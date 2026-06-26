@@ -28,10 +28,12 @@ Dependencies:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import math
 import re
+import textwrap
 from pathlib import Path
 
 import pandas as pd
@@ -48,6 +50,19 @@ LAYER_COLOURS = [
 EDGE_RELATION_COLUMNS = ("type", "relation")
 EDGE_NOTE_COLUMNS = ("note", "notes")
 EDGE_KEY_COLUMNS = ("relation", "directed", "category", "meaning", "example")
+EDGE_TOOLTIP_LINE_WIDTH = 50
+EDGE_WIDTH = 5.0
+UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
+EDGE_COLOURS = [
+    "#1f77b4",
+    "#d62728",
+    "#2ca02c",
+    "#9467bd",
+    "#ff7f0e",
+    "#17becf",
+    "#8c564b",
+    "#e377c2",
+]
 
 
 def strip_latex(text: str, max_chars: int = 700) -> str:
@@ -203,6 +218,62 @@ def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
     return edge_key
 
 
+def build_edge_colour_map(edge_key: dict[str, dict[str, str | bool]]) -> dict[str, str]:
+    """Assign stable colours to relation types, using grey for undirected edges."""
+    colour_map = {}
+    directed_relations = sorted(
+        relation
+        for relation, metadata in edge_key.items()
+        if bool(metadata.get("directed", True))
+    )
+
+    for index, relation in enumerate(directed_relations):
+        colour_map[relation] = EDGE_COLOURS[index % len(EDGE_COLOURS)]
+
+    for relation, metadata in edge_key.items():
+        if not bool(metadata.get("directed", True)):
+            colour_map[relation] = UNDIRECTED_EDGE_COLOUR
+
+    return colour_map
+
+
+def stable_edge_colour(relation: str) -> str:
+    """Return a repeatable fallback colour for relation names not present in the key."""
+    digest = hashlib.sha256(relation.encode("utf-8")).digest()
+    return EDGE_COLOURS[digest[0] % len(EDGE_COLOURS)]
+
+
+def enrich_edge_key_with_colours(
+    edge_key: dict[str, dict[str, str | bool]],
+    edge_colour_map: dict[str, str],
+) -> dict[str, dict[str, str | bool]]:
+    """Add generated display colours to edge-key metadata shown in the UI."""
+    return {
+        relation: {
+            **metadata,
+            "colour": edge_colour_map.get(relation, EDGE_COLOURS[0]),
+        }
+        for relation, metadata in edge_key.items()
+    }
+
+
+def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_WIDTH) -> str:
+    """Build a readable wrapped tooltip for an edge relation and optional note."""
+    relation_text = html.escape(relation)
+    note = str(note or "").strip()
+    if not note:
+        return relation_text
+
+    wrapped_note = textwrap.wrap(
+        note,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    wrapped_note_text = "\n".join(html.escape(line) for line in wrapped_note)
+    return f"{relation_text}:\n{wrapped_note_text}"
+
+
 def find_edge_key_path(edges_path: Path, configured_path: str | None) -> Path | None:
     """Use an explicit edge key, or edges_key.csv beside the edge file when present."""
     if configured_path:
@@ -272,6 +343,32 @@ def inject_controls(
         max-height: 180px;
         overflow-y: auto;
         font-size: 12px;
+      }
+      #kg_edge_filters {
+        margin-top: 8px;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+        font-size: 12px;
+      }
+      .kg-edge-filter {
+        align-items: center;
+        display: flex;
+        gap: 5px;
+        margin: 3px 0;
+      }
+      .kg-edge-filter input {
+        width: auto;
+      }
+      .kg-edge-filter-swatch {
+        border: 1px solid #777;
+        display: inline-block;
+        height: 9px;
+        width: 16px;
+      }
+      .kg-edge-filter-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       #kg_concept_list {
         margin-top: 8px;
@@ -429,6 +526,29 @@ def inject_controls(
     #info_panel .edge-key-table th {
         background: #f4f4f4;
     }
+
+    #info_panel .edge-colour-swatch {
+        border: 1px solid #777;
+        display: inline-block;
+        height: 10px;
+        margin-right: 6px;
+        vertical-align: -1px;
+        width: 18px;
+    }
+
+    div.vis-tooltip {
+        z-index: 10000 !important;
+        max-width: 380px;
+        padding: 6px 8px;
+        background: #ffffff;
+        border: 1px solid #b8b8b8;
+        color: #222;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        white-space: pre-line;
+        line-height: 1.35;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
     </style>
     """
 
@@ -446,6 +566,7 @@ def inject_controls(
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
       <div id="kg_legend"></div>
+      <div id="kg_edge_filters"></div>
       <div id="kg_concept_list"></div>
     </div>
 
@@ -475,8 +596,13 @@ def inject_controls(
 
         var originalNodes = {};
         var originalEdges = {};
+        var enabledEdgeRelations = {};
+        var currentView = {mode: "all", nodeId: null};
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
+        Object.keys(edgeKey).forEach(function(relation) {
+          enabledEdgeRelations[relation] = true;
+        });
 
         function htmlToText(s) {
           var div = document.createElement("div");
@@ -556,6 +682,66 @@ def inject_controls(
             concept.layer_title || "",
             concept.body || ""
           ].join(" ").toLowerCase();
+        }
+
+        function edgeRelation(edge) {
+          return String(edge.relation || "");
+        }
+
+        function edgeRelationEnabled(edge) {
+          var relation = edgeRelation(edge);
+          return enabledEdgeRelations[relation] !== false;
+        }
+
+        function enabledConnectedNodes(nodeId) {
+          var connected = {};
+          allEdges.forEach(function(edge) {
+            if (!edgeRelationEnabled(edge)) { return; }
+            if (edge.from == nodeId) { connected[edge.to] = true; }
+            if (edge.to == nodeId) { connected[edge.from] = true; }
+          });
+          return Object.keys(connected);
+        }
+
+        function relationColour(relation) {
+          var item = edgeKey[relation] || {};
+          return item.colour || "#999999";
+        }
+
+        function buildEdgeFilters() {
+          var relations = Object.keys(edgeKey).sort();
+          var html = "<b>Edge types</b>";
+
+          if (relations.length === 0) {
+            html += '<div style="color:#555; padding-top:4px;">No edge key loaded.</div>';
+            document.getElementById("kg_edge_filters").innerHTML = html;
+            return;
+          }
+
+          relations.forEach(function(relation) {
+            var inputId = "kg_edge_filter_" + relation.replace(/[^a-zA-Z0-9_-]/g, "_");
+            html += '<label class="kg-edge-filter" for="' + escapeHtml(inputId) + '">' +
+              '<input type="checkbox" id="' + escapeHtml(inputId) +
+              '" data-edge-relation="' + escapeHtml(relation) + '" checked>' +
+              '<span class="kg-edge-filter-swatch" style="background:' +
+              escapeHtml(relationColour(relation)) + '"></span>' +
+              '<span class="kg-edge-filter-label">' + escapeHtml(relation) + "</span>" +
+              "</label>";
+          });
+
+          document.getElementById("kg_edge_filters").innerHTML = html;
+        }
+
+        function applyCurrentView() {
+          if (currentView.mode === "highlight" && currentView.nodeId !== null) {
+            kgHighlight(currentView.nodeId, true);
+            return;
+          }
+          if (currentView.mode === "neighbourhood" && currentView.nodeId !== null) {
+            kgApplyNeighbourhood(currentView.nodeId, true);
+            return;
+          }
+          kgReset(true);
         }
 
         function visibleConceptLabel(nodeId) {
@@ -653,6 +839,7 @@ def inject_controls(
           html += '<table class="edge-key-table">';
           html += "<thead><tr>" +
             "<th>Relation</th>" +
+            "<th>Colour</th>" +
             "<th>Direction</th>" +
             "<th>Category</th>" +
             "<th>Meaning</th>" +
@@ -661,8 +848,11 @@ def inject_controls(
 
           relations.forEach(function(relation) {
             var item = edgeKey[relation] || {};
+            var colour = item.colour || "#999999";
             html += "<tr>" +
               "<td><strong>" + escapeHtml(relation) + "</strong></td>" +
+              '<td><span class="edge-colour-swatch" style="background:' + escapeHtml(colour) + '"></span>' +
+              escapeHtml(colour) + "</td>" +
               "<td>" + (item.directed ? "directed" : "undirected") + "</td>" +
               "<td>" + escapeHtml(item.category || "") + "</td>" +
               "<td>" + escapeHtml(item.meaning || "") + "</td>" +
@@ -691,7 +881,7 @@ def inject_controls(
         function focusConcept(nodeId, statusPrefix) {
           if (!getConcept(nodeId)) { return; }
           network.selectNodes([nodeId]);
-          network.focus(nodeId, {scale: 1.4, animation: true});
+          network.focus(nodeId, {scale: 0.7, animation: true});
           kgHighlight(nodeId);
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
@@ -745,7 +935,8 @@ def inject_controls(
           document.getElementById("kg_status").innerText = "Layout physics restarted.";
         };
 
-        window.kgReset = function() {
+        window.kgReset = function(preserveStatus) {
+          currentView = {mode: "all", nodeId: null};
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
@@ -753,11 +944,13 @@ def inject_controls(
           }));
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = false;
+            o.hidden = !edgeRelationEnabled(e);
             return o;
           }));
           updateNodeLabelPositions();
-          document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
+          if (!preserveStatus) {
+            document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
+          }
           setActiveConceptItem(null);
         };
 
@@ -783,8 +976,9 @@ def inject_controls(
             "Found " + matches.length + " match(es). Showing first: " + (concept.label || id);
         };
 
-        window.kgHighlight = function(nodeId) {
-          var connected = network.getConnectedNodes(nodeId);
+        window.kgHighlight = function(nodeId, preserveStatus) {
+          currentView = {mode: "highlight", nodeId: nodeId};
+          var connected = enabledConnectedNodes(nodeId);
           var keep = {};
           keep[nodeId] = true;
           connected.forEach(function(id) { keep[id] = true; });
@@ -804,12 +998,19 @@ def inject_controls(
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            if (e.from == nodeId || e.to == nodeId) {
+            if (!edgeRelationEnabled(e)) {
+              o.hidden = true;
+            } else if (e.from == nodeId || e.to == nodeId) {
               o.hidden = false;
-              o.color = {color: "#111111", opacity: 0.95};
-              o.width = 2.6;
+              o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
+              o.width = Math.max(Number(o.width) || 0, 3.0);
             } else {
-              o.color = {color: "#cccccc", opacity: 0.10};
+              o.color = {
+                color: "#cccccc",
+                highlight: "#cccccc",
+                hover: "#cccccc",
+                opacity: 0.10
+              };
               o.width = 0.4;
               o.hidden = false;
             }
@@ -817,19 +1018,15 @@ def inject_controls(
           }));
           updateNodeLabelPositions();
 
-          document.getElementById("kg_status").innerText =
-            "Selected " + nodeId + ": showing immediate neighbours.";
+          if (!preserveStatus) {
+            document.getElementById("kg_status").innerText =
+              "Selected " + nodeId + ": showing immediate neighbours.";
+          }
         };
 
-        window.kgFocusSelected = function() {
-          var selected = network.getSelectedNodes();
-          if (selected.length === 0) {
-            document.getElementById("kg_status").innerText = "Select a node first.";
-            return;
-          }
-
-          var nodeId = selected[0];
-          var connected = network.getConnectedNodes(nodeId);
+        function kgApplyNeighbourhood(nodeId, preserveStatus) {
+          currentView = {mode: "neighbourhood", nodeId: nodeId};
+          var connected = enabledConnectedNodes(nodeId);
           var keep = {};
           keep[nodeId] = true;
           connected.forEach(function(id) { keep[id] = true; });
@@ -842,14 +1039,26 @@ def inject_controls(
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = !(keep[e.from] && keep[e.to]);
+            o.hidden = !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]);
             return o;
           }));
 
           network.fit({animation: true});
           updateNodeLabelPositions();
-          document.getElementById("kg_status").innerText =
-            "Neighbourhood mode for " + nodeId + ".";
+          if (!preserveStatus) {
+            document.getElementById("kg_status").innerText =
+              "Neighbourhood mode for " + nodeId + ".";
+          }
+        }
+
+        window.kgFocusSelected = function() {
+          var selected = network.getSelectedNodes();
+          if (selected.length === 0) {
+            document.getElementById("kg_status").innerText = "Select a node first.";
+            return;
+          }
+
+          kgApplyNeighbourhood(selected[0], false);
         };
 
         network.on("click", function(params) {
@@ -880,6 +1089,14 @@ def inject_controls(
 
         document.getElementById("kg_search").addEventListener("input", function(e) {
           buildConceptList(e.target.value);
+        });
+
+        document.getElementById("kg_edge_filters").addEventListener("change", function(e) {
+          var input = e.target.closest("input[data-edge-relation]");
+          if (!input) { return; }
+
+          enabledEdgeRelations[input.getAttribute("data-edge-relation")] = input.checked;
+          applyCurrentView();
         });
 
         document.getElementById("kg_concept_list").addEventListener("click", function(e) {
@@ -918,6 +1135,7 @@ def inject_controls(
         });
         legend.innerHTML = html;
         buildNodeLabels();
+        buildEdgeFilters();
         buildConceptList("");
       }
 
@@ -952,6 +1170,7 @@ def main():
     nodes_df = pd.read_csv(args.nodes).fillna("")
     edges_df = pd.read_csv(edges_path).fillna("")
     edge_key = load_edge_key(edge_key_path)
+    edge_colour_map = build_edge_colour_map(edge_key)
 
     if "id" not in nodes_df.columns:
         raise ValueError("nodes.csv must contain an 'id' column")
@@ -1093,16 +1312,24 @@ def main():
         rel = str(row.get("relation", "REFERENCE") or "REFERENCE")
         relation_meta = edge_key.get(rel, {})
         directed = bool(relation_meta.get("directed", True))
-        title_parts = [html.escape(rel)]
+        edge_colour = edge_colour_map.get(
+            rel,
+            stable_edge_colour(rel) if directed else UNDIRECTED_EDGE_COLOUR,
+        )
         note = str(row.get("note", "")).strip()
-        if note:
-            title_parts.append(html.escape(note))
 
         net.add_edge(
             source,
             target,
-            title=": ".join(title_parts),
+            title=make_edge_tooltip(rel, note),
+            relation=rel,
             arrows="to" if directed else "",
+            color={
+                "color": edge_colour,
+                "highlight": edge_colour,
+                "hover": edge_colour,
+            },
+            width=EDGE_WIDTH,
         )
 
     concept_data = build_concept_data(nodes_df)
@@ -1112,7 +1339,11 @@ def main():
     net.write_html(str(out_path), notebook=False, open_browser=False)
 
     html_text = out_path.read_text(encoding="utf-8")
-    html_text = inject_controls(html_text, concept_data, edge_key)
+    html_text = inject_controls(
+        html_text,
+        concept_data,
+        enrich_edge_key_with_colours(edge_key, edge_colour_map),
+    )
     out_path.write_text(html_text, encoding="utf-8")
 
     print(f"Wrote {out_path}")
