@@ -1,0 +1,4 @@
+relation,directed,category,meaning,example
+PREREQUISITE,true,knowledge,"A requires prior understanding of B. Only include essential, non-redundant dependencies.","10.1 Electromagnetic waves -> 10.2 Wave equation"
+DERIVES_FROM,true,knowledge,"A can be mathematically derived from B.","10.2 Wave equation -> 7.6 Maxwell's equations"
+RELATED,false,association,"A and B are closely associated, but neither is a prerequisite of the other.","7.3 Electric field -- 7.4 Magnetic field"

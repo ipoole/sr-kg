@@ -10,6 +10,12 @@ Expected nodes.csv columns:
 Expected edges.csv columns:
     source,target,type
 
+The edge relation column may be named either type or relation. Optional note/notes
+columns are accepted and ignored.
+
+Expected edges_key.csv columns:
+    relation,directed,category,meaning,example
+
 Only id/source/target are strictly required. Other columns are used when present.
 
 Usage:
@@ -38,6 +44,10 @@ LAYER_COLOURS = [
     "#4363d8", "#911eb4", "#f032e6", "#fabed4", "#9a6324",
     "#808080", "#469990", "#dcbeff", "#aaffc3"
 ]
+
+EDGE_RELATION_COLUMNS = ("type", "relation")
+EDGE_NOTE_COLUMNS = ("note", "notes")
+EDGE_KEY_COLUMNS = ("relation", "directed", "category", "meaning", "example")
 
 
 def strip_latex(text: str, max_chars: int = 700) -> str:
@@ -135,7 +145,81 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
     return concept_data
 
 
-def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> str:
+def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
+    """Validate and standardise edge data from supported CSV variants."""
+    if not {"source", "target"}.issubset(edges_df.columns):
+        raise ValueError("edges.csv must contain 'source' and 'target' columns")
+
+    edges_df = edges_df.copy()
+
+    relation_column = next((col for col in EDGE_RELATION_COLUMNS if col in edges_df.columns), None)
+    if relation_column is None:
+        edges_df["relation"] = "REFERENCE"
+    else:
+        edges_df["relation"] = edges_df[relation_column].replace("", "REFERENCE")
+
+    note_column = next((col for col in EDGE_NOTE_COLUMNS if col in edges_df.columns), None)
+    edges_df["note"] = edges_df[note_column] if note_column else ""
+
+    return edges_df
+
+
+def parse_bool(value, default: bool = True) -> bool:
+    """Parse common CSV boolean spellings."""
+    if isinstance(value, bool):
+        return value
+
+    text = str(value).strip().lower()
+    if text in {"true", "t", "yes", "y", "1"}:
+        return True
+    if text in {"false", "f", "no", "n", "0"}:
+        return False
+    return default
+
+
+def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
+    """Load relation metadata that controls edge direction and help text."""
+    if path is None or not path.exists():
+        return {}
+
+    edge_key_df = pd.read_csv(path).fillna("")
+    missing = set(EDGE_KEY_COLUMNS) - set(edge_key_df.columns)
+    if missing:
+        missing_cols = ", ".join(sorted(missing))
+        raise ValueError(f"{path} must contain columns: {missing_cols}")
+
+    edge_key = {}
+    for _, row in edge_key_df.iterrows():
+        relation = str(row.get("relation", "")).strip()
+        if not relation:
+            continue
+        edge_key[relation] = {
+            "relation": relation,
+            "directed": parse_bool(row.get("directed", ""), default=True),
+            "category": str(row.get("category", "")).strip(),
+            "meaning": str(row.get("meaning", "")).strip(),
+            "example": str(row.get("example", "")).strip(),
+        }
+    return edge_key
+
+
+def find_edge_key_path(edges_path: Path, configured_path: str | None) -> Path | None:
+    """Use an explicit edge key, or edges_key.csv beside the edge file when present."""
+    if configured_path:
+        return Path(configured_path)
+
+    sibling = edges_path.parent / "edges_key.csv"
+    if sibling.exists():
+        return sibling
+
+    return None
+
+
+def inject_controls(
+    html_text: str,
+    concept_data: dict[str, dict[str, str]],
+    edge_key: dict[str, dict[str, str | bool]],
+) -> str:
     """Inject a small control panel and useful vis.js event handlers."""
     mathjax = """
     <script>
@@ -231,6 +315,52 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
         margin-right: 5px;
         vertical-align: middle;
       }
+
+      #mynetwork {
+        position: relative;
+      }
+
+      #kg_node_labels {
+        bottom: 0;
+        left: 0;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 5;
+      }
+
+      .kg-node-label {
+        color: #111;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.2;
+        max-width: 150px;
+        overflow-wrap: anywhere;
+        position: absolute;
+        text-align: center;
+        text-shadow:
+          -1px -1px 0 rgba(255,255,255,0.9),
+          1px -1px 0 rgba(255,255,255,0.9),
+          -1px 1px 0 rgba(255,255,255,0.9),
+          1px 1px 0 rgba(255,255,255,0.9);
+        transform: translate(-50%, 0);
+        white-space: normal;
+      }
+
+      .kg-node-label mjx-container {
+        display: inline-block;
+        margin: 0 !important;
+        vertical-align: -0.15em;
+      }
+
+      .kg-node-label-id {
+        color: #333;
+        display: block;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
     
     #info_panel {
         position: fixed;
@@ -281,6 +411,24 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
     #info_panel .concept-link:focus {
         text-decoration: underline;
     }
+
+    #info_panel .edge-key-table {
+        border-collapse: collapse;
+        font-size: 13px;
+        width: 100%;
+    }
+
+    #info_panel .edge-key-table th,
+    #info_panel .edge-key-table td {
+        border: 1px solid #ddd;
+        padding: 6px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    #info_panel .edge-key-table th {
+        background: #f4f4f4;
+    }
     </style>
     """
 
@@ -293,6 +441,7 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
       <br>
       <button onclick="kgFocusSelected()">Neighbourhood</button>
       <button onclick="kgShowAll()">Show all</button>
+      <button onclick="kgShowEdgeKey()">Edge key</button>
       <button onclick="kgFreezeLayout()">Freeze</button>
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
@@ -307,14 +456,22 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
     """
 
     concept_data_json = json.dumps(concept_data, ensure_ascii=False).replace("</", "<\\/")
+    edge_key_json = json.dumps(edge_key, ensure_ascii=False).replace("</", "<\\/")
 
     js = """
     <script type="text/javascript">
       var conceptData = __CONCEPT_DATA__;
+      var edgeKey = __EDGE_KEY__;
 
       function kgAfterReady() {
         var allNodes = nodes.get();
         var allEdges = edges.get();
+        var graphContainer = document.getElementById("mynetwork");
+        var nodeLabelLayer = document.createElement("div");
+        var nodeLabelEls = {};
+
+        nodeLabelLayer.id = "kg_node_labels";
+        graphContainer.appendChild(nodeLabelLayer);
 
         var originalNodes = {};
         var originalEdges = {};
@@ -401,6 +558,63 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
           ].join(" ").toLowerCase();
         }
 
+        function visibleConceptLabel(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return '<span class="kg-node-label-id">' + escapeHtml(nodeId) + '</span>' +
+            renderConceptText(concept.label || "");
+        }
+
+        function buildNodeLabels() {
+          nodeLabelLayer.innerHTML = "";
+          Object.keys(conceptData).forEach(function(id) {
+            var el = document.createElement("div");
+            el.className = "kg-node-label";
+            el.setAttribute("data-node-id", id);
+            el.innerHTML = visibleConceptLabel(id);
+            nodeLabelLayer.appendChild(el);
+            nodeLabelEls[id] = el;
+          });
+          typesetNodeLabels();
+          updateNodeLabelPositions();
+        }
+
+        function typesetNodeLabels() {
+          if (window.MathJax && MathJax.typesetPromise) {
+            if (MathJax.typesetClear) {
+              MathJax.typesetClear([nodeLabelLayer]);
+            }
+            MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
+              console.warn("MathJax label typesetting failed:", err);
+            }).then(function() {
+              updateNodeLabelPositions();
+            });
+          } else {
+            setTimeout(typesetNodeLabels, 250);
+          }
+        }
+
+        function updateNodeLabelPositions() {
+          if (!network || !nodeLabelLayer) { return; }
+
+          var positions = network.getPositions();
+          Object.keys(nodeLabelEls).forEach(function(id) {
+            var el = nodeLabelEls[id];
+            var node = nodes.get(id);
+            var pos = positions[id];
+            if (!node || !pos || node.hidden) {
+              el.style.display = "none";
+              return;
+            }
+
+            var dom = network.canvasToDOM(pos);
+            var offset = (Number(node.size) || 18) + 6;
+            el.style.display = "block";
+            el.style.left = dom.x + "px";
+            el.style.top = (dom.y + offset) + "px";
+            el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
+          });
+        }
+
         function showConcept(nodeId) {
           var concept = getConcept(nodeId);
           if (!concept) {
@@ -425,6 +639,40 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
           document.getElementById("info_panel").innerHTML = html;
           typesetInfoPanel();
         }
+
+        window.kgShowEdgeKey = function() {
+          var relations = Object.keys(edgeKey).sort();
+          var html = "<h2>Edge Key</h2>";
+
+          if (relations.length === 0) {
+            html += "<p>No edge key data was loaded.</p>";
+            document.getElementById("info_panel").innerHTML = html;
+            return;
+          }
+
+          html += '<table class="edge-key-table">';
+          html += "<thead><tr>" +
+            "<th>Relation</th>" +
+            "<th>Direction</th>" +
+            "<th>Category</th>" +
+            "<th>Meaning</th>" +
+            "<th>Example</th>" +
+            "</tr></thead><tbody>";
+
+          relations.forEach(function(relation) {
+            var item = edgeKey[relation] || {};
+            html += "<tr>" +
+              "<td><strong>" + escapeHtml(relation) + "</strong></td>" +
+              "<td>" + (item.directed ? "directed" : "undirected") + "</td>" +
+              "<td>" + escapeHtml(item.category || "") + "</td>" +
+              "<td>" + escapeHtml(item.meaning || "") + "</td>" +
+              "<td>" + escapeHtml(item.example || "") + "</td>" +
+              "</tr>";
+          });
+
+          html += "</tbody></table>";
+          document.getElementById("info_panel").innerHTML = html;
+        };
 
         function setActiveConceptItem(nodeId) {
           document.querySelectorAll(".kg-concept-item.active").forEach(function(el) {
@@ -508,6 +756,7 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
             o.hidden = false;
             return o;
           }));
+          updateNodeLabelPositions();
           document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           setActiveConceptItem(null);
         };
@@ -528,9 +777,10 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
           }
 
           var id = matches[0].id;
+          var concept = getConcept(id) || {};
           focusConcept(id, null);
           document.getElementById("kg_status").innerText =
-            "Found " + matches.length + " match(es). Showing first: " + matches[0].label;
+            "Found " + matches.length + " match(es). Showing first: " + (concept.label || id);
         };
 
         window.kgHighlight = function(nodeId) {
@@ -565,6 +815,7 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
             }
             return o;
           }));
+          updateNodeLabelPositions();
 
           document.getElementById("kg_status").innerText =
             "Selected " + nodeId + ": showing immediate neighbours.";
@@ -596,6 +847,7 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
           }));
 
           network.fit({animation: true});
+          updateNodeLabelPositions();
           document.getElementById("kg_status").innerText =
             "Neighbourhood mode for " + nodeId + ".";
         };
@@ -614,7 +866,13 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
 
         network.once("stabilizationIterationsDone", function() {
           kgFreezeLayout();
+          updateNodeLabelPositions();
         });
+
+        network.on("afterDrawing", updateNodeLabelPositions);
+        network.on("dragEnd", updateNodeLabelPositions);
+        network.on("zoom", updateNodeLabelPositions);
+        network.on("animationFinished", updateNodeLabelPositions);
 
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
@@ -659,13 +917,14 @@ def inject_controls(html_text: str, concept_data: dict[str, dict[str, str]]) -> 
                   'Layer ' + g + (layerTitle ? ': ' + layerTitle : '') + '<br>';
         });
         legend.innerHTML = html;
+        buildNodeLabels();
         buildConceptList("");
       }
 
       // Wait until pyvis has created network/nodes/edges variables.
       setTimeout(kgAfterReady, 500);
     </script>
-    """.replace("__CONCEPT_DATA__", concept_data_json)
+    """.replace("__CONCEPT_DATA__", concept_data_json).replace("__EDGE_KEY__", edge_key_json)
 
     html_text = html_text.replace("</head>", mathjax + "\n" + css + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
@@ -677,18 +936,27 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--nodes", default="nodes.csv", help="Path to nodes.csv")
     parser.add_argument("--edges", default="edges.csv", help="Path to edges.csv")
+    parser.add_argument(
+        "--edge-key",
+        default=None,
+        help="Path to edges_key.csv. Defaults to edges_key.csv beside the edges file when present.",
+    )
     parser.add_argument("--out", default="interactive_graph.html", help="Output HTML file")
     parser.add_argument("--height", default="900px")
     parser.add_argument("--width", default="100%")
     args = parser.parse_args()
 
+    edges_path = Path(args.edges)
+    edge_key_path = find_edge_key_path(edges_path, args.edge_key)
+
     nodes_df = pd.read_csv(args.nodes).fillna("")
-    edges_df = pd.read_csv(args.edges).fillna("")
+    edges_df = pd.read_csv(edges_path).fillna("")
+    edge_key = load_edge_key(edge_key_path)
 
     if "id" not in nodes_df.columns:
         raise ValueError("nodes.csv must contain an 'id' column")
-    if not {"source", "target"}.issubset(edges_df.columns):
-        raise ValueError("edges.csv must contain 'source' and 'target' columns")
+
+    edges_df = normalise_edges(edges_df)
 
     # Normalise IDs as strings.
     nodes_df["id"] = nodes_df["id"].astype(str)
@@ -737,7 +1005,7 @@ def main():
       "edges": {
         "arrows": {
           "to": {
-            "enabled": true,
+            "enabled": false,
             "scaleFactor": 0.65
           }
         },
@@ -793,20 +1061,22 @@ def main():
         prereqs = [label_lookup.get(x, x) for x in prereq_ids]
         dependents = [label_lookup.get(x, x) for x in dependent_ids]
 
-        title = f"{cid} {label}"
+        title = f"{cid} {html.escape(label)}"
 
         # Node size mainly reflects how many other concepts point to it.
         importance = incoming.get(cid, 0)
         size = 18 + 4.0 * math.sqrt(importance + 1)
 
-        visible_label = f"{cid}\n{label}"
-
         net.add_node(
             cid,
-            label=visible_label,
+            label=" ",
             title=title,
             group=layer_int,
             size=size,
+            font={
+                "size": 1,
+                "color": "rgba(0,0,0,0)",
+            },
             color={
                 "background": colour,
                 "border": "#333333",
@@ -820,11 +1090,19 @@ def main():
     for i, row in edges_df.iterrows():
         source = row["source"]
         target = row["target"]
-        rel = str(row.get("type", row.get("relation", "REFERENCE")) or "REFERENCE")
+        rel = str(row.get("relation", "REFERENCE") or "REFERENCE")
+        relation_meta = edge_key.get(rel, {})
+        directed = bool(relation_meta.get("directed", True))
+        title_parts = [html.escape(rel)]
+        note = str(row.get("note", "")).strip()
+        if note:
+            title_parts.append(html.escape(note))
+
         net.add_edge(
             source,
             target,
-            title=html.escape(rel),
+            title=": ".join(title_parts),
+            arrows="to" if directed else "",
         )
 
     concept_data = build_concept_data(nodes_df)
@@ -834,12 +1112,14 @@ def main():
     net.write_html(str(out_path), notebook=False, open_browser=False)
 
     html_text = out_path.read_text(encoding="utf-8")
-    html_text = inject_controls(html_text, concept_data)
+    html_text = inject_controls(html_text, concept_data, edge_key)
     out_path.write_text(html_text, encoding="utf-8")
 
     print(f"Wrote {out_path}")
     print(f"Nodes: {len(nodes_df)}")
     print(f"Edges: {len(edges_df)}")
+    if edge_key_path:
+        print(f"Edge key: {edge_key_path} ({len(edge_key)} relation types)")
 
 
 if __name__ == "__main__":

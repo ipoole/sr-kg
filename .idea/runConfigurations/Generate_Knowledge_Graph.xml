@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Generate Knowledge Graph" type="PythonConfigurationType" factoryName="Python">
+    <module name="sr-kg" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="EMULATE_TERMINAL" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="MODULE_MODE" value="false" />
+    <option name="PARAMETERS" value="--nodes data/nodes.csv --edges data/knowledge_edges.csv --edge-key data/edges_key.csv --out output/interactive_graph.html" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/generate_pyvis.py" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

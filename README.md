@@ -19,6 +19,8 @@ The project reads concept data from CSV files and generates a standalone interac
 data/
   nodes.csv                Concept metadata and descriptions
   edges.csv                Directed concept relationships
+  knowledge_edges.csv      Refined directed relationships with optional notes
+  edges_key.csv            Edge relation meanings and direction metadata
 lib/
   vis-9.1.2/               Vendored vis-network assets used by PyVis output
   tom-select/              Vendored PyVis UI assets
@@ -42,7 +44,8 @@ python -m pip install -r requirements.txt
 ```bash
 python tools/generate_pyvis.py \
   --nodes data/nodes.csv \
-  --edges data/edges.csv \
+  --edges data/knowledge_edges.csv \
+  --edge-key data/edges_key.csv \
   --out output/interactive_graph.html
 ```
 
@@ -64,7 +67,17 @@ id,label,layer,layer_title,body
 source,target,type
 ```
 
-Only `id`, `source`, and `target` are strictly required by the generator. The richer fields drive labels, panel content, layer grouping, search, and rendered concept references.
+The edge relation column may be named either `type` or `relation`. Optional `note` or `notes` columns are accepted and ignored by the generator for now.
+
+`data/edges_key.csv` expects:
+
+```text
+relation,directed,category,meaning,example
+```
+
+The generator uses `directed` to decide whether each relation type should render with an arrow. The generated viewer includes an `Edge key` button that shows the relation meanings and examples.
+
+Only `id`, `source`, and `target` are strictly required by the generator. The richer node fields drive labels, panel content, layer grouping, search, and rendered concept references.
 
 Concept references in node bodies use:
 
@@ -73,4 +86,3 @@ Concept references in node bodies use:
 ```
 
 When the target id exists, the generated viewer renders the reference as a clickable link. Missing targets render as bold text without a link.
-
