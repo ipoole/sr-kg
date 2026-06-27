@@ -52,6 +52,9 @@ EDGE_NOTE_COLUMNS = ("note", "notes")
 EDGE_KEY_COLUMNS = ("relation", "directed", "category", "meaning", "example")
 EDGE_TOOLTIP_LINE_WIDTH = 50
 EDGE_WIDTH = 5.0
+LAYOUT_X_SPACING = 600
+LAYOUT_Y_SPACING = 320
+LAYOUT_ROW_STAGGER = 70
 UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
 EDGE_COLOURS = [
     "#1f77b4",
@@ -255,6 +258,85 @@ def enrich_edge_key_with_colours(
         }
         for relation, metadata in edge_key.items()
     }
+
+
+def relation_is_directed(relation: str, edge_key: dict[str, dict[str, str | bool]]) -> bool:
+    """Return whether a relation should be treated as directed."""
+    return bool(edge_key.get(relation, {}).get("directed", True))
+
+
+def build_hierarchy_levels(
+    node_ids: list[str],
+    edges_df: pd.DataFrame,
+    edge_key: dict[str, dict[str, str | bool]],
+) -> dict[str, int]:
+    """Assign best-effort top-to-bottom levels from directed edges.
+
+    Directed edge orientation is source -> target, so larger levels place edge
+    targets lower in a top-down hierarchical layout. Cycles are collapsed into
+    strongly connected components before ranking.
+    """
+    directed_graph = nx.DiGraph()
+    directed_graph.add_nodes_from(node_ids)
+
+    for _, row in edges_df.iterrows():
+        relation = str(row.get("relation", "REFERENCE") or "REFERENCE")
+        if relation_is_directed(relation, edge_key):
+            directed_graph.add_edge(row["source"], row["target"])
+
+    components = list(nx.strongly_connected_components(directed_graph))
+    node_to_component = {}
+    for index, component in enumerate(components):
+        for node_id in component:
+            node_to_component[node_id] = index
+
+    component_graph = nx.DiGraph()
+    component_graph.add_nodes_from(range(len(components)))
+    for source, target in directed_graph.edges():
+        source_component = node_to_component[source]
+        target_component = node_to_component[target]
+        if source_component != target_component:
+            component_graph.add_edge(source_component, target_component)
+
+    component_levels = {component: 0 for component in component_graph.nodes()}
+    for component in nx.topological_sort(component_graph):
+        for target in component_graph.successors(component):
+            component_levels[target] = max(
+                component_levels[target],
+                component_levels[component] + 1,
+            )
+
+    return {
+        node_id: component_levels[node_to_component[node_id]]
+        for node_id in node_ids
+    }
+
+
+def build_hierarchy_positions(
+    hierarchy_levels: dict[str, int],
+    x_spacing: int = LAYOUT_X_SPACING,
+    y_spacing: int = LAYOUT_Y_SPACING,
+    row_stagger: int = LAYOUT_ROW_STAGGER,
+) -> dict[str, tuple[float, float]]:
+    """Place nodes in compact staggered rows derived from hierarchy levels."""
+    nodes_by_level: dict[int, list[str]] = {}
+    for node_id, level in hierarchy_levels.items():
+        nodes_by_level.setdefault(level, []).append(node_id)
+
+    positions = {}
+    for level, level_nodes in nodes_by_level.items():
+        sorted_nodes = sorted(level_nodes, key=concept_sort_key)
+        row_width = (len(sorted_nodes) - 1) * x_spacing
+        for index, node_id in enumerate(sorted_nodes):
+            stagger = 0
+            if len(sorted_nodes) > 1:
+                stagger = ((index % 3) - 1) * row_stagger
+            positions[node_id] = (
+                (index * x_spacing) - (row_width / 2),
+                (level * y_spacing) + stagger,
+            )
+
+    return positions
 
 
 def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_WIDTH) -> str:
@@ -930,9 +1012,11 @@ def inject_controls(
         };
 
         window.kgRestartLayout = function() {
-          network.setOptions({physics: {enabled: true}});
-          network.startSimulation();
-          document.getElementById("kg_status").innerText = "Layout physics restarted.";
+          network.setOptions({
+            physics: {enabled: false}
+          });
+          network.fit({animation: true});
+          document.getElementById("kg_status").innerText = "Initial compact layout restored.";
         };
 
         window.kgReset = function(preserveStatus) {
@@ -1184,6 +1268,8 @@ def main():
 
     node_ids = set(nodes_df["id"])
     edges_df = edges_df[edges_df["source"].isin(node_ids) & edges_df["target"].isin(node_ids)].copy()
+    hierarchy_levels = build_hierarchy_levels(list(nodes_df["id"]), edges_df, edge_key)
+    hierarchy_positions = build_hierarchy_positions(hierarchy_levels)
 
     G = nx.DiGraph()
     for _, row in nodes_df.iterrows():
@@ -1221,6 +1307,9 @@ def main():
           "multi": true
         }
       },
+      "layout": {
+        "improvedLayout": false
+      },
       "edges": {
         "arrows": {
           "to": {
@@ -1230,7 +1319,9 @@ def main():
         },
         "smooth": {
           "enabled": true,
-          "type": "dynamic"
+          "type": "cubicBezier",
+          "forceDirection": "vertical",
+          "roundness": 0.35
         },
         "color": {
           "color": "#999999",
@@ -1239,20 +1330,7 @@ def main():
         "width": 1
       },
       "physics": {
-        "enabled": true,
-        "solver": "forceAtlas2Based",
-        "forceAtlas2Based": {
-          "gravitationalConstant": -80,
-          "centralGravity": 0.012,
-          "springLength": 170,
-          "springConstant": 0.045,
-          "damping": 0.5,
-          "avoidOverlap": 0.8
-        },
-        "stabilization": {
-          "enabled": true,
-          "iterations": 900
-        }
+        "enabled": false
       },
       "interaction": {
         "hover": true,
@@ -1284,13 +1362,17 @@ def main():
 
         # Node size mainly reflects how many other concepts point to it.
         importance = incoming.get(cid, 0)
-        size = 18 + 4.0 * math.sqrt(importance + 1)
+        size = 36 + 4.0 * math.sqrt(importance + 1)
+        x_pos, y_pos = hierarchy_positions.get(cid, (0, 0))
 
         net.add_node(
             cid,
             label=" ",
             title=title,
             group=layer_int,
+            level=hierarchy_levels.get(cid, 0),
+            x=x_pos,
+            y=y_pos,
             size=size,
             font={
                 "size": 1,
@@ -1310,8 +1392,7 @@ def main():
         source = row["source"]
         target = row["target"]
         rel = str(row.get("relation", "REFERENCE") or "REFERENCE")
-        relation_meta = edge_key.get(rel, {})
-        directed = bool(relation_meta.get("directed", True))
+        directed = relation_is_directed(rel, edge_key)
         edge_colour = edge_colour_map.get(
             rel,
             stable_edge_colour(rel) if directed else UNDIRECTED_EDGE_COLOUR,
