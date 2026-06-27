@@ -269,50 +269,42 @@ def relation_is_directed(relation: str, edge_key: dict[str, dict[str, str | bool
     return bool(edge_key.get(relation, {}).get("directed", True))
 
 
-def build_hierarchy_levels(
-    node_ids: list[str],
-    edges_df: pd.DataFrame,
-    edge_key: dict[str, dict[str, str | bool]],
-) -> dict[str, int]:
-    """Assign best-effort top-to-bottom levels from directed edges.
+def parse_layer_value(node_id: str, layer: str | int | float | None) -> int:
+    """Read a pedagogical layer from the layer column, falling back to the id prefix."""
+    try:
+        value = int(float(str(layer).strip()))
+        if value > 0:
+            return value
+    except Exception:
+        pass
 
-    Directed edge orientation is source -> target, so larger levels place edge
-    targets lower in a top-down hierarchical layout. Cycles are collapsed into
-    strongly connected components before ranking.
+    try:
+        value = int(str(node_id).split(".", 1)[0])
+        if value > 0:
+            return value
+    except Exception:
+        pass
+
+    return 0
+
+
+def build_hierarchy_levels(nodes_df: pd.DataFrame) -> dict[str, int]:
+    """Assign top-to-bottom layout levels from pedagogical node layers.
+
+    Larger hierarchy levels are drawn lower by build_hierarchy_positions(), so
+    layer 1 is mapped to the bottom row and the largest layer is mapped to the
+    top row.
     """
-    directed_graph = nx.DiGraph()
-    directed_graph.add_nodes_from(node_ids)
-
-    for _, row in edges_df.iterrows():
-        relation = str(row.get("relation", "REFERENCE") or "REFERENCE")
-        if relation_is_directed(relation, edge_key):
-            directed_graph.add_edge(row["source"], row["target"])
-
-    components = list(nx.strongly_connected_components(directed_graph))
-    node_to_component = {}
-    for index, component in enumerate(components):
-        for node_id in component:
-            node_to_component[node_id] = index
-
-    component_graph = nx.DiGraph()
-    component_graph.add_nodes_from(range(len(components)))
-    for source, target in directed_graph.edges():
-        source_component = node_to_component[source]
-        target_component = node_to_component[target]
-        if source_component != target_component:
-            component_graph.add_edge(source_component, target_component)
-
-    component_levels = {component: 0 for component in component_graph.nodes()}
-    for component in nx.topological_sort(component_graph):
-        for target in component_graph.successors(component):
-            component_levels[target] = max(
-                component_levels[target],
-                component_levels[component] + 1,
-            )
+    node_layers = {
+        str(row["id"]): parse_layer_value(row["id"], row.get("layer", ""))
+        for _, row in nodes_df.iterrows()
+    }
+    positive_layers = [layer for layer in node_layers.values() if layer > 0]
+    max_layer = max(positive_layers, default=0)
 
     return {
-        node_id: component_levels[node_to_component[node_id]]
-        for node_id in node_ids
+        node_id: (max_layer - layer if layer > 0 else max_layer)
+        for node_id, layer in node_layers.items()
     }
 
 
@@ -687,6 +679,7 @@ def inject_controls(
         var currentView = {mode: "all", nodeId: null};
         var activeNodeId = null;
         var layoutFinalized = false;
+        var layoutFinalizeTimer = null;
 
         var transparentNodeColor = {
           background: "rgba(255,255,255,0)",
@@ -954,6 +947,10 @@ def inject_controls(
 
         function finalizeLayoutForInteraction() {
           if (layoutFinalized) { return; }
+          if (layoutFinalizeTimer !== null) {
+            clearTimeout(layoutFinalizeTimer);
+            layoutFinalizeTimer = null;
+          }
           lockLayout();
           captureCurrentNodeLayout();
           layoutFinalized = true;
@@ -1282,6 +1279,10 @@ def inject_controls(
           updateNodeLabelPositions();
         });
 
+        layoutFinalizeTimer = setTimeout(function() {
+          finalizeLayoutForInteraction();
+        }, 1500);
+
         network.on("afterDrawing", function(ctx) {
           drawVisibleNodes(ctx);
           updateNodeLabelPositions();
@@ -1396,7 +1397,7 @@ def main():
 
     node_ids = set(nodes_df["id"])
     edges_df = edges_df[edges_df["source"].isin(node_ids) & edges_df["target"].isin(node_ids)].copy()
-    hierarchy_levels = build_hierarchy_levels(list(nodes_df["id"]), edges_df, edge_key)
+    hierarchy_levels = build_hierarchy_levels(nodes_df)
     hierarchy_positions = build_hierarchy_positions(hierarchy_levels)
 
     G = nx.DiGraph()
@@ -1500,7 +1501,7 @@ def main():
         },
         "stabilization": {
           "enabled": true,
-          "iterations": 200,
+          "iterations": 50,
           "fit": true
         },
         "minVelocity": 1.5
@@ -1549,6 +1550,10 @@ def main():
             level=hierarchy_levels.get(cid, 0),
             x=x_pos,
             y=y_pos,
+            fixed={
+                "x": False,
+                "y": True,
+            },
             size=size,
             visualSize=size,
             visualColor={
