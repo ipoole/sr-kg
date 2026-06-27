@@ -11,7 +11,7 @@ Expected edges.csv columns:
     source,target,type
 
 The edge relation column may be named either type or relation. Optional note/notes
-columns are accepted and ignored.
+columns are shown in edge hover text.
 
 Expected edges_key.csv columns:
     relation,directed,category,meaning,example
@@ -55,6 +55,10 @@ EDGE_WIDTH = 5.0
 LAYOUT_X_SPACING = 600
 LAYOUT_Y_SPACING = 320
 LAYOUT_ROW_STAGGER = 70
+NODE_COLLISION_WIDTH = 280
+NODE_COLLISION_HEIGHT = 170
+NODE_LABEL_WIDTH = 180
+NODE_LABEL_FONT_SIZE = 28
 UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
 EDGE_COLOURS = [
     "#1f77b4",
@@ -511,11 +515,12 @@ def inject_controls(
       }
 
       .kg-node-label {
+        box-sizing: border-box;
         color: #111;
+        display: block;
         font-family: Arial, sans-serif;
-        font-size: 13px;
+        font-size: __NODE_LABEL_FONT_SIZE__px;
         line-height: 1.2;
-        max-width: 150px;
         overflow-wrap: anywhere;
         position: absolute;
         text-align: center;
@@ -524,8 +529,8 @@ def inject_controls(
           1px -1px 0 rgba(255,255,255,0.9),
           -1px 1px 0 rgba(255,255,255,0.9),
           1px 1px 0 rgba(255,255,255,0.9);
-        transform: translate(-50%, 0);
         white-space: normal;
+        width: __NODE_LABEL_WIDTH__px;
       }
 
       .kg-node-label mjx-container {
@@ -680,6 +685,36 @@ def inject_controls(
         var originalEdges = {};
         var enabledEdgeRelations = {};
         var currentView = {mode: "all", nodeId: null};
+        var activeNodeId = null;
+        var layoutFinalized = false;
+
+        var transparentNodeColor = {
+          background: "rgba(255,255,255,0)",
+          border: "rgba(255,255,255,0)",
+          highlight: {
+            background: "rgba(255,255,255,0)",
+            border: "rgba(255,255,255,0)"
+          },
+          hover: {
+            background: "rgba(255,255,255,0)",
+            border: "rgba(255,255,255,0)"
+          }
+        };
+
+        function applyCollisionNodeStyle(node) {
+          var o = Object.assign({}, node);
+          o.label = " ";
+          o.borderWidth = 0;
+          o.color = Object.assign({}, transparentNodeColor);
+          o.font = Object.assign({}, o.font || {}, {
+            size: 1,
+            color: "rgba(0,0,0,0)"
+          });
+          return o;
+        }
+
+        nodes.update(allNodes.map(applyCollisionNodeStyle));
+        allNodes = nodes.get();
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
         Object.keys(edgeKey).forEach(function(relation) {
@@ -865,6 +900,7 @@ def inject_controls(
           if (!network || !nodeLabelLayer) { return; }
 
           var positions = network.getPositions();
+          var labelScale = Math.max(0.35, network.getScale ? network.getScale() : 1);
           Object.keys(nodeLabelEls).forEach(function(id) {
             var el = nodeLabelEls[id];
             var node = nodes.get(id);
@@ -875,11 +911,79 @@ def inject_controls(
             }
 
             var dom = network.canvasToDOM(pos);
-            var offset = (Number(node.size) || 18) + 6;
+            var radius = Number(node.visualSize) || Number(node.size) || 18;
+            var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
+            var radiusPx = Math.abs(radiusEdge.x - dom.x);
+            var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
+            var canvasRect = canvasEl ? canvasEl.getBoundingClientRect() : graphContainer.getBoundingClientRect();
+            var layerRect = nodeLabelLayer.getBoundingClientRect();
+            var labelCenterX = canvasRect.left - layerRect.left + dom.x;
+            var labelTopY = canvasRect.top - layerRect.top + dom.y + Math.max(4, radiusPx + 3);
+            var labelWidth = __NODE_LABEL_WIDTH__ * labelScale;
             el.style.display = "block";
-            el.style.left = dom.x + "px";
-            el.style.top = (dom.y + offset) + "px";
+            el.style.width = labelWidth + "px";
+            el.style.fontSize = (__NODE_LABEL_FONT_SIZE__ * labelScale) + "px";
+            el.style.left = (labelCenterX - labelWidth / 2) + "px";
+            el.style.top = labelTopY + "px";
             el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
+          });
+        }
+
+        function lockLayout() {
+          network.stopSimulation();
+          network.setOptions({physics: {enabled: false}});
+        }
+
+        function captureCurrentNodeLayout() {
+          var positions = network.getPositions();
+          allNodes = nodes.get();
+          originalNodes = {};
+          allNodes.forEach(function(n) {
+            var o = Object.assign({}, n);
+            if (positions[n.id]) {
+              o.x = positions[n.id].x;
+              o.y = positions[n.id].y;
+            }
+            originalNodes[n.id] = applyCollisionNodeStyle(o);
+          });
+          nodes.update(Object.keys(originalNodes).map(function(id) {
+            return Object.assign({}, originalNodes[id]);
+          }));
+          allNodes = nodes.get();
+        }
+
+        function finalizeLayoutForInteraction() {
+          if (layoutFinalized) { return; }
+          lockLayout();
+          captureCurrentNodeLayout();
+          layoutFinalized = true;
+          updateNodeLabelPositions();
+        }
+
+        function drawVisibleNodes(ctx) {
+          var positions = network.getPositions();
+          nodes.get().forEach(function(node) {
+            if (node.hidden) { return; }
+
+            var pos = positions[node.id];
+            if (!pos) { return; }
+
+            var radius = Number(node.visualSize) || 18;
+            var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
+            var color = node.visualColor || {};
+            var fill = color.background || "#999999";
+            var border = color.border || "#333333";
+
+            ctx.save();
+            ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = node.id === activeNodeId ? "#000000" : border;
+            ctx.stroke();
+            ctx.restore();
           });
         }
 
@@ -962,7 +1066,8 @@ def inject_controls(
 
         function focusConcept(nodeId, statusPrefix) {
           if (!getConcept(nodeId)) { return; }
-          network.selectNodes([nodeId]);
+          finalizeLayoutForInteraction();
+          activeNodeId = nodeId;
           network.focus(nodeId, {scale: 0.7, animation: true});
           kgHighlight(nodeId);
           showConcept(nodeId);
@@ -1006,8 +1111,7 @@ def inject_controls(
         }
 
         window.kgFreezeLayout = function() {
-          network.stopSimulation();
-          network.setOptions({physics: {enabled: false}});
+          finalizeLayoutForInteraction();
           document.getElementById("kg_status").innerText = "Layout frozen.";
         };
 
@@ -1020,10 +1124,14 @@ def inject_controls(
         };
 
         window.kgReset = function(preserveStatus) {
+          finalizeLayoutForInteraction();
+          network.unselectAll();
           currentView = {mode: "all", nodeId: null};
+          activeNodeId = null;
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
+            o.opacity = 1.0;
             return o;
           }));
           edges.update(allEdges.map(function(e) {
@@ -1041,6 +1149,7 @@ def inject_controls(
         window.kgShowAll = window.kgReset;
 
         window.kgSearch = function() {
+          finalizeLayoutForInteraction();
           var q = document.getElementById("kg_search").value.trim().toLowerCase();
           if (!q) { return; }
 
@@ -1061,6 +1170,8 @@ def inject_controls(
         };
 
         window.kgHighlight = function(nodeId, preserveStatus) {
+          finalizeLayoutForInteraction();
+          activeNodeId = nodeId;
           currentView = {mode: "highlight", nodeId: nodeId};
           var connected = enabledConnectedNodes(nodeId);
           var keep = {};
@@ -1073,9 +1184,14 @@ def inject_controls(
               o.opacity = 1.0;
               o.font = Object.assign({}, o.font || {}, {color: "#111111"});
             } else {
-              o.opacity = 0.18;
+              o.opacity = 1.0;
               o.font = Object.assign({}, o.font || {}, {color: "#999999"});
+              o.visualColor = {
+                background: "#f2f2f2",
+                border: "#d0d0d0"
+              };
             }
+            o = applyCollisionNodeStyle(o);
             o.hidden = false;
             return o;
           }));
@@ -1100,6 +1216,7 @@ def inject_controls(
             }
             return o;
           }));
+          network.unselectAll();
           updateNodeLabelPositions();
 
           if (!preserveStatus) {
@@ -1109,6 +1226,8 @@ def inject_controls(
         };
 
         function kgApplyNeighbourhood(nodeId, preserveStatus) {
+          finalizeLayoutForInteraction();
+          activeNodeId = nodeId;
           currentView = {mode: "neighbourhood", nodeId: nodeId};
           var connected = enabledConnectedNodes(nodeId);
           var keep = {};
@@ -1137,12 +1256,13 @@ def inject_controls(
 
         window.kgFocusSelected = function() {
           var selected = network.getSelectedNodes();
-          if (selected.length === 0) {
+          var nodeId = activeNodeId || selected[0];
+          if (!nodeId) {
             document.getElementById("kg_status").innerText = "Select a node first.";
             return;
           }
 
-          kgApplyNeighbourhood(selected[0], false);
+          kgApplyNeighbourhood(nodeId, false);
         };
 
         network.on("click", function(params) {
@@ -1157,12 +1277,15 @@ def inject_controls(
             setActiveConceptItem(nodeId);
         });
 
-        network.once("stabilizationIterationsDone", function() {
-          kgFreezeLayout();
+        network.once("stabilized", function() {
+          finalizeLayoutForInteraction();
           updateNodeLabelPositions();
         });
 
-        network.on("afterDrawing", updateNodeLabelPositions);
+        network.on("afterDrawing", function(ctx) {
+          drawVisibleNodes(ctx);
+          updateNodeLabelPositions();
+        });
         network.on("dragEnd", updateNodeLabelPositions);
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
@@ -1211,7 +1334,7 @@ def inject_controls(
         var html = "<b>Layers</b><br>";
         Object.keys(groups).sort(function(a,b){return Number(a)-Number(b);}).forEach(function(g) {
           var sample = allNodes.find(function(n) { return String(n.group) === String(g); });
-          var color = sample && sample.color && sample.color.background ? sample.color.background : "#999";
+          var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
           var sampleConcept = sample ? getConcept(sample.id) : null;
           var layerTitle = sampleConcept && sampleConcept.layer_title ? sampleConcept.layer_title : "";
           html += '<span class="legend-dot" style="background:' + color + '"></span>' +
@@ -1227,6 +1350,11 @@ def inject_controls(
       setTimeout(kgAfterReady, 500);
     </script>
     """.replace("__CONCEPT_DATA__", concept_data_json).replace("__EDGE_KEY__", edge_key_json)
+    js = js.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
+    js = js.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
+
+    css = css.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
+    css = css.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
 
     html_text = html_text.replace("</head>", mathjax + "\n" + css + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
@@ -1299,18 +1427,48 @@ def main():
     net.set_options("""
     {
       "nodes": {
-        "shape": "dot",
-        "borderWidth": 1,
+        "shape": "box",
+        "borderWidth": 0,
         "font": {
-          "size": 16,
+          "size": 1,
           "face": "arial",
-          "multi": true
+          "multi": true,
+          "color": "rgba(0,0,0,0)"
+        },
+        "margin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "widthConstraint": {
+          "minimum": __NODE_COLLISION_WIDTH__,
+          "maximum": __NODE_COLLISION_WIDTH__
+        },
+        "heightConstraint": {
+          "minimum": __NODE_COLLISION_HEIGHT__,
+          "valign": "middle"
+        },
+        "color": {
+          "background": "rgba(255,255,255,0)",
+          "border": "rgba(255,255,255,0)",
+          "highlight": {
+            "background": "rgba(255,255,255,0)",
+            "border": "rgba(255,255,255,0)"
+          },
+          "hover": {
+            "background": "rgba(255,255,255,0)",
+            "border": "rgba(255,255,255,0)"
+          }
         }
       },
       "layout": {
         "improvedLayout": false
       },
       "edges": {
+        "chosen": false,
+        "selectionWidth": 0,
+        "hoverWidth": 0,
         "arrows": {
           "to": {
             "enabled": false,
@@ -1330,16 +1488,33 @@ def main():
         "width": 1
       },
       "physics": {
-        "enabled": false
+        "enabled": true,
+        "solver": "forceAtlas2Based",
+        "forceAtlas2Based": {
+            "gravitationalConstant": -100,
+            "centralGravity": 0.0,
+            "springLength": 100,
+            "springConstant": 0.008,
+            "damping": 0.85,
+            "avoidOverlap": 1.0
+        },
+        "stabilization": {
+          "enabled": true,
+          "iterations": 200,
+          "fit": true
+        },
+        "minVelocity": 1.5
       },
       "interaction": {
         "hover": true,
+        "hoverConnectedEdges": false,
+        "selectConnectedEdges": false,
         "navigationButtons": true,
         "keyboard": true,
         "tooltipDelay": 120
       }
     }
-    """)
+    """.replace("__NODE_COLLISION_WIDTH__", str(NODE_COLLISION_WIDTH)).replace("__NODE_COLLISION_HEIGHT__", str(NODE_COLLISION_HEIGHT)))
 
     for _, row in nodes_df.iterrows():
         cid = row["id"]
@@ -1362,28 +1537,38 @@ def main():
 
         # Node size mainly reflects how many other concepts point to it.
         importance = incoming.get(cid, 0)
-        size = 36 + 4.0 * math.sqrt(importance + 1)
+        size = 40 + 4.0 * math.sqrt(importance + 1)
         x_pos, y_pos = hierarchy_positions.get(cid, (0, 0))
 
         net.add_node(
             cid,
             label=" ",
             title=title,
+            shape="box",
             group=layer_int,
             level=hierarchy_levels.get(cid, 0),
             x=x_pos,
             y=y_pos,
             size=size,
+            visualSize=size,
+            visualColor={
+                "background": colour,
+                "border": "#333333",
+            },
             font={
                 "size": 1,
                 "color": "rgba(0,0,0,0)",
             },
             color={
-                "background": colour,
-                "border": "#333333",
+                "background": "rgba(255,255,255,0)",
+                "border": "rgba(255,255,255,0)",
                 "highlight": {
-                    "background": colour,
-                    "border": "#000000",
+                    "background": "rgba(255,255,255,0)",
+                    "border": "rgba(255,255,255,0)",
+                },
+                "hover": {
+                    "background": "rgba(255,255,255,0)",
+                    "border": "rgba(255,255,255,0)",
                 },
             },
         )

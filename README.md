@@ -10,6 +10,7 @@ The project reads concept data from CSV files and generates a standalone interac
 - clickable `\cref{label}{id}` references in concept descriptions
 - MathJax rendering for inline and display equations
 - MathJax-rendered graph labels for node IDs and concept names
+- topological-sort-based initial node placement with physics refinement
 - layer colouring and a layer legend
 - relation-aware edge colouring and an edge key
 - edge-type filters with persistent checkboxes
@@ -79,6 +80,10 @@ The right panel shows the selected concept body with MathJax-rendered equations.
 
 Graph labels are rendered in an HTML overlay rather than as raw vis.js labels. This allows equation fragments such as `\(A_\mu\)` to render correctly in node labels while preserving normal graph interaction.
 
+Node layout is seeded from a best-effort topological ordering over directed relation types. Directed edges therefore tend to point downward, with more foundational prerequisite concepts tending toward the bottom of the graph. The generated viewer then runs a short initial vis.js physics adjustment to reduce collisions and improve spacing. Once the layout stabilizes, or as soon as the user interacts with the graph, the current node positions are captured and physics is disabled so filtering and selection do not cause the graph to drift or snap back.
+
+The visible graph nodes are custom-drawn circles on the canvas. The underlying vis.js nodes are transparent fixed-size collision boxes that include room for the external label, so the physics model has a better approximation of the rendered footprint. Labels remain in the HTML overlay for MathJax support and scale with graph zoom so they do not dominate the view when zoomed out.
+
 Edge rendering is relation-aware:
 
 - relation colours are stable and repeatable across runs
@@ -89,6 +94,28 @@ Edge rendering is relation-aware:
 - edge tooltips use an opaque background and are drawn above graph labels
 
 The `Edge types` checkboxes in the left panel toggle relation types on and off. The filter is respected in show-all, selected-node highlighting, and neighbourhood mode.
+
+## Layout Tuning
+
+The main layout and node display constants live near the top of `tools/generate_pyvis.py`:
+
+```python
+LAYOUT_X_SPACING = 600
+LAYOUT_Y_SPACING = 320
+LAYOUT_ROW_STAGGER = 70
+NODE_COLLISION_WIDTH = 280
+NODE_COLLISION_HEIGHT = 170
+NODE_LABEL_WIDTH = 180
+NODE_LABEL_FONT_SIZE = 28
+```
+
+Circle size is controlled where nodes are added:
+
+```python
+size = 50 + 4.0 * math.sqrt(importance + 1)
+```
+
+The physics settings are in the `net.set_options(...)` block in `tools/generate_pyvis.py`. They control the initial relaxation only; the generated viewer freezes the settled layout before normal interaction.
 
 ## Data Format
 
