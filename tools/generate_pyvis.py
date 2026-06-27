@@ -310,6 +310,7 @@ def build_hierarchy_levels(nodes_df: pd.DataFrame) -> dict[str, int]:
 
 def build_hierarchy_positions(
     hierarchy_levels: dict[str, int],
+    edges_df: pd.DataFrame | None = None,
     x_spacing: int = LAYOUT_X_SPACING,
     y_spacing: int = LAYOUT_Y_SPACING,
     row_stagger: int = LAYOUT_ROW_STAGGER,
@@ -319,9 +320,10 @@ def build_hierarchy_positions(
     for node_id, level in hierarchy_levels.items():
         nodes_by_level.setdefault(level, []).append(node_id)
 
+    ordered_nodes = order_nodes_within_levels(nodes_by_level, hierarchy_levels, edges_df)
+
     positions = {}
-    for level, level_nodes in nodes_by_level.items():
-        sorted_nodes = sorted(level_nodes, key=concept_sort_key)
+    for level, sorted_nodes in ordered_nodes.items():
         row_width = (len(sorted_nodes) - 1) * x_spacing
         for index, node_id in enumerate(sorted_nodes):
             stagger = 0
@@ -333,6 +335,75 @@ def build_hierarchy_positions(
             )
 
     return positions
+
+
+def order_nodes_within_levels(
+    nodes_by_level: dict[int, list[str]],
+    hierarchy_levels: dict[str, int],
+    edges_df: pd.DataFrame | None,
+    sweeps: int = 6,
+) -> dict[int, list[str]]:
+    """Reduce crossings by reordering nodes within each fixed layer.
+
+    This is a small barycentric ordering pass: each node is sorted by the
+    average normalized horizontal position of its neighbours in other layers.
+    """
+    ordered = {
+        level: sorted(nodes, key=concept_sort_key)
+        for level, nodes in nodes_by_level.items()
+    }
+    if edges_df is None or edges_df.empty:
+        return ordered
+
+    neighbours: dict[str, set[str]] = {node_id: set() for node_id in hierarchy_levels}
+    for _, row in edges_df.iterrows():
+        source = str(row["source"])
+        target = str(row["target"])
+        if source not in neighbours or target not in neighbours:
+            continue
+        if hierarchy_levels[source] == hierarchy_levels[target]:
+            continue
+        neighbours[source].add(target)
+        neighbours[target].add(source)
+
+    levels = sorted(ordered)
+
+    def normalized_orders() -> dict[str, float]:
+        values = {}
+        for level, nodes in ordered.items():
+            denominator = max(len(nodes) - 1, 1)
+            for index, node_id in enumerate(nodes):
+                values[node_id] = index / denominator
+        return values
+
+    def reorder_level(level: int, order_values: dict[str, float], direction: int) -> None:
+        previous_index = {node_id: index for index, node_id in enumerate(ordered[level])}
+
+        def sort_key(node_id: str):
+            candidates = [
+                order_values[neighbour]
+                for neighbour in neighbours.get(node_id, set())
+                if neighbour in order_values
+                and (hierarchy_levels[neighbour] - level) * direction < 0
+            ]
+            if candidates:
+                barycenter = sum(candidates) / len(candidates)
+            else:
+                barycenter = previous_index[node_id]
+            return (barycenter, previous_index[node_id], concept_sort_key(node_id))
+
+        ordered[level] = sorted(ordered[level], key=sort_key)
+
+    for _ in range(sweeps):
+        order_values = normalized_orders()
+        for level in levels[1:]:
+            reorder_level(level, order_values, direction=1)
+
+        order_values = normalized_orders()
+        for level in reversed(levels[:-1]):
+            reorder_level(level, order_values, direction=-1)
+
+    return ordered
 
 
 def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_WIDTH) -> str:
@@ -927,6 +998,12 @@ def inject_controls(
           network.setOptions({physics: {enabled: false}});
         }
 
+        function releaseNodeDragConstraints(node) {
+          var o = Object.assign({}, node);
+          o.fixed = {x: false, y: false};
+          return o;
+        }
+
         function captureCurrentNodeLayout() {
           var positions = network.getPositions();
           allNodes = nodes.get();
@@ -937,6 +1014,7 @@ def inject_controls(
               o.x = positions[n.id].x;
               o.y = positions[n.id].y;
             }
+            o = releaseNodeDragConstraints(o);
             originalNodes[n.id] = applyCollisionNodeStyle(o);
           });
           nodes.update(Object.keys(originalNodes).map(function(id) {
@@ -1398,7 +1476,7 @@ def main():
     node_ids = set(nodes_df["id"])
     edges_df = edges_df[edges_df["source"].isin(node_ids) & edges_df["target"].isin(node_ids)].copy()
     hierarchy_levels = build_hierarchy_levels(nodes_df)
-    hierarchy_positions = build_hierarchy_positions(hierarchy_levels)
+    hierarchy_positions = build_hierarchy_positions(hierarchy_levels, edges_df)
 
     G = nx.DiGraph()
     for _, row in nodes_df.iterrows():
