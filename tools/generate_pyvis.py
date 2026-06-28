@@ -767,6 +767,7 @@ def inject_controls(
 
         function applyCollisionNodeStyle(node) {
           var o = Object.assign({}, node);
+          o.shape = "box";
           o.label = " ";
           o.borderWidth = 0;
           o.color = Object.assign({}, transparentNodeColor);
@@ -1407,12 +1408,12 @@ def inject_controls(
         // Build legend from node groups.
         var groups = {};
         allNodes.forEach(function(n) {
-          if (n.group !== undefined) { groups[n.group] = true; }
+          if (n.layerGroup !== undefined) { groups[n.layerGroup] = true; }
         });
         var legend = document.getElementById("kg_legend");
         var html = "<b>Layers</b><br>";
         Object.keys(groups).sort(function(a,b){return Number(a)-Number(b);}).forEach(function(g) {
-          var sample = allNodes.find(function(n) { return String(n.group) === String(g); });
+          var sample = allNodes.find(function(n) { return String(n.layerGroup) === String(g); });
           var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
           var sampleConcept = sample ? getConcept(sample.id) : null;
           var layerTitle = sampleConcept && sampleConcept.layer_title ? sampleConcept.layer_title : "";
@@ -1426,7 +1427,17 @@ def inject_controls(
       }
 
       // Wait until pyvis has created network/nodes/edges variables.
-      setTimeout(kgAfterReady, 500);
+      (function waitForKgNetwork() {
+        if (
+          typeof network !== "undefined" &&
+          typeof nodes !== "undefined" &&
+          typeof edges !== "undefined"
+        ) {
+          kgAfterReady();
+          return;
+        }
+        setTimeout(waitForKgNetwork, 20);
+      })();
     </script>
     """.replace("__CONCEPT_DATA__", concept_data_json).replace("__EDGE_KEY__", edge_key_json)
     js = js.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
@@ -1451,7 +1462,7 @@ def main():
         help="Path to edges_key.csv. Defaults to edges_key.csv beside the edges file when present.",
     )
     parser.add_argument("--out", default="interactive_graph.html", help="Output HTML file")
-    parser.add_argument("--height", default="900px")
+    parser.add_argument("--height", default="100vh")
     parser.add_argument("--width", default="100%")
     args = parser.parse_args()
 
@@ -1551,7 +1562,7 @@ def main():
         "arrows": {
           "to": {
             "enabled": false,
-            "scaleFactor": 0.65
+            "scaleFactor": 2.0
           }
         },
         "smooth": {
@@ -1623,8 +1634,8 @@ def main():
             cid,
             label=" ",
             title=title,
-            shape="box",
-            group=layer_int,
+            shape="dot",
+            layerGroup=layer_int,
             level=hierarchy_levels.get(cid, 0),
             x=x_pos,
             y=y_pos,
@@ -1643,15 +1654,15 @@ def main():
                 "color": "rgba(0,0,0,0)",
             },
             color={
-                "background": "rgba(255,255,255,0)",
-                "border": "rgba(255,255,255,0)",
+                "background": colour,
+                "border": "#333333",
                 "highlight": {
-                    "background": "rgba(255,255,255,0)",
-                    "border": "rgba(255,255,255,0)",
+                    "background": colour,
+                    "border": "#000000",
                 },
                 "hover": {
-                    "background": "rgba(255,255,255,0)",
-                    "border": "rgba(255,255,255,0)",
+                    "background": colour,
+                    "border": "#000000",
                 },
             },
         )
