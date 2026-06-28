@@ -15,6 +15,12 @@ import json
 from srkg.config import NODE_LABEL_FONT_SIZE, NODE_LABEL_WIDTH
 
 
+def require_html_marker(html_text: str, marker: str) -> None:
+    """Fail clearly if PyVis output no longer contains an injection marker."""
+    if marker not in html_text:
+        raise ValueError(f"Generated PyVis HTML is missing expected marker: {marker}")
+
+
 def inject_controls(
     html_text: str,
     concept_data: dict[str, dict[str, str]],
@@ -1082,8 +1088,10 @@ def inject_controls(
     css = css.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     css = css.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
 
+    for marker in ("</head>", "<body>", "</body>"):
+        require_html_marker(html_text, marker)
+
     html_text = html_text.replace("</head>", mathjax + "\n" + css + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
     html_text = html_text.replace("</body>", js + "\n</body>")
     return html_text
-

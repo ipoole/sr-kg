@@ -88,7 +88,10 @@ def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
 def find_edge_key_path(edges_path: Path, configured_path: str | None) -> Path | None:
     """Use an explicit edge key, or edges_key.csv beside the edge file when present."""
     if configured_path:
-        return Path(configured_path)
+        path = Path(configured_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Configured edge key file does not exist: {path}")
+        return path
 
     sibling = edges_path.parent / "edges_key.csv"
     if sibling.exists():

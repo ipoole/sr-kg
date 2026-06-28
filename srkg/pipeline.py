@@ -54,7 +54,18 @@ def generate_viewer(
     edges_df["target"] = edges_df["target"].astype(str)
 
     node_ids = set(nodes_df["id"])
-    edges_df = edges_df[edges_df["source"].isin(node_ids) & edges_df["target"].isin(node_ids)].copy()
+    invalid_edges = edges_df[~edges_df["source"].isin(node_ids) | ~edges_df["target"].isin(node_ids)]
+    if not invalid_edges.empty:
+        examples = "; ".join(
+            f"{row.source}->{row.target}"
+            for row in invalid_edges[["source", "target"]].head(5).itertuples(index=False)
+        )
+        more = "" if len(invalid_edges) <= 5 else f"; ... {len(invalid_edges) - 5} more"
+        raise ValueError(
+            "knowledge_edges.csv contains edges with endpoints not present in nodes.csv: "
+            f"{examples}{more}"
+        )
+
     hierarchy_levels = build_hierarchy_levels(nodes_df)
     hierarchy_positions = build_hierarchy_positions(hierarchy_levels, edges_df)
 
