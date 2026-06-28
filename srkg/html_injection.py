@@ -121,17 +121,32 @@ def inject_controls(
         font-size: 12px;
         color: #333;
       }
-      #kg_legend {
-        margin-top: 8px;
-        max-height: 180px;
-        overflow-y: auto;
-        font-size: 12px;
+      #kg_search_block {
+        padding-top: 6px;
       }
-      #kg_edge_filters {
+      .kg-fold {
         margin-top: 8px;
         border-top: 1px solid #ddd;
         padding-top: 8px;
         font-size: 12px;
+      }
+      .kg-fold summary {
+        cursor: pointer;
+        font-weight: 700;
+        list-style-position: outside;
+      }
+      .kg-fold summary:hover,
+      .kg-fold summary:focus {
+        color: #174ea6;
+        outline: none;
+      }
+      #kg_legend {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-top: 4px;
+      }
+      #kg_edge_filters {
+        padding-top: 4px;
       }
       .kg-edge-filter {
         align-items: center;
@@ -154,23 +169,13 @@ def inject_controls(
         white-space: nowrap;
       }
       #kg_concept_list {
-        margin-top: 8px;
         max-height: 260px;
         overflow-y: auto;
-        border-top: 1px solid #ddd;
-        padding-top: 8px;
+        padding-top: 6px;
         font-size: 12px;
       }
       #kg_recent {
-        margin-top: 8px;
-        border-top: 1px solid #ddd;
-        padding-top: 8px;
-        font-size: 12px;
-      }
-      .kg-recent-header {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
+        padding-top: 4px;
       }
       .kg-recent-clear {
         border: 0;
@@ -422,19 +427,32 @@ def inject_controls(
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <button onclick="kgReset()">Reset</button>
-      <br>
       <button onclick="kgFocusSelected()">Neighbourhood</button>
       <button onclick="kgShowAll()">Show all</button>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <div id="kg_recent"></div>
-      <div id="kg_legend"></div>
-      <div id="kg_edge_filters"></div>
-      <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
-      <button onclick="kgSearch()">Find</button>
-      <div id="kg_concept_list"></div>
+      <details id="kg_recent_section" class="kg-fold" hidden>
+        <summary>Recent</summary>
+        <div id="kg_recent"></div>
+      </details>
+      <details id="kg_legend_section" class="kg-fold" open>
+        <summary>Layers</summary>
+        <div id="kg_legend"></div>
+      </details>
+      <details id="kg_edge_filters_section" class="kg-fold" open>
+        <summary>Edge types</summary>
+        <div id="kg_edge_filters"></div>
+      </details>
+      <details id="kg_search_section" class="kg-fold" open>
+        <summary>Search</summary>
+        <div id="kg_search_block">
+          <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
+          <button onclick="kgSearch()">Find</button>
+        </div>
+        <div id="kg_concept_list"></div>
+      </details>
     </div>
 
     <div id="info_panel">
@@ -711,16 +729,21 @@ def inject_controls(
 
         function renderRecentConcepts() {
           var container = document.getElementById("kg_recent");
+          var section = document.getElementById("kg_recent_section");
           if (!container) { return; }
 
           if (recentConceptIds.length === 0) {
             container.innerHTML = "";
+            if (section) { section.hidden = true; }
             return;
           }
 
-          var html = '<div class="kg-recent-header"><b>Recent</b>' +
-            '<button type="button" class="kg-recent-clear" onclick="kgClearRecent()">Clear</button>' +
-            '</div>';
+          if (section) {
+            if (section.hidden) { section.open = true; }
+            section.hidden = false;
+          }
+
+          var html = '<button type="button" class="kg-recent-clear" onclick="kgClearRecent()">Clear</button>';
           recentConceptIds.forEach(function(id) {
             var concept = getConcept(id) || {};
             var activeClass = id === activeNodeId ? " active" : "";
@@ -799,10 +822,10 @@ def inject_controls(
 
         function buildEdgeFilters() {
           var relations = Object.keys(edgeKey).sort();
-          var html = "<b>Edge types</b>";
+          var html = "";
 
           if (relations.length === 0) {
-            html += '<div style="color:#555; padding-top:4px;">No edge key loaded.</div>';
+            html += '<div style="color:#555;">No edge key loaded.</div>';
             document.getElementById("kg_edge_filters").innerHTML = html;
             return;
           }
@@ -989,7 +1012,7 @@ def inject_controls(
         function buildConceptList(filterText) {
           var q = String(filterText || "").trim().toLowerCase();
           var ids = Object.keys(conceptData).sort(compareConceptIds);
-          var html = "<b>Concepts</b><br>";
+          var html = "";
           var count = 0;
 
           ids.forEach(function(id) {
@@ -1260,7 +1283,7 @@ def inject_controls(
           if (n.layerGroup !== undefined) { groups[n.layerGroup] = true; }
         });
         var legend = document.getElementById("kg_legend");
-        var html = "<b>Layers</b><br>";
+        var html = "";
         Object.keys(groups).sort(function(a,b){return Number(a)-Number(b);}).forEach(function(g) {
           var sample = allNodes.find(function(n) { return String(n.layerGroup) === String(g); });
           var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
