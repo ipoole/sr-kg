@@ -60,7 +60,8 @@ python tools/generate_pyvis.py \
   --nodes data/nodes.csv \
   --edges data/knowledge_edges.csv \
   --edge-key data/edges_key.csv \
-  --out output/interactive_graph.html
+  --out output/interactive_graph.html \
+  --title "Special Relativity and Classical Fields"
 ```
 
 Then open `output/interactive_graph.html` in a browser.
@@ -82,6 +83,8 @@ The left control panel provides:
 - layout freeze and restart controls
 - an Edge key button
 - edge-type filter checkboxes
+- a controls-panel show/hide toggle
+- a details-panel show/hide toggle
 
 The right panel shows the selected concept body with MathJax-rendered equations. References written as `\cref{Visible concept title}{concept.id}` become clickable links when the target concept exists.
 

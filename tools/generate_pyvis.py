@@ -50,6 +50,7 @@ def main():
     parser.add_argument("--out", default="interactive_graph.html", help="Output HTML file")
     parser.add_argument("--height", default="100vh")
     parser.add_argument("--width", default="100%")
+    parser.add_argument("--title", default="Knowledge Graph", help="Title shown at the top of the viewer")
     args = parser.parse_args()
 
     out_path, node_count, edge_count, edge_key_path, edge_key_count = generate_viewer(
@@ -59,6 +60,7 @@ def main():
         out_path=args.out,
         height=args.height,
         width=args.width,
+        title=args.title,
     )
 
     print(f"Wrote {out_path}")

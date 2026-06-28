@@ -34,6 +34,7 @@ def generate_viewer(
     out_path: str,
     height: str,
     width: str,
+    title: str,
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer and return summary metadata."""
     edges_file = Path(edges_path)
@@ -89,6 +90,7 @@ def generate_viewer(
         html_text,
         concept_data,
         enrich_edge_key_with_colours(edge_key, edge_colour_map),
+        title,
     )
     output_file.write_text(html_text, encoding="utf-8")
 

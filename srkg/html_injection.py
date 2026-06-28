@@ -11,6 +11,7 @@ they are split into separate template/static files.
 """
 
 import json
+from html import escape as html_escape
 
 from srkg.config import NODE_LABEL_FONT_SIZE, NODE_LABEL_WIDTH
 
@@ -25,6 +26,7 @@ def inject_controls(
     html_text: str,
     concept_data: dict[str, dict[str, str]],
     edge_key: dict[str, dict[str, str | bool]],
+    view_title: str,
 ) -> str:
     """Inject a small control panel and useful vis.js event handlers."""
     mathjax = """
@@ -47,7 +49,7 @@ def inject_controls(
     <style>
       #kg_controls {
         position: fixed;
-        top: 12px;
+        top: 48px;
         left: 12px;
         z-index: 9999;
         background: rgba(255, 255, 255, 0.94);
@@ -58,6 +60,52 @@ def inject_controls(
         font-size: 13px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.18);
         max-width: 320px;
+      }
+      #kg_controls.kg-hidden {
+        display: none;
+      }
+      #kg_controls_toggle {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 10000;
+        padding: 5px 9px;
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+        color: #222;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+      }
+      #kg_controls_toggle:hover,
+      #kg_controls_toggle:focus {
+        background: #eef3fd;
+        outline: none;
+      }
+      #kg_view_title {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9997;
+        max-width: min(760px, 42vw);
+        padding: 7px 12px;
+        border: 1px solid rgba(0,0,0,0.12);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.94);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+        color: #222;
+        font-family: Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow: hidden;
+        pointer-events: none;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       #kg_controls input {
         width: 210px;
@@ -217,6 +265,10 @@ def inject_controls(
         z-index: 9998;
     }
 
+    #info_panel.kg-hidden {
+        display: none;
+    }
+
     #info_panel .concept-body {
         white-space: pre-wrap;
         font-family: inherit;
@@ -302,6 +354,11 @@ def inject_controls(
             width: 160px;
         }
 
+        #kg_view_title {
+            max-width: min(520px, 36vw);
+            font-size: 15px;
+        }
+
         #info_panel {
             width: 300px;
             font-size: 13px;
@@ -317,6 +374,10 @@ def inject_controls(
             max-width: 150px;
         }
 
+        #kg_view_title {
+            display: none;
+        }
+
         #info_panel {
             width: 150px;
             font-size: 12px;
@@ -329,7 +390,10 @@ def inject_controls(
     </style>
     """
 
+    title_html = f'<div id="kg_view_title">{html_escape(view_title)}</div>'
     controls = """
+    __TITLE_HTML__
+    <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
@@ -339,6 +403,7 @@ def inject_controls(
       <button onclick="kgFocusSelected()">Neighbourhood</button>
       <button onclick="kgShowAll()">Show all</button>
       <button onclick="kgShowEdgeKey()">Edge key</button>
+      <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
       <button onclick="kgFreezeLayout()">Freeze</button>
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
@@ -348,10 +413,10 @@ def inject_controls(
     </div>
 
     <div id="info_panel">
-      <h2>Knowledge Graph</h2>
+      <h2>__VIEW_TITLE__</h2>
       <p>Click a concept node to view details.</p>
     </div>
-    """
+    """.replace("__TITLE_HTML__", title_html).replace("__VIEW_TITLE__", html_escape(view_title))
 
     concept_data_json = json.dumps(concept_data, ensure_ascii=False).replace("</", "<\\/")
     edge_key_json = json.dumps(edge_key, ensure_ascii=False).replace("</", "<\\/")
@@ -563,6 +628,24 @@ def inject_controls(
           }
         }
 
+        function setInfoPanelVisible(visible) {
+          var panel = document.getElementById("info_panel");
+          var button = document.getElementById("kg_info_toggle");
+          panel.classList.toggle("kg-hidden", !visible);
+          if (button) {
+            button.innerText = visible ? "Hide details" : "Show details";
+          }
+        }
+
+        function setControlsVisible(visible) {
+          var panel = document.getElementById("kg_controls");
+          var button = document.getElementById("kg_controls_toggle");
+          panel.classList.toggle("kg-hidden", !visible);
+          if (button) {
+            button.innerText = visible ? "Hide controls" : "Show controls";
+          }
+        }
+
         function getConcept(nodeId) {
           return conceptData[String(nodeId)] || null;
         }
@@ -730,6 +813,7 @@ def inject_controls(
         }
 
         window.kgShowEdgeKey = function() {
+          setInfoPanelVisible(true);
           var relations = Object.keys(edgeKey).sort();
           var html = "<h2>Edge Key</h2>";
 
@@ -765,6 +849,18 @@ def inject_controls(
 
           html += "</tbody></table>";
           document.getElementById("info_panel").innerHTML = html;
+        };
+
+        window.kgToggleInfoPanel = function() {
+          var panel = document.getElementById("info_panel");
+          setInfoPanelVisible(panel.classList.contains("kg-hidden"));
+          updateNodeLabelPositions();
+        };
+
+        window.kgToggleControls = function() {
+          var panel = document.getElementById("kg_controls");
+          setControlsVisible(panel.classList.contains("kg-hidden"));
+          updateNodeLabelPositions();
         };
 
         function setActiveConceptItem(nodeId) {

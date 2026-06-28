@@ -6,7 +6,7 @@
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="MODULE_MODE" value="false" />
-    <option name="PARAMETERS" value="--nodes data/nodes.csv --edges data/knowledge_edges.csv --edge-key data/edges_key.csv --out output/interactive_graph.html" />
+    <option name="PARAMETERS" value="--nodes data/nodes.csv --edges data/knowledge_edges.csv --edge-key data/edges_key.csv --out output/interactive_graph.html --title Special Relativity and Classical Fields" />
     <option name="PARENT_ENVS" value="true" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/generate_pyvis.py" />
