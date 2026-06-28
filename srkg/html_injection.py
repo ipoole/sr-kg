@@ -650,6 +650,26 @@ def inject_controls(
           return conceptData[String(nodeId)] || null;
         }
 
+        function conceptHash(nodeId) {
+          return "#concept-" + encodeURIComponent(String(nodeId));
+        }
+
+        function conceptIdFromHash(hash) {
+          var prefix = "#concept-";
+          if (!hash || hash.indexOf(prefix) !== 0) { return null; }
+          try {
+            return decodeURIComponent(hash.slice(prefix.length));
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function pushConceptHistory(nodeId) {
+          var hash = conceptHash(nodeId);
+          if (window.location.hash === hash) { return; }
+          window.history.pushState({nodeId: String(nodeId)}, "", hash);
+        }
+
         function conceptIdParts(id) {
           return String(id).split(".").map(function(part) {
             var n = Number(part);
@@ -877,7 +897,8 @@ def inject_controls(
           }
         }
 
-        function focusConcept(nodeId, statusPrefix) {
+        function focusConcept(nodeId, statusPrefix, options) {
+          options = options || {};
           if (!getConcept(nodeId)) { return; }
           finalizeLayoutForInteraction();
           activeNodeId = nodeId;
@@ -885,6 +906,10 @@ def inject_controls(
           kgHighlight(nodeId);
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
+          setInfoPanelVisible(true);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId);
+          }
           if (statusPrefix) {
             document.getElementById("kg_status").innerText = statusPrefix + " " + nodeId + ".";
           }
@@ -1085,9 +1110,7 @@ def inject_controls(
 
             const nodeId = params.nodes[0];
 
-            kgHighlight(nodeId);
-            showConcept(nodeId);
-            setActiveConceptItem(nodeId);
+            focusConcept(nodeId, "Selected");
         });
 
         network.once("stabilized", function() {
@@ -1107,6 +1130,19 @@ def inject_controls(
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", updateNodeLabelPositions);
+
+        window.addEventListener("popstate", function(event) {
+          var nodeId = event.state && event.state.nodeId;
+          if (!nodeId) {
+            nodeId = conceptIdFromHash(window.location.hash);
+          }
+
+          if (nodeId && getConcept(nodeId)) {
+            focusConcept(nodeId, "Selected", {skipHistory: true});
+          } else {
+            kgReset(true);
+          }
+        });
 
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
@@ -1162,6 +1198,14 @@ def inject_controls(
         buildNodeLabels();
         buildEdgeFilters();
         buildConceptList("");
+
+        var initialNodeId = conceptIdFromHash(window.location.hash);
+        if (initialNodeId && getConcept(initialNodeId)) {
+          window.history.replaceState({nodeId: String(initialNodeId)}, "", conceptHash(initialNodeId));
+          focusConcept(initialNodeId, "Selected", {skipHistory: true});
+        } else {
+          window.history.replaceState({}, "", window.location.href);
+        }
       }
 
       // Wait until pyvis has created network/nodes/edges variables.

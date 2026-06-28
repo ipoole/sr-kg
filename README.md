@@ -6,6 +6,7 @@ The project reads concept data from CSV files and generates a standalone interac
 
 - searchable concept list
 - clickable graph nodes, concept-list entries, and concept references
+- browser back/forward navigation between selected concepts
 - right-hand concept detail panel with rendered equations
 - clickable `\cref{label}{id}` references in concept descriptions
 - MathJax rendering for inline and display equations
