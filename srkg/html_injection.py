@@ -161,6 +161,31 @@ def inject_controls(
         padding-top: 8px;
         font-size: 12px;
       }
+      #kg_recent {
+        margin-top: 8px;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+        font-size: 12px;
+      }
+      .kg-recent-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+      }
+      .kg-recent-clear {
+        border: 0;
+        background: transparent;
+        color: #174ea6;
+        cursor: pointer;
+        font: inherit;
+        margin: 0;
+        padding: 0 2px;
+      }
+      .kg-recent-clear:hover,
+      .kg-recent-clear:focus {
+        text-decoration: underline;
+        outline: none;
+      }
       .kg-concept-item {
         display: block;
         width: 100%;
@@ -407,6 +432,7 @@ def inject_controls(
       <button onclick="kgFreezeLayout()">Freeze</button>
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
+      <div id="kg_recent"></div>
       <div id="kg_legend"></div>
       <div id="kg_edge_filters"></div>
       <div id="kg_concept_list"></div>
@@ -443,6 +469,8 @@ def inject_controls(
         var activeNodeId = null;
         var layoutFinalized = false;
         var layoutFinalizeTimer = null;
+        var recentConceptIds = [];
+        var recentConceptLimit = 6;
 
         /*
          * Custom node rendering
@@ -669,6 +697,47 @@ def inject_controls(
           if (window.location.hash === hash) { return; }
           window.history.pushState({nodeId: String(nodeId)}, "", hash);
         }
+
+        function rememberConcept(nodeId) {
+          var id = String(nodeId);
+          recentConceptIds = recentConceptIds.filter(function(existingId) {
+            return existingId !== id;
+          });
+          recentConceptIds.push(id);
+          if (recentConceptIds.length > recentConceptLimit) {
+            recentConceptIds = recentConceptIds.slice(recentConceptIds.length - recentConceptLimit);
+          }
+          renderRecentConcepts();
+        }
+
+        function renderRecentConcepts() {
+          var container = document.getElementById("kg_recent");
+          if (!container) { return; }
+
+          if (recentConceptIds.length === 0) {
+            container.innerHTML = "";
+            return;
+          }
+
+          var html = '<div class="kg-recent-header"><b>Recent</b>' +
+            '<button type="button" class="kg-recent-clear" onclick="kgClearRecent()">Clear</button>' +
+            '</div>';
+          recentConceptIds.forEach(function(id) {
+            var concept = getConcept(id) || {};
+            var activeClass = id === activeNodeId ? " active" : "";
+            html += '<button type="button" class="kg-concept-item' + activeClass +
+              '" data-recent-concept-id="' + escapeHtml(id) + '">' +
+              '<span class="kg-concept-id">' + escapeHtml(id) + '</span> ' +
+              escapeHtml(concept.label || "") +
+              "</button>";
+          });
+          container.innerHTML = html;
+        }
+
+        window.kgClearRecent = function() {
+          recentConceptIds = [];
+          renderRecentConcepts();
+        };
 
         function conceptIdParts(id) {
           return String(id).split(".").map(function(part) {
@@ -907,6 +976,9 @@ def inject_controls(
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
           setInfoPanelVisible(true);
+          if (!options.skipRecent) {
+            rememberConcept(nodeId);
+          }
           if (!options.skipHistory) {
             pushConceptHistory(nodeId);
           }
@@ -982,6 +1054,7 @@ def inject_controls(
             document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           }
           setActiveConceptItem(null);
+          renderRecentConcepts();
         };
 
         window.kgShowAll = window.kgReset;
@@ -1166,6 +1239,14 @@ def inject_controls(
 
           e.preventDefault();
           focusConcept(item.getAttribute("data-concept-id"), "Selected");
+        });
+
+        document.getElementById("kg_recent").addEventListener("click", function(e) {
+          var item = e.target.closest(".kg-concept-item[data-recent-concept-id]");
+          if (!item) { return; }
+
+          e.preventDefault();
+          focusConcept(item.getAttribute("data-recent-concept-id"), "Selected");
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
