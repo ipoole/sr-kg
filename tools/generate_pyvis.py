@@ -25,13 +25,11 @@ Dependencies:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import html
 import json
 import math
 import re
 import sys
-import textwrap
 from pathlib import Path
 
 import pandas as pd
@@ -43,10 +41,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from srkg.config import (
-    EDGE_COLOURS,
-    EDGE_COLUMNS,
-    EDGE_KEY_COLUMNS,
-    EDGE_TOOLTIP_LINE_WIDTH,
     EDGE_WIDTH,
     LAYER_COLOURS,
     LAYOUT_ROW_STAGGER,
@@ -56,7 +50,19 @@ from srkg.config import (
     NODE_COLLISION_WIDTH,
     NODE_LABEL_FONT_SIZE,
     NODE_LABEL_WIDTH,
-    UNDIRECTED_EDGE_COLOUR,
+)
+from srkg.data import (
+    build_concept_data,
+    find_edge_key_path,
+    load_edge_key,
+    normalise_edges,
+)
+from srkg.edges import (
+    build_edge_colour_map,
+    enrich_edge_key_with_colours,
+    make_edge_tooltip,
+    relation_is_directed,
+    stable_edge_colour,
 )
 
 
@@ -137,118 +143,6 @@ def make_tooltip(node: dict, prerequisites: list[str], dependents: list[str]) ->
       {dep_html if dep_html else "<i>none</i>"}
     </div>
     """
-
-
-def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
-    """Build panel data directly from nodes.csv, independent of PyVis metadata."""
-    concept_data = {}
-    for _, row in nodes_df.iterrows():
-        cid = str(row.get("id", "")).strip()
-        if not cid:
-            continue
-        concept_data[cid] = {
-            "label": str(row.get("label", "")).strip(),
-            "layer": str(row.get("layer", "")).strip(),
-            "layer_title": str(row.get("layer_title", "")).strip(),
-            "body": str(row.get("body", "")),
-        }
-    return concept_data
-
-
-def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
-    """Validate and clean the knowledge edge data."""
-    missing = set(EDGE_COLUMNS) - set(edges_df.columns)
-    if missing:
-        missing_cols = ", ".join(sorted(missing))
-        raise ValueError(f"knowledge_edges.csv must contain columns: {missing_cols}")
-
-    edges_df = edges_df.copy()
-    edges_df["relation"] = edges_df["relation"].replace("", "REFERENCE")
-
-    return edges_df
-
-
-def parse_bool(value, default: bool = True) -> bool:
-    """Parse common CSV boolean spellings."""
-    if isinstance(value, bool):
-        return value
-
-    text = str(value).strip().lower()
-    if text in {"true", "t", "yes", "y", "1"}:
-        return True
-    if text in {"false", "f", "no", "n", "0"}:
-        return False
-    return default
-
-
-def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
-    """Load relation metadata that controls edge direction and help text."""
-    if path is None or not path.exists():
-        return {}
-
-    edge_key_df = pd.read_csv(path).fillna("")
-    missing = set(EDGE_KEY_COLUMNS) - set(edge_key_df.columns)
-    if missing:
-        missing_cols = ", ".join(sorted(missing))
-        raise ValueError(f"{path} must contain columns: {missing_cols}")
-
-    edge_key = {}
-    for _, row in edge_key_df.iterrows():
-        relation = str(row.get("relation", "")).strip()
-        if not relation:
-            continue
-        edge_key[relation] = {
-            "relation": relation,
-            "directed": parse_bool(row.get("directed", ""), default=True),
-            "category": str(row.get("category", "")).strip(),
-            "meaning": str(row.get("meaning", "")).strip(),
-            "example": str(row.get("example", "")).strip(),
-        }
-    return edge_key
-
-
-def build_edge_colour_map(edge_key: dict[str, dict[str, str | bool]]) -> dict[str, str]:
-    """Assign stable colours to relation types, using grey for undirected edges."""
-    colour_map = {}
-    directed_relations = sorted(
-        relation
-        for relation, metadata in edge_key.items()
-        if bool(metadata.get("directed", True))
-    )
-
-    for index, relation in enumerate(directed_relations):
-        colour_map[relation] = EDGE_COLOURS[index % len(EDGE_COLOURS)]
-
-    for relation, metadata in edge_key.items():
-        if not bool(metadata.get("directed", True)):
-            colour_map[relation] = UNDIRECTED_EDGE_COLOUR
-
-    return colour_map
-
-
-def stable_edge_colour(relation: str) -> str:
-    """Return a repeatable fallback colour for relation names not present in the key."""
-    digest = hashlib.sha256(relation.encode("utf-8")).digest()
-    return EDGE_COLOURS[digest[0] % len(EDGE_COLOURS)]
-
-
-def enrich_edge_key_with_colours(
-    edge_key: dict[str, dict[str, str | bool]],
-    edge_colour_map: dict[str, str],
-) -> dict[str, dict[str, str | bool]]:
-    """Add generated display colours to edge-key metadata shown in the UI."""
-    return {
-        relation: {
-            **metadata,
-            "colour": edge_colour_map.get(relation, EDGE_COLOURS[0]),
-        }
-        for relation, metadata in edge_key.items()
-    }
-
-
-def relation_is_directed(relation: str, edge_key: dict[str, dict[str, str | bool]]) -> bool:
-    """Return whether a relation should be treated as directed."""
-    return bool(edge_key.get(relation, {}).get("directed", True))
 
 
 def parse_layer_value(node_id: str, layer: str | int | float | None) -> int:
@@ -386,35 +280,6 @@ def order_nodes_within_levels(
             reorder_level(level, order_values, direction=-1)
 
     return ordered
-
-
-def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_WIDTH) -> str:
-    """Build a readable wrapped tooltip for an edge relation and optional note."""
-    relation_text = html.escape(relation)
-    note = str(note or "").strip()
-    if not note:
-        return relation_text
-
-    wrapped_note = textwrap.wrap(
-        note,
-        width=width,
-        break_long_words=False,
-        break_on_hyphens=False,
-    )
-    wrapped_note_text = "\n".join(html.escape(line) for line in wrapped_note)
-    return f"{relation_text}:\n{wrapped_note_text}"
-
-
-def find_edge_key_path(edges_path: Path, configured_path: str | None) -> Path | None:
-    """Use an explicit edge key, or edges_key.csv beside the edge file when present."""
-    if configured_path:
-        return Path(configured_path)
-
-    sibling = edges_path.parent / "edges_key.csv"
-    if sibling.exists():
-        return sibling
-
-    return None
 
 
 def inject_controls(
@@ -1712,7 +1577,7 @@ def main():
         directed = relation_is_directed(rel, edge_key)
         edge_colour = edge_colour_map.get(
             rel,
-            stable_edge_colour(rel) if directed else UNDIRECTED_EDGE_COLOUR,
+            stable_edge_colour(rel),
         )
         note = str(row.get("note", "")).strip()
 

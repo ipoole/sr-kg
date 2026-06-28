@@ -13,3 +13,10 @@ env/
 .DS_Store
 Thumbs.db
 
+.idea/.gitignore
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/sr-kg.iml
+.idea/vcs.xml
+

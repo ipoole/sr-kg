@@ -1,0 +1,87 @@
+"""CSV loading and validation helpers for the SR knowledge graph."""
+
+from pathlib import Path
+
+import pandas as pd
+
+from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
+
+
+def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
+    """Build panel data directly from nodes.csv, independent of PyVis metadata."""
+    concept_data = {}
+    for _, row in nodes_df.iterrows():
+        cid = str(row.get("id", "")).strip()
+        if not cid:
+            continue
+        concept_data[cid] = {
+            "label": str(row.get("label", "")).strip(),
+            "layer": str(row.get("layer", "")).strip(),
+            "layer_title": str(row.get("layer_title", "")).strip(),
+            "body": str(row.get("body", "")),
+        }
+    return concept_data
+
+
+def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
+    """Validate and clean the knowledge edge data."""
+    missing = set(EDGE_COLUMNS) - set(edges_df.columns)
+    if missing:
+        missing_cols = ", ".join(sorted(missing))
+        raise ValueError(f"knowledge_edges.csv must contain columns: {missing_cols}")
+
+    edges_df = edges_df.copy()
+    edges_df["relation"] = edges_df["relation"].replace("", "REFERENCE")
+
+    return edges_df
+
+
+def parse_bool(value, default: bool = True) -> bool:
+    """Parse common CSV boolean spellings."""
+    if isinstance(value, bool):
+        return value
+
+    text = str(value).strip().lower()
+    if text in {"true", "t", "yes", "y", "1"}:
+        return True
+    if text in {"false", "f", "no", "n", "0"}:
+        return False
+    return default
+
+
+def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
+    """Load relation metadata that controls edge direction and help text."""
+    if path is None or not path.exists():
+        return {}
+
+    edge_key_df = pd.read_csv(path).fillna("")
+    missing = set(EDGE_KEY_COLUMNS) - set(edge_key_df.columns)
+    if missing:
+        missing_cols = ", ".join(sorted(missing))
+        raise ValueError(f"{path} must contain columns: {missing_cols}")
+
+    edge_key = {}
+    for _, row in edge_key_df.iterrows():
+        relation = str(row.get("relation", "")).strip()
+        if not relation:
+            continue
+        edge_key[relation] = {
+            "relation": relation,
+            "directed": parse_bool(row.get("directed", ""), default=True),
+            "category": str(row.get("category", "")).strip(),
+            "meaning": str(row.get("meaning", "")).strip(),
+            "example": str(row.get("example", "")).strip(),
+        }
+    return edge_key
+
+
+def find_edge_key_path(edges_path: Path, configured_path: str | None) -> Path | None:
+    """Use an explicit edge key, or edges_key.csv beside the edge file when present."""
+    if configured_path:
+        return Path(configured_path)
+
+    sibling = edges_path.parent / "edges_key.csv"
+    if sibling.exists():
+        return sibling
+
+    return None
