@@ -1,4 +1,13 @@
-"""Shared configuration constants for the SR knowledge graph generator."""
+"""Shared configuration constants for the SR knowledge graph generator.
+
+This module is intentionally dependency-free. It defines the stable values
+used across data validation, layout, PyVis rendering, and injected viewer
+assets: colours, required CSV columns, layout spacing, node collision geometry,
+label sizing, and edge display defaults.
+
+Keep this module limited to simple constants so every other ``srkg`` module can
+import it without creating dependency cycles.
+"""
 
 LAYER_COLOURS = [
     "#e6194b", "#f58231", "#ffe119", "#3cb44b", "#46f0f0",

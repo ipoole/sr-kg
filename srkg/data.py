@@ -1,4 +1,14 @@
-"""CSV loading and validation helpers for the SR knowledge graph."""
+"""CSV-adjacent data helpers for the SR knowledge graph.
+
+This module owns validation and lightweight normalization of tabular inputs,
+plus conversion of node rows into the concept-data mapping used by the injected
+viewer. It deliberately does not know about PyVis, HTML generation, physics, or
+layout. Callers are responsible for reading the primary CSV files and passing
+``pandas`` data frames in.
+
+Dependencies should stay limited to ``srkg.config`` and general-purpose parsing
+libraries.
+"""
 
 from pathlib import Path
 

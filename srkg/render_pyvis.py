@@ -1,4 +1,16 @@
-"""PyVis network rendering for the SR knowledge graph."""
+"""PyVis network rendering for the SR knowledge graph.
+
+This module converts prepared node, edge, relation, and layout data into the
+base PyVis HTML file. It owns the PyVis ``Network`` object, vis-network physics
+options, native node/edge attributes, relation colours, initial coordinates,
+and the temporary native node representation used before the injected viewer
+customizes rendering.
+
+It deliberately stops at writing PyVis output. It does not inject controls,
+MathJax configuration, HTML labels, or application JavaScript; that belongs in
+``srkg.html_injection``. It also assumes data frames have already been
+validated and normalized by the pipeline.
+"""
 
 from pathlib import Path
 import html

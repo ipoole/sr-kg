@@ -1,4 +1,14 @@
-"""Layer-based node layout helpers."""
+"""Layer-based node layout helpers.
+
+This module computes deterministic initial graph positions from pedagogical
+node layers. Layer 1 is placed at the bottom of the graph, higher numbered
+layers are placed above it, and nodes within each layer are reordered with a
+small barycentric sweep to reduce crossings before physics refinement.
+
+The layout code accepts already-loaded data frames and plain dictionaries. It
+does not load files, create PyVis objects, inject HTML, or inspect edge display
+metadata.
+"""
 
 import pandas as pd
 

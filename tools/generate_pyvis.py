@@ -4,6 +4,9 @@ generate_pyvis.py
 
 Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and knowledge_edges.csv.
 
+This script is the command-line entry point only. It parses arguments, delegates
+the generation workflow to srkg.pipeline, and prints a short summary.
+
 Expected nodes.csv columns:
     id,label,layer,layer_title,body
 

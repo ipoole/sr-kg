@@ -1,4 +1,14 @@
-"""End-to-end graph generation pipeline."""
+"""End-to-end graph generation pipeline.
+
+This module coordinates the complete generation workflow for callers that do
+not want to manage individual stages. It resolves input paths, reads CSV files,
+validates and normalizes data, builds relation colour metadata, computes layout
+levels and positions, writes the base PyVis HTML, injects viewer assets, and
+returns summary information for the CLI.
+
+The pipeline is the only ``srkg`` module intended to depend on all major stages.
+Lower-level modules should not import it.
+"""
 
 from pathlib import Path
 

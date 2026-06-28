@@ -1,4 +1,12 @@
-"""Edge relation semantics, colours, and display helpers."""
+"""Edge relation semantics, colours, and display helpers.
+
+This module interprets relation metadata loaded from ``edges_key.csv``. It
+decides whether a relation is directed, assigns repeatable colours, enriches
+relation metadata for the viewer UI, and formats edge hover text.
+
+It is intentionally independent of graph layout, PyVis network construction,
+and CSV loading. The only project dependency should be ``srkg.config``.
+"""
 
 import hashlib
 import html

@@ -33,8 +33,16 @@ lib/
   bindings/                PyVis binding asset
 output/
   interactive_graph.html   Generated standalone viewer
+srkg/
+  config.py                Shared constants
+  data.py                  CSV validation and concept-data helpers
+  edges.py                 Edge relation semantics and tooltip helpers
+  layout.py                Layer-based initial layout logic
+  render_pyvis.py          Base PyVis network rendering
+  html_injection.py        Browser-side CSS/JS/MathJax injection
+  pipeline.py              End-to-end generation workflow
 tools/
-  generate_pyvis.py        CSV-to-HTML generator
+  generate_pyvis.py        Command-line entry point
 ```
 
 ## Setup
@@ -96,9 +104,63 @@ Edge rendering is relation-aware:
 
 The `Edge types` checkboxes in the left panel toggle relation types on and off. The filter is respected in show-all, selected-node highlighting, and neighbourhood mode.
 
+## Architecture
+The project is a static HTML generator. Concept and relationship content is read from CSV files, then Python prepares the data model, computes an initial graph layout, and uses PyVis to emit a base vis-network HTML document. The generator then injects additional CSS and JavaScript for the application UI, MathJax rendering, custom node labels, filtering, and interaction behaviour. The final output is a standalone interactive_graph.html file that runs directly in a browser.
+
+The generator is organized as a small staged pipeline. The command-line script parses arguments and delegates to `srkg.pipeline`, which coordinates data loading, validation, relation metadata, layout, PyVis rendering, and final HTML injection.
+
+The lower-level modules are intentionally separated so the data, edge semantics, and layout code can be tested without PyVis or browser-side HTML. PyVis rendering is isolated from the injected viewer application: `srkg.render_pyvis` writes the base graph document, then `srkg.html_injection` layers on MathJax setup, custom node drawing, labels, controls, filters, and interaction handlers.
+
+`srkg.config` is dependency-free and can be imported by any module. `srkg.pipeline` is the only module that depends on all major stages.
+
+## Modules
+
+- `tools/generate_pyvis.py`: generate_pyvis.py
+- `srkg/__init__.py`: SR knowledge graph generation package.
+- `srkg/config.py`: Shared configuration constants for the SR knowledge graph generator.
+- `srkg/data.py`: CSV-adjacent data helpers for the SR knowledge graph.
+- `srkg/edges.py`: Edge relation semantics, colours, and display helpers.
+- `srkg/layout.py`: Layer-based node layout helpers.
+- `srkg/render_pyvis.py`: PyVis network rendering for the SR knowledge graph.
+- `srkg/html_injection.py`: HTML, CSS, and JavaScript injection for the generated viewer.
+- `srkg/pipeline.py`: End-to-end graph generation pipeline.
+
+Module dependency graph:
+
+```text
+tools/generate_pyvis.py
+  -> srkg.pipeline
+
+srkg.pipeline
+  -> srkg.data
+  -> srkg.edges
+  -> srkg.layout
+  -> srkg.render_pyvis
+  -> srkg.html_injection
+
+srkg.render_pyvis
+  -> srkg.config
+  -> srkg.edges
+
+srkg.html_injection
+  -> srkg.config
+
+srkg.data
+  -> srkg.config
+
+srkg.edges
+  -> srkg.config
+
+srkg.layout
+  -> srkg.config
+
+srkg.config
+  -> no project modules
+```
+
 ## Layout Tuning
 
-The main layout and node display constants live near the top of `tools/generate_pyvis.py`:
+The main layout and node display constants live in `srkg/config.py`:
 
 ```python
 LAYOUT_X_SPACING = 600
@@ -110,13 +172,13 @@ NODE_LABEL_WIDTH = 180
 NODE_LABEL_FONT_SIZE = 28
 ```
 
-Circle size is controlled where nodes are added:
+Circle size is controlled where nodes are added in `srkg/render_pyvis.py`:
 
 ```python
 size = 50 + 4.0 * math.sqrt(importance + 1)
 ```
 
-The physics settings are in the `net.set_options(...)` block in `tools/generate_pyvis.py`. They control the initial relaxation only; the generated viewer freezes the settled layout before normal interaction.
+The physics settings are in the `net.set_options(...)` block in `srkg/render_pyvis.py`. They control the initial relaxation only; the generated viewer freezes the settled layout before normal interaction.
 
 ## Data Format
 

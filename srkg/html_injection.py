@@ -1,4 +1,14 @@
-"""HTML, CSS, and JavaScript injection for the generated viewer."""
+"""HTML, CSS, and JavaScript injection for the generated viewer.
+
+This module owns the browser-side application shell layered on top of PyVis:
+MathJax setup, control panels, responsive CSS, node-label overlays, custom
+canvas node drawing, edge filters, concept search, and interaction handlers.
+
+The function here accepts an already-generated PyVis HTML document and injects
+viewer assets by string replacement. It should not load CSV files, compute
+layout, or create PyVis networks. Large embedded asset strings live here until
+they are split into separate template/static files.
+"""
 
 import json
 
@@ -1076,5 +1086,4 @@ def inject_controls(
     html_text = html_text.replace("<body>", "<body>\n" + controls)
     html_text = html_text.replace("</body>", js + "\n</body>")
     return html_text
-
 
