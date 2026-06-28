@@ -637,6 +637,12 @@ def inject_controls(
         line-height: 1.45;
     }
 
+    #info_panel h2 {
+        font-size: 1.5em;
+        line-height: 1.15;
+        margin: 0 0 0.6em;
+    }
+
     #info_panel mjx-container[display="true"] {
         overflow-x: auto;
         overflow-y: hidden;
@@ -699,6 +705,41 @@ def inject_controls(
         line-height: 1.35;
         box-shadow: 0 2px 6px rgba(0,0,0,0.18);
     }
+
+    @media (max-width: 1100px) {
+        #kg_controls {
+            max-width: 240px;
+            font-size: 12px;
+        }
+
+        #kg_controls input {
+            width: 160px;
+        }
+
+        #info_panel {
+            width: 300px;
+            font-size: 13px;
+        }
+
+        #info_panel h2 {
+            font-size: 1.3em;
+        }
+    }
+
+    @media (max-width: 850px) {
+        #kg_controls {
+            max-width: 150px;
+        }
+
+        #info_panel {
+            width: 150px;
+            font-size: 12px;
+        }
+
+        #info_panel h2 {
+            font-size: 1.15em;
+        }
+    }
     </style>
     """
 
@@ -752,6 +793,20 @@ def inject_controls(
         var layoutFinalized = false;
         var layoutFinalizeTimer = null;
 
+        /*
+         * Custom node rendering
+         *
+         * PyVis/vis-network is still responsible for physics, edge routing,
+         * hit testing, and node selection. The visible nodes are deliberately
+         * split into three pieces:
+         *
+         * 1. native vis-network dot nodes for the first frame, avoiding a blank
+         *    graph while this injected script waits for network/nodes/edges;
+         * 2. invisible fixed-size box nodes after startup, giving physics a
+         *    larger collision area that includes the external label footprint;
+         * 3. canvas-drawn circles plus HTML labels, so node labels can contain
+         *    MathJax and still track pan/zoom.
+         */
         var transparentNodeColor = {
           background: "rgba(255,255,255,0)",
           border: "rgba(255,255,255,0)",
@@ -776,6 +831,101 @@ def inject_controls(
             color: "rgba(0,0,0,0)"
           });
           return o;
+        }
+
+        function visibleConceptLabel(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return '<span class="kg-node-label-id">' + escapeHtml(nodeId) + '</span>' +
+            renderConceptText(concept.label || "");
+        }
+
+        function buildNodeLabels() {
+          nodeLabelLayer.innerHTML = "";
+          Object.keys(conceptData).forEach(function(id) {
+            var el = document.createElement("div");
+            el.className = "kg-node-label";
+            el.setAttribute("data-node-id", id);
+            el.innerHTML = visibleConceptLabel(id);
+            nodeLabelLayer.appendChild(el);
+            nodeLabelEls[id] = el;
+          });
+          typesetNodeLabels();
+          updateNodeLabelPositions();
+        }
+
+        function typesetNodeLabels() {
+          if (window.MathJax && MathJax.typesetPromise) {
+            if (MathJax.typesetClear) {
+              MathJax.typesetClear([nodeLabelLayer]);
+            }
+            MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
+              console.warn("MathJax label typesetting failed:", err);
+            }).then(function() {
+              updateNodeLabelPositions();
+            });
+          } else {
+            setTimeout(typesetNodeLabels, 250);
+          }
+        }
+
+        function updateNodeLabelPositions() {
+          if (!network || !nodeLabelLayer) { return; }
+
+          var positions = network.getPositions();
+          var labelScale = Math.max(0.35, network.getScale ? network.getScale() : 1);
+          Object.keys(nodeLabelEls).forEach(function(id) {
+            var el = nodeLabelEls[id];
+            var node = nodes.get(id);
+            var pos = positions[id];
+            if (!node || !pos || node.hidden) {
+              el.style.display = "none";
+              return;
+            }
+
+            var dom = network.canvasToDOM(pos);
+            var radius = Number(node.visualSize) || Number(node.size) || 18;
+            var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
+            var radiusPx = Math.abs(radiusEdge.x - dom.x);
+            var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
+            var canvasRect = canvasEl ? canvasEl.getBoundingClientRect() : graphContainer.getBoundingClientRect();
+            var layerRect = nodeLabelLayer.getBoundingClientRect();
+            var labelCenterX = canvasRect.left - layerRect.left + dom.x;
+            var labelTopY = canvasRect.top - layerRect.top + dom.y + Math.max(4, radiusPx + 3);
+            var labelWidth = __NODE_LABEL_WIDTH__ * labelScale;
+            el.style.display = "block";
+            el.style.width = labelWidth + "px";
+            el.style.fontSize = (__NODE_LABEL_FONT_SIZE__ * labelScale) + "px";
+            el.style.left = (labelCenterX - labelWidth / 2) + "px";
+            el.style.top = labelTopY + "px";
+            el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
+          });
+        }
+
+        function drawVisibleNodes(ctx) {
+          var positions = network.getPositions();
+          nodes.get().forEach(function(node) {
+            if (node.hidden) { return; }
+
+            var pos = positions[node.id];
+            if (!pos) { return; }
+
+            var radius = Number(node.visualSize) || 18;
+            var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
+            var color = node.visualColor || {};
+            var fill = color.background || "#999999";
+            var border = color.border || "#333333";
+
+            ctx.save();
+            ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = node.id === activeNodeId ? "#000000" : border;
+            ctx.stroke();
+            ctx.restore();
+          });
         }
 
         nodes.update(allNodes.map(applyCollisionNodeStyle));
@@ -926,74 +1076,6 @@ def inject_controls(
           kgReset(true);
         }
 
-        function visibleConceptLabel(nodeId) {
-          var concept = getConcept(nodeId) || {};
-          return '<span class="kg-node-label-id">' + escapeHtml(nodeId) + '</span>' +
-            renderConceptText(concept.label || "");
-        }
-
-        function buildNodeLabels() {
-          nodeLabelLayer.innerHTML = "";
-          Object.keys(conceptData).forEach(function(id) {
-            var el = document.createElement("div");
-            el.className = "kg-node-label";
-            el.setAttribute("data-node-id", id);
-            el.innerHTML = visibleConceptLabel(id);
-            nodeLabelLayer.appendChild(el);
-            nodeLabelEls[id] = el;
-          });
-          typesetNodeLabels();
-          updateNodeLabelPositions();
-        }
-
-        function typesetNodeLabels() {
-          if (window.MathJax && MathJax.typesetPromise) {
-            if (MathJax.typesetClear) {
-              MathJax.typesetClear([nodeLabelLayer]);
-            }
-            MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
-              console.warn("MathJax label typesetting failed:", err);
-            }).then(function() {
-              updateNodeLabelPositions();
-            });
-          } else {
-            setTimeout(typesetNodeLabels, 250);
-          }
-        }
-
-        function updateNodeLabelPositions() {
-          if (!network || !nodeLabelLayer) { return; }
-
-          var positions = network.getPositions();
-          var labelScale = Math.max(0.35, network.getScale ? network.getScale() : 1);
-          Object.keys(nodeLabelEls).forEach(function(id) {
-            var el = nodeLabelEls[id];
-            var node = nodes.get(id);
-            var pos = positions[id];
-            if (!node || !pos || node.hidden) {
-              el.style.display = "none";
-              return;
-            }
-
-            var dom = network.canvasToDOM(pos);
-            var radius = Number(node.visualSize) || Number(node.size) || 18;
-            var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
-            var radiusPx = Math.abs(radiusEdge.x - dom.x);
-            var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
-            var canvasRect = canvasEl ? canvasEl.getBoundingClientRect() : graphContainer.getBoundingClientRect();
-            var layerRect = nodeLabelLayer.getBoundingClientRect();
-            var labelCenterX = canvasRect.left - layerRect.left + dom.x;
-            var labelTopY = canvasRect.top - layerRect.top + dom.y + Math.max(4, radiusPx + 3);
-            var labelWidth = __NODE_LABEL_WIDTH__ * labelScale;
-            el.style.display = "block";
-            el.style.width = labelWidth + "px";
-            el.style.fontSize = (__NODE_LABEL_FONT_SIZE__ * labelScale) + "px";
-            el.style.left = (labelCenterX - labelWidth / 2) + "px";
-            el.style.top = labelTopY + "px";
-            el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
-          });
-        }
-
         function lockLayout() {
           network.stopSimulation();
           network.setOptions({physics: {enabled: false}});
@@ -1034,33 +1116,6 @@ def inject_controls(
           captureCurrentNodeLayout();
           layoutFinalized = true;
           updateNodeLabelPositions();
-        }
-
-        function drawVisibleNodes(ctx) {
-          var positions = network.getPositions();
-          nodes.get().forEach(function(node) {
-            if (node.hidden) { return; }
-
-            var pos = positions[node.id];
-            if (!pos) { return; }
-
-            var radius = Number(node.visualSize) || 18;
-            var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
-            var color = node.visualColor || {};
-            var fill = color.background || "#999999";
-            var border = color.border || "#333333";
-
-            ctx.save();
-            ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = fill;
-            ctx.fill();
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = node.id === activeNodeId ? "#000000" : border;
-            ctx.stroke();
-            ctx.restore();
-          });
         }
 
         function showConcept(nodeId) {
@@ -1369,6 +1424,7 @@ def inject_controls(
         network.on("dragEnd", updateNodeLabelPositions);
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
+        window.addEventListener("resize", updateNodeLabelPositions);
 
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
