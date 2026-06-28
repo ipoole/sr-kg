@@ -25,8 +25,7 @@ The project reads concept data from CSV files and generates a standalone interac
 ```text
 data/
   nodes.csv                Concept metadata and descriptions
-  edges.csv                Legacy concept relationships
-  knowledge_edges.csv      Refined relationships with relation types and notes
+  knowledge_edges.csv      Concept relationships with relation types and notes
   edges_key.csv            Edge relation meanings and direction metadata
 lib/
   vis-9.1.2/               Vendored vis-network assets used by PyVis output
@@ -127,19 +126,13 @@ The physics settings are in the `net.set_options(...)` block in `tools/generate_
 id,label,layer,layer_title,body
 ```
 
-`data/edges.csv` expects:
-
-```text
-source,target,type
-```
-
-`data/knowledge_edges.csv` uses the same required endpoints but normally includes relation notes:
+`data/knowledge_edges.csv` expects:
 
 ```text
 source,target,relation,note
 ```
 
-The edge relation column may be named either `type` or `relation`. Optional `note` or `notes` columns are accepted. When present, the note is shown in the edge hover tooltip.
+The `relation` value controls edge colour, direction, filtering, and edge-key lookup. The `note` value is shown in the edge hover tooltip.
 
 `data/edges_key.csv` expects:
 

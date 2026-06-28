@@ -2,24 +2,21 @@
 """
 generate_pyvis.py
 
-Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and edges.csv.
+Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and knowledge_edges.csv.
 
 Expected nodes.csv columns:
     id,label,layer,layer_title,body
 
-Expected edges.csv columns:
-    source,target,type
-
-The edge relation column may be named either type or relation. Optional note/notes
-columns are shown in edge hover text.
+Expected knowledge_edges.csv columns:
+    source,target,relation,note
 
 Expected edges_key.csv columns:
     relation,directed,category,meaning,example
 
-Only id/source/target are strictly required. Other columns are used when present.
+Only the documented columns are supported.
 
 Usage:
-    python generate_pyvis.py --nodes nodes.csv --edges edges.csv --out interactive_graph.html
+    python generate_pyvis.py --nodes nodes.csv --edges knowledge_edges.csv --out interactive_graph.html
 
 Dependencies:
     pip install pandas networkx pyvis
@@ -47,8 +44,7 @@ LAYER_COLOURS = [
     "#808080", "#469990", "#dcbeff", "#aaffc3"
 ]
 
-EDGE_RELATION_COLUMNS = ("type", "relation")
-EDGE_NOTE_COLUMNS = ("note", "notes")
+EDGE_COLUMNS = ("source", "target", "relation", "note")
 EDGE_KEY_COLUMNS = ("relation", "directed", "category", "meaning", "example")
 EDGE_TOOLTIP_LINE_WIDTH = 50
 EDGE_WIDTH = 5.0
@@ -168,20 +164,14 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
 
 
 def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
-    """Validate and standardise edge data from supported CSV variants."""
-    if not {"source", "target"}.issubset(edges_df.columns):
-        raise ValueError("edges.csv must contain 'source' and 'target' columns")
+    """Validate and clean the knowledge edge data."""
+    missing = set(EDGE_COLUMNS) - set(edges_df.columns)
+    if missing:
+        missing_cols = ", ".join(sorted(missing))
+        raise ValueError(f"knowledge_edges.csv must contain columns: {missing_cols}")
 
     edges_df = edges_df.copy()
-
-    relation_column = next((col for col in EDGE_RELATION_COLUMNS if col in edges_df.columns), None)
-    if relation_column is None:
-        edges_df["relation"] = "REFERENCE"
-    else:
-        edges_df["relation"] = edges_df[relation_column].replace("", "REFERENCE")
-
-    note_column = next((col for col in EDGE_NOTE_COLUMNS if col in edges_df.columns), None)
-    edges_df["note"] = edges_df[note_column] if note_column else ""
+    edges_df["relation"] = edges_df["relation"].replace("", "REFERENCE")
 
     return edges_df
 
@@ -1511,7 +1501,7 @@ def inject_controls(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--nodes", default="nodes.csv", help="Path to nodes.csv")
-    parser.add_argument("--edges", default="edges.csv", help="Path to edges.csv")
+    parser.add_argument("--edges", default="data/knowledge_edges.csv", help="Path to knowledge_edges.csv")
     parser.add_argument(
         "--edge-key",
         default=None,
