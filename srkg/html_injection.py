@@ -421,20 +421,19 @@ def inject_controls(
     <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
-      <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
-      <button onclick="kgSearch()">Find</button>
       <button onclick="kgReset()">Reset</button>
       <br>
       <button onclick="kgFocusSelected()">Neighbourhood</button>
       <button onclick="kgShowAll()">Show all</button>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
-      <button onclick="kgFreezeLayout()">Freeze</button>
       <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
       <div id="kg_recent"></div>
       <div id="kg_legend"></div>
       <div id="kg_edge_filters"></div>
+      <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
+      <button onclick="kgSearch()">Find</button>
       <div id="kg_concept_list"></div>
     </div>
 
@@ -1019,11 +1018,6 @@ def inject_controls(
           }
           document.getElementById("kg_concept_list").innerHTML = html;
         }
-
-        window.kgFreezeLayout = function() {
-          finalizeLayoutForInteraction();
-          document.getElementById("kg_status").innerText = "Layout frozen.";
-        };
 
         window.kgRestartLayout = function() {
           network.setOptions({

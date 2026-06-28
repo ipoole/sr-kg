@@ -19,7 +19,7 @@ The project reads concept data from CSV files and generates a standalone interac
 - relation-specific edge hover notes with wrapped tooltip text
 - directed and undirected edge rendering
 - neighbour highlighting, neighbourhood mode, and show-all mode
-- layout freeze/restart controls
+- layout restart control
 - stable, repeatable colour choices across runs
 
 ## Repository Layout
@@ -82,7 +82,7 @@ The left control panel provides:
 - a scrollable concept list
 - graph reset and show-all controls
 - neighbourhood mode for the selected node
-- layout freeze and restart controls
+- layout restart control
 - an Edge key button
 - edge-type filter checkboxes
 - a controls-panel show/hide toggle
