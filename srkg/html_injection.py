@@ -306,6 +306,22 @@ def inject_controls(
         line-height: 1.45;
     }
 
+    #info_panel .concept-graphic {
+        display: flex;
+        justify-content: center;
+        margin: 0.1em 0 0.1em;
+        overflow: hidden;
+    }
+
+    #info_panel .concept-graphic svg {
+        display: block;
+        height: auto;
+        margin: -42px 0;
+        max-height: 300px;
+        max-width: min(100%, 380px);
+        width: 100%;
+    }
+
     #info_panel h2 {
         font-size: 1.5em;
         line-height: 1.15;
@@ -492,6 +508,7 @@ def inject_controls(
         var enabledEdgeRelations = {};
         var currentView = {mode: "all", nodeId: null};
         var activeNodeId = null;
+        var svgImageCache = {};
         var layoutFinalized = false;
         var layoutFinalizeTimer = null;
         var recentConceptIds = [];
@@ -618,18 +635,88 @@ def inject_controls(
             var color = node.visualColor || {};
             var fill = color.background || "#999999";
             var border = color.border || "#333333";
+            var concept = getConcept(node.id) || {};
+            var svgImage = concept.svg_graphic ? getSvgNodeImage(node.id, concept.svg_graphic) : null;
 
             ctx.save();
             ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = fill;
+            ctx.fillStyle = svgImage ? tintHexColour(fill, 0.86) : fill;
             ctx.fill();
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = node.id === activeNodeId ? "#000000" : border;
+
+            if (svgImage && svgImage.complete && svgImage.naturalWidth > 0) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(pos.x, pos.y, Math.max(1, radius - 3), 0, 2 * Math.PI, false);
+              ctx.clip();
+              var imagePadding = radius * 0.08;
+              var imageSize = Math.max(1, (radius * 2) - (imagePadding * 2));
+              var sourceCrop = 36;
+              var sourceSize = Math.max(1, 512 - (sourceCrop * 2));
+              ctx.drawImage(
+                svgImage,
+                sourceCrop,
+                sourceCrop,
+                sourceSize,
+                sourceSize,
+                pos.x - imageSize / 2,
+                pos.y - imageSize / 2,
+                imageSize,
+                imageSize
+              );
+              ctx.restore();
+            }
+
+            ctx.lineWidth = svgImage ? 4 : 1.5;
+            ctx.strokeStyle = svgImage ? fill : (node.id === activeNodeId ? "#000000" : border);
             ctx.stroke();
+            if (svgImage && node.id === activeNodeId) {
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = "#000000";
+              ctx.stroke();
+            }
             ctx.restore();
           });
+        }
+
+        function getSvgNodeImage(nodeId, svgText) {
+          var cached = svgImageCache[nodeId];
+          if (cached === null) {
+            return null;
+          }
+          if (cached) {
+            return cached;
+          }
+
+          var image = new Image();
+          image.onload = function() {
+            if (network && network.redraw) {
+              network.redraw();
+            }
+          };
+          image.onerror = function() {
+            svgImageCache[nodeId] = null;
+          };
+          svgImageCache[nodeId] = image;
+          image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+          return image;
+        }
+
+        function tintHexColour(hexColour, amount) {
+          var match = String(hexColour || "").trim().match(/^#([0-9a-fA-F]{6})$/);
+          if (!match) {
+            return "#ffffff";
+          }
+          var hex = match[1];
+          var r = parseInt(hex.slice(0, 2), 16);
+          var g = parseInt(hex.slice(2, 4), 16);
+          var b = parseInt(hex.slice(4, 6), 16);
+          var mix = Math.max(0, Math.min(1, Number(amount)));
+          r = Math.round(r + (255 - r) * mix);
+          g = Math.round(g + (255 - g) * mix);
+          b = Math.round(b + (255 - b) * mix);
+          return "rgb(" + r + "," + g + "," + b + ")";
         }
 
         nodes.update(allNodes.map(applyCollisionNodeStyle));
@@ -927,6 +1014,9 @@ def inject_controls(
           html += "<h2>" + escapeHtml(nodeId) + " " + renderConceptText(concept.label) + "</h2>";
           if (layerParts.length > 0) {
             html += "<p>" + layerParts.join(" - ") + "</p>";
+          }
+          if (concept.svg_graphic) {
+            html += '<div class="concept-graphic">' + concept.svg_graphic + "</div>";
           }
           html += "<hr>";
           if (concept.body) {

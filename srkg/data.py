@@ -15,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 
 from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
+from srkg.concept_svg_graphics import createSvgGraphic
 
 
 def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
@@ -24,6 +25,7 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
         cid = str(row.get("id", "")).strip()
         if not cid:
             continue
+        svg_graphic = createSvgGraphic(cid)
         concept_data[cid] = {
             "label": str(row.get("label", "")).strip(),
             "layer": str(row.get("layer", "")).strip(),
@@ -32,6 +34,7 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
             "definition": str(row.get("definition", "")).strip(),
             "explanation": str(row.get("explanation", "")).strip(),
             "example": str(row.get("example", "")).strip(),
+            "svg_graphic": svg_graphic or "",
         }
     return concept_data
 
