@@ -262,7 +262,8 @@
         color: #111;
         display: block;
         font-family: Arial, sans-serif;
-        font-size: 28px;
+        font-size: 32px;
+        font-weight: 700;
         line-height: 1.2;
         overflow-wrap: anywhere;
         position: absolute;
@@ -273,7 +274,7 @@
           -1px 1px 0 rgba(255,255,255,0.9),
           1px 1px 0 rgba(255,255,255,0.9);
         white-space: normal;
-        width: 180px;
+        width: 250px;
       }
 
       .kg-node-label mjx-container {
@@ -674,10 +675,10 @@
             var layerRect = nodeLabelLayer.getBoundingClientRect();
             var labelCenterX = canvasRect.left - layerRect.left + dom.x;
             var labelTopY = canvasRect.top - layerRect.top + dom.y + Math.max(4, radiusPx + 3);
-            var labelWidth = 180 * labelScale;
+            var labelWidth = 250 * labelScale;
             el.style.display = "block";
             el.style.width = labelWidth + "px";
-            el.style.fontSize = (28 * labelScale) + "px";
+            el.style.fontSize = (32 * labelScale) + "px";
             el.style.left = (labelCenterX - labelWidth / 2) + "px";
             el.style.top = labelTopY + "px";
             el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
@@ -1000,9 +1001,9 @@
           if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
 
           var html = "";
-          html += "<h2>" + escapeHtml(nodeId) + "<br>" + renderConceptText(concept.label) + "</h2>";
+          html += "<h2>" + escapeHtml(nodeId) + " " + renderConceptText(concept.label) + "</h2>";
           if (layerParts.length > 0) {
-            html += "<p><b>Layer:</b> " + layerParts.join(" - ") + "</p>";
+            html += "<p>" + layerParts.join(" - ") + "</p>";
           }
           html += "<hr>";
           html += '<div class="concept-body">' + renderConceptText(concept.body) + "</div>";
@@ -1371,7 +1372,7 @@
         });
         var legend = document.getElementById("kg_legend");
         var html = "";
-        Object.keys(groups).sort(function(a,b){return Number(a)-Number(b);}).forEach(function(g) {
+        Object.keys(groups).sort(function(a,b){return Number(b)-Number(a);}).forEach(function(g) {
           var sample = allNodes.find(function(n) { return String(n.layerGroup) === String(g); });
           var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
           var sampleConcept = sample ? getConcept(sample.id) : null;

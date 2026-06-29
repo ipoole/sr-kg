@@ -13,7 +13,7 @@ they are split into separate template/static files.
 import json
 from html import escape as html_escape
 
-from srkg.config import NODE_LABEL_FONT_SIZE, NODE_LABEL_WIDTH
+from srkg.config import NODE_LABEL_FONT_SIZE, NODE_LABEL_FONT_WEIGHT, NODE_LABEL_WIDTH
 
 
 def require_html_marker(html_text: str, marker: str) -> None:
@@ -247,6 +247,7 @@ def inject_controls(
         display: block;
         font-family: Arial, sans-serif;
         font-size: __NODE_LABEL_FONT_SIZE__px;
+        font-weight: __NODE_LABEL_FONT_WEIGHT__;
         line-height: 1.2;
         overflow-wrap: anywhere;
         position: absolute;
@@ -913,9 +914,9 @@ def inject_controls(
           if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
 
           var html = "";
-          html += "<h2>" + escapeHtml(nodeId) + "<br>" + renderConceptText(concept.label) + "</h2>";
+          html += "<h2>" + escapeHtml(nodeId) + " " + renderConceptText(concept.label) + "</h2>";
           if (layerParts.length > 0) {
-            html += "<p><b>Layer:</b> " + layerParts.join(" - ") + "</p>";
+            html += "<p>" + layerParts.join(" - ") + "</p>";
           }
           html += "<hr>";
           html += '<div class="concept-body">' + renderConceptText(concept.body) + "</div>";
@@ -1284,7 +1285,7 @@ def inject_controls(
         });
         var legend = document.getElementById("kg_legend");
         var html = "";
-        Object.keys(groups).sort(function(a,b){return Number(a)-Number(b);}).forEach(function(g) {
+        Object.keys(groups).sort(function(a,b){return Number(b)-Number(a);}).forEach(function(g) {
           var sample = allNodes.find(function(n) { return String(n.layerGroup) === String(g); });
           var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
           var sampleConcept = sample ? getConcept(sample.id) : null;
@@ -1325,6 +1326,7 @@ def inject_controls(
 
     css = css.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     css = css.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
+    css = css.replace("__NODE_LABEL_FONT_WEIGHT__", str(NODE_LABEL_FONT_WEIGHT))
 
     for marker in ("</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)
