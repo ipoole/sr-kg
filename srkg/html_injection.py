@@ -312,6 +312,13 @@ def inject_controls(
         margin: 0 0 0.6em;
     }
 
+    #info_panel h3 {
+        font-size: 1.05em;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 1em 0 0.35em;
+    }
+
     #info_panel mjx-container[display="true"] {
         overflow-x: auto;
         overflow-y: hidden;
@@ -793,7 +800,10 @@ def inject_controls(
             concept.label || "",
             concept.layer || "",
             concept.layer_title || "",
-            concept.body || ""
+            concept.body || "",
+            concept.definition || "",
+            concept.explanation || "",
+            concept.example || ""
           ].join(" ").toLowerCase();
         }
 
@@ -919,7 +929,19 @@ def inject_controls(
             html += "<p>" + layerParts.join(" - ") + "</p>";
           }
           html += "<hr>";
-          html += '<div class="concept-body">' + renderConceptText(concept.body) + "</div>";
+          if (concept.body) {
+            html += "<h3>Concept</h3>";
+            html += '<div class="concept-body">' + renderConceptText(concept.body) + "</div>";
+          }
+          [
+            ["Definition", concept.definition],
+            ["Explanation", concept.explanation],
+            ["Example", concept.example]
+          ].forEach(function(section) {
+            if (!section[1]) { return; }
+            html += "<h3>" + section[0] + "</h3>";
+            html += '<div class="concept-body">' + renderConceptText(section[1]) + "</div>";
+          });
           document.getElementById("info_panel").innerHTML = html;
           typesetInfoPanel();
         }
@@ -1023,7 +1045,10 @@ def inject_controls(
               concept.label || "",
               concept.layer || "",
               concept.layer_title || "",
-              concept.body || ""
+              concept.body || "",
+              concept.definition || "",
+              concept.explanation || "",
+              concept.example || ""
             ].join(" ").toLowerCase();
             if (q && !haystack.includes(q)) { return; }
 

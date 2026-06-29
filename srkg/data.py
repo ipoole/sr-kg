@@ -29,6 +29,9 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
             "layer": str(row.get("layer", "")).strip(),
             "layer_title": str(row.get("layer_title", "")).strip(),
             "body": str(row.get("body", "")),
+            "definition": str(row.get("definition", "")).strip(),
+            "explanation": str(row.get("explanation", "")).strip(),
+            "example": str(row.get("example", "")).strip(),
         }
     return concept_data
 
