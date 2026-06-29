@@ -113,7 +113,7 @@ def _svg(node_id: str, title: str, body: list[str], defs: list[str] | None = Non
 
 def _axis_arrow_defs(node_id: str, colour: str = BLACK) -> tuple[str, list[str]]:
     marker_id = f"{_sid(node_id)}_axis_arrow"
-    return marker_id, [_arrow_marker(marker_id, colour=colour, size=9)]
+    return marker_id, [_arrow_marker(marker_id, colour=colour, size=6)]
 
 
 def _draw_axes(
@@ -173,29 +173,30 @@ def create_1_1_principle_of_relativity() -> str:
     node_id = "1.1"
     marker_id, defs = _axis_arrow_defs(node_id, BLACK)
     v_marker = f"{_sid(node_id)}_v_arrow"
-    defs.append(_arrow_marker(v_marker, colour=BLUE, size=9))
+    defs.append(_arrow_marker(v_marker, colour=BLUE, size=6))
 
     body: list[str] = []
 
-    # Left frame S
-    body.extend(_draw_axes(110, 330, 115, 115, marker_id, x_label="x", y_label="y", stroke_width=4))
-    body.append(_text(88, 365, "S", font_size=42, font_family=FONT, font_style="italic", fill=BLACK))
+    # Two equal "laboratory frames" with identical axes and identical internal
+    # straight experiment traces. Their offset and the single arrow carry the
+    # relative-motion idea; identical structure carries the symmetry idea.
+    for ox, oy, frame_label in [(94, 368, "S"), (308, 244, "S′")]:
+        body.append(_rect(ox - 34, oy - 118, 170, 148, rx=18,
+                          fill=VERY_LIGHT_GREY, opacity="0.62", stroke=LIGHT_GREY,
+                          stroke_width=2))
+        body.extend(_draw_axes(ox, oy, 112, 104, marker_id,
+                               x_label="x", y_label="y", stroke_width=5))
+        body.append(_line(ox + 26, oy - 35, ox + 88, oy - 78,
+                          stroke=AMBER, stroke_width=7, stroke_linecap="round"))
+        body.append(_circle(ox + 55, oy - 55, 10, fill=AMBER, stroke=BLACK,
+                            stroke_width=2))
+        body.append(_text(ox - 24, oy + 42, frame_label, font_size=50,
+                          font_family=FONT, font_style="italic", fill=BLACK))
 
-    # Right frame S' - slightly shifted, but same geometry.
-    body.extend(_draw_axes(305, 245, 115, 115, marker_id, x_label="x′", y_label="y′", stroke_width=4))
-    body.append(_text(278, 280, "S′", font_size=42, font_family=FONT, font_style="italic", fill=BLACK))
-
-    # Relative uniform motion arrow.
-    body.append(_line(190, 175, 325, 175, stroke=BLUE, stroke_width=5,
+    body.append(_line(168, 176, 344, 176, stroke=BLUE, stroke_width=7,
                       stroke_linecap="round", marker_end=f"url(#{v_marker})"))
-    body.append(_text(250, 155, "v", font_size=40, font_family=FONT,
+    body.append(_text(256, 148, "v", font_size=46, font_family=FONT,
                       font_style="italic", fill=BLUE, text_anchor="middle"))
-
-    # Subtle matching glyphs: identical small straight worldlines in both frames.
-    body.append(_line(145, 305, 205, 275, stroke=AMBER, stroke_width=4,
-                      stroke_linecap="round"))
-    body.append(_line(340, 220, 400, 190, stroke=AMBER, stroke_width=4,
-                      stroke_linecap="round"))
 
     return _svg(node_id, "Principle of relativity", body, defs)
 
@@ -225,36 +226,34 @@ def create_1_2_constancy_of_speed_of_light() -> str:
     """
     node_id = "1.2"
     ray_marker = f"{_sid(node_id)}_ray_arrow"
-    defs = [_arrow_marker(ray_marker, colour=BLUE, size=9)]
+    defs = [_arrow_marker(ray_marker, colour=BLUE, size=6)]
 
     body: list[str] = []
 
-    # Circular wavefronts.
-    for r, sw in [(62, 3.5), (118, 3.5), (174, 3.5)]:
-        body.append(_circle(CX, CY, r, fill="none", stroke=BLUE,
-                            stroke_width=sw, opacity="0.95"))
+    # Concentric equal-centre wavefronts are the whole silhouette.
+    body.append(_circle(CX, CY, 186, fill="#f4f8ff", stroke="none"))
+    for r, sw in [(66, 7), (124, 6), (182, 5)]:
+        body.append(_circle(CX, CY, r, fill="none", stroke=BLUE, stroke_width=sw))
 
-    # Central light flash.
-    body.append(_circle(CX, CY, 17, fill=AMBER, stroke=BLACK, stroke_width=2.5))
+    # Central source dot and flash.
     body.append(_path(
-        "M256,220 L266,250 L298,250 L272,268 L282,300 L256,280 L230,300 L240,268 L214,250 L246,250 Z",
-        fill=AMBER,
-        opacity="0.22",
-        stroke="none",
+        "M256,209 L269,239 L302,240 L276,260 L286,292 L256,274 L226,292 L236,260 L210,240 L243,239 Z",
+        fill=AMBER, opacity="0.34", stroke="none",
     ))
+    body.append(_circle(CX, CY, 21, fill=AMBER, stroke=BLACK, stroke_width=3))
 
-    # Two light-speed rays labelled c.
-    for angle, label_offset in [(28, (18, -10)), (152, (-28, -10))]:
+    # Two rays in deliberately different directions, both labelled c.
+    for angle, label_offset in [(24, (22, -12)), (122, (-10, -24))]:
         a = radians(angle)
-        x1 = CX + 32 * cos(a)
-        y1 = CY - 32 * sin(a)
-        x2 = CX + 202 * cos(a)
-        y2 = CY - 202 * sin(a)
-        body.append(_line(x1, y1, x2, y2, stroke=BLUE, stroke_width=4.5,
+        x1 = CX + 38 * cos(a)
+        y1 = CY - 38 * sin(a)
+        x2 = CX + 214 * cos(a)
+        y2 = CY - 214 * sin(a)
+        body.append(_line(x1, y1, x2, y2, stroke=BLUE, stroke_width=7,
                           stroke_linecap="round", marker_end=f"url(#{ray_marker})"))
-        lx = CX + 140 * cos(a) + label_offset[0]
-        ly = CY - 140 * sin(a) + label_offset[1]
-        body.append(_text(lx, ly, "c", font_size=38, font_family=FONT,
+        lx = CX + 120 * cos(a) + label_offset[0]
+        ly = CY - 120 * sin(a) + label_offset[1]
+        body.append(_text(lx, ly, "c", font_size=46, font_family=FONT,
                           font_style="italic", fill=BLUE, text_anchor="middle"))
 
     return _svg(node_id, "Constancy of the speed of light", body, defs)
@@ -290,24 +289,21 @@ def create_2_1_inertial_frames() -> str:
     node_id = "2.1"
     marker_id, defs = _axis_arrow_defs(node_id, BLACK)
     v_marker = f"{_sid(node_id)}_v_arrow"
-    defs.append(_arrow_marker(v_marker, colour=GREEN, size=9))
+    defs.append(_arrow_marker(v_marker, colour=GREEN, size=6))
 
     body: list[str] = []
-    body.extend(_draw_axes(105, 390, 300, 270, marker_id, x_label="x", y_label="y", stroke_width=4.5))
+    body.extend(_draw_axes(92, 392, 330, 276, marker_id, x_label="x", y_label="y", stroke_width=7))
 
-    # Straight inertial trajectory.
-    body.append(_line(145, 330, 370, 170, stroke=GREEN, stroke_width=5,
+    # One straight horizontal free-particle track: no curvature, no force cue.
+    y_track = 250
+    body.append(_line(132, y_track, 390, y_track, stroke=VERY_LIGHT_GREY,
+                      stroke_width=20, stroke_linecap="round", opacity="0.7"))
+    body.append(_line(132, y_track, 390, y_track, stroke=GREEN, stroke_width=9,
                       stroke_linecap="round", marker_end=f"url(#{v_marker})"))
-    body.append(_circle(185, 302, 12, fill=GREEN, stroke=BLACK, stroke_width=2))
-    body.append(_text(310, 195, "v", font_size=40, font_family=FONT,
+    for x in [170, 224, 278]:
+        body.append(_circle(x, y_track, 11, fill=GREEN, stroke=BLACK, stroke_width=2))
+    body.append(_text(334, y_track - 28, "v", font_size=46, font_family=FONT,
                       font_style="italic", fill=GREEN))
-
-    # Very light construction line behind the path.
-    body.append(_line(145, 330, 370, 170, stroke=VERY_LIGHT_GREY, stroke_width=12,
-                      stroke_linecap="round", opacity="0.35"))
-
-    # Reorder so the pale line sits behind; easiest is explicit body order.
-    body = body[:4] + [body[-1]] + body[4:-1]
 
     return _svg(node_id, "Inertial frames", body, defs)
 
@@ -338,20 +334,25 @@ def create_2_2_spacetime_event() -> str:
     marker_id, defs = _axis_arrow_defs(node_id, BLACK)
 
     body: list[str] = []
-    ox, oy = 105, 395
-    px, py = 300, 205
+    ox, oy = 90, 402
+    px, py = 326, 174
 
-    body.extend(_draw_axes(ox, oy, 300, 280, marker_id, x_label="x", y_label="ct", stroke_width=4.5))
+    body.extend(_draw_axes(ox, oy, 328, 300, marker_id, x_label="x", y_label="ct", stroke_width=7))
 
-    # Coordinate projections.
-    body.append(_line(px, py, px, oy, stroke=LIGHT_GREY, stroke_width=3,
-                      stroke_dasharray="8 8", stroke_linecap="round"))
-    body.append(_line(ox, py, px, py, stroke=LIGHT_GREY, stroke_width=3,
-                      stroke_dasharray="8 8", stroke_linecap="round"))
+    # A coordinate "corner" from the axes to the event point.
+    body.append(_line(px, py, px, oy, stroke=LIGHT_GREY, stroke_width=5,
+                      stroke_dasharray="9 9", stroke_linecap="round"))
+    body.append(_line(ox, py, px, py, stroke=LIGHT_GREY, stroke_width=5,
+                      stroke_dasharray="9 9", stroke_linecap="round"))
+    body.append(_rect(px - 9, oy - 9, 18, 18, rx=3, fill=VERY_LIGHT_GREY,
+                      stroke="none"))
+    body.append(_rect(ox - 9, py - 9, 18, 18, rx=3, fill=VERY_LIGHT_GREY,
+                      stroke="none"))
 
-    # Event point.
-    body.append(_circle(px, py, 17, fill=RED, stroke=BLACK, stroke_width=2.5))
-    body.append(_text(px + 25, py - 20, "P", font_size=42, font_family=FONT,
+    # The single event dominates the diagram.
+    body.append(_circle(px, py, 25, fill=RED, stroke=BLACK, stroke_width=3.5))
+    body.append(_circle(px, py, 7, fill="white", stroke="none", opacity="0.8"))
+    body.append(_text(px + 34, py - 24, "P", font_size=50, font_family=FONT,
                       font_style="italic", fill=RED))
 
     return _svg(node_id, "Spacetime event", body, defs)
@@ -386,44 +387,40 @@ def create_2_3_principle_of_locality() -> str:
     local_marker_blue = f"{_sid(node_id)}_blue_arrow"
     defs = [
         _arrow_marker(axis_marker, colour=GREY, size=8),
-        _arrow_marker(local_marker_green, colour=GREEN, size=9),
-        _arrow_marker(local_marker_blue, colour=BLUE, size=9),
+        _arrow_marker(local_marker_green, colour=GREEN, size=6),
+        _arrow_marker(local_marker_blue, colour=BLUE, size=6),
     ]
 
     body: list[str] = []
 
     # Faint spacetime axes as context, not the main subject.
-    ox, oy = 105, 392
-    body.append(_line(ox, oy, 405, oy, stroke=LIGHT_GREY, stroke_width=3.5,
+    ox, oy = 96, 400
+    body.append(_line(ox, oy, 415, oy, stroke=LIGHT_GREY, stroke_width=4,
                       stroke_linecap="round", marker_end=f"url(#{axis_marker})"))
-    body.append(_line(ox, oy, ox, 120, stroke=LIGHT_GREY, stroke_width=3.5,
+    body.append(_line(ox, oy, ox, 112, stroke=LIGHT_GREY, stroke_width=4,
                       stroke_linecap="round", marker_end=f"url(#{axis_marker})"))
     body.append(_text(424, 402, "x", font_size=32, font_family=FONT,
                       font_style="italic", fill=GREY))
-    body.append(_text(82, 105, "ct", font_size=32, font_family=FONT,
+    body.append(_text(73, 101, "ct", font_size=32, font_family=FONT,
                       font_style="italic", fill=GREY))
 
-    # Local neighbourhood.
-    body.append(_circle(CX, CY, 88, fill=BLUE, opacity="0.06", stroke=BLUE,
-                        stroke_width=3, stroke_dasharray="10 8"))
+    # Local neighbourhood: a small bounded region around one event.
+    body.append(_circle(CX, CY, 116, fill="#edf3ff", stroke=BLUE,
+                        stroke_width=4, stroke_dasharray="12 9"))
 
-    # Short local arrows meeting at the same spacetime event.
-    body.append(_line(CX - 75, CY + 45, CX - 18, CY + 12, stroke=GREEN,
-                      stroke_width=5, stroke_linecap="round",
-                      marker_end=f"url(#{local_marker_green})"))
-    body.append(_line(CX + 78, CY + 38, CX + 19, CY + 10, stroke=BLUE,
-                      stroke_width=5, stroke_linecap="round",
-                      marker_end=f"url(#{local_marker_blue})"))
-    body.append(_line(CX - 10, CY - 78, CX - 2, CY - 24, stroke=AMBER,
-                      stroke_width=5, stroke_linecap="round",
-                      marker_end=f"url(#{local_marker_green})"))
+    # Short local arrows from nearby directions. All terminate at the same event.
+    for x1, y1, x2, y2, colour, marker in [
+        (CX - 96, CY, CX - 31, CY, GREEN, local_marker_green),
+        (CX + 96, CY, CX + 31, CY, BLUE, local_marker_blue),
+        (CX, CY - 96, CX, CY - 31, AMBER, local_marker_green),
+        (CX, CY + 96, CX, CY + 31, GREY, local_marker_blue),
+    ]:
+        body.append(_line(x1, y1, x2, y2, stroke=colour, stroke_width=7,
+                          stroke_linecap="round", marker_end=f"url(#{marker})"))
 
     # The event where local quantities meet.
-    body.append(_circle(CX, CY, 19, fill=RED, stroke=BLACK, stroke_width=2.5))
-    body.append(_circle(CX, CY, 5, fill="white", stroke="none"))
-
-    # A far-away grey dot is deliberately not connected: no action at a distance.
-    body.append(_circle(410, 175, 10, fill=LIGHT_GREY, stroke=GREY, stroke_width=2, opacity="0.55"))
+    body.append(_circle(CX, CY, 24, fill=RED, stroke=BLACK, stroke_width=3))
+    body.append(_circle(CX, CY, 7, fill="white", stroke="none"))
 
     return _svg(node_id, "Principle of locality", body, defs)
 

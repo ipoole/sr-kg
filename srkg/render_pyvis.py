@@ -23,6 +23,8 @@ from pyvis.network import Network
 from srkg.config import (
     EDGE_WIDTH,
     LAYER_COLOURS,
+    NODE_CIRCLE_BASE_SIZE,
+    NODE_CIRCLE_IMPORTANCE_SCALE,
     NODE_COLLISION_HEIGHT,
     NODE_COLLISION_WIDTH,
 )
@@ -166,7 +168,7 @@ def write_pyvis_html(
         title = f"{cid} {html.escape(label)}"
 
         importance = incoming.get(cid, 0)
-        size = 40 + 4.0 * math.sqrt(importance + 1)
+        size = NODE_CIRCLE_BASE_SIZE + NODE_CIRCLE_IMPORTANCE_SCALE * math.sqrt(importance + 1)
         x_pos, y_pos = hierarchy_positions.get(cid, (0, 0))
 
         net.add_node(

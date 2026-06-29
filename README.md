@@ -169,15 +169,14 @@ LAYOUT_Y_SPACING = 320
 LAYOUT_ROW_STAGGER = 70
 NODE_COLLISION_WIDTH = 280
 NODE_COLLISION_HEIGHT = 170
-NODE_LABEL_WIDTH = 180
-NODE_LABEL_FONT_SIZE = 28
+NODE_CIRCLE_BASE_SIZE = 48
+NODE_CIRCLE_IMPORTANCE_SCALE = 4.0
+NODE_LABEL_WIDTH = 250
+NODE_LABEL_FONT_SIZE = 32
+NODE_LABEL_FONT_WEIGHT = 700
 ```
 
-Circle size is controlled where nodes are added in `srkg/render_pyvis.py`:
-
-```python
-size = 50 + 4.0 * math.sqrt(importance + 1)
-```
+Circle radius is computed from `NODE_CIRCLE_BASE_SIZE` plus `NODE_CIRCLE_IMPORTANCE_SCALE * sqrt(incoming_edge_count + 1)`.
 
 The physics settings are in the `net.set_options(...)` block in `srkg/render_pyvis.py`. They control the initial relaxation only; the generated viewer freezes the settled layout before normal interaction.
 
