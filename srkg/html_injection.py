@@ -310,13 +310,13 @@ def inject_controls(
         display: flex;
         justify-content: center;
         margin: 0.1em 0 0.1em;
-        overflow: hidden;
+        overflow: visible;
     }
 
     #info_panel .concept-graphic svg {
         display: block;
         height: auto;
-        margin: -42px 0;
+        margin: -30px 0 -38px;
         max-height: 300px;
         max-width: min(100%, 380px);
         width: 100%;
@@ -636,7 +636,8 @@ def inject_controls(
             var fill = color.background || "#999999";
             var border = color.border || "#333333";
             var concept = getConcept(node.id) || {};
-            var svgImage = concept.svg_graphic ? getSvgNodeImage(node.id, concept.svg_graphic) : null;
+            var svgIcon = concept.svg_icon || concept.svg_graphic || "";
+            var svgImage = svgIcon ? getSvgNodeImage(node.id, svgIcon) : null;
 
             ctx.save();
             ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
@@ -1015,8 +1016,9 @@ def inject_controls(
           if (layerParts.length > 0) {
             html += "<p>" + layerParts.join(" - ") + "</p>";
           }
-          if (concept.svg_graphic) {
-            html += '<div class="concept-graphic">' + concept.svg_graphic + "</div>";
+          var svgDetail = concept.svg_detail || concept.svg_graphic || concept.svg_icon || "";
+          if (svgDetail) {
+            html += '<div class="concept-graphic">' + svgDetail + "</div>";
           }
           html += "<hr>";
           if (concept.body) {

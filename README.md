@@ -47,6 +47,7 @@ srkg/
   pipeline.py              End-to-end generation workflow
 tools/
   generate_pyvis.py        Command-line entry point
+  show_graphics.py         SVG graphics review sheet generator
 ```
 
 ## Setup
@@ -75,6 +76,20 @@ MathJax is loaded from a CDN in the generated HTML, so equation rendering requir
 There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against `data/nodes.csv`, `data/knowledge_edges.csv`, and `data/edges_key.csv`.
 
 If `--edge-key` is omitted, the generator automatically looks for `edges_key.csv` beside the selected edge file.
+
+## Review Concept Graphics
+
+Generate a standalone HTML sheet showing icon and detail SVGs side by side:
+
+```bash
+python tools/show_graphics.py 7.6
+python tools/show_graphics.py '7.*'
+python tools/show_graphics.py '*.*'
+```
+
+The default output is `/tmp/srkg-graphics-review.html`. Quote wildcard patterns so the shell does not expand them as filenames. Use `--out path/to/review.html` to choose a different output path.
+
+The review sheet also shows the `icon_caption` and `detail_caption` fields from `data/concept_graphic_designs.csv`, which describe the intended mnemonic and teaching point for each graphic.
 
 ## Viewer Features
 
@@ -127,6 +142,9 @@ The lower-level modules are intentionally separated so the data, edge semantics,
 ```text
 tools/generate_pyvis.py
   -> srkg.pipeline
+
+tools/show_graphics.py
+  -> srkg.concept_svg_graphics
 
 srkg.pipeline
   -> srkg.data
