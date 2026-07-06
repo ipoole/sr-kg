@@ -63,7 +63,7 @@ def generate_viewer(
         )
         more = "" if len(invalid_edges) <= 5 else f"; ... {len(invalid_edges) - 5} more"
         raise ValueError(
-            "knowledge_edges.csv contains edges with endpoints not present in nodes.csv: "
+            "edges.csv contains edges with endpoints not present in nodes.csv: "
             f"{examples}{more}"
         )
 

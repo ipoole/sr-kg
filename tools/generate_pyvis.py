@@ -2,7 +2,7 @@
 """
 generate_pyvis.py
 
-Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and knowledge_edges.csv.
+Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and edges.csv.
 
 This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
@@ -10,7 +10,7 @@ the generation workflow to srkg.pipeline, and prints a short summary.
 Expected nodes.csv columns:
     id,label,layer,layer_title,body
 
-Expected knowledge_edges.csv columns:
+Expected edges.csv columns:
     source,target,relation,note
 
 Expected edges_key.csv columns:
@@ -19,7 +19,7 @@ Expected edges_key.csv columns:
 Only the documented columns are supported.
 
 Usage:
-    python generate_pyvis.py --nodes nodes.csv --edges knowledge_edges.csv --out interactive_graph.html
+    python generate_pyvis.py --nodes data/nodes.csv --edges data/edges.csv --out interactive_graph.html
 
 Dependencies:
     pip install pandas networkx pyvis
@@ -40,8 +40,8 @@ from srkg.pipeline import generate_viewer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nodes", default="nodes.csv", help="Path to nodes.csv")
-    parser.add_argument("--edges", default="data/knowledge_edges.csv", help="Path to knowledge_edges.csv")
+    parser.add_argument("--nodes", default="data/nodes.csv", help="Path to nodes.csv")
+    parser.add_argument("--edges", default="data/edges.csv", help="Path to edges.csv")
     parser.add_argument(
         "--edge-key",
         default=None,

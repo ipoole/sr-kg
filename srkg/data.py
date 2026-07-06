@@ -47,7 +47,7 @@ def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
     missing = set(EDGE_COLUMNS) - set(edges_df.columns)
     if missing:
         missing_cols = ", ".join(sorted(missing))
-        raise ValueError(f"knowledge_edges.csv must contain columns: {missing_cols}")
+        raise ValueError(f"edges.csv must contain columns: {missing_cols}")
 
     edges_df = edges_df.copy()
     edges_df["relation"] = edges_df["relation"].replace("", "REFERENCE")

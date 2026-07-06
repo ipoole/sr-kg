@@ -28,7 +28,7 @@ The project reads concept data from CSV files and generates a standalone interac
 ```text
 data/
   nodes.csv                Concept metadata and descriptions
-  knowledge_edges.csv      Concept relationships with relation types and notes
+  edges.csv                Concept relationships with relation types and notes
   edges_key.csv            Edge relation meanings and direction metadata
 lib/
   vis-9.1.2/               Vendored vis-network assets used by PyVis output
@@ -63,7 +63,7 @@ python -m pip install -r requirements.txt
 ```bash
 python tools/generate_pyvis.py \
   --nodes data/nodes.csv \
-  --edges data/knowledge_edges.csv \
+  --edges data/edges.csv \
   --edge-key data/edges_key.csv \
   --out output/interactive_graph.html \
   --title "Special Relativity and Classical Fields"
@@ -73,7 +73,7 @@ Then open `output/interactive_graph.html` in a browser.
 
 MathJax is loaded from a CDN in the generated HTML, so equation rendering requires network access when viewing the file.
 
-There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against `data/nodes.csv`, `data/knowledge_edges.csv`, and `data/edges_key.csv`.
+There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against `data/nodes.csv`, `data/edges.csv`, and `data/edges_key.csv`.
 
 If `--edge-key` is omitted, the generator automatically looks for `edges_key.csv` beside the selected edge file.
 
@@ -208,7 +208,7 @@ id,label,layer,layer_title,body,definition,explanation,example
 
 `definition`, `explanation`, and `example` are optional richer-content fields. Empty values are skipped in the details panel. Older node files with only `body` still work because missing columns default to empty strings.
 
-`data/knowledge_edges.csv` expects:
+`data/edges.csv` expects:
 
 ```text
 source,target,relation,note
