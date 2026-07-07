@@ -174,23 +174,6 @@ def inject_controls(
         padding-top: 6px;
         font-size: 12px;
       }
-      #kg_recent {
-        padding-top: 4px;
-      }
-      .kg-recent-clear {
-        border: 0;
-        background: transparent;
-        color: #174ea6;
-        cursor: pointer;
-        font: inherit;
-        margin: 0;
-        padding: 0 2px;
-      }
-      .kg-recent-clear:hover,
-      .kg-recent-clear:focus {
-        text-decoration: underline;
-        outline: none;
-      }
       .kg-concept-item {
         display: block;
         width: 100%;
@@ -450,17 +433,11 @@ def inject_controls(
     <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
-      <button onclick="kgReset()">Reset</button>
       <button onclick="kgFocusSelected()">Neighbourhood</button>
       <button onclick="kgShowAll()">Show all</button>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
-      <button onclick="kgRestartLayout()">Restart layout</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <details id="kg_recent_section" class="kg-fold" hidden>
-        <summary>Recent</summary>
-        <div id="kg_recent"></div>
-      </details>
       <details id="kg_legend_section" class="kg-fold" open>
         <summary>Layers</summary>
         <div id="kg_legend"></div>
@@ -511,8 +488,6 @@ def inject_controls(
         var svgImageCache = {};
         var layoutFinalized = false;
         var layoutFinalizeTimer = null;
-        var recentConceptIds = [];
-        var recentConceptLimit = 6;
 
         /*
          * Custom node rendering
@@ -725,7 +700,7 @@ def inject_controls(
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
         Object.keys(edgeKey).forEach(function(relation) {
-          enabledEdgeRelations[relation] = true;
+          enabledEdgeRelations[relation] = edgeKey[relation].directed !== false;
         });
 
         function htmlToText(s) {
@@ -811,52 +786,6 @@ def inject_controls(
           window.history.pushState({nodeId: String(nodeId)}, "", hash);
         }
 
-        function rememberConcept(nodeId) {
-          var id = String(nodeId);
-          recentConceptIds = recentConceptIds.filter(function(existingId) {
-            return existingId !== id;
-          });
-          recentConceptIds.push(id);
-          if (recentConceptIds.length > recentConceptLimit) {
-            recentConceptIds = recentConceptIds.slice(recentConceptIds.length - recentConceptLimit);
-          }
-          renderRecentConcepts();
-        }
-
-        function renderRecentConcepts() {
-          var container = document.getElementById("kg_recent");
-          var section = document.getElementById("kg_recent_section");
-          if (!container) { return; }
-
-          if (recentConceptIds.length === 0) {
-            container.innerHTML = "";
-            if (section) { section.hidden = true; }
-            return;
-          }
-
-          if (section) {
-            if (section.hidden) { section.open = true; }
-            section.hidden = false;
-          }
-
-          var html = '<button type="button" class="kg-recent-clear" onclick="kgClearRecent()">Clear</button>';
-          recentConceptIds.forEach(function(id) {
-            var concept = getConcept(id) || {};
-            var activeClass = id === activeNodeId ? " active" : "";
-            html += '<button type="button" class="kg-concept-item' + activeClass +
-              '" data-recent-concept-id="' + escapeHtml(id) + '">' +
-              '<span class="kg-concept-id">' + escapeHtml(id) + '</span> ' +
-              escapeHtml(concept.label || "") +
-              "</button>";
-          });
-          container.innerHTML = html;
-        }
-
-        window.kgClearRecent = function() {
-          recentConceptIds = [];
-          renderRecentConcepts();
-        };
-
         function conceptIdParts(id) {
           return String(id).split(".").map(function(part) {
             var n = Number(part);
@@ -930,9 +859,10 @@ def inject_controls(
 
           relations.forEach(function(relation) {
             var inputId = "kg_edge_filter_" + relation.replace(/[^a-zA-Z0-9_-]/g, "_");
+            var checked = enabledEdgeRelations[relation] !== false ? " checked" : "";
             html += '<label class="kg-edge-filter" for="' + escapeHtml(inputId) + '">' +
               '<input type="checkbox" id="' + escapeHtml(inputId) +
-              '" data-edge-relation="' + escapeHtml(relation) + '" checked>' +
+              '" data-edge-relation="' + escapeHtml(relation) + '"' + checked + '>' +
               '<span class="kg-edge-filter-swatch" style="background:' +
               escapeHtml(relationColour(relation)) + '"></span>' +
               '<span class="kg-edge-filter-label">' + escapeHtml(relation) + "</span>" +
@@ -1108,9 +1038,6 @@ def inject_controls(
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
           setInfoPanelVisible(true);
-          if (!options.skipRecent) {
-            rememberConcept(nodeId);
-          }
           if (!options.skipHistory) {
             pushConceptHistory(nodeId);
           }
@@ -1154,14 +1081,6 @@ def inject_controls(
           document.getElementById("kg_concept_list").innerHTML = html;
         }
 
-        window.kgRestartLayout = function() {
-          network.setOptions({
-            physics: {enabled: false}
-          });
-          network.fit({animation: true});
-          document.getElementById("kg_status").innerText = "Initial compact layout restored.";
-        };
-
         window.kgReset = function(preserveStatus) {
           finalizeLayoutForInteraction();
           network.unselectAll();
@@ -1183,7 +1102,6 @@ def inject_controls(
             document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           }
           setActiveConceptItem(null);
-          renderRecentConcepts();
         };
 
         window.kgShowAll = window.kgReset;
@@ -1370,14 +1288,6 @@ def inject_controls(
           focusConcept(item.getAttribute("data-concept-id"), "Selected");
         });
 
-        document.getElementById("kg_recent").addEventListener("click", function(e) {
-          var item = e.target.closest(".kg-concept-item[data-recent-concept-id]");
-          if (!item) { return; }
-
-          e.preventDefault();
-          focusConcept(item.getAttribute("data-recent-concept-id"), "Selected");
-        });
-
         document.getElementById("info_panel").addEventListener("click", function(e) {
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
@@ -1408,6 +1318,12 @@ def inject_controls(
         buildNodeLabels();
         buildEdgeFilters();
         buildConceptList("");
+        edges.update(allEdges.map(function(e) {
+          var o = Object.assign({}, e);
+          o.hidden = !edgeRelationEnabled(e);
+          return o;
+        }));
+        allEdges = edges.get();
 
         var initialNodeId = conceptIdFromHash(window.location.hash);
         if (initialNodeId && getConcept(initialNodeId)) {

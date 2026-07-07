@@ -8,8 +8,7 @@ This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
 
 Expected nodes.csv columns:
-    id,label,layer,layer_title,body_orig,definition_orig,explanation_orig,example_orig,
-    definition_new,derivation_new,explanation_new
+    id,label,layer,layer_title,definition_new,derivation_new,explanation_new
 
 Expected edges.csv columns:
     source,target,relation,note
@@ -37,6 +36,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from srkg.pipeline import generate_viewer
+from srkg.dag import format_dag_reports, load_dag_reports
 
 
 def main():
@@ -57,7 +57,40 @@ def main():
         default=["Knowledge Graph"],
         help="Title shown at the top of the viewer",
     )
+    parser.add_argument(
+        "--dag-report",
+        action="store_true",
+        help=(
+            "Print DAG diagnostics for directed relations before writing "
+            "the viewer."
+        ),
+    )
+    parser.add_argument(
+        "--dag-report-only",
+        action="store_true",
+        help="Print DAG diagnostics and skip HTML generation.",
+    )
+    parser.add_argument(
+        "--dag-relations",
+        nargs="+",
+        default=None,
+        help=(
+            "Relations to include in DAG diagnostics. Defaults to all "
+            "relations marked directed in edges_key.csv."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.dag_report or args.dag_report_only:
+        reports = load_dag_reports(
+            nodes_path=args.nodes,
+            edges_path=args.edges,
+            edge_key_path=args.edge_key,
+            relations=args.dag_relations,
+        )
+        print(format_dag_reports(reports))
+        if args.dag_report_only:
+            return
 
     out_path, node_count, edge_count, edge_key_path, edge_key_count = generate_viewer(
         nodes_path=args.nodes,
