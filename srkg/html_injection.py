@@ -888,10 +888,9 @@ def inject_controls(
             concept.label || "",
             concept.layer || "",
             concept.layer_title || "",
-            concept.body || "",
-            concept.definition || "",
-            concept.explanation || "",
-            concept.example || ""
+            concept.definition_new || "",
+            concept.derivation_new || "",
+            concept.explanation_new || ""
           ].join(" ").toLowerCase();
         }
 
@@ -1021,14 +1020,10 @@ def inject_controls(
             html += '<div class="concept-graphic">' + svgDetail + "</div>";
           }
           html += "<hr>";
-          if (concept.body) {
-            html += "<h3>Concept</h3>";
-            html += '<div class="concept-body">' + renderConceptText(concept.body) + "</div>";
-          }
           [
-            ["Definition", concept.definition],
-            ["Explanation", concept.explanation],
-            ["Example", concept.example]
+            ["Definition", concept.definition_new],
+            ["Derivation", concept.derivation_new],
+            ["Explanation", concept.explanation_new]
           ].forEach(function(section) {
             if (!section[1]) { return; }
             html += "<h3>" + section[0] + "</h3>";
@@ -1137,10 +1132,9 @@ def inject_controls(
               concept.label || "",
               concept.layer || "",
               concept.layer_title || "",
-              concept.body || "",
-              concept.definition || "",
-              concept.explanation || "",
-              concept.example || ""
+              concept.definition_new || "",
+              concept.derivation_new || "",
+              concept.explanation_new || ""
             ].join(" ").toLowerCase();
             if (q && !haystack.includes(q)) { return; }
 

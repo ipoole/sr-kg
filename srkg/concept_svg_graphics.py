@@ -1056,6 +1056,46 @@ def create_4_5_momentum_four_vector(variant: str = "icon") -> str:
     return _svg(node_id, "Momentum four-vector", body, defs)
 
 
+def create_4_6_mass_energy_equivalence(variant: str = "icon") -> str:
+    """Mass-energy equivalence: rest energy from the four-momentum norm."""
+    node_id = "4.6"
+    body: list[str] = []
+
+    tile_y = 104 if variant == "detail" else 162
+    body.append(_rect(74, tile_y, 364, 142, rx=18, fill="#f7f7f7",
+                      stroke=BLACK, stroke_width=4))
+    body.append(_text(256, tile_y + 92, "E=mc", font_size=72, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+    body.append(_text(364, tile_y + 60, "2", font_size=36, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+
+    if variant == "detail":
+        body.append(_line(256, 264, 256, 310, stroke=LIGHT_GREY, stroke_width=5,
+                          stroke_linecap="round"))
+        body.append(_rect(88, 326, 336, 70, rx=10, fill="#ffffff",
+                          stroke=BLACK, stroke_width=3))
+        body.append(_math_text(158, 372, "p", sub="μ", font_size=31,
+                               font_family=FONT, font_style="italic",
+                               fill=GREY, text_anchor="middle"))
+        body.append(_math_text(209, 372, "p", sup="μ", font_size=31,
+                               font_family=FONT, font_style="italic",
+                               fill=GREY, text_anchor="middle"))
+        body.append(_text(256, 372, "=", font_size=31, font_family=FONT,
+                          fill=GREY, text_anchor="middle"))
+        body.append(_text(309, 372, "m", font_size=31, font_family=FONT,
+                          font_style="italic", fill=GREY, text_anchor="middle"))
+        body.append(_text(326, 357, "2", font_size=19, font_family=FONT,
+                          font_style="italic", fill=GREY, text_anchor="middle"))
+        body.append(_text(350, 372, "c", font_size=31, font_family=FONT,
+                          font_style="italic", fill=GREY, text_anchor="middle"))
+        body.append(_text(366, 357, "2", font_size=19, font_family=FONT,
+                          font_style="italic", fill=GREY, text_anchor="middle"))
+        body.append(_text(256, 446, "rest frame: p = 0", font_size=28,
+                          font_family=FONT, font_style="italic", fill=GREY,
+                          text_anchor="middle"))
+    return _svg(node_id, "Mass-energy equivalence", body)
+
+
 # ---------------------------------------------------------------------------
 # Layer 5: Variational and Hamiltonian Structure
 # ---------------------------------------------------------------------------
@@ -2122,6 +2162,7 @@ def createSvgGraphic(node_id: str, variant: str = "icon") -> str | None:
         4.3  Position four-vector
         4.4  Velocity four-vector
         4.5  Momentum four-vector
+        4.6  Mass-energy equivalence
         5.1  Action principle
         5.2  Lagrangian
         5.3  Euler-Lagrange equations
@@ -2171,6 +2212,7 @@ def createSvgGraphic(node_id: str, variant: str = "icon") -> str | None:
         "4.3": create_4_3_position_four_vector,
         "4.4": create_4_4_velocity_four_vector,
         "4.5": create_4_5_momentum_four_vector,
+        "4.6": create_4_6_mass_energy_equivalence,
         "5.1": create_5_1_action_principle,
         "5.2": create_5_2_lagrangian,
         "5.3": create_5_3_euler_lagrange,
@@ -2216,7 +2258,7 @@ def saveSvgGraphics(output_dir: str | Path = ".") -> None:
     for node_id in [
         "1.1", "1.2", "2.1", "2.2", "2.3",
         "3.1", "3.2", "3.3", "3.4", "3.5",
-        "4.1", "4.2", "4.3", "4.4", "4.5",
+        "4.1", "4.2", "4.3", "4.4", "4.5", "4.6",
         "5.1", "5.2", "5.3", "5.4", "5.5", "5.6",
         "6.1", "6.2", "6.3", "6.4",
         "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7",

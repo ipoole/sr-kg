@@ -1,6 +1,6 @@
 # SR Knowledge Graph
 
-A small pedagogical knowledge graph viewer for special relativity concepts.
+A small pedagogical knowledge graph viewer for special relativity and classical fields concepts.
 
 The project reads concept data from CSV files and generates a standalone interactive HTML graph using PyVis and vis.js. The generated viewer supports:
 
@@ -203,10 +203,10 @@ The physics settings are in the `net.set_options(...)` block in `srkg/render_pyv
 `data/nodes.csv` expects:
 
 ```text
-id,label,layer,layer_title,body,definition,explanation,example
+id,label,layer,layer_title,body_orig,definition_orig,explanation_orig,example_orig,definition_new,derivation_new,explanation_new
 ```
 
-`definition`, `explanation`, and `example` are optional richer-content fields. Empty values are skipped in the details panel. Older node files with only `body` still work because missing columns default to empty strings.
+The `_orig` fields preserve the previous content in the CSV for comparison. The generated details panel renders the revised trial content from the `_new` fields, including optional derivations. The learner-focused `explanation_new` field should include any useful examples. Empty values are skipped in the details panel. Older node files with `body`, `definition`, `explanation`, and `example` still work because those columns are mapped to the corresponding `_orig` fields.
 
 `data/edges.csv` expects:
 

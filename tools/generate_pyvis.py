@@ -8,7 +8,8 @@ This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
 
 Expected nodes.csv columns:
-    id,label,layer,layer_title,body
+    id,label,layer,layer_title,body_orig,definition_orig,explanation_orig,example_orig,
+    definition_new,derivation_new,explanation_new
 
 Expected edges.csv columns:
     source,target,relation,note

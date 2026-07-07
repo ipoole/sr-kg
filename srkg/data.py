@@ -21,6 +21,14 @@ from srkg.concept_svg_graphics import createSvgGraphic
 def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
     concept_data = {}
+
+    def text(row: pd.Series, *columns: str) -> str:
+        for column in columns:
+            value = str(row.get(column, "")).strip()
+            if value:
+                return value
+        return ""
+
     for _, row in nodes_df.iterrows():
         cid = str(row.get("id", "")).strip()
         if not cid:
@@ -31,10 +39,13 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
             "label": str(row.get("label", "")).strip(),
             "layer": str(row.get("layer", "")).strip(),
             "layer_title": str(row.get("layer_title", "")).strip(),
-            "body": str(row.get("body", "")),
-            "definition": str(row.get("definition", "")).strip(),
-            "explanation": str(row.get("explanation", "")).strip(),
-            "example": str(row.get("example", "")).strip(),
+            "body_orig": text(row, "body_orig", "body"),
+            "definition_orig": text(row, "definition_orig", "definition"),
+            "explanation_orig": text(row, "explanation_orig", "explanation"),
+            "example_orig": text(row, "example_orig", "example"),
+            "definition_new": text(row, "definition_new"),
+            "derivation_new": text(row, "derivation_new"),
+            "explanation_new": text(row, "explanation_new"),
             "svg_icon": svg_icon or "",
             "svg_detail": svg_detail or svg_icon or "",
             "svg_graphic": svg_detail or svg_icon or "",
