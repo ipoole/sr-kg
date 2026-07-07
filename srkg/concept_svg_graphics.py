@@ -1258,14 +1258,17 @@ def create_5_4_canonical_momentum(variant: str = "icon") -> str:
     if variant == "detail":
         body.append(_line(122, 300, 206, 300, stroke=AMBER, stroke_width=5,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
-        body.append(_text(154, 288, "qdot", font_size=28, font_family=FONT,
+        body.append(_text(154, 288, "q̇", font_size=34, font_family=FONT,
                           font_style="italic", fill=AMBER, text_anchor="middle"))
         body.extend(_label_tile(312, 164, 64, 60, "L", fill="#edf3ff",
                                 stroke=BLUE, text_colour=BLUE, font_size=38))
         body.append(_line(340, 232, 340, 282, stroke=BLUE, stroke_width=5,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
-        body.extend(_label_tile(304, 270, 126, 54, "∂L/∂q̇", fill="#f7f7f7",
-                                stroke=GREY, font_size=25))
+        body.append(_rect(304, 270, 126, 54, rx=12, fill="#f7f7f7",
+                          stroke=GREY, stroke_width=3))
+        body.append(_text(367, 305, "∂L / ∂q̇", font_size=25,
+                          font_family=FONT, font_style="italic",
+                          fill=BLACK, text_anchor="middle"))
         body.append(_line(304, 318, 214, 306, stroke=GREEN, stroke_width=5,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
     else:
@@ -1668,9 +1671,13 @@ def create_8_6_lorenz_gauge(variant: str = "icon") -> str:
                            font_family=FONT, font_style="italic",
                            fill=BLUE, text_anchor="middle"))
     if variant == "detail":
-        body.append(_text(256, 334, "∂μ Aμ = 0", font_size=34,
-                          font_family=FONT, font_style="italic",
-                          fill=BLACK, text_anchor="middle"))
+        body.append(_text(
+            256, 334,
+            '∂<tspan baseline-shift="sub" font-size="68%">μ</tspan> '
+            'A<tspan baseline-shift="super" font-size="68%">μ</tspan> = 0',
+            font_size=34, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
         body.extend(_label_tile(82, 378, 58, 50, "F", fill="#eef8f0",
                                 stroke=GREEN, text_colour=GREEN, font_size=32))
         body.extend(_label_tile(410, 378, 58, 50, "F", fill="#eef8f0",
@@ -1678,9 +1685,13 @@ def create_8_6_lorenz_gauge(variant: str = "icon") -> str:
         body.append(_line(144, 404, 406, 404, stroke=GREEN, stroke_width=3,
                           stroke_dasharray="9 8", opacity="0.55"))
     else:
-        body.append(_text(256, 382, "∂·A = 0", font_size=36,
-                          font_family=FONT, font_style="italic",
-                          fill=BLACK, text_anchor="middle"))
+        body.append(_text(
+            256, 382,
+            '∂<tspan baseline-shift="sub" font-size="68%">μ</tspan>A'
+            '<tspan baseline-shift="super" font-size="68%">μ</tspan> = 0',
+            font_size=32, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
     return _svg(node_id, "Lorenz gauge", body, defs)
 
 
@@ -1709,8 +1720,13 @@ def create_8_1_gauge_invariance(variant: str = "icon") -> str:
         body.append(_math_text(150, 140, "A", sub="μ", font_size=30,
                                font_family=FONT, font_style="italic",
                                fill=BLUE, text_anchor="middle"))
-        body.append(_text(154, 356, "Aμ + ∂μΛ", font_size=28, font_family=FONT,
-                          font_style="italic", fill=BLUE, text_anchor="middle"))
+        body.append(_text(
+            154, 356,
+            'A<tspan baseline-shift="sub" font-size="68%">μ</tspan> + '
+            '∂<tspan baseline-shift="sub" font-size="68%">μ</tspan>Λ',
+            font_size=28, font_family=FONT, font_style="italic",
+            fill=BLUE, text_anchor="middle",
+        ))
     body.append(_line(224, 176, 332, 232, stroke=BLUE, stroke_width=5,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.append(_line(224, 294, 332, 256, stroke=BLUE, stroke_width=5,
@@ -1721,8 +1737,12 @@ def create_8_1_gauge_invariance(variant: str = "icon") -> str:
         body.append(_circle(428, 220, 10, fill="none", stroke=GREEN, stroke_width=4))
         body.append(_line(422, 226, 434, 214, stroke=GREEN, stroke_width=4,
                           stroke_linecap="round"))
-        body.append(_text(394, 326, "same Fμν", font_size=28, font_family=FONT,
-                          fill=GREEN, text_anchor="middle"))
+        body.append(_text(
+            394, 326,
+            'same F<tspan baseline-shift="sub" font-size="68%">μν</tspan>',
+            font_size=28, font_family=FONT, fill=GREEN,
+            text_anchor="middle",
+        ))
     return _svg(node_id, "Gauge invariance", body, defs)
 
 
@@ -1743,8 +1763,11 @@ def create_7_6_four_current(variant: str = "icon") -> str:
         body.append(_line(132, 250, 248, 222, stroke=RED, stroke_width=6,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
 
-    body.extend(_label_tile(324, 162, 112, 160, "Jμ", fill="#ffeaea",
-                            stroke=RED, text_colour=RED, font_size=38))
+    body.append(_rect(324, 162, 112, 160, rx=12, fill="#ffeaea",
+                      stroke=RED, stroke_width=3))
+    body.append(_math_text(380, 224, "J", sup="μ", font_size=38,
+                           font_family=FONT, font_style="italic",
+                           fill=RED, text_anchor="middle"))
     body.append(_line(342, 214, 418, 214, stroke=RED, stroke_width=4,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.append(_circle(356, 268, 14, fill=RED, stroke=BLACK, stroke_width=2))
@@ -1784,9 +1807,13 @@ def create_8_3_minimal_coupling(variant: str = "icon") -> str:
     body.extend(_label_tile(368, 210, 112, 84, "p-eA", fill="#f7f7f7",
                             stroke=BLACK, font_size=34))
     if variant == "detail":
-        body.append(_text(242, 338, "pμ - eAμ", font_size=32,
-                          font_family=FONT, font_style="italic", fill=BLACK,
-                          text_anchor="middle"))
+        body.append(_text(
+            242, 338,
+            'p<tspan baseline-shift="sub" font-size="68%">μ</tspan> - eA'
+            '<tspan baseline-shift="sub" font-size="68%">μ</tspan>',
+            font_size=32, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
     return _svg(node_id, "Minimal coupling", body, defs)
 
 
@@ -1811,9 +1838,14 @@ def create_8_4_lorentz_force_law(variant: str = "icon") -> str:
     body.append(_text(358, 294, "dp", font_size=38, font_family=FONT,
                       font_style="italic", fill=RED))
     if variant == "detail":
-        body.append(_text(258, 388, "q Fμν u^μ → dp^μ/dτ", font_size=27,
-                          font_family=FONT, font_style="italic", fill=BLACK,
-                          text_anchor="middle"))
+        body.append(_text(
+            258, 388,
+            'q F<tspan baseline-shift="sub" font-size="68%">μν</tspan> '
+            'u<tspan baseline-shift="super" font-size="68%">μ</tspan> → '
+            'dp<tspan baseline-shift="super" font-size="68%">μ</tspan>/dτ',
+            font_size=27, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
     return _svg(node_id, "Lorentz force law", body, defs)
 
 
@@ -1835,9 +1867,13 @@ def create_8_5_charge_conservation(variant: str = "icon") -> str:
     body.append(_text(386, 232, "J", font_size=42, font_family=FONT,
                       font_style="italic", fill=RED))
     if variant == "detail":
-        body.append(_text(240, 372, "∂μJ^μ = 0", font_size=34,
-                          font_family=FONT, font_style="italic", fill=BLACK,
-                          text_anchor="middle"))
+        body.append(_text(
+            240, 372,
+            '∂<tspan baseline-shift="sub" font-size="68%">μ</tspan>'
+            'J<tspan baseline-shift="super" font-size="68%">μ</tspan> = 0',
+            font_size=34, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
         body.append(_text(238, 130, "rho", font_size=30, font_family=FONT,
                           font_style="italic", fill=RED, text_anchor="middle"))
     return _svg(node_id, "Charge conservation", body, defs)
@@ -1861,9 +1897,14 @@ def create_9_4_em_energy_density(variant: str = "icon") -> str:
         body.append(_path(f"M{x+24},{y+size*0.66} C{x+40},{y+size*0.48} {x+58},{y+size*0.84} {x+size-24},{y+size*0.64}",
                           fill="none", stroke=GREEN, stroke_width=5,
                           stroke_linecap="round"))
-    body.append(_text(256, 372 if variant != "detail" else 416, "u_EM" if variant == "detail" else "u",
-                      font_size=44, font_family=FONT, font_style="italic",
-                      fill=AMBER, text_anchor="middle"))
+    if variant == "detail":
+        body.append(_math_text(256, 416, "u", sub="EM", font_size=44,
+                               font_family=FONT, font_style="italic",
+                               fill=AMBER, text_anchor="middle"))
+    else:
+        body.append(_text(256, 372, "u", font_size=44, font_family=FONT,
+                          font_style="italic", fill=AMBER,
+                          text_anchor="middle"))
     body.append(_text(170, 164, "E", font_size=34, font_family=FONT,
                       font_style="italic", fill=BLUE))
     body.append(_text(332, 164, "B", font_size=34, font_family=FONT,
@@ -1898,7 +1939,7 @@ def create_9_2_poynting_vector(variant: str = "icon") -> str:
     body.append(_text(386, 176, "S", font_size=48, font_family=FONT,
                       font_style="italic", fill=AMBER))
     if variant == "detail":
-        body.append(_text(258, 402, "E x B → S", font_size=34, font_family=FONT,
+        body.append(_text(258, 402, "E × B → S", font_size=34, font_family=FONT,
                           font_style="italic", fill=BLACK, text_anchor="middle"))
     return _svg(node_id, "Momentum density", body, defs)
 
@@ -1909,8 +1950,11 @@ def create_9_3_em_stress_energy(variant: str = "icon") -> str:
     arrow = f"{_sid(node_id)}_arrow"
     defs = [_arrow_marker(arrow, colour=AMBER, size=6)]
     body: list[str] = []
-    body.extend(_label_tile(166, 148, 180, 170, "T_EM", fill="#f7f7f7",
-                            stroke=BLACK, font_size=42))
+    body.append(_rect(166, 148, 180, 170, rx=12, fill="#f7f7f7",
+                      stroke=BLACK, stroke_width=3))
+    body.append(_math_text(256, 240, "T", sub="EM", font_size=42,
+                           font_family=FONT, font_style="italic",
+                           fill=BLACK, text_anchor="middle"))
     body.append(_line(190, 204, 322, 204, stroke=BLUE, stroke_width=5,
                       stroke_linecap="round"))
     body.append(_path("M202,250 C230,222 258,278 310,246", fill="none",
@@ -1957,9 +2001,13 @@ def create_9_1_energy_momentum_tensor(variant: str = "icon") -> str:
                            font_size=35, font_family=FONT, font_style="italic",
                            fill=BLACK, text_anchor="middle"))
     if variant == "detail":
-        body.append(_text(256, 390, "∂μT^μν = 0", font_size=33,
-                          font_family=FONT, font_style="italic", fill=BLACK,
-                          text_anchor="middle"))
+        body.append(_text(
+            256, 390,
+            '∂<tspan baseline-shift="sub" font-size="68%">μ</tspan>'
+            'T<tspan baseline-shift="super" font-size="68%">μν</tspan> = 0',
+            font_size=33, font_family=FONT, font_style="italic",
+            fill=BLACK, text_anchor="middle",
+        ))
     return _svg(node_id, "Energy-momentum tensor", body, defs)
 
 
@@ -2003,11 +2051,17 @@ def create_10_1_wave_equation(variant: str = "icon") -> str:
     arrow = f"{_sid(node_id)}_arrow"
     defs = [_arrow_marker(arrow, colour=BLUE, size=6)]
     body: list[str] = []
-    body.extend(_label_tile(78, 204, 112, 86, "□A", fill="#f7f7f7",
-                            stroke=BLACK, font_size=42))
+    body.append(_rect(78, 204, 112, 86, rx=12, fill="#f7f7f7",
+                      stroke=BLACK, stroke_width=3))
+    body.append(_math_text(134, 258, "□A", sub="μ", font_size=42,
+                           font_family=FONT, font_style="italic",
+                           fill=BLACK, text_anchor="middle"))
     if variant == "detail":
-        body.extend(_label_tile(92, 96, 84, 62, "Jμ", fill="#ffeaea",
-                                stroke=RED, text_colour=RED, font_size=27))
+        body.append(_rect(92, 96, 84, 62, rx=12, fill="#ffeaea",
+                          stroke=RED, stroke_width=3))
+        body.append(_math_text(134, 136, "j", sub="μ", font_size=27,
+                               font_family=FONT, font_style="italic",
+                               fill=RED, text_anchor="middle"))
         body.append(_line(134, 164, 134, 198, stroke=RED, stroke_width=5,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.append(_line(202, 246, 282, 246, stroke=BLUE, stroke_width=7,
@@ -2111,8 +2165,12 @@ def create_11_2_gauge_fixing(variant: str = "icon") -> str:
     if variant == "detail":
         body.extend(_label_tile(90, 348, 66, 54, "F", fill="#eef8f0",
                                 stroke=GREEN, text_colour=GREEN, font_size=34))
-        body.append(_text(150, 330, "same Fμν", font_size=25,
-                          font_family=FONT, fill=GREEN, text_anchor="middle"))
+        body.append(_text(
+            150, 330,
+            'same F<tspan baseline-shift="sub" font-size="68%">μν</tspan>',
+            font_size=25, font_family=FONT, fill=GREEN,
+            text_anchor="middle",
+        ))
     body.append(_line(238, 218, 286, 218, stroke=BLUE, stroke_width=7,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.append(_path("M294,124 L362,166 L362,286 L294,328 Z", fill="#f7f7f7",

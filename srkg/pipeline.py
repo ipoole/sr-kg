@@ -42,6 +42,12 @@ def generate_viewer(
 
     nodes_df = pd.read_csv(nodes_path).fillna("")
     edges_df = pd.read_csv(edges_file).fillna("")
+    graphic_designs_path = Path(nodes_path).parent / "concept_graphic_designs.csv"
+    graphic_designs_df = (
+        pd.read_csv(graphic_designs_path).fillna("")
+        if graphic_designs_path.exists()
+        else None
+    )
     edge_key = load_edge_key(resolved_edge_key_path)
     edge_colour_map = build_edge_colour_map(edge_key)
 
@@ -70,7 +76,7 @@ def generate_viewer(
     hierarchy_levels = build_hierarchy_levels(nodes_df)
     hierarchy_positions = build_hierarchy_positions(hierarchy_levels, edges_df)
 
-    concept_data = build_concept_data(nodes_df)
+    concept_data = build_concept_data(nodes_df, graphic_designs_df)
 
     output_file = Path(out_path)
     write_pyvis_html(

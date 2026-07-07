@@ -289,10 +289,14 @@ def inject_controls(
         line-height: 1.45;
     }
 
+    #info_panel .concept-figure {
+        margin: 0.1em 0 0.85em;
+    }
+
     #info_panel .concept-graphic {
         display: flex;
         justify-content: center;
-        margin: 0.1em 0 0.1em;
+        margin: 0;
         overflow: visible;
     }
 
@@ -303,6 +307,15 @@ def inject_controls(
         max-height: 300px;
         max-width: min(100%, 380px);
         width: 100%;
+    }
+
+    #info_panel .concept-graphic-caption {
+        color: #555;
+        font-size: 0.95em;
+        font-style: italic;
+        line-height: 1.35;
+        margin: 0.15em 0 0;
+        text-align: center;
     }
 
     #info_panel h2 {
@@ -732,6 +745,39 @@ def inject_controls(
           );
         }
 
+        function renderCaptionText(s) {
+          var html = renderConceptText(s);
+          [
+            [/partial_mu A\\^mu = 0/g, "\\\\(\\\\partial_\\\\mu A^\\\\mu = 0\\\\)"],
+            [/A_mu \\+ partial_mu Lambda/g, "\\\\(A_\\\\mu + \\\\partial_\\\\mu \\\\Lambda\\\\)"],
+            [/p_mu - e A_mu/g, "\\\\(p_\\\\mu - e A_\\\\mu\\\\)"],
+            [/delta S = 0/g, "\\\\(\\\\delta S = 0\\\\)"],
+            [/u\\^mu = dx\\^mu\\/dtau/g, "\\\\(u^\\\\mu = dx^\\\\mu/d\\\\tau\\\\)"],
+            [/p\\^mu = m u\\^mu/g, "\\\\(p^\\\\mu = m u^\\\\mu\\\\)"],
+            [/F_mu_nu/g, "\\\\(F_{\\\\mu\\\\nu}\\\\)"],
+            [/phi\\(x\\)/g, "\\\\(\\\\phi(x)\\\\)"],
+            [/A_mu\\(x\\)/g, "\\\\(A_\\\\mu(x)\\\\)"],
+            [/A_mu/g, "\\\\(A_\\\\mu\\\\)"],
+            [/A\\^mu/g, "\\\\(A^\\\\mu\\\\)"],
+            [/J\\^mu/g, "\\\\(J^\\\\mu\\\\)"],
+            [/dp\\^mu\\/dtau/g, "\\\\(dp^\\\\mu/d\\\\tau\\\\)"],
+            [/p\\^mu/g, "\\\\(p^\\\\mu\\\\)"],
+            [/x\\^mu/g, "\\\\(x^\\\\mu\\\\)"],
+            [/u\\^mu/g, "\\\\(u^\\\\mu\\\\)"],
+            [/dx\\^mu\\/dtau/g, "\\\\(dx^\\\\mu/d\\\\tau\\\\)"],
+            [/p_mu/g, "\\\\(p_\\\\mu\\\\)"],
+            [/s\\^2/g, "\\\\(s^2\\\\)"],
+            [/d\\^4x/g, "\\\\(d^4x\\\\)"],
+            [/E=mc\\^2/g, "\\\\(E=mc^2\\\\)"],
+            [/T_EM/g, "\\\\(T_{EM}\\\\)"],
+            [/T\\^munu/g, "\\\\(T^{\\\\mu\\\\nu}\\\\)"]
+          ].forEach(function(replacement) {
+            html = html.replace(replacement[0], replacement[1]);
+          });
+          html = html.replace(/(^|[^\\\\A-Za-z])tau\\b/g, "$1\\\\(\\\\tau\\\\)");
+          return html;
+        }
+
         function typesetInfoPanel() {
           var panel = document.getElementById("info_panel");
           if (window.MathJax && MathJax.typesetPromise) {
@@ -947,7 +993,13 @@ def inject_controls(
           }
           var svgDetail = concept.svg_detail || concept.svg_graphic || concept.svg_icon || "";
           if (svgDetail) {
+            html += '<figure class="concept-figure">';
             html += '<div class="concept-graphic">' + svgDetail + "</div>";
+            var graphicCaption = concept.svg_detail_caption || concept.svg_icon_caption || "";
+            if (graphicCaption) {
+              html += '<figcaption class="concept-graphic-caption">' + renderCaptionText(graphicCaption) + "</figcaption>";
+            }
+            html += "</figure>";
           }
           html += "<hr>";
           [

@@ -18,9 +18,13 @@ from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
 from srkg.concept_svg_graphics import createSvgGraphic
 
 
-def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
+def build_concept_data(
+    nodes_df: pd.DataFrame,
+    graphic_designs_df: pd.DataFrame | None = None,
+) -> dict[str, dict[str, str]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
     concept_data = {}
+    graphic_captions = _graphic_captions_by_id(graphic_designs_df)
 
     def text(row: pd.Series, *columns: str) -> str:
         for column in columns:
@@ -35,6 +39,7 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
             continue
         svg_icon = createSvgGraphic(cid, variant="icon")
         svg_detail = createSvgGraphic(cid, variant="detail")
+        captions = graphic_captions.get(cid, {})
         concept_data[cid] = {
             "label": str(row.get("label", "")).strip(),
             "layer": str(row.get("layer", "")).strip(),
@@ -45,8 +50,31 @@ def build_concept_data(nodes_df: pd.DataFrame) -> dict[str, dict[str, str]]:
             "svg_icon": svg_icon or "",
             "svg_detail": svg_detail or svg_icon or "",
             "svg_graphic": svg_detail or svg_icon or "",
+            "svg_icon_caption": captions.get("icon_caption", ""),
+            "svg_detail_caption": (
+                captions.get("detail_caption", "") or captions.get("icon_caption", "")
+            ),
         }
     return concept_data
+
+
+def _graphic_captions_by_id(
+    graphic_designs_df: pd.DataFrame | None,
+) -> dict[str, dict[str, str]]:
+    """Return optional SVG caption metadata keyed by concept id."""
+    if graphic_designs_df is None or graphic_designs_df.empty:
+        return {}
+
+    captions = {}
+    for _, row in graphic_designs_df.iterrows():
+        cid = str(row.get("id", "")).strip()
+        if not cid:
+            continue
+        captions[cid] = {
+            "icon_caption": str(row.get("icon_caption", "")).strip(),
+            "detail_caption": str(row.get("detail_caption", "")).strip(),
+        }
+    return captions
 
 
 def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
