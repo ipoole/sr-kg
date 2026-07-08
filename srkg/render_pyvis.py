@@ -1,10 +1,9 @@
 """PyVis network rendering for the SR knowledge graph.
 
 This module converts prepared node, edge, relation, and layout data into the
-base PyVis HTML file. It owns the PyVis ``Network`` object, vis-network physics
-options, native node/edge attributes, relation colours, initial coordinates,
-and the temporary native node representation used before the injected viewer
-customizes rendering.
+base PyVis HTML file. It owns the PyVis ``Network`` object, native node/edge
+attributes, relation colours, initial coordinates, and the temporary native node
+representation used before the injected viewer customizes rendering.
 
 It deliberately stops at writing PyVis output. It does not inject controls,
 MathJax configuration, HTML labels, or application JavaScript; that belongs in
@@ -125,28 +124,13 @@ def write_pyvis_html(
         "width": 1
       },
       "physics": {
-        "enabled": true,
-        "solver": "forceAtlas2Based",
-        "forceAtlas2Based": {
-            "gravitationalConstant": -100,
-            "centralGravity": 0.0,
-            "springLength": 100,
-            "springConstant": 0.008,
-            "damping": 0.85,
-            "avoidOverlap": 1.0
-        },
-        "stabilization": {
-          "enabled": true,
-          "iterations": 50,
-          "fit": true
-        },
-        "minVelocity": 1.5
+        "enabled": false
       },
       "interaction": {
         "hover": true,
         "hoverConnectedEdges": false,
         "selectConnectedEdges": false,
-        "navigationButtons": true,
+        "navigationButtons": false,
         "keyboard": true,
         "tooltipDelay": 120
       }
@@ -180,10 +164,6 @@ def write_pyvis_html(
             level=hierarchy_levels.get(cid, 0),
             x=x_pos,
             y=y_pos,
-            fixed={
-                "x": False,
-                "y": True,
-            },
             size=size,
             visualSize=size,
             visualColor={

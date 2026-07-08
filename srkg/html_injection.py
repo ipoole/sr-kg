@@ -13,7 +13,14 @@ they are split into separate template/static files.
 import json
 from html import escape as html_escape
 
-from srkg.config import NODE_LABEL_FONT_SIZE, NODE_LABEL_FONT_WEIGHT, NODE_LABEL_WIDTH
+from srkg.config import (
+    LAYOUT_ROW_STAGGER,
+    LAYOUT_X_SPACING,
+    LAYOUT_Y_SPACING,
+    NODE_LABEL_FONT_SIZE,
+    NODE_LABEL_FONT_WEIGHT,
+    NODE_LABEL_WIDTH,
+)
 
 
 def require_html_marker(html_text: str, marker: str) -> None:
@@ -115,6 +122,28 @@ def inject_controls(
         margin-top: 6px;
         margin-right: 4px;
         padding: 4px 8px;
+      }
+      .kg-mode-controls {
+        display: flex;
+        gap: 4px;
+        margin: 6px 0 4px;
+      }
+      #kg_controls .kg-mode-button {
+        border: 1px solid #bbb;
+        border-radius: 999px;
+        background: #f7f7f7;
+        color: #222;
+        cursor: pointer;
+        flex: 1 1 0;
+        font: inherit;
+        margin: 0;
+        padding: 4px 8px;
+      }
+      #kg_controls .kg-mode-button.kg-active {
+        background: #174ea6;
+        border-color: #174ea6;
+        color: #fff;
+        font-weight: 700;
       }
       #kg_status {
         margin-top: 6px;
@@ -446,8 +475,10 @@ def inject_controls(
     <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
-      <button onclick="kgFocusSelected()">Neighbourhood</button>
-      <button onclick="kgShowAll()">Show all</button>
+      <div class="kg-mode-controls" role="group" aria-label="Graph view mode">
+        <button id="kg_mode_neighbourhood" class="kg-mode-button" onclick="kgFocusSelected()" aria-pressed="false">Neighbourhood</button>
+        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">Show all</button>
+      </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
@@ -482,6 +513,9 @@ def inject_controls(
     <script type="text/javascript">
       var conceptData = __CONCEPT_DATA__;
       var edgeKey = __EDGE_KEY__;
+      var layoutXSpacing = __LAYOUT_X_SPACING__;
+      var layoutYSpacing = __LAYOUT_Y_SPACING__;
+      var layoutRowStagger = __LAYOUT_ROW_STAGGER__;
 
       function kgAfterReady() {
         var allNodes = nodes.get();
@@ -499,20 +533,18 @@ def inject_controls(
         var currentView = {mode: "all", nodeId: null};
         var activeNodeId = null;
         var svgImageCache = {};
-        var layoutFinalized = false;
-        var layoutFinalizeTimer = null;
 
         /*
          * Custom node rendering
          *
-         * PyVis/vis-network is still responsible for physics, edge routing,
-         * hit testing, and node selection. The visible nodes are deliberately
-         * split into three pieces:
+         * PyVis/vis-network is still responsible for edge routing, hit testing,
+         * and node selection. The visible nodes are deliberately split into
+         * three pieces:
          *
          * 1. native vis-network dot nodes for the first frame, avoiding a blank
          *    graph while this injected script waits for network/nodes/edges;
-         * 2. invisible fixed-size box nodes after startup, giving physics a
-         *    larger collision area that includes the external label footprint;
+         * 2. invisible fixed-size box nodes after startup, giving interaction a
+         *    larger hit area that includes the external label footprint;
          * 3. canvas-drawn circles plus HTML labels, so node labels can contain
          *    MathJax and still track pan/zoom.
          */
@@ -808,6 +840,20 @@ def inject_controls(
           }
         }
 
+        function updateModeButtons() {
+          var inNeighbourhood = currentView.mode === "neighbourhood";
+          var neighbourhoodButton = document.getElementById("kg_mode_neighbourhood");
+          var allButton = document.getElementById("kg_mode_all");
+          if (neighbourhoodButton) {
+            neighbourhoodButton.classList.toggle("kg-active", inNeighbourhood);
+            neighbourhoodButton.setAttribute("aria-pressed", inNeighbourhood ? "true" : "false");
+          }
+          if (allButton) {
+            allButton.classList.toggle("kg-active", !inNeighbourhood);
+            allButton.setAttribute("aria-pressed", inNeighbourhood ? "false" : "true");
+          }
+        }
+
         function getConcept(nodeId) {
           return conceptData[String(nodeId)] || null;
         }
@@ -826,10 +872,21 @@ def inject_controls(
           }
         }
 
-        function pushConceptHistory(nodeId) {
+        function pushConceptHistory(nodeId, mode) {
           var hash = conceptHash(nodeId);
-          if (window.location.hash === hash) { return; }
-          window.history.pushState({nodeId: String(nodeId)}, "", hash);
+          var state = {
+            nodeId: String(nodeId),
+            mode: mode || "highlight"
+          };
+          var currentState = window.history.state || {};
+          if (
+            window.location.hash === hash &&
+            currentState.nodeId === state.nodeId &&
+            currentState.mode === state.mode
+          ) {
+            return;
+          }
+          window.history.pushState(state, "", hash);
         }
 
         function conceptIdParts(id) {
@@ -853,6 +910,66 @@ def inject_controls(
             return String(aa[i]).localeCompare(String(bb[i]));
           }
           return 0;
+        }
+
+        function nodeLayerValue(nodeId) {
+          var node = originalNodes[nodeId] || nodes.get(nodeId) || {};
+          var concept = getConcept(nodeId) || {};
+          var candidates = [
+            node.layerGroup,
+            concept.layer,
+            String(nodeId).split(".", 1)[0]
+          ];
+          for (var i = 0; i < candidates.length; i++) {
+            var value = parseInt(String(candidates[i] || "").trim(), 10);
+            if (Number.isFinite(value) && value > 0) {
+              return value;
+            }
+          }
+          return 0;
+        }
+
+        function buildCompactLayerPositions(nodeIds) {
+          var ids = nodeIds.slice().sort(compareConceptIds);
+          var layers = {};
+          ids.forEach(function(id) {
+            var layer = nodeLayerValue(id);
+            if (layer > 0) { layers[layer] = true; }
+          });
+
+          var orderedLayers = Object.keys(layers).map(Number).sort(function(a, b) {
+            return b - a;
+          });
+          var layerToLevel = {};
+          orderedLayers.forEach(function(layer, index) {
+            layerToLevel[layer] = index;
+          });
+
+          var fallbackLevel = orderedLayers.length;
+          var nodesByLevel = {};
+          ids.forEach(function(id) {
+            var layer = nodeLayerValue(id);
+            var level = layer > 0 && layerToLevel[layer] !== undefined
+              ? layerToLevel[layer]
+              : fallbackLevel;
+            if (!nodesByLevel[level]) { nodesByLevel[level] = []; }
+            nodesByLevel[level].push(id);
+          });
+
+          var positions = {};
+          Object.keys(nodesByLevel).forEach(function(levelKey) {
+            var level = Number(levelKey);
+            var rowNodes = nodesByLevel[levelKey].sort(compareConceptIds);
+            var rowWidth = (rowNodes.length - 1) * layoutXSpacing;
+            var rowSlopeHeight = (rowNodes.length - 1) * layoutRowStagger;
+            rowNodes.forEach(function(id, index) {
+              positions[id] = {
+                x: (index * layoutXSpacing) - (rowWidth / 2),
+                y: (level * layoutYSpacing) + (rowSlopeHeight / 2) - (index * layoutRowStagger)
+              };
+            });
+          });
+          return positions;
         }
 
         function conceptSearchText(nodeId, node) {
@@ -928,48 +1045,6 @@ def inject_controls(
             return;
           }
           kgReset(true);
-        }
-
-        function lockLayout() {
-          network.stopSimulation();
-          network.setOptions({physics: {enabled: false}});
-        }
-
-        function releaseNodeDragConstraints(node) {
-          var o = Object.assign({}, node);
-          o.fixed = {x: false, y: false};
-          return o;
-        }
-
-        function captureCurrentNodeLayout() {
-          var positions = network.getPositions();
-          allNodes = nodes.get();
-          originalNodes = {};
-          allNodes.forEach(function(n) {
-            var o = Object.assign({}, n);
-            if (positions[n.id]) {
-              o.x = positions[n.id].x;
-              o.y = positions[n.id].y;
-            }
-            o = releaseNodeDragConstraints(o);
-            originalNodes[n.id] = applyCollisionNodeStyle(o);
-          });
-          nodes.update(Object.keys(originalNodes).map(function(id) {
-            return Object.assign({}, originalNodes[id]);
-          }));
-          allNodes = nodes.get();
-        }
-
-        function finalizeLayoutForInteraction() {
-          if (layoutFinalized) { return; }
-          if (layoutFinalizeTimer !== null) {
-            clearTimeout(layoutFinalizeTimer);
-            layoutFinalizeTimer = null;
-          }
-          lockLayout();
-          captureCurrentNodeLayout();
-          layoutFinalized = true;
-          updateNodeLabelPositions();
         }
 
         function showConcept(nodeId) {
@@ -1083,19 +1158,37 @@ def inject_controls(
         function focusConcept(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
-          finalizeLayoutForInteraction();
           activeNodeId = nodeId;
-          network.focus(nodeId, {scale: 0.7, animation: true});
-          kgHighlight(nodeId);
+          kgHighlight(nodeId, true);
+          network.focus(nodeId, {scale: 0.7, animation: true, locked: false});
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
           setInfoPanelVisible(true);
           if (!options.skipHistory) {
-            pushConceptHistory(nodeId);
+            pushConceptHistory(nodeId, "highlight");
           }
           if (statusPrefix) {
             document.getElementById("kg_status").innerText = statusPrefix + " " + nodeId + ".";
           }
+        }
+
+        function focusNeighbourhood(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          kgApplyNeighbourhood(nodeId, true);
+          showConcept(nodeId);
+          setActiveConceptItem(nodeId);
+          setInfoPanelVisible(true);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId, "neighbourhood");
+          }
+
+          var neighbourCount = enabledConnectedNodes(nodeId).length;
+          document.getElementById("kg_status").innerText =
+            (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
+            "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
+            " neighbour" + (neighbourCount === 1 ? "" : "s") +
+            ". Click a visible node to walk one step.";
         }
 
         function buildConceptList(filterText) {
@@ -1134,10 +1227,10 @@ def inject_controls(
         }
 
         window.kgReset = function(preserveStatus) {
-          finalizeLayoutForInteraction();
           network.unselectAll();
           currentView = {mode: "all", nodeId: null};
           activeNodeId = null;
+          updateModeButtons();
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
@@ -1159,7 +1252,6 @@ def inject_controls(
         window.kgShowAll = window.kgReset;
 
         window.kgSearch = function() {
-          finalizeLayoutForInteraction();
           var q = document.getElementById("kg_search").value.trim().toLowerCase();
           if (!q) { return; }
 
@@ -1180,9 +1272,9 @@ def inject_controls(
         };
 
         window.kgHighlight = function(nodeId, preserveStatus) {
-          finalizeLayoutForInteraction();
           activeNodeId = nodeId;
           currentView = {mode: "highlight", nodeId: nodeId};
+          updateModeButtons();
           var connected = enabledConnectedNodes(nodeId);
           var keep = {};
           keep[nodeId] = true;
@@ -1236,17 +1328,25 @@ def inject_controls(
         };
 
         function kgApplyNeighbourhood(nodeId, preserveStatus) {
-          finalizeLayoutForInteraction();
           activeNodeId = nodeId;
           currentView = {mode: "neighbourhood", nodeId: nodeId};
+          updateModeButtons();
           var connected = enabledConnectedNodes(nodeId);
           var keep = {};
           keep[nodeId] = true;
           connected.forEach(function(id) { keep[id] = true; });
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return keep[id];
+          });
+          var compactPositions = buildCompactLayerPositions(visibleIds);
 
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = !keep[n.id];
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
             return o;
           }));
 
@@ -1256,11 +1356,14 @@ def inject_controls(
             return o;
           }));
 
-          network.fit({animation: true});
+          network.fit({animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
+            var neighbourCount = Math.max(0, visibleIds.length - 1);
             document.getElementById("kg_status").innerText =
-              "Neighbourhood mode for " + nodeId + ".";
+              "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
+              " neighbour" + (neighbourCount === 1 ? "" : "s") +
+              ". Click a visible node to walk one step.";
           }
         }
 
@@ -1272,7 +1375,7 @@ def inject_controls(
             return;
           }
 
-          kgApplyNeighbourhood(nodeId, false);
+          focusNeighbourhood(nodeId);
         };
 
         network.on("click", function(params) {
@@ -1282,17 +1385,12 @@ def inject_controls(
 
             const nodeId = params.nodes[0];
 
-            focusConcept(nodeId, "Selected");
+            if (currentView.mode === "neighbourhood") {
+              focusNeighbourhood(nodeId);
+            } else {
+              focusConcept(nodeId, "Selected");
+            }
         });
-
-        network.once("stabilized", function() {
-          finalizeLayoutForInteraction();
-          updateNodeLabelPositions();
-        });
-
-        layoutFinalizeTimer = setTimeout(function() {
-          finalizeLayoutForInteraction();
-        }, 1500);
 
         network.on("afterDrawing", function(ctx) {
           drawVisibleNodes(ctx);
@@ -1305,12 +1403,17 @@ def inject_controls(
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
+          var mode = event.state && event.state.mode;
           if (!nodeId) {
             nodeId = conceptIdFromHash(window.location.hash);
           }
 
           if (nodeId && getConcept(nodeId)) {
-            focusConcept(nodeId, "Selected", {skipHistory: true});
+            if (mode === "neighbourhood") {
+              focusNeighbourhood(nodeId, null, {skipHistory: true});
+            } else {
+              focusConcept(nodeId, "Selected", {skipHistory: true});
+            }
           } else {
             kgReset(true);
           }
@@ -1379,7 +1482,11 @@ def inject_controls(
 
         var initialNodeId = conceptIdFromHash(window.location.hash);
         if (initialNodeId && getConcept(initialNodeId)) {
-          window.history.replaceState({nodeId: String(initialNodeId)}, "", conceptHash(initialNodeId));
+          window.history.replaceState(
+            {nodeId: String(initialNodeId), mode: "highlight"},
+            "",
+            conceptHash(initialNodeId)
+          );
           focusConcept(initialNodeId, "Selected", {skipHistory: true});
         } else {
           window.history.replaceState({}, "", window.location.href);
@@ -1402,6 +1509,9 @@ def inject_controls(
     """.replace("__CONCEPT_DATA__", concept_data_json).replace("__EDGE_KEY__", edge_key_json)
     js = js.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     js = js.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
+    js = js.replace("__LAYOUT_X_SPACING__", str(LAYOUT_X_SPACING))
+    js = js.replace("__LAYOUT_Y_SPACING__", str(LAYOUT_Y_SPACING))
+    js = js.replace("__LAYOUT_ROW_STAGGER__", str(LAYOUT_ROW_STAGGER))
 
     css = css.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     css = css.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))

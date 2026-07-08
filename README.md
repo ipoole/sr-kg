@@ -13,14 +13,13 @@ The project reads concept data from CSV files and generates a standalone interac
 - MathJax rendering for inline and display equations
 - MathJax-rendered graph labels for node IDs and concept names
 - generated concept SVG graphics in the detail panel and graph nodes where available
-- topological-sort-based initial node placement with physics refinement
+- layer-based manual node placement
 - layer colouring and a layer legend
 - relation-aware edge colouring and an edge key
 - edge-type filters with persistent checkboxes
 - relation-specific edge hover notes with wrapped tooltip text
 - directed and undirected edge rendering
 - neighbour highlighting, neighbourhood mode, and show-all mode
-- layout restart control
 - stable, repeatable colour choices across runs
 
 ## Repository Layout
@@ -129,9 +128,9 @@ Graph labels are rendered in an HTML overlay rather than as raw vis.js labels. T
 
 Node layout is seeded from the pedagogical layer encoded in each node. The generator reads the `layer` column, falling back to the leading ID prefix such as `3` in `3.2`; layer 1 is placed at the bottom of the graph and higher numbered layers appear above it. Within each layer, nodes are placed left-to-right by numeric concept ID on a slight upward slope.
 
-The generated viewer then runs a short initial vis.js physics adjustment with vertical movement locked, so nodes can shift sideways but stay in their pedagogical layers. Once the layout stabilizes, after a short timeout, or as soon as the user interacts with the graph, the current node positions are captured, physics is disabled, and node dragging is unlocked in both axes. Filtering and selection therefore do not cause the graph to drift or snap back, while users can still manually move nodes up or down after the initial layout.
+The generated viewer uses these manual coordinates directly. Filtering and highlighting reuse the same source layout, so the graph does not drift or resettle during interaction. Neighbourhood mode applies the same layer-based layout rule to only the selected local nodes, collapsing missing layers into a compact view. While in neighbourhood mode, clicking a visible node walks one step by making that node the new neighbourhood focus; search and concept-list navigation remain global.
 
-The visible graph nodes are custom-drawn circles on the canvas. The underlying vis.js nodes are transparent fixed-size collision boxes that include room for the external label, so the physics model has a better approximation of the rendered footprint. Labels remain in the HTML overlay for MathJax support and scale with graph zoom so they do not dominate the view when zoomed out.
+The visible graph nodes are custom-drawn circles on the canvas. The underlying vis.js nodes are transparent fixed-size boxes that include room for the external label, giving the graph a larger interaction footprint. Labels remain in the HTML overlay for MathJax support and scale with graph zoom so they do not dominate the view when zoomed out.
 
 Edge rendering is relation-aware:
 
@@ -213,7 +212,7 @@ NODE_LABEL_FONT_WEIGHT = 700
 Circle radius is computed from `NODE_CIRCLE_BASE_SIZE` plus `NODE_CIRCLE_IMPORTANCE_SCALE * sqrt(incoming_edge_count + 1)`.
 Nodes are placed left-to-right by numeric concept ID within each layer. `LAYOUT_ROW_STAGGER` is the per-node vertical rise used to slope each layer upward to the right.
 
-The physics settings are in the `net.set_options(...)` block in `srkg/render_pyvis.py`. They control the initial relaxation only; the generated viewer freezes the settled layout before normal interaction.
+The generated graph disables vis-network physics and uses the deterministic coordinates from `srkg.layout`.
 
 ## Data Format
 
