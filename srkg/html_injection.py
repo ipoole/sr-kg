@@ -14,6 +14,7 @@ import json
 from html import escape as html_escape
 
 from srkg.config import (
+    EDGE_HOVER_WIDTH,
     LAYOUT_ROW_STAGGER,
     LAYOUT_X_SPACING,
     LAYOUT_Y_SPACING,
@@ -71,10 +72,9 @@ def inject_controls(
       #kg_controls.kg-hidden {
         display: none;
       }
-      #kg_controls_toggle {
+      .kg-canvas-toggle {
         position: fixed;
         top: 12px;
-        left: 12px;
         z-index: 10000;
         padding: 5px 9px;
         border: 1px solid #bbb;
@@ -86,8 +86,14 @@ def inject_controls(
         font-family: Arial, sans-serif;
         font-size: 13px;
       }
-      #kg_controls_toggle:hover,
-      #kg_controls_toggle:focus {
+      #kg_controls_toggle {
+        left: 12px;
+      }
+      #kg_info_toggle {
+        left: 128px;
+      }
+      .kg-canvas-toggle:hover,
+      .kg-canvas-toggle:focus {
         background: #eef3fd;
         outline: none;
       }
@@ -472,23 +478,24 @@ def inject_controls(
     title_html = f'<div id="kg_view_title">{html_escape(view_title)}</div>'
     controls = """
     __TITLE_HTML__
-    <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
+    <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
+    <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <div class="kg-mode-controls" role="group" aria-label="Graph view mode">
         <button id="kg_mode_neighbourhood" class="kg-mode-button" onclick="kgFocusSelected()" aria-pressed="false">Neighbourhood</button>
-        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">Show all</button>
+        <button id="kg_mode_descendants" class="kg-mode-button" onclick="kgFocusDescendantsSelected()" aria-pressed="false">Descendants</button>
+        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">All</button>
       </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
-      <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <details id="kg_legend_section" class="kg-fold" open>
-        <summary>Layers</summary>
-        <div id="kg_legend"></div>
-      </details>
       <details id="kg_edge_filters_section" class="kg-fold" open>
         <summary>Edge types</summary>
         <div id="kg_edge_filters"></div>
+      </details>
+      <details id="kg_legend_section" class="kg-fold" open>
+        <summary>Layers</summary>
+        <div id="kg_legend"></div>
       </details>
       <details id="kg_search_section" class="kg-fold" open>
         <summary>Search</summary>
@@ -516,6 +523,7 @@ def inject_controls(
       var layoutXSpacing = __LAYOUT_X_SPACING__;
       var layoutYSpacing = __LAYOUT_Y_SPACING__;
       var layoutRowStagger = __LAYOUT_ROW_STAGGER__;
+      var edgeHoverWidth = __EDGE_HOVER_WIDTH__;
 
       function kgAfterReady() {
         var allNodes = nodes.get();
@@ -532,7 +540,11 @@ def inject_controls(
         var enabledEdgeRelations = {};
         var currentView = {mode: "all", nodeId: null};
         var activeNodeId = null;
+        var hoveredEdgeId = null;
+        var hoveredEdgeBeforeHover = null;
         var svgImageCache = {};
+        var activeNodeRadiusScale = 1.4;
+        var activeNodeBorderWidth = 6;
 
         /*
          * Custom node rendering
@@ -624,7 +636,8 @@ def inject_controls(
             }
 
             var dom = network.canvasToDOM(pos);
-            var radius = Number(node.visualSize) || Number(node.size) || 18;
+            var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+            var radius = id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius;
             var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
             var radiusPx = Math.abs(radiusEdge.x - dom.x);
             var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
@@ -650,7 +663,9 @@ def inject_controls(
             var pos = positions[node.id];
             if (!pos) { return; }
 
-            var radius = Number(node.visualSize) || 18;
+            var baseRadius = Number(node.visualSize) || 18;
+            var isActive = node.id === activeNodeId;
+            var radius = isActive ? baseRadius * activeNodeRadiusScale : baseRadius;
             var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
             var color = node.visualColor || {};
             var fill = color.background || "#999999";
@@ -689,14 +704,9 @@ def inject_controls(
               ctx.restore();
             }
 
-            ctx.lineWidth = svgImage ? 4 : 1.5;
-            ctx.strokeStyle = svgImage ? fill : (node.id === activeNodeId ? "#000000" : border);
+            ctx.lineWidth = isActive ? activeNodeBorderWidth : (svgImage ? 4 : 1.5);
+            ctx.strokeStyle = isActive ? "#000000" : (svgImage ? fill : border);
             ctx.stroke();
-            if (svgImage && node.id === activeNodeId) {
-              ctx.lineWidth = 2;
-              ctx.strokeStyle = "#000000";
-              ctx.stroke();
-            }
             ctx.restore();
           });
         }
@@ -842,15 +852,21 @@ def inject_controls(
 
         function updateModeButtons() {
           var inNeighbourhood = currentView.mode === "neighbourhood";
+          var inDescendants = currentView.mode === "descendants";
           var neighbourhoodButton = document.getElementById("kg_mode_neighbourhood");
+          var descendantsButton = document.getElementById("kg_mode_descendants");
           var allButton = document.getElementById("kg_mode_all");
           if (neighbourhoodButton) {
             neighbourhoodButton.classList.toggle("kg-active", inNeighbourhood);
             neighbourhoodButton.setAttribute("aria-pressed", inNeighbourhood ? "true" : "false");
           }
+          if (descendantsButton) {
+            descendantsButton.classList.toggle("kg-active", inDescendants);
+            descendantsButton.setAttribute("aria-pressed", inDescendants ? "true" : "false");
+          }
           if (allButton) {
-            allButton.classList.toggle("kg-active", !inNeighbourhood);
-            allButton.setAttribute("aria-pressed", inNeighbourhood ? "false" : "true");
+            allButton.classList.toggle("kg-active", !inNeighbourhood && !inDescendants);
+            allButton.setAttribute("aria-pressed", (!inNeighbourhood && !inDescendants) ? "true" : "false");
           }
         }
 
@@ -995,6 +1011,44 @@ def inject_controls(
           return enabledEdgeRelations[relation] !== false;
         }
 
+        function edgeRelationDirected(edge) {
+          var relation = edgeRelation(edge);
+          var item = edgeKey[relation] || {};
+          return item.directed === true;
+        }
+
+        function setEdgeHidden(edge, hidden) {
+          edge.hidden = hidden;
+          if (hidden) {
+            edge.title = "";
+          } else if (originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
+            edge.title = originalEdges[edge.id].title;
+          }
+          return edge;
+        }
+
+        function setEdgeTooltipEnabled(edge, enabled) {
+          if (enabled && originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
+            edge.title = originalEdges[edge.id].title;
+          } else if (!enabled) {
+            edge.title = "";
+          }
+          return edge;
+        }
+
+        function edgeHoverableInCurrentView(edge) {
+          if (!edge || edge.hidden || !edgeRelationEnabled(edge)) {
+            return false;
+          }
+          if (currentView.mode === "highlight" && currentView.nodeId !== null) {
+            return edge.from == currentView.nodeId || edge.to == currentView.nodeId;
+          }
+          if (currentView.mode === "descendants") {
+            return edgeRelationDirected(edge);
+          }
+          return true;
+        }
+
         function enabledConnectedNodes(nodeId) {
           var connected = {};
           allEdges.forEach(function(edge) {
@@ -1003,6 +1057,27 @@ def inject_controls(
             if (edge.to == nodeId) { connected[edge.from] = true; }
           });
           return Object.keys(connected);
+        }
+
+        function enabledDirectedDescendants(nodeId) {
+          var keep = {};
+          var queue = [String(nodeId)];
+          keep[String(nodeId)] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            allEdges.forEach(function(edge) {
+              if (!edgeRelationEnabled(edge) || !edgeRelationDirected(edge)) { return; }
+              if (String(edge.from) !== current) { return; }
+
+              var target = String(edge.to);
+              if (keep[target]) { return; }
+              keep[target] = true;
+              queue.push(target);
+            });
+          }
+
+          return keep;
         }
 
         function relationColour(relation) {
@@ -1044,7 +1119,44 @@ def inject_controls(
             kgApplyNeighbourhood(currentView.nodeId, true);
             return;
           }
+          if (currentView.mode === "descendants" && currentView.nodeId !== null) {
+            kgApplyDescendants(currentView.nodeId, true);
+            return;
+          }
           kgReset(true);
+        }
+
+        function restoreHoveredEdge() {
+          if (hoveredEdgeId === null || hoveredEdgeBeforeHover === null) {
+            return;
+          }
+          if (edges.get(hoveredEdgeId)) {
+            edges.update(Object.assign({}, hoveredEdgeBeforeHover));
+          }
+          hoveredEdgeId = null;
+          hoveredEdgeBeforeHover = null;
+        }
+
+        function highlightHoveredEdge(edgeId) {
+          restoreHoveredEdge();
+
+          var edge = edges.get(edgeId);
+          if (!edgeHoverableInCurrentView(edge)) {
+            return;
+          }
+
+          var currentWidth = Number(edge.width);
+          if (!Number.isFinite(currentWidth) || currentWidth <= 0) {
+            currentWidth = 1;
+          }
+
+          hoveredEdgeId = edgeId;
+          hoveredEdgeBeforeHover = Object.assign({}, edge);
+
+          var hoverStyle = Object.assign({}, edge);
+          hoverStyle.width = Math.max(currentWidth, edgeHoverWidth);
+          hoverStyle.color = Object.assign({}, edge.color || {}, {opacity: 1.0});
+          edges.update(hoverStyle);
         }
 
         function showConcept(nodeId) {
@@ -1132,13 +1244,21 @@ def inject_controls(
         window.kgToggleInfoPanel = function() {
           var panel = document.getElementById("info_panel");
           setInfoPanelVisible(panel.classList.contains("kg-hidden"));
-          updateNodeLabelPositions();
+          if (currentView.mode === "highlight" && activeNodeId !== null) {
+            fitHighlightedSelection(activeNodeId);
+          } else {
+            updateNodeLabelPositions();
+          }
         };
 
         window.kgToggleControls = function() {
           var panel = document.getElementById("kg_controls");
           setControlsVisible(panel.classList.contains("kg-hidden"));
-          updateNodeLabelPositions();
+          if (currentView.mode === "highlight" && activeNodeId !== null) {
+            fitHighlightedSelection(activeNodeId);
+          } else {
+            updateNodeLabelPositions();
+          }
         };
 
         function setActiveConceptItem(nodeId) {
@@ -1155,15 +1275,115 @@ def inject_controls(
           }
         }
 
+        function panelAdjustedGraphCenter() {
+          var containerRect = graphContainer.getBoundingClientRect();
+          var leftInset = 0;
+          var rightInset = 0;
+          var margin = 24;
+          var controlsPanel = document.getElementById("kg_controls");
+          var infoPanel = document.getElementById("info_panel");
+
+          if (controlsPanel && !controlsPanel.classList.contains("kg-hidden")) {
+            var controlsRect = controlsPanel.getBoundingClientRect();
+            leftInset = Math.max(
+              leftInset,
+              Math.min(containerRect.right, controlsRect.right) - containerRect.left + margin
+            );
+          }
+
+          if (infoPanel && !infoPanel.classList.contains("kg-hidden")) {
+            var infoRect = infoPanel.getBoundingClientRect();
+            rightInset = Math.max(
+              rightInset,
+              containerRect.right - Math.max(containerRect.left, infoRect.left) + margin
+            );
+          }
+
+          leftInset = Math.max(0, Math.min(leftInset, containerRect.width * 0.45));
+          rightInset = Math.max(0, Math.min(rightInset, containerRect.width * 0.45));
+
+          if (leftInset + rightInset > containerRect.width * 0.8) {
+            leftInset = 0;
+            rightInset = 0;
+          }
+
+          return {
+            x: leftInset + ((containerRect.width - leftInset - rightInset) / 2),
+            y: containerRect.height / 2
+          };
+        }
+
+        function nodeBoundsCenter(nodeIds) {
+          var positions = network.getPositions(nodeIds);
+          var minX = Infinity;
+          var maxX = -Infinity;
+          var minY = Infinity;
+          var maxY = -Infinity;
+
+          nodeIds.forEach(function(id) {
+            var pos = positions[id];
+            if (!pos) { return; }
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxY = Math.max(maxY, pos.y);
+          });
+
+          if (!Number.isFinite(minX)) {
+            return null;
+          }
+
+          return {
+            x: (minX + maxX) / 2,
+            y: (minY + maxY) / 2
+          };
+        }
+
+        function shiftViewForPanels(nodeIds) {
+          var graphCenter = nodeBoundsCenter(nodeIds);
+          if (!graphCenter) { return; }
+
+          var desiredDomCenter = panelAdjustedGraphCenter();
+          var currentCanvasAtDesiredCenter = network.DOMtoCanvas(desiredDomCenter);
+          var viewPosition = network.getViewPosition();
+          var targetPosition = {
+            x: viewPosition.x + graphCenter.x - currentCanvasAtDesiredCenter.x,
+            y: viewPosition.y + graphCenter.y - currentCanvasAtDesiredCenter.y
+          };
+
+          network.moveTo({
+            position: targetPosition,
+            scale: network.getScale(),
+            animation: {
+              duration: 250,
+              easingFunction: "easeInOutQuad"
+            }
+          });
+        }
+
+        function fitHighlightedSelection(nodeId) {
+          var fitIds = [String(nodeId)];
+          enabledConnectedNodes(nodeId).forEach(function(id) {
+            if (originalNodes[id] && fitIds.indexOf(id) === -1) {
+              fitIds.push(id);
+            }
+          });
+
+          network.fit({nodes: fitIds, animation: false});
+          if (network.getScale() > 0.7) {
+            network.moveTo({scale: 0.7, animation: false});
+          }
+          shiftViewForPanels(fitIds);
+        }
+
         function focusConcept(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
           activeNodeId = nodeId;
           kgHighlight(nodeId, true);
-          network.focus(nodeId, {scale: 0.7, animation: true, locked: false});
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
-          setInfoPanelVisible(true);
+          fitHighlightedSelection(nodeId);
           if (!options.skipHistory) {
             pushConceptHistory(nodeId, "highlight");
           }
@@ -1178,7 +1398,6 @@ def inject_controls(
           kgApplyNeighbourhood(nodeId, true);
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
-          setInfoPanelVisible(true);
           if (!options.skipHistory) {
             pushConceptHistory(nodeId, "neighbourhood");
           }
@@ -1188,6 +1407,24 @@ def inject_controls(
             (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
             "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
             " neighbour" + (neighbourCount === 1 ? "" : "s") +
+            ". Click a visible node to walk one step.";
+        }
+
+        function focusDescendants(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          kgApplyDescendants(nodeId, true);
+          showConcept(nodeId);
+          setActiveConceptItem(nodeId);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId, "descendants");
+          }
+
+          var descendantCount = Math.max(0, Object.keys(enabledDirectedDescendants(nodeId)).length - 1);
+          document.getElementById("kg_status").innerText =
+            (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
+            "Descendants mode: " + nodeId + " plus " + descendantCount +
+            " reachable node" + (descendantCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
         }
 
@@ -1227,6 +1464,7 @@ def inject_controls(
         }
 
         window.kgReset = function(preserveStatus) {
+          restoreHoveredEdge();
           network.unselectAll();
           currentView = {mode: "all", nodeId: null};
           activeNodeId = null;
@@ -1239,8 +1477,7 @@ def inject_controls(
           }));
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = !edgeRelationEnabled(e);
-            return o;
+            return setEdgeHidden(o, !edgeRelationEnabled(e));
           }));
           updateNodeLabelPositions();
           if (!preserveStatus) {
@@ -1272,6 +1509,7 @@ def inject_controls(
         };
 
         window.kgHighlight = function(nodeId, preserveStatus) {
+          restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "highlight", nodeId: nodeId};
           updateModeButtons();
@@ -1301,11 +1539,11 @@ def inject_controls(
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
             if (!edgeRelationEnabled(e)) {
-              o.hidden = true;
+              return setEdgeHidden(o, true);
             } else if (e.from == nodeId || e.to == nodeId) {
-              o.hidden = false;
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
+              return setEdgeHidden(o, false);
             } else {
               o.color = {
                 color: "#cccccc",
@@ -1314,9 +1552,9 @@ def inject_controls(
                 opacity: 0.10
               };
               o.width = 0.4;
-              o.hidden = false;
+              o = setEdgeHidden(o, false);
+              return setEdgeTooltipEnabled(o, false);
             }
-            return o;
           }));
           network.unselectAll();
           updateNodeLabelPositions();
@@ -1328,6 +1566,7 @@ def inject_controls(
         };
 
         function kgApplyNeighbourhood(nodeId, preserveStatus) {
+          restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "neighbourhood", nodeId: nodeId};
           updateModeButtons();
@@ -1352,8 +1591,7 @@ def inject_controls(
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]);
-            return o;
+            return setEdgeHidden(o, !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]));
           }));
 
           network.fit({animation: false});
@@ -1363,6 +1601,48 @@ def inject_controls(
             document.getElementById("kg_status").innerText =
               "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
               " neighbour" + (neighbourCount === 1 ? "" : "s") +
+              ". Click a visible node to walk one step.";
+          }
+        }
+
+        function kgApplyDescendants(nodeId, preserveStatus) {
+          restoreHoveredEdge();
+          activeNodeId = nodeId;
+          currentView = {mode: "descendants", nodeId: nodeId};
+          updateModeButtons();
+          var keep = enabledDirectedDescendants(nodeId);
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return keep[id];
+          });
+          var compactPositions = buildCompactLayerPositions(visibleIds);
+
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            o.hidden = !keep[n.id];
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
+            return o;
+          }));
+
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            return setEdgeHidden(o, !(
+              edgeRelationEnabled(e) &&
+              edgeRelationDirected(e) &&
+              keep[String(e.from)] &&
+              keep[String(e.to)]
+            ));
+          }));
+
+          network.fit({animation: false});
+          updateNodeLabelPositions();
+          if (!preserveStatus) {
+            var descendantCount = Math.max(0, visibleIds.length - 1);
+            document.getElementById("kg_status").innerText =
+              "Descendants mode: " + nodeId + " plus " + descendantCount +
+              " reachable node" + (descendantCount === 1 ? "" : "s") +
               ". Click a visible node to walk one step.";
           }
         }
@@ -1378,6 +1658,17 @@ def inject_controls(
           focusNeighbourhood(nodeId);
         };
 
+        window.kgFocusDescendantsSelected = function() {
+          var selected = network.getSelectedNodes();
+          var nodeId = activeNodeId || selected[0];
+          if (!nodeId) {
+            document.getElementById("kg_status").innerText = "Select a node first.";
+            return;
+          }
+
+          focusDescendants(nodeId);
+        };
+
         network.on("click", function(params) {
 
             if (params.nodes.length === 0)
@@ -1387,9 +1678,23 @@ def inject_controls(
 
             if (currentView.mode === "neighbourhood") {
               focusNeighbourhood(nodeId);
+            } else if (currentView.mode === "descendants") {
+              focusDescendants(nodeId);
             } else {
               focusConcept(nodeId, "Selected");
             }
+        });
+
+        network.on("hoverEdge", function(params) {
+          if (params.edge !== undefined && params.edge !== null) {
+            highlightHoveredEdge(params.edge);
+          }
+        });
+
+        network.on("blurEdge", function(params) {
+          if (params.edge === hoveredEdgeId) {
+            restoreHoveredEdge();
+          }
         });
 
         network.on("afterDrawing", function(ctx) {
@@ -1400,6 +1705,7 @@ def inject_controls(
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", updateNodeLabelPositions);
+        graphContainer.addEventListener("mouseleave", restoreHoveredEdge);
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
@@ -1411,6 +1717,8 @@ def inject_controls(
           if (nodeId && getConcept(nodeId)) {
             if (mode === "neighbourhood") {
               focusNeighbourhood(nodeId, null, {skipHistory: true});
+            } else if (mode === "descendants") {
+              focusDescendants(nodeId, null, {skipHistory: true});
             } else {
               focusConcept(nodeId, "Selected", {skipHistory: true});
             }
@@ -1451,7 +1759,13 @@ def inject_controls(
           var id = link.getAttribute("data-concept-id");
           if (!getConcept(id)) { return; }
 
-          focusConcept(id, "Selected");
+          if (currentView.mode === "neighbourhood") {
+            focusNeighbourhood(id, "Selected");
+          } else if (currentView.mode === "descendants") {
+            focusDescendants(id, "Selected");
+          } else {
+            focusConcept(id, "Selected");
+          }
         });
 
         // Build legend from node groups.
@@ -1475,8 +1789,7 @@ def inject_controls(
         buildConceptList("");
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
-          o.hidden = !edgeRelationEnabled(e);
-          return o;
+          return setEdgeHidden(o, !edgeRelationEnabled(e));
         }));
         allEdges = edges.get();
 
@@ -1507,6 +1820,7 @@ def inject_controls(
       })();
     </script>
     """.replace("__CONCEPT_DATA__", concept_data_json).replace("__EDGE_KEY__", edge_key_json)
+    js = js.replace("__EDGE_HOVER_WIDTH__", str(EDGE_HOVER_WIDTH))
     js = js.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     js = js.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
     js = js.replace("__LAYOUT_X_SPACING__", str(LAYOUT_X_SPACING))

@@ -80,10 +80,9 @@
       #kg_controls.kg-hidden {
         display: none;
       }
-      #kg_controls_toggle {
+      .kg-canvas-toggle {
         position: fixed;
         top: 12px;
-        left: 12px;
         z-index: 10000;
         padding: 5px 9px;
         border: 1px solid #bbb;
@@ -95,8 +94,14 @@
         font-family: Arial, sans-serif;
         font-size: 13px;
       }
-      #kg_controls_toggle:hover,
-      #kg_controls_toggle:focus {
+      #kg_controls_toggle {
+        left: 12px;
+      }
+      #kg_info_toggle {
+        left: 128px;
+      }
+      .kg-canvas-toggle:hover,
+      .kg-canvas-toggle:focus {
         background: #eef3fd;
         outline: none;
       }
@@ -483,23 +488,24 @@
     <body>
 
     <div id="kg_view_title">Special Relativity and Classical Fields</div>
-    <button id="kg_controls_toggle" onclick="kgToggleControls()">Hide controls</button>
+    <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
+    <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <div class="kg-mode-controls" role="group" aria-label="Graph view mode">
         <button id="kg_mode_neighbourhood" class="kg-mode-button" onclick="kgFocusSelected()" aria-pressed="false">Neighbourhood</button>
-        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">Show all</button>
+        <button id="kg_mode_descendants" class="kg-mode-button" onclick="kgFocusDescendantsSelected()" aria-pressed="false">Descendants</button>
+        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">All</button>
       </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
-      <button id="kg_info_toggle" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <details id="kg_legend_section" class="kg-fold" open>
-        <summary>Layers</summary>
-        <div id="kg_legend"></div>
-      </details>
       <details id="kg_edge_filters_section" class="kg-fold" open>
         <summary>Edge types</summary>
         <div id="kg_edge_filters"></div>
+      </details>
+      <details id="kg_legend_section" class="kg-fold" open>
+        <summary>Layers</summary>
+        <div id="kg_legend"></div>
       </details>
       <details id="kg_search_section" class="kg-fold" open>
         <summary>Search</summary>
@@ -554,7 +560,7 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.3", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 65.65685424949238, "title": "1.3 Principle of relativity", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350.0, "y": 3965.0}, {"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.2", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 65.65685424949238, "title": "1.2 Constancy of the speed of light", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 0.0, "y": 4000.0}, {"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.1", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 66.92820323027551, "title": "1.1 Inertial frames", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": -350.0, "y": 4035.0}, {"color": {"background": "#f58231", "border": "#333333", "highlight": {"background": "#f58231", "border": "#000000"}, "hover": {"background": "#f58231", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "2.2", "label": " ", "layerGroup": 2, "level": 9, "shape": "dot", "size": 69.79795897113272, "title": "2.2 Spacetime event", "visualColor": {"background": "#f58231", "border": "#333333"}, "visualSize": 69.79795897113272, "x": -175.0, "y": 3617.5}, {"color": {"background": "#f58231", "border": "#333333", "highlight": {"background": "#f58231", "border": "#000000"}, "hover": {"background": "#f58231", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "2.3", "label": " ", "layerGroup": 2, "level": 9, "shape": "dot", "size": 64.0, "title": "2.3 Principle of locality", "visualColor": {"background": "#f58231", "border": "#333333"}, "visualSize": 64.0, "x": 175.0, "y": 3582.5}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.3", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 73.26649916142159, "title": "3.3 Lorentz transformations", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 73.26649916142159, "x": 0.0, "y": 3200.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.2", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 68.94427190999916, "title": "3.2 Spacetime interval", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 68.94427190999916, "x": -350.0, "y": 3235.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.1", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 72.64911064067351, "title": "3.1 Metric tensor", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 72.64911064067351, "x": -700.0, "y": 3270.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.4", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 65.65685424949238, "title": "3.4 Light cone", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350.0, "y": 3165.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.5", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 64.0, "title": "3.5 Minkowski diagram", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 64.0, "x": 700.0, "y": 3130.0}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.1", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 68.0, "title": "4.1 Proper time", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 68.0, "x": -875.0, "y": 2887.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.2", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 72.0, "title": "4.2 Four-vectors", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 72.0, "x": -525.0, "y": 2852.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.3", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.3 Position four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": -175.0, "y": 2817.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.4", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.4 Velocity four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 175.0, "y": 2782.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.5", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.5 Momentum four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 525.0, "y": 2747.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.6", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 64.0, "title": "4.6 Mass-energy equivalence", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 64.0, "x": 875.0, "y": 2712.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.2", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 68.94427190999916, "title": "5.2 Action principle", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 68.94427190999916, "x": -525.0, "y": 2452.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.1", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 68.94427190999916, "title": "5.1 Lagrangian", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 68.94427190999916, "x": -875.0, "y": 2487.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.3", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 66.92820323027551, "title": "5.3 Euler\u2013Lagrange equations", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 66.92820323027551, "x": -175.0, "y": 2417.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.5", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 64.0, "title": "5.5 Hamiltonian formalism", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 64.0, "x": 525.0, "y": 2347.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.4", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 65.65685424949238, "title": "5.4 Canonical momentum", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 175.0, "y": 2382.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.6", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 65.65685424949238, "title": "5.6 Noether\u0026#x27;s theorem", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 875.0, "y": 2312.5}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.1", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 64.0, "title": "6.1 Scalar field", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 64.0, "x": -525.0, "y": 2052.5}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.2", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 65.65685424949238, "title": "6.2 Vector field", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 65.65685424949238, "x": -175.0, "y": 2017.5}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.3", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 68.0, "title": "6.3 Field Lagrangian", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 68.0, "x": 175.0, "y": 1982.5}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.4", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 64.0, "title": "6.4 Field equations", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 64.0, "x": 525.0, "y": 1947.5}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.1", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 69.79795897113272, "title": "7.1 Vector potential \\(A_\\mu\\)", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": -1050.0, "y": 1705.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.2", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 73.26649916142159, "title": "7.2 Field tensor \\(F_{\\mu\\nu}\\)", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 73.26649916142159, "x": -700.0, "y": 1670.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.3", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.3 Electric field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": -350.0, "y": 1635.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.4", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.4 Magnetic field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 0.0, "y": 1600.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.5", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 71.31370849898477, "title": "7.5 Electromagnetic field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 71.31370849898477, "x": 350.0, "y": 1565.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.7", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 69.79795897113272, "title": "7.7 Maxwell\u0026#x27;s equations", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": 1050.0, "y": 1495.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.6", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.6 Lorenz gauge", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 700.0, "y": 1130.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.1", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 68.0, "title": "8.1 Gauge invariance", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 68.0, "x": -700.0, "y": 1270.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.6", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.6 Four-current", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 700.0, "y": 1530.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.3", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.3 Minimal coupling", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": -350.0, "y": 1235.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.4", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.4 Lorentz force law", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 0.0, "y": 1200.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.5", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 64.0, "title": "8.5 Charge conservation", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 64.0, "x": 350.0, "y": 1165.0}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.4", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.4 Energy density of EM field", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": 525.0, "y": 747.5}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.2", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.2 Momentum density (Poynting vector)", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": -175.0, "y": 817.5}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.3", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.3 Stress\u2013energy of EM field", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": 175.0, "y": 782.5}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.1", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 69.79795897113272, "title": "9.1 Energy--momentum tensor", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": -525.0, "y": 852.5}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.2", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 65.65685424949238, "title": "10.2 Electromagnetic waves", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 0.0, "y": 400.0}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.1", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 65.65685424949238, "title": "10.1 Wave equation", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 65.65685424949238, "x": -350.0, "y": 435.0}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.3", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 64.0, "title": "10.3 Radiation reaction", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 64.0, "x": 350.0, "y": 365.0}, {"color": {"background": "#808080", "border": "#333333", "highlight": {"background": "#808080", "border": "#000000"}, "hover": {"background": "#808080", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "11.1", "label": " ", "layerGroup": 11, "level": 0, "shape": "dot", "size": 66.92820323027551, "title": "11.1 Lorentz invariance", "visualColor": {"background": "#808080", "border": "#333333"}, "visualSize": 66.92820323027551, "x": -175.0, "y": 17.5}, {"color": {"background": "#808080", "border": "#333333", "highlight": {"background": "#808080", "border": "#000000"}, "hover": {"background": "#808080", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "11.2", "label": " ", "layerGroup": 11, "level": 0, "shape": "dot", "size": 65.65685424949238, "title": "11.2 Gauge fixing", "visualColor": {"background": "#808080", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 175.0, "y": -17.5}]);
+                  nodes = new vis.DataSet([{"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.3", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 65.65685424949238, "title": "1.3 Principle of relativity", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 700, "y": 3977.5}, {"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.2", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 65.65685424949238, "title": "1.2 Constancy of the speed of light", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350, "y": 4000.0}, {"color": {"background": "#e6194b", "border": "#333333", "highlight": {"background": "#e6194b", "border": "#000000"}, "hover": {"background": "#e6194b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "1.1", "label": " ", "layerGroup": 1, "level": 10, "shape": "dot", "size": 66.92820323027551, "title": "1.1 Inertial frames", "visualColor": {"background": "#e6194b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 0, "y": 4000.0}, {"color": {"background": "#f58231", "border": "#333333", "highlight": {"background": "#f58231", "border": "#000000"}, "hover": {"background": "#f58231", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "2.2", "label": " ", "layerGroup": 2, "level": 9, "shape": "dot", "size": 69.79795897113272, "title": "2.2 Spacetime event", "visualColor": {"background": "#f58231", "border": "#333333"}, "visualSize": 69.79795897113272, "x": 0, "y": 3600.0}, {"color": {"background": "#f58231", "border": "#333333", "highlight": {"background": "#f58231", "border": "#000000"}, "hover": {"background": "#f58231", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "2.3", "label": " ", "layerGroup": 2, "level": 9, "shape": "dot", "size": 64.0, "title": "2.3 Principle of locality", "visualColor": {"background": "#f58231", "border": "#333333"}, "visualSize": 64.0, "x": 350, "y": 3600.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.3", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 73.26649916142159, "title": "3.3 Lorentz transformations", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 73.26649916142159, "x": 700, "y": 3177.5}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.2", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 68.94427190999916, "title": "3.2 Spacetime interval", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 350, "y": 3200.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.1", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 72.64911064067351, "title": "3.1 Metric tensor", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 72.64911064067351, "x": 0, "y": 3200.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.4", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 65.65685424949238, "title": "3.4 Light cone", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 1050, "y": 3110.0}, {"color": {"background": "#ffe119", "border": "#333333", "highlight": {"background": "#ffe119", "border": "#000000"}, "hover": {"background": "#ffe119", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "3.5", "label": " ", "layerGroup": 3, "level": 8, "shape": "dot", "size": 64.0, "title": "3.5 Minkowski diagram", "visualColor": {"background": "#ffe119", "border": "#333333"}, "visualSize": 64.0, "x": 1400, "y": 2997.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.1", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 68.0, "title": "4.1 Proper time", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 68.0, "x": 0, "y": 2800.0}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.2", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 72.0, "title": "4.2 Four-vectors", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 72.0, "x": 350, "y": 2800.0}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.3", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.3 Position four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 700, "y": 2777.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.4", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.4 Velocity four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 1050, "y": 2710.0}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.5", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 66.92820323027551, "title": "4.5 Momentum four-vector", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 1400, "y": 2597.5}, {"color": {"background": "#3cb44b", "border": "#333333", "highlight": {"background": "#3cb44b", "border": "#000000"}, "hover": {"background": "#3cb44b", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "4.6", "label": " ", "layerGroup": 4, "level": 7, "shape": "dot", "size": 64.0, "title": "4.6 Mass-energy equivalence", "visualColor": {"background": "#3cb44b", "border": "#333333"}, "visualSize": 64.0, "x": 1750, "y": 2440.0}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.2", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 68.94427190999916, "title": "5.2 Action principle", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 350, "y": 2400.0}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.1", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 68.94427190999916, "title": "5.1 Lagrangian", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 0, "y": 2400.0}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.3", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 66.92820323027551, "title": "5.3 Euler\u2013Lagrange equations", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 700, "y": 2377.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.5", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 64.0, "title": "5.5 Hamiltonian formalism", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 64.0, "x": 1400, "y": 2197.5}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.4", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 65.65685424949238, "title": "5.4 Canonical momentum", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 1050, "y": 2310.0}, {"color": {"background": "#46f0f0", "border": "#333333", "highlight": {"background": "#46f0f0", "border": "#000000"}, "hover": {"background": "#46f0f0", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "5.6", "label": " ", "layerGroup": 5, "level": 6, "shape": "dot", "size": 65.65685424949238, "title": "5.6 Noether\u0026#x27;s theorem", "visualColor": {"background": "#46f0f0", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 1750, "y": 2040.0}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.1", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 64.0, "title": "6.1 Scalar field", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 64.0, "x": 0, "y": 2000.0}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.2", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 65.65685424949238, "title": "6.2 Vector field", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350, "y": 2000.0}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.3", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 68.0, "title": "6.3 Field Lagrangian", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 68.0, "x": 700, "y": 1977.5}, {"color": {"background": "#4363d8", "border": "#333333", "highlight": {"background": "#4363d8", "border": "#000000"}, "hover": {"background": "#4363d8", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "6.4", "label": " ", "layerGroup": 6, "level": 5, "shape": "dot", "size": 64.0, "title": "6.4 Field equations", "visualColor": {"background": "#4363d8", "border": "#333333"}, "visualSize": 64.0, "x": 1050, "y": 1910.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.1", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 69.79795897113272, "title": "7.1 Vector potential \\(A_\\mu\\)", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": 0, "y": 1600.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.2", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 73.26649916142159, "title": "7.2 Field tensor \\(F_{\\mu\\nu}\\)", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 73.26649916142159, "x": 350, "y": 1600.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.3", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.3 Electric field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 700, "y": 1577.5}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.4", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.4 Magnetic field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 1050, "y": 1510.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.5", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 71.31370849898477, "title": "7.5 Electromagnetic field", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 71.31370849898477, "x": 1400, "y": 1397.5}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.7", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 69.79795897113272, "title": "7.7 Maxwell\u0026#x27;s equations", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": 2100, "y": 1037.5}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.6", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.6 Lorenz gauge", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 1400, "y": 997.5}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.1", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 68.0, "title": "8.1 Gauge invariance", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 68.0, "x": 0, "y": 1200.0}, {"color": {"background": "#911eb4", "border": "#333333", "highlight": {"background": "#911eb4", "border": "#000000"}, "hover": {"background": "#911eb4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "7.6", "label": " ", "layerGroup": 7, "level": 4, "shape": "dot", "size": 68.94427190999916, "title": "7.6 Four-current", "visualColor": {"background": "#911eb4", "border": "#333333"}, "visualSize": 68.94427190999916, "x": 1750, "y": 1240.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.3", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.3 Minimal coupling", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350, "y": 1200.0}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.4", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 65.65685424949238, "title": "8.4 Lorentz force law", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 700, "y": 1177.5}, {"color": {"background": "#f032e6", "border": "#333333", "highlight": {"background": "#f032e6", "border": "#000000"}, "hover": {"background": "#f032e6", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "8.5", "label": " ", "layerGroup": 8, "level": 3, "shape": "dot", "size": 64.0, "title": "8.5 Charge conservation", "visualColor": {"background": "#f032e6", "border": "#333333"}, "visualSize": 64.0, "x": 1050, "y": 1110.0}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.4", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.4 Energy density of EM field", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": 1050, "y": 710.0}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.2", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.2 Momentum density (Poynting vector)", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": 350, "y": 800.0}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.3", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 64.0, "title": "9.3 Stress\u2013energy of EM field", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 64.0, "x": 700, "y": 777.5}, {"color": {"background": "#fabed4", "border": "#333333", "highlight": {"background": "#fabed4", "border": "#000000"}, "hover": {"background": "#fabed4", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "9.1", "label": " ", "layerGroup": 9, "level": 2, "shape": "dot", "size": 69.79795897113272, "title": "9.1 Energy--momentum tensor", "visualColor": {"background": "#fabed4", "border": "#333333"}, "visualSize": 69.79795897113272, "x": 0, "y": 800.0}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.2", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 65.65685424949238, "title": "10.2 Electromagnetic waves", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350, "y": 400.0}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.1", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 65.65685424949238, "title": "10.1 Wave equation", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 0, "y": 400.0}, {"color": {"background": "#9a6324", "border": "#333333", "highlight": {"background": "#9a6324", "border": "#000000"}, "hover": {"background": "#9a6324", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "10.3", "label": " ", "layerGroup": 10, "level": 1, "shape": "dot", "size": 64.0, "title": "10.3 Radiation reaction", "visualColor": {"background": "#9a6324", "border": "#333333"}, "visualSize": 64.0, "x": 700, "y": 377.5}, {"color": {"background": "#808080", "border": "#333333", "highlight": {"background": "#808080", "border": "#000000"}, "hover": {"background": "#808080", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "11.1", "label": " ", "layerGroup": 11, "level": 0, "shape": "dot", "size": 66.92820323027551, "title": "11.1 Lorentz invariance", "visualColor": {"background": "#808080", "border": "#333333"}, "visualSize": 66.92820323027551, "x": 0, "y": 0.0}, {"color": {"background": "#808080", "border": "#333333", "highlight": {"background": "#808080", "border": "#000000"}, "hover": {"background": "#808080", "border": "#000000"}}, "font": {"color": "#222222"}, "id": "11.2", "label": " ", "layerGroup": 11, "level": 0, "shape": "dot", "size": 65.65685424949238, "title": "11.2 Gauge fixing", "visualColor": {"background": "#808080", "border": "#333333"}, "visualSize": 65.65685424949238, "x": 350, "y": 0.0}]);
                   edges = new vis.DataSet([{"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.3", "relation": "DERIVES_FROM", "title": "The Lorentz transformations are derived by\nimposing the principle of relativity together with\nthe constancy of the speed of light.", "to": "1.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.3", "relation": "DERIVES_FROM", "title": "The Lorentz transformations are derived by\nimposing invariant light speed together with the\nrelativity principle.", "to": "1.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "3.3", "relation": "PREREQUISITE", "title": "Lorentz transformations relate the coordinate\ndescriptions used by different inertial frames.", "to": "1.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "3.2", "relation": "PREREQUISITE", "title": "The spacetime interval measures the separation\nbetween spacetime events.", "to": "2.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "4.3", "relation": "PREREQUISITE", "title": "The position four-vector is formed by arranging\nthe coordinates of a spacetime event into a\nfour-vector.", "to": "2.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.3", "relation": "DERIVES_FROM", "title": "Lorentz transformations can be characterised as\nthe linear transformations that preserve the\nspacetime interval.", "to": "3.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.3", "relation": "DERIVES_FROM", "title": "In tensor form, Lorentz transformations are the\ntransformations that preserve the Minkowski\nmetric.", "to": "3.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "4.2", "relation": "PREREQUISITE", "title": "Four-vectors are defined by their transformation\nlaw under Lorentz transformations.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.2", "relation": "DERIVES_FROM", "title": "The spacetime interval is obtained by contracting\ncoordinate differences with the Minkowski metric.", "to": "3.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "3.1", "relation": "RELATED", "title": "The metric defines inner products of four-vectors,\nwhile four-vectors provide the objects on which\nthe metric acts.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "3.4", "relation": "DERIVES_FROM", "title": "The light cone is the set of directions or\nseparations for which the spacetime interval is\nzero.", "to": "3.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "3.5", "relation": "PREREQUISITE", "title": "A Minkowski diagram represents spacetime events\ngraphically using space and time axes.", "to": "2.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.1", "relation": "DERIVES_FROM", "title": "For timelike motion, proper time is obtained from\nthe spacetime interval along the world-line.", "to": "3.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "4.3", "relation": "PREREQUISITE", "title": "The position four-vector is a specific example of\nthe general four-vector concept.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "4.3", "relation": "PREREQUISITE", "title": "The position four-vector is defined so that its\ncomponents transform under Lorentz\ntransformations.", "to": "3.3", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "3.2", "relation": "RELATED", "title": "The spacetime interval is computed from\ndifferences of position four-vectors, with the\nmetric supplying the contraction.", "to": "4.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.4", "relation": "DERIVES_FROM", "title": "The velocity four-vector is obtained by\ndifferentiating the position four-vector with\nrespect to proper time, so proper time is part of\nthe construction.", "to": "4.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.4", "relation": "DERIVES_FROM", "title": "The velocity four-vector is obtained by\ndifferentiating the position four-vector with\nrespect to proper time.", "to": "4.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.5", "relation": "DERIVES_FROM", "title": "The momentum four-vector is obtained by\nmultiplying the velocity four-vector by the\nparticle mass.", "to": "4.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.6", "relation": "DERIVES_FROM", "title": "Mass-energy equivalence follows from the invariant\nnorm of the momentum four-vector.", "to": "4.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "4.6", "relation": "DERIVES_FROM", "title": "The energy-momentum relation is obtained by\ncontracting four-momentum with the Minkowski\nmetric.", "to": "3.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "5.2", "relation": "RELATED", "title": "Relativistic actions must be compatible with\nLorentz transformations, but the variational\nprinciple is not derived from them.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "5.2", "relation": "PREREQUISITE", "title": "The action principle is formulated by making\nstationary an action constructed from a\nLagrangian.", "to": "5.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "5.1", "relation": "PREREQUISITE", "title": "Relativistic Lagrangians are constructed from\ninvariant quantities such as the spacetime\ninterval.", "to": "3.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "5.1", "relation": "PREREQUISITE", "title": "Lorentz-invariant Lagrangians are built using\nscalars formed from objects such as four-vectors.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "5.3", "relation": "PREREQUISITE", "title": "The Euler\u2013Lagrange equations are equations for a\nspecified Lagrangian.", "to": "5.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "5.3", "relation": "DERIVES_FROM", "title": "The Euler\u2013Lagrange equations are obtained by\napplying the stationary-action condition to\nvariations of the path.", "to": "5.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "5.5", "relation": "DERIVES_FROM", "title": "Hamiltonian formalism is obtained from the\nLagrangian formulation by a Legendre transform.", "to": "5.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "5.5", "relation": "DERIVES_FROM", "title": "Hamiltonian formalism is obtained by introducing\ncanonical momentum and performing a Legendre\ntransform.", "to": "5.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "5.4", "relation": "DERIVES_FROM", "title": "Canonical momentum is defined as the derivative of\nthe Lagrangian with respect to the corresponding\nvelocity.", "to": "5.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "5.6", "relation": "DERIVES_FROM", "title": "Noether\u0026#x27;s theorem follows from applying continuous\nsymmetry variations to the stationary-action\ncondition.", "to": "5.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.1", "relation": "DERIVES_FROM", "title": "In field theory, the energy\u2013momentum tensor can be\nobtained as the Noether current associated with\nspacetime translations.", "to": "5.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "6.1", "relation": "PREREQUISITE", "title": "A scalar field is defined as assigning a value to\neach spacetime event.", "to": "2.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "6.1", "relation": "PREREQUISITE", "title": "A relativistic scalar field is characterised by\nits invariance under Lorentz transformations.", "to": "3.3", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "6.1", "relation": "RELATED", "title": "Scalar fields and four-vectors are contrasting\ntransformation types: scalars are invariant while\nfour-vectors have components that mix.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "6.2", "relation": "PREREQUISITE", "title": "A relativistic vector field is defined by how its\ncomponents transform under Lorentz\ntransformations.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "6.2", "relation": "PREREQUISITE", "title": "A relativistic vector field has components that\ntransform as a four-vector at each spacetime\npoint.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "6.3", "relation": "DERIVES_FROM", "title": "A field Lagrangian is obtained by extending the\naction principle from particle paths to spacetime\nfields via a local Lagrangian density.", "to": "5.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "6.4", "relation": "DERIVES_FROM", "title": "Field equations are obtained by varying the action\nconstructed from a field Lagrangian.", "to": "6.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "6.4", "relation": "PREREQUISITE", "title": "Relativistic field equations are required to\ntransform covariantly under Lorentz\ntransformations.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "6.4", "relation": "DERIVES_FROM", "title": "Field equations are obtained by applying the\nEuler\u2013Lagrange equations to fields rather than\nparticle coordinates.", "to": "5.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.1", "relation": "PREREQUISITE", "title": "The vector potential is a field defined over\nspacetime, assigning components at spacetime\nevents.", "to": "2.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.1", "relation": "PREREQUISITE", "title": "The vector potential is a specific relativistic\nvector field.", "to": "6.2", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "7.1", "relation": "RELATED", "title": "The vector potential is the field variable used in\nelectromagnetic Lagrangian formulations, but it is\nnot itself derived from a field Lagrangian.", "to": "6.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.2", "relation": "DERIVES_FROM", "title": "The electromagnetic field tensor is constructed\nfrom derivatives of the vector potential.", "to": "7.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.3", "relation": "DERIVES_FROM", "title": "The electric field components are obtained from\nthe time-space components of the field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.4", "relation": "DERIVES_FROM", "title": "The magnetic field components are obtained from\nthe spatial components of the field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.5", "relation": "PREREQUISITE", "title": "The relativistic electromagnetic field is\nrepresented compactly by the field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.3", "relation": "PREREQUISITE", "title": "The electric field is a frame-dependent component\nof the electromagnetic field, defined relative to\nan inertial frame.", "to": "1.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.5", "relation": "PREREQUISITE", "title": "The electromagnetic field combines electric and\nmagnetic fields into one relativistic field.", "to": "7.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.5", "relation": "PREREQUISITE", "title": "The electromagnetic field combines magnetic and\nelectric fields into one relativistic field.", "to": "7.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.7", "relation": "PREREQUISITE", "title": "Maxwell\u2019s equations are equations governing the\nelectromagnetic field.", "to": "7.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.7", "relation": "DERIVES_FROM", "title": "Maxwell\u2019s equations can be obtained by applying\nthe Euler\u2013Lagrange equations to the\nelectromagnetic field action.", "to": "5.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.7", "relation": "DERIVES_FROM", "title": "Maxwell\u2019s equations follow from varying the\nelectromagnetic field Lagrangian.", "to": "6.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.6", "relation": "DERIVES_FROM", "title": "The Lorenz gauge is obtained by imposing the\ncovariant divergence condition on the vector\npotential.", "to": "7.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "8.6", "relation": "PREREQUISITE", "title": "The significance of gauge choice depends on\ndistinguishing the vector potential from the\nphysical electromagnetic field it leaves\nunchanged.", "to": "7.5", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "8.6", "relation": "RELATED", "title": "The Lorenz gauge is closely associated with\nMaxwell\u2019s equations because it simplifies their\npotential form, but it is not derived from them.", "to": "7.7", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.1", "relation": "DERIVES_FROM", "title": "The gauge invariance of the electromagnetic field\nfollows because the antisymmetric field tensor is\nunchanged by adding a gradient to the vector\npotential.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "8.1", "relation": "PREREQUISITE", "title": "Gauge invariance concerns changes of potential\nthat leave the physical electromagnetic field\nunchanged.", "to": "7.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "8.6", "relation": "PREREQUISITE", "title": "The Lorenz gauge is a particular gauge choice, so\nit presupposes the gauge freedom expressed by\ngauge invariance.", "to": "8.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "7.6", "relation": "DERIVES_FROM", "title": "The four-current is constructed as the four-vector\ncombining charge density and current density.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.7", "relation": "PREREQUISITE", "title": "The sourced covariant form of Maxwell\u2019s equations\nuses the four-current as the source term.", "to": "7.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "8.5", "relation": "PREREQUISITE", "title": "Charge conservation is expressed locally as the\nvanishing four-divergence of the four-current.", "to": "7.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.3", "relation": "DERIVES_FROM", "title": "Minimal coupling is constructed by introducing the\nvector potential into the charged-particle\nmomentum or action.", "to": "7.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.3", "relation": "DERIVES_FROM", "title": "Minimal coupling is chosen so that the\ncharged-particle interaction respects gauge\ninvariance.", "to": "8.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.4", "relation": "DERIVES_FROM", "title": "The covariant Lorentz force law uses the velocity\nfour-vector in its tensor equation of motion.", "to": "4.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.4", "relation": "DERIVES_FROM", "title": "The covariant Lorentz force law gives the\nproper-time rate of change of the momentum\nfour-vector.", "to": "4.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.4", "relation": "DERIVES_FROM", "title": "The Lorentz force law is obtained by applying the\naction principle to a charged particle coupled to\nthe electromagnetic field.", "to": "5.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.4", "relation": "DERIVES_FROM", "title": "The covariant Lorentz force law is built from the\nelectromagnetic field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.4", "relation": "DERIVES_FROM", "title": "The Lorentz force law follows from the minimally\ncoupled action for a charged particle.", "to": "8.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "8.5", "relation": "DERIVES_FROM", "title": "Local charge conservation follows from the sourced\nMaxwell equations because the divergence of the\nantisymmetric field-tensor equation vanishes\nidentically.", "to": "7.7", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.4", "relation": "DERIVES_FROM", "title": "The electromagnetic energy density is constructed\nfrom the squared electric field and magnetic field\ncomponents.", "to": "7.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.4", "relation": "DERIVES_FROM", "title": "The electromagnetic energy density is constructed\nfrom the squared electric field and magnetic field\ncomponents.", "to": "7.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "9.4", "relation": "PREREQUISITE", "title": "Energy density is a property carried by the\nelectromagnetic field.", "to": "7.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.4", "relation": "DERIVES_FROM", "title": "The electromagnetic energy density is the\ntime-time component of the energy-momentum tensor.", "to": "9.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.2", "relation": "DERIVES_FROM", "title": "The Poynting vector is the energy-flux and\nmomentum-density expression for the\nelectromagnetic field.", "to": "7.5", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.3", "relation": "DERIVES_FROM", "title": "The electromagnetic stress-energy tensor uses the\nmetric to contract and raise or lower field-tensor\nindices.", "to": "3.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.3", "relation": "DERIVES_FROM", "title": "The electromagnetic stress-energy tensor is\nconstructed algebraically from the field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.1", "relation": "DERIVES_FROM", "title": "For the electromagnetic field, the energy-momentum\ntensor is constructed from the field tensor.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.2", "relation": "PREREQUISITE", "title": "Electromagnetic waves are self-propagating\noscillations involving the electric field.", "to": "7.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.2", "relation": "PREREQUISITE", "title": "Electromagnetic waves are self-propagating\noscillations involving the magnetic field.", "to": "7.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.2", "relation": "PREREQUISITE", "title": "Electromagnetic waves are propagating disturbances\nof the electromagnetic field.", "to": "7.5", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "10.2", "relation": "RELATED", "title": "Source-free electromagnetic waves are discussed in\nregions where the four-current vanishes, but the\nfour-current is not part of the wave itself.", "to": "7.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.1", "relation": "PREREQUISITE", "title": "The relativistic wave equation uses the metric to\nform the d\u2019Alembertian operator.", "to": "3.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.1", "relation": "PREREQUISITE", "title": "The potential form of the electromagnetic wave\nequation is written for the vector potential.", "to": "7.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.1", "relation": "DERIVES_FROM", "title": "The simple potential wave equation is obtained\nafter imposing the Lorenz gauge.", "to": "8.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.1", "relation": "PREREQUISITE", "title": "The sourced wave equation includes the\nfour-current as its source term.", "to": "7.6", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.2", "relation": "DERIVES_FROM", "title": "Electromagnetic waves are propagating solutions of\nthe electromagnetic wave equation.", "to": "10.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "10.3", "relation": "PREREQUISITE", "title": "Radiation reaction is a correction to the particle\nmotion described by the Lorentz force law.", "to": "8.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.3", "relation": "DERIVES_FROM", "title": "Radiation reaction follows from energy-momentum\ncarried away by the electromagnetic field.", "to": "9.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.3", "relation": "DERIVES_FROM", "title": "Radiation reaction arises because accelerating\ncharges emit electromagnetic waves.", "to": "10.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "11.1", "relation": "DERIVES_FROM", "title": "Lorentz invariance is defined as covariance under\nLorentz transformations.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "11.1", "relation": "DERIVES_FROM", "title": "Lorentz invariance preserves the Minkowski metric\nstructure.", "to": "3.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "11.1", "relation": "RELATED", "title": "Four-vectors provide a manifestly\nLorentz-covariant way to write physical laws.", "to": "4.2", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "11.1", "relation": "RELATED", "title": "The field tensor is a Lorentz-covariant object\nused to express electromagnetism in invariant\nform.", "to": "7.2", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "11.1", "relation": "RELATED", "title": "The energy-momentum tensor is a Lorentz-covariant\nobject whose components describe energy and\nmomentum consistently between frames.", "to": "9.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "11.2", "relation": "PREREQUISITE", "title": "Gauge fixing is the choice of a particular\nrepresentative vector potential from a\ngauge-equivalent family.", "to": "7.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "11.2", "relation": "PREREQUISITE", "title": "Gauge fixing changes the potential while leaving\nthe field tensor, and hence the physical field,\nunchanged.", "to": "7.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "11.2", "relation": "PREREQUISITE", "title": "Gauge fixing is meaningful because different\npotentials can represent the same electromagnetic\nfield.", "to": "7.5", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "8.6", "relation": "RELATED", "title": "The Lorenz gauge is a specific example of gauge\nfixing.", "to": "11.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "11.2", "relation": "DERIVES_FROM", "title": "Gauge fixing is possible because gauge invariance\ncreates gauge-equivalent potentials.", "to": "8.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "1.3", "relation": "RELATED", "title": "Expanded Principle of relativity explanation\nexplicitly connects the postulate to Lorentz\ninvariance as the modern form of\nobserver-independent physical laws.", "to": "11.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "3.5", "relation": "RELATED", "title": "Expanded Minkowski diagram text uses the diagram\nas a visual representation of Lorentz\ntransformations and tilted inertial-frame axes.", "to": "3.3", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "3.5", "relation": "RELATED", "title": "Expanded Minkowski diagram text treats light cones\nas a central geometric feature represented in the\ndiagram.", "to": "3.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "4.5", "relation": "PREREQUISITE", "title": "Expanded Momentum four-vector text uses the metric\ntensor to compute the invariant magnitude and\nmass-shell relation.", "to": "3.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "6.4", "relation": "RELATED", "title": "Expanded Field equations example explicitly uses\nMaxwell equations as the central electromagnetic\nexample of relativistic field equations.", "to": "7.7", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.2", "relation": "PREREQUISITE", "title": "Expanded Field tensor text introduces raising and\nlowering electromagnetic tensor indices using the\nmetric tensor, especially in equations such as\npartial_mu F^{mu nu}=J^nu.", "to": "3.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.2", "relation": "DERIVES_FROM", "title": "Expanded momentum-density text presents the\nPoynting vector/momentum flow as part of the\nenergy--momentum tensor.", "to": "9.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "9.3", "relation": "RELATED", "title": "The electromagnetic stress-energy tensor is the\nelectromagnetic-field instance of the more general\nenergy--momentum tensor.", "to": "9.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.2", "relation": "DERIVES_FROM", "title": "Expanded electromagnetic-wave text explicitly\nstates that source-free Maxwell equations imply\npropagating electromagnetic waves.", "to": "7.7", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "11.2", "relation": "RELATED", "title": "Expanded gauge-fixing text notes that the Lorenz\ngauge is useful because it respects Lorentz\ninvariance.", "to": "11.1", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.2", "relation": "DERIVES_FROM", "title": "The Poynting vector is constructed from the cross\nproduct of the electric and magnetic fields.", "to": "7.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "9.2", "relation": "DERIVES_FROM", "title": "The Poynting vector is constructed from the cross\nproduct of the electric and magnetic fields.", "to": "7.4", "width": 5.0}, {"arrows": "to", "color": {"color": "#1f77b4", "highlight": "#1f77b4", "hover": "#1f77b4"}, "from": "10.1", "relation": "DERIVES_FROM", "title": "The electromagnetic wave equation is obtained from\nMaxwell equations in potential form.", "to": "7.7", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "3.4", "relation": "RELATED", "title": "Light cone structure is preserved by Lorentz\ntransformations, but it is derived from the\nspacetime interval rather than from the\ntransformation rule.", "to": "3.3", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "4.3", "relation": "RELATED", "title": "Metric contractions give invariant intervals\nbetween position four-vectors, but the position\nfour-vector itself is not derived from the metric.", "to": "3.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "5.1", "relation": "RELATED", "title": "Relativistic Lagrangians may be built from proper\ntime, but the general Lagrangian concept is not\nderived from proper time.", "to": "4.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "5.2", "relation": "RELATED", "title": "Relativistic actions often use proper time as an\ninvariant ingredient, but the action principle is\nmore general.", "to": "4.1", "width": 5.0}, {"arrows": "", "color": {"color": "#c8c8c8", "highlight": "#c8c8c8", "hover": "#c8c8c8"}, "from": "5.2", "relation": "RELATED", "title": "Relativistic actions are constructed from\nLorentz-scalar combinations of four-vectors, but\nthe action principle is not derived from\nfour-vectors.", "to": "4.2", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.5", "relation": "PREREQUISITE", "title": "Understanding the unified electromagnetic field\nrequires Lorentz transformations because electric\nand magnetic components mix between inertial\nframes.", "to": "3.3", "width": 5.0}, {"arrows": "to", "color": {"color": "#d62728", "highlight": "#d62728", "hover": "#d62728"}, "from": "7.7", "relation": "PREREQUISITE", "title": "Maxwell\u0026#x27;s equations in covariant form are written\nusing the electromagnetic field tensor.", "to": "7.2", "width": 5.0}]);
 
                   nodeColors = {};
@@ -596,6 +602,7 @@
       var layoutXSpacing = 350;
       var layoutYSpacing = 400;
       var layoutRowStagger = 35;
+      var edgeHoverWidth = 9.0;
 
       function kgAfterReady() {
         var allNodes = nodes.get();
@@ -612,7 +619,11 @@
         var enabledEdgeRelations = {};
         var currentView = {mode: "all", nodeId: null};
         var activeNodeId = null;
+        var hoveredEdgeId = null;
+        var hoveredEdgeBeforeHover = null;
         var svgImageCache = {};
+        var activeNodeRadiusScale = 1.4;
+        var activeNodeBorderWidth = 6;
 
         /*
          * Custom node rendering
@@ -704,7 +715,8 @@
             }
 
             var dom = network.canvasToDOM(pos);
-            var radius = Number(node.visualSize) || Number(node.size) || 18;
+            var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+            var radius = id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius;
             var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
             var radiusPx = Math.abs(radiusEdge.x - dom.x);
             var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
@@ -730,7 +742,9 @@
             var pos = positions[node.id];
             if (!pos) { return; }
 
-            var radius = Number(node.visualSize) || 18;
+            var baseRadius = Number(node.visualSize) || 18;
+            var isActive = node.id === activeNodeId;
+            var radius = isActive ? baseRadius * activeNodeRadiusScale : baseRadius;
             var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
             var color = node.visualColor || {};
             var fill = color.background || "#999999";
@@ -769,14 +783,9 @@
               ctx.restore();
             }
 
-            ctx.lineWidth = svgImage ? 4 : 1.5;
-            ctx.strokeStyle = svgImage ? fill : (node.id === activeNodeId ? "#000000" : border);
+            ctx.lineWidth = isActive ? activeNodeBorderWidth : (svgImage ? 4 : 1.5);
+            ctx.strokeStyle = isActive ? "#000000" : (svgImage ? fill : border);
             ctx.stroke();
-            if (svgImage && node.id === activeNodeId) {
-              ctx.lineWidth = 2;
-              ctx.strokeStyle = "#000000";
-              ctx.stroke();
-            }
             ctx.restore();
           });
         }
@@ -922,15 +931,21 @@
 
         function updateModeButtons() {
           var inNeighbourhood = currentView.mode === "neighbourhood";
+          var inDescendants = currentView.mode === "descendants";
           var neighbourhoodButton = document.getElementById("kg_mode_neighbourhood");
+          var descendantsButton = document.getElementById("kg_mode_descendants");
           var allButton = document.getElementById("kg_mode_all");
           if (neighbourhoodButton) {
             neighbourhoodButton.classList.toggle("kg-active", inNeighbourhood);
             neighbourhoodButton.setAttribute("aria-pressed", inNeighbourhood ? "true" : "false");
           }
+          if (descendantsButton) {
+            descendantsButton.classList.toggle("kg-active", inDescendants);
+            descendantsButton.setAttribute("aria-pressed", inDescendants ? "true" : "false");
+          }
           if (allButton) {
-            allButton.classList.toggle("kg-active", !inNeighbourhood);
-            allButton.setAttribute("aria-pressed", inNeighbourhood ? "false" : "true");
+            allButton.classList.toggle("kg-active", !inNeighbourhood && !inDescendants);
+            allButton.setAttribute("aria-pressed", (!inNeighbourhood && !inDescendants) ? "true" : "false");
           }
         }
 
@@ -1075,6 +1090,44 @@
           return enabledEdgeRelations[relation] !== false;
         }
 
+        function edgeRelationDirected(edge) {
+          var relation = edgeRelation(edge);
+          var item = edgeKey[relation] || {};
+          return item.directed === true;
+        }
+
+        function setEdgeHidden(edge, hidden) {
+          edge.hidden = hidden;
+          if (hidden) {
+            edge.title = "";
+          } else if (originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
+            edge.title = originalEdges[edge.id].title;
+          }
+          return edge;
+        }
+
+        function setEdgeTooltipEnabled(edge, enabled) {
+          if (enabled && originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
+            edge.title = originalEdges[edge.id].title;
+          } else if (!enabled) {
+            edge.title = "";
+          }
+          return edge;
+        }
+
+        function edgeHoverableInCurrentView(edge) {
+          if (!edge || edge.hidden || !edgeRelationEnabled(edge)) {
+            return false;
+          }
+          if (currentView.mode === "highlight" && currentView.nodeId !== null) {
+            return edge.from == currentView.nodeId || edge.to == currentView.nodeId;
+          }
+          if (currentView.mode === "descendants") {
+            return edgeRelationDirected(edge);
+          }
+          return true;
+        }
+
         function enabledConnectedNodes(nodeId) {
           var connected = {};
           allEdges.forEach(function(edge) {
@@ -1083,6 +1136,27 @@
             if (edge.to == nodeId) { connected[edge.from] = true; }
           });
           return Object.keys(connected);
+        }
+
+        function enabledDirectedDescendants(nodeId) {
+          var keep = {};
+          var queue = [String(nodeId)];
+          keep[String(nodeId)] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            allEdges.forEach(function(edge) {
+              if (!edgeRelationEnabled(edge) || !edgeRelationDirected(edge)) { return; }
+              if (String(edge.from) !== current) { return; }
+
+              var target = String(edge.to);
+              if (keep[target]) { return; }
+              keep[target] = true;
+              queue.push(target);
+            });
+          }
+
+          return keep;
         }
 
         function relationColour(relation) {
@@ -1124,7 +1198,44 @@
             kgApplyNeighbourhood(currentView.nodeId, true);
             return;
           }
+          if (currentView.mode === "descendants" && currentView.nodeId !== null) {
+            kgApplyDescendants(currentView.nodeId, true);
+            return;
+          }
           kgReset(true);
+        }
+
+        function restoreHoveredEdge() {
+          if (hoveredEdgeId === null || hoveredEdgeBeforeHover === null) {
+            return;
+          }
+          if (edges.get(hoveredEdgeId)) {
+            edges.update(Object.assign({}, hoveredEdgeBeforeHover));
+          }
+          hoveredEdgeId = null;
+          hoveredEdgeBeforeHover = null;
+        }
+
+        function highlightHoveredEdge(edgeId) {
+          restoreHoveredEdge();
+
+          var edge = edges.get(edgeId);
+          if (!edgeHoverableInCurrentView(edge)) {
+            return;
+          }
+
+          var currentWidth = Number(edge.width);
+          if (!Number.isFinite(currentWidth) || currentWidth <= 0) {
+            currentWidth = 1;
+          }
+
+          hoveredEdgeId = edgeId;
+          hoveredEdgeBeforeHover = Object.assign({}, edge);
+
+          var hoverStyle = Object.assign({}, edge);
+          hoverStyle.width = Math.max(currentWidth, edgeHoverWidth);
+          hoverStyle.color = Object.assign({}, edge.color || {}, {opacity: 1.0});
+          edges.update(hoverStyle);
         }
 
         function showConcept(nodeId) {
@@ -1212,13 +1323,21 @@
         window.kgToggleInfoPanel = function() {
           var panel = document.getElementById("info_panel");
           setInfoPanelVisible(panel.classList.contains("kg-hidden"));
-          updateNodeLabelPositions();
+          if (currentView.mode === "highlight" && activeNodeId !== null) {
+            fitHighlightedSelection(activeNodeId);
+          } else {
+            updateNodeLabelPositions();
+          }
         };
 
         window.kgToggleControls = function() {
           var panel = document.getElementById("kg_controls");
           setControlsVisible(panel.classList.contains("kg-hidden"));
-          updateNodeLabelPositions();
+          if (currentView.mode === "highlight" && activeNodeId !== null) {
+            fitHighlightedSelection(activeNodeId);
+          } else {
+            updateNodeLabelPositions();
+          }
         };
 
         function setActiveConceptItem(nodeId) {
@@ -1235,15 +1354,115 @@
           }
         }
 
+        function panelAdjustedGraphCenter() {
+          var containerRect = graphContainer.getBoundingClientRect();
+          var leftInset = 0;
+          var rightInset = 0;
+          var margin = 24;
+          var controlsPanel = document.getElementById("kg_controls");
+          var infoPanel = document.getElementById("info_panel");
+
+          if (controlsPanel && !controlsPanel.classList.contains("kg-hidden")) {
+            var controlsRect = controlsPanel.getBoundingClientRect();
+            leftInset = Math.max(
+              leftInset,
+              Math.min(containerRect.right, controlsRect.right) - containerRect.left + margin
+            );
+          }
+
+          if (infoPanel && !infoPanel.classList.contains("kg-hidden")) {
+            var infoRect = infoPanel.getBoundingClientRect();
+            rightInset = Math.max(
+              rightInset,
+              containerRect.right - Math.max(containerRect.left, infoRect.left) + margin
+            );
+          }
+
+          leftInset = Math.max(0, Math.min(leftInset, containerRect.width * 0.45));
+          rightInset = Math.max(0, Math.min(rightInset, containerRect.width * 0.45));
+
+          if (leftInset + rightInset > containerRect.width * 0.8) {
+            leftInset = 0;
+            rightInset = 0;
+          }
+
+          return {
+            x: leftInset + ((containerRect.width - leftInset - rightInset) / 2),
+            y: containerRect.height / 2
+          };
+        }
+
+        function nodeBoundsCenter(nodeIds) {
+          var positions = network.getPositions(nodeIds);
+          var minX = Infinity;
+          var maxX = -Infinity;
+          var minY = Infinity;
+          var maxY = -Infinity;
+
+          nodeIds.forEach(function(id) {
+            var pos = positions[id];
+            if (!pos) { return; }
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxY = Math.max(maxY, pos.y);
+          });
+
+          if (!Number.isFinite(minX)) {
+            return null;
+          }
+
+          return {
+            x: (minX + maxX) / 2,
+            y: (minY + maxY) / 2
+          };
+        }
+
+        function shiftViewForPanels(nodeIds) {
+          var graphCenter = nodeBoundsCenter(nodeIds);
+          if (!graphCenter) { return; }
+
+          var desiredDomCenter = panelAdjustedGraphCenter();
+          var currentCanvasAtDesiredCenter = network.DOMtoCanvas(desiredDomCenter);
+          var viewPosition = network.getViewPosition();
+          var targetPosition = {
+            x: viewPosition.x + graphCenter.x - currentCanvasAtDesiredCenter.x,
+            y: viewPosition.y + graphCenter.y - currentCanvasAtDesiredCenter.y
+          };
+
+          network.moveTo({
+            position: targetPosition,
+            scale: network.getScale(),
+            animation: {
+              duration: 250,
+              easingFunction: "easeInOutQuad"
+            }
+          });
+        }
+
+        function fitHighlightedSelection(nodeId) {
+          var fitIds = [String(nodeId)];
+          enabledConnectedNodes(nodeId).forEach(function(id) {
+            if (originalNodes[id] && fitIds.indexOf(id) === -1) {
+              fitIds.push(id);
+            }
+          });
+
+          network.fit({nodes: fitIds, animation: false});
+          if (network.getScale() > 0.7) {
+            network.moveTo({scale: 0.7, animation: false});
+          }
+          shiftViewForPanels(fitIds);
+        }
+
         function focusConcept(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
           activeNodeId = nodeId;
           kgHighlight(nodeId, true);
-          network.focus(nodeId, {scale: 0.7, animation: true, locked: false});
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
-          setInfoPanelVisible(true);
+          fitHighlightedSelection(nodeId);
           if (!options.skipHistory) {
             pushConceptHistory(nodeId, "highlight");
           }
@@ -1258,7 +1477,6 @@
           kgApplyNeighbourhood(nodeId, true);
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
-          setInfoPanelVisible(true);
           if (!options.skipHistory) {
             pushConceptHistory(nodeId, "neighbourhood");
           }
@@ -1268,6 +1486,24 @@
             (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
             "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
             " neighbour" + (neighbourCount === 1 ? "" : "s") +
+            ". Click a visible node to walk one step.";
+        }
+
+        function focusDescendants(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          kgApplyDescendants(nodeId, true);
+          showConcept(nodeId);
+          setActiveConceptItem(nodeId);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId, "descendants");
+          }
+
+          var descendantCount = Math.max(0, Object.keys(enabledDirectedDescendants(nodeId)).length - 1);
+          document.getElementById("kg_status").innerText =
+            (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
+            "Descendants mode: " + nodeId + " plus " + descendantCount +
+            " reachable node" + (descendantCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
         }
 
@@ -1307,6 +1543,7 @@
         }
 
         window.kgReset = function(preserveStatus) {
+          restoreHoveredEdge();
           network.unselectAll();
           currentView = {mode: "all", nodeId: null};
           activeNodeId = null;
@@ -1319,8 +1556,7 @@
           }));
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = !edgeRelationEnabled(e);
-            return o;
+            return setEdgeHidden(o, !edgeRelationEnabled(e));
           }));
           updateNodeLabelPositions();
           if (!preserveStatus) {
@@ -1352,6 +1588,7 @@
         };
 
         window.kgHighlight = function(nodeId, preserveStatus) {
+          restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "highlight", nodeId: nodeId};
           updateModeButtons();
@@ -1381,11 +1618,11 @@
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
             if (!edgeRelationEnabled(e)) {
-              o.hidden = true;
+              return setEdgeHidden(o, true);
             } else if (e.from == nodeId || e.to == nodeId) {
-              o.hidden = false;
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
+              return setEdgeHidden(o, false);
             } else {
               o.color = {
                 color: "#cccccc",
@@ -1394,9 +1631,9 @@
                 opacity: 0.10
               };
               o.width = 0.4;
-              o.hidden = false;
+              o = setEdgeHidden(o, false);
+              return setEdgeTooltipEnabled(o, false);
             }
-            return o;
           }));
           network.unselectAll();
           updateNodeLabelPositions();
@@ -1408,6 +1645,7 @@
         };
 
         function kgApplyNeighbourhood(nodeId, preserveStatus) {
+          restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "neighbourhood", nodeId: nodeId};
           updateModeButtons();
@@ -1432,8 +1670,7 @@
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            o.hidden = !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]);
-            return o;
+            return setEdgeHidden(o, !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]));
           }));
 
           network.fit({animation: false});
@@ -1443,6 +1680,48 @@
             document.getElementById("kg_status").innerText =
               "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
               " neighbour" + (neighbourCount === 1 ? "" : "s") +
+              ". Click a visible node to walk one step.";
+          }
+        }
+
+        function kgApplyDescendants(nodeId, preserveStatus) {
+          restoreHoveredEdge();
+          activeNodeId = nodeId;
+          currentView = {mode: "descendants", nodeId: nodeId};
+          updateModeButtons();
+          var keep = enabledDirectedDescendants(nodeId);
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return keep[id];
+          });
+          var compactPositions = buildCompactLayerPositions(visibleIds);
+
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            o.hidden = !keep[n.id];
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
+            return o;
+          }));
+
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            return setEdgeHidden(o, !(
+              edgeRelationEnabled(e) &&
+              edgeRelationDirected(e) &&
+              keep[String(e.from)] &&
+              keep[String(e.to)]
+            ));
+          }));
+
+          network.fit({animation: false});
+          updateNodeLabelPositions();
+          if (!preserveStatus) {
+            var descendantCount = Math.max(0, visibleIds.length - 1);
+            document.getElementById("kg_status").innerText =
+              "Descendants mode: " + nodeId + " plus " + descendantCount +
+              " reachable node" + (descendantCount === 1 ? "" : "s") +
               ". Click a visible node to walk one step.";
           }
         }
@@ -1458,6 +1737,17 @@
           focusNeighbourhood(nodeId);
         };
 
+        window.kgFocusDescendantsSelected = function() {
+          var selected = network.getSelectedNodes();
+          var nodeId = activeNodeId || selected[0];
+          if (!nodeId) {
+            document.getElementById("kg_status").innerText = "Select a node first.";
+            return;
+          }
+
+          focusDescendants(nodeId);
+        };
+
         network.on("click", function(params) {
 
             if (params.nodes.length === 0)
@@ -1467,9 +1757,23 @@
 
             if (currentView.mode === "neighbourhood") {
               focusNeighbourhood(nodeId);
+            } else if (currentView.mode === "descendants") {
+              focusDescendants(nodeId);
             } else {
               focusConcept(nodeId, "Selected");
             }
+        });
+
+        network.on("hoverEdge", function(params) {
+          if (params.edge !== undefined && params.edge !== null) {
+            highlightHoveredEdge(params.edge);
+          }
+        });
+
+        network.on("blurEdge", function(params) {
+          if (params.edge === hoveredEdgeId) {
+            restoreHoveredEdge();
+          }
         });
 
         network.on("afterDrawing", function(ctx) {
@@ -1480,6 +1784,7 @@
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", updateNodeLabelPositions);
+        graphContainer.addEventListener("mouseleave", restoreHoveredEdge);
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
@@ -1491,6 +1796,8 @@
           if (nodeId && getConcept(nodeId)) {
             if (mode === "neighbourhood") {
               focusNeighbourhood(nodeId, null, {skipHistory: true});
+            } else if (mode === "descendants") {
+              focusDescendants(nodeId, null, {skipHistory: true});
             } else {
               focusConcept(nodeId, "Selected", {skipHistory: true});
             }
@@ -1531,7 +1838,13 @@
           var id = link.getAttribute("data-concept-id");
           if (!getConcept(id)) { return; }
 
-          focusConcept(id, "Selected");
+          if (currentView.mode === "neighbourhood") {
+            focusNeighbourhood(id, "Selected");
+          } else if (currentView.mode === "descendants") {
+            focusDescendants(id, "Selected");
+          } else {
+            focusConcept(id, "Selected");
+          }
         });
 
         // Build legend from node groups.
@@ -1555,8 +1868,7 @@
         buildConceptList("");
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
-          o.hidden = !edgeRelationEnabled(e);
-          return o;
+          return setEdgeHidden(o, !edgeRelationEnabled(e));
         }));
         allEdges = edges.get();
 
