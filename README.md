@@ -111,7 +111,7 @@ The review sheet also shows the `icon_caption` and `detail_caption` fields from 
 
 The left control panel provides:
 
-- search by concept ID, title, layer text, definition, derivation, or explanation text
+- search by concept ID, title, definition, derivation, or explanation text, with highlighted result snippets and details-panel matches
 - a scrollable concept list
 - an all-graph control
 - neighbourhood mode for the selected node

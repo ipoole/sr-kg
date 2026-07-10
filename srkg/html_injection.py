@@ -233,6 +233,31 @@ def inject_controls(
         background: #dbe8ff;
         font-weight: 700;
       }
+      .kg-search-hit-title {
+        display: block;
+      }
+      .kg-search-snippets {
+        display: block;
+        margin-top: 3px;
+      }
+      .kg-search-snippet {
+        color: #444;
+        display: block;
+        font-size: 0.95em;
+        font-weight: 400;
+        line-height: 1.25;
+        margin-top: 2px;
+      }
+      .kg-search-field {
+        color: #666;
+        font-weight: 700;
+      }
+      .kg-search-mark {
+        background: #ffeb70;
+        border-radius: 2px;
+        color: #111;
+        padding: 0 1px;
+      }
       .kg-concept-id {
         color: #555;
         font-variant-numeric: tabular-nums;
@@ -631,7 +656,7 @@ def inject_controls(
       <details id="kg_search_section" class="kg-fold" open>
         <summary>Search</summary>
         <div id="kg_search_block">
-          <input id="kg_search" placeholder="Search ID or title, e.g. 3.1 or Lorentz">
+          <input id="kg_search" placeholder="Search ID, title, or concept text">
           <button onclick="kgSearch()">Find</button>
         </div>
         <div id="kg_concept_list"></div>
@@ -891,12 +916,6 @@ def inject_controls(
           enabledEdgeRelations[relation] = edgeKey[relation].directed !== false;
         });
 
-        function htmlToText(s) {
-          var div = document.createElement("div");
-          div.innerHTML = s || "";
-          return (div.textContent || div.innerText || "").toLowerCase();
-        }
-
         function escapeHtml(s) {
           return String(s || "")
             .replace(/&/g, "&amp;")
@@ -953,7 +972,8 @@ def inject_controls(
           return html;
         }
 
-        function typesetInfoPanel() {
+        function typesetInfoPanel(options) {
+          options = options || {};
           var panel = document.getElementById("info_panel");
           schedulePanelContentRefit();
           if (window.MathJax && MathJax.typesetPromise) {
@@ -963,8 +983,79 @@ def inject_controls(
             MathJax.typesetPromise([panel]).catch(function(err) {
               console.warn("MathJax typesetting failed:", err);
             }).then(function() {
+              applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
               schedulePanelContentRefit();
             });
+          } else if (options.searchQuery) {
+            setTimeout(function() {
+              applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
+              schedulePanelContentRefit();
+            }, 250);
+          }
+        }
+
+        function shouldSkipSearchHighlightNode(node) {
+          var el = node.parentElement;
+          if (!el) { return true; }
+          return Boolean(el.closest(
+            "mark, .study-questions, svg, mjx-container, script, style"
+          ));
+        }
+
+        function applyInfoPanelSearchHighlight(query, scrollToMatch) {
+          var normalizedQuery = searchDisplayText(query).toLowerCase();
+          if (!normalizedQuery) { return; }
+
+          var panel = document.getElementById("info_panel");
+          var walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT, {
+            acceptNode: function(node) {
+              if (shouldSkipSearchHighlightNode(node)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              if (node.nodeValue.toLowerCase().indexOf(normalizedQuery) === -1) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          });
+
+          var matches = [];
+          var node;
+          while ((node = walker.nextNode())) {
+            matches.push(node);
+          }
+
+          var firstMark = null;
+          matches.forEach(function(textNode) {
+            var value = textNode.nodeValue;
+            var lower = value.toLowerCase();
+            var fragment = document.createDocumentFragment();
+            var cursor = 0;
+            var index = lower.indexOf(normalizedQuery);
+
+            while (index !== -1) {
+              if (index > cursor) {
+                fragment.appendChild(document.createTextNode(value.slice(cursor, index)));
+              }
+
+              var mark = document.createElement("mark");
+              mark.className = "kg-search-mark kg-detail-search-mark";
+              mark.textContent = value.slice(index, index + normalizedQuery.length);
+              fragment.appendChild(mark);
+              if (!firstMark) { firstMark = mark; }
+
+              cursor = index + normalizedQuery.length;
+              index = lower.indexOf(normalizedQuery, cursor);
+            }
+
+            if (cursor < value.length) {
+              fragment.appendChild(document.createTextNode(value.slice(cursor)));
+            }
+            textNode.parentNode.replaceChild(fragment, textNode);
+          });
+
+          if (scrollToMatch && firstMark) {
+            firstMark.scrollIntoView({block: "center", inline: "nearest"});
           }
         }
 
@@ -1129,18 +1220,93 @@ def inject_controls(
           return positions;
         }
 
-        function conceptSearchText(nodeId, node) {
+        function searchDisplayText(s) {
+          return String(s || "")
+            .replace(/\\\\cref\\{([^{}]*)\\}\\{([^{}]*)\\}/g, "$1")
+            .replace(/\\s+/g, " ")
+            .trim();
+        }
+
+        function searchFieldsForConcept(nodeId) {
           var concept = getConcept(nodeId) || {};
           return [
-            String(nodeId),
-            node && node.label ? String(node.label) : "",
-            concept.label || "",
-            concept.layer || "",
-            concept.layer_title || "",
-            concept.definition_new || "",
-            concept.derivation_new || "",
-            concept.explanation_new || ""
-          ].join(" ").toLowerCase();
+            {name: "ID", value: String(nodeId)},
+            {name: "Title", value: concept.label || ""},
+            {name: "Definition", value: concept.definition_new || ""},
+            {name: "Derivation", value: concept.derivation_new || ""},
+            {name: "Explanation", value: concept.explanation_new || ""}
+          ].map(function(field) {
+            return {
+              name: field.name,
+              value: searchDisplayText(field.value)
+            };
+          });
+        }
+
+        function fieldContainsQuery(field, query) {
+          return field.value.toLowerCase().indexOf(query) !== -1;
+        }
+
+        function matchingSearchFields(nodeId, query) {
+          return searchFieldsForConcept(nodeId).filter(function(field) {
+            return fieldContainsQuery(field, query);
+          });
+        }
+
+        function matchingSearchIds(query) {
+          var ids = Object.keys(conceptData).sort(compareConceptIds);
+          if (!query) { return ids; }
+          return ids.filter(function(id) {
+            return matchingSearchFields(id, query).length > 0;
+          });
+        }
+
+        function highlightedSearchText(text, query) {
+          var value = String(text || "");
+          if (!query) { return escapeHtml(value); }
+
+          var lower = value.toLowerCase();
+          var html = "";
+          var cursor = 0;
+          var index = lower.indexOf(query);
+          while (index !== -1) {
+            html += escapeHtml(value.slice(cursor, index));
+            html += '<mark class="kg-search-mark">' +
+              escapeHtml(value.slice(index, index + query.length)) +
+              "</mark>";
+            cursor = index + query.length;
+            index = lower.indexOf(query, cursor);
+          }
+          html += escapeHtml(value.slice(cursor));
+          return html;
+        }
+
+        function searchSnippet(field, query) {
+          var value = field.value;
+          var lower = value.toLowerCase();
+          var index = lower.indexOf(query);
+          if (index === -1) { return ""; }
+
+          var context = 55;
+          var start = Math.max(0, index - context);
+          var end = Math.min(value.length, index + query.length + context);
+          if (start > 0) {
+            var previousSpace = value.indexOf(" ", start);
+            if (previousSpace !== -1 && previousSpace < index) {
+              start = previousSpace + 1;
+            }
+          }
+          if (end < value.length) {
+            var nextSpace = value.lastIndexOf(" ", end);
+            if (nextSpace > index + query.length) {
+              end = nextSpace;
+            }
+          }
+
+          var snippet = value.slice(start, end);
+          return (start > 0 ? "... " : "") +
+            highlightedSearchText(snippet, query) +
+            (end < value.length ? " ..." : "");
         }
 
         function edgeRelation(edge) {
@@ -1300,13 +1466,14 @@ def inject_controls(
           edges.update(hoverStyle);
         }
 
-        function showConcept(nodeId) {
+        function showConcept(nodeId, options) {
+          options = options || {};
           var concept = getConcept(nodeId);
           if (!concept) {
             document.getElementById("info_panel").innerHTML =
               "<h2>" + escapeHtml(nodeId) + "</h2>" +
               "<p>No concept data was found for this node.</p>";
-            typesetInfoPanel();
+            typesetInfoPanel(options);
             return;
           }
 
@@ -1361,7 +1528,7 @@ def inject_controls(
             html += "</details>";
           }
           document.getElementById("info_panel").innerHTML = html;
-          typesetInfoPanel();
+          typesetInfoPanel(options);
         }
 
         window.kgShowEdgeKey = function() {
@@ -1408,13 +1575,13 @@ def inject_controls(
         window.kgToggleInfoPanel = function() {
           var panel = document.getElementById("info_panel");
           setInfoPanelVisible(panel.classList.contains("kg-hidden"));
-          refitCurrentViewForPanels();
+          refitCurrentViewForPanels(true);
         };
 
         window.kgToggleControls = function() {
           var panel = document.getElementById("kg_controls");
           setControlsVisible(panel.classList.contains("kg-hidden"));
-          refitCurrentViewForPanels();
+          refitCurrentViewForPanels(true);
         };
 
         function setActiveConceptItem(nodeId) {
@@ -1735,7 +1902,10 @@ def inject_controls(
           if (!getConcept(nodeId)) { return; }
           activeNodeId = nodeId;
           kgHighlight(nodeId, true);
-          showConcept(nodeId);
+          showConcept(nodeId, {
+            searchQuery: options.searchQuery,
+            scrollToSearchMatch: options.scrollToSearchMatch
+          });
           setActiveConceptItem(nodeId);
           fitHighlightedSelection(nodeId);
           if (!options.skipHistory) {
@@ -1783,30 +1953,41 @@ def inject_controls(
         }
 
         function buildConceptList(filterText) {
-          var q = String(filterText || "").trim().toLowerCase();
-          var ids = Object.keys(conceptData).sort(compareConceptIds);
+          var q = searchDisplayText(filterText).toLowerCase();
+          var ids = matchingSearchIds(q);
           var html = "";
           var count = 0;
 
           ids.forEach(function(id) {
             var concept = getConcept(id);
-            var haystack = [
-              id,
-              concept.label || "",
-              concept.layer || "",
-              concept.layer_title || "",
-              concept.definition_new || "",
-              concept.derivation_new || "",
-              concept.explanation_new || ""
-            ].join(" ").toLowerCase();
-            if (q && !haystack.includes(q)) { return; }
+            var label = searchDisplayText(concept.label || "");
+            var titleHtml = '<span class="kg-search-hit-title">' +
+              '<span class="kg-concept-id">' + highlightedSearchText(id, q) + "</span> " +
+              highlightedSearchText(label, q) +
+              "</span>";
+            var snippetHtml = "";
+
+            if (q) {
+              var snippets = matchingSearchFields(id, q).filter(function(field) {
+                return field.name !== "ID" && field.name !== "Title";
+              }).slice(0, 2);
+              if (snippets.length > 0) {
+                snippetHtml += '<span class="kg-search-snippets">';
+                snippets.forEach(function(field) {
+                  snippetHtml += '<span class="kg-search-snippet">' +
+                    '<span class="kg-search-field">' + escapeHtml(field.name) + ":</span> " +
+                    searchSnippet(field, q) +
+                    "</span>";
+                });
+                snippetHtml += "</span>";
+              }
+            }
 
             html += '<button type="button" class="kg-concept-item" data-concept-id="' +
               escapeHtml(id) +
-              '"><span class="kg-concept-id">' +
-              escapeHtml(id) +
-              '</span> ' +
-              escapeHtml(concept.label || "") +
+              '">' +
+              titleHtml +
+              snippetHtml +
               "</button>";
             count += 1;
           });
@@ -1843,21 +2024,23 @@ def inject_controls(
         window.kgShowAll = window.kgReset;
 
         window.kgSearch = function() {
-          var q = document.getElementById("kg_search").value.trim().toLowerCase();
+          var q = searchDisplayText(document.getElementById("kg_search").value).toLowerCase();
           if (!q) { return; }
 
-          var matches = allNodes.filter(function(n) {
-            return conceptSearchText(n.id, n).includes(q) || htmlToText(n.title || "").includes(q);
-          });
+          var matches = matchingSearchIds(q);
 
           if (matches.length === 0) {
             document.getElementById("kg_status").innerText = "No matching concept found.";
             return;
           }
 
-          var id = matches[0].id;
+          buildConceptList(q);
+          var id = matches[0];
           var concept = getConcept(id) || {};
-          focusConcept(id, null);
+          focusConcept(id, null, {
+            searchQuery: q,
+            scrollToSearchMatch: true
+          });
           document.getElementById("kg_status").innerText =
             "Found " + matches.length + " match(es). Showing first: " + (concept.label || id);
         };
@@ -2107,7 +2290,10 @@ def inject_controls(
           if (!item) { return; }
 
           e.preventDefault();
-          focusConcept(item.getAttribute("data-concept-id"), "Selected");
+          focusConcept(item.getAttribute("data-concept-id"), "Selected", {
+            searchQuery: document.getElementById("kg_search").value,
+            scrollToSearchMatch: true
+          });
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
