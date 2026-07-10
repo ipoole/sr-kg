@@ -37,6 +37,7 @@ def inject_controls(
     view_title: str,
 ) -> str:
     """Inject a small control panel and useful vis.js event handlers."""
+    viewport_meta = '<meta name="viewport" content="width=device-width, initial-scale=1">'
     mathjax = """
     <script>
       window.MathJax = {
@@ -121,6 +122,7 @@ def inject_controls(
         white-space: nowrap;
       }
       #kg_controls input {
+        box-sizing: border-box;
         width: 210px;
         padding: 4px;
       }
@@ -466,12 +468,12 @@ def inject_controls(
 
     @media (max-width: 1100px) {
         #kg_controls {
-            max-width: 240px;
+            max-width: min(280px, 30vw);
             font-size: 12px;
         }
 
         #kg_controls input {
-            width: 160px;
+            width: 100%;
         }
 
         #kg_view_title {
@@ -480,7 +482,7 @@ def inject_controls(
         }
 
         #info_panel {
-            width: 300px;
+            width: min(340px, 34vw);
             font-size: 13px;
         }
 
@@ -490,8 +492,56 @@ def inject_controls(
     }
 
     @media (max-width: 850px) {
+        .kg-canvas-toggle {
+            top: max(8px, env(safe-area-inset-top));
+            padding: 6px 9px;
+            font-size: 12px;
+        }
+
+        #kg_controls_toggle {
+            left: max(8px, env(safe-area-inset-left));
+        }
+
+        #kg_info_toggle {
+            left: calc(max(8px, env(safe-area-inset-left)) + 112px);
+        }
+
         #kg_controls {
-            max-width: 150px;
+            top: calc(max(8px, env(safe-area-inset-top)) + 38px);
+            left: max(8px, env(safe-area-inset-left));
+            max-height: min(68vh, 520px);
+            max-width: min(420px, calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+            overflow-y: auto;
+            padding: 8px;
+            width: min(420px, calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+        }
+
+        #kg_controls input {
+            width: 100%;
+        }
+
+        #kg_controls button {
+            padding: 6px 8px;
+        }
+
+        .kg-mode-controls {
+            flex-wrap: wrap;
+        }
+
+        #kg_controls .kg-mode-button {
+            flex: 1 1 9em;
+        }
+
+        #kg_status {
+            line-height: 1.3;
+        }
+
+        #kg_legend {
+            max-height: 110px;
+        }
+
+        #kg_concept_list {
+            max-height: 160px;
         }
 
         #kg_view_title {
@@ -499,12 +549,58 @@ def inject_controls(
         }
 
         #info_panel {
-            width: 150px;
+            bottom: max(8px, env(safe-area-inset-bottom));
+            box-sizing: border-box;
             font-size: 12px;
+            height: auto;
+            left: max(8px, env(safe-area-inset-left));
+            max-height: min(48vh, 360px);
+            max-width: none;
+            overflow-y: auto;
+            padding: 10px;
+            right: max(8px, env(safe-area-inset-right));
+            top: auto;
+            width: auto;
         }
 
         #info_panel h2 {
             font-size: 1.15em;
+        }
+
+        #info_panel h3 {
+            font-size: 1em;
+        }
+
+        #info_panel .concept-graphic svg {
+            margin: -24px 0 -30px;
+            max-height: 220px;
+            max-width: min(100%, 300px);
+        }
+
+        #info_panel .edge-key-table {
+            font-size: 12px;
+        }
+
+        #info_panel .edge-key-table th,
+        #info_panel .edge-key-table td {
+            padding: 4px;
+        }
+    }
+
+    @media (max-width: 850px) and (orientation: landscape) {
+        #kg_controls {
+            max-height: calc(100vh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            max-width: min(390px, 44vw);
+            width: min(390px, 44vw);
+        }
+
+        #info_panel {
+            max-height: calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            right: max(8px, env(safe-area-inset-right));
+            top: max(8px, env(safe-area-inset-top));
+            bottom: max(8px, env(safe-area-inset-bottom));
+            left: auto;
+            width: min(390px, 42vw);
         }
     }
     </style>
@@ -580,6 +676,8 @@ def inject_controls(
         var svgImageCache = {};
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
+        var nodeLabelWidth = __NODE_LABEL_WIDTH__;
+        var nodeLabelFontSize = __NODE_LABEL_FONT_SIZE__;
 
         /*
          * Custom node rendering
@@ -857,12 +955,15 @@ def inject_controls(
 
         function typesetInfoPanel() {
           var panel = document.getElementById("info_panel");
+          schedulePanelContentRefit();
           if (window.MathJax && MathJax.typesetPromise) {
             if (MathJax.typesetClear) {
               MathJax.typesetClear([panel]);
             }
             MathJax.typesetPromise([panel]).catch(function(err) {
               console.warn("MathJax typesetting failed:", err);
+            }).then(function() {
+              schedulePanelContentRefit();
             });
           }
         }
@@ -883,6 +984,11 @@ def inject_controls(
           if (button) {
             button.innerText = visible ? "Hide controls" : "Show controls";
           }
+        }
+
+        function shouldStartWithControlsHidden() {
+          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
         }
 
         function updateModeButtons() {
@@ -1266,6 +1372,7 @@ def inject_controls(
           if (relations.length === 0) {
             html += "<p>No edge key data was loaded.</p>";
             document.getElementById("info_panel").innerHTML = html;
+            schedulePanelContentRefit();
             return;
           }
 
@@ -1295,26 +1402,19 @@ def inject_controls(
 
           html += "</tbody></table>";
           document.getElementById("info_panel").innerHTML = html;
+          schedulePanelContentRefit();
         };
 
         window.kgToggleInfoPanel = function() {
           var panel = document.getElementById("info_panel");
           setInfoPanelVisible(panel.classList.contains("kg-hidden"));
-          if (currentView.mode === "highlight" && activeNodeId !== null) {
-            fitHighlightedSelection(activeNodeId);
-          } else {
-            updateNodeLabelPositions();
-          }
+          refitCurrentViewForPanels();
         };
 
         window.kgToggleControls = function() {
           var panel = document.getElementById("kg_controls");
           setControlsVisible(panel.classList.contains("kg-hidden"));
-          if (currentView.mode === "highlight" && activeNodeId !== null) {
-            fitHighlightedSelection(activeNodeId);
-          } else {
-            updateNodeLabelPositions();
-          }
+          refitCurrentViewForPanels();
         };
 
         function setActiveConceptItem(nodeId) {
@@ -1331,45 +1431,146 @@ def inject_controls(
           }
         }
 
-        function panelAdjustedGraphCenter() {
-          var containerRect = graphContainer.getBoundingClientRect();
-          var leftInset = 0;
-          var rightInset = 0;
-          var margin = 24;
-          var controlsPanel = document.getElementById("kg_controls");
-          var infoPanel = document.getElementById("info_panel");
-
-          if (controlsPanel && !controlsPanel.classList.contains("kg-hidden")) {
-            var controlsRect = controlsPanel.getBoundingClientRect();
-            leftInset = Math.max(
-              leftInset,
-              Math.min(containerRect.right, controlsRect.right) - containerRect.left + margin
-            );
+        function visualViewportRect() {
+          if (window.visualViewport) {
+            return {
+              left: window.visualViewport.offsetLeft,
+              top: window.visualViewport.offsetTop,
+              right: window.visualViewport.offsetLeft + window.visualViewport.width,
+              bottom: window.visualViewport.offsetTop + window.visualViewport.height,
+              width: window.visualViewport.width,
+              height: window.visualViewport.height
+            };
           }
-
-          if (infoPanel && !infoPanel.classList.contains("kg-hidden")) {
-            var infoRect = infoPanel.getBoundingClientRect();
-            rightInset = Math.max(
-              rightInset,
-              containerRect.right - Math.max(containerRect.left, infoRect.left) + margin
-            );
-          }
-
-          leftInset = Math.max(0, Math.min(leftInset, containerRect.width * 0.45));
-          rightInset = Math.max(0, Math.min(rightInset, containerRect.width * 0.45));
-
-          if (leftInset + rightInset > containerRect.width * 0.8) {
-            leftInset = 0;
-            rightInset = 0;
-          }
-
           return {
-            x: leftInset + ((containerRect.width - leftInset - rightInset) / 2),
-            y: containerRect.height / 2
+            left: 0,
+            top: 0,
+            right: window.innerWidth,
+            bottom: window.innerHeight,
+            width: window.innerWidth,
+            height: window.innerHeight
           };
         }
 
-        function nodeBoundsCenter(nodeIds) {
+        function intersectRects(a, b) {
+          var left = Math.max(a.left, b.left);
+          var top = Math.max(a.top, b.top);
+          var right = Math.min(a.right, b.right);
+          var bottom = Math.min(a.bottom, b.bottom);
+          if (right <= left || bottom <= top) { return null; }
+          return {
+            left: left,
+            top: top,
+            right: right,
+            bottom: bottom,
+            width: right - left,
+            height: bottom - top
+          };
+        }
+
+        function visiblePanelRects() {
+          return ["kg_controls", "info_panel"].map(function(id) {
+            var el = document.getElementById(id);
+            if (!el || el.classList.contains("kg-hidden")) { return null; }
+            return {
+              id: id,
+              rect: el.getBoundingClientRect()
+            };
+          }).filter(Boolean);
+        }
+
+        function panelOcclusionEdge(panel, baseRect, overlap) {
+          if (panel.id === "info_panel" && overlap.width >= baseRect.width * 0.60) {
+            return ((overlap.top + overlap.bottom) / 2) >= ((baseRect.top + baseRect.bottom) / 2)
+              ? "bottom"
+              : "top";
+          }
+          if (panel.id === "info_panel" && overlap.height >= baseRect.height * 0.45) {
+            return ((overlap.left + overlap.right) / 2) >= ((baseRect.left + baseRect.right) / 2)
+              ? "right"
+              : "left";
+          }
+          if (panel.id === "kg_controls" && overlap.height >= baseRect.height * 0.35) {
+            return ((overlap.left + overlap.right) / 2) >= ((baseRect.left + baseRect.right) / 2)
+              ? "right"
+              : "left";
+          }
+
+          var distances = {
+            left: Math.abs(overlap.left - baseRect.left),
+            right: Math.abs(baseRect.right - overlap.right),
+            top: Math.abs(overlap.top - baseRect.top),
+            bottom: Math.abs(baseRect.bottom - overlap.bottom)
+          };
+          return Object.keys(distances).sort(function(a, b) {
+            return distances[a] - distances[b];
+          })[0];
+        }
+
+        function availableGraphRect() {
+          var containerRect = graphContainer.getBoundingClientRect();
+          var viewport = visualViewportRect();
+          var baseAbs = intersectRects(containerRect, viewport) || containerRect;
+          var margin = 28;
+          var insets = {
+            left: margin,
+            top: margin,
+            right: margin,
+            bottom: margin
+          };
+
+          visiblePanelRects().forEach(function(panel) {
+            var overlap = intersectRects(baseAbs, panel.rect);
+            if (!overlap) { return; }
+
+            var edge = panelOcclusionEdge(panel, baseAbs, overlap);
+            if (edge === "left") {
+              insets.left = Math.max(insets.left, overlap.right - baseAbs.left + margin);
+            } else if (edge === "right") {
+              insets.right = Math.max(insets.right, baseAbs.right - overlap.left + margin);
+            } else if (edge === "top") {
+              insets.top = Math.max(insets.top, overlap.bottom - baseAbs.top + margin);
+            } else if (edge === "bottom") {
+              insets.bottom = Math.max(insets.bottom, baseAbs.bottom - overlap.top + margin);
+            }
+          });
+
+          var availableAbs = {
+            left: baseAbs.left + insets.left,
+            top: baseAbs.top + insets.top,
+            right: baseAbs.right - insets.right,
+            bottom: baseAbs.bottom - insets.bottom
+          };
+          var availableWidth = availableAbs.right - availableAbs.left;
+          var availableHeight = availableAbs.bottom - availableAbs.top;
+
+          var minWidth = Math.min(220, baseAbs.width * 0.65);
+          var minHeight = Math.min(180, baseAbs.height * 0.65);
+          if (availableWidth < minWidth || availableHeight < minHeight) {
+            availableAbs = {
+              left: baseAbs.left + margin,
+              top: baseAbs.top + margin,
+              right: baseAbs.right - margin,
+              bottom: baseAbs.bottom - margin
+            };
+          }
+
+          var left = availableAbs.left - containerRect.left;
+          var top = availableAbs.top - containerRect.top;
+          var width = Math.max(1, availableAbs.right - availableAbs.left);
+          var height = Math.max(1, availableAbs.bottom - availableAbs.top);
+
+          return {
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            centerX: left + (width / 2),
+            centerY: top + (height / 2)
+          };
+        }
+
+        function nodeCanvasBounds(nodeIds) {
           var positions = network.getPositions(nodeIds);
           var minX = Infinity;
           var maxX = -Infinity;
@@ -1378,11 +1579,21 @@ def inject_controls(
 
           nodeIds.forEach(function(id) {
             var pos = positions[id];
-            if (!pos) { return; }
-            minX = Math.min(minX, pos.x);
-            maxX = Math.max(maxX, pos.x);
-            minY = Math.min(minY, pos.y);
-            maxY = Math.max(maxY, pos.y);
+            var node = nodes.get(id);
+            if (!pos || !node || node.hidden) { return; }
+
+            var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+            var radius = id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius;
+            var halfLabelWidth = nodeLabelWidth / 2;
+            var labelHeight = nodeLabelFontSize * 3.2;
+            var horizontalExtent = Math.max(radius, halfLabelWidth) + 18;
+            var topExtent = radius + 18;
+            var bottomExtent = radius + labelHeight + 28;
+
+            minX = Math.min(minX, pos.x - horizontalExtent);
+            maxX = Math.max(maxX, pos.x + horizontalExtent);
+            minY = Math.min(minY, pos.y - topExtent);
+            maxY = Math.max(maxY, pos.y + bottomExtent);
           });
 
           if (!Number.isFinite(minX)) {
@@ -1390,31 +1601,59 @@ def inject_controls(
           }
 
           return {
+            left: minX,
+            top: minY,
+            right: maxX,
+            bottom: maxY,
+            width: Math.max(1, maxX - minX),
+            height: Math.max(1, maxY - minY),
             x: (minX + maxX) / 2,
             y: (minY + maxY) / 2
           };
         }
 
-        function shiftViewForPanels(nodeIds) {
-          var graphCenter = nodeBoundsCenter(nodeIds);
-          if (!graphCenter) { return; }
+        function fitNodesToAvailableRect(nodeIds, options) {
+          options = options || {};
+          var fitIds = nodeIds.map(String).filter(function(id, index, ids) {
+            var node = nodes.get(id);
+            return node && !node.hidden && ids.indexOf(id) === index;
+          });
+          if (fitIds.length === 0) { return; }
 
-          var desiredDomCenter = panelAdjustedGraphCenter();
-          var currentCanvasAtDesiredCenter = network.DOMtoCanvas(desiredDomCenter);
-          var viewPosition = network.getViewPosition();
+          var bounds = nodeCanvasBounds(fitIds);
+          if (!bounds) { return; }
+
+          var available = availableGraphRect();
+          var maxScale = options.maxScale === undefined ? 0.7 : Number(options.maxScale);
+          var minScale = options.minScale === undefined ? 0.08 : Number(options.minScale);
+          if (!Number.isFinite(maxScale) || maxScale <= 0) { maxScale = 0.7; }
+          if (!Number.isFinite(minScale) || minScale <= 0) { minScale = 0.08; }
+
+          var scale = Math.min(
+            available.width / bounds.width,
+            available.height / bounds.height,
+            maxScale
+          );
+          scale = Math.max(minScale, scale);
+
+          var containerCenter = {
+            x: graphContainer.clientWidth / 2,
+            y: graphContainer.clientHeight / 2
+          };
           var targetPosition = {
-            x: viewPosition.x + graphCenter.x - currentCanvasAtDesiredCenter.x,
-            y: viewPosition.y + graphCenter.y - currentCanvasAtDesiredCenter.y
+            x: bounds.x - ((available.centerX - containerCenter.x) / scale),
+            y: bounds.y - ((available.centerY - containerCenter.y) / scale)
           };
 
           network.moveTo({
             position: targetPosition,
-            scale: network.getScale(),
-            animation: {
-              duration: 250,
+            scale: scale,
+            animation: options.animation === false ? false : {
+              duration: options.duration || 250,
               easingFunction: "easeInOutQuad"
             }
           });
+          setTimeout(updateNodeLabelPositions, options.animation === false ? 0 : 260);
         }
 
         function fitHighlightedSelection(nodeId) {
@@ -1425,11 +1664,70 @@ def inject_controls(
             }
           });
 
-          network.fit({nodes: fitIds, animation: false});
-          if (network.getScale() > 0.7) {
-            network.moveTo({scale: 0.7, animation: false});
+          fitNodesToAvailableRect(fitIds, {maxScale: 0.7});
+        }
+
+        function visibleNodeIds() {
+          return nodes.get().filter(function(node) {
+            return !node.hidden;
+          }).map(function(node) {
+            return String(node.id);
+          });
+        }
+
+        function refitCurrentViewForPanels() {
+          if (currentView.mode === "highlight" && activeNodeId !== null) {
+            fitHighlightedSelection(activeNodeId);
+          } else if (
+            (currentView.mode === "neighbourhood" || currentView.mode === "descendants") &&
+            currentView.nodeId !== null
+          ) {
+            fitNodesToAvailableRect(visibleNodeIds(), {maxScale: 0.85});
+          } else {
+            updateNodeLabelPositions();
           }
-          shiftViewForPanels(fitIds);
+        }
+
+        var viewportRefitTimer = null;
+        var viewportRefitSettledTimer = null;
+        function scheduleViewportRefit() {
+          updateNodeLabelPositions();
+          if (viewportRefitTimer !== null) {
+            clearTimeout(viewportRefitTimer);
+          }
+          if (viewportRefitSettledTimer !== null) {
+            clearTimeout(viewportRefitSettledTimer);
+          }
+          viewportRefitTimer = setTimeout(function() {
+            viewportRefitTimer = null;
+            refitCurrentViewForPanels();
+          }, 120);
+          viewportRefitSettledTimer = setTimeout(function() {
+            viewportRefitSettledTimer = null;
+            refitCurrentViewForPanels();
+          }, 420);
+        }
+
+        var panelContentRefitTimer = null;
+        var panelContentRefitSettledTimer = null;
+        function schedulePanelContentRefit() {
+          if (panelContentRefitTimer !== null) {
+            clearTimeout(panelContentRefitTimer);
+          }
+          if (panelContentRefitSettledTimer !== null) {
+            clearTimeout(panelContentRefitSettledTimer);
+          }
+          requestAnimationFrame(function() {
+            updateNodeLabelPositions();
+          });
+          panelContentRefitTimer = setTimeout(function() {
+            panelContentRefitTimer = null;
+            refitCurrentViewForPanels();
+          }, 180);
+          panelContentRefitSettledTimer = setTimeout(function() {
+            panelContentRefitSettledTimer = null;
+            refitCurrentViewForPanels();
+          }, 520);
         }
 
         function focusConcept(nodeId, statusPrefix, options) {
@@ -1650,7 +1948,7 @@ def inject_controls(
             return setEdgeHidden(o, !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]));
           }));
 
-          network.fit({animation: false});
+          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
             var neighbourCount = Math.max(0, visibleIds.length - 1);
@@ -1692,7 +1990,7 @@ def inject_controls(
             ));
           }));
 
-          network.fit({animation: false});
+          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
             var descendantCount = Math.max(0, visibleIds.length - 1);
@@ -1760,7 +2058,12 @@ def inject_controls(
         network.on("dragEnd", updateNodeLabelPositions);
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
-        window.addEventListener("resize", updateNodeLabelPositions);
+        window.addEventListener("resize", scheduleViewportRefit);
+        window.addEventListener("orientationchange", scheduleViewportRefit);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", scheduleViewportRefit);
+          window.visualViewport.addEventListener("scroll", scheduleViewportRefit);
+        }
         graphContainer.addEventListener("mouseleave", restoreHoveredEdge);
 
         window.addEventListener("popstate", function(event) {
@@ -1824,6 +2127,12 @@ def inject_controls(
           }
         });
 
+        document.getElementById("info_panel").addEventListener("toggle", function(e) {
+          if (e.target && e.target.tagName === "DETAILS") {
+            schedulePanelContentRefit();
+          }
+        }, true);
+
         // Build legend from node groups.
         var groups = {};
         allNodes.forEach(function(n) {
@@ -1843,6 +2152,9 @@ def inject_controls(
         buildNodeLabels();
         buildEdgeFilters();
         buildConceptList("");
+        if (shouldStartWithControlsHidden()) {
+          setControlsVisible(false);
+        }
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
           return setEdgeHidden(o, !edgeRelationEnabled(e));
@@ -1890,7 +2202,11 @@ def inject_controls(
     for marker in ("</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)
 
-    html_text = html_text.replace("</head>", mathjax + "\n" + css + "\n</head>")
+    head_assets = mathjax + "\n" + css
+    if 'name="viewport"' not in html_text and "name='viewport'" not in html_text:
+        head_assets = viewport_meta + "\n" + head_assets
+
+    html_text = html_text.replace("</head>", head_assets + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
     html_text = html_text.replace("</body>", js + "\n</body>")
     return html_text
