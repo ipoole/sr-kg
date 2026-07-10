@@ -11,6 +11,7 @@ libraries.
 """
 
 from pathlib import Path
+import re
 
 import pandas as pd
 
@@ -21,7 +22,7 @@ from srkg.concept_svg_graphics import createSvgGraphic
 def build_concept_data(
     nodes_df: pd.DataFrame,
     graphic_designs_df: pd.DataFrame | None = None,
-) -> dict[str, dict[str, str]]:
+) -> dict[str, dict[str, object]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
     concept_data = {}
     graphic_captions = _graphic_captions_by_id(graphic_designs_df)
@@ -54,8 +55,29 @@ def build_concept_data(
             "svg_detail_caption": (
                 captions.get("detail_caption", "") or captions.get("icon_caption", "")
             ),
+            "study_questions": _study_questions(row),
         }
     return concept_data
+
+
+def _study_questions(row: pd.Series) -> list[dict[str, str]]:
+    """Return numbered study question/answer pairs from optional CSV columns."""
+    question_numbers = []
+    for column in row.index:
+        match = re.fullmatch(r"study_question_(\d+)", str(column))
+        if match:
+            question_numbers.append(int(match.group(1)))
+
+    questions = []
+    for number in sorted(question_numbers):
+        question = str(row.get(f"study_question_{number}", "")).strip()
+        answer = str(row.get(f"study_answer_{number}", "")).strip()
+        if question:
+            questions.append({
+                "question": question,
+                "answer": answer,
+            })
+    return questions
 
 
 def _graphic_captions_by_id(

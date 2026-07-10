@@ -32,7 +32,7 @@ def require_html_marker(html_text: str, marker: str) -> None:
 
 def inject_controls(
     html_text: str,
-    concept_data: dict[str, dict[str, str]],
+    concept_data: dict[str, dict[str, object]],
     edge_key: dict[str, dict[str, str | bool]],
     view_title: str,
 ) -> str:
@@ -322,6 +322,41 @@ def inject_controls(
         white-space: pre-wrap;
         font-family: inherit;
         line-height: 1.45;
+    }
+
+    #info_panel .study-questions {
+        border-top: 1px solid #ddd;
+        margin-top: 1em;
+        padding-top: 0.75em;
+    }
+
+    #info_panel .study-questions > summary {
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .study-question {
+        margin-top: 0.8em;
+    }
+
+    #info_panel .study-question-title {
+        font-weight: 700;
+        margin-bottom: 0.25em;
+    }
+
+    #info_panel .study-answer {
+        margin-top: 0.4em;
+    }
+
+    #info_panel .study-answer > summary {
+        color: #174ea6;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .study-answer-body {
+        margin-top: 0.35em;
+        white-space: pre-wrap;
     }
 
     #info_panel .concept-figure {
@@ -1198,6 +1233,27 @@ def inject_controls(
             html += "<h3>" + section[0] + "</h3>";
             html += '<div class="concept-body">' + renderConceptText(section[1]) + "</div>";
           });
+          var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
+          if (studyQuestions.length > 0) {
+            html += '<details class="study-questions">';
+            html += "<summary>Study Questions</summary>";
+            studyQuestions.forEach(function(item, index) {
+              var question = item && item.question ? item.question : "";
+              var answer = item && item.answer ? item.answer : "";
+              if (!question) { return; }
+              html += '<section class="study-question">';
+              html += '<div class="study-question-title">Question ' + (index + 1) + "</div>";
+              html += '<div class="concept-body">' + renderConceptText(question) + "</div>";
+              if (answer) {
+                html += '<details class="study-answer">';
+                html += "<summary>Answer</summary>";
+                html += '<div class="study-answer-body">' + renderConceptText(answer) + "</div>";
+                html += "</details>";
+              }
+              html += "</section>";
+            });
+            html += "</details>";
+          }
           document.getElementById("info_panel").innerHTML = html;
           typesetInfoPanel();
         }

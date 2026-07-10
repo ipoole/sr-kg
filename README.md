@@ -233,6 +233,14 @@ id,label,layer,layer_title,definition_new,derivation_new,explanation_new
 
 The generated details panel renders `definition_new`, `derivation_new`, and `explanation_new`, including optional derivations. The learner-focused `explanation_new` field should include any useful examples. Empty values are skipped in the details panel.
 
+Nodes may also include optional numbered study-question pairs:
+
+```text
+study_question_1,study_answer_1,study_question_2,study_answer_2,...
+```
+
+The viewer detects all `study_question_N` columns present in `nodes.csv`. If a concept has one or more questions, its details panel includes a default-closed `Study Questions` section. Each answer is rendered inside its own fold-down. Question text can include multiple-choice options, ordinary prose, and MathJax notation.
+
 `data/edges.csv` expects:
 
 ```text
