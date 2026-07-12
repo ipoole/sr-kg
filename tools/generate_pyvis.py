@@ -39,7 +39,8 @@ from srkg.pipeline import generate_viewer
 from srkg.dag import format_dag_reports, load_dag_reports
 
 
-def main():
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser for the graph viewer generator."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--nodes", default="data/nodes.csv", help="Path to nodes.csv")
     parser.add_argument("--edges", default="data/edges.csv", help="Path to edges.csv")
@@ -79,7 +80,12 @@ def main():
             "relations marked directed in edges_key.csv."
         ),
     )
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    args = parser.parse_args(argv)
 
     if args.dag_report or args.dag_report_only:
         reports = load_dag_reports(

@@ -14,7 +14,12 @@ from typing import Iterable, Sequence
 import networkx as nx
 import pandas as pd
 
-from srkg.data import find_edge_key_path, load_edge_key, normalise_edges
+from srkg.data import (
+    find_edge_key_path,
+    load_edge_key,
+    normalise_edges,
+    validate_edge_endpoints,
+)
 from srkg.layout import concept_sort_key, parse_layer_value
 
 
@@ -92,27 +97,13 @@ def load_dag_reports(
     nodes_df = pd.read_csv(nodes_path).fillna("")
     edges_df = pd.read_csv(edges_file).fillna("")
 
-    if "id" not in nodes_df.columns:
-        raise ValueError("nodes.csv must contain an 'id' column")
-
     edges_df = normalise_edges(edges_df)
     nodes_df["id"] = nodes_df["id"].astype(str)
     edges_df["source"] = edges_df["source"].astype(str)
     edges_df["target"] = edges_df["target"].astype(str)
     edges_df["relation"] = edges_df["relation"].astype(str)
 
-    node_ids = set(nodes_df["id"])
-    invalid_edges = edges_df[~edges_df["source"].isin(node_ids) | ~edges_df["target"].isin(node_ids)]
-    if not invalid_edges.empty:
-        examples = "; ".join(
-            f"{row.source}->{row.target}"
-            for row in invalid_edges[["source", "target"]].head(5).itertuples(index=False)
-        )
-        more = "" if len(invalid_edges) <= 5 else f"; ... {len(invalid_edges) - 5} more"
-        raise ValueError(
-            "edges.csv contains edges with endpoints not present in nodes.csv: "
-            f"{examples}{more}"
-        )
+    validate_edge_endpoints(nodes_df, edges_df)
 
     edge_key_file = find_edge_key_path(edges_file, str(edge_key_path) if edge_key_path else None)
     edge_key = load_edge_key(edge_key_file)

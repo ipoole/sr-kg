@@ -112,6 +112,29 @@ def normalise_edges(edges_df: pd.DataFrame) -> pd.DataFrame:
     return edges_df
 
 
+def validate_edge_endpoints(nodes_df: pd.DataFrame, edges_df: pd.DataFrame) -> None:
+    """Raise if any edge endpoint does not refer to a known node id."""
+    if "id" not in nodes_df.columns:
+        raise ValueError("nodes.csv must contain an 'id' column")
+
+    node_ids = set(nodes_df["id"].astype(str))
+    sources = edges_df["source"].astype(str)
+    targets = edges_df["target"].astype(str)
+    invalid_edges = edges_df[~sources.isin(node_ids) | ~targets.isin(node_ids)]
+    if invalid_edges.empty:
+        return
+
+    examples = "; ".join(
+        f"{row.source}->{row.target}"
+        for row in invalid_edges[["source", "target"]].head(5).itertuples(index=False)
+    )
+    more = "" if len(invalid_edges) <= 5 else f"; ... {len(invalid_edges) - 5} more"
+    raise ValueError(
+        "edges.csv contains edges with endpoints not present in nodes.csv: "
+        f"{examples}{more}"
+    )
+
+
 def parse_bool(value, default: bool = True) -> bool:
     """Parse common CSV boolean spellings."""
     if isinstance(value, bool):
