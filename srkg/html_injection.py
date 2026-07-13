@@ -15,6 +15,16 @@ from html import escape as html_escape
 
 from srkg.config import (
     EDGE_HOVER_WIDTH,
+    INFO_PANEL_FONT_SIZE_PX,
+    INFO_PANEL_MOBILE_FONT_SIZE_PX,
+    INFO_PANEL_TABLET_FONT_SIZE_PX,
+    INFO_PANEL_TABLET_WIDTH_MAX_PX,
+    INFO_PANEL_TABLET_WIDTH_VIEWPORT_PERCENT,
+    INFO_PANEL_TEXT_ZOOM_MAX_PX,
+    INFO_PANEL_TEXT_ZOOM_MIN_PX,
+    INFO_PANEL_WIDTH_MAX_PX,
+    INFO_PANEL_WIDTH_MIN_PX,
+    INFO_PANEL_WIDTH_VIEWPORT_PERCENT,
     LAYOUT_ROW_STAGGER,
     LAYOUT_X_SPACING,
     LAYOUT_Y_SPACING,
@@ -323,7 +333,7 @@ def inject_controls(
         position: fixed;
         top: 12px;
         right: 12px;
-        width: 420px;
+        width: clamp(__INFO_PANEL_WIDTH_MIN_PX__px, __INFO_PANEL_WIDTH_VIEWPORT_PERCENT__vw, __INFO_PANEL_WIDTH_MAX_PX__px);
         height: 90vh;
         overflow-y: auto;
 
@@ -334,7 +344,7 @@ def inject_controls(
         padding: 12px;
 
         font-family: Arial, sans-serif;
-        font-size: 14px;
+        font-size: __INFO_PANEL_FONT_SIZE_PX__px;
 
         box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 
@@ -349,6 +359,22 @@ def inject_controls(
         white-space: pre-wrap;
         font-family: inherit;
         line-height: 1.45;
+    }
+
+    #info_panel .optional-detail {
+        border-left: 3px solid #d6e3fb;
+        margin: 0.75em 0;
+        padding: 0.1em 0 0.1em 0.75em;
+    }
+
+    #info_panel .optional-detail > summary {
+        color: #174ea6;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .optional-detail-body {
+        margin-top: 0.45em;
     }
 
     #info_panel .study-questions {
@@ -507,8 +533,8 @@ def inject_controls(
         }
 
         #info_panel {
-            width: min(340px, 34vw);
-            font-size: 13px;
+            width: min(__INFO_PANEL_TABLET_WIDTH_MAX_PX__px, __INFO_PANEL_TABLET_WIDTH_VIEWPORT_PERCENT__vw);
+            font-size: __INFO_PANEL_TABLET_FONT_SIZE_PX__px;
         }
 
         #info_panel h2 {
@@ -576,7 +602,7 @@ def inject_controls(
         #info_panel {
             bottom: max(8px, env(safe-area-inset-bottom));
             box-sizing: border-box;
-            font-size: 12px;
+            font-size: __INFO_PANEL_MOBILE_FONT_SIZE_PX__px;
             height: auto;
             left: max(8px, env(safe-area-inset-left));
             max-height: min(48vh, 360px);
@@ -925,7 +951,7 @@ def inject_controls(
             .replace(/'/g, "&#039;");
         }
 
-        function renderConceptText(s) {
+        function renderSimpleConceptText(s) {
           return escapeHtml(s).replace(
             /\\\\cref\\{([^{}]*)\\}\\{([^{}]*)\\}/g,
             function(match, label, targetId) {
@@ -937,6 +963,86 @@ def inject_controls(
                 '"><strong>' + label + "</strong></a>";
             }
           );
+        }
+
+        function skipOptionalDetailWhitespace(text, index) {
+          while (index < text.length && /\\s/.test(text.charAt(index))) {
+            index += 1;
+          }
+          return index;
+        }
+
+        function parseBracedArgument(text, openIndex) {
+          if (text.charAt(openIndex) !== "{") { return null; }
+
+          var depth = 1;
+          var index = openIndex + 1;
+          var start = index;
+          while (index < text.length) {
+            var ch = text.charAt(index);
+            if (ch === "\\\\") {
+              index += 2;
+              continue;
+            }
+            if (ch === "{") {
+              depth += 1;
+            } else if (ch === "}") {
+              depth -= 1;
+              if (depth === 0) {
+                return {
+                  value: text.slice(start, index),
+                  end: index + 1
+                };
+              }
+            }
+            index += 1;
+          }
+          return null;
+        }
+
+        function renderOptionalDetail(summary, body) {
+          return '<details class="optional-detail">' +
+            "<summary>" + renderConceptText(summary) + "</summary>" +
+            '<div class="concept-body optional-detail-body">' +
+            renderConceptText(body) +
+            "</div></details>";
+        }
+
+        function renderConceptText(s) {
+          var text = String(s || "");
+          var macro = "\\\\optional_details";
+          var html = "";
+          var cursor = 0;
+
+          while (cursor < text.length) {
+            var macroIndex = text.indexOf(macro, cursor);
+            if (macroIndex === -1) {
+              html += renderSimpleConceptText(text.slice(cursor));
+              break;
+            }
+
+            html += renderSimpleConceptText(text.slice(cursor, macroIndex));
+            var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
+            var summary = parseBracedArgument(text, summaryStart);
+            if (!summary) {
+              html += renderSimpleConceptText(macro);
+              cursor = macroIndex + macro.length;
+              continue;
+            }
+
+            var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
+            var body = parseBracedArgument(text, bodyStart);
+            if (!body) {
+              html += renderSimpleConceptText(text.slice(macroIndex, summary.end));
+              cursor = summary.end;
+              continue;
+            }
+
+            html += renderOptionalDetail(summary.value, body.value);
+            cursor = body.end;
+          }
+
+          return html;
         }
 
         function renderCaptionText(s) {
@@ -1081,11 +1187,14 @@ def inject_controls(
           var panel = document.getElementById("info_panel");
           var currentSize = parseFloat(window.getComputedStyle(panel).fontSize);
           if (!Number.isFinite(currentSize) || currentSize <= 0) {
-            currentSize = 14;
+            currentSize = __INFO_PANEL_FONT_SIZE_PX__;
           }
 
           var direction = deltaY < 0 ? 1 : -1;
-          var nextSize = Math.max(10, Math.min(28, currentSize + direction));
+          var nextSize = Math.max(
+            __INFO_PANEL_TEXT_ZOOM_MIN_PX__,
+            Math.min(__INFO_PANEL_TEXT_ZOOM_MAX_PX__, currentSize + direction)
+          );
           panel.style.fontSize = nextSize + "px";
           schedulePanelContentRefit();
         }
@@ -2400,10 +2509,24 @@ def inject_controls(
     js = js.replace("__LAYOUT_X_SPACING__", str(LAYOUT_X_SPACING))
     js = js.replace("__LAYOUT_Y_SPACING__", str(LAYOUT_Y_SPACING))
     js = js.replace("__LAYOUT_ROW_STAGGER__", str(LAYOUT_ROW_STAGGER))
+    js = js.replace("__INFO_PANEL_FONT_SIZE_PX__", str(INFO_PANEL_FONT_SIZE_PX))
+    js = js.replace("__INFO_PANEL_TEXT_ZOOM_MIN_PX__", str(INFO_PANEL_TEXT_ZOOM_MIN_PX))
+    js = js.replace("__INFO_PANEL_TEXT_ZOOM_MAX_PX__", str(INFO_PANEL_TEXT_ZOOM_MAX_PX))
 
     css = css.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     css = css.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
     css = css.replace("__NODE_LABEL_FONT_WEIGHT__", str(NODE_LABEL_FONT_WEIGHT))
+    css = css.replace("__INFO_PANEL_WIDTH_MIN_PX__", str(INFO_PANEL_WIDTH_MIN_PX))
+    css = css.replace("__INFO_PANEL_WIDTH_VIEWPORT_PERCENT__", str(INFO_PANEL_WIDTH_VIEWPORT_PERCENT))
+    css = css.replace("__INFO_PANEL_WIDTH_MAX_PX__", str(INFO_PANEL_WIDTH_MAX_PX))
+    css = css.replace("__INFO_PANEL_TABLET_WIDTH_MAX_PX__", str(INFO_PANEL_TABLET_WIDTH_MAX_PX))
+    css = css.replace(
+        "__INFO_PANEL_TABLET_WIDTH_VIEWPORT_PERCENT__",
+        str(INFO_PANEL_TABLET_WIDTH_VIEWPORT_PERCENT),
+    )
+    css = css.replace("__INFO_PANEL_FONT_SIZE_PX__", str(INFO_PANEL_FONT_SIZE_PX))
+    css = css.replace("__INFO_PANEL_TABLET_FONT_SIZE_PX__", str(INFO_PANEL_TABLET_FONT_SIZE_PX))
+    css = css.replace("__INFO_PANEL_MOBILE_FONT_SIZE_PX__", str(INFO_PANEL_MOBILE_FONT_SIZE_PX))
 
     for marker in ("</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)

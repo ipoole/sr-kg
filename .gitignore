@@ -10,6 +10,8 @@ env/
 .mypy_cache/
 .ruff_cache/
 
+tests/browser/lib/
+
 .DS_Store
 Thumbs.db
 
@@ -19,4 +21,3 @@ Thumbs.db
 .idea/modules.xml
 .idea/sr-kg.iml
 .idea/vcs.xml
-

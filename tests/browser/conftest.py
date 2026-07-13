@@ -60,7 +60,11 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "layer_title": "Applications",
             "definition_new": "Beta definition",
             "derivation_new": "",
-            "explanation_new": "Beta explains alpha.",
+            "explanation_new": (
+                "Beta explains alpha. "
+                "\\optional_details{Why this matters}{The optional body can include "
+                "\\(x^{2}+y^{2}\\) and a \\cref{link to Alpha}{1.1}.}"
+            ),
         },
         {
             "id": "2.2",

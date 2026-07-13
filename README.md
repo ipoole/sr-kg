@@ -97,6 +97,46 @@ There is also a PyCharm run configuration named `Generate Knowledge Graph` that 
 
 If `--edge-key` is omitted, the generator automatically looks for `edges_key.csv` beside the selected edge file.
 
+## Validate Source Data
+
+After manually editing `data/nodes.csv`, `data/edges.csv`, or `data/edges_key.csv`, run the generator in validation-only mode:
+
+```bash
+python tools/generate_pyvis.py \
+  --nodes data/nodes.csv \
+  --edges data/edges.csv \
+  --edge-key data/edges_key.csv \
+  --validate-only
+```
+
+Validation prints a diagnostic report and exits with a non-zero status when it finds errors. Use `--validate` to run the same checks before normal HTML generation:
+
+```bash
+python tools/generate_pyvis.py \
+  --nodes data/nodes.csv \
+  --edges data/edges.csv \
+  --edge-key data/edges_key.csv \
+  --out output/interactive_graph.html \
+  --title "Special Relativity and Classical Fields" \
+  --validate
+```
+
+By default, errors fail validation and warnings are informational. Add `--validation-strict` when warnings should also fail the command, for example in a stricter pre-commit or CI check.
+
+The validator checks structural and textual consistency, including:
+
+- required CSV columns and required concept fields such as `definition_new`
+- duplicate concept ids and duplicate labels
+- edge endpoints and relation names
+- `\cref{label}{id}` syntax and target ids
+- `\optional_details{title}{body}` syntax
+- balanced braces and balanced MathJax delimiters `\(...\)` and `\[...\]`
+- accidental control characters in text fields
+- study-question/study-answer mismatches
+- directed relation cycles using the relation direction metadata in `edges_key.csv`
+
+It also emits warning-level diagnostics for likely data-quality issues, such as `\cref` references without a corresponding graph edge, graph edges without a reciprocal `\cref`, layer-order issues in directed edges, and transitively redundant directed edges. These warnings are useful review prompts; they are not automatically wrong.
+
 ## Review Directed DAGs
 
 Relations marked `directed=true` in `edges_key.csv` are checked as directed graph edges. Their CSV direction is `source -> target`; for example, `A PREREQUISITE B` means A requires B.
@@ -191,6 +231,13 @@ srkg.pipeline
   -> srkg.layout
   -> srkg.render_pyvis
   -> srkg.html_injection
+
+srkg.validation
+  -> srkg.config
+  -> srkg.data
+  -> srkg.dag
+  -> srkg.edges
+  -> srkg.layout
 
 srkg.render_pyvis
   -> srkg.config

@@ -34,6 +34,25 @@ def test_concept_list_click_populates_details_and_hash(browser_graph):
 
 
 @pytest.mark.browser
+def test_optional_details_render_inline_and_can_contain_concept_links(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    optional = page.locator("#info_panel details.optional-detail")
+    assert optional.count() == 1
+    assert optional.locator("summary").inner_text() == "Why this matters"
+    assert not optional.locator(".optional-detail-body").is_visible()
+
+    optional.locator("summary").click()
+
+    assert optional.locator(".optional-detail-body").is_visible()
+    assert "The optional body can include" in optional.locator(".optional-detail-body").inner_text()
+    optional.locator(".concept-link").click()
+    assert page.locator("#info_panel h2").inner_text() == "1.1 Alpha"
+    assert page.evaluate("() => window.location.hash") == "#concept-1.1"
+
+
+@pytest.mark.browser
 def test_search_finds_definition_text_and_highlights_detail_match(browser_graph):
     page = browser_graph.page
 

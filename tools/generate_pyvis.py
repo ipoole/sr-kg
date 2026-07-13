@@ -37,6 +37,11 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from srkg.pipeline import generate_viewer
 from srkg.dag import format_dag_reports, load_dag_reports
+from srkg.validation import (
+    format_validation_issues,
+    has_validation_errors,
+    load_validation_issues,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -80,6 +85,21 @@ def build_parser() -> argparse.ArgumentParser:
             "relations marked directed in edges_key.csv."
         ),
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Validate source CSV data before writing the viewer.",
+    )
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate source CSV data and skip HTML generation.",
+    )
+    parser.add_argument(
+        "--validation-strict",
+        action="store_true",
+        help="Treat validation warnings as failures.",
+    )
     return parser
 
 
@@ -96,6 +116,18 @@ def main(argv: list[str] | None = None) -> None:
         )
         print(format_dag_reports(reports))
         if args.dag_report_only:
+            return
+
+    if args.validate or args.validate_only:
+        issues = load_validation_issues(
+            nodes_path=args.nodes,
+            edges_path=args.edges,
+            edge_key_path=args.edge_key,
+        )
+        print(format_validation_issues(issues))
+        if has_validation_errors(issues, strict=args.validation_strict):
+            raise SystemExit(1)
+        if args.validate_only:
             return
 
     out_path, node_count, edge_count, edge_key_path, edge_key_count = generate_viewer(
