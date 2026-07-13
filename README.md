@@ -57,6 +57,27 @@ Use Python 3.12 or newer.
 python -m pip install -r requirements.txt
 ```
 
+## Testing
+
+Run the unit test suite:
+
+```bash
+conda run -n sr-kg pytest -q
+```
+
+Browser integration tests use Playwright. Install the Chromium browser binary
+once inside the project environment:
+
+```bash
+conda run -n sr-kg python -m playwright install chromium
+```
+
+Then run the browser tests explicitly:
+
+```bash
+conda run -n sr-kg pytest -q tests/browser
+```
+
 ## Generate The Viewer
 
 ```bash

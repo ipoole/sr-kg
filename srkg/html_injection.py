@@ -1077,6 +1077,19 @@ def inject_controls(
           }
         }
 
+        function adjustInfoPanelTextZoom(deltaY) {
+          var panel = document.getElementById("info_panel");
+          var currentSize = parseFloat(window.getComputedStyle(panel).fontSize);
+          if (!Number.isFinite(currentSize) || currentSize <= 0) {
+            currentSize = 14;
+          }
+
+          var direction = deltaY < 0 ? 1 : -1;
+          var nextSize = Math.max(10, Math.min(28, currentSize + direction));
+          panel.style.fontSize = nextSize + "px";
+          schedulePanelContentRefit();
+        }
+
         function shouldStartWithControlsHidden() {
           var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
@@ -2312,6 +2325,13 @@ def inject_controls(
             focusConcept(id, "Selected");
           }
         });
+
+        document.getElementById("info_panel").addEventListener("wheel", function(e) {
+          if (!e.ctrlKey && !e.metaKey) { return; }
+          e.preventDefault();
+          e.stopPropagation();
+          adjustInfoPanelTextZoom(e.deltaY);
+        }, {passive: false});
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
