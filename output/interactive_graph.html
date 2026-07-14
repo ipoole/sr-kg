@@ -360,9 +360,8 @@
     }
 
     #info_panel .optional-detail {
-        border-left: 3px solid #d6e3fb;
         margin: 0.75em 0;
-        padding: 0.1em 0 0.1em 0.75em;
+        padding: 0;
     }
 
     #info_panel .optional-detail > summary {
@@ -372,7 +371,112 @@
     }
 
     #info_panel .optional-detail-body {
+        border-left: 2px solid #c8d7f2;
         margin-top: 0.45em;
+        padding-left: 0.75em;
+    }
+
+    #info_panel .concept-section {
+        margin: 0;
+    }
+
+    #info_panel .concept-line {
+        min-height: 1.45em;
+    }
+
+    #info_panel .kg-add-note-row {
+        display: none;
+        margin: 0.35em 0;
+    }
+
+    #info_panel.kg-note-editing .kg-add-note-row {
+        display: block;
+    }
+
+    #info_panel .kg-add-note {
+        background: #f6f1dc;
+        border: 1px dashed #b08b16;
+        border-radius: 4px;
+        color: #6b5200;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.88em;
+        padding: 2px 7px;
+    }
+
+    #info_panel .kg-add-note:hover,
+    #info_panel .kg-add-note:focus {
+        background: #fff5bf;
+        outline: none;
+    }
+
+    #info_panel .user-note {
+        margin: 0.75em 0;
+        padding: 0;
+    }
+
+    #info_panel .user-note > summary {
+        color: #7a5800;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .user-note-body {
+        border-left: 2px solid #e4c568;
+        margin-top: 0.45em;
+        padding-left: 0.75em;
+        white-space: pre-wrap;
+    }
+
+    #info_panel .user-note-editor {
+        border-left: 2px solid #e4c568;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35em;
+        margin-top: 0.45em;
+        padding-left: 0.75em;
+    }
+
+    #info_panel .user-note-editor label {
+        color: #444;
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9em;
+        font-weight: 700;
+        gap: 0.2em;
+    }
+
+    #info_panel .user-note-editor input,
+    #info_panel .user-note-editor textarea {
+        box-sizing: border-box;
+        font: inherit;
+        width: 100%;
+    }
+
+    #info_panel .user-note-editor textarea {
+        min-height: 7em;
+        resize: vertical;
+    }
+
+    #info_panel .user-note-actions {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+    }
+
+    #info_panel .user-note-delete {
+        background: #fff4f2;
+        border: 1px solid #c43d2d;
+        border-radius: 4px;
+        color: #9b2418;
+        cursor: pointer;
+        font: inherit;
+        padding: 3px 7px;
+    }
+
+    #info_panel .user-note-saved {
+        color: #666;
+        font-size: 0.85em;
     }
 
     #info_panel .study-questions {
@@ -679,6 +783,19 @@
         <summary>Layers</summary>
         <div id="kg_legend"></div>
       </details>
+      <details id="kg_notes_section" class="kg-fold">
+        <summary>Notes</summary>
+        <label class="kg-edge-filter">
+          <input id="kg_notes_edit_toggle" type="checkbox">
+          <span class="kg-edge-filter-label">Note editing</span>
+        </label>
+        <button id="kg_notes_export" type="button" onclick="kgExportNotes()">Export notes</button>
+        <label>
+          <button id="kg_notes_import_button" type="button">Import notes</button>
+          <input id="kg_notes_import_input" type="file" accept=".csv,text/csv" style="display:none">
+        </label>
+        <div id="kg_notes_status"></div>
+      </details>
       <details id="kg_search_section" class="kg-fold" open>
         <summary>Search</summary>
         <div id="kg_search_block">
@@ -798,6 +915,11 @@
         var activeNodeBorderWidth = 6;
         var nodeLabelWidth = 250;
         var nodeLabelFontSize = 30;
+        var userNotesStorageKey = "srkg.userNotes.v1";
+        var noteEditingStorageKey = "srkg.noteEditing.v1";
+        var userNotesState = loadUserNotes();
+        var noteEditingEnabled = loadNoteEditingPreference();
+        var openUserNoteId = null;
 
         /*
          * Custom node rendering
@@ -1069,12 +1191,28 @@
           return null;
         }
 
-        function renderOptionalDetail(summary, body) {
-          return '<details class="optional-detail">' +
-            "<summary>" + renderConceptText(summary) + "</summary>" +
-            '<div class="concept-body optional-detail-body">' +
-            renderConceptText(body) +
+        function renderFoldDown(options) {
+          var attrs = "";
+          if (options.id) {
+            attrs += ' data-note-id="' + escapeHtml(options.id) + '"';
+          }
+          if (options.open) {
+            attrs += " open";
+          }
+          return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
+            "<summary>" + renderConceptText(options.title || "") + "</summary>" +
+            '<div class="' + escapeHtml(options.bodyClass || "") + '">' +
+            (options.bodyHtml || "") +
             "</div></details>";
+        }
+
+        function renderOptionalDetail(summary, body) {
+          return renderFoldDown({
+            className: "optional-detail",
+            title: summary,
+            bodyClass: "concept-body optional-detail-body",
+            bodyHtml: renderConceptText(body)
+          });
         }
 
         function renderConceptText(s) {
@@ -1112,6 +1250,451 @@
           }
 
           return html;
+        }
+
+        function safeLocalStorageGet(key) {
+          try {
+            return window.localStorage.getItem(key);
+          } catch (err) {
+            return null;
+          }
+        }
+
+        function safeLocalStorageSet(key, value) {
+          try {
+            window.localStorage.setItem(key, value);
+            return true;
+          } catch (err) {
+            return false;
+          }
+        }
+
+        function loadUserNotes() {
+          var raw = safeLocalStorageGet(userNotesStorageKey);
+          if (!raw) { return {version: 1, notes: []}; }
+          try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.notes)) {
+              return {version: 1, notes: []};
+            }
+            return {
+              version: 1,
+              notes: parsed.notes.map(normalizeUserNote).filter(Boolean)
+            };
+          } catch (err) {
+            return {version: 1, notes: []};
+          }
+        }
+
+        function saveUserNotes() {
+          var saved = safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
+          setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
+          return saved;
+        }
+
+        function loadNoteEditingPreference() {
+          return safeLocalStorageGet(noteEditingStorageKey) === "true";
+        }
+
+        function saveNoteEditingPreference() {
+          safeLocalStorageSet(noteEditingStorageKey, noteEditingEnabled ? "true" : "false");
+        }
+
+        function setNotesStatus(message) {
+          var el = document.getElementById("kg_notes_status");
+          if (el) { el.innerText = message || ""; }
+        }
+
+        function normalizeUserNote(note) {
+          if (!note || !note.conceptId || !note.section) { return null; }
+          var anchor = note.anchor || {};
+          var blockIndex = Number(anchor.blockIndex);
+          if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
+          return {
+            id: String(note.id || makeNoteId()),
+            conceptId: String(note.conceptId),
+            section: String(note.section),
+            anchor: {
+              blockIndex: Math.floor(blockIndex),
+              afterText: String(anchor.afterText || "")
+            },
+            title: String(note.title || "Untitled note"),
+            body: String(note.body || ""),
+            createdAt: String(note.createdAt || new Date().toISOString()),
+            updatedAt: String(note.updatedAt || note.createdAt || new Date().toISOString())
+          };
+        }
+
+        function makeNoteId() {
+          return "note-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
+        }
+
+        function notesForAnchor(conceptId, sectionName, anchorIndex) {
+          return userNotesState.notes.filter(function(note) {
+            return note.conceptId === String(conceptId) &&
+              note.section === String(sectionName) &&
+              Number(note.anchor && note.anchor.blockIndex) === Number(anchorIndex);
+          }).sort(function(a, b) {
+            return String(a.createdAt).localeCompare(String(b.createdAt));
+          });
+        }
+
+        function findUserNote(noteId) {
+          return userNotesState.notes.find(function(note) {
+            return note.id === noteId;
+          }) || null;
+        }
+
+        function renderUserNote(note) {
+          if (noteEditingEnabled) {
+            var shouldOpen = note.id === openUserNoteId;
+            var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
+              (shouldOpen ? " open" : "") + ">";
+            html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
+            html += '<div class="user-note-editor">';
+            html += '<label>Title<input class="user-note-title-input" data-note-id="' +
+              escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
+            html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
+              escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
+            html += '<div class="user-note-actions">';
+            html += '<button type="button" class="user-note-delete" data-note-id="' +
+              escapeHtml(note.id) + '">Delete</button>';
+            html += '<span class="user-note-saved">Saved locally</span>';
+            html += "</div></div>";
+            html += "</details>";
+            return html;
+          }
+          return renderFoldDown({
+            className: "user-note",
+            id: note.id,
+            title: note.title || "Untitled note",
+            bodyClass: "user-note-body",
+            bodyHtml: renderConceptText(note.body || "")
+          });
+        }
+
+        function renderNotesAtAnchor(conceptId, sectionName, anchorIndex, afterText) {
+          var html = "";
+          notesForAnchor(conceptId, sectionName, anchorIndex).forEach(function(note) {
+            html += renderUserNote(note);
+          });
+          html += '<div class="kg-add-note-row">';
+          html += '<button type="button" class="kg-add-note" data-section="' +
+            escapeHtml(sectionName) + '" data-anchor-index="' + String(anchorIndex) +
+            '" data-anchor-after="' + escapeHtml(afterText || "") + '">+ note</button>';
+          html += "</div>";
+          return html;
+        }
+
+        function findNextOptionalDetailBlock(text, cursor) {
+          var macro = "\\optional_details";
+          var search = cursor;
+          while (search < text.length) {
+            var macroIndex = text.indexOf(macro, search);
+            if (macroIndex === -1) { return null; }
+
+            var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
+            var summary = parseBracedArgument(text, summaryStart);
+            if (!summary) {
+              search = macroIndex + macro.length;
+              continue;
+            }
+
+            var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
+            var body = parseBracedArgument(text, bodyStart);
+            if (!body) {
+              search = summary.end;
+              continue;
+            }
+
+            return {
+              kind: "optional",
+              start: macroIndex,
+              end: body.end
+            };
+          }
+          return null;
+        }
+
+        function findNextDisplayMathBlock(text, cursor) {
+          var open = "\\[";
+          var close = "\\]";
+          var start = text.indexOf(open, cursor);
+          if (start === -1) { return null; }
+          var end = text.indexOf(close, start + open.length);
+          if (end === -1) { return null; }
+          return {
+            kind: "display-math",
+            start: start,
+            end: end + close.length
+          };
+        }
+
+        function findNextLineBreakBlock(text, cursor) {
+          var lf = text.indexOf("\n", cursor);
+          var cr = text.indexOf("\r", cursor);
+          if (lf === -1 && cr === -1) { return null; }
+          if (cr !== -1 && (lf === -1 || cr < lf)) {
+            return {
+              kind: "newline",
+              start: cr,
+              end: text.charAt(cr + 1) === "\n" ? cr + 2 : cr + 1
+            };
+          }
+          return {
+            kind: "newline",
+            start: lf,
+            end: lf + 1
+          };
+        }
+
+        function splitConceptBlocks(text) {
+          var blocks = [];
+          var raw = String(text || "");
+          var cursor = 0;
+
+          function pushText(value) {
+            blocks.push({kind: "text", text: value});
+          }
+
+          while (cursor < raw.length) {
+            var newlineBlock = findNextLineBreakBlock(raw, cursor);
+            var optionalBlock = findNextOptionalDetailBlock(raw, cursor);
+            var displayBlock = findNextDisplayMathBlock(raw, cursor);
+            var candidates = [];
+            if (newlineBlock) { candidates.push(newlineBlock); }
+            if (optionalBlock) { candidates.push(optionalBlock); }
+            if (displayBlock) { candidates.push(displayBlock); }
+
+            if (candidates.length === 0) {
+              pushText(raw.slice(cursor));
+              break;
+            }
+
+            candidates.sort(function(a, b) {
+              return a.start - b.start || a.end - b.end;
+            });
+            var next = candidates[0];
+            if (next.start > cursor) {
+              pushText(raw.slice(cursor, next.start));
+            } else if (next.kind === "newline") {
+              pushText("");
+            }
+
+            if (next.kind !== "newline") {
+              blocks.push({
+                kind: next.kind,
+                text: raw.slice(next.start, next.end)
+              });
+            }
+            cursor = next.end;
+          }
+
+          if (raw.length === 0) {
+            return [];
+          }
+          return blocks;
+        }
+
+        function renderConceptSection(conceptId, title, text) {
+          var raw = String(text || "");
+          if (!raw) { return ""; }
+          var blocks = splitConceptBlocks(raw);
+          var html = "<h3>" + escapeHtml(title) + "</h3>";
+          html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
+          html += renderNotesAtAnchor(conceptId, title, 0, "");
+          blocks.forEach(function(block, index) {
+            html += '<div class="concept-line">' + (block.text ? renderConceptText(block.text) : "&nbsp;") + "</div>";
+            html += renderNotesAtAnchor(conceptId, title, index + 1, block.text.slice(0, 160));
+          });
+          html += "</div>";
+          return html;
+        }
+
+        function createUserNote(conceptId, sectionName, anchorIndex, afterText) {
+          var now = new Date().toISOString();
+          var note = {
+            id: makeNoteId(),
+            conceptId: String(conceptId),
+            section: String(sectionName),
+            anchor: {
+              blockIndex: Number(anchorIndex) || 0,
+              afterText: String(afterText || "")
+            },
+            title: "Note",
+            body: "",
+            createdAt: now,
+            updatedAt: now
+          };
+          userNotesState.notes.push(note);
+          openUserNoteId = note.id;
+          saveUserNotes();
+          return note;
+        }
+
+        function deleteUserNote(noteId) {
+          userNotesState.notes = userNotesState.notes.filter(function(note) {
+            return note.id !== noteId;
+          });
+          if (openUserNoteId === noteId) { openUserNoteId = null; }
+          saveUserNotes();
+        }
+
+        function updateUserNote(noteId, fields) {
+          var note = findUserNote(noteId);
+          if (!note) { return; }
+          Object.keys(fields).forEach(function(key) {
+            note[key] = String(fields[key]);
+          });
+          note.updatedAt = new Date().toISOString();
+          saveUserNotes();
+        }
+
+        function refreshActiveConcept() {
+          if (activeNodeId && getConcept(activeNodeId)) {
+            showConcept(activeNodeId);
+          }
+        }
+
+        function csvEscape(value) {
+          var text = String(value || "");
+          if (/[",\r\n]/.test(text)) {
+            return '"' + text.replace(/"/g, '""') + '"';
+          }
+          return text;
+        }
+
+        function notesToCsv() {
+          var rows = [[
+            "note_id",
+            "concept_id",
+            "concept_label",
+            "section",
+            "anchor_index",
+            "anchor_after",
+            "title",
+            "body",
+            "created_at",
+            "updated_at"
+          ]];
+          userNotesState.notes.forEach(function(note) {
+            var concept = getConcept(note.conceptId) || {};
+            rows.push([
+              note.id,
+              note.conceptId,
+              concept.label || "",
+              note.section,
+              String((note.anchor && note.anchor.blockIndex) || 0),
+              (note.anchor && note.anchor.afterText) || "",
+              note.title || "",
+              note.body || "",
+              note.createdAt || "",
+              note.updatedAt || ""
+            ]);
+          });
+          return rows.map(function(row) {
+            return row.map(csvEscape).join(",");
+          }).join("\n") + "\n";
+        }
+
+        window.kgExportNotes = function() {
+          var csv = notesToCsv();
+          var blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "srkg-notes.csv";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          setNotesStatus("Exported " + userNotesState.notes.length + " note(s).");
+        };
+
+        function parseCsv(text) {
+          var rows = [];
+          var row = [];
+          var field = "";
+          var inQuotes = false;
+          for (var index = 0; index < text.length; index += 1) {
+            var ch = text.charAt(index);
+            if (inQuotes) {
+              if (ch === '"') {
+                if (text.charAt(index + 1) === '"') {
+                  field += '"';
+                  index += 1;
+                } else {
+                  inQuotes = false;
+                }
+              } else {
+                field += ch;
+              }
+            } else if (ch === '"') {
+              inQuotes = true;
+            } else if (ch === ",") {
+              row.push(field);
+              field = "";
+            } else if (ch === "\n") {
+              row.push(field);
+              rows.push(row);
+              row = [];
+              field = "";
+            } else if (ch !== "\r") {
+              field += ch;
+            }
+          }
+          if (field || row.length > 0) {
+            row.push(field);
+            rows.push(row);
+          }
+          return rows;
+        }
+
+        function importNotesCsv(text) {
+          var rows = parseCsv(text).filter(function(row) {
+            return row.some(function(value) { return String(value || "").trim(); });
+          });
+          if (rows.length < 2) { return 0; }
+          var headers = {};
+          rows[0].forEach(function(name, index) {
+            headers[String(name).trim()] = index;
+          });
+          function value(row, name) {
+            var index = headers[name];
+            return index === undefined ? "" : String(row[index] || "");
+          }
+
+          var imported = 0;
+          rows.slice(1).forEach(function(row) {
+            var conceptId = value(row, "concept_id").trim();
+            var section = value(row, "section").trim();
+            if (!conceptId || !section) { return; }
+            var noteId = value(row, "note_id").trim() || makeNoteId();
+            var blockIndex = Number(value(row, "anchor_index"));
+            if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
+            var note = findUserNote(noteId);
+            var payload = {
+              id: noteId,
+              conceptId: conceptId,
+              section: section,
+              anchor: {
+                blockIndex: Math.floor(blockIndex),
+                afterText: value(row, "anchor_after")
+              },
+              title: value(row, "title") || "Imported note",
+              body: value(row, "body"),
+              createdAt: value(row, "created_at") || new Date().toISOString(),
+              updatedAt: value(row, "updated_at") || new Date().toISOString()
+            };
+            if (note) {
+              Object.assign(note, payload);
+            } else {
+              userNotesState.notes.push(payload);
+            }
+            imported += 1;
+          });
+          saveUserNotes();
+          return imported;
         }
 
         function renderCaptionText(s) {
@@ -1693,9 +2276,7 @@
             ["Derivation", concept.derivation_new],
             ["Explanation", concept.explanation_new]
           ].forEach(function(section) {
-            if (!section[1]) { return; }
-            html += "<h3>" + section[0] + "</h3>";
-            html += '<div class="concept-body">' + renderConceptText(section[1]) + "</div>";
+            html += renderConceptSection(nodeId, section[0], section[1]);
           });
           var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
           if (studyQuestions.length > 0) {
@@ -1718,7 +2299,10 @@
             });
             html += "</details>";
           }
-          document.getElementById("info_panel").innerHTML = html;
+          var panel = document.getElementById("info_panel");
+          panel.innerHTML = html;
+          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
+          openUserNoteId = null;
           typesetInfoPanel(options);
         }
 
@@ -2468,6 +3052,36 @@
           buildConceptList(e.target.value);
         });
 
+        var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
+        notesEditToggle.checked = noteEditingEnabled;
+        notesEditToggle.addEventListener("change", function(e) {
+          noteEditingEnabled = e.target.checked;
+          saveNoteEditingPreference();
+          setNotesStatus(noteEditingEnabled ? "Note editing enabled." : "Note editing disabled.");
+          refreshActiveConcept();
+        });
+
+        document.getElementById("kg_notes_import_button").addEventListener("click", function() {
+          document.getElementById("kg_notes_import_input").click();
+        });
+
+        document.getElementById("kg_notes_import_input").addEventListener("change", function(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) { return; }
+          var reader = new FileReader();
+          reader.onload = function() {
+            try {
+              var count = importNotesCsv(String(reader.result || ""));
+              setNotesStatus("Imported " + count + " note(s).");
+              refreshActiveConcept();
+            } catch (err) {
+              setNotesStatus("Could not import notes CSV.");
+            }
+            e.target.value = "";
+          };
+          reader.readAsText(file);
+        });
+
         document.getElementById("kg_edge_filters").addEventListener("change", function(e) {
           var input = e.target.closest("input[data-edge-relation]");
           if (!input) { return; }
@@ -2488,6 +3102,29 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var addNoteButton = e.target.closest(".kg-add-note");
+          if (addNoteButton) {
+            e.preventDefault();
+            if (!noteEditingEnabled || !activeNodeId) { return; }
+            createUserNote(
+              activeNodeId,
+              addNoteButton.getAttribute("data-section") || "",
+              Number(addNoteButton.getAttribute("data-anchor-index")) || 0,
+              addNoteButton.getAttribute("data-anchor-after") || ""
+            );
+            refreshActiveConcept();
+            return;
+          }
+
+          var deleteNoteButton = e.target.closest(".user-note-delete");
+          if (deleteNoteButton) {
+            e.preventDefault();
+            if (!noteEditingEnabled) { return; }
+            deleteUserNote(deleteNoteButton.getAttribute("data-note-id"));
+            refreshActiveConcept();
+            return;
+          }
+
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
 
@@ -2501,6 +3138,19 @@
             focusDescendants(id, "Selected");
           } else {
             focusConcept(id, "Selected");
+          }
+        });
+
+        document.getElementById("info_panel").addEventListener("input", function(e) {
+          if (!noteEditingEnabled) { return; }
+          var titleInput = e.target.closest(".user-note-title-input");
+          if (titleInput) {
+            updateUserNote(titleInput.getAttribute("data-note-id"), {title: titleInput.value});
+            return;
+          }
+          var bodyInput = e.target.closest(".user-note-body-input");
+          if (bodyInput) {
+            updateUserNote(bodyInput.getAttribute("data-note-id"), {body: bodyInput.value});
           }
         });
 

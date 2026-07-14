@@ -63,7 +63,9 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "explanation_new": (
                 "Beta explains alpha. "
                 "\\optional_details{Why this matters}{The optional body can include "
-                "\\(x^{2}+y^{2}\\) and a \\cref{link to Alpha}{1.1}.}"
+                "\\(x^{2}+y^{2}\\) and a \\cref{link to Alpha}{1.1}.} "
+                "\\[x^{2}+y^{2}=z^{2}\\] "
+                "After the display equation."
             ),
         },
         {
@@ -199,6 +201,13 @@ def browser_graph(tmp_path):
             ),
         )
         page.goto(output_path.as_uri(), wait_until="domcontentloaded")
+        page.evaluate(
+            """() => {
+              localStorage.removeItem("srkg.userNotes.v1");
+              localStorage.removeItem("srkg.noteEditing.v1");
+            }"""
+        )
+        page.reload(wait_until="domcontentloaded")
         page.wait_for_selector("#kg_controls", state="attached")
         page.wait_for_selector("#info_panel", state="attached")
         page.wait_for_function(
