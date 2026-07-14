@@ -343,6 +343,7 @@ def inject_controls(
 
         font-family: Arial, sans-serif;
         font-size: __INFO_PANEL_FONT_SIZE_PX__px;
+        touch-action: pan-y;
 
         box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 
@@ -978,6 +979,7 @@ def inject_controls(
         var userNotesState = loadUserNotes();
         var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
+        var infoPanelPinchState = null;
 
         /*
          * Custom node rendering
@@ -1979,20 +1981,67 @@ def inject_controls(
           }
         }
 
-        function adjustInfoPanelTextZoom(deltaY) {
+        function currentInfoPanelFontSize() {
           var panel = document.getElementById("info_panel");
           var currentSize = parseFloat(window.getComputedStyle(panel).fontSize);
           if (!Number.isFinite(currentSize) || currentSize <= 0) {
             currentSize = __INFO_PANEL_FONT_SIZE_PX__;
           }
+          return currentSize;
+        }
 
-          var direction = deltaY < 0 ? 1 : -1;
+        function setInfoPanelFontSize(sizePx) {
+          var panel = document.getElementById("info_panel");
           var nextSize = Math.max(
             __INFO_PANEL_TEXT_ZOOM_MIN_PX__,
-            Math.min(__INFO_PANEL_TEXT_ZOOM_MAX_PX__, currentSize + direction)
+            Math.min(__INFO_PANEL_TEXT_ZOOM_MAX_PX__, Number(sizePx))
           );
           panel.style.fontSize = nextSize + "px";
           schedulePanelContentRefit();
+        }
+
+        function adjustInfoPanelTextZoom(deltaY) {
+          var direction = deltaY < 0 ? 1 : -1;
+          setInfoPanelFontSize(currentInfoPanelFontSize() + direction);
+        }
+
+        function touchDistance(touches) {
+          if (!touches || touches.length < 2) { return 0; }
+          var dx = touches[0].clientX - touches[1].clientX;
+          var dy = touches[0].clientY - touches[1].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function beginInfoPanelPinch(e) {
+          if (!e.touches || e.touches.length !== 2) { return; }
+          infoPanelPinchState = {
+            distance: touchDistance(e.touches),
+            fontSize: currentInfoPanelFontSize()
+          };
+        }
+
+        function updateInfoPanelPinch(e) {
+          if (!e.touches || e.touches.length !== 2) {
+            infoPanelPinchState = null;
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          if (!infoPanelPinchState) {
+            beginInfoPanelPinch(e);
+            return;
+          }
+
+          var distance = touchDistance(e.touches);
+          if (infoPanelPinchState.distance <= 0 || distance <= 0) { return; }
+          var deltaPx = (distance - infoPanelPinchState.distance) / 18;
+          setInfoPanelFontSize(infoPanelPinchState.fontSize + deltaPx);
+        }
+
+        function endInfoPanelPinch(e) {
+          if (!e.touches || e.touches.length < 2) {
+            infoPanelPinchState = null;
+          }
         }
 
         function shouldStartWithControlsHidden() {
@@ -3516,6 +3565,11 @@ def inject_controls(
           e.stopPropagation();
           adjustInfoPanelTextZoom(e.deltaY);
         }, {passive: false});
+
+        document.getElementById("info_panel").addEventListener("touchstart", beginInfoPanelPinch, {passive: true});
+        document.getElementById("info_panel").addEventListener("touchmove", updateInfoPanelPinch, {passive: false});
+        document.getElementById("info_panel").addEventListener("touchend", endInfoPanelPinch, {passive: true});
+        document.getElementById("info_panel").addEventListener("touchcancel", endInfoPanelPinch, {passive: true});
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
