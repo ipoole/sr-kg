@@ -101,10 +101,30 @@
       #kg_info_toggle {
         left: 128px;
       }
+      #kg_graph_view_select {
+        left: 244px;
+        min-width: 170px;
+      }
       .kg-canvas-toggle:hover,
-      .kg-canvas-toggle:focus {
+      .kg-canvas-toggle:focus,
+      .kg-canvas-select:hover,
+      .kg-canvas-select:focus {
         background: #eef3fd;
         outline: none;
+      }
+      .kg-canvas-select {
+        position: fixed;
+        top: 12px;
+        z-index: 10000;
+        padding: 5px 8px;
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+        color: #222;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
       }
       #kg_view_title {
         position: fixed;
@@ -138,28 +158,6 @@
         margin-top: 6px;
         margin-right: 4px;
         padding: 4px 8px;
-      }
-      .kg-mode-controls {
-        display: flex;
-        gap: 4px;
-        margin: 6px 0 4px;
-      }
-      #kg_controls .kg-mode-button {
-        border: 1px solid #bbb;
-        border-radius: 999px;
-        background: #f7f7f7;
-        color: #222;
-        cursor: pointer;
-        flex: 1 1 0;
-        font: inherit;
-        margin: 0;
-        padding: 4px 8px;
-      }
-      #kg_controls .kg-mode-button.kg-active {
-        background: #174ea6;
-        border-color: #174ea6;
-        color: #fff;
-        font-weight: 700;
       }
       #kg_status {
         margin-top: 6px;
@@ -386,7 +384,8 @@
 
     #info_panel .kg-add-note-row {
         display: none;
-        margin: 0.35em 0;
+        line-height: 1;
+        margin: 0.08em 0;
     }
 
     #info_panel.kg-note-editing .kg-add-note-row {
@@ -396,17 +395,20 @@
     #info_panel .kg-add-note {
         background: #f6f1dc;
         border: 1px dashed #b08b16;
-        border-radius: 4px;
+        border-radius: 3px;
         color: #6b5200;
         cursor: pointer;
         font: inherit;
-        font-size: 0.88em;
-        padding: 2px 7px;
+        font-size: 0.72em;
+        line-height: 1.1;
+        opacity: 0.78;
+        padding: 0 4px;
     }
 
     #info_panel .kg-add-note:hover,
     #info_panel .kg-add-note:focus {
         background: #fff5bf;
+        opacity: 1;
         outline: none;
     }
 
@@ -614,9 +616,101 @@
         color: #222;
         font-family: Arial, sans-serif;
         font-size: 12px;
-        white-space: pre-line;
+        white-space: normal;
         line-height: 1.35;
         box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+
+    #kg_node_tooltip {
+        display: none;
+        position: fixed;
+        z-index: 10001;
+        max-width: min(380px, calc(100vw - 24px));
+        padding: 6px 8px;
+        background: #ffffff;
+        border: 1px solid #b8b8b8;
+        color: #222;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        white-space: normal;
+        line-height: 1.35;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+        pointer-events: none;
+    }
+
+    div.vis-tooltip .kg-tooltip-title,
+    #kg_node_tooltip .kg-tooltip-title {
+        font-weight: 700;
+        margin-bottom: 0.45em;
+    }
+
+    div.vis-tooltip .kg-tooltip-definition,
+    #kg_node_tooltip .kg-tooltip-definition {
+        margin-bottom: 0.45em;
+    }
+
+    div.vis-tooltip .kg-tooltip-section-title,
+    #kg_node_tooltip .kg-tooltip-section-title {
+        font-weight: 700;
+        margin-top: 0.45em;
+    }
+
+    div.vis-tooltip ul,
+    #kg_node_tooltip ul {
+        margin: 0.12em 0 0;
+        padding-left: 1.25em;
+    }
+
+    body.kg-graph-hidden #mynetwork,
+    body.kg-graph-hidden #kg_node_labels,
+    body.kg-graph-hidden #kg_view_title {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .kg-splash::backdrop {
+        background: rgba(20, 24, 32, 0.35);
+    }
+
+    .kg-splash {
+        border: 1px solid #b8c2d4;
+        border-radius: 8px;
+        box-shadow: 0 16px 42px rgba(0,0,0,0.28);
+        color: #222;
+        font-family: Arial, sans-serif;
+        max-width: min(560px, calc(100vw - 32px));
+        padding: 18px 20px;
+    }
+
+    .kg-splash h2 {
+        font-size: 1.2rem;
+        margin: 0 0 0.6rem;
+    }
+
+    .kg-splash ul {
+        margin: 0.65rem 0 1rem;
+        padding-left: 1.25rem;
+    }
+
+    .kg-splash li {
+        margin: 0.35rem 0;
+    }
+
+    .kg-new-badge {
+        background: #fff1b8;
+        border: 1px solid #d2a500;
+        border-radius: 4px;
+        color: #5c4700;
+        font-size: 0.72em;
+        font-weight: 700;
+        margin-left: 0.35em;
+        padding: 0.05em 0.3em;
+        vertical-align: 0.08em;
+    }
+
+    .kg-splash-actions {
+        display: flex;
+        justify-content: flex-end;
     }
 
     @media (max-width: 1100px) {
@@ -659,6 +753,18 @@
             left: calc(max(8px, env(safe-area-inset-left)) + 112px);
         }
 
+        #kg_graph_view_select {
+            left: calc(max(8px, env(safe-area-inset-left)) + 222px);
+            min-width: 154px;
+            max-width: calc(100vw - 230px - env(safe-area-inset-left) - env(safe-area-inset-right));
+        }
+
+        .kg-canvas-select {
+            top: max(8px, env(safe-area-inset-top));
+            padding: 6px 7px;
+            font-size: 12px;
+        }
+
         #kg_controls {
             top: calc(max(8px, env(safe-area-inset-top)) + 38px);
             left: max(8px, env(safe-area-inset-left));
@@ -675,14 +781,6 @@
 
         #kg_controls button {
             padding: 6px 8px;
-        }
-
-        .kg-mode-controls {
-            flex-wrap: wrap;
-        }
-
-        #kg_controls .kg-mode-button {
-            flex: 1 1 9em;
         }
 
         #kg_status {
@@ -704,7 +802,7 @@
         #info_panel {
             bottom: max(8px, env(safe-area-inset-bottom));
             box-sizing: border-box;
-            font-size: 13px;
+            font-size: 11px;
             height: auto;
             left: max(8px, env(safe-area-inset-left));
             max-height: min(48vh, 360px);
@@ -714,6 +812,11 @@
             right: max(8px, env(safe-area-inset-right));
             top: auto;
             width: auto;
+        }
+
+        body.kg-graph-hidden #info_panel {
+            top: calc(max(8px, env(safe-area-inset-top)) + 42px);
+            max-height: calc(100vh - 58px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         }
 
         #info_panel h2 {
@@ -766,14 +869,17 @@
     <div id="kg_view_title">Special Relativity and Classical Fields</div>
     <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
     <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
+    <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
+      <option value="hide">Hide graph</option>
+      <option value="all" selected>All</option>
+      <option value="neighbourhood-1">Neighbourhood (1)</option>
+      <option value="neighbourhood-2">Neighbourhood (2)</option>
+      <option value="descendants">Descendants</option>
+    </select>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
-      <div class="kg-mode-controls" role="group" aria-label="Graph view mode">
-        <button id="kg_mode_neighbourhood" class="kg-mode-button" onclick="kgFocusSelected()" aria-pressed="false">Neighbourhood</button>
-        <button id="kg_mode_descendants" class="kg-mode-button" onclick="kgFocusDescendantsSelected()" aria-pressed="false">Descendants</button>
-        <button id="kg_mode_all" class="kg-mode-button kg-active" onclick="kgShowAll()" aria-pressed="true">All</button>
-      </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
+      <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
       <details id="kg_edge_filters_section" class="kg-fold" open>
         <summary>Edge types</summary>
@@ -810,6 +916,21 @@
       <h2>Special Relativity and Classical Fields</h2>
       <p>Click a concept node to view details.</p>
     </div>
+    <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
+      <h2 id="kg_splash_title">Knowledge graph browser</h2>
+      <p>Use the graph and details panel together while studying each concept.</p>
+      <ul>
+        <li>Click graph nodes or the searchable concept list to open concept details.</li>
+        <li>Switch graph views between all concepts, one-hop/two-hop neighbourhoods, descendants, or hidden graph.</li>
+        <li>Filter edge types and inspect relation meanings from the edge key.</li>
+        <li>Open optional derivation details inline. <span class="kg-new-badge">NEW</span></li>
+        <li>Add personal notes inline, then export or import them as CSV. <span class="kg-new-badge">NEW</span></li>
+        <li>Zoom the details text independently from the graph. <span class="kg-new-badge">NEW</span></li>
+      </ul>
+      <div class="kg-splash-actions">
+        <button id="kg_splash_dismiss" type="button">Dismiss</button>
+      </div>
+    </dialog>
     
         <div class="card" style="width: 100%">
             
@@ -898,10 +1019,14 @@
         var allEdges = edges.get();
         var graphContainer = document.getElementById("mynetwork");
         var nodeLabelLayer = document.createElement("div");
+        var nodeTooltip = document.createElement("div");
         var nodeLabelEls = {};
 
         nodeLabelLayer.id = "kg_node_labels";
         graphContainer.appendChild(nodeLabelLayer);
+        nodeTooltip.id = "kg_node_tooltip";
+        nodeTooltip.setAttribute("role", "tooltip");
+        document.body.appendChild(nodeTooltip);
 
         var originalNodes = {};
         var originalEdges = {};
@@ -915,8 +1040,10 @@
         var activeNodeBorderWidth = 6;
         var nodeLabelWidth = 250;
         var nodeLabelFontSize = 30;
+        var tooltipTypesetTimer = null;
         var userNotesStorageKey = "srkg.userNotes.v1";
         var noteEditingStorageKey = "srkg.noteEditing.v1";
+        var splashDismissedStorageKey = "srkg.splash.dismissed.v1";
         var userNotesState = loadUserNotes();
         var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
@@ -993,6 +1120,59 @@
             });
           } else {
             setTimeout(typesetNodeLabels, 250);
+          }
+        }
+
+        function typesetVisibleTooltip() {
+          var tooltip = nodeTooltip;
+          if (!tooltip || !window.MathJax || !MathJax.typesetPromise) { return; }
+          if (MathJax.typesetClear) {
+            MathJax.typesetClear([tooltip]);
+          }
+          MathJax.typesetPromise([tooltip]).catch(function(err) {
+            console.warn("MathJax tooltip typesetting failed:", err);
+          });
+        }
+
+        function scheduleTooltipTypeset() {
+          if (tooltipTypesetTimer) {
+            clearTimeout(tooltipTypesetTimer);
+          }
+          tooltipTypesetTimer = setTimeout(function() {
+            tooltipTypesetTimer = null;
+            typesetVisibleTooltip();
+          }, 180);
+        }
+
+        function positionNodeTooltip(pointer) {
+          if (!nodeTooltip || !pointer || !pointer.DOM) { return; }
+          var containerRect = graphContainer.getBoundingClientRect();
+          var margin = 10;
+          var x = containerRect.left + pointer.DOM.x + 14;
+          var y = containerRect.top + pointer.DOM.y + 14;
+          var rect = nodeTooltip.getBoundingClientRect();
+          var maxX = window.innerWidth - rect.width - margin;
+          var maxY = window.innerHeight - rect.height - margin;
+          nodeTooltip.style.left = Math.max(margin, Math.min(x, maxX)) + "px";
+          nodeTooltip.style.top = Math.max(margin, Math.min(y, maxY)) + "px";
+        }
+
+        function showNodeTooltip(nodeId, pointer) {
+          if (!nodeTooltip || currentView.mode === "hide" || !getConcept(nodeId)) { return; }
+          nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+          nodeTooltip.style.display = "block";
+          positionNodeTooltip(pointer);
+          scheduleTooltipTypeset();
+        }
+
+        function hideNodeTooltip() {
+          if (tooltipTypesetTimer) {
+            clearTimeout(tooltipTypesetTimer);
+            tooltipTypesetTimer = null;
+          }
+          if (nodeTooltip) {
+            nodeTooltip.style.display = "none";
+            nodeTooltip.innerHTML = "";
           }
         }
 
@@ -1129,6 +1309,7 @@
         allNodes = nodes.get();
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
+        refreshNodeTooltips();
         Object.keys(edgeKey).forEach(function(relation) {
           enabledEdgeRelations[relation] = edgeKey[relation].directed !== false;
         });
@@ -1289,6 +1470,7 @@
         function saveUserNotes() {
           var saved = safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
           setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
+          refreshNodeTooltips();
           return saved;
         }
 
@@ -1298,6 +1480,37 @@
 
         function saveNoteEditingPreference() {
           safeLocalStorageSet(noteEditingStorageKey, noteEditingEnabled ? "true" : "false");
+        }
+
+        function splashDismissed() {
+          return safeLocalStorageGet(splashDismissedStorageKey) === "true";
+        }
+
+        function dismissSplash() {
+          safeLocalStorageSet(splashDismissedStorageKey, "true");
+          var dialog = document.getElementById("kg_splash_dialog");
+          if (!dialog) { return; }
+          if (dialog.close) {
+            dialog.close();
+          } else {
+            dialog.removeAttribute("open");
+          }
+        }
+
+        window.kgShowSplash = function() {
+          var dialog = document.getElementById("kg_splash_dialog");
+          if (!dialog) { return; }
+          if (dialog.showModal && !dialog.open) {
+            dialog.showModal();
+          } else {
+            dialog.setAttribute("open", "open");
+          }
+        };
+
+        function showSplashOnFirstLoad() {
+          if (!splashDismissed()) {
+            window.kgShowSplash();
+          }
         }
 
         function setNotesStatus(message) {
@@ -1844,7 +2057,7 @@
 
           var direction = deltaY < 0 ? 1 : -1;
           var nextSize = Math.max(
-            10,
+            6,
             Math.min(28, currentSize + direction)
           );
           panel.style.fontSize = nextSize + "px";
@@ -1856,24 +2069,21 @@
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
         }
 
-        function updateModeButtons() {
-          var inNeighbourhood = currentView.mode === "neighbourhood";
-          var inDescendants = currentView.mode === "descendants";
-          var neighbourhoodButton = document.getElementById("kg_mode_neighbourhood");
-          var descendantsButton = document.getElementById("kg_mode_descendants");
-          var allButton = document.getElementById("kg_mode_all");
-          if (neighbourhoodButton) {
-            neighbourhoodButton.classList.toggle("kg-active", inNeighbourhood);
-            neighbourhoodButton.setAttribute("aria-pressed", inNeighbourhood ? "true" : "false");
+        function graphViewSelectValue() {
+          if (currentView.mode === "hide") { return "hide"; }
+          if (currentView.mode === "neighbourhood") {
+            return "neighbourhood-" + String(currentView.radius || 1);
           }
-          if (descendantsButton) {
-            descendantsButton.classList.toggle("kg-active", inDescendants);
-            descendantsButton.setAttribute("aria-pressed", inDescendants ? "true" : "false");
+          if (currentView.mode === "descendants") { return "descendants"; }
+          return "all";
+        }
+
+        function updateGraphViewControls() {
+          var select = document.getElementById("kg_graph_view_select");
+          if (select) {
+            select.value = graphViewSelectValue();
           }
-          if (allButton) {
-            allButton.classList.toggle("kg-active", !inNeighbourhood && !inDescendants);
-            allButton.setAttribute("aria-pressed", (!inNeighbourhood && !inDescendants) ? "true" : "false");
-          }
+          document.body.classList.toggle("kg-graph-hidden", currentView.mode === "hide");
         }
 
         function getConcept(nodeId) {
@@ -1999,6 +2209,101 @@
             .replace(/\\cref\{([^{}]*)\}\{([^{}]*)\}/g, "$1")
             .replace(/\s+/g, " ")
             .trim();
+        }
+
+        function stripOptionalDetailsFromTooltipText(text) {
+          var raw = String(text || "");
+          var cursor = 0;
+          var output = "";
+
+          while (cursor < raw.length) {
+            var block = findNextOptionalDetailBlock(raw, cursor);
+            if (!block) {
+              output += raw.slice(cursor);
+              break;
+            }
+            output += raw.slice(cursor, block.start);
+            cursor = block.end;
+          }
+          return output;
+        }
+
+        function renderTooltipText(s) {
+          return escapeHtml(searchDisplayText(stripOptionalDetailsFromTooltipText(s)));
+        }
+
+        function optionalDetailTitlesFromText(text) {
+          var titles = [];
+          var cursor = 0;
+          var raw = String(text || "");
+
+          while (cursor < raw.length) {
+            var block = findNextOptionalDetailBlock(raw, cursor);
+            if (!block) { break; }
+
+            var summaryStart = skipOptionalDetailWhitespace(
+              raw,
+              block.start + "\\optional_details".length
+            );
+            var summary = parseBracedArgument(raw, summaryStart);
+            if (summary) {
+              var title = summary.value;
+              if (title) { titles.push(title); }
+            }
+            cursor = block.end;
+          }
+          return titles;
+        }
+
+        function optionalDetailTitlesForConcept(concept) {
+          return []
+            .concat(optionalDetailTitlesFromText(concept.definition_new || ""))
+            .concat(optionalDetailTitlesFromText(concept.derivation_new || ""))
+            .concat(optionalDetailTitlesFromText(concept.explanation_new || ""));
+        }
+
+        function noteTitlesForConcept(nodeId) {
+          return userNotesState.notes
+            .filter(function(note) { return note.conceptId === String(nodeId); })
+            .map(function(note) { return note.title || "Untitled note"; })
+            .filter(Boolean);
+        }
+
+        function tooltipListHtml(title, values) {
+          if (!values.length) { return ""; }
+          return '<div class="kg-tooltip-section-title">' + escapeHtml(title) + "</div>" +
+            "<ul>" + values.map(function(value) {
+              return "<li>" + renderTooltipText(value) + "</li>";
+            }).join("") + "</ul>";
+        }
+
+        function conceptTooltipHtml(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          var title = String(nodeId) + " " + String(concept.label || "");
+          var definition = concept.definition_new || "";
+          var html = '<div class="kg-tooltip-title">' + renderTooltipText(title) + "</div>";
+          if (definition) {
+            html += '<div class="kg-tooltip-definition">' + renderTooltipText(definition) + "</div>";
+          }
+          html += tooltipListHtml("Optional details", optionalDetailTitlesForConcept(concept));
+          html += tooltipListHtml("Notes", noteTitlesForConcept(nodeId));
+          return html;
+        }
+
+        function refreshNodeTooltips() {
+          if (!nodes || !originalNodes) { return; }
+          var updates = [];
+          Object.keys(conceptData).forEach(function(id) {
+            if (originalNodes[id]) {
+              originalNodes[id].title = "";
+            }
+            if (nodes.get(id)) {
+              updates.push({id: id, title: ""});
+            }
+          });
+          if (updates.length) {
+            nodes.update(updates);
+          }
         }
 
         function searchFieldsForConcept(nodeId) {
@@ -2192,12 +2497,16 @@
         }
 
         function applyCurrentView() {
+          if (currentView.mode === "hide") {
+            kgHideGraph(true);
+            return;
+          }
           if (currentView.mode === "highlight" && currentView.nodeId !== null) {
             kgHighlight(currentView.nodeId, true);
             return;
           }
           if (currentView.mode === "neighbourhood" && currentView.nodeId !== null) {
-            kgApplyNeighbourhood(currentView.nodeId, true);
+            kgApplyNeighbourhood(currentView.nodeId, true, currentView.radius || 1);
             return;
           }
           if (currentView.mode === "descendants" && currentView.nodeId !== null) {
@@ -2675,6 +2984,10 @@
         function focusConcept(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
+          if (currentView.mode === "hide") {
+            focusHiddenConcept(nodeId, statusPrefix, options);
+            return;
+          }
           activeNodeId = nodeId;
           kgHighlight(nodeId, true);
           showConcept(nodeId, {
@@ -2694,17 +3007,18 @@
         function focusNeighbourhood(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
-          kgApplyNeighbourhood(nodeId, true);
+          var radius = Math.max(1, Math.min(2, Math.floor(Number(options.radius || currentView.radius || 1))));
+          kgApplyNeighbourhood(nodeId, true, radius);
           showConcept(nodeId);
           setActiveConceptItem(nodeId);
           if (!options.skipHistory) {
-            pushConceptHistory(nodeId, "neighbourhood");
+            pushConceptHistory(nodeId, "neighbourhood-" + radius);
           }
 
-          var neighbourCount = enabledConnectedNodes(nodeId).length;
+          var neighbourCount = Math.max(0, Object.keys(enabledNeighbourhoodNodes(nodeId, radius)).length - 1);
           document.getElementById("kg_status").innerText =
             (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
-            "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
+            "Neighbourhood (" + radius + ") mode: " + nodeId + " plus " + neighbourCount +
             " neighbour" + (neighbourCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
         }
@@ -2775,10 +3089,11 @@
 
         window.kgReset = function(preserveStatus) {
           restoreHoveredEdge();
+          hideNodeTooltip();
           network.unselectAll();
           currentView = {mode: "all", nodeId: null};
           activeNodeId = null;
-          updateModeButtons();
+          updateGraphViewControls();
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
@@ -2797,6 +3112,79 @@
         };
 
         window.kgShowAll = window.kgReset;
+
+        function selectedOrActiveNodeId() {
+          var selected = network.getSelectedNodes();
+          return activeNodeId || selected[0] || null;
+        }
+
+        window.kgSetGraphView = function(value) {
+          var nodeId = selectedOrActiveNodeId();
+          if (value === "hide") {
+            kgHideGraph();
+          } else if (value === "all") {
+            kgReset();
+          } else if (value === "neighbourhood-1" || value === "neighbourhood-2") {
+            if (!nodeId) {
+              document.getElementById("kg_status").innerText = "Select a node first.";
+              updateGraphViewControls();
+              return;
+            }
+            focusNeighbourhood(nodeId, null, {radius: value === "neighbourhood-2" ? 2 : 1});
+          } else if (value === "descendants") {
+            if (!nodeId) {
+              document.getElementById("kg_status").innerText = "Select a node first.";
+              updateGraphViewControls();
+              return;
+            }
+            focusDescendants(nodeId);
+          } else {
+            updateGraphViewControls();
+          }
+        };
+
+        function focusHiddenConcept(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          activeNodeId = nodeId;
+          currentView = {mode: "hide", nodeId: nodeId};
+          kgHideGraph(true);
+          showConcept(nodeId, {
+            searchQuery: options.searchQuery,
+            scrollToSearchMatch: options.scrollToSearchMatch
+          });
+          setActiveConceptItem(nodeId);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId, "hide");
+          }
+          if (statusPrefix) {
+            document.getElementById("kg_status").innerText =
+              statusPrefix + " " + nodeId + ". Graph hidden.";
+          }
+        }
+
+        window.kgHideGraph = function(preserveStatus) {
+          restoreHoveredEdge();
+          hideNodeTooltip();
+          var nodeId = activeNodeId || (currentView && currentView.nodeId) || null;
+          currentView = {mode: "hide", nodeId: nodeId};
+          updateGraphViewControls();
+          network.unselectAll();
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            o.hidden = true;
+            return o;
+          }));
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            return setEdgeHidden(o, true);
+          }));
+          updateNodeLabelPositions();
+          if (!preserveStatus) {
+            document.getElementById("kg_status").innerText =
+              "Graph hidden. Use the concept list or detail links to browse details.";
+          }
+        };
 
         window.kgSearch = function() {
           var q = searchDisplayText(document.getElementById("kg_search").value).toLowerCase();
@@ -2824,7 +3212,7 @@
           restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "highlight", nodeId: nodeId};
-          updateModeButtons();
+          updateGraphViewControls();
           var connected = enabledConnectedNodes(nodeId);
           var keep = {};
           keep[nodeId] = true;
@@ -2877,15 +3265,33 @@
           }
         };
 
-        function kgApplyNeighbourhood(nodeId, preserveStatus) {
+        function enabledNeighbourhoodNodes(nodeId, radius) {
+          var keep = {};
+          var queue = [{id: String(nodeId), depth: 0}];
+          var maxDepth = Math.max(1, Math.floor(Number(radius) || 1));
+          keep[String(nodeId)] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            if (current.depth >= maxDepth) { continue; }
+
+            enabledConnectedNodes(current.id).forEach(function(connectedId) {
+              connectedId = String(connectedId);
+              if (keep[connectedId]) { return; }
+              keep[connectedId] = true;
+              queue.push({id: connectedId, depth: current.depth + 1});
+            });
+          }
+          return keep;
+        }
+
+        function kgApplyNeighbourhood(nodeId, preserveStatus, radius) {
           restoreHoveredEdge();
           activeNodeId = nodeId;
-          currentView = {mode: "neighbourhood", nodeId: nodeId};
-          updateModeButtons();
-          var connected = enabledConnectedNodes(nodeId);
-          var keep = {};
-          keep[nodeId] = true;
-          connected.forEach(function(id) { keep[id] = true; });
+          radius = Math.max(1, Math.min(2, Math.floor(Number(radius) || 1)));
+          currentView = {mode: "neighbourhood", nodeId: nodeId, radius: radius};
+          updateGraphViewControls();
+          var keep = enabledNeighbourhoodNodes(nodeId, radius);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return keep[id];
           });
@@ -2911,7 +3317,7 @@
           if (!preserveStatus) {
             var neighbourCount = Math.max(0, visibleIds.length - 1);
             document.getElementById("kg_status").innerText =
-              "Neighbourhood mode: " + nodeId + " plus " + neighbourCount +
+              "Neighbourhood (" + radius + ") mode: " + nodeId + " plus " + neighbourCount +
               " neighbour" + (neighbourCount === 1 ? "" : "s") +
               ". Click a visible node to walk one step.";
           }
@@ -2921,7 +3327,7 @@
           restoreHoveredEdge();
           activeNodeId = nodeId;
           currentView = {mode: "descendants", nodeId: nodeId};
-          updateModeButtons();
+          updateGraphViewControls();
           var keep = enabledDirectedDescendants(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return keep[id];
@@ -2960,19 +3366,17 @@
         }
 
         window.kgFocusSelected = function() {
-          var selected = network.getSelectedNodes();
-          var nodeId = activeNodeId || selected[0];
+          var nodeId = selectedOrActiveNodeId();
           if (!nodeId) {
             document.getElementById("kg_status").innerText = "Select a node first.";
             return;
           }
 
-          focusNeighbourhood(nodeId);
+          focusNeighbourhood(nodeId, null, {radius: currentView.radius || 1});
         };
 
         window.kgFocusDescendantsSelected = function() {
-          var selected = network.getSelectedNodes();
-          var nodeId = activeNodeId || selected[0];
+          var nodeId = selectedOrActiveNodeId();
           if (!nodeId) {
             document.getElementById("kg_status").innerText = "Select a node first.";
             return;
@@ -2989,13 +3393,19 @@
             const nodeId = params.nodes[0];
 
             if (currentView.mode === "neighbourhood") {
-              focusNeighbourhood(nodeId);
+              focusNeighbourhood(nodeId, null, {radius: currentView.radius || 1});
             } else if (currentView.mode === "descendants") {
               focusDescendants(nodeId);
             } else {
               focusConcept(nodeId, "Selected");
             }
         });
+
+        network.on("hoverNode", function(params) {
+          showNodeTooltip(params.node, params.pointer);
+        });
+
+        network.on("blurNode", hideNodeTooltip);
 
         network.on("hoverEdge", function(params) {
           if (params.edge !== undefined && params.edge !== null) {
@@ -3022,7 +3432,10 @@
           window.visualViewport.addEventListener("resize", scheduleViewportRefit);
           window.visualViewport.addEventListener("scroll", scheduleViewportRefit);
         }
-        graphContainer.addEventListener("mouseleave", restoreHoveredEdge);
+        graphContainer.addEventListener("mouseleave", function() {
+          restoreHoveredEdge();
+          hideNodeTooltip();
+        });
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
@@ -3032,8 +3445,12 @@
           }
 
           if (nodeId && getConcept(nodeId)) {
-            if (mode === "neighbourhood") {
-              focusNeighbourhood(nodeId, null, {skipHistory: true});
+            if (mode === "hide") {
+              focusHiddenConcept(nodeId, null, {skipHistory: true});
+            } else if (mode === "neighbourhood" || mode === "neighbourhood-1") {
+              focusNeighbourhood(nodeId, null, {skipHistory: true, radius: 1});
+            } else if (mode === "neighbourhood-2") {
+              focusNeighbourhood(nodeId, null, {skipHistory: true, radius: 2});
             } else if (mode === "descendants") {
               focusDescendants(nodeId, null, {skipHistory: true});
             } else {
@@ -3051,6 +3468,12 @@
         document.getElementById("kg_search").addEventListener("input", function(e) {
           buildConceptList(e.target.value);
         });
+
+        document.getElementById("kg_graph_view_select").addEventListener("change", function(e) {
+          kgSetGraphView(e.target.value);
+        });
+
+        document.getElementById("kg_splash_dismiss").addEventListener("click", dismissSplash);
 
         var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
         notesEditToggle.checked = noteEditingEnabled;
@@ -3133,7 +3556,9 @@
           if (!getConcept(id)) { return; }
 
           if (currentView.mode === "neighbourhood") {
-            focusNeighbourhood(id, "Selected");
+            focusNeighbourhood(id, "Selected", {radius: currentView.radius || 1});
+          } else if (currentView.mode === "hide") {
+            focusHiddenConcept(id, "Selected");
           } else if (currentView.mode === "descendants") {
             focusDescendants(id, "Selected");
           } else {
@@ -3186,6 +3611,7 @@
         buildNodeLabels();
         buildEdgeFilters();
         buildConceptList("");
+        updateGraphViewControls();
         if (shouldStartWithControlsHidden()) {
           setControlsVisible(false);
         }
@@ -3206,6 +3632,7 @@
         } else {
           window.history.replaceState({}, "", window.location.href);
         }
+        showSplashOnFirstLoad();
       }
 
       // Wait until pyvis has created network/nodes/edges variables.

@@ -15,6 +15,41 @@ def test_generated_viewer_boots_and_initializes_in_browser(browser_graph):
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
     assert page.evaluate("() => nodes.length") == 4
     assert page.evaluate("() => edges.length") == 4
+    assert page.locator("#kg_graph_view_select").input_value() == "all"
+
+
+@pytest.mark.browser
+def test_node_builtin_title_is_disabled_for_custom_tooltips(browser_graph):
+    page = browser_graph.page
+
+    title = page.evaluate("""() => nodes.get("2.1").title""")
+
+    assert title == ""
+
+
+@pytest.mark.browser
+def test_node_hover_tooltip_typesets_mathjax(browser_graph):
+    page = browser_graph.page
+
+    point = page.evaluate(
+        """() => {
+          const position = network.getPositions(["2.1"])["2.1"];
+          const dom = network.canvasToDOM(position);
+          const rect = network.canvas.frame.canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
+        }"""
+    )
+    page.mouse.move(point["x"], point["y"])
+
+    page.wait_for_selector("#kg_node_tooltip", state="visible")
+    page.wait_for_selector("#kg_node_tooltip mjx-container")
+    tooltip_text = page.locator("#kg_node_tooltip").inner_text()
+    assert "2.1 Beta" in tooltip_text
+    assert "Beta definition" in tooltip_text
+    assert "Optional details" in tooltip_text
+    assert "Why this matters" in tooltip_text
+    assert "The optional body can include" not in tooltip_text
+    assert "<div" not in tooltip_text
 
 
 @pytest.mark.browser
@@ -94,15 +129,12 @@ def test_descendants_mode_follows_enabled_directed_edges_only(browser_graph):
     page = browser_graph.page
 
     page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
-    page.locator("#kg_mode_descendants").click()
+    page.locator("#kg_graph_view_select").select_option("descendants")
 
     assert page.locator("#kg_status").inner_text() == (
         "Descendants mode: 2.1 plus 1 reachable node. Click a visible node to walk one step."
     )
-    assert page.locator("#kg_mode_descendants").evaluate(
-        "el => el.classList.contains('kg-active')"
-    )
-    assert page.locator("#kg_mode_descendants").get_attribute("aria-pressed") == "true"
+    assert page.locator("#kg_graph_view_select").input_value() == "descendants"
     assert page.evaluate(
         """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
@@ -127,3 +159,56 @@ def test_descendants_mode_follows_enabled_directed_edges_only(browser_graph):
     assert page.evaluate(
         """() => edges.get().every(edge => edge.hidden)"""
     )
+
+
+@pytest.mark.browser
+def test_graph_view_selector_hides_graph_and_supports_two_hop_neighbourhood(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="3.1"]').click()
+    page.locator("#kg_graph_view_select").select_option("hide")
+
+    assert page.locator("#kg_graph_view_select").input_value() == "hide"
+    assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
+    assert page.evaluate("""() => nodes.get().every(node => node.hidden)""")
+    assert page.evaluate("""() => edges.get().every(edge => edge.hidden)""")
+    assert "Delta definition" in page.locator("#info_panel").inner_text()
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    assert page.locator("#kg_graph_view_select").input_value() == "hide"
+    assert "Beta definition" in page.locator("#info_panel").inner_text()
+    assert page.evaluate("""() => nodes.get().every(node => node.hidden)""")
+
+    page.locator("#kg_graph_view_select").select_option("neighbourhood-2")
+    assert page.locator("#kg_status").inner_text() == (
+        "Neighbourhood (2) mode: 2.1 plus 3 neighbours. Click a visible node to walk one step."
+    )
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+
+
+@pytest.mark.browser
+def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
+    page = browser_graph.page
+
+    page.evaluate("""() => localStorage.removeItem("srkg.splash.dismissed.v1")""")
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_selector("#kg_splash_dialog[open]")
+
+    assert "Knowledge graph browser" in page.locator("#kg_splash_dialog").inner_text()
+    assert page.locator("#kg_splash_dialog .kg-new-badge").count() >= 3
+
+    page.locator("#kg_splash_dismiss").click()
+    assert page.evaluate("""() => localStorage.getItem("srkg.splash.dismissed.v1")""") == "true"
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_selector("#kg_controls", state="attached")
+    assert page.locator("#kg_splash_dialog[open]").count() == 0
+
+    page.locator("#kg_features_button").click()
+    assert page.locator("#kg_splash_dialog[open]").count() == 1

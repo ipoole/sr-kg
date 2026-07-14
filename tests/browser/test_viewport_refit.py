@@ -37,9 +37,9 @@ def _enter_browsing_mode(page, mode):
     if mode == "all":
         return
     if mode == "neighbourhood":
-        page.locator("#kg_mode_neighbourhood").click()
+        page.locator("#kg_graph_view_select").select_option("neighbourhood-1")
     elif mode == "descendants":
-        page.locator("#kg_mode_descendants").click()
+        page.locator("#kg_graph_view_select").select_option("descendants")
     else:
         raise AssertionError(f"unknown mode: {mode}")
     _wait_for_refit(page)

@@ -58,7 +58,7 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "label": "Beta",
             "layer": "2",
             "layer_title": "Applications",
-            "definition_new": "Beta definition",
+            "definition_new": "Beta definition \\(E=mc^2\\)",
             "derivation_new": "",
             "explanation_new": (
                 "Beta explains alpha. "
@@ -205,6 +205,7 @@ def browser_graph(tmp_path):
             """() => {
               localStorage.removeItem("srkg.userNotes.v1");
               localStorage.removeItem("srkg.noteEditing.v1");
+              localStorage.removeItem("srkg.splash.dismissed.v1");
             }"""
         )
         page.reload(wait_until="domcontentloaded")
@@ -218,6 +219,11 @@ def browser_graph(tmp_path):
               document.querySelector("#kg_node_labels")
             """
         )
+        try:
+            page.locator("#kg_splash_dialog[open]").wait_for(timeout=1000)
+            page.locator("#kg_splash_dismiss").click()
+        except playwright_api.TimeoutError:
+            pass
 
         try:
             yield BrowserGraph(

@@ -3,6 +3,19 @@ import csv
 import pytest
 
 
+def _hover_beta_node(page):
+    point = page.evaluate(
+        """() => {
+          const position = network.getPositions(["2.1"])["2.1"];
+          const dom = network.canvasToDOM(position);
+          const rect = network.canvas.frame.canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
+        }"""
+    )
+    page.mouse.move(point["x"], point["y"])
+    page.wait_for_selector("#kg_node_tooltip", state="visible")
+
+
 @pytest.mark.browser
 def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(browser_graph):
     page = browser_graph.page
@@ -30,6 +43,10 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
     assert stored[0]["conceptId"] == "2.1"
     assert stored[0]["title"] == "Check this derivation"
     assert stored[0]["body"] == "This should become an optional detail later."
+    _hover_beta_node(page)
+    tooltip_text = page.locator("#kg_node_tooltip").inner_text()
+    assert "Check this derivation" in tooltip_text
+    assert "This should become an optional detail later." not in tooltip_text
 
     page.locator("#kg_notes_edit_toggle").uncheck()
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
