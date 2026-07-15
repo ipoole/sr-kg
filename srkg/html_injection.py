@@ -30,6 +30,7 @@ from srkg.config import (
     LAYOUT_Y_SPACING,
     NODE_LABEL_FONT_SIZE,
     NODE_LABEL_FONT_WEIGHT,
+    NODE_LABEL_HIDE_BELOW_PX,
     NODE_LABEL_WIDTH,
 )
 
@@ -1184,12 +1185,14 @@ def inject_controls(
           if (!network || !nodeLabelLayer) { return; }
 
           var positions = network.getPositions();
-          var labelScale = Math.max(0.35, network.getScale ? network.getScale() : 1);
+          var rawScale = network.getScale ? network.getScale() : 1;
+          var labelScale = Math.max(0.25, rawScale);
+          var visibleFontSize = __NODE_LABEL_FONT_SIZE__ * rawScale;
           Object.keys(nodeLabelEls).forEach(function(id) {
             var el = nodeLabelEls[id];
             var node = nodes.get(id);
             var pos = positions[id];
-            if (!node || !pos || node.hidden) {
+            if (!node || !pos || node.hidden || visibleFontSize < __NODE_LABEL_HIDE_BELOW_PX__) {
               el.style.display = "none";
               return;
             }
@@ -1213,6 +1216,7 @@ def inject_controls(
             el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
           });
         }
+        window.kgUpdateNodeLabelPositions = updateNodeLabelPositions;
 
         function drawVisibleNodes(ctx) {
           var positions = network.getPositions();
@@ -3813,6 +3817,7 @@ def inject_controls(
     js = js.replace("__EDGE_HOVER_WIDTH__", str(EDGE_HOVER_WIDTH))
     js = js.replace("__NODE_LABEL_WIDTH__", str(NODE_LABEL_WIDTH))
     js = js.replace("__NODE_LABEL_FONT_SIZE__", str(NODE_LABEL_FONT_SIZE))
+    js = js.replace("__NODE_LABEL_HIDE_BELOW_PX__", str(NODE_LABEL_HIDE_BELOW_PX))
     js = js.replace("__LAYOUT_X_SPACING__", str(LAYOUT_X_SPACING))
     js = js.replace("__LAYOUT_Y_SPACING__", str(LAYOUT_Y_SPACING))
     js = js.replace("__LAYOUT_ROW_STAGGER__", str(LAYOUT_ROW_STAGGER))

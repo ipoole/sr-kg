@@ -21,6 +21,32 @@ def test_mouse_wheel_over_graph_changes_network_zoom(browser_graph):
 
 
 @pytest.mark.browser
+def test_node_labels_hide_when_zoomed_out_below_readable_size(browser_graph):
+    page = browser_graph.page
+
+    assert page.locator("#kg_node_labels .kg-node-label").first.is_visible()
+
+    page.evaluate(
+        """() => {
+          network.moveTo({scale: 0.2, animation: false});
+          kgUpdateNodeLabelPositions();
+        }"""
+    )
+
+    assert page.locator("#kg_node_labels .kg-node-label:visible").count() == 0
+    assert page.evaluate("""() => nodes.get().some(node => !node.hidden)""")
+
+    page.evaluate(
+        """() => {
+          network.moveTo({scale: 0.6, animation: false});
+          kgUpdateNodeLabelPositions();
+        }"""
+    )
+
+    assert page.locator("#kg_node_labels .kg-node-label:visible").count() > 0
+
+
+@pytest.mark.browser
 def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_graph):
     page = browser_graph.page
     page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
