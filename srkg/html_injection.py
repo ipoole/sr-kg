@@ -428,6 +428,7 @@ def inject_controls(
 
     #info_panel .user-note-body {
         border-left: 2px solid #e4c568;
+        font-weight: 400;
         margin-top: 0.45em;
         padding-left: 0.75em;
         white-space: pre-wrap;
@@ -455,6 +456,7 @@ def inject_controls(
     #info_panel .user-note-editor textarea {
         box-sizing: border-box;
         font: inherit;
+        font-weight: 400;
         width: 100%;
     }
 
@@ -467,6 +469,16 @@ def inject_controls(
         align-items: center;
         display: flex;
         gap: 0.5em;
+    }
+
+    #info_panel .user-note-close {
+        background: #f5f7fb;
+        border: 1px solid #9aa8bd;
+        border-radius: 4px;
+        color: #26384f;
+        cursor: pointer;
+        font: inherit;
+        padding: 3px 7px;
     }
 
     #info_panel .user-note-delete {
@@ -482,6 +494,63 @@ def inject_controls(
     #info_panel .user-note-saved {
         color: #666;
         font-size: 0.85em;
+    }
+
+    #kg_notes_count {
+        color: #444;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    #kg_notes_list {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 6px;
+        max-height: 140px;
+        overflow-y: auto;
+    }
+
+    #kg_notes_list .kg-note-list-empty {
+        color: #666;
+        padding: 6px;
+    }
+
+    #kg_notes_list .kg-note-list-item {
+        background: #fff;
+        border: 0;
+        border-bottom: 1px solid #eee;
+        color: #222;
+        cursor: pointer;
+        display: block;
+        font: inherit;
+        margin: 0;
+        padding: 5px 6px;
+        text-align: left;
+        width: 100%;
+    }
+
+    #kg_notes_list .kg-note-list-item:last-child {
+        border-bottom: 0;
+    }
+
+    #kg_notes_list .kg-note-list-item:hover,
+    #kg_notes_list .kg-note-list-item:focus {
+        background: #eef3fd;
+        outline: none;
+    }
+
+    #kg_notes_list .kg-note-list-concept {
+        color: #333;
+        display: block;
+        font-weight: 700;
+    }
+
+    #kg_notes_list .kg-note-list-title {
+        color: #555;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     #info_panel .study-questions {
@@ -902,6 +971,8 @@ def inject_controls(
           <input id="kg_notes_import_input" type="file" accept=".csv,text/csv" style="display:none">
         </label>
         <div id="kg_notes_status"></div>
+        <div id="kg_notes_count"></div>
+        <div id="kg_notes_list"></div>
       </details>
       <details id="kg_search_section" class="kg-fold" open>
         <summary>Search</summary>
@@ -1404,6 +1475,7 @@ def inject_controls(
           var saved = safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
           setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
           refreshNodeTooltips();
+          renderNotesOverview();
           return saved;
         }
 
@@ -1451,6 +1523,12 @@ def inject_controls(
           if (el) { el.innerText = message || ""; }
         }
 
+        function noteIsDefaultEmpty(note) {
+          return note &&
+            String(note.title || "").trim() === "Note" &&
+            String(note.body || "").trim() === "";
+        }
+
         function normalizeUserNote(note) {
           if (!note || !note.conceptId || !note.section) { return null; }
           var anchor = note.anchor || {};
@@ -1491,6 +1569,40 @@ def inject_controls(
           }) || null;
         }
 
+        function noteConceptLabel(note) {
+          var concept = getConcept(note.conceptId) || {};
+          return note.conceptId + (concept.label ? " " + searchDisplayText(concept.label) : "");
+        }
+
+        function sortedUserNotes() {
+          return userNotesState.notes.slice().sort(function(a, b) {
+            var conceptOrder = compareConceptIds(a.conceptId, b.conceptId);
+            if (conceptOrder !== 0) { return conceptOrder; }
+            return String(a.createdAt).localeCompare(String(b.createdAt));
+          });
+        }
+
+        function renderNotesOverview() {
+          var countEl = document.getElementById("kg_notes_count");
+          var listEl = document.getElementById("kg_notes_list");
+          if (!countEl || !listEl) { return; }
+
+          var count = userNotesState.notes.length;
+          countEl.innerText = count + " note" + (count === 1 ? "" : "s");
+          if (count === 0) {
+            listEl.innerHTML = '<div class="kg-note-list-empty">No notes yet.</div>';
+            return;
+          }
+
+          listEl.innerHTML = sortedUserNotes().map(function(note) {
+            return '<button type="button" class="kg-note-list-item" data-note-id="' +
+              escapeHtml(note.id) + '" data-concept-id="' + escapeHtml(note.conceptId) + '">' +
+              '<span class="kg-note-list-concept">' + escapeHtml(noteConceptLabel(note)) + "</span>" +
+              '<span class="kg-note-list-title">' + escapeHtml(note.title || "Untitled note") + "</span>" +
+              "</button>";
+          }).join("");
+        }
+
         function renderUserNote(note) {
           if (noteEditingEnabled) {
             var shouldOpen = note.id === openUserNoteId;
@@ -1503,6 +1615,8 @@ def inject_controls(
             html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
               escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
             html += '<div class="user-note-actions">';
+            html += '<button type="button" class="user-note-close" data-note-id="' +
+              escapeHtml(note.id) + '">Close</button>';
             html += '<button type="button" class="user-note-delete" data-note-id="' +
               escapeHtml(note.id) + '">Delete</button>';
             html += '<span class="user-note-saved">Saved locally</span>';
@@ -1694,6 +1808,39 @@ def inject_controls(
           });
           note.updatedAt = new Date().toISOString();
           saveUserNotes();
+        }
+
+        function noteEditorField(noteId, selector) {
+          var fields = document.querySelectorAll(selector);
+          for (var i = 0; i < fields.length; i++) {
+            if (fields[i].getAttribute("data-note-id") === noteId) {
+              return fields[i];
+            }
+          }
+          return null;
+        }
+
+        function syncUserNoteFromEditor(noteId) {
+          var note = findUserNote(noteId);
+          if (!note) { return null; }
+          var titleInput = noteEditorField(noteId, ".user-note-title-input");
+          var bodyInput = noteEditorField(noteId, ".user-note-body-input");
+          if (titleInput) { note.title = String(titleInput.value || ""); }
+          if (bodyInput) { note.body = String(bodyInput.value || ""); }
+          note.updatedAt = new Date().toISOString();
+          saveUserNotes();
+          return note;
+        }
+
+        function closeUserNote(noteId) {
+          var note = syncUserNoteFromEditor(noteId);
+          if (!note) { return; }
+          if (noteIsDefaultEmpty(note)) {
+            deleteUserNote(noteId);
+          } else {
+            openUserNoteId = null;
+          }
+          refreshActiveConcept();
         }
 
         function refreshActiveConcept() {
@@ -3464,6 +3611,18 @@ def inject_controls(
           refreshActiveConcept();
         });
 
+        document.getElementById("kg_notes_list").addEventListener("click", function(e) {
+          var item = e.target.closest(".kg-note-list-item");
+          if (!item) { return; }
+
+          e.preventDefault();
+          var note = findUserNote(item.getAttribute("data-note-id"));
+          var conceptId = item.getAttribute("data-concept-id");
+          if (!note || !getConcept(conceptId)) { return; }
+          openUserNoteId = note.id;
+          focusConcept(conceptId, "Selected");
+        });
+
         document.getElementById("kg_notes_import_button").addEventListener("click", function() {
           document.getElementById("kg_notes_import_input").click();
         });
@@ -3516,6 +3675,14 @@ def inject_controls(
               addNoteButton.getAttribute("data-anchor-after") || ""
             );
             refreshActiveConcept();
+            return;
+          }
+
+          var closeNoteButton = e.target.closest(".user-note-close");
+          if (closeNoteButton) {
+            e.preventDefault();
+            if (!noteEditingEnabled) { return; }
+            closeUserNote(closeNoteButton.getAttribute("data-note-id"));
             return;
           }
 
@@ -3573,6 +3740,14 @@ def inject_controls(
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            if (
+              noteEditingEnabled &&
+              e.target.classList.contains("user-note") &&
+              !e.target.open
+            ) {
+              closeUserNote(e.target.getAttribute("data-note-id"));
+              return;
+            }
             schedulePanelContentRefit();
           }
         }, true);
@@ -3596,6 +3771,7 @@ def inject_controls(
         buildNodeLabels();
         buildEdgeFilters();
         buildConceptList("");
+        renderNotesOverview();
         updateGraphViewControls();
         if (shouldStartWithControlsHidden()) {
           setControlsVisible(false);
