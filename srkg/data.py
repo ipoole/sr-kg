@@ -17,6 +17,13 @@ import pandas as pd
 
 from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
 from srkg.concept_svg_graphics import createSvgGraphic
+from srkg.model import Concept, ConceptSection, StudyQuestion
+
+CONTENT_SECTION_COLUMNS = (
+    ("definition", "Definition", "definition_new"),
+    ("derivation", "Derivation", "derivation_new"),
+    ("explanation", "Explanation", "explanation_new"),
+)
 
 
 def build_concept_data(
@@ -24,7 +31,18 @@ def build_concept_data(
     graphic_designs_df: pd.DataFrame | None = None,
 ) -> dict[str, dict[str, object]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
-    concept_data = {}
+    return {
+        concept.id: concept.to_viewer_data()
+        for concept in build_concepts(nodes_df, graphic_designs_df)
+    }
+
+
+def build_concepts(
+    nodes_df: pd.DataFrame,
+    graphic_designs_df: pd.DataFrame | None = None,
+) -> list[Concept]:
+    """Build internal concept models from source CSV data."""
+    concepts = []
     graphic_captions = _graphic_captions_by_id(graphic_designs_df)
 
     def text(row: pd.Series, *columns: str) -> str:
@@ -41,26 +59,29 @@ def build_concept_data(
         svg_icon = createSvgGraphic(cid, variant="icon")
         svg_detail = createSvgGraphic(cid, variant="detail")
         captions = graphic_captions.get(cid, {})
-        concept_data[cid] = {
-            "label": str(row.get("label", "")).strip(),
-            "layer": str(row.get("layer", "")).strip(),
-            "layer_title": str(row.get("layer_title", "")).strip(),
-            "definition_new": text(row, "definition_new"),
-            "derivation_new": text(row, "derivation_new"),
-            "explanation_new": text(row, "explanation_new"),
-            "svg_icon": svg_icon or "",
-            "svg_detail": svg_detail or svg_icon or "",
-            "svg_graphic": svg_detail or svg_icon or "",
-            "svg_icon_caption": captions.get("icon_caption", ""),
-            "svg_detail_caption": (
-                captions.get("detail_caption", "") or captions.get("icon_caption", "")
-            ),
-            "study_questions": _study_questions(row),
-        }
-    return concept_data
+        concepts.append(Concept(
+            id=cid,
+            label=str(row.get("label", "")).strip(),
+            layer=str(row.get("layer", "")).strip(),
+            layer_title=str(row.get("layer_title", "")).strip(),
+            sections=[
+                ConceptSection(
+                    key=key,
+                    title=title,
+                    text=text(row, column),
+                )
+                for key, title, column in CONTENT_SECTION_COLUMNS
+            ],
+            svg_icon=svg_icon or "",
+            svg_detail=svg_detail or "",
+            svg_icon_caption=captions.get("icon_caption", ""),
+            svg_detail_caption=captions.get("detail_caption", ""),
+            study_questions=_study_questions(row),
+        ))
+    return concepts
 
 
-def _study_questions(row: pd.Series) -> list[dict[str, str]]:
+def _study_questions(row: pd.Series) -> list[StudyQuestion]:
     """Return numbered study question/answer pairs from optional CSV columns."""
     question_numbers = []
     for column in row.index:
@@ -73,10 +94,7 @@ def _study_questions(row: pd.Series) -> list[dict[str, str]]:
         question = str(row.get(f"study_question_{number}", "")).strip()
         answer = str(row.get(f"study_answer_{number}", "")).strip()
         if question:
-            questions.append({
-                "question": question,
-                "answer": answer,
-            })
+            questions.append(StudyQuestion(question=question, answer=answer))
     return questions
 
 

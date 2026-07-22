@@ -50,25 +50,49 @@ def test_node_labels_hide_when_zoomed_out_below_readable_size(browser_graph):
 def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_graph):
     page = browser_graph.page
     page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
-    page.wait_for_timeout(250)
-    panel_box = page.locator("#info_panel").bounding_box()
-    x, y = _center(panel_box)
-    initial_scale = page.evaluate("() => network.getScale()")
+    page.wait_for_timeout(700)
+    page.evaluate(
+        """() => {
+          network.moveTo({
+            position: {x: 130, y: -90},
+            scale: 0.42,
+            animation: false
+          });
+          kgUpdateNodeLabelPositions();
+        }"""
+    )
+    initial_view = page.evaluate(
+        """() => ({
+          position: network.getViewPosition(),
+          scale: network.getScale()
+        })"""
+    )
     initial_font_size = page.locator("#info_panel").evaluate(
         "el => parseFloat(getComputedStyle(el).fontSize)"
     )
 
-    page.mouse.move(x, y)
-    page.keyboard.down("Control")
-    page.mouse.wheel(0, -600)
-    page.keyboard.up("Control")
+    page.locator("#info_panel").evaluate(
+        """panel => panel.dispatchEvent(new WheelEvent("wheel", {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          deltaY: -600
+        }))"""
+    )
     page.wait_for_timeout(250)
 
-    zoomed_scale = page.evaluate("() => network.getScale()")
+    zoomed_view = page.evaluate(
+        """() => ({
+          position: network.getViewPosition(),
+          scale: network.getScale()
+        })"""
+    )
     zoomed_font_size = page.locator("#info_panel").evaluate(
         "el => parseFloat(getComputedStyle(el).fontSize)"
     )
-    assert abs(zoomed_scale - initial_scale) < 0.001
+    assert abs(zoomed_view["scale"] - initial_view["scale"]) < 0.001
+    assert abs(zoomed_view["position"]["x"] - initial_view["position"]["x"]) < 0.001
+    assert abs(zoomed_view["position"]["y"] - initial_view["position"]["y"]) < 0.001
     assert zoomed_font_size > initial_font_size
 
 

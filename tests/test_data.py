@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from srkg.data import (
+    build_concepts,
     build_concept_data,
     find_edge_key_path,
     load_edge_key,
@@ -51,6 +52,11 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     assert concept_data["1.1"]["definition_new"] == "Definition text"
     assert concept_data["1.1"]["derivation_new"] == "Derivation text"
     assert concept_data["1.1"]["explanation_new"] == "Explanation text"
+    assert concept_data["1.1"]["sections"] == [
+        {"key": "definition", "title": "Definition", "text": "Definition text"},
+        {"key": "derivation", "title": "Derivation", "text": "Derivation text"},
+        {"key": "explanation", "title": "Explanation", "text": "Explanation text"},
+    ]
     assert concept_data["1.1"]["svg_icon"].startswith("<svg")
     assert concept_data["1.1"]["svg_detail"].startswith("<svg")
     assert concept_data["1.1"]["svg_graphic"] == concept_data["1.1"]["svg_detail"]
@@ -76,6 +82,36 @@ def test_build_concept_data_uses_empty_graphics_for_unknown_node_ids():
     assert concept_data["99.99"]["svg_detail"] == ""
     assert concept_data["99.99"]["svg_graphic"] == ""
     assert concept_data["99.99"]["study_questions"] == []
+
+
+def test_build_concepts_returns_structured_model():
+    nodes_df = pd.DataFrame([
+        {
+            "id": "1.1",
+            "label": "Inertial frames",
+            "definition_new": "Definition text",
+            "derivation_new": "",
+            "explanation_new": "Explanation text",
+            "study_question_1": "Question?",
+            "study_answer_1": "Answer.",
+        },
+    ])
+
+    concepts = build_concepts(nodes_df)
+
+    assert len(concepts) == 1
+    assert concepts[0].id == "1.1"
+    assert [section.key for section in concepts[0].sections] == [
+        "definition",
+        "derivation",
+        "explanation",
+    ]
+    assert [section.text for section in concepts[0].sections] == [
+        "Definition text",
+        "",
+        "Explanation text",
+    ]
+    assert concepts[0].study_questions[0].question == "Question?"
 
 
 def test_normalise_edges_requires_expected_columns():

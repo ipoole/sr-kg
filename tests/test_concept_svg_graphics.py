@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 import pytest
 
 from srkg.concept_svg_graphics import createSvgGraphic, saveSvgGraphics
+from srkg.svg_graphics.registry import IMPLEMENTED_NODE_IDS, create_svg_graphic
 
 
 GRAPHIC_NODE_IDS = [
@@ -51,6 +52,11 @@ def test_create_svg_graphic_returns_none_for_unknown_node_id():
 
 def test_create_svg_graphic_trims_node_id_whitespace():
     assert createSvgGraphic(" 1.1 ") == createSvgGraphic("1.1")
+
+
+def test_public_svg_api_delegates_to_registry():
+    assert createSvgGraphic("1.1") == create_svg_graphic("1.1")
+    assert list(IMPLEMENTED_NODE_IDS) == GRAPHIC_NODE_IDS
 
 
 @pytest.mark.parametrize(

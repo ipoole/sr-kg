@@ -1,0 +1,68 @@
+    __TITLE_HTML__
+    <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
+    <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
+    <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
+      <option value="hide">Hide graph</option>
+      <option value="all" selected>All</option>
+      <option value="neighbourhood-1">Neighbourhood (1)</option>
+      <option value="neighbourhood-2">Neighbourhood (2)</option>
+      <option value="descendants">Descendants</option>
+    </select>
+    <div id="kg_controls">
+      <b>Knowledge graph explorer</b><br>
+      <button onclick="kgShowEdgeKey()">Edge key</button>
+      <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
+      <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
+      <details id="kg_edge_filters_section" class="kg-fold" open>
+        <summary>Edge types</summary>
+        <div id="kg_edge_filters"></div>
+      </details>
+      <details id="kg_legend_section" class="kg-fold" open>
+        <summary>Layers</summary>
+        <div id="kg_legend"></div>
+      </details>
+      <details id="kg_notes_section" class="kg-fold">
+        <summary>Notes</summary>
+        <label class="kg-edge-filter">
+          <input id="kg_notes_edit_toggle" type="checkbox">
+          <span class="kg-edge-filter-label">Note editing</span>
+        </label>
+        <button id="kg_notes_export" type="button" onclick="kgExportNotes()">Export notes</button>
+        <label>
+          <button id="kg_notes_import_button" type="button">Import notes</button>
+          <input id="kg_notes_import_input" type="file" accept=".csv,text/csv" style="display:none">
+        </label>
+        <div id="kg_notes_status"></div>
+        <div id="kg_notes_count"></div>
+        <div id="kg_notes_list"></div>
+      </details>
+      <details id="kg_search_section" class="kg-fold" open>
+        <summary>Search</summary>
+        <div id="kg_search_block">
+          <input id="kg_search" placeholder="Search ID, title, or concept text">
+          <button onclick="kgSearch()">Find</button>
+        </div>
+        <div id="kg_concept_list"></div>
+      </details>
+    </div>
+
+    <div id="info_panel">
+      <h2>__VIEW_TITLE__</h2>
+      <p>Click a concept node to view details.</p>
+    </div>
+    <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
+      <h2 id="kg_splash_title">Knowledge graph browser</h2>
+      <p>Use the graph and details panel together while studying each concept.</p>
+      <ul>
+        <li>Click graph nodes or the searchable concept list to open concept details.</li>
+        <li>Switch graph views between all concepts, one-hop/two-hop neighbourhoods, descendants, or hidden graph.</li>
+        <li>Filter edge types and inspect relation meanings from the edge key.</li>
+        <li>Open optional derivation details inline. <span class="kg-new-badge">NEW</span></li>
+        <li>Add personal notes inline, then export or import them as CSV. <span class="kg-new-badge">NEW</span></li>
+        <li>Zoom the details text independently from the graph. <span class="kg-new-badge">NEW</span></li>
+      </ul>
+      <div class="kg-splash-actions">
+        <button id="kg_splash_dismiss" type="button">Dismiss</button>
+      </div>
+    </dialog>
+    

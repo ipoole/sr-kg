@@ -20,6 +20,10 @@ Run tests from the repository root with:
 conda run -n sr-kg pytest -q
 ```
 
+When fixing a reported defect, prefer a test-first workflow: add or update a
+focused regression test that fails against the current behaviour, confirm the
+failure when practical, then patch the code and rerun the test to make it pass.
+
 The unit test suite is fast; run it after every significant code change before
 handing work back.
 
