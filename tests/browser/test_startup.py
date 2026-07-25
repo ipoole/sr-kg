@@ -88,6 +88,21 @@ def test_optional_details_render_inline_and_can_contain_concept_links(browser_gr
 
 
 @pytest.mark.browser
+def test_optional_details_do_not_create_whitespace_only_lines(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+
+    whitespace_lines = page.locator("#info_panel .concept-line").evaluate_all(
+        """lines => lines
+          .map(line => line.textContent)
+          .filter(text => text && text.trim() === "")
+        """
+    )
+    assert whitespace_lines == []
+
+
+@pytest.mark.browser
 def test_search_finds_definition_text_and_highlights_detail_match(browser_graph):
     page = browser_graph.page
 

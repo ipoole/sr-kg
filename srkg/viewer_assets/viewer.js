@@ -793,6 +793,7 @@
           var cursor = 0;
 
           function pushText(value) {
+            if (!String(value || "").trim()) { return; }
             blocks.push({kind: "text", text: value});
           }
 
@@ -817,7 +818,7 @@
             if (next.start > cursor) {
               pushText(raw.slice(cursor, next.start));
             } else if (next.kind === "newline") {
-              pushText("");
+              blocks.push({kind: "text", text: ""});
             }
 
             if (next.kind !== "newline") {
@@ -1217,6 +1218,15 @@
           return currentSize;
         }
 
+        function currentControlsFontSize() {
+          var panel = document.getElementById("kg_controls");
+          var currentSize = parseFloat(window.getComputedStyle(panel).fontSize);
+          if (!Number.isFinite(currentSize) || currentSize <= 0) {
+            currentSize = 13;
+          }
+          return currentSize;
+        }
+
         function currentGraphView() {
           if (!network || !network.getScale || !network.getViewPosition) {
             return null;
@@ -1265,6 +1275,22 @@
         function adjustInfoPanelTextZoom(deltaY) {
           var direction = deltaY < 0 ? 1 : -1;
           setInfoPanelFontSize(currentInfoPanelFontSize() + direction);
+        }
+
+        function setControlsFontSize(sizePx) {
+          var graphView = currentGraphView();
+          var panel = document.getElementById("kg_controls");
+          var nextSize = Math.max(
+            kgInfoPanelConfig.textZoomMinPx,
+            Math.min(kgInfoPanelConfig.textZoomMaxPx, Number(sizePx))
+          );
+          panel.style.fontSize = nextSize + "px";
+          preserveGraphView(graphView);
+        }
+
+        function adjustControlsTextZoom(deltaY) {
+          var direction = deltaY < 0 ? 1 : -1;
+          setControlsFontSize(currentControlsFontSize() + direction);
         }
 
         function touchDistance(touches) {
@@ -2887,6 +2913,13 @@
           e.preventDefault();
           e.stopPropagation();
           adjustInfoPanelTextZoom(e.deltaY);
+        }, {passive: false});
+
+        document.getElementById("kg_controls").addEventListener("wheel", function(e) {
+          if (!e.ctrlKey && !e.metaKey) { return; }
+          e.preventDefault();
+          e.stopPropagation();
+          adjustControlsTextZoom(e.deltaY);
         }, {passive: false});
 
         document.getElementById("info_panel").addEventListener("touchstart", beginInfoPanelPinch, {passive: true});

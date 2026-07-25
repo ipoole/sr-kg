@@ -12,6 +12,7 @@ from srkg.svg_graphics.primitives import (
     _arrow_marker,
     _line,
     _path,
+    _polygon,
     _rect,
     _sid,
     _text,
@@ -82,6 +83,39 @@ def _label_tile(
     ]
 
 
+def _implies_symbol(
+    x: float,
+    y: float,
+    *,
+    width: float = 104,
+    height: float = 34,
+    colour: str = BLUE,
+    stroke_width: float = 5,
+) -> list[str]:
+    """Draw a clear line-based implication symbol, shaped like ==>."""
+    mid_y = y + height / 2
+    line_end = x + width - height * 0.42
+    head_tip = x + width
+    head_half = height / 2
+    upper_y = mid_y - height * 0.22
+    lower_y = mid_y + height * 0.22
+    return [
+        _line(x, upper_y, line_end, upper_y, stroke=colour,
+              stroke_width=stroke_width, stroke_linecap="round"),
+        _line(x, lower_y, line_end, lower_y, stroke=colour,
+              stroke_width=stroke_width, stroke_linecap="round"),
+        _polygon(
+            [
+                (line_end, mid_y - head_half),
+                (head_tip, mid_y),
+                (line_end, mid_y + head_half),
+            ],
+            fill=colour,
+            stroke="none",
+        ),
+    ]
+
+
 def _paren_column(
     x: float,
     y: float,
@@ -142,6 +176,7 @@ __all__ = [
     '_axis_arrow_defs',
     '_draw_axes',
     '_draw_grid',
+    '_implies_symbol',
     '_label_tile',
     '_paren_column',
     '_paren_matrix',

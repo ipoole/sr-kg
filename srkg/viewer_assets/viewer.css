@@ -85,17 +85,19 @@
       }
       #kg_controls input {
         box-sizing: border-box;
+        font: inherit;
         width: 210px;
         padding: 4px;
       }
       #kg_controls button {
+        font: inherit;
         margin-top: 6px;
         margin-right: 4px;
         padding: 4px 8px;
       }
       #kg_status {
         margin-top: 6px;
-        font-size: 12px;
+        font-size: 0.923em;
         color: #333;
       }
       #kg_search_block {
@@ -105,7 +107,7 @@
         margin-top: 8px;
         border-top: 1px solid #ddd;
         padding-top: 8px;
-        font-size: 12px;
+        font-size: 0.923em;
       }
       .kg-fold summary {
         cursor: pointer;
@@ -149,7 +151,7 @@
         max-height: 260px;
         overflow-y: auto;
         padding-top: 6px;
-        font-size: 12px;
+        font-size: 0.923em;
       }
       .kg-concept-item {
         display: block;

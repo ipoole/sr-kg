@@ -8,6 +8,7 @@ from srkg.svg_graphics.motifs import (
     _axis_arrow_defs,
     _draw_axes,
     _draw_grid,
+    _implies_symbol,
     _label_tile,
     _paren_column,
     _paren_matrix,
@@ -99,9 +100,9 @@ def create_1_3_principle_of_relativity(variant: str = "icon") -> str:
         body.append(_text(ox - 24, oy + 42, frame_label, font_size=50,
                           font_family=FONT, font_style="italic", fill=BLACK))
 
-    body.append(_line(168, 176, 344, 176, stroke=BLUE, stroke_width=7,
+    body.append(_line(206, 176, 268, 176, stroke=BLUE, stroke_width=7,
                       stroke_linecap="round", marker_end=f"url(#{v_marker})"))
-    body.append(_text(256, 148, "v", font_size=46, font_family=FONT,
+    body.append(_text(238, 148, "v", font_size=46, font_family=FONT,
                       font_style="italic", fill=BLUE, text_anchor="middle"))
 
     return _svg(node_id, "Principle of relativity", body, defs)
@@ -386,9 +387,9 @@ def create_3_3_lorentz_transformations(variant: str = "icon") -> str:
                           stroke_dasharray="7 8", stroke_linecap="round"))
         body.append(_line(ox, py, px, py, stroke=LIGHT_GREY, stroke_width=3,
                           stroke_dasharray="7 8", stroke_linecap="round"))
-        body.append(_line(px, py, px - 86, py + 50, stroke=LIGHT_GREY, stroke_width=3,
+        body.append(_line(px, py, 172, 252, stroke=LIGHT_GREY, stroke_width=3,
                           stroke_dasharray="7 8", stroke_linecap="round"))
-        body.append(_line(px, py, px - 54, py - 88, stroke=LIGHT_GREY, stroke_width=3,
+        body.append(_line(px, py, 286, 336, stroke=LIGHT_GREY, stroke_width=3,
                           stroke_dasharray="7 8", stroke_linecap="round"))
 
     # Primed frame: same origin, tilted axes.
@@ -655,8 +656,8 @@ def create_4_1_proper_time(variant: str = "icon") -> str:
     body: list[str] = []
     ox, oy = 90, 404
     ax, ay = 142, 352
-    bx, by = 340, 130
-    worldline = "M142,352 C174,286 258,286 340,130"
+    bx, by = 276, 130
+    worldline = "M142,352 C158,286 226,274 276,130"
 
     if variant == "detail":
         body.extend(_draw_grid(ox, 112, 318, 292, 53))
@@ -667,13 +668,13 @@ def create_4_1_proper_time(variant: str = "icon") -> str:
                           stroke_dasharray="8 9", stroke_linecap="round"))
         body.append(_text(bx + 18, oy - 10, "t", font_size=34, font_family=FONT,
                           font_style="italic", fill=GREY))
-        body.append(_path("M142,352 C210,214 284,336 340,130", fill="none",
+        body.append(_path("M142,352 C190,220 258,316 276,130", fill="none",
                           stroke=LIGHT_GREY, stroke_width=4, stroke_dasharray="9 9",
                           stroke_linecap="round"))
 
     body.append(_path(worldline, fill="none", stroke=BLACK, stroke_width=8,
                       stroke_linecap="round"))
-    for x, y, angle in [(178, 298, 28), (224, 272, 38), (270, 232, 48), (308, 174, 54)]:
+    for x, y, angle in [(162, 300, 18), (198, 268, 32), (236, 220, 48), (262, 166, 64)]:
         body.append(_tick(x, y, angle, 34, stroke=BLUE, stroke_width=5,
                           stroke_linecap="round"))
     body.append(_circle(ax, ay, 17, fill=RED, stroke=BLACK, stroke_width=2.5))
@@ -682,7 +683,7 @@ def create_4_1_proper_time(variant: str = "icon") -> str:
                       font_style="italic", fill=RED))
     body.append(_text(bx + 22, by - 8, "B", font_size=38, font_family=FONT,
                       font_style="italic", fill=RED))
-    body.append(_text(242, 246, "τ", font_size=48, font_family=FONT,
+    body.append(_text(214, 246, "τ", font_size=48, font_family=FONT,
                       font_style="italic", fill=BLUE, text_anchor="middle"))
     return _svg(node_id, "Proper time", body, defs)
 
@@ -706,14 +707,14 @@ def create_4_2_four_vectors(variant: str = "icon") -> str:
                           stroke_dasharray="8 9", stroke_linecap="round"))
     body.append(_line(ox, oy, px, py, stroke=BLUE, stroke_width=9,
                       stroke_linecap="round", marker_end=f"url(#{vec_marker})"))
-    body.append(_math_text(224, 292, "A", sup="μ", font_size=38,
+    body.append(_math_text(210, 262, "A", sup="μ", font_size=38,
                            font_family=FONT, font_style="italic",
                            fill=BLUE, text_anchor="middle"))
 
     rows = ["A⁰", "A¹", "A²", "A³"] if variant == "detail" else ["•", "•", "•", "•"]
     body.extend(_paren_column(362, 154, rows, row_gap=34, font_size=24, colour=GREY))
     if variant == "detail":
-        body.extend(_label_tile(358, 326, 68, 58, "η", fill="#f7f7f7",
+        body.extend(_label_tile(358, 294, 68, 58, "η", fill="#f7f7f7",
                                 stroke=BLACK, font_size=36))
     return _svg(node_id, "Four-vectors", body, defs)
 
@@ -765,26 +766,26 @@ def create_4_4_velocity_four_vector(variant: str = "icon") -> str:
         body.extend(_draw_grid(ox, 112, 318, 290, 53))
     body.extend(_draw_axes(ox, oy, 328, 300, axis_marker, x_label="x", y_label="ct",
                            stroke_width=5.3))
-    body.append(_path("M132,366 C184,324 176,244 244,246 C314,248 306,156 386,118",
+    body.append(_path("M132,366 C168,324 210,300 244,246 C270,198 318,144 386,118",
                       fill="none", stroke=BLACK, stroke_width=7,
                       stroke_linecap="round"))
     if variant == "detail":
-        body.append(_tick(210, 270, -34, 32, stroke=BLUE, stroke_width=4.5,
+        body.append(_tick(208, 286, -34, 32, stroke=BLUE, stroke_width=4.5,
                           stroke_linecap="round"))
-        body.append(_tick(286, 214, -34, 32, stroke=BLUE, stroke_width=4.5,
+        body.append(_tick(288, 194, -34, 32, stroke=BLUE, stroke_width=4.5,
                           stroke_linecap="round"))
-        body.append(_text(178, 286, "τ", font_size=29, font_family=FONT,
+        body.append(_text(176, 306, "τ", font_size=29, font_family=FONT,
                           font_style="italic", fill=BLUE))
-        body.append(_text(306, 204, "τ+dτ", font_size=27, font_family=FONT,
+        body.append(_text(304, 188, "τ+dτ", font_size=27, font_family=FONT,
                           font_style="italic", fill=BLUE))
-        body.append(_line(210, 270, 286, 214, stroke=LIGHT_GREY, stroke_width=4,
+        body.append(_line(208, 286, 288, 194, stroke=LIGHT_GREY, stroke_width=4,
                           stroke_dasharray="7 7", stroke_linecap="round"))
-        body.append(_text(322, 182, "dx^μ", font_size=27, font_family=FONT,
+        body.append(_text(310, 226, "dx^μ", font_size=27, font_family=FONT,
                           font_style="italic", fill=GREY))
     body.append(_circle(ex, ey, 18, fill=RED, stroke=BLACK, stroke_width=2.5))
-    body.append(_line(ex, ey, ex + 104, ey - 88, stroke=GREEN, stroke_width=9,
+    body.append(_line(ex, ey, ex + 72, ey - 126, stroke=GREEN, stroke_width=9,
                       stroke_linecap="round", marker_end=f"url(#{u_marker})"))
-    body.append(_math_text(ex + 130, ey - 92, "u", sup="μ", font_size=38,
+    body.append(_math_text(ex + 82, ey - 132, "u", sup="μ", font_size=38,
                            font_family=FONT, font_style="italic", fill=GREEN))
     return _svg(node_id, "Velocity four-vector", body, defs)
 
@@ -811,16 +812,13 @@ def create_4_5_momentum_four_vector(variant: str = "icon") -> str:
                           font_style="italic", fill=GREY))
     body.append(_line(ox, oy, px, py, stroke=BLUE, stroke_width=10,
                       stroke_linecap="round", marker_end=f"url(#{p_marker})"))
-    body.append(_math_text(208, 264, "p", sup="μ", font_size=40,
+    body.append(_math_text(232, 202, "p", sup="μ", font_size=40,
                            font_family=FONT, font_style="italic",
                            fill=BLUE, text_anchor="middle"))
 
-    body.append(_rect(348, 174, 92, 116, rx=12, fill="#f7f7f7",
-                      stroke=BLACK, stroke_width=3))
-    body.append(_line(348, 232, 440, 232, stroke=LIGHT_GREY, stroke_width=2))
-    body.append(_text(394, 216, "E/c", font_size=30, font_family=FONT,
-                      font_style="italic", fill=BLUE, text_anchor="middle"))
-    body.append(_text(394, 270, "p", font_size=34, font_family=FONT,
+    body.extend(_paren_column(360, 194, ["E/c", ""], row_gap=48,
+                              font_size=31, colour=BLUE))
+    body.append(_text(385, 276, "p", font_size=34, font_family=FONT,
                       font_style="italic", fill=GREY, text_anchor="middle"))
     return _svg(node_id, "Momentum four-vector", body, defs)
 
@@ -997,11 +995,6 @@ def create_5_5_hamiltonian_formalism(variant: str = "icon") -> str:
     body.append(_path("M154,318 C210,214 318,230 376,152", fill="none",
                       stroke=GREEN, stroke_width=8, stroke_linecap="round",
                       marker_end=f"url(#{flow_marker})"))
-    if variant == "detail":
-        body.append(_tick(226, 252, -32, 30, stroke=GREEN, stroke_width=5,
-                          stroke_linecap="round"))
-        body.append(_tick(310, 204, -32, 30, stroke=GREEN, stroke_width=5,
-                          stroke_linecap="round"))
     body.extend(_label_tile(322, 284, 72, 66, "H", fill="#eef8f0",
                             stroke=GREEN, text_colour=GREEN, font_size=44))
     return _svg(node_id, "Hamiltonian formalism", body, defs)
@@ -1058,14 +1051,14 @@ def create_5_6_noethers_theorem(variant: str = "icon") -> str:
 
     body.extend(_label_tile(92, 204, 98, 88, "S", fill="#edf3ff",
                             stroke=BLUE, text_colour=BLUE, font_size=54))
-    body.append(_path("M104,196 C78,144 158,104 196,156 C214,184 210,198 196,198",
+    body.append(_path("M108,194 C86,152 112,110 156,104 C210,96 238,154 206,194",
                       fill="none", stroke=BLUE, stroke_width=7,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     if variant == "detail":
         body.append(_text(140, 324, "unchanged", font_size=30, font_family=FONT,
                           fill=BLUE, text_anchor="middle"))
-    body.append(_line(204, 248, 306, 248, stroke=BLUE, stroke_width=7,
-                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
+    body.extend(_implies_symbol(204, 229, width=104, height=38,
+                                colour=BLUE, stroke_width=5))
     body.extend(_label_tile(324, 198, 108, 100, "Q", fill="#fff6df",
                             stroke=AMBER, text_colour=AMBER, font_size=58))
     body.append(_circle(406, 212, 11, fill="none", stroke=AMBER, stroke_width=4))
@@ -1151,16 +1144,22 @@ def create_6_3_field_lagrangian(variant: str = "icon") -> str:
     body.extend(_draw_axes(64, 410, 286, 310, axis_marker, x_label="x", y_label="ct",
                            colour=GREY, stroke_width=4))
 
-    cells = [(112, 286), (164, 234), (216, 286)] if variant != "detail" else [
-        (112, 286), (164, 234), (216, 286), (216, 182), (268, 234)
+    region = [
+        (112, 324), (94, 250), (132, 184), (214, 154),
+        (292, 190), (314, 276), (254, 342), (174, 356),
     ]
-    for x, y in cells:
-        body.extend(_label_tile(x - 24, y - 24, 48, 48, "L",
-                                fill="#edf3ff", stroke=BLUE,
-                                text_colour=BLUE, font_size=28, rx=8))
+    body.append(_polygon(region, fill="#edf3ff", stroke=BLUE,
+                         stroke_width=4, opacity="0.82"))
+    body.append(_text(198, 262, "∫ℒ d⁴x", font_size=35, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
     if variant == "detail":
-        body.append(_text(206, 390, "d⁴x", font_size=31, font_family=FONT,
-                          font_style="italic", fill=GREY, text_anchor="middle"))
+        for x, y in [(126, 276), (156, 212), (224, 198), (266, 274)]:
+            body.append(_circle(x, y, 5, fill=BLUE, stroke="none", opacity="0.75"))
+            body.append(_text(x + 12, y - 8, "ℒ", font_size=25, font_family=FONT,
+                              font_style="italic", fill=BLUE))
+        body.append(_text(220, 386, "region in d⁴x", font_size=26,
+                          font_family=FONT, font_style="italic", fill=GREY,
+                          text_anchor="middle"))
     body.append(_line(322, 252, 380, 252, stroke=BLUE, stroke_width=7,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.extend(_label_tile(392, 210, 78, 84, "S", fill="#fff6df",
@@ -1789,27 +1788,82 @@ def create_10_2_electromagnetic_waves(variant: str = "icon") -> str:
     """Electromagnetic waves: coupled E and B oscillations propagating at c."""
     node_id = "10.2"
     arrow = f"{_sid(node_id)}_arrow"
-    defs = [_arrow_marker(arrow, colour=AMBER, size=7)]
+    e_arrow = f"{_sid(node_id)}_e_arrow"
+    b_arrow = f"{_sid(node_id)}_b_arrow"
+    defs = [
+        _arrow_marker(arrow, colour=AMBER, size=7),
+        _arrow_marker(e_arrow, colour=BLUE, size=5),
+        _arrow_marker(b_arrow, colour=GREEN, size=5),
+    ]
     body: list[str] = []
-    body.append(_path("M70,230 C110,170 150,290 190,230 C230,170 270,290 310,230 C350,170 390,290 430,230",
-                      fill="none", stroke=BLUE, stroke_width=7, stroke_linecap="round"))
-    body.append(_path("M70,292 C110,352 150,232 190,292 C230,352 270,232 310,292 C350,352 390,232 430,292",
-                      fill="none", stroke=GREEN, stroke_width=7, stroke_linecap="round"))
-    body.append(_line(104, 128, 408, 128, stroke=AMBER, stroke_width=8,
-                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
-    body.append(_text(256, 106, "c", font_size=42, font_family=FONT,
-                      font_style="italic", fill=AMBER, text_anchor="middle"))
-    body.append(_text(86, 204, "E", font_size=40, font_family=FONT,
+
+    axis_y = 256
+    x0, x1 = 78, 432
+    span = x1 - x0
+
+    def phase(x: float) -> float:
+        return radians((x - x0) / span * 720 - 18)
+
+    def amp_at(x: float, amplitude: float) -> float:
+        return amplitude * sin(phase(x))
+
+    def x_for_phase(degrees: float) -> float:
+        return x0 + ((degrees + 18) / 720) * span
+
+    def wave_path(points: list[tuple[float, float]]) -> str:
+        first_x, first_y = points[0]
+        rest = " ".join(f"L{x:.1f},{y:.1f}" for x, y in points[1:])
+        return f"M{first_x:.1f},{first_y:.1f} {rest}"
+
+    samples = [x0 + i * span / 56 for i in range(57)]
+    e_points = [(x, axis_y - amp_at(x, 72)) for x in samples]
+    b_points = [
+        (x + 0.78 * amp_at(x, 66), axis_y + 0.48 * amp_at(x, 66))
+        for x in samples
+    ]
+
+    if variant == "detail":
+        for x in [x0 + span * frac for frac in [0.18, 0.43, 0.68, 0.93]]:
+            body.append(_line(x, axis_y - 92, x, axis_y + 78,
+                              stroke=LIGHT_GREY, stroke_width=2.5,
+                              stroke_dasharray="6 8", opacity="0.55"))
+
+    body.append(_line(x0 - 12, axis_y, x1 + 6, axis_y, stroke=AMBER,
+                      stroke_width=7, stroke_linecap="round",
+                      marker_end=f"url(#{arrow})"))
+    body.append(_text(x1 + 28, axis_y + 12, "c", font_size=40,
+                      font_family=FONT, font_style="italic", fill=AMBER))
+
+    body.append(_path(wave_path(b_points), fill="none", stroke=GREEN,
+                      stroke_width=6, stroke_linecap="round",
+                      stroke_linejoin="round", opacity="0.9"))
+    body.append(_path(wave_path(e_points), fill="none", stroke=BLUE,
+                      stroke_width=6.5, stroke_linecap="round",
+                      stroke_linejoin="round"))
+
+    vector_xs = (
+        [x_for_phase(degrees) for degrees in [90, 270, 450, 630]]
+        if variant == "detail" else
+        [x_for_phase(degrees) for degrees in [90, 270, 450]]
+    )
+    for x in vector_xs:
+        e_amp = amp_at(x, 72)
+        b_amp = amp_at(x, 66)
+        body.append(_line(x, axis_y, x, axis_y - e_amp,
+                          stroke=BLUE, stroke_width=4.5,
+                          stroke_linecap="round", marker_end=f"url(#{e_arrow})"))
+        body.append(_line(x, axis_y, x + 0.78 * b_amp, axis_y + 0.48 * b_amp,
+                          stroke=GREEN, stroke_width=4.5,
+                          stroke_linecap="round", marker_end=f"url(#{b_arrow})"))
+
+    body.append(_text(116, 162, "E", font_size=42, font_family=FONT,
                       font_style="italic", fill=BLUE))
-    body.append(_text(86, 346, "B", font_size=40, font_family=FONT,
+    body.append(_text(96, 320, "B", font_size=42, font_family=FONT,
                       font_style="italic", fill=GREEN))
     if variant == "detail":
-        for x in [150, 250, 350]:
-            body.append(_line(x, 172, x, 350, stroke=LIGHT_GREY, stroke_width=3,
-                              stroke_dasharray="7 8"))
-        body.append(_line(154, 386, 354, 386, stroke=AMBER, stroke_width=6,
+        body.append(_line(164, 390, 348, 390, stroke=AMBER, stroke_width=6,
                           stroke_linecap="round", marker_end=f"url(#{arrow})"))
-        body.append(_text(256, 374, "S", font_size=34, font_family=FONT,
+        body.append(_text(256, 376, "S", font_size=34, font_family=FONT,
                           font_style="italic", fill=AMBER, text_anchor="middle"))
     return _svg(node_id, "Electromagnetic waves", body, defs)
 
