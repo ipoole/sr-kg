@@ -27,9 +27,11 @@ The project reads concept data from CSV files and generates a standalone interac
 
 ```text
 data/
-  nodes.csv                Concept metadata and descriptions
+  manifest.yaml            Data-root file manifest
+  nodes.csv                Concept metadata
   edges.csv                Concept relationships with relation types and notes
   edges_key.csv            Edge relation meanings and direction metadata
+  content_blocks.csv       Ordered concept content blocks with pedagogical level
 lib/
   vis-9.1.2/               Vendored vis-network assets used by PyVis output
   tom-select/              Vendored PyVis UI assets
@@ -83,9 +85,7 @@ conda run -n sr-kg pytest -q tests/browser
 
 ```bash
 python tools/generate_pyvis.py \
-  --nodes data/nodes.csv \
-  --edges data/edges.csv \
-  --edge-key data/edges_key.csv \
+  --data-root data \
   --out output/interactive_graph.html \
   --title "Special Relativity and Classical Fields"
 ```
@@ -94,19 +94,15 @@ Then open `output/interactive_graph.html` in a browser.
 
 MathJax is loaded from a CDN in the generated HTML, so equation rendering requires network access when viewing the file.
 
-There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against `data/nodes.csv`, `data/edges.csv`, and `data/edges_key.csv`.
-
-If `--edge-key` is omitted, the generator automatically looks for `edges_key.csv` beside the selected edge file.
+There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against the files in `data/`. Generation is manifest-backed; use `--data-root` rather than passing individual CSV files.
 
 ## Validate Source Data
 
-After manually editing `data/nodes.csv`, `data/edges.csv`, or `data/edges_key.csv`, run the generator in validation-only mode:
+After manually editing the source files in `data/`, run the generator in validation-only mode:
 
 ```bash
 python tools/generate_pyvis.py \
-  --nodes data/nodes.csv \
-  --edges data/edges.csv \
-  --edge-key data/edges_key.csv \
+  --data-root data \
   --validate-only
 ```
 
@@ -114,9 +110,7 @@ Validation prints a diagnostic report and exits with a non-zero status when it f
 
 ```bash
 python tools/generate_pyvis.py \
-  --nodes data/nodes.csv \
-  --edges data/edges.csv \
-  --edge-key data/edges_key.csv \
+  --data-root data \
   --out output/interactive_graph.html \
   --title "Special Relativity and Classical Fields" \
   --validate
@@ -126,7 +120,7 @@ By default, errors fail validation and warnings are informational. Add `--valida
 
 The validator checks structural and textual consistency, including:
 
-- required CSV columns and required concept fields such as `definition_new`
+- required CSV columns and required concept metadata fields
 - duplicate concept ids and duplicate labels
 - edge endpoints and relation names
 - `\cref{label}{id}` syntax and target ids
@@ -146,12 +140,11 @@ Print DAG diagnostics without regenerating the viewer:
 
 ```bash
 python tools/generate_pyvis.py \
-  --nodes data/nodes.csv \
-  --edges data/edges.csv \
+  --data-root data \
   --dag-report-only
 ```
 
-By default, the report checks every relation marked `directed=true` in `edges_key.csv` and their combined subgraph. It lists directed cycles if any are present, edges that point from an earlier pedagogical layer to a later target layer, same-layer directed edges, same-layer order violations where a lower-numbered source points to a higher-numbered target, transitively redundant direct edges, suggested target-first renumberings within affected layers, any forward references that would remain after those renumberings, foundation nodes, capstone nodes, and the longest source-to-target chain.
+By default, the report checks every relation marked `directed=true` in `edges_key.csv` and their combined subgraph. It lists directed cycles if any are present, edges that point from an earlier pedagogical layer to a later target layer, same-layer directed edges, same-layer order violations where a lower-display-numbered source points to a higher-display-numbered target, transitively redundant direct edges, suggested target-first display-ID renumberings within affected layers, any forward references that would remain after those renumberings, foundation nodes, capstone nodes, and the longest source-to-target chain.
 
 Use `--dag-report` to print the same diagnostics before normal HTML generation. Use `--dag-relations RELATION ...` to inspect an explicit relation set instead of the directed defaults.
 
@@ -173,7 +166,7 @@ The review sheet also shows the `icon_caption` and `detail_caption` fields from 
 
 The left control panel provides:
 
-- search by concept ID, title, definition, derivation, or explanation text, with highlighted result snippets and details-panel matches
+- search by display ID, concept ID, title, definition, derivation, or explanation text, with highlighted result snippets and details-panel matches
 - a scrollable concept list
 - an all-graph control
 - neighbourhood mode for the selected node
@@ -193,7 +186,7 @@ Some concepts also have deterministic SVG graphics generated by `srkg.concept_sv
 
 Graph labels are rendered in an HTML overlay rather than as raw vis.js labels. This allows equation fragments such as `\(A_\mu\)` to render correctly in node labels while preserving normal graph interaction.
 
-Node layout is seeded from the pedagogical layer encoded in each node. The generator reads the `layer` column, falling back to the leading ID prefix such as `3` in `3.2`; layer 1 is placed at the bottom of the graph and higher numbered layers appear above it. Within each layer, nodes are placed left-to-right by numeric concept ID on a left-aligned upward curve.
+Node layout is seeded from the pedagogical layer encoded in each node. The generator reads the `layer` column, falling back to the leading `display_id` prefix such as `3` in `3.2`; layer 1 is placed at the bottom of the graph and higher numbered layers appear above it. Within each layer, nodes are placed left-to-right by `display_id` on a left-aligned upward curve.
 
 The generated viewer uses these manual coordinates directly. Filtering and highlighting reuse the same source layout, so the graph does not drift or resettle during interaction. In all-graph mode, selecting a node fits the selected node and its enabled neighbours into the unobscured canvas area, taking the visible control and details panels into account. Neighbourhood mode applies a compact layer-based layout to only the selected local nodes, collapsing missing layers into a compact view. Descendants mode applies the same compact layout to the selected node and every node reachable by following enabled directed edges outward. In either local browsing mode, clicking a visible node walks one step by making that node the new focus; search and concept-list navigation remain global.
 
@@ -211,9 +204,9 @@ Edge rendering is relation-aware:
 The `Edge types` checkboxes in the left panel toggle relation types on and off. The filter is respected in all-graph, selected-node highlighting, neighbourhood, and descendants modes.
 
 ## Architecture
-The project is a static HTML generator. Concept and relationship content is read from CSV files, then Python prepares the data model, computes an initial graph layout, and uses PyVis to emit a base vis-network HTML document. The generator then injects additional CSS and JavaScript for the application UI, MathJax rendering, custom node labels, filtering, and interaction behaviour. The final output is a standalone interactive_graph.html file that runs directly in a browser.
+The project is a static HTML generator. Concept and relationship content is read from a text-file knowledge-base data root, then Python prepares the data model, computes an initial graph layout, and uses PyVis to emit a base vis-network HTML document. The generator then injects additional CSS and JavaScript for the application UI, MathJax rendering, custom node labels, filtering, and interaction behaviour. The final output is a standalone interactive_graph.html file that runs directly in a browser.
 
-The generator is organized as a small staged pipeline. The command-line script parses arguments and delegates to `srkg.pipeline`, which coordinates data loading, validation, relation metadata, layout, PyVis rendering, and final HTML injection.
+The generator is organized as a small staged pipeline. The command-line script parses arguments and delegates to `srkg.pipeline`, which coordinates data loading, validation, relation metadata, layout, PyVis rendering, and final HTML injection. `srkg.kb` loads the directory-backed `KnowledgeBase` from `manifest.yaml` and exposes Python query helpers for concepts, content blocks, viewer sections, and graph neighbours.
 
 The lower-level modules are intentionally separated so the data, edge semantics, and layout code can be tested without PyVis or browser-side HTML. PyVis rendering is isolated from the injected viewer application: `srkg.render_pyvis` writes the base graph document, then `srkg.html_injection` layers on MathJax setup, custom node drawing, labels, controls, filters, and interaction handlers.
 
@@ -291,28 +284,65 @@ NODE_LABEL_FONT_WEIGHT = 700
 ```
 
 Circle radius is computed from `NODE_CIRCLE_BASE_SIZE` plus `NODE_CIRCLE_IMPORTANCE_SCALE * sqrt(incoming_edge_count + 1)`.
-Nodes are placed left-to-right by numeric concept ID within each layer, with every global row sharing the same left x anchor. The `LAYOUT_ROW_CURVE_*` constants control the upward curve used by the global Python layout. `LAYOUT_ROW_STAGGER` is still used by the browser-side compact neighbourhood layout.
+Nodes are placed left-to-right by `display_id` within each layer, with every global row sharing the same left x anchor. The `LAYOUT_ROW_CURVE_*` constants control the upward curve used by the global Python layout. `LAYOUT_ROW_STAGGER` is still used by the browser-side compact neighbourhood layout.
 Visible edges temporarily use `EDGE_HOVER_WIDTH` while hovered, making the edge path easier to trace in dense parts of the graph.
 
 The generated graph disables vis-network physics and uses the deterministic coordinates from `srkg.layout`.
 
 ## Data Format
 
-`data/nodes.csv` expects:
+The current KB file schema is documented in [KB_SCHEMA.md](KB_SCHEMA.md).
+
+`data/nodes.csv` expects concept metadata:
 
 ```text
-id,label,layer,layer_title,definition_new,derivation_new,explanation_new
+id,display_id,label,layer,layer_title
 ```
 
-The generated details panel renders `definition_new`, `derivation_new`, and `explanation_new`, including optional derivations. The learner-focused `explanation_new` field should include any useful examples. Empty values are skipped in the details panel.
+`id` is the stable semantic concept key, for example `sr.lorentz_transformations`.
+`display_id` is the human-facing ordered number, for example `3.3`, used for
+visible numbering, sorting, and layout.
 
-Nodes may also include optional numbered study-question pairs:
+`data/content_blocks.csv` is the canonical source for concept prose in the manifest-backed KB.
+
+`data/content_blocks.csv` expects:
 
 ```text
-study_question_1,study_answer_1,study_question_2,study_answer_2,...
+block_id,concept_id,sequence,kind,pedagogical_level,title,body
 ```
 
-The viewer detects all `study_question_N` columns present in `nodes.csv`. If a concept has one or more questions, its details panel includes a default-closed `Study Questions` section. Each answer is rendered inside its own fold-down. Question text can include multiple-choice options, ordinary prose, and MathJax notation.
+The initial block kinds are `definition`, `derivation`, and `explanation`. The generator groups ordered blocks of those kinds back into the current visible details-panel sections, so the viewer output remains compatible while the KB moves toward smaller pedagogical units. `pedagogical_level` may be blank during migration.
+
+`data/study_questions.csv` is the canonical source for concept study questions:
+
+```text
+question_id,concept_id,sequence,pedagogical_level,question_type,prompt,answer
+```
+
+If a concept has one or more questions, its details panel includes a default-closed `Study Questions` section. Each answer is rendered inside its own fold-down. Question text can include multiple-choice options, ordinary prose, and MathJax notation.
+Current `question_type` values are `short_answer`, `multiple_choice`, and `calculation`.
+
+`data/references.csv` registers books, papers, lectures, websites, and other
+sources:
+
+```text
+reference_id,reference_type,citation,authors,title,year,url,note
+```
+
+Use `citation` for the abbreviated source label shown in the viewer, for
+example `TTM II` or `TRR`; keep fuller bibliographic detail in the other fields
+or in `note`.
+
+`data/reference_links.csv` attaches those sources to concepts, content blocks,
+or study questions:
+
+```text
+source_type,source_id,reference_id,locator,note
+```
+
+Current `source_type` values are `concept`, `content_block`, and
+`study_question`. Prefer linking to the most specific useful item, such as a
+derivation content block, with page or section information in `locator`.
 
 `data/edges.csv` expects:
 
@@ -330,7 +360,7 @@ relation,directed,category,meaning,example
 
 The generator uses `directed` to decide whether each relation type should render with an arrow. The generated viewer includes an `Edge key` button that shows the relation colour, direction, category, meaning, and example.
 
-Only `id`, `source`, and `target` are strictly required by the generator. The richer node fields drive labels, panel content, layer grouping, search, rendered concept references, and optional generated concept graphics.
+The documented schema in [KB_SCHEMA.md](KB_SCHEMA.md) is the supported generator input. The richer fields drive labels, panel content, layer grouping, search, rendered concept references, source references, and optional generated concept graphics.
 
 Concept references in node bodies use:
 

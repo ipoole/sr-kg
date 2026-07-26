@@ -1,122 +1,122 @@
 source,target,relation,note
-3.3,1.3,DERIVES_FROM,The Lorentz transformations are derived by imposing the principle of relativity together with the constancy of the speed of light.
-3.3,1.2,DERIVES_FROM,The Lorentz transformations are derived by imposing invariant light speed together with the relativity principle.
-3.3,1.1,PREREQUISITE,Lorentz transformations relate the coordinate descriptions used by different inertial frames.
-3.2,2.2,PREREQUISITE,The spacetime interval measures the separation between spacetime events.
-4.3,2.2,PREREQUISITE,The position four-vector is formed by arranging the coordinates of a spacetime event into a four-vector.
-3.3,3.2,DERIVES_FROM,Lorentz transformations can be characterised as the linear transformations that preserve the spacetime interval.
-3.3,3.1,DERIVES_FROM,"In tensor form, Lorentz transformations are the transformations that preserve the Minkowski metric."
-4.2,3.3,PREREQUISITE,Four-vectors are defined by their transformation law under Lorentz transformations.
-3.2,3.1,DERIVES_FROM,The spacetime interval is obtained by contracting coordinate differences with the Minkowski metric.
-3.1,4.2,RELATED,"The metric defines inner products of four-vectors, while four-vectors provide the objects on which the metric acts."
-3.4,3.2,DERIVES_FROM,The light cone is the set of directions or separations for which the spacetime interval is zero.
-3.5,2.2,PREREQUISITE,A Minkowski diagram represents spacetime events graphically using space and time axes.
-4.1,3.2,DERIVES_FROM,"For timelike motion, proper time is obtained from the spacetime interval along the world-line."
-4.3,4.2,PREREQUISITE,The position four-vector is a specific example of the general four-vector concept.
-4.3,3.3,PREREQUISITE,The position four-vector is defined so that its components transform under Lorentz transformations.
-3.2,4.3,RELATED,"The spacetime interval is computed from differences of position four-vectors, with the metric supplying the contraction."
-4.4,4.1,DERIVES_FROM,"The velocity four-vector is obtained by differentiating the position four-vector with respect to proper time, so proper time is part of the construction."
-4.4,4.3,DERIVES_FROM,The velocity four-vector is obtained by differentiating the position four-vector with respect to proper time.
-4.5,4.4,DERIVES_FROM,The momentum four-vector is obtained by multiplying the velocity four-vector by the particle mass.
-4.6,4.5,DERIVES_FROM,Mass-energy equivalence follows from the invariant norm of the momentum four-vector.
-4.6,3.1,DERIVES_FROM,The energy-momentum relation is obtained by contracting four-momentum with the Minkowski metric.
-5.2,3.3,RELATED,"Relativistic actions must be compatible with Lorentz transformations, but the variational principle is not derived from them."
-5.2,5.1,PREREQUISITE,The action principle is formulated by making stationary an action constructed from a Lagrangian.
-5.1,3.2,PREREQUISITE,Relativistic Lagrangians are constructed from invariant quantities such as the spacetime interval.
-5.1,4.2,PREREQUISITE,Lorentz-invariant Lagrangians are built using scalars formed from objects such as four-vectors.
-5.3,5.1,PREREQUISITE,The Euler–Lagrange equations are equations for a specified Lagrangian.
-5.3,5.2,DERIVES_FROM,The Euler–Lagrange equations are obtained by applying the stationary-action condition to variations of the path.
-5.5,5.1,DERIVES_FROM,Hamiltonian formalism is obtained from the Lagrangian formulation by a Legendre transform.
-5.5,5.4,DERIVES_FROM,Hamiltonian formalism is obtained by introducing canonical momentum and performing a Legendre transform.
-5.4,5.1,DERIVES_FROM,Canonical momentum is defined as the derivative of the Lagrangian with respect to the corresponding velocity.
-5.6,5.2,DERIVES_FROM,Noether's theorem follows from applying continuous symmetry variations to the stationary-action condition.
-9.1,5.6,DERIVES_FROM,"In field theory, the energy–momentum tensor can be obtained as the Noether current associated with spacetime translations."
-6.1,2.2,PREREQUISITE,A scalar field is defined as assigning a value to each spacetime event.
-6.1,3.3,PREREQUISITE,A relativistic scalar field is characterised by its invariance under Lorentz transformations.
-6.1,4.2,RELATED,Scalar fields and four-vectors are contrasting transformation types: scalars are invariant while four-vectors have components that mix.
-6.2,3.3,PREREQUISITE,A relativistic vector field is defined by how its components transform under Lorentz transformations.
-6.2,4.2,PREREQUISITE,A relativistic vector field has components that transform as a four-vector at each spacetime point.
-6.3,5.2,DERIVES_FROM,A field Lagrangian is obtained by extending the action principle from particle paths to spacetime fields via a local Lagrangian density.
-6.4,6.3,DERIVES_FROM,Field equations are obtained by varying the action constructed from a field Lagrangian.
-6.4,3.3,PREREQUISITE,Relativistic field equations are required to transform covariantly under Lorentz transformations.
-6.4,5.3,DERIVES_FROM,Field equations are obtained by applying the Euler–Lagrange equations to fields rather than particle coordinates.
-7.1,2.2,PREREQUISITE,"The vector potential is a field defined over spacetime, assigning components at spacetime events."
-7.1,6.2,PREREQUISITE,The vector potential is a specific relativistic vector field.
-7.1,6.3,RELATED,"The vector potential is the field variable used in electromagnetic Lagrangian formulations, but it is not itself derived from a field Lagrangian."
-7.2,7.1,DERIVES_FROM,The electromagnetic field tensor is constructed from derivatives of the vector potential.
-7.3,7.2,DERIVES_FROM,The electric field components are obtained from the time-space components of the field tensor.
-7.4,7.2,DERIVES_FROM,The magnetic field components are obtained from the spatial components of the field tensor.
-7.5,7.2,PREREQUISITE,The relativistic electromagnetic field is represented compactly by the field tensor.
-7.3,1.1,PREREQUISITE,"The electric field is a frame-dependent component of the electromagnetic field, defined relative to an inertial frame."
-7.5,7.3,PREREQUISITE,The electromagnetic field combines electric and magnetic fields into one relativistic field.
-7.5,7.4,PREREQUISITE,The electromagnetic field combines magnetic and electric fields into one relativistic field.
-7.7,7.5,PREREQUISITE,Maxwell’s equations are equations governing the electromagnetic field.
-7.7,5.3,DERIVES_FROM,Maxwell’s equations can be obtained by applying the Euler–Lagrange equations to the electromagnetic field action.
-7.7,6.3,DERIVES_FROM,Maxwell’s equations follow from varying the electromagnetic field Lagrangian.
-8.6,7.1,DERIVES_FROM,The Lorenz gauge is obtained by imposing the covariant divergence condition on the vector potential.
-8.6,7.5,PREREQUISITE,The significance of gauge choice depends on distinguishing the vector potential from the physical electromagnetic field it leaves unchanged.
-8.6,7.7,RELATED,"The Lorenz gauge is closely associated with Maxwell’s equations because it simplifies their potential form, but it is not derived from them."
-8.1,7.2,DERIVES_FROM,The gauge invariance of the electromagnetic field follows because the antisymmetric field tensor is unchanged by adding a gradient to the vector potential.
-8.1,7.5,PREREQUISITE,Gauge invariance concerns changes of potential that leave the physical electromagnetic field unchanged.
-8.6,8.1,PREREQUISITE,"The Lorenz gauge is a particular gauge choice, so it presupposes the gauge freedom expressed by gauge invariance."
-7.6,4.2,DERIVES_FROM,The four-current is constructed as the four-vector combining charge density and current density.
-7.7,7.6,PREREQUISITE,The sourced covariant form of Maxwell’s equations uses the four-current as the source term.
-8.5,7.6,PREREQUISITE,Charge conservation is expressed locally as the vanishing four-divergence of the four-current.
-8.3,7.1,DERIVES_FROM,Minimal coupling is constructed by introducing the vector potential into the charged-particle momentum or action.
-8.3,8.1,DERIVES_FROM,Minimal coupling is chosen so that the charged-particle interaction respects gauge invariance.
-8.4,4.4,DERIVES_FROM,The covariant Lorentz force law uses the velocity four-vector in its tensor equation of motion.
-8.4,4.5,DERIVES_FROM,The covariant Lorentz force law gives the proper-time rate of change of the momentum four-vector.
-8.4,5.2,DERIVES_FROM,The Lorentz force law is obtained by applying the action principle to a charged particle coupled to the electromagnetic field.
-8.4,7.2,DERIVES_FROM,The covariant Lorentz force law is built from the electromagnetic field tensor.
-8.4,8.3,DERIVES_FROM,The Lorentz force law follows from the minimally coupled action for a charged particle.
-8.5,7.7,DERIVES_FROM,Local charge conservation follows from the sourced Maxwell equations because the divergence of the antisymmetric field-tensor equation vanishes identically.
-9.4,7.3,DERIVES_FROM,The electromagnetic energy density is constructed from the squared electric field and magnetic field components.
-9.4,7.4,DERIVES_FROM,The electromagnetic energy density is constructed from the squared electric field and magnetic field components.
-9.4,7.5,PREREQUISITE,Energy density is a property carried by the electromagnetic field.
-9.4,9.1,DERIVES_FROM,The electromagnetic energy density is the time-time component of the energy-momentum tensor.
-9.2,7.5,DERIVES_FROM,The Poynting vector is the energy-flux and momentum-density expression for the electromagnetic field.
-9.3,3.1,DERIVES_FROM,The electromagnetic stress-energy tensor uses the metric to contract and raise or lower field-tensor indices.
-9.3,7.2,DERIVES_FROM,The electromagnetic stress-energy tensor is constructed algebraically from the field tensor.
-9.1,7.2,DERIVES_FROM,"For the electromagnetic field, the energy-momentum tensor is constructed from the field tensor."
-10.2,7.3,PREREQUISITE,Electromagnetic waves are self-propagating oscillations involving the electric field.
-10.2,7.4,PREREQUISITE,Electromagnetic waves are self-propagating oscillations involving the magnetic field.
-10.2,7.5,PREREQUISITE,Electromagnetic waves are propagating disturbances of the electromagnetic field.
-10.2,7.6,RELATED,"Source-free electromagnetic waves are discussed in regions where the four-current vanishes, but the four-current is not part of the wave itself."
-10.1,3.1,PREREQUISITE,The relativistic wave equation uses the metric to form the d’Alembertian operator.
-10.1,7.1,PREREQUISITE,The potential form of the electromagnetic wave equation is written for the vector potential.
-10.1,8.6,DERIVES_FROM,The simple potential wave equation is obtained after imposing the Lorenz gauge.
-10.1,7.6,PREREQUISITE,The sourced wave equation includes the four-current as its source term.
-10.2,10.1,DERIVES_FROM,Electromagnetic waves are propagating solutions of the electromagnetic wave equation.
-10.3,8.4,PREREQUISITE,Radiation reaction is a correction to the particle motion described by the Lorentz force law.
-10.3,9.1,DERIVES_FROM,Radiation reaction follows from energy-momentum carried away by the electromagnetic field.
-10.3,10.2,DERIVES_FROM,Radiation reaction arises because accelerating charges emit electromagnetic waves.
-11.1,3.3,DERIVES_FROM,Lorentz invariance is defined as covariance under Lorentz transformations.
-11.1,3.1,DERIVES_FROM,Lorentz invariance preserves the Minkowski metric structure.
-11.1,4.2,RELATED,Four-vectors provide a manifestly Lorentz-covariant way to write physical laws.
-11.1,7.2,RELATED,The field tensor is a Lorentz-covariant object used to express electromagnetism in invariant form.
-11.1,9.1,RELATED,The energy-momentum tensor is a Lorentz-covariant object whose components describe energy and momentum consistently between frames.
-11.2,7.1,PREREQUISITE,Gauge fixing is the choice of a particular representative vector potential from a gauge-equivalent family.
-11.2,7.2,PREREQUISITE,"Gauge fixing changes the potential while leaving the field tensor, and hence the physical field, unchanged."
-11.2,7.5,PREREQUISITE,Gauge fixing is meaningful because different potentials can represent the same electromagnetic field.
-8.6,11.2,RELATED,The Lorenz gauge is a specific example of gauge fixing.
-11.2,8.1,DERIVES_FROM,Gauge fixing is possible because gauge invariance creates gauge-equivalent potentials.
-1.3,11.1,RELATED,Expanded Principle of relativity explanation explicitly connects the postulate to Lorentz invariance as the modern form of observer-independent physical laws.
-3.5,3.3,RELATED,Expanded Minkowski diagram text uses the diagram as a visual representation of Lorentz transformations and tilted inertial-frame axes.
-3.5,3.4,RELATED,Expanded Minkowski diagram text treats light cones as a central geometric feature represented in the diagram.
-4.5,3.1,PREREQUISITE,Expanded Momentum four-vector text uses the metric tensor to compute the invariant magnitude and mass-shell relation.
-6.4,7.7,RELATED,Expanded Field equations example explicitly uses Maxwell equations as the central electromagnetic example of relativistic field equations.
-7.2,3.1,PREREQUISITE,"Expanded Field tensor text introduces raising and lowering electromagnetic tensor indices using the metric tensor, especially in equations such as partial_mu F^{mu nu}=J^nu."
-9.2,9.1,DERIVES_FROM,Expanded momentum-density text presents the Poynting vector/momentum flow as part of the energy--momentum tensor.
-9.3,9.1,RELATED,The electromagnetic stress-energy tensor is the electromagnetic-field instance of the more general energy--momentum tensor.
-10.2,7.7,DERIVES_FROM,Expanded electromagnetic-wave text explicitly states that source-free Maxwell equations imply propagating electromagnetic waves.
-11.2,11.1,RELATED,Expanded gauge-fixing text notes that the Lorenz gauge is useful because it respects Lorentz invariance.
-9.2,7.3,DERIVES_FROM,The Poynting vector is constructed from the cross product of the electric and magnetic fields.
-9.2,7.4,DERIVES_FROM,The Poynting vector is constructed from the cross product of the electric and magnetic fields.
-10.1,7.7,DERIVES_FROM,The electromagnetic wave equation is obtained from Maxwell equations in potential form.
-3.4,3.3,RELATED,"Light cone structure is preserved by Lorentz transformations, but it is derived from the spacetime interval rather than from the transformation rule."
-4.3,3.1,RELATED,"Metric contractions give invariant intervals between position four-vectors, but the position four-vector itself is not derived from the metric."
-5.1,4.1,RELATED,"Relativistic Lagrangians may be built from proper time, but the general Lagrangian concept is not derived from proper time."
-5.2,4.1,RELATED,"Relativistic actions often use proper time as an invariant ingredient, but the action principle is more general."
-5.2,4.2,RELATED,"Relativistic actions are constructed from Lorentz-scalar combinations of four-vectors, but the action principle is not derived from four-vectors."
-7.5,3.3,PREREQUISITE,Understanding the unified electromagnetic field requires Lorentz transformations because electric and magnetic components mix between inertial frames.
-7.7,7.2,PREREQUISITE,Maxwell's equations in covariant form are written using the electromagnetic field tensor.
+sr.lorentz_transformations,sr.principle_of_relativity,DERIVES_FROM,The Lorentz transformations are derived by imposing the principle of relativity together with the constancy of the speed of light.
+sr.lorentz_transformations,sr.constancy_of_speed_of_light,DERIVES_FROM,The Lorentz transformations are derived by imposing invariant light speed together with the relativity principle.
+sr.lorentz_transformations,sr.inertial_frames,PREREQUISITE,Lorentz transformations relate the coordinate descriptions used by different inertial frames.
+sr.spacetime_interval,sr.spacetime_event,PREREQUISITE,The spacetime interval measures the separation between spacetime events.
+sr.position_four_vector,sr.spacetime_event,PREREQUISITE,The position four-vector is formed by arranging the coordinates of a spacetime event into a four-vector.
+sr.lorentz_transformations,sr.spacetime_interval,DERIVES_FROM,Lorentz transformations can be characterised as the linear transformations that preserve the spacetime interval.
+sr.lorentz_transformations,sr.metric_tensor,DERIVES_FROM,"In tensor form, Lorentz transformations are the transformations that preserve the Minkowski metric."
+sr.four_vectors,sr.lorentz_transformations,PREREQUISITE,Four-vectors are defined by their transformation law under Lorentz transformations.
+sr.spacetime_interval,sr.metric_tensor,DERIVES_FROM,The spacetime interval is obtained by contracting coordinate differences with the Minkowski metric.
+sr.metric_tensor,sr.four_vectors,RELATED,"The metric defines inner products of four-vectors, while four-vectors provide the objects on which the metric acts."
+sr.light_cone,sr.spacetime_interval,DERIVES_FROM,The light cone is the set of directions or separations for which the spacetime interval is zero.
+sr.minkowski_diagram,sr.spacetime_event,PREREQUISITE,A Minkowski diagram represents spacetime events graphically using space and time axes.
+sr.proper_time,sr.spacetime_interval,DERIVES_FROM,"For timelike motion, proper time is obtained from the spacetime interval along the world-line."
+sr.position_four_vector,sr.four_vectors,PREREQUISITE,The position four-vector is a specific example of the general four-vector concept.
+sr.position_four_vector,sr.lorentz_transformations,PREREQUISITE,The position four-vector is defined so that its components transform under Lorentz transformations.
+sr.spacetime_interval,sr.position_four_vector,RELATED,"The spacetime interval is computed from differences of position four-vectors, with the metric supplying the contraction."
+sr.velocity_four_vector,sr.proper_time,DERIVES_FROM,"The velocity four-vector is obtained by differentiating the position four-vector with respect to proper time, so proper time is part of the construction."
+sr.velocity_four_vector,sr.position_four_vector,DERIVES_FROM,The velocity four-vector is obtained by differentiating the position four-vector with respect to proper time.
+sr.momentum_four_vector,sr.velocity_four_vector,DERIVES_FROM,The momentum four-vector is obtained by multiplying the velocity four-vector by the particle mass.
+sr.mass_energy_equivalence,sr.momentum_four_vector,DERIVES_FROM,Mass-energy equivalence follows from the invariant norm of the momentum four-vector.
+sr.mass_energy_equivalence,sr.metric_tensor,DERIVES_FROM,The energy-momentum relation is obtained by contracting four-momentum with the Minkowski metric.
+sr.action_principle,sr.lorentz_transformations,RELATED,"Relativistic actions must be compatible with Lorentz transformations, but the variational principle is not derived from them."
+sr.action_principle,sr.lagrangian,PREREQUISITE,The action principle is formulated by making stationary an action constructed from a Lagrangian.
+sr.lagrangian,sr.spacetime_interval,PREREQUISITE,Relativistic Lagrangians are constructed from invariant quantities such as the spacetime interval.
+sr.lagrangian,sr.four_vectors,PREREQUISITE,Lorentz-invariant Lagrangians are built using scalars formed from objects such as four-vectors.
+sr.euler_lagrange_equations,sr.lagrangian,PREREQUISITE,The Euler–Lagrange equations are equations for a specified Lagrangian.
+sr.euler_lagrange_equations,sr.action_principle,DERIVES_FROM,The Euler–Lagrange equations are obtained by applying the stationary-action condition to variations of the path.
+sr.hamiltonian_formalism,sr.lagrangian,DERIVES_FROM,Hamiltonian formalism is obtained from the Lagrangian formulation by a Legendre transform.
+sr.hamiltonian_formalism,sr.canonical_momentum,DERIVES_FROM,Hamiltonian formalism is obtained by introducing canonical momentum and performing a Legendre transform.
+sr.canonical_momentum,sr.lagrangian,DERIVES_FROM,Canonical momentum is defined as the derivative of the Lagrangian with respect to the corresponding velocity.
+sr.noether_theorem,sr.action_principle,DERIVES_FROM,Noether's theorem follows from applying continuous symmetry variations to the stationary-action condition.
+sr.energy_momentum_tensor,sr.noether_theorem,DERIVES_FROM,"In field theory, the energy–momentum tensor can be obtained as the Noether current associated with spacetime translations."
+sr.scalar_field,sr.spacetime_event,PREREQUISITE,A scalar field is defined as assigning a value to each spacetime event.
+sr.scalar_field,sr.lorentz_transformations,PREREQUISITE,A relativistic scalar field is characterised by its invariance under Lorentz transformations.
+sr.scalar_field,sr.four_vectors,RELATED,Scalar fields and four-vectors are contrasting transformation types: scalars are invariant while four-vectors have components that mix.
+sr.vector_field,sr.lorentz_transformations,PREREQUISITE,A relativistic vector field is defined by how its components transform under Lorentz transformations.
+sr.vector_field,sr.four_vectors,PREREQUISITE,A relativistic vector field has components that transform as a four-vector at each spacetime point.
+sr.field_lagrangian,sr.action_principle,DERIVES_FROM,A field Lagrangian is obtained by extending the action principle from particle paths to spacetime fields via a local Lagrangian density.
+sr.field_equations,sr.field_lagrangian,DERIVES_FROM,Field equations are obtained by varying the action constructed from a field Lagrangian.
+sr.field_equations,sr.lorentz_transformations,PREREQUISITE,Relativistic field equations are required to transform covariantly under Lorentz transformations.
+sr.field_equations,sr.euler_lagrange_equations,DERIVES_FROM,Field equations are obtained by applying the Euler–Lagrange equations to fields rather than particle coordinates.
+sr.vector_potential,sr.spacetime_event,PREREQUISITE,"The vector potential is a field defined over spacetime, assigning components at spacetime events."
+sr.vector_potential,sr.vector_field,PREREQUISITE,The vector potential is a specific relativistic vector field.
+sr.vector_potential,sr.field_lagrangian,RELATED,"The vector potential is the field variable used in electromagnetic Lagrangian formulations, but it is not itself derived from a field Lagrangian."
+sr.field_tensor,sr.vector_potential,DERIVES_FROM,The electromagnetic field tensor is constructed from derivatives of the vector potential.
+sr.electric_field,sr.field_tensor,DERIVES_FROM,The electric field components are obtained from the time-space components of the field tensor.
+sr.magnetic_field,sr.field_tensor,DERIVES_FROM,The magnetic field components are obtained from the spatial components of the field tensor.
+sr.electromagnetic_field,sr.field_tensor,PREREQUISITE,The relativistic electromagnetic field is represented compactly by the field tensor.
+sr.electric_field,sr.inertial_frames,PREREQUISITE,"The electric field is a frame-dependent component of the electromagnetic field, defined relative to an inertial frame."
+sr.electromagnetic_field,sr.electric_field,PREREQUISITE,The electromagnetic field combines electric and magnetic fields into one relativistic field.
+sr.electromagnetic_field,sr.magnetic_field,PREREQUISITE,The electromagnetic field combines magnetic and electric fields into one relativistic field.
+sr.maxwells_equations,sr.electromagnetic_field,PREREQUISITE,Maxwell’s equations are equations governing the electromagnetic field.
+sr.maxwells_equations,sr.euler_lagrange_equations,DERIVES_FROM,Maxwell’s equations can be obtained by applying the Euler–Lagrange equations to the electromagnetic field action.
+sr.maxwells_equations,sr.field_lagrangian,DERIVES_FROM,Maxwell’s equations follow from varying the electromagnetic field Lagrangian.
+sr.lorenz_gauge,sr.vector_potential,DERIVES_FROM,The Lorenz gauge is obtained by imposing the covariant divergence condition on the vector potential.
+sr.lorenz_gauge,sr.electromagnetic_field,PREREQUISITE,The significance of gauge choice depends on distinguishing the vector potential from the physical electromagnetic field it leaves unchanged.
+sr.lorenz_gauge,sr.maxwells_equations,RELATED,"The Lorenz gauge is closely associated with Maxwell’s equations because it simplifies their potential form, but it is not derived from them."
+sr.gauge_invariance,sr.field_tensor,DERIVES_FROM,The gauge invariance of the electromagnetic field follows because the antisymmetric field tensor is unchanged by adding a gradient to the vector potential.
+sr.gauge_invariance,sr.electromagnetic_field,PREREQUISITE,Gauge invariance concerns changes of potential that leave the physical electromagnetic field unchanged.
+sr.lorenz_gauge,sr.gauge_invariance,PREREQUISITE,"The Lorenz gauge is a particular gauge choice, so it presupposes the gauge freedom expressed by gauge invariance."
+sr.four_current,sr.four_vectors,DERIVES_FROM,The four-current is constructed as the four-vector combining charge density and current density.
+sr.maxwells_equations,sr.four_current,PREREQUISITE,The sourced covariant form of Maxwell’s equations uses the four-current as the source term.
+sr.charge_conservation,sr.four_current,PREREQUISITE,Charge conservation is expressed locally as the vanishing four-divergence of the four-current.
+sr.minimal_coupling,sr.vector_potential,DERIVES_FROM,Minimal coupling is constructed by introducing the vector potential into the charged-particle momentum or action.
+sr.minimal_coupling,sr.gauge_invariance,DERIVES_FROM,Minimal coupling is chosen so that the charged-particle interaction respects gauge invariance.
+sr.lorentz_force_law,sr.velocity_four_vector,DERIVES_FROM,The covariant Lorentz force law uses the velocity four-vector in its tensor equation of motion.
+sr.lorentz_force_law,sr.momentum_four_vector,DERIVES_FROM,The covariant Lorentz force law gives the proper-time rate of change of the momentum four-vector.
+sr.lorentz_force_law,sr.action_principle,DERIVES_FROM,The Lorentz force law is obtained by applying the action principle to a charged particle coupled to the electromagnetic field.
+sr.lorentz_force_law,sr.field_tensor,DERIVES_FROM,The covariant Lorentz force law is built from the electromagnetic field tensor.
+sr.lorentz_force_law,sr.minimal_coupling,DERIVES_FROM,The Lorentz force law follows from the minimally coupled action for a charged particle.
+sr.charge_conservation,sr.maxwells_equations,DERIVES_FROM,Local charge conservation follows from the sourced Maxwell equations because the divergence of the antisymmetric field-tensor equation vanishes identically.
+sr.em_energy_density,sr.electric_field,DERIVES_FROM,The electromagnetic energy density is constructed from the squared electric field and magnetic field components.
+sr.em_energy_density,sr.magnetic_field,DERIVES_FROM,The electromagnetic energy density is constructed from the squared electric field and magnetic field components.
+sr.em_energy_density,sr.electromagnetic_field,PREREQUISITE,Energy density is a property carried by the electromagnetic field.
+sr.em_energy_density,sr.energy_momentum_tensor,DERIVES_FROM,The electromagnetic energy density is the time-time component of the energy-momentum tensor.
+sr.poynting_vector,sr.electromagnetic_field,DERIVES_FROM,The Poynting vector is the energy-flux and momentum-density expression for the electromagnetic field.
+sr.em_stress_energy,sr.metric_tensor,DERIVES_FROM,The electromagnetic stress-energy tensor uses the metric to contract and raise or lower field-tensor indices.
+sr.em_stress_energy,sr.field_tensor,DERIVES_FROM,The electromagnetic stress-energy tensor is constructed algebraically from the field tensor.
+sr.energy_momentum_tensor,sr.field_tensor,DERIVES_FROM,"For the electromagnetic field, the energy-momentum tensor is constructed from the field tensor."
+sr.electromagnetic_waves,sr.electric_field,PREREQUISITE,Electromagnetic waves are self-propagating oscillations involving the electric field.
+sr.electromagnetic_waves,sr.magnetic_field,PREREQUISITE,Electromagnetic waves are self-propagating oscillations involving the magnetic field.
+sr.electromagnetic_waves,sr.electromagnetic_field,PREREQUISITE,Electromagnetic waves are propagating disturbances of the electromagnetic field.
+sr.electromagnetic_waves,sr.four_current,RELATED,"Source-free electromagnetic waves are discussed in regions where the four-current vanishes, but the four-current is not part of the wave itself."
+sr.wave_equation,sr.metric_tensor,PREREQUISITE,The relativistic wave equation uses the metric to form the d’Alembertian operator.
+sr.wave_equation,sr.vector_potential,PREREQUISITE,The potential form of the electromagnetic wave equation is written for the vector potential.
+sr.wave_equation,sr.lorenz_gauge,DERIVES_FROM,The simple potential wave equation is obtained after imposing the Lorenz gauge.
+sr.wave_equation,sr.four_current,PREREQUISITE,The sourced wave equation includes the four-current as its source term.
+sr.electromagnetic_waves,sr.wave_equation,DERIVES_FROM,Electromagnetic waves are propagating solutions of the electromagnetic wave equation.
+sr.radiation_reaction,sr.lorentz_force_law,PREREQUISITE,Radiation reaction is a correction to the particle motion described by the Lorentz force law.
+sr.radiation_reaction,sr.energy_momentum_tensor,DERIVES_FROM,Radiation reaction follows from energy-momentum carried away by the electromagnetic field.
+sr.radiation_reaction,sr.electromagnetic_waves,DERIVES_FROM,Radiation reaction arises because accelerating charges emit electromagnetic waves.
+sr.lorentz_invariance,sr.lorentz_transformations,DERIVES_FROM,Lorentz invariance is defined as covariance under Lorentz transformations.
+sr.lorentz_invariance,sr.metric_tensor,DERIVES_FROM,Lorentz invariance preserves the Minkowski metric structure.
+sr.lorentz_invariance,sr.four_vectors,RELATED,Four-vectors provide a manifestly Lorentz-covariant way to write physical laws.
+sr.lorentz_invariance,sr.field_tensor,RELATED,The field tensor is a Lorentz-covariant object used to express electromagnetism in invariant form.
+sr.lorentz_invariance,sr.energy_momentum_tensor,RELATED,The energy-momentum tensor is a Lorentz-covariant object whose components describe energy and momentum consistently between frames.
+sr.gauge_fixing,sr.vector_potential,PREREQUISITE,Gauge fixing is the choice of a particular representative vector potential from a gauge-equivalent family.
+sr.gauge_fixing,sr.field_tensor,PREREQUISITE,"Gauge fixing changes the potential while leaving the field tensor, and hence the physical field, unchanged."
+sr.gauge_fixing,sr.electromagnetic_field,PREREQUISITE,Gauge fixing is meaningful because different potentials can represent the same electromagnetic field.
+sr.lorenz_gauge,sr.gauge_fixing,RELATED,The Lorenz gauge is a specific example of gauge fixing.
+sr.gauge_fixing,sr.gauge_invariance,DERIVES_FROM,Gauge fixing is possible because gauge invariance creates gauge-equivalent potentials.
+sr.principle_of_relativity,sr.lorentz_invariance,RELATED,Expanded Principle of relativity explanation explicitly connects the postulate to Lorentz invariance as the modern form of observer-independent physical laws.
+sr.minkowski_diagram,sr.lorentz_transformations,RELATED,Expanded Minkowski diagram text uses the diagram as a visual representation of Lorentz transformations and tilted inertial-frame axes.
+sr.minkowski_diagram,sr.light_cone,RELATED,Expanded Minkowski diagram text treats light cones as a central geometric feature represented in the diagram.
+sr.momentum_four_vector,sr.metric_tensor,PREREQUISITE,Expanded Momentum four-vector text uses the metric tensor to compute the invariant magnitude and mass-shell relation.
+sr.field_equations,sr.maxwells_equations,RELATED,Expanded Field equations example explicitly uses Maxwell equations as the central electromagnetic example of relativistic field equations.
+sr.field_tensor,sr.metric_tensor,PREREQUISITE,"Expanded Field tensor text introduces raising and lowering electromagnetic tensor indices using the metric tensor, especially in equations such as partial_mu F^{mu nu}=J^nu."
+sr.poynting_vector,sr.energy_momentum_tensor,DERIVES_FROM,Expanded momentum-density text presents the Poynting vector/momentum flow as part of the energy--momentum tensor.
+sr.em_stress_energy,sr.energy_momentum_tensor,RELATED,The electromagnetic stress-energy tensor is the electromagnetic-field instance of the more general energy--momentum tensor.
+sr.electromagnetic_waves,sr.maxwells_equations,DERIVES_FROM,Expanded electromagnetic-wave text explicitly states that source-free Maxwell equations imply propagating electromagnetic waves.
+sr.gauge_fixing,sr.lorentz_invariance,RELATED,Expanded gauge-fixing text notes that the Lorenz gauge is useful because it respects Lorentz invariance.
+sr.poynting_vector,sr.electric_field,DERIVES_FROM,The Poynting vector is constructed from the cross product of the electric and magnetic fields.
+sr.poynting_vector,sr.magnetic_field,DERIVES_FROM,The Poynting vector is constructed from the cross product of the electric and magnetic fields.
+sr.wave_equation,sr.maxwells_equations,DERIVES_FROM,The electromagnetic wave equation is obtained from Maxwell equations in potential form.
+sr.light_cone,sr.lorentz_transformations,RELATED,"Light cone structure is preserved by Lorentz transformations, but it is derived from the spacetime interval rather than from the transformation rule."
+sr.position_four_vector,sr.metric_tensor,RELATED,"Metric contractions give invariant intervals between position four-vectors, but the position four-vector itself is not derived from the metric."
+sr.lagrangian,sr.proper_time,RELATED,"Relativistic Lagrangians may be built from proper time, but the general Lagrangian concept is not derived from proper time."
+sr.action_principle,sr.proper_time,RELATED,"Relativistic actions often use proper time as an invariant ingredient, but the action principle is more general."
+sr.action_principle,sr.four_vectors,RELATED,"Relativistic actions are constructed from Lorentz-scalar combinations of four-vectors, but the action principle is not derived from four-vectors."
+sr.electromagnetic_field,sr.lorentz_transformations,PREREQUISITE,Understanding the unified electromagnetic field requires Lorentz transformations because electric and magnetic components mix between inertial frames.
+sr.maxwells_equations,sr.field_tensor,PREREQUISITE,Maxwell's equations in covariant form are written using the electromagnetic field tensor.

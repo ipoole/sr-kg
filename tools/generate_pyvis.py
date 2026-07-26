@@ -2,13 +2,25 @@
 """
 generate_pyvis.py
 
-Generate a standalone interactive HTML knowledge-graph viewer from nodes.csv and edges.csv.
+Generate a standalone interactive HTML knowledge-graph viewer from a KB data root.
 
 This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
 
-Expected nodes.csv columns:
-    id,label,layer,layer_title,definition_new,derivation_new,explanation_new
+Expected manifest-backed nodes.csv columns:
+    id,display_id,label,layer,layer_title
+
+Expected manifest-backed content_blocks.csv columns:
+    block_id,concept_id,sequence,kind,pedagogical_level,title,body
+
+Expected manifest-backed study_questions.csv columns:
+    question_id,concept_id,sequence,pedagogical_level,question_type,prompt,answer
+
+Expected manifest-backed references.csv columns:
+    reference_id,reference_type,citation,authors,title,year,url,note
+
+Expected manifest-backed reference_links.csv columns:
+    source_type,source_id,reference_id,locator,note
 
 Expected edges.csv columns:
     source,target,relation,note
@@ -19,7 +31,7 @@ Expected edges_key.csv columns:
 Only the documented columns are supported.
 
 Usage:
-    python generate_pyvis.py --nodes data/nodes.csv --edges data/edges.csv --out interactive_graph.html
+    python generate_pyvis.py --data-root data --out interactive_graph.html
 
 Dependencies:
     pip install pandas networkx pyvis
@@ -35,24 +47,23 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from srkg.pipeline import generate_viewer
+from srkg.kb import resolve_knowledge_base_paths
+from srkg.pipeline import generate_viewer_from_root
 from srkg.dag import format_dag_reports, load_dag_reports
 from srkg.validation import (
     format_validation_issues,
     has_validation_errors,
-    load_validation_issues,
+    load_validation_issues_from_root,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser for the graph viewer generator."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nodes", default="data/nodes.csv", help="Path to nodes.csv")
-    parser.add_argument("--edges", default="data/edges.csv", help="Path to edges.csv")
     parser.add_argument(
-        "--edge-key",
-        default=None,
-        help="Path to edges_key.csv. Defaults to edges_key.csv beside the edges file when present.",
+        "--data-root",
+        default="data",
+        help="Path to a KB data root containing manifest.yaml.",
     )
     parser.add_argument("--out", default="interactive_graph.html", help="Output HTML file")
     parser.add_argument("--height", default="100vh")
@@ -106,12 +117,16 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
+    kb_paths = resolve_knowledge_base_paths(args.data_root)
+    nodes_path = str(kb_paths.nodes)
+    edges_path = str(kb_paths.edges)
+    edge_key_path = str(kb_paths.edge_key) if kb_paths.edge_key else None
 
     if args.dag_report or args.dag_report_only:
         reports = load_dag_reports(
-            nodes_path=args.nodes,
-            edges_path=args.edges,
-            edge_key_path=args.edge_key,
+            nodes_path=nodes_path,
+            edges_path=edges_path,
+            edge_key_path=edge_key_path,
             relations=args.dag_relations,
         )
         print(format_dag_reports(reports))
@@ -119,25 +134,21 @@ def main(argv: list[str] | None = None) -> None:
             return
 
     if args.validate or args.validate_only:
-        issues = load_validation_issues(
-            nodes_path=args.nodes,
-            edges_path=args.edges,
-            edge_key_path=args.edge_key,
-        )
+        issues = load_validation_issues_from_root(args.data_root)
         print(format_validation_issues(issues))
         if has_validation_errors(issues, strict=args.validation_strict):
             raise SystemExit(1)
         if args.validate_only:
             return
 
-    out_path, node_count, edge_count, edge_key_path, edge_key_count = generate_viewer(
-        nodes_path=args.nodes,
-        edges_path=args.edges,
-        edge_key_path=args.edge_key,
-        out_path=args.out,
-        height=args.height,
-        width=args.width,
-        title=" ".join(args.title),
+    out_path, node_count, edge_count, edge_key_path, edge_key_count = (
+        generate_viewer_from_root(
+            data_root=args.data_root,
+            out_path=args.out,
+            height=args.height,
+            width=args.width,
+            title=" ".join(args.title),
+        )
     )
 
     print(f"Wrote {out_path}")

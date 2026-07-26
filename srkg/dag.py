@@ -15,7 +15,6 @@ import networkx as nx
 import pandas as pd
 
 from srkg.data import (
-    find_edge_key_path,
     load_edge_key,
     normalise_edges,
     validate_edge_endpoints,
@@ -24,13 +23,24 @@ from srkg.layout import concept_sort_key, parse_layer_value
 
 
 @dataclass(frozen=True)
+class DagNodeMetadata:
+    """Display metadata for a node in DAG diagnostics."""
+
+    label: str
+    layer: int
+    display_id: str
+
+
+@dataclass(frozen=True)
 class DagEdge:
     """A labelled edge in a directed relation subgraph."""
 
     source: str
+    source_display_id: str
     source_label: str
     source_layer: int
     target: str
+    target_display_id: str
     target_label: str
     target_layer: int
     relation: str
@@ -105,8 +115,7 @@ def load_dag_reports(
 
     validate_edge_endpoints(nodes_df, edges_df)
 
-    edge_key_file = find_edge_key_path(edges_file, str(edge_key_path) if edge_key_path else None)
-    edge_key = load_edge_key(edge_key_file)
+    edge_key = load_edge_key(Path(edge_key_path) if edge_key_path else None)
     selected_relations = tuple(relations) if relations is not None else _directed_relations(edges_df, edge_key)
 
     if not selected_relations:
@@ -167,6 +176,7 @@ def analyse_relation_group(
 ) -> DagReport:
     """Analyze one relation group as a directed graph."""
     node_metadata = _node_metadata(nodes_df)
+    sort_key_by_id = _display_sort_keys(node_metadata)
     relation_set = set(relations)
     selected_edges = edges_df[edges_df["relation"].isin(relation_set)]
 
@@ -187,7 +197,10 @@ def analyse_relation_group(
     )
     is_dag = nx.is_directed_acyclic_graph(graph)
 
-    all_edges = tuple(edge_lookup[key] for key in sorted(edge_lookup, key=_edge_sort_key))
+    all_edges = tuple(
+        edge_lookup[key]
+        for key in sorted(edge_lookup, key=lambda item: _edge_sort_key(item, sort_key_by_id))
+    )
     layer_forward_edges = tuple(
         edge for edge in all_edges if edge.source_layer < edge.target_layer
     )
@@ -197,26 +210,35 @@ def analyse_relation_group(
     same_layer_order_violations = tuple(
         edge
         for edge in same_layer_edges
-        if concept_sort_key(edge.source) < concept_sort_key(edge.target)
+        if sort_key_by_id.get(edge.source, concept_sort_key(edge.source)) < sort_key_by_id.get(
+            edge.target,
+            concept_sort_key(edge.target),
+        )
     )
     layer_renumberings = _build_layer_renumberings(
         nodes_df,
         same_layer_edges,
         same_layer_order_violations,
         node_metadata,
+        sort_key_by_id,
     )
-    transitive_redundancies = _find_transitive_redundancies(graph, all_edges, node_metadata)
+    transitive_redundancies = _find_transitive_redundancies(
+        graph,
+        all_edges,
+        node_metadata,
+        sort_key_by_id,
+    )
 
     foundation_nodes = tuple(
         sorted(
             (node for node in graph.nodes if graph.out_degree(node) == 0),
-            key=concept_sort_key,
+            key=lambda node: sort_key_by_id.get(node, concept_sort_key(node)),
         )
     )
     capstone_nodes = tuple(
         sorted(
             (node for node in graph.nodes if graph.in_degree(node) == 0),
-            key=concept_sort_key,
+            key=lambda node: sort_key_by_id.get(node, concept_sort_key(node)),
         )
     )
 
@@ -283,7 +305,7 @@ def format_dag_reports(
 
         lines.append(
             "  Same-layer order violations "
-            f"(lower-numbered source points to higher-numbered target): "
+            f"(lower-display-numbered source points to higher-display-numbered target): "
             f"{len(report.same_layer_order_violations)}"
         )
         for edge in report.same_layer_order_violations[:max_items]:
@@ -333,21 +355,30 @@ def format_dag_reports(
     return "\n".join(lines)
 
 
-def _node_metadata(nodes_df: pd.DataFrame) -> dict[str, tuple[str, int]]:
+def _node_metadata(nodes_df: pd.DataFrame) -> dict[str, DagNodeMetadata]:
     metadata = {}
     for row in nodes_df.itertuples(index=False):
         node_id = str(row.id)
         label = str(getattr(row, "label", "")).strip()
-        layer = parse_layer_value(node_id, getattr(row, "layer", ""))
-        metadata[node_id] = (label, layer)
+        display_id = str(getattr(row, "display_id", "")).strip() or node_id
+        layer = parse_layer_value(display_id, getattr(row, "layer", ""))
+        metadata[node_id] = DagNodeMetadata(label=label, layer=layer, display_id=display_id)
     return metadata
+
+
+def _display_sort_keys(node_metadata: dict[str, DagNodeMetadata]) -> dict[str, tuple]:
+    return {
+        node_id: concept_sort_key(metadata.display_id)
+        for node_id, metadata in node_metadata.items()
+    }
 
 
 def _build_layer_renumberings(
     nodes_df: pd.DataFrame,
     same_layer_edges: Sequence[DagEdge],
     same_layer_order_violations: Sequence[DagEdge],
-    node_metadata: dict[str, tuple[str, int]],
+    node_metadata: dict[str, DagNodeMetadata],
+    sort_key_by_id: dict[str, tuple],
 ) -> tuple[LayerRenumbering, ...]:
     """Suggest target-first IDs for layers with same-layer order violations."""
     violation_count_by_layer: dict[int, int] = {}
@@ -361,9 +392,9 @@ def _build_layer_renumberings(
     nodes_by_layer: dict[int, list[str]] = {}
     for row in nodes_df.itertuples(index=False):
         node_id = str(row.id)
-        _, layer = node_metadata.get(node_id, ("", 0))
-        if layer in violation_count_by_layer:
-            nodes_by_layer.setdefault(layer, []).append(node_id)
+        metadata = node_metadata.get(node_id)
+        if metadata and metadata.layer in violation_count_by_layer:
+            nodes_by_layer.setdefault(metadata.layer, []).append(node_id)
 
     edges_by_layer: dict[int, list[DagEdge]] = {}
     for edge in same_layer_edges:
@@ -372,24 +403,43 @@ def _build_layer_renumberings(
 
     suggestions = []
     for layer in sorted(violation_count_by_layer):
-        current_order = tuple(sorted(nodes_by_layer.get(layer, []), key=concept_sort_key))
+        current_order = tuple(
+            sorted(
+                nodes_by_layer.get(layer, []),
+                key=lambda node: sort_key_by_id.get(node, concept_sort_key(node)),
+            )
+        )
         dependency_first_graph = nx.DiGraph()
         dependency_first_graph.add_nodes_from(current_order)
         for edge in edges_by_layer.get(layer, []):
             dependency_first_graph.add_edge(edge.target, edge.source)
 
         if nx.is_directed_acyclic_graph(dependency_first_graph):
-            proposed_order = tuple(_best_topological_order(dependency_first_graph, current_order, layer))
+            proposed_order = tuple(
+                _best_topological_order(
+                    dependency_first_graph,
+                    current_order,
+                    layer,
+                    node_metadata,
+                )
+            )
         else:
             proposed_order = current_order
 
         renames = []
         for index, node_id in enumerate(proposed_order, start=1):
             new_id = f"{layer}.{index}"
-            if node_id == new_id:
+            metadata = node_metadata.get(
+                node_id,
+                DagNodeMetadata(label="", layer=layer, display_id=node_id),
+            )
+            if metadata.display_id == new_id:
                 continue
-            label, _ = node_metadata.get(node_id, ("", layer))
-            renames.append(DagRename(old_id=node_id, new_id=new_id, label=label))
+            renames.append(DagRename(
+                old_id=metadata.display_id,
+                new_id=new_id,
+                label=metadata.label,
+            ))
 
         proposed_index = {node_id: index for index, node_id in enumerate(proposed_order)}
         remaining_order_violations = tuple(
@@ -412,13 +462,18 @@ def _build_layer_renumberings(
     return tuple(suggestions)
 
 
-def _best_topological_order(graph: nx.DiGraph, current_order: Sequence[str], layer: int) -> list[str]:
+def _best_topological_order(
+    graph: nx.DiGraph,
+    current_order: Sequence[str],
+    layer: int,
+    node_metadata: dict[str, DagNodeMetadata],
+) -> list[str]:
     """Find a target-first order that minimizes ID churn for small layers."""
     if len(current_order) <= 8:
         best_order = None
         best_score = None
         for candidate in nx.all_topological_sorts(graph):
-            score = _renumbering_score(candidate, current_order, layer)
+            score = _renumbering_score(candidate, current_order, layer, node_metadata)
             if best_score is None or score < best_score:
                 best_score = score
                 best_order = candidate
@@ -428,7 +483,12 @@ def _best_topological_order(graph: nx.DiGraph, current_order: Sequence[str], lay
     return _stable_topological_order(graph, current_order)
 
 
-def _renumbering_score(candidate: Sequence[str], current_order: Sequence[str], layer: int):
+def _renumbering_score(
+    candidate: Sequence[str],
+    current_order: Sequence[str],
+    layer: int,
+    node_metadata: dict[str, DagNodeMetadata],
+):
     """Score lower for less disruptive proposed IDs."""
     current_index = {node_id: index for index, node_id in enumerate(current_order)}
     fixed_count = 0
@@ -437,9 +497,13 @@ def _renumbering_score(candidate: Sequence[str], current_order: Sequence[str], l
 
     for new_index, node_id in enumerate(candidate):
         new_suffix = new_index + 1
-        if node_id == f"{layer}.{new_suffix}":
+        display_id = node_metadata.get(
+            node_id,
+            DagNodeMetadata(label="", layer=layer, display_id=node_id),
+        ).display_id
+        if display_id == f"{layer}.{new_suffix}":
             fixed_count += 1
-        old_suffix = _node_suffix(node_id)
+        old_suffix = _node_suffix(display_id)
         if old_suffix is None:
             old_suffix = current_index.get(node_id, new_index) + 1
         movement += abs(old_suffix - new_suffix)
@@ -490,17 +554,25 @@ def _make_dag_edge(
     source: str,
     target: str,
     relation: str,
-    node_metadata: dict[str, tuple[str, int]],
+    node_metadata: dict[str, DagNodeMetadata],
 ) -> DagEdge:
-    source_label, source_layer = node_metadata.get(source, ("", 0))
-    target_label, target_layer = node_metadata.get(target, ("", 0))
+    source_metadata = node_metadata.get(
+        source,
+        DagNodeMetadata(label="", layer=0, display_id=source),
+    )
+    target_metadata = node_metadata.get(
+        target,
+        DagNodeMetadata(label="", layer=0, display_id=target),
+    )
     return DagEdge(
         source=source,
-        source_label=source_label,
-        source_layer=source_layer,
+        source_display_id=source_metadata.display_id,
+        source_label=source_metadata.label,
+        source_layer=source_metadata.layer,
         target=target,
-        target_label=target_label,
-        target_layer=target_layer,
+        target_display_id=target_metadata.display_id,
+        target_label=target_metadata.label,
+        target_layer=target_metadata.layer,
         relation=relation,
     )
 
@@ -508,7 +580,8 @@ def _make_dag_edge(
 def _find_transitive_redundancies(
     graph: nx.DiGraph,
     all_edges: Sequence[DagEdge],
-    node_metadata: dict[str, tuple[str, int]],
+    node_metadata: dict[str, DagNodeMetadata],
+    sort_key_by_id: dict[str, tuple],
 ) -> tuple[TransitiveRedundancy, ...]:
     """Find direct edges whose reachability is preserved by an alternate path."""
     redundancies = []
@@ -521,7 +594,13 @@ def _find_transitive_redundancies(
                 TransitiveRedundancy(
                     edge=edge,
                     path=path,
-                    path_labels=tuple(node_metadata.get(node_id, ("", 0))[0] for node_id in path),
+                    path_labels=tuple(
+                        node_metadata.get(
+                            node_id,
+                            DagNodeMetadata(label="", layer=0, display_id=node_id),
+                        ).label
+                        for node_id in path
+                    ),
                 )
             )
         graph.add_edge(edge.source, edge.target, **edge_data)
@@ -530,8 +609,8 @@ def _find_transitive_redundancies(
         sorted(
             redundancies,
             key=lambda item: (
-                concept_sort_key(item.edge.source),
-                concept_sort_key(item.edge.target),
+                sort_key_by_id.get(item.edge.source, concept_sort_key(item.edge.source)),
+                sort_key_by_id.get(item.edge.target, concept_sort_key(item.edge.target)),
                 item.edge.relation,
             ),
         )
@@ -546,22 +625,28 @@ def _cycle_edges(
     return tuple(edge_lookup[(source, target)] for source, target in zip(path, path[1:]))
 
 
-def _edge_sort_key(edge_key: tuple[str, str]):
+def _edge_sort_key(edge_key: tuple[str, str], sort_key_by_id: dict[str, tuple]):
     source, target = edge_key
-    return (concept_sort_key(source), concept_sort_key(target))
+    return (
+        sort_key_by_id.get(source, concept_sort_key(source)),
+        sort_key_by_id.get(target, concept_sort_key(target)),
+    )
 
 
 def _format_edge(edge: DagEdge) -> str:
     return (
-        f"{edge.source} {edge.source_label} [L{edge.source_layer}] "
-        f"{edge.relation} {edge.target} {edge.target_label} [L{edge.target_layer}]"
+        f"{edge.source_display_id} {edge.source_label} [L{edge.source_layer}] "
+        f"{edge.relation} {edge.target_display_id} {edge.target_label} [L{edge.target_layer}]"
     )
 
 
 def _format_edge_chain(edges: Sequence[DagEdge]) -> str:
     if not edges:
         return ""
-    parts = [f"{edge.source} {edge.relation} {edge.target}" for edge in edges]
+    parts = [
+        f"{edge.source_display_id} {edge.relation} {edge.target_display_id}"
+        for edge in edges
+    ]
     return " | ".join(parts)
 
 

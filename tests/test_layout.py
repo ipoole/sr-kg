@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from srkg.layout import (
+    build_concept_sort_keys,
     build_hierarchy_levels,
     build_hierarchy_positions,
     concept_sort_key,
@@ -73,6 +74,18 @@ def test_build_hierarchy_levels_maps_layer_one_to_bottom_row():
         "4.1": 0,
         "fallback-from-id": 4,
         "3.5": 1,
+    }
+
+
+def test_build_hierarchy_levels_can_fall_back_to_display_id_layer():
+    nodes_df = pd.DataFrame([
+        {"id": "test.beta", "display_id": "2.1", "layer": ""},
+        {"id": "test.alpha", "display_id": "1.1", "layer": ""},
+    ])
+
+    assert build_hierarchy_levels(nodes_df) == {
+        "test.beta": 0,
+        "test.alpha": 1,
     }
 
 
@@ -155,6 +168,26 @@ def test_order_nodes_within_levels_sorts_each_level_by_numeric_concept_id():
     assert order_nodes_within_levels(nodes_by_level, hierarchy_levels, edges_df) == {
         2: ["2.1", "2.2", "2.10"],
         0: ["3.2", "3.12", "10.1"],
+    }
+
+
+def test_order_nodes_within_levels_uses_display_sort_keys_for_semantic_ids():
+    nodes_df = pd.DataFrame([
+        {"id": "test.gamma", "display_id": "2.10"},
+        {"id": "test.alpha", "display_id": "2.1"},
+        {"id": "test.beta", "display_id": "2.2"},
+    ])
+    nodes_by_level = {
+        0: ["test.gamma", "test.beta", "test.alpha"],
+    }
+
+    assert order_nodes_within_levels(
+        nodes_by_level,
+        {"test.gamma": 0, "test.beta": 0, "test.alpha": 0},
+        None,
+        sort_key_by_id=build_concept_sort_keys(nodes_df),
+    ) == {
+        0: ["test.alpha", "test.beta", "test.gamma"],
     }
 
 

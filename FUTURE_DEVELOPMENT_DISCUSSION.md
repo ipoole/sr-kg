@@ -507,3 +507,83 @@ Good. I think file-based source is the right instinct for this project.
 
 The next sensible evolution is probably not “database”, but “better authored files plus stricter validation”: keep the source readable, let Python assemble the richer knowledge model, and generate whatever views we need from that.
 ````
+
+## Deeper KB Architecture Direction
+
+This decision record captures the follow-up discussion on how the project should
+evolve from the current `nodes.csv` / `edges.csv` knowledge base into a deeper,
+more extensible physics atlas.
+
+The canonical knowledge base should remain text-file based, using formats such
+as CSV, Markdown, and YAML where appropriate. A SQL database may eventually be
+useful as an internal generated cache, but not as the authored source of truth.
+
+The long-term model should be a unified atlas rather than isolated course files.
+It should nevertheless support pluggable volumes and domains, so new areas such
+as GR, QM, mathematics, or even non-physics subjects can be added smoothly.
+
+The model should separate distinct kinds of knowledge object:
+
+- `Concept`: a stable intellectual object with a semantic ID, such as
+  `sr.noether_theorem`.
+- `ContentBlock`: a smaller teaching unit attached to a concept, such as a
+  definition, intuition, derivation step, optional detail, misconception, worked
+  example, historical note, or construction.
+- `Question`: a first-class study item, linkable to concepts, content blocks,
+  references, graphics, and prerequisites.
+- `Reference`: a first-class citation into sources such as Susskind's TTM
+  volumes or Penrose's *The Road to Reality*.
+- `DerivationStep`: a fine-grained mathematical or conceptual step in a
+  derivation path.
+- `Notation`: symbols, conventions, glossary entries, and notation contexts.
+- `Graphic`: a reusable visual asset that can be linked to concepts, questions,
+  derivations, or other objects rather than being owned by a concept.
+- `HistoricalActor` / `HistoricalEvent`: objects supporting the historical
+  dimension of the atlas.
+
+Stable semantic IDs should replace numeric IDs as primary identifiers. Existing
+numeric IDs can remain as display IDs, legacy aliases, ordering keys, or layout
+helpers. Ordering and level should be explicit metadata, separate from identity,
+so they can support navigation, curriculum views, and graph layout.
+
+Pedagogical level should apply primarily to content blocks, questions,
+derivation steps, references, and similar authored units. A concept may still
+have curriculum or layout metadata, but the teaching material for a concept may
+exist at several pedagogical levels.
+
+The KB should support richer internal edge types, while presenting them to the
+user through simpler viewer modes. The user should not need to manage a large
+matrix of edge toggles. Richer edges should instead power automated views such
+as prerequisite paths, derivation paths, analogy views, historical timelines,
+and study routes.
+
+Derivations should eventually become more fine-grained than the current
+`DERIVES_FROM` concept-level edge. The aim is to support explicit derivation
+paths with consistent notation and clear links back to postulates, assumptions,
+or prior results.
+
+Graphics should be registered as linkable resources, not hard-wired to concepts.
+The same graphic may be relevant to a concept, a study question, a derivation
+step, or a volume-specific presentation. Volume-specific overrides should be
+possible without losing shared atlas-level graphics.
+
+The first implementation priority should be content blocks and pedagogical
+level. This is the most useful next step because it lets concept narratives be
+split into smaller, ordered, level-aware pieces while preserving the current
+viewer output during migration.
+
+The central `KnowledgeBase` model should have manifestations at both the Python
+and JavaScript levels. The Python model supports generation, validation, tests,
+editing tools, and future command-line analysis of the KB. The JavaScript model
+supports the interactive viewer. Their APIs should be kept as close as
+practical, so that common queries such as concept lookup, neighbours,
+derivation paths, content blocks, questions, references, and graphics feel the
+same on both sides. The implementations need not be identical internally, but
+they should expose the same conceptual vocabulary.
+
+The deeper-KB branch should focus first on code infrastructure rather than on
+substantial new content. Additional data files can be introduced with mostly
+empty or minimally populated rows, plus a small number of demonstration
+concepts such as Maxwell's equations and Lorentz transformations. Building the
+full content base is a separate phase with a different focus: careful physics
+curation, notation, references, derivations, questions, and graphics.

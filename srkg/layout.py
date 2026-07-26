@@ -3,7 +3,7 @@
 This module computes deterministic initial graph positions from pedagogical
 node layers. Layer 1 is placed at the bottom of the graph, higher numbered
 layers are placed above it, and each left-aligned row curves upward as nodes
-advance left-to-right in numeric concept-ID order.
+advance left-to-right in display-ID order.
 
 The layout code accepts already-loaded data frames and plain dictionaries. It
 does not load files, create PyVis objects, inject HTML, or inspect edge display
@@ -29,6 +29,22 @@ def concept_sort_key(cid: str):
         return tuple(int(x) for x in str(cid).split("."))
     except Exception:
         return (9999, str(cid))
+
+
+def concept_display_id(row) -> str:
+    """Return the human-facing concept number for a node row."""
+    display_id = str(row.get("display_id", "")).strip()
+    if display_id:
+        return display_id
+    return str(row.get("id", "")).strip()
+
+
+def build_concept_sort_keys(nodes_df: pd.DataFrame) -> dict[str, tuple]:
+    """Return sort keys keyed by stable concept id, using display_id when present."""
+    return {
+        str(row["id"]): concept_sort_key(concept_display_id(row))
+        for _, row in nodes_df.iterrows()
+    }
 
 
 def parse_layer_value(node_id: str, layer: str | int | float | None) -> int:
@@ -58,7 +74,7 @@ def build_hierarchy_levels(nodes_df: pd.DataFrame) -> dict[str, int]:
     top row.
     """
     node_layers = {
-        str(row["id"]): parse_layer_value(row["id"], row.get("layer", ""))
+        str(row["id"]): parse_layer_value(concept_display_id(row), row.get("layer", ""))
         for _, row in nodes_df.iterrows()
     }
     positive_layers = [layer for layer in node_layers.values() if layer > 0]
@@ -73,6 +89,7 @@ def build_hierarchy_levels(nodes_df: pd.DataFrame) -> dict[str, int]:
 def build_hierarchy_positions(
     hierarchy_levels: dict[str, int],
     edges_df: pd.DataFrame | None = None,
+    sort_key_by_id: dict[str, tuple] | None = None,
     x_spacing: int = LAYOUT_X_SPACING,
     y_spacing: int = LAYOUT_Y_SPACING,
     row_stagger: int | None = None,
@@ -91,7 +108,12 @@ def build_hierarchy_positions(
     for node_id, level in hierarchy_levels.items():
         nodes_by_level.setdefault(level, []).append(node_id)
 
-    ordered_nodes = order_nodes_within_levels(nodes_by_level, hierarchy_levels, edges_df)
+    ordered_nodes = order_nodes_within_levels(
+        nodes_by_level,
+        hierarchy_levels,
+        edges_df,
+        sort_key_by_id=sort_key_by_id,
+    )
 
     positions = {}
     for level, sorted_nodes in ordered_nodes.items():
@@ -144,9 +166,11 @@ def order_nodes_within_levels(
     hierarchy_levels: dict[str, int],
     edges_df: pd.DataFrame | None,
     sweeps: int = 6,
+    sort_key_by_id: dict[str, tuple] | None = None,
 ) -> dict[int, list[str]]:
-    """Order nodes within each fixed layer by numeric concept ID."""
+    """Order nodes within each fixed layer by display ID when available."""
+    sort_keys = sort_key_by_id or {}
     return {
-        level: sorted(nodes, key=concept_sort_key)
+        level: sorted(nodes, key=lambda node_id: sort_keys.get(node_id, concept_sort_key(node_id)))
         for level, nodes in nodes_by_level.items()
     }

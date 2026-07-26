@@ -14,10 +14,11 @@ from typing import Iterable, Literal
 
 import pandas as pd
 
-from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
+from srkg.config import EDGE_COLUMNS
 from srkg.dag import build_dag_reports
-from srkg.data import find_edge_key_path, load_edge_key, normalise_edges
+from srkg.data import normalise_edges
 from srkg.edges import relation_is_directed
+from srkg.kb import KnowledgeBaseLoadError, load_knowledge_base
 from srkg.layout import parse_layer_value
 
 
@@ -25,14 +26,11 @@ Severity = Literal["error", "warning"]
 
 NODE_REQUIRED_COLUMNS = (
     "id",
+    "display_id",
     "label",
     "layer",
     "layer_title",
-    "definition_new",
-    "derivation_new",
-    "explanation_new",
 )
-BASE_TEXT_COLUMNS = ("definition_new", "derivation_new", "explanation_new")
 SUPPORTED_CUSTOM_MACROS = {"cref", "optional_details"}
 CONTROL_CHARS = tuple(chr(code) for code in range(32) if chr(code) not in ("\r", "\n"))
 
@@ -57,59 +55,23 @@ class MacroCall:
     end: int
 
 
-def load_validation_issues(
-    *,
-    nodes_path: str | Path,
-    edges_path: str | Path,
-    edge_key_path: str | Path | None = None,
-) -> list[ValidationIssue]:
-    """Load graph CSV files and validate them."""
-    nodes_file = Path(nodes_path)
-    edges_file = Path(edges_path)
-    issues: list[ValidationIssue] = []
-
+def load_validation_issues_from_root(data_root: str | Path) -> list[ValidationIssue]:
+    """Load and validate a directory-backed knowledge base."""
     try:
-        nodes_df = pd.read_csv(nodes_file).fillna("")
+        kb = load_knowledge_base(data_root)
+    except KnowledgeBaseLoadError as exc:
+        return [_issue("error", "kb-load", str(exc), str(data_root))]
     except Exception as exc:
-        return [_issue("error", "nodes-read", f"Could not read nodes CSV: {exc}", str(nodes_file))]
+        return [_issue("error", "kb-load", f"Could not load KB data root: {exc}", str(data_root))]
 
-    try:
-        edges_df = pd.read_csv(edges_file).fillna("")
-    except Exception as exc:
-        return [_issue("error", "edges-read", f"Could not read edges CSV: {exc}", str(edges_file))]
-
-    resolved_edge_key_path = find_edge_key_path(
-        edges_file,
-        str(edge_key_path) if edge_key_path else None,
+    issues = validate_graph_data(
+        kb.nodes_df,
+        kb.edges_df,
+        kb.edge_key,
+        check_cref_edge_consistency=False,
     )
-    edge_key: dict[str, dict[str, str | bool]] = {}
-    if resolved_edge_key_path is not None:
-        try:
-            edge_key_df = pd.read_csv(resolved_edge_key_path).fillna("")
-        except Exception as exc:
-            issues.append(
-                _issue(
-                    "error",
-                    "edge-key-read",
-                    f"Could not read edge key CSV: {exc}",
-                    str(resolved_edge_key_path),
-                )
-            )
-        else:
-            missing = set(EDGE_KEY_COLUMNS) - set(edge_key_df.columns)
-            if missing:
-                issues.append(
-                    _issue(
-                        "error",
-                        "edge-key-columns",
-                        f"edges_key.csv is missing columns: {', '.join(sorted(missing))}",
-                        str(resolved_edge_key_path),
-                    )
-                )
-            else:
-                edge_key = load_edge_key(resolved_edge_key_path)
-
-    issues.extend(validate_graph_data(nodes_df, edges_df, edge_key))
+    issues.extend(_validate_content_block_text(kb.concepts, kb.nodes_df, kb.edges_df))
+    issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df))
     return issues
 
 
@@ -117,6 +79,8 @@ def validate_graph_data(
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
     edge_key: dict[str, dict[str, str | bool]] | None = None,
+    *,
+    check_cref_edge_consistency: bool = True,
 ) -> list[ValidationIssue]:
     """Validate loaded graph data frames."""
     edge_key = edge_key or {}
@@ -137,47 +101,9 @@ def validate_graph_data(
     issues.extend(_validate_nodes(nodes))
     issues.extend(_validate_edges(nodes, edges, edge_key))
 
-    text_columns = _text_columns(nodes)
-    cref_pairs: set[tuple[str, str]] = set()
-    cref_targets_by_node: dict[str, set[str]] = {}
-    for row_index, row in nodes.iterrows():
-        node_id = str(row["id"]).strip()
-        for column in text_columns:
-            text = str(row.get(column, ""))
-            location = _node_location(row_index, node_id, column)
-            issues.extend(_validate_control_characters(text, location))
-            issues.extend(_validate_backslash_end(text, location))
-            issues.extend(_validate_balanced_braces(text, location))
-            issues.extend(_validate_math_delimiters(text, location))
-            issues.extend(_validate_custom_macro_typos(text, location))
-
-            cref_calls, cref_errors = _parse_two_arg_macro_calls(text, "cref", location)
-            issues.extend(cref_errors)
-            for call in cref_calls:
-                target = call.args[1].strip()
-                cref_pairs.add((node_id, target))
-                cref_targets_by_node.setdefault(node_id, set()).add(target)
-
-            _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
-            issues.extend(optional_errors)
-
-    node_ids = set(nodes["id"])
-    for source, target in sorted(cref_pairs):
-        if target not in node_ids:
-            issues.append(
-                _issue(
-                    "error",
-                    "cref-target",
-                    f"\\cref target '{target}' is not a known concept id",
-                    f"node {source}",
-                )
-            )
-
     if any(issue.severity == "error" for issue in issues):
         return issues
 
-    issues.extend(_validate_cref_edge_consistency(nodes, edges, cref_pairs, cref_targets_by_node))
-    issues.extend(_validate_study_questions(nodes))
     issues.extend(_validate_dag(nodes, edges, edge_key))
     return issues
 
@@ -238,7 +164,7 @@ def _validate_nodes(nodes_df: pd.DataFrame) -> list[ValidationIssue]:
     for row_index, row in nodes_df.iterrows():
         node_id = str(row["id"]).strip()
         location = _node_location(row_index, node_id)
-        for column in ("id", "label", "layer", "layer_title", "definition_new"):
+        for column in ("id", "label", "layer", "layer_title"):
             if not str(row.get(column, "")).strip():
                 issues.append(
                     _issue("error", "node-required-value", f"Concept has empty {column}", location)
@@ -508,29 +434,6 @@ def _validate_cref_edge_consistency(
     return issues
 
 
-def _validate_study_questions(nodes_df: pd.DataFrame) -> list[ValidationIssue]:
-    issues = []
-    question_numbers = sorted(
-        {
-            int(match.group(1))
-            for column in nodes_df.columns
-            for match in [re.fullmatch(r"study_question_(\d+)", str(column))]
-            if match
-        }
-    )
-    for row_index, row in nodes_df.iterrows():
-        node_id = str(row["id"]).strip()
-        for number in question_numbers:
-            question = str(row.get(f"study_question_{number}", "")).strip()
-            answer = str(row.get(f"study_answer_{number}", "")).strip()
-            location = _node_location(row_index, node_id, f"study_question_{number}")
-            if question and not answer:
-                issues.append(_issue("warning", "study-answer-missing", "Study question has no answer", location))
-            if answer and not question:
-                issues.append(_issue("warning", "study-question-missing", "Study answer has no question", location))
-    return issues
-
-
 def _validate_dag(
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
@@ -598,12 +501,112 @@ def _validate_dag(
     return issues
 
 
-def _text_columns(nodes_df: pd.DataFrame) -> tuple[str, ...]:
-    columns = list(BASE_TEXT_COLUMNS)
-    for column in nodes_df.columns:
-        if re.fullmatch(r"study_(question|answer)_\d+", str(column)):
-            columns.append(str(column))
-    return tuple(columns)
+def _validate_content_block_text(
+    concepts,
+    nodes_df: pd.DataFrame,
+    edges_df: pd.DataFrame,
+) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    node_ids = set(nodes_df["id"].astype(str).str.strip())
+    cref_pairs: set[tuple[str, str]] = set()
+    cref_targets_by_node: dict[str, set[str]] = {}
+
+    for concept in concepts:
+        for block in concept.content_blocks:
+            location = f"content block {block.block_id}"
+            text = str(block.body)
+            issues.extend(_validate_control_characters(text, location))
+            issues.extend(_validate_backslash_end(text, location))
+            issues.extend(_validate_balanced_braces(text, location))
+            issues.extend(_validate_math_delimiters(text, location))
+            issues.extend(_validate_custom_macro_typos(text, location))
+
+            cref_calls, cref_errors = _parse_two_arg_macro_calls(text, "cref", location)
+            issues.extend(cref_errors)
+            for call in cref_calls:
+                target = call.args[1].strip()
+                cref_pairs.add((concept.id, target))
+                cref_targets_by_node.setdefault(concept.id, set()).add(target)
+
+            _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
+            issues.extend(optional_errors)
+
+    for source, target in sorted(cref_pairs):
+        if target not in node_ids:
+            issues.append(
+                _issue(
+                    "error",
+                    "cref-target",
+                    f"\\cref target '{target}' is not a known concept id",
+                    f"content block source {source}",
+                )
+            )
+
+    if any(issue.severity == "error" for issue in issues):
+        return issues
+
+    issues.extend(_validate_cref_edge_consistency(nodes_df, edges_df, cref_pairs, cref_targets_by_node))
+    return issues
+
+
+def _validate_study_question_text(
+    concepts,
+    nodes_df: pd.DataFrame,
+    edges_df: pd.DataFrame,
+) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    node_ids = set(nodes_df["id"].astype(str).str.strip())
+    cref_pairs: set[tuple[str, str]] = set()
+    cref_targets_by_node: dict[str, set[str]] = {}
+
+    for concept in concepts:
+        for question in concept.study_questions:
+            for field_name, text in (
+                ("prompt", question.prompt),
+                ("answer", question.answer),
+            ):
+                location = f"study question {question.question_id} {field_name}"
+                issues.extend(_validate_control_characters(text, location))
+                issues.extend(_validate_backslash_end(text, location))
+                issues.extend(_validate_balanced_braces(text, location))
+                issues.extend(_validate_math_delimiters(text, location))
+                issues.extend(_validate_custom_macro_typos(text, location))
+
+                cref_calls, cref_errors = _parse_two_arg_macro_calls(text, "cref", location)
+                issues.extend(cref_errors)
+                for call in cref_calls:
+                    target = call.args[1].strip()
+                    cref_pairs.add((concept.id, target))
+                    cref_targets_by_node.setdefault(concept.id, set()).add(target)
+
+                _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
+                issues.extend(optional_errors)
+
+            if not str(question.answer).strip():
+                issues.append(
+                    _issue(
+                        "warning",
+                        "study-answer-missing",
+                        "Study question has no answer",
+                        f"study question {question.question_id}",
+                    )
+                )
+
+    for source, target in sorted(cref_pairs):
+        if target not in node_ids:
+            issues.append(
+                _issue(
+                    "error",
+                    "cref-target",
+                    f"\\cref target '{target}' is not a known concept id",
+                    f"study question source {source}",
+                )
+            )
+
+    if any(issue.severity == "error" for issue in issues):
+        return issues
+
+    return issues
 
 
 def _node_location(row_index: int, node_id: str, column: str | None = None) -> str:

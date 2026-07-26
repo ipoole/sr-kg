@@ -1,12 +1,11 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
 from srkg.data import (
+    build_concept_references_from_dfs,
+    build_study_questions_from_df,
     build_concepts,
     build_concept_data,
-    find_edge_key_path,
     load_edge_key,
     normalise_edges,
     parse_bool,
@@ -17,18 +16,11 @@ from srkg.data import (
 def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     nodes_df = pd.DataFrame([
         {
-            "id": " 1.1 ",
+            "id": " sr.inertial_frames ",
+            "display_id": " 1.1 ",
             "label": " Inertial frames ",
             "layer": " 1 ",
             "layer_title": " Foundations ",
-            "definition_new": " Definition text ",
-            "derivation_new": " Derivation text ",
-            "explanation_new": " Explanation text ",
-            "study_question_2": " Second question? ",
-            "study_answer_2": " Second answer. ",
-            "study_question_1": " First question? ",
-            "study_answer_1": " First answer. ",
-            "study_answer_3": " Ignored because there is no question. ",
         },
         {
             "id": "   ",
@@ -37,34 +29,174 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     ])
     graphic_designs_df = pd.DataFrame([
         {
-            "id": " 1.1 ",
+            "id": " sr.inertial_frames ",
             "icon_caption": " Icon caption ",
             "detail_caption": " ",
         },
     ])
+    content_blocks_df = pd.DataFrame([
+        {
+            "block_id": "sr.inertial_frames.definition",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": " Definition text ",
+        },
+        {
+            "block_id": "sr.inertial_frames.derivation",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 20,
+            "kind": "derivation",
+            "pedagogical_level": "",
+            "title": "Derivation",
+            "body": " Derivation text ",
+        },
+        {
+            "block_id": "sr.inertial_frames.explanation",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 30,
+            "kind": "explanation",
+            "pedagogical_level": "",
+            "title": "Explanation",
+            "body": " Explanation text ",
+        },
+    ])
+    study_questions_df = pd.DataFrame([
+        {
+            "question_id": " sr.inertial_frames.q2 ",
+            "concept_id": " sr.inertial_frames ",
+            "sequence": 20,
+            "pedagogical_level": " intro ",
+            "question_type": " short_answer ",
+            "prompt": " Second question? ",
+            "answer": " Second answer. ",
+        },
+        {
+            "question_id": " sr.inertial_frames.q1 ",
+            "concept_id": " sr.inertial_frames ",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": " short_answer ",
+            "prompt": " First question? ",
+            "answer": " First answer. ",
+        },
+    ])
+    references_df = pd.DataFrame([
+        {
+            "reference_id": " ttm.sr_cf ",
+            "reference_type": " book ",
+            "citation": " Citation text. ",
+            "authors": " Author ",
+            "title": " Title ",
+            "year": " 2017 ",
+            "url": " ",
+            "note": "",
+        },
+    ])
+    reference_links_df = pd.DataFrame([
+        {
+            "source_type": " content_block ",
+            "source_id": " sr.inertial_frames.derivation ",
+            "reference_id": " ttm.sr_cf ",
+            "locator": " p. 12 ",
+            "note": " See derivation. ",
+        },
+    ])
 
-    concept_data = build_concept_data(nodes_df, graphic_designs_df)
+    concept_data = build_concept_data(
+        nodes_df,
+        graphic_designs_df,
+        content_blocks_df,
+        study_questions_df,
+        references_df,
+        reference_links_df,
+    )
 
-    assert set(concept_data) == {"1.1"}
-    assert concept_data["1.1"]["label"] == "Inertial frames"
-    assert concept_data["1.1"]["layer"] == "1"
-    assert concept_data["1.1"]["layer_title"] == "Foundations"
-    assert concept_data["1.1"]["definition_new"] == "Definition text"
-    assert concept_data["1.1"]["derivation_new"] == "Derivation text"
-    assert concept_data["1.1"]["explanation_new"] == "Explanation text"
-    assert concept_data["1.1"]["sections"] == [
+    assert set(concept_data) == {"sr.inertial_frames"}
+    assert concept_data["sr.inertial_frames"]["display_id"] == "1.1"
+    assert concept_data["sr.inertial_frames"]["label"] == "Inertial frames"
+    assert concept_data["sr.inertial_frames"]["layer"] == "1"
+    assert concept_data["sr.inertial_frames"]["layer_title"] == "Foundations"
+    assert concept_data["sr.inertial_frames"]["sections"] == [
         {"key": "definition", "title": "Definition", "text": "Definition text"},
         {"key": "derivation", "title": "Derivation", "text": "Derivation text"},
         {"key": "explanation", "title": "Explanation", "text": "Explanation text"},
     ]
-    assert concept_data["1.1"]["svg_icon"].startswith("<svg")
-    assert concept_data["1.1"]["svg_detail"].startswith("<svg")
-    assert concept_data["1.1"]["svg_graphic"] == concept_data["1.1"]["svg_detail"]
-    assert concept_data["1.1"]["svg_icon_caption"] == "Icon caption"
-    assert concept_data["1.1"]["svg_detail_caption"] == "Icon caption"
-    assert concept_data["1.1"]["study_questions"] == [
-        {"question": "First question?", "answer": "First answer."},
-        {"question": "Second question?", "answer": "Second answer."},
+    assert concept_data["sr.inertial_frames"]["content_blocks"] == [
+        {
+            "block_id": "sr.inertial_frames.definition",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Definition text",
+        },
+        {
+            "block_id": "sr.inertial_frames.derivation",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 20,
+            "kind": "derivation",
+            "pedagogical_level": "",
+            "title": "Derivation",
+            "body": "Derivation text",
+        },
+        {
+            "block_id": "sr.inertial_frames.explanation",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 30,
+            "kind": "explanation",
+            "pedagogical_level": "",
+            "title": "Explanation",
+            "body": "Explanation text",
+        },
+    ]
+    assert concept_data["sr.inertial_frames"]["svg_icon"].startswith("<svg")
+    assert concept_data["sr.inertial_frames"]["svg_detail"].startswith("<svg")
+    assert (
+        concept_data["sr.inertial_frames"]["svg_graphic"]
+        == concept_data["sr.inertial_frames"]["svg_detail"]
+    )
+    assert concept_data["sr.inertial_frames"]["svg_icon_caption"] == "Icon caption"
+    assert concept_data["sr.inertial_frames"]["svg_detail_caption"] == "Icon caption"
+    assert concept_data["sr.inertial_frames"]["study_questions"] == [
+        {
+            "question_id": "sr.inertial_frames.q1",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "First question?",
+            "question": "First question?",
+            "answer": "First answer.",
+        },
+        {
+            "question_id": "sr.inertial_frames.q2",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 20,
+            "pedagogical_level": "intro",
+            "question_type": "short_answer",
+            "prompt": "Second question?",
+            "question": "Second question?",
+            "answer": "Second answer.",
+        },
+    ]
+    assert concept_data["sr.inertial_frames"]["references"] == [
+        {
+            "reference_id": "ttm.sr_cf",
+            "reference_type": "book",
+            "citation": "Citation text.",
+            "title": "Title",
+            "authors": "Author",
+            "year": "2017",
+            "url": "",
+            "locator": "p. 12",
+            "note": "See derivation.",
+            "source_type": "content_block",
+            "source_id": "sr.inertial_frames.derivation",
+        },
     ]
 
 
@@ -82,6 +214,7 @@ def test_build_concept_data_uses_empty_graphics_for_unknown_node_ids():
     assert concept_data["99.99"]["svg_detail"] == ""
     assert concept_data["99.99"]["svg_graphic"] == ""
     assert concept_data["99.99"]["study_questions"] == []
+    assert concept_data["99.99"]["references"] == []
 
 
 def test_build_concepts_returns_structured_model():
@@ -89,15 +222,45 @@ def test_build_concepts_returns_structured_model():
         {
             "id": "1.1",
             "label": "Inertial frames",
-            "definition_new": "Definition text",
-            "derivation_new": "",
-            "explanation_new": "Explanation text",
-            "study_question_1": "Question?",
-            "study_answer_1": "Answer.",
+        },
+    ])
+    content_blocks_df = pd.DataFrame([
+        {
+            "block_id": "1.1.definition",
+            "concept_id": "1.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Definition text",
+        },
+        {
+            "block_id": "1.1.explanation",
+            "concept_id": "1.1",
+            "sequence": 30,
+            "kind": "explanation",
+            "pedagogical_level": "",
+            "title": "Explanation",
+            "body": "Explanation text",
+        },
+    ])
+    study_questions_df = pd.DataFrame([
+        {
+            "question_id": "1.1.q1",
+            "concept_id": "1.1",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "Question?",
+            "answer": "Answer.",
         },
     ])
 
-    concepts = build_concepts(nodes_df)
+    concepts = build_concepts(
+        nodes_df,
+        content_blocks_df=content_blocks_df,
+        study_questions_df=study_questions_df,
+    )
 
     assert len(concepts) == 1
     assert concepts[0].id == "1.1"
@@ -111,7 +274,196 @@ def test_build_concepts_returns_structured_model():
         "",
         "Explanation text",
     ]
-    assert concepts[0].study_questions[0].question == "Question?"
+    assert [block.block_id for block in concepts[0].content_blocks] == [
+        "1.1.definition",
+        "1.1.explanation",
+    ]
+    assert concepts[0].study_questions[0].prompt == "Question?"
+
+
+def test_build_study_questions_from_df_uses_non_empty_prompts_only():
+    study_questions_df = pd.DataFrame([
+        {
+            "question_id": " q2 ",
+            "concept_id": " c1 ",
+            "sequence": 20,
+            "pedagogical_level": " intro ",
+            "question_type": " calculation ",
+            "prompt": " Second? ",
+            "answer": " Second answer. ",
+        },
+        {
+            "question_id": " q1 ",
+            "concept_id": " c1 ",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": " First? ",
+            "answer": "",
+        },
+        {
+            "question_id": " skipped ",
+            "concept_id": " c1 ",
+            "sequence": 30,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "",
+            "answer": "No prompt.",
+        },
+    ])
+
+    questions = build_study_questions_from_df(study_questions_df)
+
+    assert [question.to_viewer_data() for question in questions] == [
+        {
+            "question_id": "q1",
+            "concept_id": "c1",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "First?",
+            "question": "First?",
+            "answer": "",
+        },
+        {
+            "question_id": "q2",
+            "concept_id": "c1",
+            "sequence": 20,
+            "pedagogical_level": "intro",
+            "question_type": "calculation",
+            "prompt": "Second?",
+            "question": "Second?",
+            "answer": "Second answer.",
+        },
+    ]
+
+
+def test_build_concept_references_from_dfs_links_to_concepts_blocks_and_questions():
+    references_df = pd.DataFrame([
+        {
+            "reference_id": "ref.a",
+            "reference_type": "book",
+            "citation": "A citation.",
+            "authors": "",
+            "title": "Reference A",
+            "year": "",
+            "url": "",
+            "note": "",
+        },
+    ])
+    reference_links_df = pd.DataFrame([
+        {
+            "source_type": "concept",
+            "source_id": "concept.a",
+            "reference_id": "ref.a",
+            "locator": "",
+            "note": "Concept-level note.",
+        },
+        {
+            "source_type": "content_block",
+            "source_id": "concept.b.definition",
+            "reference_id": "ref.a",
+            "locator": "section 2",
+            "note": "",
+        },
+        {
+            "source_type": "study_question",
+            "source_id": "concept.c.q1",
+            "reference_id": "ref.a",
+            "locator": "",
+            "note": "",
+        },
+    ])
+    content_blocks = [
+        build_concepts(
+            pd.DataFrame([{"id": "concept.b", "label": "B"}]),
+            content_blocks_df=pd.DataFrame([
+                {
+                    "block_id": "concept.b.definition",
+                    "concept_id": "concept.b",
+                    "sequence": 10,
+                    "kind": "definition",
+                    "pedagogical_level": "",
+                    "title": "Definition",
+                    "body": "Body",
+                },
+            ]),
+        )[0].content_blocks[0],
+    ]
+    study_questions = build_study_questions_from_df(pd.DataFrame([
+        {
+            "question_id": "concept.c.q1",
+            "concept_id": "concept.c",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "Question?",
+            "answer": "",
+        },
+    ]))
+
+    references = build_concept_references_from_dfs(
+        references_df,
+        reference_links_df,
+        content_blocks,
+        study_questions,
+    )
+
+    assert [(concept_id, ref.source_type, ref.source_id) for concept_id, ref in references] == [
+        ("concept.a", "concept", "concept.a"),
+        ("concept.b", "content_block", "concept.b.definition"),
+        ("concept.c", "study_question", "concept.c.q1"),
+    ]
+
+
+def test_build_concepts_groups_content_blocks_into_legacy_viewer_sections():
+    nodes_df = pd.DataFrame([
+        {
+            "id": "1.1",
+            "label": "Inertial frames",
+        },
+    ])
+    content_blocks_df = pd.DataFrame([
+        {
+            "block_id": "1.1.definition.1",
+            "concept_id": "1.1",
+            "sequence": 20,
+            "kind": "definition",
+            "pedagogical_level": "intro",
+            "title": "Definition",
+            "body": "Second definition block",
+        },
+        {
+            "block_id": "1.1.definition.0",
+            "concept_id": "1.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "intro",
+            "title": "Definition",
+            "body": "First definition block",
+        },
+        {
+            "block_id": "1.1.explanation",
+            "concept_id": "1.1",
+            "sequence": 30,
+            "kind": "explanation",
+            "pedagogical_level": "",
+            "title": "Explanation",
+            "body": "Explanation block",
+        },
+    ])
+
+    concepts = build_concepts(nodes_df, content_blocks_df=content_blocks_df)
+
+    assert [section.to_viewer_data() for section in concepts[0].sections] == [
+        {
+            "key": "definition",
+            "title": "Definition",
+            "text": "First definition block\n\nSecond definition block",
+        },
+        {"key": "derivation", "title": "Derivation", "text": ""},
+        {"key": "explanation", "title": "Explanation", "text": "Explanation block"},
+    ]
 
 
 def test_normalise_edges_requires_expected_columns():
@@ -265,38 +617,3 @@ def test_load_edge_key_parses_metadata_and_skips_blank_relations(tmp_path):
             "example": "A uses B",
         },
     }
-
-
-def test_find_edge_key_path_prefers_configured_existing_path(tmp_path):
-    edges_path = tmp_path / "data" / "edges.csv"
-    sibling_key_path = edges_path.parent / "edges_key.csv"
-    configured_key_path = tmp_path / "configured.csv"
-    edges_path.parent.mkdir()
-    sibling_key_path.write_text("", encoding="utf-8")
-    configured_key_path.write_text("", encoding="utf-8")
-
-    assert find_edge_key_path(edges_path, str(configured_key_path)) == configured_key_path
-
-
-def test_find_edge_key_path_rejects_missing_configured_path(tmp_path):
-    edges_path = tmp_path / "edges.csv"
-    configured_key_path = tmp_path / "missing.csv"
-
-    with pytest.raises(FileNotFoundError) as exc:
-        find_edge_key_path(edges_path, str(configured_key_path))
-
-    assert str(exc.value) == (
-        f"Configured edge key file does not exist: {configured_key_path}"
-    )
-
-
-def test_find_edge_key_path_uses_sibling_when_present(tmp_path):
-    edges_path = tmp_path / "edges.csv"
-    sibling_key_path = tmp_path / "edges_key.csv"
-    sibling_key_path.write_text("", encoding="utf-8")
-
-    assert find_edge_key_path(edges_path, None) == sibling_key_path
-
-
-def test_find_edge_key_path_returns_none_without_configured_or_sibling_key(tmp_path):
-    assert find_edge_key_path(Path(tmp_path / "edges.csv"), None) is None

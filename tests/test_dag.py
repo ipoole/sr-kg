@@ -171,6 +171,10 @@ def test_format_dag_reports_includes_core_diagnostics_and_truncates_lists():
     assert "Edge direction is source -> target." in text
     assert "PREREQ: nodes=7, edges=5, dag=yes, cycles=0" in text
     assert "Layer-forward directed edges (source layer < target layer): 1" in text
+    assert (
+        "Same-layer order violations "
+        "(lower-display-numbered source points to higher-display-numbered target): 1"
+    ) in text
     assert "1.2 Early Forward Source [L1] PREREQ 2.4 Forward Target [L2]" in text
     assert "Same-layer directed edges: 1" in text
     assert "Transitively redundant direct edges (A -> C also has A -> ... -> C): 1" in text
@@ -212,7 +216,7 @@ def test_load_dag_reports_uses_directed_edge_key_metadata_and_default_direction(
         },
     ]).to_csv(edge_key_path, index=False)
 
-    reports = load_dag_reports(nodes_path, edges_path)
+    reports = load_dag_reports(nodes_path, edges_path, edge_key_path=edge_key_path)
 
     assert [report.name for report in reports] == [
         "DIRECTED",
@@ -247,6 +251,7 @@ def test_load_dag_reports_explicit_relations_override_edge_key_direction(tmp_pat
         nodes_path,
         edges_path,
         relations=["UNDIRECTED"],
+        edge_key_path=edge_key_path,
     )
 
     assert len(reports) == 1
@@ -276,7 +281,7 @@ def test_load_dag_reports_rejects_empty_default_directed_relation_set(tmp_path):
     ]).to_csv(edge_key_path, index=False)
 
     with pytest.raises(ValueError) as exc:
-        load_dag_reports(nodes_path, edges_path)
+        load_dag_reports(nodes_path, edges_path, edge_key_path=edge_key_path)
 
     assert str(exc.value) == (
         "No directed relations were found for DAG diagnostics. "

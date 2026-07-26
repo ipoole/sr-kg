@@ -1,9 +1,16 @@
-from srkg.model import Concept, ConceptSection, StudyQuestion
+from srkg.model import (
+    Concept,
+    ConceptReference,
+    ConceptSection,
+    ContentBlock,
+    StudyQuestion,
+)
 
 
-def test_concept_serializes_sections_and_legacy_text_fields():
+def test_concept_serializes_sections_and_study_questions():
     concept = Concept(
-        id="1.1",
+        id="sr.inertial_frames",
+        display_id="1.1",
         label="Inertial frames",
         layer="1",
         layer_title="Foundations",
@@ -13,39 +20,96 @@ def test_concept_serializes_sections_and_legacy_text_fields():
             ConceptSection(key="explanation", title="Explanation", text="Explanation text"),
         ],
         study_questions=[
-            StudyQuestion(question="Question?", answer="Answer."),
+            StudyQuestion(
+                question_id="sr.inertial_frames.q1",
+                concept_id="sr.inertial_frames",
+                sequence=10,
+                prompt="Question?",
+                answer="Answer.",
+                question_type="short_answer",
+            ),
+        ],
+        references=[
+            ConceptReference(
+                reference_id="ttm.sr_cf",
+                reference_type="book",
+                citation="Citation.",
+                title="Title",
+                locator="chapter 1",
+            ),
         ],
     )
 
     data = concept.to_viewer_data()
 
-    assert data["definition_new"] == "Definition text"
-    assert data["derivation_new"] == ""
-    assert data["explanation_new"] == "Explanation text"
+    assert data["display_id"] == "1.1"
+    assert "definition_new" not in data
+    assert "derivation_new" not in data
+    assert "explanation_new" not in data
     assert data["sections"] == [
         {"key": "definition", "title": "Definition", "text": "Definition text"},
         {"key": "derivation", "title": "Derivation", "text": ""},
         {"key": "explanation", "title": "Explanation", "text": "Explanation text"},
     ]
     assert data["study_questions"] == [
-        {"question": "Question?", "answer": "Answer."},
+        {
+            "question_id": "sr.inertial_frames.q1",
+            "concept_id": "sr.inertial_frames",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "Question?",
+            "question": "Question?",
+            "answer": "Answer.",
+        },
+    ]
+    assert data["references"] == [
+        {
+            "reference_id": "ttm.sr_cf",
+            "reference_type": "book",
+            "citation": "Citation.",
+            "title": "Title",
+            "authors": "",
+            "year": "",
+            "url": "",
+            "locator": "chapter 1",
+            "note": "",
+            "source_type": "",
+            "source_id": "",
+        },
     ]
 
 
-def test_concept_uses_explicit_legacy_text_when_present():
+def test_concept_serializes_content_blocks_alongside_viewer_sections():
     concept = Concept(
         id="1.1",
         label="Inertial frames",
-        legacy_text={
-            "definition_new": "Legacy definition",
-            "derivation_new": "Legacy derivation",
-            "explanation_new": "Legacy explanation",
-        },
+        sections=[
+            ConceptSection(key="definition", title="Definition", text="Definition text"),
+        ],
+        content_blocks=[
+            ContentBlock(
+                block_id="1.1.definition",
+                concept_id="1.1",
+                sequence=10,
+                kind="definition",
+                pedagogical_level="intro",
+                title="Definition",
+                body="Definition text",
+            ),
+        ],
     )
 
     data = concept.to_viewer_data()
 
-    assert data["definition_new"] == "Legacy definition"
-    assert data["derivation_new"] == "Legacy derivation"
-    assert data["explanation_new"] == "Legacy explanation"
-    assert data["sections"] == []
+    assert data["content_blocks"] == [
+        {
+            "block_id": "1.1.definition",
+            "concept_id": "1.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "intro",
+            "title": "Definition",
+            "body": "Definition text",
+        },
+    ]

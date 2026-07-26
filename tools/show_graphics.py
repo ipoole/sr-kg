@@ -32,6 +32,7 @@ from srkg.concept_svg_graphics import createSvgGraphic
 @dataclass(frozen=True)
 class Concept:
     id: str
+    display_id: str
     label: str
     layer: str
     icon_caption: str
@@ -39,7 +40,7 @@ class Concept:
 
 
 def concept_sort_key(concept_id: str) -> tuple[int, ...]:
-    """Sort dotted numeric concept IDs numerically where possible."""
+    """Sort dotted display IDs numerically where possible."""
     parts = []
     for part in concept_id.split("."):
         try:
@@ -55,6 +56,7 @@ def load_concepts(designs_path: Path) -> list[Concept]:
         concepts = [
             Concept(
                 id=(row.get("id") or "").strip(),
+                display_id=(row.get("display_id") or row.get("id") or "").strip(),
                 label=(row.get("label") or "").strip(),
                 layer=(row.get("layer") or "").strip(),
                 icon_caption=(row.get("icon_caption") or "").strip(),
@@ -62,14 +64,17 @@ def load_concepts(designs_path: Path) -> list[Concept]:
             )
             for row in reader
         ]
-    return sorted((c for c in concepts if c.id), key=lambda c: concept_sort_key(c.id))
+    return sorted((c for c in concepts if c.id), key=lambda c: concept_sort_key(c.display_id))
 
 
 def select_concepts(concepts: list[Concept], patterns: list[str]) -> list[Concept]:
     selected: list[Concept] = []
     seen: set[str] = set()
     for pattern in patterns:
-        matches = [c for c in concepts if fnmatch.fnmatchcase(c.id, pattern)]
+        matches = [
+            c for c in concepts
+            if fnmatch.fnmatchcase(c.display_id, pattern) or fnmatch.fnmatchcase(c.id, pattern)
+        ]
         for concept in matches:
             if concept.id not in seen:
                 selected.append(concept)
@@ -87,13 +92,13 @@ def render_svg_cell(concept_id: str, variant: str) -> str:
 def render_html(concepts: list[Concept], patterns: list[str]) -> str:
     rows = []
     for concept in concepts:
-        icon_svg = render_svg_cell(concept.id, "icon")
-        detail_svg = render_svg_cell(concept.id, "detail")
+        icon_svg = render_svg_cell(concept.display_id, "icon")
+        detail_svg = render_svg_cell(concept.display_id, "detail")
         rows.append(
             f"""
             <section class="concept-card" id="concept-{escape(concept.id)}">
               <header>
-                <div class="concept-id">{escape(concept.id)}</div>
+                <div class="concept-id">{escape(concept.display_id)}</div>
                 <div>
                   <h2>{escape(concept.label)}</h2>
                   <p>Layer {escape(concept.layer)}</p>
@@ -273,12 +278,12 @@ def main() -> None:
         "patterns",
         nargs="*",
         default=["*.*"],
-        help="Concept ID or wildcard pattern, such as 7.6, '7.*', or '*.*'.",
+        help="Display ID or concept ID wildcard pattern, such as 7.6, '7.*', or 'sr.*'.",
     )
     parser.add_argument(
         "--designs",
         default="data/concept_graphic_designs.csv",
-        help="CSV containing concept IDs and labels.",
+        help="CSV containing concept IDs, display IDs, and labels.",
     )
     parser.add_argument(
         "--out",

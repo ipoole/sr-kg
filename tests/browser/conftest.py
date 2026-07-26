@@ -6,7 +6,7 @@ import shutil
 import pandas as pd
 import pytest
 
-from srkg.pipeline import generate_viewer
+from srkg.pipeline import generate_viewer_from_root
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -40,27 +40,83 @@ class BrowserGraph:
 
 
 def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+    (tmp_path / "manifest.yaml").write_text(
+        "\n".join([
+            "name: browser-test-kb",
+            "files:",
+            "  nodes: nodes.csv",
+            "  edges: edges.csv",
+            "  edge_key: edges_key.csv",
+            "  content_blocks: content_blocks.csv",
+            "  study_questions: study_questions.csv",
+            "  references: references.csv",
+            "  reference_links: reference_links.csv",
+            "",
+        ]),
+        encoding="utf-8",
+    )
     nodes_path = tmp_path / "nodes.csv"
     edges_path = tmp_path / "edges.csv"
     edge_key_path = tmp_path / "edges_key.csv"
+    content_blocks_path = tmp_path / "content_blocks.csv"
+    study_questions_path = tmp_path / "study_questions.csv"
     pd.DataFrame([
         {
             "id": "1.1",
+            "display_id": "1.1",
             "label": "Alpha",
             "layer": "1",
             "layer_title": "Foundations",
-            "definition_new": "Alpha definition",
-            "derivation_new": "",
-            "explanation_new": "",
         },
         {
             "id": "2.1",
+            "display_id": "2.1",
             "label": "Beta",
             "layer": "2",
             "layer_title": "Applications",
-            "definition_new": "Beta definition \\(E=mc^2\\)",
-            "derivation_new": "",
-            "explanation_new": (
+        },
+        {
+            "id": "2.2",
+            "display_id": "2.2",
+            "label": "Gamma",
+            "layer": "2",
+            "layer_title": "Applications",
+        },
+        {
+            "id": "3.1",
+            "display_id": "3.1",
+            "label": "Delta",
+            "layer": "3",
+            "layer_title": "Synthesis",
+        },
+    ]).to_csv(nodes_path, index=False)
+    pd.DataFrame([
+        {
+            "block_id": "1.1.definition",
+            "concept_id": "1.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Alpha definition",
+        },
+        {
+            "block_id": "2.1.definition",
+            "concept_id": "2.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Beta definition \\(E=mc^2\\)",
+        },
+        {
+            "block_id": "2.1.explanation",
+            "concept_id": "2.1",
+            "sequence": 30,
+            "kind": "explanation",
+            "pedagogical_level": "",
+            "title": "Explanation",
+            "body": (
                 "Beta explains alpha. "
                 "\\optional_details{Why this matters}{The optional body can include "
                 "\\(x^{2}+y^{2}\\) and a \\cref{link to Alpha}{1.1}.} "
@@ -69,24 +125,24 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             ),
         },
         {
-            "id": "2.2",
-            "label": "Gamma",
-            "layer": "2",
-            "layer_title": "Applications",
-            "definition_new": "Gamma definition",
-            "derivation_new": "",
-            "explanation_new": "",
+            "block_id": "2.2.definition",
+            "concept_id": "2.2",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Gamma definition",
         },
         {
-            "id": "3.1",
-            "label": "Delta",
-            "layer": "3",
-            "layer_title": "Synthesis",
-            "definition_new": "Delta definition",
-            "derivation_new": "",
-            "explanation_new": "",
+            "block_id": "3.1.definition",
+            "concept_id": "3.1",
+            "sequence": 10,
+            "kind": "definition",
+            "pedagogical_level": "",
+            "title": "Definition",
+            "body": "Delta definition",
         },
-    ]).to_csv(nodes_path, index=False)
+    ]).to_csv(content_blocks_path, index=False)
     pd.DataFrame([
         {
             "source": "3.1",
@@ -129,6 +185,34 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "example": "Alpha is related to Beta",
         },
     ]).to_csv(edge_key_path, index=False)
+    pd.DataFrame([
+        {
+            "question_id": "2.1.q1",
+            "concept_id": "2.1",
+            "sequence": 10,
+            "pedagogical_level": "",
+            "question_type": "short_answer",
+            "prompt": "Beta question?",
+            "answer": "Beta answer.",
+        },
+    ]).to_csv(study_questions_path, index=False)
+    pd.DataFrame(columns=[
+        "reference_id",
+        "reference_type",
+        "citation",
+        "authors",
+        "title",
+        "year",
+        "url",
+        "note",
+    ]).to_csv(tmp_path / "references.csv", index=False)
+    pd.DataFrame(columns=[
+        "source_type",
+        "source_id",
+        "reference_id",
+        "locator",
+        "note",
+    ]).to_csv(tmp_path / "reference_links.csv", index=False)
     return nodes_path, edges_path, edge_key_path
 
 
@@ -164,12 +248,10 @@ def browser_graph(tmp_path):
         reason="Playwright is not installed in the sr-kg environment",
     )
 
-    nodes_path, edges_path, edge_key_path = _write_browser_fixture(tmp_path)
+    _write_browser_fixture(tmp_path)
     output_path = tmp_path / "viewer.html"
-    generate_viewer(
-        nodes_path=str(nodes_path),
-        edges_path=str(edges_path),
-        edge_key_path=str(edge_key_path),
+    generate_viewer_from_root(
+        data_root=str(tmp_path),
         out_path=str(output_path),
         height="100vh",
         width="100vw",

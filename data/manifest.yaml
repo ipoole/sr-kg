@@ -1,0 +1,10 @@
+name: sr-kg
+files:
+  nodes: nodes.csv
+  edges: edges.csv
+  edge_key: edges_key.csv
+  content_blocks: content_blocks.csv
+  study_questions: study_questions.csv
+  references: references.csv
+  reference_links: reference_links.csv
+  graphic_designs: concept_graphic_designs.csv

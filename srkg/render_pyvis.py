@@ -139,6 +139,7 @@ def write_pyvis_html(
 
     for _, row in nodes_df.iterrows():
         cid = row["id"]
+        display_id = str(row.get("display_id", "")).strip() or str(cid)
         label = str(row.get("label", "")).strip()
         layer = str(row.get("layer", "")).strip()
 
@@ -149,7 +150,7 @@ def write_pyvis_html(
 
         colour = LAYER_COLOURS[(layer_int - 1) % len(LAYER_COLOURS)] if layer_int > 0 else "#999999"
 
-        title = f"{cid} {html.escape(label)}"
+        title = f"{display_id} {html.escape(label)}"
 
         importance = incoming.get(cid, 0)
         size = NODE_CIRCLE_BASE_SIZE + NODE_CIRCLE_IMPORTANCE_SCALE * math.sqrt(importance + 1)

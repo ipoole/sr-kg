@@ -168,7 +168,7 @@
 
         function visibleConceptLabel(nodeId) {
           var concept = getConcept(nodeId) || {};
-          return '<span class="kg-node-label-id">' + escapeHtml(nodeId) + '</span>' +
+          return '<span class="kg-node-label-id">' + escapeHtml(conceptDisplayId(nodeId)) + '</span>' +
             renderConceptText(concept.label || "");
         }
 
@@ -1130,7 +1130,7 @@
           var el = node.parentElement;
           if (!el) { return true; }
           return Boolean(el.closest(
-            "mark, .study-questions, svg, mjx-container, script, style"
+            "mark, .study-questions, .concept-references, svg, mjx-container, script, style"
           ));
         }
 
@@ -1358,6 +1358,16 @@
           return conceptData[String(nodeId)] || null;
         }
 
+        function conceptDisplayId(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return String(concept.display_id || nodeId);
+        }
+
+        function conceptTitleText(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return (conceptDisplayId(nodeId) + " " + String(concept.label || "")).trim();
+        }
+
         function conceptHash(nodeId) {
           return "#concept-" + encodeURIComponent(String(nodeId));
         }
@@ -1397,8 +1407,8 @@
         }
 
         function compareConceptIds(a, b) {
-          var aa = conceptIdParts(a);
-          var bb = conceptIdParts(b);
+          var aa = conceptIdParts(conceptDisplayId(a));
+          var bb = conceptIdParts(conceptDisplayId(b));
           var len = Math.max(aa.length, bb.length);
           for (var i = 0; i < len; i++) {
             if (aa[i] === undefined) { return -1; }
@@ -1418,7 +1428,7 @@
           var candidates = [
             node.layerGroup,
             concept.layer,
-            String(nodeId).split(".", 1)[0]
+            String(conceptDisplayId(nodeId)).split(".", 1)[0]
           ];
           for (var i = 0; i < candidates.length; i++) {
             var value = parseInt(String(candidates[i] || "").trim(), 10);
@@ -1524,14 +1534,6 @@
           return titles;
         }
 
-        function legacyConceptSections(concept) {
-          return [
-            {key: "definition", title: "Definition", text: concept.definition_new || ""},
-            {key: "derivation", title: "Derivation", text: concept.derivation_new || ""},
-            {key: "explanation", title: "Explanation", text: concept.explanation_new || ""}
-          ];
-        }
-
         function conceptSections(concept) {
           if (concept && Array.isArray(concept.sections) && concept.sections.length > 0) {
             return concept.sections.map(function(section) {
@@ -1542,7 +1544,7 @@
               };
             });
           }
-          return legacyConceptSections(concept || {});
+          return [];
         }
 
         function conceptSectionText(concept, key) {
@@ -1575,7 +1577,7 @@
 
         function conceptTooltipHtml(nodeId) {
           var concept = getConcept(nodeId) || {};
-          var title = String(nodeId) + " " + String(concept.label || "");
+          var title = conceptTitleText(nodeId);
           var definition = conceptSectionText(concept, "definition");
           var html = '<div class="kg-tooltip-title">' + renderTooltipText(title) + "</div>";
           if (definition) {
@@ -1605,7 +1607,8 @@
         function searchFieldsForConcept(nodeId) {
           var concept = getConcept(nodeId) || {};
           var fields = [
-            {name: "ID", value: String(nodeId)},
+            {name: "Display ID", value: conceptDisplayId(nodeId)},
+            {name: "Concept ID", value: String(nodeId)},
             {name: "Title", value: concept.label || ""}
           ].concat(conceptSections(concept).map(function(section) {
             return {name: section.title || section.key || "Section", value: section.text};
@@ -1851,7 +1854,7 @@
           var concept = getConcept(nodeId);
           if (!concept) {
             document.getElementById("info_panel").innerHTML =
-              "<h2>" + escapeHtml(nodeId) + "</h2>" +
+              "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
               "<p>No concept data was found for this node.</p>";
             typesetInfoPanel(options);
             return;
@@ -1862,7 +1865,7 @@
           if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
 
           var html = "";
-          html += "<h2>" + escapeHtml(nodeId) + " " + renderConceptText(concept.label) + "</h2>";
+          html += "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) + "</h2>";
           if (layerParts.length > 0) {
             html += "<p>" + layerParts.join(" - ") + "</p>";
           }
@@ -1885,7 +1888,7 @@
             html += '<details class="study-questions">';
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
-              var question = item && item.question ? item.question : "";
+              var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
               var answer = item && item.answer ? item.answer : "";
               if (!question) { return; }
               html += '<section class="study-question">';
@@ -1899,6 +1902,26 @@
               }
               html += "</section>";
             });
+            html += "</details>";
+          }
+          var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
+          if (conceptReferences.length > 0) {
+            html += '<details class="concept-references">';
+            html += "<summary>References</summary>";
+            html += '<ul class="concept-reference-list">';
+            conceptReferences.forEach(function(item) {
+              if (!item || !item.citation) { return; }
+              var locator = item.locator ? ", " + escapeHtml(item.locator) : "";
+              var note = item.note ? '<div class="concept-reference-note">' + renderConceptText(item.note) + "</div>" : "";
+              html += '<li class="concept-reference">';
+              if (item.url) {
+                html += '<a href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer">' + renderConceptText(item.citation) + "</a>";
+              } else {
+                html += renderConceptText(item.citation);
+              }
+              html += locator + note + "</li>";
+            });
+            html += "</ul>";
             html += "</details>";
           }
           var panel = document.getElementById("info_panel");
@@ -2304,7 +2327,8 @@
             pushConceptHistory(nodeId, graphViewHistoryMode(currentView));
           }
           if (statusPrefix) {
-            document.getElementById("kg_status").innerText = statusPrefix + " " + nodeId + ".";
+            document.getElementById("kg_status").innerText =
+              statusPrefix + " " + conceptDisplayId(nodeId) + ".";
           }
         }
 
@@ -2320,9 +2344,10 @@
           }
 
           var neighbourCount = Math.max(0, Object.keys(enabledNeighbourhoodNodes(nodeId, radius)).length - 1);
+          var displayId = conceptDisplayId(nodeId);
           document.getElementById("kg_status").innerText =
-            (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
-            "Neighbourhood (" + radius + ") mode: " + nodeId + " plus " + neighbourCount +
+            (statusPrefix ? statusPrefix + " " + displayId + ". " : "") +
+            "Neighbourhood (" + radius + ") mode: " + displayId + " plus " + neighbourCount +
             " neighbour" + (neighbourCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
         }
@@ -2338,9 +2363,10 @@
           }
 
           var descendantCount = Math.max(0, Object.keys(enabledDirectedDescendants(nodeId)).length - 1);
+          var displayId = conceptDisplayId(nodeId);
           document.getElementById("kg_status").innerText =
-            (statusPrefix ? statusPrefix + " " + nodeId + ". " : "") +
-            "Descendants mode: " + nodeId + " plus " + descendantCount +
+            (statusPrefix ? statusPrefix + " " + displayId + ". " : "") +
+            "Descendants mode: " + displayId + " plus " + descendantCount +
             " reachable node" + (descendantCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
         }
@@ -2354,15 +2380,18 @@
           ids.forEach(function(id) {
             var concept = getConcept(id);
             var label = searchDisplayText(concept.label || "");
+            var displayId = conceptDisplayId(id);
             var titleHtml = '<span class="kg-search-hit-title">' +
-              '<span class="kg-concept-id">' + highlightedSearchText(id, q) + "</span> " +
+              '<span class="kg-concept-id">' + highlightedSearchText(displayId, q) + "</span> " +
               highlightedSearchText(label, q) +
               "</span>";
             var snippetHtml = "";
 
             if (q) {
               var snippets = matchingSearchFields(id, q).filter(function(field) {
-                return field.name !== "ID" && field.name !== "Title";
+                return field.name !== "Display ID" &&
+                  field.name !== "Concept ID" &&
+                  field.name !== "Title";
               }).slice(0, 2);
               if (snippets.length > 0) {
                 snippetHtml += '<span class="kg-search-snippets">';
@@ -2469,7 +2498,7 @@
           }
           if (statusPrefix) {
             document.getElementById("kg_status").innerText =
-              statusPrefix + " " + nodeId + ". Graph hidden.";
+              statusPrefix + " " + conceptDisplayId(nodeId) + ". Graph hidden.";
           }
         }
 
@@ -2569,7 +2598,7 @@
 
           if (!preserveStatus) {
             document.getElementById("kg_status").innerText =
-              "Selected " + nodeId + ": showing immediate neighbours.";
+              "Selected " + conceptDisplayId(nodeId) + ": showing immediate neighbours.";
           }
         };
 
@@ -2624,7 +2653,7 @@
           if (!preserveStatus) {
             var neighbourCount = Math.max(0, visibleIds.length - 1);
             document.getElementById("kg_status").innerText =
-              "Neighbourhood (" + radius + ") mode: " + nodeId + " plus " + neighbourCount +
+              "Neighbourhood (" + radius + ") mode: " + conceptDisplayId(nodeId) + " plus " + neighbourCount +
               " neighbour" + (neighbourCount === 1 ? "" : "s") +
               ". Click a visible node to walk one step.";
           }
@@ -2665,7 +2694,7 @@
           if (!preserveStatus) {
             var descendantCount = Math.max(0, visibleIds.length - 1);
             document.getElementById("kg_status").innerText =
-              "Descendants mode: " + nodeId + " plus " + descendantCount +
+              "Descendants mode: " + conceptDisplayId(nodeId) + " plus " + descendantCount +
               " reachable node" + (descendantCount === 1 ? "" : "s") +
               ". Click a visible node to walk one step.";
           }
