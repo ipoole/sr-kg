@@ -1,6 +1,6 @@
 # Simplified Content Block Strategy
 
-Captured on 2026-07-27.
+Captured on 2026-07-27. Revised on 2026-07-28.
 
 ## Decision
 
@@ -31,12 +31,21 @@ title
 body
 ```
 
-The `kind` vocabulary still needs design, but it should be semantic. Candidate
-kinds include:
+Every content block should have a short, non-empty `title`. The viewer may or
+may not display the title in a particular view, but the title gives the block a
+clear editorial handle. It can also support folded-section handles, inline
+subheadings, local tables of contents, search results, notes, references, and
+review workflows.
+
+The `kind` vocabulary should be semantic, not presentational. It should describe
+what the block is, not how the viewer happens to render it. The initial accepted
+kinds are:
 
 ```text
 definition
 intuition
+explanation
+construction
 derivation
 derivation_step
 example
@@ -46,6 +55,10 @@ warning
 historical_note
 summary
 ```
+
+The meaning of each accepted kind is recorded in `KB_SCHEMA.md`. Expand the
+vocabulary only when content curation exposes a recurring need. Multiple blocks
+of the same kind within one concept are allowed and expected.
 
 ## Viewer Policy
 
@@ -58,7 +71,6 @@ default_visibility
 disclosure_mode
 depth
 detail
-pedagogical_level
 ```
 
 should not be added to the source KB at this stage. These are viewer policy
@@ -75,7 +87,14 @@ worked_example -> shown after derivation
 ```
 
 Those choices belong initially in the viewer implementation, not in the authored
-KB.
+KB. This is analogous to a stylesheet or LaTeX style: the KB supplies semantic
+block kinds, and the viewer maps those kinds to presentation.
+
+The viewer should not be forced to render blocks strictly in source sequence in
+every view. The `sequence` field is the authored narrative order within a
+concept. A viewer may still group references at the end, fold examples, pull
+misconceptions into callouts, generate a local contents list, or show a
+kind-filtered view.
 
 ## Curation Workflow
 
@@ -90,6 +109,23 @@ The next content-building workflow should be:
 The block `sequence` can come directly from the exposition order. We do not need
 topological sorting, graph analysis, or derived ordering for the first step.
 
+Curation should proceed concept by concept, starting from the earliest/foundation
+concepts and working upward through the atlas. For each concept, aim to finish
+the coherent unit before moving on:
+
+```text
+exposition
+block split
+kind assignment
+study questions
+references
+concept edges
+graphics review where relevant
+```
+
+Concept edges added during this process should mostly point to earlier concepts,
+though this is a guideline rather than a hard rule.
+
 ## What We Are Not Doing Yet
 
 For the immediate next phase, do not add:
@@ -102,14 +138,33 @@ topological ordering
 global PL / depth / detail fields
 graph-derived visibility
 block-edge data in the JS viewer model
+parent_block_id / hierarchical content blocks
 ```
 
 The fine-grained graph experiment remains useful design exploration,
 particularly for possible future derivation tracing. But it is not the path for
 the immediate content migration.
 
+Hierarchical content blocks are feasible later if flat ordered blocks become
+insufficient. A future `parent_block_id` could allow whole sections to fold,
+hide, or move together. Do not add it until real curated content demonstrates
+the need.
+
+Richer atlas-level concept edge types also remain deferred. The current graph
+uses `PREREQUISITE`, `DERIVES_FROM`, and `RELATED`. During curation, note where
+`RELATED` feels too vague. Promote only recurring relationships into new edge
+types, such as:
+
+```text
+SPECIAL_CASE_OF
+GENERALIZES
+MOTIVATES
+CONTRASTS_WITH
+EXAMPLE_OF
+USES_NOTATION_FROM
+```
+
 ## Principle
 
 The concept graph is the atlas. Content blocks are the readable pages. Block
 kind is authored meaning; visibility and disclosure are viewer policy.
-

@@ -32,26 +32,29 @@ CONTENT_BLOCK_COLUMNS = (
     "concept_id",
     "sequence",
     "kind",
-    "pedagogical_level",
     "title",
     "body",
 )
-CONTENT_BLOCK_KINDS = {
-    "definition",
-    "derivation",
-    "explanation",
-    "intuition",
-    "construction",
-    "optional_detail",
-    "misconception",
-    "worked_example",
-    "historical_note",
+CONTENT_BLOCK_KIND_DESCRIPTIONS = {
+    "overview": "A short orientation block stating what the concept will do.",
+    "definition": "A precise statement of what the concept is.",
+    "intuition": "A qualitative mental model or physical interpretation.",
+    "explanation": "General explanatory prose that develops the concept.",
+    "construction": "A setup or construction that builds an object or argument.",
+    "derivation": "A coherent mathematical derivation or proof.",
+    "derivation_step": "A smaller algebraic or logical step inside a derivation.",
+    "example": "A short illustrative example.",
+    "worked_example": "A worked problem or calculation with solution details.",
+    "misconception": "A common mistake, ambiguity, or misleading intuition.",
+    "warning": "A caveat, domain restriction, or notation trap.",
+    "historical_note": "Historical context about discovery, attribution, or influence.",
+    "summary": "A concise recap of the main result or takeaway.",
 }
+CONTENT_BLOCK_KINDS = frozenset(CONTENT_BLOCK_KIND_DESCRIPTIONS)
 STUDY_QUESTION_COLUMNS = (
     "question_id",
     "concept_id",
     "sequence",
-    "pedagogical_level",
     "question_type",
     "prompt",
     "answer",
@@ -303,7 +306,7 @@ def _validate_content_blocks(
             + ", ".join(duplicate_block_ids)
         )
 
-    for column in ("block_id", "concept_id", "sequence", "kind", "body"):
+    for column in ("block_id", "concept_id", "sequence", "kind", "title", "body"):
         values = content_blocks_df[column].astype(str).str.strip()
         if values.eq("").any():
             raise KnowledgeBaseLoadError(f"content_blocks.csv has empty {column} value(s)")

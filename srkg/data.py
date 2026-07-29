@@ -126,7 +126,6 @@ def build_content_blocks_from_df(content_blocks_df: pd.DataFrame) -> list[Conten
             concept_id=concept_id,
             sequence=_parse_int(row.get("sequence", ""), default=0),
             kind=kind,
-            pedagogical_level=str(row.get("pedagogical_level", "")).strip(),
             title=str(row.get("title", "")).strip(),
             body=body,
         ))
@@ -146,7 +145,6 @@ def build_study_questions_from_df(study_questions_df: pd.DataFrame) -> list[Stud
             question_id=question_id,
             concept_id=concept_id,
             sequence=_parse_int(row.get("sequence", ""), default=0),
-            pedagogical_level=str(row.get("pedagogical_level", "")).strip(),
             question_type=str(row.get("question_type", "")).strip(),
             prompt=prompt,
             answer=str(row.get("answer", "")).strip(),
@@ -384,4 +382,3 @@ def load_edge_key(path: Path | None) -> dict[str, dict[str, str | bool]]:
             "example": str(row.get("example", "")).strip(),
         }
     return edge_key
-

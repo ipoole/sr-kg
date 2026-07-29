@@ -1,2 +1,40 @@
 source_type,source_id,reference_id,locator,note
-content_block,sr.lorentz_transformations.derivation,ttm.sr_cf,1.3 General Lorentz Transformation,
+content_block,sr.lorentz_transformations.boost_formula,ttm.sr_cf,1.3 General Lorentz Transformation,
+content_block,sr.inertial_frames.definition,ttm.sr_cf,Ch. 1,Reference-frame discussion; tighten locator during source review.
+content_block,sr.constancy_of_speed_of_light.definition,ttm.sr_cf,Ch. 1,Light-speed postulate discussion; tighten locator during source review.
+content_block,sr.principle_of_relativity.definition,ttm.sr_cf,Ch. 1,Relativity-principle discussion; tighten locator during source review.
+content_block,sr.spacetime_event.definition,ttm.sr_cf,Ch. 1,Spacetime-coordinate discussion; tighten locator during source review.
+content_block,sr.principle_of_locality.definition,ttm.sr_cf,,General field-theory locality background; add precise locator during source review.
+content_block,sr.metric_tensor.definition,ttm.sr_cf,,Minkowski metric/sign-convention discussion; add precise locator during source review.
+content_block,sr.metric_tensor.gr_bridge,penrose.rtr,,Metric as spacetime geometry background; add precise locator during source review.
+content_block,sr.spacetime_interval.definition,ttm.sr_cf,,Spacetime interval discussion; add precise locator during source review.
+content_block,sr.spacetime_interval.classification,penrose.rtr,,Minkowski interval and causal classification background; add precise locator during source review.
+content_block,sr.lorentz_transformations.matrix_form,penrose.rtr,,Lorentz transformations and metric preservation background; add precise locator during source review.
+content_block,sr.light_cone.definition,ttm.sr_cf,,Light-cone/null-separation discussion; add precise locator during source review.
+content_block,sr.light_cone.causal_regions,penrose.rtr,,Light cone and causal structure background; add precise locator during source review.
+content_block,sr.minkowski_diagram.definition,ttm.sr_cf,,Minkowski diagram/spacetime graph discussion; add precise locator during source review.
+content_block,sr.minkowski_diagram.not_ordinary_graph,penrose.rtr,,Spacetime diagram geometry background; add precise locator during source review.
+content_block,sr.proper_time.definition,ttm.sr_cf,,Proper time from invariant interval; add precise locator during source review.
+content_block,sr.proper_time.historical_context,penrose.rtr,,Proper time and Minkowski spacetime geometry background; add precise locator during source review.
+content_block,sr.four_vectors.definition,ttm.sr_cf,,Four-vector transformation law; add precise locator during source review.
+content_block,sr.four_vectors.scalar_products,penrose.rtr,,Minkowski scalar products and relativistic vector notation background; add precise locator during source review.
+content_block,sr.position_four_vector.definition,ttm.sr_cf,,Position four-vector and event coordinates; add precise locator during source review.
+content_block,sr.position_four_vector.displacements,penrose.rtr,,Spacetime position/displacement vector background; add precise locator during source review.
+content_block,sr.velocity_four_vector.definition,ttm.sr_cf,,Four-velocity definition and components; add precise locator during source review.
+content_block,sr.velocity_four_vector.fixed_norm,penrose.rtr,,Four-velocity norm and timelike worldline geometry background; add precise locator during source review.
+content_block,sr.momentum_four_vector.definition,ttm.sr_cf,,Four-momentum definition and energy-momentum relation; add precise locator during source review.
+content_block,sr.momentum_four_vector.invariant_norm,penrose.rtr,,Four-momentum norm and mass shell background; add precise locator during source review.
+content_block,sr.mass_energy_equivalence.from_momentum,ttm.sr_cf,,Mass-energy relation from four-momentum norm; add precise locator during source review.
+content_block,sr.mass_energy_equivalence.historical_context,penrose.rtr,,Mass-energy equivalence and relativistic energy-momentum background; add precise locator during source review.
+content_block,sr.lagrangian.definition,ttm.sr_cf,,Lagrangian and action setup; add precise locator during source review.
+content_block,sr.lagrangian.relativistic_building_blocks,penrose.rtr,,Lagrangian/action and relativistic invariant-building background; add precise locator during source review.
+content_block,sr.action_principle.definition,ttm.sr_cf,,Action principle setup; add precise locator during source review.
+content_block,sr.action_principle.historical_context,penrose.rtr,,Stationary action and variational principles background; add precise locator during source review.
+content_block,sr.euler_lagrange_equations.definition,ttm.sr_cf,,Euler-Lagrange equations from stationary action; add precise locator during source review.
+content_block,sr.euler_lagrange_equations.integration_by_parts,penrose.rtr,,Variational calculus and Euler-Lagrange derivation background; add precise locator during source review.
+content_block,sr.canonical_momentum.definition,ttm.sr_cf,,Canonical momentum in the transition from Lagrangian to Hamiltonian mechanics; add precise locator during source review.
+content_block,sr.canonical_momentum.hamiltonian_role,penrose.rtr,,Conjugate momentum and Hamiltonian phase-space background; add precise locator during source review.
+content_block,sr.hamiltonian_formalism.definition,ttm.sr_cf,,Hamiltonian formalism and Legendre transform from Lagrangian mechanics; add precise locator during source review.
+content_block,sr.hamiltonian_formalism.why_it_matters,penrose.rtr,,Hamiltonian mechanics as phase-space structure and route toward quantum theory; add precise locator during source review.
+content_block,sr.noether_theorem.definition,ttm.sr_cf,,Noether theorem and action symmetries; add precise locator during source review.
+content_block,sr.noether_theorem.historical_context,penrose.rtr,,"Noether theorem, conservation laws, and symmetry in modern field theory; add precise locator during source review."

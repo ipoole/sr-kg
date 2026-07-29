@@ -315,6 +315,51 @@
         margin: 0;
     }
 
+    #info_panel .content-block {
+        margin: 0 0 1em;
+    }
+
+    #info_panel .content-block h3 {
+        margin-bottom: 0.35em;
+    }
+
+    #info_panel .content-block-fold {
+        border-left: 3px solid #d7d7d7;
+        margin: 0 0 1em;
+        padding-left: 0.75em;
+    }
+
+    #info_panel .content-block-fold > summary {
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .content-block-fold > summary:hover,
+    #info_panel .content-block-fold > summary:focus {
+        color: #174ea6;
+        outline: none;
+    }
+
+    #info_panel .content-block-derivation_step {
+        border-left-color: #6a7b8f;
+    }
+
+    #info_panel .content-block-warning {
+        border-left-color: #c78a00;
+    }
+
+    #info_panel .content-block-misconception {
+        border-left-color: #d22f2f;
+    }
+
+    #info_panel .content-block-historical_note {
+        border-left-color: #1f4fbf;
+    }
+
+    #info_panel .content-block-fold-body {
+        margin-top: 0.45em;
+    }
+
     #info_panel .concept-line {
         min-height: 1.45em;
     }
@@ -609,6 +654,81 @@
     #info_panel .concept-link:hover,
     #info_panel .concept-link:focus {
         text-decoration: underline;
+    }
+
+    #kg_concept_preview {
+        background: #ffffff;
+        border: 1px solid #aab5c4;
+        border-radius: 7px;
+        box-shadow: 0 8px 26px rgba(0,0,0,0.22);
+        color: #222;
+        display: none;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.35;
+        max-width: min(360px, calc(100vw - 24px));
+        padding: 10px 11px;
+        position: fixed;
+        z-index: 10002;
+    }
+
+    #kg_concept_preview .concept-preview-header {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.75em;
+        justify-content: space-between;
+    }
+
+    #kg_concept_preview .concept-preview-title {
+        font-weight: 700;
+    }
+
+    #kg_concept_preview .concept-preview-layer {
+        color: #555;
+        font-size: 0.92em;
+        margin-top: 0.18em;
+    }
+
+    #kg_concept_preview .concept-preview-excerpt {
+        margin-top: 0.65em;
+    }
+
+    #kg_concept_preview .concept-preview-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.8em;
+    }
+
+    #kg_concept_preview button {
+        border-radius: 4px;
+        cursor: pointer;
+        font: inherit;
+        padding: 3px 7px;
+    }
+
+    #kg_concept_preview .concept-preview-go {
+        background: #eef3fd;
+        border: 1px solid #8da9db;
+        color: #174ea6;
+        font-weight: 700;
+    }
+
+    #kg_concept_preview .concept-preview-close {
+        background: transparent;
+        border: 0;
+        color: #555;
+        font-size: 0.85em;
+        padding: 0;
+    }
+
+    #kg_concept_preview button:hover,
+    #kg_concept_preview button:focus {
+        outline: 2px solid #8da9db;
+        outline-offset: 1px;
+    }
+
+    #kg_concept_preview mjx-container {
+        margin: 0 !important;
     }
 
     #info_panel .edge-key-table {

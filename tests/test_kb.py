@@ -30,7 +30,6 @@ def _write_minimal_kb(root):
             "question_id": "test.alpha.q1",
             "concept_id": "test.alpha",
             "sequence": 10,
-            "pedagogical_level": "intro",
             "question_type": "short_answer",
             "prompt": "Alpha question?",
             "answer": "Alpha answer.",
@@ -75,7 +74,6 @@ def _write_minimal_kb(root):
             "concept_id": "test.alpha",
             "sequence": 10,
             "kind": "definition",
-            "pedagogical_level": "intro",
             "title": "Definition",
             "body": "Block alpha definition",
         },
@@ -84,7 +82,6 @@ def _write_minimal_kb(root):
             "concept_id": "test.alpha",
             "sequence": 30,
             "kind": "explanation",
-            "pedagogical_level": "",
             "title": "Explanation",
             "body": "Block alpha explanation",
         },
@@ -93,7 +90,6 @@ def _write_minimal_kb(root):
             "concept_id": "test.beta",
             "sequence": 10,
             "kind": "definition",
-            "pedagogical_level": "intro",
             "title": "Definition",
             "body": "Block beta definition",
         },
@@ -271,7 +267,7 @@ def test_load_knowledge_base_rejects_missing_content_block_columns(tmp_path):
         load_knowledge_base(tmp_path)
 
     assert str(exc.value) == (
-        "content_blocks.csv is missing columns: body, pedagogical_level, title"
+        "content_blocks.csv is missing columns: body, title"
     )
 
 
@@ -283,7 +279,6 @@ def test_load_knowledge_base_rejects_duplicate_content_block_ids(tmp_path):
             "concept_id": "test.alpha",
             "sequence": 10,
             "kind": "definition",
-            "pedagogical_level": "",
             "title": "Definition",
             "body": "First",
         },
@@ -292,7 +287,6 @@ def test_load_knowledge_base_rejects_duplicate_content_block_ids(tmp_path):
             "concept_id": "test.alpha",
             "sequence": 20,
             "kind": "explanation",
-            "pedagogical_level": "",
             "title": "Explanation",
             "body": "Second",
         },
@@ -309,14 +303,14 @@ def test_load_knowledge_base_rejects_duplicate_content_block_ids(tmp_path):
 def test_load_knowledge_base_rejects_invalid_content_block_kind(tmp_path):
     _write_minimal_kb(tmp_path)
     blocks = pd.read_csv(tmp_path / "content_blocks.csv").fillna("")
-    blocks.loc[0, "kind"] = "summary"
+    blocks.loc[0, "kind"] = "sidebar"
     blocks.to_csv(tmp_path / "content_blocks.csv", index=False)
 
     with pytest.raises(KnowledgeBaseLoadError) as exc:
         load_knowledge_base(tmp_path)
 
     assert str(exc.value) == (
-        "content_blocks.csv has invalid kind value(s): summary"
+        "content_blocks.csv has invalid kind value(s): sidebar"
     )
 
 
@@ -342,7 +336,6 @@ def test_load_knowledge_base_rejects_content_blocks_for_unknown_concepts(tmp_pat
             "concept_id": "missing",
             "sequence": 10,
             "kind": "definition",
-            "pedagogical_level": "",
             "title": "Definition",
             "body": "No matching concept",
         },
@@ -385,7 +378,7 @@ def test_load_knowledge_base_rejects_missing_study_question_columns(tmp_path):
         load_knowledge_base(tmp_path)
 
     assert str(exc.value) == (
-        "study_questions.csv is missing columns: answer, pedagogical_level, question_type"
+        "study_questions.csv is missing columns: answer, question_type"
     )
 
 
@@ -396,7 +389,6 @@ def test_load_knowledge_base_rejects_duplicate_study_question_ids(tmp_path):
             "question_id": "test.alpha.q1",
             "concept_id": "test.alpha",
             "sequence": 10,
-            "pedagogical_level": "",
             "question_type": "short_answer",
             "prompt": "First?",
             "answer": "",
@@ -405,7 +397,6 @@ def test_load_knowledge_base_rejects_duplicate_study_question_ids(tmp_path):
             "question_id": "test.alpha.q1",
             "concept_id": "test.alpha",
             "sequence": 20,
-            "pedagogical_level": "",
             "question_type": "short_answer",
             "prompt": "Second?",
             "answer": "",
@@ -427,7 +418,6 @@ def test_load_knowledge_base_rejects_study_questions_for_unknown_concepts(tmp_pa
             "question_id": "missing.q1",
             "concept_id": "missing",
             "sequence": 10,
-            "pedagogical_level": "",
             "question_type": "short_answer",
             "prompt": "Question?",
             "answer": "",

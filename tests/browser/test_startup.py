@@ -69,6 +69,93 @@ def test_concept_list_click_populates_details_and_hash(browser_graph):
 
 
 @pytest.mark.browser
+def test_legacy_concept_uses_coarse_details_sections(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+
+    assert page.locator("#info_panel h3").evaluate_all(
+        "nodes => nodes.map(node => node.textContent)"
+    ) == ["Definition", "Explanation"]
+    assert page.locator("#info_panel .content-block").count() == 0
+
+
+@pytest.mark.browser
+def test_revised_concept_renders_ordered_content_blocks(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.2"]').click()
+
+    assert page.locator("#info_panel .content-block h3").evaluate_all(
+        "nodes => nodes.map(node => node.textContent)"
+    ) == ["Definition", "Gamma intuition"]
+    assert "Gamma definition" in page.locator("#info_panel").inner_text()
+    assert "Gamma intuition body" in page.locator("#info_panel").inner_text()
+    assert page.locator("#info_panel .concept-section h3").count() == 0
+
+
+@pytest.mark.browser
+def test_revised_concept_renders_note_block_kinds_folded(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.2"]').click()
+
+    notes = page.locator("#info_panel details.content-block-note")
+    assert notes.count() == 2
+    assert notes.locator("summary").evaluate_all(
+        "nodes => nodes.map(node => node.textContent)"
+    ) == ["Gamma warning", "Gamma history"]
+    assert not notes.nth(0).locator(".content-block-note-body").is_visible()
+
+    notes.nth(0).locator("summary").click()
+
+    assert notes.nth(0).locator(".content-block-note-body").is_visible()
+    assert "Gamma warning body" in notes.nth(0).inner_text()
+
+
+@pytest.mark.browser
+def test_revised_concept_renders_derivation_steps_folded(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.2"]').click()
+
+    step = page.locator("#info_panel details.content-block-derivation_step")
+    assert step.count() == 1
+    assert step.locator("summary").inner_text() == "Gamma algebra step"
+    assert not step.locator(".content-block-fold-body").is_visible()
+
+    step.locator("summary").click()
+
+    assert step.locator(".content-block-fold-body").is_visible()
+    assert "Gamma derivation-step body" in step.inner_text()
+
+
+@pytest.mark.browser
+def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+
+    questions = page.locator("#info_panel details.study-questions")
+    assert questions.count() == 1
+    assert questions.evaluate("node => node.open")
+    assert "Beta question?" in questions.inner_text()
+    assert "\\n" not in questions.inner_text()
+    assert questions.locator(".study-question .concept-line").evaluate_all(
+        "nodes => nodes.map(node => node.textContent)"
+    )[:3] == ["Beta question?", "A. First option", "B. Second option"]
+
+    answer = questions.locator("details.study-answer")
+    assert answer.count() == 1
+    assert not answer.locator(".study-answer-body").is_visible()
+
+    answer.locator("summary").click()
+
+    assert answer.locator(".study-answer-body").is_visible()
+    assert "Beta answer." in answer.inner_text()
+
+
+@pytest.mark.browser
 def test_optional_details_render_inline_and_can_contain_concept_links(browser_graph):
     page = browser_graph.page
 
@@ -83,8 +170,35 @@ def test_optional_details_render_inline_and_can_contain_concept_links(browser_gr
     assert optional.locator(".optional-detail-body").is_visible()
     assert "The optional body can include" in optional.locator(".optional-detail-body").inner_text()
     optional.locator(".concept-link").click()
+    assert page.locator("#kg_concept_preview").is_visible()
+    assert "1.1 Alpha" in page.locator("#kg_concept_preview").inner_text()
+    assert "Layer 1 - Foundations" in page.locator("#kg_concept_preview").inner_text()
+    assert "Alpha definition" in page.locator("#kg_concept_preview").inner_text()
+    assert page.locator("#kg_concept_preview .concept-preview-go").inner_text() == "Go to concept"
+
+    page.locator("#kg_concept_preview .concept-preview-go").click()
+
     assert page.locator("#info_panel h2").inner_text() == "1.1 Alpha"
     assert page.evaluate("() => window.location.hash") == "#concept-1.1"
+
+
+@pytest.mark.browser
+def test_concept_link_hover_shows_preview_without_navigating(browser_graph):
+    page = browser_graph.page
+
+    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    page.locator("#info_panel details.optional-detail summary").click()
+    link = page.locator("#info_panel .optional-detail-body .concept-link")
+
+    link.hover()
+
+    preview = page.locator("#kg_concept_preview")
+    assert preview.is_visible()
+    assert "1.1 Alpha" in preview.inner_text()
+    assert "Layer 1 - Foundations" in preview.inner_text()
+    assert "Alpha definition" in preview.inner_text()
+    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
+    assert page.evaluate("() => window.location.hash") == "#concept-2.1"
 
 
 @pytest.mark.browser
@@ -216,7 +330,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     page.reload(wait_until="domcontentloaded")
     page.wait_for_selector("#kg_splash_dialog[open]")
 
-    assert "Knowledge graph browser" in page.locator("#kg_splash_dialog").inner_text()
+    splash_text = page.locator("#kg_splash_dialog").inner_text()
+    assert "Knowledge graph browser" in splash_text
+    assert "deeper block-based content for layers 1 to 5" in splash_text
+    assert "Preview linked concepts" in splash_text
+    assert "Study questions are visible with answers folded closed" in splash_text
     assert page.locator("#kg_splash_dialog .kg-new-badge").count() >= 3
 
     page.locator("#kg_splash_dismiss").click()

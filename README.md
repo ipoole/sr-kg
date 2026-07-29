@@ -31,7 +31,11 @@ data/
   nodes.csv                Concept metadata
   edges.csv                Concept relationships with relation types and notes
   edges_key.csv            Edge relation meanings and direction metadata
-  content_blocks.csv       Ordered concept content blocks with pedagogical level
+  content_blocks.csv       Ordered concept content blocks with semantic kinds
+docs/
+  AUTHORING_GUIDE.md       House style for drafting concept content
+  concept_expositions.md   Readable draft expositions before CSV block splits
+  discussion/              Design discussion notes and experiments
 lib/
   vis-9.1.2/               Vendored vis-network assets used by PyVis output
   tom-select/              Vendored PyVis UI assets
@@ -304,19 +308,26 @@ id,display_id,label,layer,layer_title
 visible numbering, sorting, and layout.
 
 `data/content_blocks.csv` is the canonical source for concept prose in the manifest-backed KB.
+For drafting style and concept-by-concept workflow, see `docs/AUTHORING_GUIDE.md`.
+Readable draft expositions are kept in `docs/concept_expositions.md` before or
+alongside their split into CSV blocks.
 
 `data/content_blocks.csv` expects:
 
 ```text
-block_id,concept_id,sequence,kind,pedagogical_level,title,body
+block_id,concept_id,sequence,kind,title,body
 ```
 
-The initial block kinds are `definition`, `derivation`, and `explanation`. The generator groups ordered blocks of those kinds back into the current visible details-panel sections, so the viewer output remains compatible while the KB moves toward smaller pedagogical units. `pedagogical_level` may be blank during migration.
+Block `kind` is semantic, not presentational; see `KB_SCHEMA.md` for the accepted
+vocabulary and meanings. The generator groups ordered `definition`,
+`derivation`, and `explanation` blocks back into the current visible
+details-panel sections, so the viewer output remains compatible while the KB
+moves toward smaller authored teaching units.
 
 `data/study_questions.csv` is the canonical source for concept study questions:
 
 ```text
-question_id,concept_id,sequence,pedagogical_level,question_type,prompt,answer
+question_id,concept_id,sequence,question_type,prompt,answer
 ```
 
 If a concept has one or more questions, its details panel includes a default-closed `Study Questions` section. Each answer is rendered inside its own fold-down. Question text can include multiple-choice options, ordinary prose, and MathJax notation.

@@ -24,6 +24,10 @@ data/
 
 The default project root is `data/`.
 
+For drafting style and concept-by-concept authoring workflow, see
+`docs/AUTHORING_GUIDE.md`. Readable exposition drafts live in
+`docs/concept_expositions.md` before or alongside their split into CSV blocks.
+
 ## manifest.yaml
 
 The manifest names the source files within the data root.
@@ -60,7 +64,8 @@ layout or teaching sequence should only change `display_id`, not `id`.
 
 Put concept prose in `content_blocks.csv`; do not add new prose columns to
 `nodes.csv`. Split new material into the smallest useful teaching blocks, using
-`sequence` for narrative order and `pedagogical_level` for graded exposure.
+`sequence` for the authored narrative order and `kind` for the semantic role of
+each block.
 
 Use only the current study-question types: `short_answer`, `multiple_choice`,
 and `calculation`. Multiple-choice options currently live in the `prompt` text.
@@ -87,17 +92,36 @@ source for concept prose in manifest-backed KB roots.
 `content_blocks.csv` contains smaller authored teaching units attached to
 concepts. It is the canonical concept-prose source for manifest-backed KB
 roots. The loader groups current block kinds back into the visible Definition,
-Derivation, and Explanation sections for the existing viewer.
+Derivation, and Explanation sections for the existing viewer. Later viewer
+policies may map `kind` values to folded sections, callouts, local contents, or
+other presentation choices, but those choices are not authored in the KB.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
 | `block_id` | Yes | Stable identifier for this content block. |
 | `concept_id` | Yes | Concept this block belongs to. Must exist in `nodes.csv`. |
 | `sequence` | Yes | Numeric ordering key within the concept. |
-| `kind` | Yes | Block kind. Currently rendered kinds are `definition`, `derivation`, and `explanation`. |
-| `pedagogical_level` | No | Pedagogical level tag. May be blank during migration. |
-| `title` | No | Block title or section title. The column must exist, but values may be blank. |
+| `kind` | Yes | Semantic block kind. See the allowed values below. |
+| `title` | Yes | Short editorial title for this block. The viewer may use it as a heading, folded-section handle, search label, or local contents entry. |
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
+
+Allowed `kind` values:
+
+| Kind | Meaning |
+| --- | --- |
+| `overview` | A short orientation block stating what the concept will do. |
+| `definition` | A precise statement of what the concept is. |
+| `intuition` | A qualitative mental model or physical interpretation. |
+| `explanation` | General explanatory prose that develops the concept. |
+| `construction` | A setup or construction that builds an object or argument. |
+| `derivation` | A coherent mathematical derivation or proof. |
+| `derivation_step` | A smaller algebraic or logical step inside a derivation. |
+| `example` | A short illustrative example. |
+| `worked_example` | A worked problem or calculation with solution details. |
+| `misconception` | A common mistake, ambiguity, or misleading intuition. |
+| `warning` | A caveat, domain restriction, or notation trap. |
+| `historical_note` | Historical context about discovery, attribution, or influence. |
+| `summary` | A concise recap of the main result or takeaway. |
 
 Initial migrated block IDs use:
 
@@ -111,8 +135,8 @@ For example, the Lorentz transformations definition block is identified as
 `sr.lorentz_transformations.definition` and points to
 `concept_id=sr.lorentz_transformations`.
 
-Future block kinds may include `intuition`, `construction`, `optional_detail`,
-`misconception`, `worked_example`, and `historical_note`.
+The existing `\optional_details{Title}{Body}` text macro remains available
+inside block bodies. It is a local text-disclosure device, not a `kind` value.
 
 ## study_questions.csv
 
@@ -125,7 +149,6 @@ sections.
 | `question_id` | Yes | Stable identifier for this question. |
 | `concept_id` | Yes | Concept this question belongs to. Must exist in `nodes.csv`. |
 | `sequence` | Yes | Numeric ordering key within the concept. |
-| `pedagogical_level` | No | Pedagogical level tag. May be blank during migration. |
 | `question_type` | Yes | Question format tag. Allowed values are `short_answer`, `multiple_choice`, and `calculation`. |
 | `prompt` | Yes | Question text, including MathJax and supported custom macros. |
 | `answer` | No | Answer text. The column must exist, but values may be blank during drafting. |

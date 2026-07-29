@@ -11,10 +11,10 @@ Expected manifest-backed nodes.csv columns:
     id,display_id,label,layer,layer_title
 
 Expected manifest-backed content_blocks.csv columns:
-    block_id,concept_id,sequence,kind,pedagogical_level,title,body
+    block_id,concept_id,sequence,kind,title,body
 
 Expected manifest-backed study_questions.csv columns:
-    question_id,concept_id,sequence,pedagogical_level,question_type,prompt,answer
+    question_id,concept_id,sequence,question_type,prompt,answer
 
 Expected manifest-backed references.csv columns:
     reference_id,reference_type,citation,authors,title,year,url,note

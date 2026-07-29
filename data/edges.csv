@@ -1,7 +1,12 @@
 source,target,relation,note
+sr.principle_of_relativity,sr.inertial_frames,PREREQUISITE,The principle of relativity is stated for inertial frames.
+sr.constancy_of_speed_of_light,sr.inertial_frames,PREREQUISITE,The light-speed postulate compares measurements made by inertial observers.
 sr.lorentz_transformations,sr.principle_of_relativity,DERIVES_FROM,The Lorentz transformations are derived by imposing the principle of relativity together with the constancy of the speed of light.
 sr.lorentz_transformations,sr.constancy_of_speed_of_light,DERIVES_FROM,The Lorentz transformations are derived by imposing invariant light speed together with the relativity principle.
 sr.lorentz_transformations,sr.inertial_frames,PREREQUISITE,Lorentz transformations relate the coordinate descriptions used by different inertial frames.
+sr.spacetime_event,sr.inertial_frames,PREREQUISITE,Introductory special relativity labels events using coordinates assigned in an inertial frame.
+sr.principle_of_locality,sr.spacetime_event,PREREQUISITE,Local physical laws are stated at spacetime events or infinitesimally nearby events.
+sr.principle_of_locality,sr.constancy_of_speed_of_light,PREREQUISITE,Relativistic locality uses the invariant light speed as the limiting causal speed.
 sr.spacetime_interval,sr.spacetime_event,PREREQUISITE,The spacetime interval measures the separation between spacetime events.
 sr.position_four_vector,sr.spacetime_event,PREREQUISITE,The position four-vector is formed by arranging the coordinates of a spacetime event into a four-vector.
 sr.lorentz_transformations,sr.spacetime_interval,DERIVES_FROM,Lorentz transformations can be characterised as the linear transformations that preserve the spacetime interval.
@@ -37,6 +42,7 @@ sr.scalar_field,sr.four_vectors,RELATED,Scalar fields and four-vectors are contr
 sr.vector_field,sr.lorentz_transformations,PREREQUISITE,A relativistic vector field is defined by how its components transform under Lorentz transformations.
 sr.vector_field,sr.four_vectors,PREREQUISITE,A relativistic vector field has components that transform as a four-vector at each spacetime point.
 sr.field_lagrangian,sr.action_principle,DERIVES_FROM,A field Lagrangian is obtained by extending the action principle from particle paths to spacetime fields via a local Lagrangian density.
+sr.field_lagrangian,sr.principle_of_locality,PREREQUISITE,A field Lagrangian is built from fields and derivatives evaluated locally in spacetime.
 sr.field_equations,sr.field_lagrangian,DERIVES_FROM,Field equations are obtained by varying the action constructed from a field Lagrangian.
 sr.field_equations,sr.lorentz_transformations,PREREQUISITE,Relativistic field equations are required to transform covariantly under Lorentz transformations.
 sr.field_equations,sr.euler_lagrange_equations,DERIVES_FROM,Field equations are obtained by applying the Euler–Lagrange equations to fields rather than particle coordinates.
@@ -120,3 +126,13 @@ sr.action_principle,sr.proper_time,RELATED,"Relativistic actions often use prope
 sr.action_principle,sr.four_vectors,RELATED,"Relativistic actions are constructed from Lorentz-scalar combinations of four-vectors, but the action principle is not derived from four-vectors."
 sr.electromagnetic_field,sr.lorentz_transformations,PREREQUISITE,Understanding the unified electromagnetic field requires Lorentz transformations because electric and magnetic components mix between inertial frames.
 sr.maxwells_equations,sr.field_tensor,PREREQUISITE,Maxwell's equations in covariant form are written using the electromagnetic field tensor.
+sr.principle_of_relativity,sr.constancy_of_speed_of_light,RELATED,The two foundational postulates jointly constrain transformations between inertial frames.
+sr.principle_of_locality,sr.field_equations,RELATED,Locality is the organising idea behind local differential field equations.
+sr.principle_of_locality,sr.charge_conservation,RELATED,Locality recasts charge conservation as point-by-point bookkeeping rather than only global total conservation.
+sr.velocity_four_vector,sr.four_vectors,RELATED,The velocity four-vector is a specific four-vector constructed from position and proper time.
+sr.momentum_four_vector,sr.four_vectors,RELATED,The momentum four-vector is a specific four-vector combining energy and three-momentum.
+sr.lagrangian,sr.noether_theorem,RELATED,Symmetries of Lagrangians and their actions are the input for Noether's theorem.
+sr.canonical_momentum,sr.momentum_four_vector,RELATED,Expanded canonical momentum text contrasts coordinate-conjugate momentum with relativistic four-momentum.
+sr.canonical_momentum,sr.vector_potential,RELATED,Electromagnetic vector potentials provide a standard example where canonical momentum differs from mechanical momentum.
+sr.hamiltonian_formalism,sr.euler_lagrange_equations,RELATED,Hamilton's equations are equivalent to the Euler-Lagrange equations when the Legendre transform is valid.
+sr.noether_theorem,sr.canonical_momentum,RELATED,A cyclic-coordinate example of Noether's theorem identifies a conserved canonical momentum.

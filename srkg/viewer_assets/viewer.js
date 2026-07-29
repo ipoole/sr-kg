@@ -97,6 +97,7 @@
         var graphContainer = document.getElementById("mynetwork");
         var nodeLabelLayer = document.createElement("div");
         var nodeTooltip = document.createElement("div");
+        var conceptPreview = document.createElement("div");
         var nodeLabelEls = {};
 
         nodeLabelLayer.id = "kg_node_labels";
@@ -104,6 +105,10 @@
         nodeTooltip.id = "kg_node_tooltip";
         nodeTooltip.setAttribute("role", "tooltip");
         document.body.appendChild(nodeTooltip);
+        conceptPreview.id = "kg_concept_preview";
+        conceptPreview.setAttribute("role", "dialog");
+        conceptPreview.setAttribute("aria-live", "polite");
+        document.body.appendChild(conceptPreview);
 
         var originalNodes = {};
         var originalEdges = {};
@@ -118,6 +123,10 @@
         var nodeLabelWidth = kgNodeLabelConfig.width;
         var nodeLabelFontSize = kgNodeLabelConfig.fontSize;
         var tooltipTypesetTimer = null;
+        var conceptPreviewTypesetTimer = null;
+        var conceptPreviewHideTimer = null;
+        var conceptPreviewPinned = false;
+        var conceptPreviewAnchor = null;
         var userNotesStorageKey = kgStorageKeys.userNotes;
         var noteEditingStorageKey = kgStorageKeys.noteEditing;
         var splashDismissedStorageKey = kgStorageKeys.splashDismissed;
@@ -412,8 +421,10 @@
               if (!getConcept(targetId)) {
                 return "<strong>" + label + "</strong>";
               }
-              return '<a href="#" class="concept-link" data-concept-id="' +
+              return '<a href="' + escapeHtml(conceptHash(targetId)) +
+                '" class="concept-link" data-concept-id="' +
                 escapeHtml(targetId) +
+                '" aria-haspopup="dialog" aria-controls="kg_concept_preview' +
                 '"><strong>' + label + "</strong></a>";
             }
           );
@@ -849,6 +860,28 @@
           });
           html += "</div>";
           return html;
+        }
+
+        function normalizeStudyText(text) {
+          return String(text || "")
+            .replace(/\\n\\n/g, "\n")
+            .replace(/\\n(?=(?:[A-Z]|[0-9]+)[.)]\s)/g, "\n");
+        }
+
+        function renderBodyLines(text, className) {
+          var blocks = splitConceptBlocks(text);
+          var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
+          blocks.forEach(function(block) {
+            html += '<div class="concept-line">' +
+              (block.text ? renderConceptText(block.text) : "&nbsp;") +
+              "</div>";
+          });
+          html += "</div>";
+          return html;
+        }
+
+        function renderStudyText(text, className) {
+          return renderBodyLines(normalizeStudyText(text), className);
         }
 
         function createUserNote(conceptId, sectionName, anchorIndex, afterText) {
@@ -1554,6 +1587,134 @@
           return section ? section.text : "";
         }
 
+        var legacyContentBlockKinds = {
+          definition: true,
+          derivation: true,
+          explanation: true
+        };
+
+        var contentBlockPresentation = Object.freeze({
+          overview: {mode: "inline"},
+          definition: {mode: "inline"},
+          intuition: {mode: "inline"},
+          explanation: {mode: "inline"},
+          construction: {mode: "inline"},
+          derivation: {mode: "inline"},
+          derivation_step: {mode: "folded"},
+          example: {mode: "inline"},
+          worked_example: {mode: "inline"},
+          misconception: {mode: "folded", note: true},
+          warning: {mode: "folded", note: true},
+          historical_note: {mode: "folded", note: true},
+          summary: {mode: "inline"}
+        });
+
+        function contentBlockPresentationFor(kind) {
+          return contentBlockPresentation[kind] || {mode: "inline"};
+        }
+
+        function contentBlockClassName(block, presentation) {
+          var className = "content-block content-block-" + block.kind;
+          if (presentation.mode === "folded") {
+            className += " content-block-fold";
+          }
+          if (presentation.note) {
+            className += " content-block-note";
+          }
+          return className;
+        }
+
+        function conceptContentBlocks(concept) {
+          if (!concept || !Array.isArray(concept.content_blocks)) { return []; }
+          return concept.content_blocks
+            .map(function(block) {
+              return {
+                block_id: String(block.block_id || ""),
+                concept_id: String(block.concept_id || ""),
+                sequence: Number(block.sequence || 0),
+                kind: String(block.kind || ""),
+                title: String(block.title || ""),
+                body: String(block.body || "")
+              };
+            })
+            .filter(function(block) {
+              return block.block_id && block.kind && block.body;
+            })
+            .sort(function(a, b) {
+              if (a.sequence !== b.sequence) { return a.sequence - b.sequence; }
+              return a.block_id.localeCompare(b.block_id);
+            });
+        }
+
+        function isLegacyContentBlock(block, seenKinds) {
+          if (!legacyContentBlockKinds[block.kind]) { return false; }
+          if (seenKinds[block.kind]) { return false; }
+          seenKinds[block.kind] = true;
+          return block.block_id === block.concept_id + "." + block.kind;
+        }
+
+        function shouldRenderContentBlocks(concept) {
+          var blocks = conceptContentBlocks(concept);
+          if (blocks.length === 0) { return false; }
+          var seenKinds = {};
+          return blocks.some(function(block) {
+            return !isLegacyContentBlock(block, seenKinds);
+          });
+        }
+
+        function contentBlockKindLabel(kind) {
+          return String(kind || "")
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+        }
+
+        function renderContentBlock(conceptId, block) {
+          var title = block.title || contentBlockKindLabel(block.kind);
+          var presentation = contentBlockPresentationFor(block.kind);
+          if (presentation.mode === "folded") {
+            var bodyClass = "concept-body content-block-fold-body";
+            if (presentation.note) {
+              bodyClass += " content-block-note-body";
+            }
+            return renderFoldDown({
+              className: contentBlockClassName(block, presentation),
+              title: title,
+              bodyClass: bodyClass,
+              bodyHtml: renderConceptText(block.body)
+            });
+          }
+          var html = '<section class="' + escapeHtml(contentBlockClassName(block, presentation)) + '">';
+          html += "<h3>" + renderConceptText(title) + "</h3>";
+          var blocks = splitConceptBlocks(block.body);
+          html += '<div class="concept-body content-block-body">';
+          html += renderNotesAtAnchor(conceptId, title, 0, "");
+          blocks.forEach(function(textBlock, index) {
+            html += '<div class="concept-line">' +
+              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+              "</div>";
+            html += renderNotesAtAnchor(
+              conceptId,
+              title,
+              index + 1,
+              textBlock.text.slice(0, 160)
+            );
+          });
+          html += "</div>";
+          html += "</section>";
+          return html;
+        }
+
+        function renderConceptContent(conceptId, concept) {
+          if (shouldRenderContentBlocks(concept)) {
+            return conceptContentBlocks(concept).map(function(block) {
+              return renderContentBlock(conceptId, block);
+            }).join("");
+          }
+          return conceptSections(concept).map(function(section) {
+            return renderConceptSection(conceptId, section.title, section.text);
+          }).join("");
+        }
+
         function optionalDetailTitlesForConcept(concept) {
           return conceptSections(concept).reduce(function(titles, section) {
             return titles.concat(optionalDetailTitlesFromText(section.text));
@@ -1586,6 +1747,151 @@
           html += tooltipListHtml("Optional details", optionalDetailTitlesForConcept(concept));
           html += tooltipListHtml("Notes", noteTitlesForConcept(nodeId));
           return html;
+        }
+
+        function conceptPreviewSourceText(concept) {
+          var blocks = conceptContentBlocks(concept);
+          var definitionBlock = blocks.find(function(block) {
+            return block.kind === "definition";
+          });
+          if (definitionBlock) { return definitionBlock.body; }
+
+          var overviewBlock = blocks.find(function(block) {
+            return block.kind === "overview";
+          });
+          if (overviewBlock) { return overviewBlock.body; }
+          if (blocks.length > 0) { return blocks[0].body; }
+
+          var definition = conceptSectionText(concept, "definition");
+          if (definition) { return definition; }
+          var sections = conceptSections(concept);
+          return sections.length > 0 ? sections[0].text : "";
+        }
+
+        function conceptPreviewExcerpt(text) {
+          var excerpt = searchDisplayText(stripOptionalDetailsFromTooltipText(text));
+          var maxLength = 280;
+          if (excerpt.length <= maxLength) { return excerpt; }
+          var cut = excerpt.slice(0, maxLength);
+          var lastSpace = cut.lastIndexOf(" ");
+          if (lastSpace > 160) {
+            cut = cut.slice(0, lastSpace);
+          }
+          return cut.replace(/[.,;:]*$/, "") + "...";
+        }
+
+        function conceptPreviewHtml(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          var layerParts = [];
+          if (concept.layer) { layerParts.push("Layer " + escapeHtml(concept.layer)); }
+          if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
+
+          var html = '<div class="concept-preview-header">';
+          html += '<div class="concept-preview-title">' + renderTooltipText(conceptTitleText(nodeId)) + "</div>";
+          html += '<button type="button" class="concept-preview-close" aria-label="Close preview">Close</button>';
+          html += "</div>";
+          if (layerParts.length > 0) {
+            html += '<div class="concept-preview-layer">' + layerParts.join(" - ") + "</div>";
+          }
+          var excerpt = conceptPreviewExcerpt(conceptPreviewSourceText(concept));
+          if (excerpt) {
+            html += '<div class="concept-preview-excerpt">' + renderTooltipText(excerpt) + "</div>";
+          }
+          html += '<div class="concept-preview-actions">';
+          html += '<button type="button" class="concept-preview-go" data-concept-id="' +
+            escapeHtml(nodeId) + '">Go to concept</button>';
+          html += "</div>";
+          return html;
+        }
+
+        function typesetConceptPreview() {
+          if (!conceptPreview || !window.MathJax || !MathJax.typesetPromise) { return; }
+          if (MathJax.typesetClear) {
+            MathJax.typesetClear([conceptPreview]);
+          }
+          MathJax.typesetPromise([conceptPreview]).catch(function(err) {
+            console.warn("MathJax concept preview typesetting failed:", err);
+          }).then(function() {
+            if (conceptPreviewAnchor && conceptPreview.style.display !== "none") {
+              positionConceptPreview(conceptPreviewAnchor);
+            }
+          });
+        }
+
+        function scheduleConceptPreviewTypeset() {
+          if (conceptPreviewTypesetTimer) {
+            clearTimeout(conceptPreviewTypesetTimer);
+          }
+          conceptPreviewTypesetTimer = setTimeout(function() {
+            conceptPreviewTypesetTimer = null;
+            typesetConceptPreview();
+          }, 120);
+        }
+
+        function positionConceptPreview(anchor) {
+          if (!conceptPreview || !anchor) { return; }
+          var margin = 10;
+          var gap = 8;
+          var anchorRect = anchor.getBoundingClientRect();
+          conceptPreview.style.display = "block";
+          conceptPreview.style.left = "0px";
+          conceptPreview.style.top = "0px";
+          var previewRect = conceptPreview.getBoundingClientRect();
+
+          var x = anchorRect.left;
+          var y = anchorRect.bottom + gap;
+          if (x + previewRect.width > window.innerWidth - margin) {
+            x = window.innerWidth - previewRect.width - margin;
+          }
+          if (y + previewRect.height > window.innerHeight - margin) {
+            y = anchorRect.top - previewRect.height - gap;
+          }
+          conceptPreview.style.left = Math.max(margin, x) + "px";
+          conceptPreview.style.top = Math.max(margin, y) + "px";
+        }
+
+        function cancelConceptPreviewHide() {
+          if (conceptPreviewHideTimer) {
+            clearTimeout(conceptPreviewHideTimer);
+            conceptPreviewHideTimer = null;
+          }
+        }
+
+        function hideConceptPreview(force) {
+          if (!conceptPreview || (!force && conceptPreviewPinned)) { return; }
+          cancelConceptPreviewHide();
+          if (conceptPreviewTypesetTimer) {
+            clearTimeout(conceptPreviewTypesetTimer);
+            conceptPreviewTypesetTimer = null;
+          }
+          conceptPreviewPinned = false;
+          conceptPreviewAnchor = null;
+          conceptPreview.classList.remove("concept-preview-pinned");
+          conceptPreview.style.display = "none";
+          conceptPreview.innerHTML = "";
+        }
+
+        function scheduleConceptPreviewHide() {
+          if (conceptPreviewPinned) { return; }
+          cancelConceptPreviewHide();
+          conceptPreviewHideTimer = setTimeout(function() {
+            hideConceptPreview(false);
+          }, 180);
+        }
+
+        function showConceptPreview(link, options) {
+          options = options || {};
+          if (!link) { return; }
+          var id = link.getAttribute("data-concept-id");
+          if (!getConcept(id)) { return; }
+
+          cancelConceptPreviewHide();
+          conceptPreviewPinned = Boolean(options.pinned);
+          conceptPreviewAnchor = link;
+          conceptPreview.innerHTML = conceptPreviewHtml(id);
+          conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
+          positionConceptPreview(link);
+          scheduleConceptPreviewTypeset();
         }
 
         function refreshNodeTooltips() {
@@ -1851,6 +2157,7 @@
 
         function showConcept(nodeId, options) {
           options = options || {};
+          hideConceptPreview(true);
           var concept = getConcept(nodeId);
           if (!concept) {
             document.getElementById("info_panel").innerHTML =
@@ -1880,12 +2187,10 @@
             html += "</figure>";
           }
           html += "<hr>";
-          conceptSections(concept).forEach(function(section) {
-            html += renderConceptSection(nodeId, section.title, section.text);
-          });
+          html += renderConceptContent(nodeId, concept);
           var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
           if (studyQuestions.length > 0) {
-            html += '<details class="study-questions">';
+            html += '<details class="study-questions" open>';
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
               var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
@@ -1893,11 +2198,11 @@
               if (!question) { return; }
               html += '<section class="study-question">';
               html += '<div class="study-question-title">Question ' + (index + 1) + "</div>";
-              html += '<div class="concept-body">' + renderConceptText(question) + "</div>";
+              html += renderStudyText(question, "concept-body study-question-prompt");
               if (answer) {
                 html += '<details class="study-answer">';
                 html += "<summary>Answer</summary>";
-                html += '<div class="study-answer-body">' + renderConceptText(answer) + "</div>";
+                html += renderStudyText(answer, "concept-body study-answer-body");
                 html += "</details>";
               }
               html += "</section>";
@@ -2502,6 +2807,24 @@
           }
         }
 
+        function navigateToConcept(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          if (graphViewIs(currentView, GraphViewMode.NEIGHBOURHOOD)) {
+            focusNeighbourhood(nodeId, statusPrefix, {
+              radius: graphViewRadius(currentView),
+              searchQuery: options.searchQuery,
+              scrollToSearchMatch: options.scrollToSearchMatch
+            });
+          } else if (graphViewIs(currentView, GraphViewMode.HIDE)) {
+            focusHiddenConcept(nodeId, statusPrefix, options);
+          } else if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
+            focusDescendants(nodeId, statusPrefix, options);
+          } else {
+            focusConcept(nodeId, statusPrefix, options);
+          }
+        }
+
         window.kgHideGraph = function(preserveStatus) {
           restoreHoveredEdge();
           hideNodeTooltip();
@@ -2874,6 +3197,71 @@
           });
         });
 
+        conceptPreview.addEventListener("pointerenter", cancelConceptPreviewHide);
+        conceptPreview.addEventListener("pointerleave", scheduleConceptPreviewHide);
+        conceptPreview.addEventListener("click", function(e) {
+          var closeButton = e.target.closest(".concept-preview-close");
+          if (closeButton) {
+            e.preventDefault();
+            hideConceptPreview(true);
+            return;
+          }
+
+          var goButton = e.target.closest(".concept-preview-go");
+          if (!goButton) { return; }
+
+          e.preventDefault();
+          var id = goButton.getAttribute("data-concept-id");
+          hideConceptPreview(true);
+          navigateToConcept(id, "Selected");
+        });
+
+        document.getElementById("info_panel").addEventListener("pointerover", function(e) {
+          var link = e.target.closest(".concept-link");
+          if (!link || e.pointerType === "touch") { return; }
+          showConceptPreview(link, {pinned: false});
+        });
+
+        document.getElementById("info_panel").addEventListener("pointerout", function(e) {
+          var link = e.target.closest(".concept-link");
+          if (!link || conceptPreviewPinned) { return; }
+          var related = e.relatedTarget;
+          if (related && (link.contains(related) || conceptPreview.contains(related))) {
+            return;
+          }
+          scheduleConceptPreviewHide();
+        });
+
+        document.getElementById("info_panel").addEventListener("focusin", function(e) {
+          var link = e.target.closest(".concept-link");
+          if (!link) { return; }
+          showConceptPreview(link, {pinned: false});
+        });
+
+        document.getElementById("info_panel").addEventListener("focusout", function(e) {
+          var link = e.target.closest(".concept-link");
+          if (!link || conceptPreviewPinned) { return; }
+          var related = e.relatedTarget;
+          if (related && (link.contains(related) || conceptPreview.contains(related))) {
+            return;
+          }
+          scheduleConceptPreviewHide();
+        });
+
+        document.addEventListener("click", function(e) {
+          if (!conceptPreview || conceptPreview.style.display === "none") { return; }
+          if (e.target.closest(".concept-link") || conceptPreview.contains(e.target)) {
+            return;
+          }
+          hideConceptPreview(true);
+        });
+
+        document.addEventListener("keydown", function(e) {
+          if (e.key === "Escape") {
+            hideConceptPreview(true);
+          }
+        });
+
         document.getElementById("info_panel").addEventListener("click", function(e) {
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
@@ -2912,16 +3300,7 @@
           e.preventDefault();
           var id = link.getAttribute("data-concept-id");
           if (!getConcept(id)) { return; }
-
-          if (graphViewIs(currentView, GraphViewMode.NEIGHBOURHOOD)) {
-            focusNeighbourhood(id, "Selected", {radius: graphViewRadius(currentView)});
-          } else if (graphViewIs(currentView, GraphViewMode.HIDE)) {
-            focusHiddenConcept(id, "Selected");
-          } else if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
-            focusDescendants(id, "Selected");
-          } else {
-            focusConcept(id, "Selected");
-          }
+          showConceptPreview(link, {pinned: true});
         });
 
         document.getElementById("info_panel").addEventListener("input", function(e) {

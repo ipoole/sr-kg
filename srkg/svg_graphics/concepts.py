@@ -485,36 +485,41 @@ def create_3_1_metric_tensor(variant: str = "icon") -> str:
     Node: 3.1
     Title: Metric tensor
 
-    Icon design: Simplify the detailed diagram to an eta tile applied to x/ct
-    axes, with one blue time-like mark and one grey space-like mark.
+    Icon design: Show eta as the spacetime measuring rule applied to a single
+    displacement on x/ct axes.
 
-    Detail design: Show an actual compact 4x4 diagonal Minkowski metric matrix
-    labelled eta_mu_nu, with +1 in the time slot and -1 entries in the three
-    spatial slots. Pair it with a small spacetime-axis inset showing time-like
-    and space-like components measured by the matrix.
+    Detail design: Show the metric as a compact diagonal matrix between a
+    displacement vector and the invariant interval it computes. Pair this with
+    a small spacetime inset so the signs read as a measuring rule, not as a
+    free-standing table.
     """
     node_id = "3.1"
     axis_marker, defs = _axis_arrow_defs(node_id, BLACK)
 
     body: list[str] = []
     if variant != "detail":
-        ox, oy = 128, 382
-        body.extend(_draw_axes(ox, oy, 284, 276, axis_marker, x_label="x", y_label="ct", stroke_width=5.5))
-        body.append(_line(ox, oy - 26, ox, oy - 146, stroke=BLUE, stroke_width=11,
-                          stroke_linecap="round"))
-        body.append(_line(ox + 34, oy, ox + 166, oy, stroke=GREY, stroke_width=11,
-                          stroke_linecap="round"))
-        body.append(_rect(300, 176, 100, 100, rx=12, fill="#f7f7f7",
+        ox, oy = 112, 390
+        px, py = 300, 176
+        body.extend(_draw_axes(ox, oy, 290, 286, axis_marker, x_label="x", y_label="ct", stroke_width=5.5))
+        body.append(_line(ox, py, px, py, stroke=LIGHT_GREY, stroke_width=4,
+                          stroke_dasharray="7 8", stroke_linecap="round"))
+        body.append(_line(px, py, px, oy, stroke=LIGHT_GREY, stroke_width=4,
+                          stroke_dasharray="7 8", stroke_linecap="round"))
+        body.append(_line(ox, oy, px, py, stroke=BLUE, stroke_width=9,
+                          stroke_linecap="round", marker_end=f"url(#{axis_marker})"))
+        body.append(_rect(326, 238, 92, 82, rx=10, fill="#f7f7f7",
                           stroke=BLACK, stroke_width=4))
-        body.append(_text(350, 242, "η", font_size=70, font_family=FONT,
+        body.append(_text(372, 295, "η", font_size=62, font_family=FONT,
                           font_style="italic", fill=BLACK, text_anchor="middle"))
+        body.append(_text(382, 214, "s²", font_size=38, font_family=FONT,
+                          font_style="italic", fill=GREEN, text_anchor="middle"))
         return _svg(node_id, "Metric tensor", body, defs)
 
-    # Detail panel: matrix first, with a small geometric inset.
-    body.append(_math_text(254, 70, "η", sub="μν", font_size=34,
+    # Detail panel: the matrix is shown as the rule that measures a displacement.
+    body.append(_math_text(254, 62, "η", sub="μν", font_size=34,
                            font_family=FONT, font_style="italic",
                            fill=BLACK, text_anchor="middle"))
-    x0, y0 = 206, 118
+    x0, y0 = 206, 98
     entries = [
         ["+1", "0", "0", "0"],
         ["0", "−1", "0", "0"],
@@ -522,20 +527,30 @@ def create_3_1_metric_tensor(variant: str = "icon") -> str:
         ["0", "0", "0", "−1"],
     ]
     body.extend(_paren_matrix(x0, y0, entries, col_gap=48, row_gap=42, font_size=26))
+    body.append(_text(254, 302, "measures", font_size=26, font_family=FONT,
+                      fill=GREY, text_anchor="middle"))
+    body.append(_line(166, 318, 342, 318, stroke=GREEN, stroke_width=5,
+                      stroke_linecap="round", marker_end=f"url(#{axis_marker})"))
+    body.append(_text(256, 356, "s² = (ct)² − x² − y² − z²", font_size=31,
+                      font_family=FONT, font_style="italic", fill=GREEN,
+                      text_anchor="middle"))
 
-    # Small spacetime-axis inset: the matrix is a measuring rule, not just a table.
+    # Small spacetime-axis inset: one displacement whose components are measured.
     inset_marker = axis_marker
-    ox, oy = 104, 444
-    body.extend(_draw_axes(ox, oy, 132, 84, inset_marker, x_label="x", y_label="ct",
+    ox, oy = 88, 458
+    px, py = 236, 382
+    body.extend(_draw_axes(ox, oy, 166, 108, inset_marker, x_label="x", y_label="ct",
                            colour=BLACK, stroke_width=3.8))
-    body.append(_line(ox, oy - 10, ox, oy - 62, stroke=BLUE, stroke_width=8,
-                      stroke_linecap="round"))
-    body.append(_line(ox + 18, oy, ox + 96, oy, stroke=GREY, stroke_width=8,
-                      stroke_linecap="round"))
-    body.append(_text(104, 390, "+1", font_size=30, font_family=FONT,
+    body.append(_line(ox, py, px, py, stroke=LIGHT_GREY, stroke_width=3,
+                      stroke_dasharray="5 7", stroke_linecap="round"))
+    body.append(_line(px, py, px, oy, stroke=LIGHT_GREY, stroke_width=3,
+                      stroke_dasharray="5 7", stroke_linecap="round"))
+    body.append(_line(ox, oy, px, py, stroke=BLUE, stroke_width=6,
+                      stroke_linecap="round", marker_end=f"url(#{axis_marker})"))
+    body.append(_text(118, 418, "+ time", font_size=24, font_family=FONT,
                       fill=BLUE, font_weight=700))
-    body.append(_text(218, 466, "−1", font_size=30, font_family=FONT,
-                      fill=GREY, font_weight=700))
+    body.append(_text(386, 474, "− space", font_size=22, font_family=FONT,
+                      fill=GREY, font_weight=700, text_anchor="middle"))
 
     return _svg(node_id, "Metric tensor", body, defs)
 

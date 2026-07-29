@@ -29,9 +29,8 @@ class ContentBlock:
     concept_id: str
     sequence: int
     kind: str
-    pedagogical_level: str = ""
-    title: str = ""
-    body: str = ""
+    title: str
+    body: str
 
     def to_viewer_data(self) -> dict[str, object]:
         return {
@@ -39,7 +38,6 @@ class ContentBlock:
             "concept_id": self.concept_id,
             "sequence": self.sequence,
             "kind": self.kind,
-            "pedagogical_level": self.pedagogical_level,
             "title": self.title,
             "body": self.body,
         }
@@ -54,7 +52,6 @@ class StudyQuestion:
     sequence: int
     prompt: str
     answer: str = ""
-    pedagogical_level: str = ""
     question_type: str = ""
 
     def to_viewer_data(self) -> dict[str, object]:
@@ -62,7 +59,6 @@ class StudyQuestion:
             "question_id": self.question_id,
             "concept_id": self.concept_id,
             "sequence": self.sequence,
-            "pedagogical_level": self.pedagogical_level,
             "question_type": self.question_type,
             "prompt": self.prompt,
             "question": self.prompt,
