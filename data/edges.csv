@@ -136,3 +136,8 @@ sr.canonical_momentum,sr.momentum_four_vector,RELATED,Expanded canonical momentu
 sr.canonical_momentum,sr.vector_potential,RELATED,Electromagnetic vector potentials provide a standard example where canonical momentum differs from mechanical momentum.
 sr.hamiltonian_formalism,sr.euler_lagrange_equations,RELATED,Hamilton's equations are equivalent to the Euler-Lagrange equations when the Legendre transform is valid.
 sr.noether_theorem,sr.canonical_momentum,RELATED,A cyclic-coordinate example of Noether's theorem identifies a conserved canonical momentum.
+sr.scalar_field,sr.field_lagrangian,RELATED,Scalar fields provide simple field variables used in introductory field Lagrangian examples.
+sr.scalar_field,sr.field_equations,RELATED,Scalar fields provide simple examples of local relativistic field equations.
+sr.vector_field,sr.scalar_field,RELATED,Vector fields are naturally contrasted with scalar fields by their component transformation behaviour.
+sr.vector_potential,sr.gauge_invariance,RELATED,Gauge invariance expresses the redundancy of the electromagnetic vector potential.
+sr.magnetic_field,sr.electric_field,RELATED,Magnetic and electric fields are frame-dependent components of the same electromagnetic field tensor.

@@ -2510,6 +2510,2323 @@ inspection shows label crowding.
 - Future edge types might distinguish "symmetry yields conservation law" from
   ordinary derivation or relatedness.
 
+
+## 6.1 `sr.scalar_field`: Scalar field
+
+### Scope
+
+This concept introduces scalar fields as the simplest local field objects: one
+observer-independent value per spacetime event. It should prepare field
+Lagrangians and field equations, while leaving vector fields and electromagnetic
+tensors to later concepts.
+
+### Exposition
+
+A scalar field assigns one number to each spacetime event. If \(x\) denotes an
+event, the field value is written
+\[
+\phi(x).
+\]
+The important relativistic statement is not that \(\phi\) is the same
+everywhere. It is that the value assigned to a particular physical event is the
+same for every inertial observer. If one observer labels the event by \(x\) and
+another by \(x'\), then
+\[
+\phi'(x')=\phi(x).
+\]
+
+This is why a temperature field is a useful analogy. At each place and time
+there is one temperature value, not an arrow. The temperature can still vary
+from point to point. Likewise, a scalar field in spacetime can have rich local
+structure while remaining scalar in its transformation law.
+
+The contrast with four-vectors is instructive. A four-vector has components
+that mix under Lorentz transformations. A scalar field has no component list to
+mix. Its coordinate argument changes when observers relabel spacetime, but the
+value at the event does not.
+
+Although \(\phi\) itself is scalar, its derivatives carry directional
+information. Quantities such as \(\partial_\mu\phi\) describe how the field
+changes from event to event, and these derivatives are natural ingredients in
+field Lagrangians. This is how a single value at each event can still support
+local dynamics and wave-like behavior.
+
+Scalar fields are useful first examples for field theory because they isolate
+the idea of a field without vector or tensor complications. They let us study
+locality, variation, field equations, and relativistic covariance in a simple
+setting.
+
+### Block Plan
+
+- `overview`: One number at each event.
+- `definition`: \(\phi(x)\) and \(\phi'(x')=\phi(x)\).
+- `intuition`: Local value, not one global number.
+- `explanation`: Same event, different coordinates.
+- `explanation`: Contrast with four-vectors.
+- `example`: Examples and analogies.
+- `construction`: Derivatives carry direction.
+- `misconception`: Scalar does not mean constant.
+- `summary`: Role in field theory.
+- `historical_note`: Simple field object.
+
+### Study Questions
+
+1. Recognize a scalar field.
+2. Interpret \(\phi'(x')=\phi(x)\).
+3. Explain why scalar does not mean constant.
+4. Evaluate a simple scalar field at an event.
+5. Contrast scalar and four-vector transformation behavior.
+6. Explain why scalar fields are useful first field examples.
+
+### References
+
+- TTM SR/CF: scalar fields as simple relativistic field variables; precise
+  locator needed.
+- TRR: scalar versus vector/tensor transformation behavior; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic, showing differently sized scalar values over a spacetime
+grid, matches the concept. Retain unless review shows crowding.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- A future notation glossary should distinguish the event \(x\), the coordinate
+  tuple \(x^\mu\), and the scalar value \(\phi(x)\).
+
+#### Atlas Issues
+
+- Scalar field derivatives may eventually deserve a small linked notation
+  concept if field-theory calculations become more detailed.
+
+
+## 6.2 `sr.vector_field`: Vector field
+
+### Scope
+
+This concept introduces vector fields as local assignments of four-vector-like
+objects to spacetime events. It should contrast them with scalar fields and
+prepare the electromagnetic vector potential without teaching gauge theory or
+the field tensor in full.
+
+### Exposition
+
+A vector field assigns a vector-like object to each spacetime event. If \(x\)
+denotes the event, a typical notation is
+\[
+A^\mu(x).
+\]
+The field can vary from event to event, but at each event its components must
+transform as a four-vector:
+\[
+A'^\mu(x')=\Lambda^\mu{}_{\nu}A^\nu(x).
+\]
+
+This notation contains two ideas at once. The argument \(x\) is the coordinate
+label of the event, and that label changes to \(x'\) for another inertial
+observer. The component index \(\mu\) describes the four-vector attached to
+that event, and those components mix under the Lorentz transformation.
+
+The contrast with a scalar field is useful. A scalar field has one value at an
+event, agreed by all inertial observers. A vector field has several components
+at the event, and those components change together when the observer changes
+frame. Four component functions written in a list are not automatically a
+four-vector field; the transformation law is what binds them into one
+geometric object.
+
+The main example here is the electromagnetic vector potential \(A_\mu\). It is
+a field over spacetime whose derivatives build the electromagnetic field
+tensor. That is why vector fields sit naturally between scalar fields and the
+tensor description of electromagnetism.
+
+### Block Plan
+
+- `overview`: A vector at every event.
+- `definition`: \(A'^\mu(x')=\Lambda^\mu{}_\nu A^\nu(x)\).
+- `intuition`: Local vectors, not one arrow.
+- `explanation`: Contrast with scalar fields.
+- `warning`: Both argument and components transform.
+- `example`: The electromagnetic potential.
+- `construction`: Local derivatives.
+- `misconception`: Not four unrelated scalar fields.
+- `historical_note`: Classical fields and relativistic reorganisation.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize a vector field.
+2. Explain why it is not four scalar fields.
+3. Distinguish argument transformation and component transformation.
+4. Compute a simple two-component boost.
+5. Connect vector fields to the electromagnetic potential.
+6. Compare the extra structure beyond scalar fields.
+
+### References
+
+- TTM SR/CF: relativistic vector-field transformation rule; precise locator
+  needed.
+- TRR: scalar/vector/tensor distinction; precise locator needed.
+
+### Graphics
+
+The existing graphic showing arrows attached to a spacetime grid expresses the
+right local-field idea. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- A future notation glossary should record contravariant \(A^\mu\), covariant
+  \(A_\mu\), and how this relates to the electromagnetic potential convention.
+
+#### Atlas Issues
+
+- The phrase "vector field" means four-vector field in this relativistic
+  layer; later nonrelativistic vector fields may need careful disambiguation.
+
+
+## 6.3 `sr.field_lagrangian`: Field Lagrangian
+
+### Scope
+
+This concept explains the Lagrangian density and field action. It should link
+the action principle to local field theory and prepare field equations, without
+doing the full field Euler-Lagrange derivation.
+
+### Exposition
+
+A field Lagrangian is the field-theory version of the Lagrangian idea. For a
+particle, the action is an integral over a path:
+\[
+S=\int L\,dt.
+\]
+For a field, there are degrees of freedom at every spacetime event, so the
+action is built from a density:
+\[
+S[\phi]=\int \mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
+\]
+
+The word density matters. \(\mathcal L\) is not just another symbol for \(L\);
+it is the local contribution per spacetime volume. The action adds these local
+contributions over a region of spacetime.
+
+Locality constrains what \(\mathcal L\) may depend on. In an ordinary local
+field theory, the density at an event is built from field values and derivatives
+at that same event. A scalar-field density might use \(\phi\) and
+\(\partial_\mu\phi\). An electromagnetic density is naturally written using
+the potential \(A_\mu\) and field tensor \(F_{\mu\nu}\).
+
+Relativity adds another strong preference: the action should be a scalar. We
+therefore build \(\mathcal L\) from invariant contractions, such as
+\(\partial_\mu\phi\partial^\mu\phi\) or \(F_{\mu\nu}F^{\mu\nu}\). Once the
+action has been chosen, varying the field throughout a spacetime region gives
+the local field equations.
+
+The Lagrangian density should not be confused with energy density. It is the
+quantity whose variation produces dynamics. Energy density is extracted from
+the energy-momentum tensor, a later concept.
+
+### Block Plan
+
+- `overview`: Action density for fields.
+- `definition`: \(S=\int\mathcal L\,d^4x\).
+- `intuition`: Why a density.
+- `construction`: Local building blocks.
+- `explanation`: Scalar action.
+- `example`: Scalar-field pattern.
+- `example`: Electromagnetic pattern.
+- `construction`: Variation preview.
+- `misconception`: Not energy density.
+- `historical_note`: Mechanics to field theory.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Identify the Lagrangian density.
+2. Explain why it is a density.
+3. State the locality constraint.
+4. Compute a constant-density action contribution.
+5. Explain why scalar combinations matter.
+6. Distinguish Lagrangian density from energy density.
+
+### References
+
+- TTM SR/CF: field action and Lagrangian-density formulation; precise locator
+  needed.
+- TRR: invariant action and covariant field-theory construction; precise
+  locator needed.
+
+### Graphics
+
+The existing graphic communicates integration of local density over spacetime.
+Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- A notation glossary should distinguish \(L\), \(\mathcal L\), action \(S\),
+  and the measure \(d^4x\).
+
+#### Atlas Issues
+
+- Energy density is mentioned but belongs to later electromagnetic energy and
+  stress-energy concepts.
+
+
+## 6.4 `sr.field_equations`: Field equations
+
+### Scope
+
+This concept explains field equations as local differential equations for
+spacetime fields, especially as equations obtained by varying a field action.
+It should prepare Maxwell's equations without presenting all of electromagnetism.
+
+### Exposition
+
+Field equations are the equations of motion for fields. In mechanics the
+unknown may be a path \(q(t)\). In field theory the unknown is a function over
+spacetime, such as \(\phi_a(x)\). The action is a functional of that whole
+field configuration:
+\[
+S[\phi]=\int\mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
+\]
+
+Varying this action gives the field Euler-Lagrange equations:
+\[
+\frac{\partial \mathcal L}{\partial \phi_a}
+-\partial_\mu\left(
+\frac{\partial \mathcal L}{\partial(\partial_\mu\phi_a)}
+\right)=0.
+\]
+The derivation follows the same logic as particle mechanics, but with
+spacetime derivatives replacing ordinary time derivatives. The variation
+contains terms involving \(\partial_\mu\delta\phi_a\); integration by parts
+moves the derivative onto its coefficient, and the boundary term is discarded
+because the variation is fixed at the boundary.
+
+The result is local. A field equation normally relates field values and
+derivatives at an event. It is not a direct instruction from one distant point
+to another. This local character is why field equations are usually partial
+differential equations.
+
+Relativistic field equations often contain the d'Alembertian
+\[
+\Box=\partial_\mu\partial^\mu
+=\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2.
+\]
+This operator carries the spacetime sign structure and is central in wave-like
+relativistic field equations.
+
+Maxwell's equations are the central example in this atlas. In covariant form
+they relate the electromagnetic field tensor to the four-current source and
+express field propagation locally through spacetime.
+
+### Block Plan
+
+- `overview`: Local rules for fields.
+- `definition`: Field equations from varying an action.
+- `construction`: From paths to fields.
+- `derivation`: Field Euler-Lagrange equation.
+- `derivation_step`: Integration by parts.
+- `intuition`: Local PDEs.
+- `example`: Wave-operator pattern.
+- `example`: Maxwell bridge.
+- `misconception`: Not just a global constraint.
+- `historical_note`: Maxwell before relativity.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize field equations as local equations of motion.
+2. Compare particle and field Euler-Lagrange ideas.
+3. Explain the integration-by-parts step.
+4. Derive the plane-wave dispersion relation for \(\Box\phi=0\).
+5. Explain locality.
+6. Connect to Maxwell's equations.
+
+### References
+
+- TTM SR/CF: field Euler-Lagrange equations and field action; precise locator
+  needed.
+- TRR: covariant wave operator and field equations; precise locator needed.
+
+### Graphics
+
+The existing graphic gives a compact local-equation motif. Retain for this
+pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- The d'Alembertian \(\Box\) is a good candidate for the notation glossary.
+
+#### Atlas Issues
+
+- A future general "partial differential equation" or "operator" concept may
+  be useful if the atlas expands beyond SR/CF.
+
+
+## 7.1 `sr.vector_potential`: Vector potential \(A_\mu\)
+
+### Scope
+
+This concept introduces the electromagnetic four-potential as a vector field
+whose derivatives build the field tensor. It should explain why the potential
+is useful and why it is not directly the same as the observable fields, while
+leaving detailed gauge fixing to later concepts.
+
+### Exposition
+
+The electromagnetic vector potential \(A_\mu\) is a four-vector field over
+spacetime. With one common convention,
+\[
+A^\mu=(\phi/c,\mathbf A),\qquad A_\mu=(\phi/c,-\mathbf A),
+\]
+where \(\phi\) is the scalar potential and \(\mathbf A\) the ordinary
+three-vector potential.
+
+The potential is important because its spacetime derivatives build the
+electromagnetic field tensor:
+\[
+F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+\]
+The antisymmetry is doing real work. It keeps the curl-like part of the
+potential's variation and leaves six independent components, which become the
+three electric and three magnetic components after an inertial frame is chosen.
+
+The vector potential is not simply the observed electromagnetic field. The
+field strength is \(F_{\mu\nu}\), not \(A_\mu\) itself. Moreover, different
+potentials can give the same field tensor:
+\[
+A_\mu\rightarrow A_\mu+\partial_\mu\Lambda.
+\]
+The added pure-gradient part cancels out of \(F_{\mu\nu}\) because partial
+derivatives commute. This is the beginning of gauge invariance.
+
+In the action formulation, \(A_\mu\) is the electromagnetic field variable that
+is varied. A charged particle also couples naturally to it through a scalar
+worldline term proportional to \(qA_\mu dx^\mu\). These facts make the vector
+potential more than a computational convenience, even though it has gauge
+redundancy.
+
+### Block Plan
+
+- `overview`: The potential behind the field.
+- `definition`: Four-potential convention.
+- `construction`: \(F_{\mu\nu}\) from \(A_\mu\).
+- `intuition`: Why antisymmetry.
+- `explanation`: Gauge freedom.
+- `construction`: Field variable in the action.
+- `example`: Coupling to charge.
+- `misconception`: Not simply the observed field.
+- `historical_note`: Potentials become central.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Identify what the vector potential constructs.
+2. Distinguish potential from observed field.
+3. Explain why pure-gradient additions cancel.
+4. Package \(\phi\) and \(\mathbf A\) into \(A^\mu\).
+5. Explain the action/coupling role.
+6. State the significance of gauge freedom.
+
+### References
+
+- TTM SR/CF: four-potential convention and electromagnetic potential
+  formulation; precise locator needed.
+- TRR: potential, field strength, and gauge redundancy; precise locator needed.
+
+### Graphics
+
+The existing graphic shows a potential feeding a derivative/field-strength
+construction. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Gauge-related notation \(\Lambda\), \(A_\mu\), and \(F_{\mu\nu}\) should be
+  candidates for the notation glossary.
+
+#### Atlas Issues
+
+- The edge vocabulary may eventually want a sharper "CONSTRUCTS" relation for
+  \(A_\mu\rightarrow F_{\mu\nu}\), rather than using only `DERIVES_FROM` from
+  field tensor to vector potential.
+
+
+## 7.2 `sr.field_tensor`: Field tensor \(F_{\mu\nu}\)
+
+### Scope
+
+This concept introduces \(F_{\mu\nu}\) as the covariant electromagnetic field
+strength. It should cover construction from the vector potential,
+antisymmetry, the six-component count, and the observer-dependent split into
+electric and magnetic fields.
+
+### Exposition
+
+The electromagnetic field tensor is the covariant package for classical
+electromagnetism. Starting from the vector potential,
+\[
+F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+\]
+This immediately gives
+\[
+F_{\mu\nu}=-F_{\nu\mu}.
+\]
+
+Antisymmetry is not decorative. A general \(4\times4\) tensor has sixteen
+entries. Antisymmetry sets the four diagonal entries to zero and pairs each
+off-diagonal entry with an opposite-sign partner. That leaves six independent
+components.
+
+Those six components are physically suggestive. After choosing an inertial
+frame, the time-space components are identified with the electric field, while
+the spatial antisymmetric components are identified with the magnetic field.
+Signs and factors of \(c\) depend on the convention for \(x^0\), \(A^\mu\),
+index placement, and metric signature.
+
+The tensor view explains why electric and magnetic fields mix between
+observers. A Lorentz boost mixes time and space directions. Since \(\mathbf E\)
+comes from time-space components and \(\mathbf B\) from space-space components,
+another observer can split the same \(F_{\mu\nu}\) differently.
+
+The construction from \(A_\mu\) also builds in a structural identity. Cyclic
+derivatives of \(F_{\mu\nu}\) cancel because partial derivatives commute. In
+three-vector language, this becomes the homogeneous half of Maxwell's
+equations.
+
+### Block Plan
+
+- `overview`: One tensor for electromagnetism.
+- `definition`: \(F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu\).
+- `construction`: Antisymmetry.
+- `intuition`: Six components.
+- `explanation`: Frame split into \(\mathbf E\) and \(\mathbf B\).
+- `warning`: Index placement and metric signs.
+- `explanation`: Lorentz mixing.
+- `construction`: Homogeneous-structure hint.
+- `misconception`: Not two unrelated fields.
+- `historical_note`: Minkowski formulation.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize \(F_{\mu\nu}\) as the unified relativistic object.
+2. Interpret its definition from \(A_\mu\).
+3. Count independent antisymmetric components.
+4. Read off electric and magnetic parts.
+5. Explain Lorentz mixing.
+6. Explain convention sensitivity of index placement.
+
+### References
+
+- TTM SR/CF: electromagnetic field tensor construction from the four-potential;
+  precise locator needed.
+- TRR: unification and Lorentz mixing of electric and magnetic components;
+  precise locator needed.
+
+### Graphics
+
+The existing tensor-matrix graphic is appropriate. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Sign conventions for \(F_{\mu\nu}\), \(F^{\mu\nu}\), and the \(E/B\) split
+  are a notation-glossary priority.
+
+#### Atlas Issues
+
+- The field tensor really wants a richer edge type for "constructed from" the
+  vector potential.
+
+
+## 7.3 `sr.electric_field`: Electric field
+
+### Scope
+
+This concept explains the electric field as the frame-dependent time-space
+part of the electromagnetic field tensor, while retaining the elementary force
+interpretation. It should not rederive the Lorentz force law in full.
+
+### Exposition
+
+The electric field is the part of the electromagnetic field that acts on a
+charge at rest in a chosen inertial frame. Operationally, it is force per unit
+charge for such a test charge.
+
+Relativistically, the words "in a chosen frame" matter. The electromagnetic
+field tensor \(F_{\mu\nu}\) is the covariant object. Once an observer splits
+spacetime into time plus space, the components with one time index and one
+space index are identified with the electric field:
+\[
+F_{0i}\quad\hbox{or}\quad F^{0i},
+\]
+depending on convention.
+
+In ordinary potential language,
+\[
+\mathbf E=-\nabla\phi-\frac{\partial\mathbf A}{\partial t}.
+\]
+The first term is familiar from electrostatics: the electric field points down
+the scalar-potential gradient for a positive test charge. The second term shows
+that a time-varying vector potential also contributes to the electric field.
+
+Another observer moving relative to the first may decompose the same
+\(F_{\mu\nu}\) differently. Part of what one observer calls electric can appear
+as magnetic to another. Thus \(\mathbf E\) is physically meaningful and directly
+useful, but it is not the whole invariant electromagnetic object.
+
+### Block Plan
+
+- `overview`: Field seen by charges at rest.
+- `definition`: Force per unit charge and tensor location.
+- `warning`: Frame choice.
+- `construction`: Time-space components.
+- `derivation`: \(\mathbf E=-\nabla\phi-\partial_t\mathbf A\).
+- `example`: Static potential.
+- `intuition`: Force meaning.
+- `misconception`: Not absolute by itself.
+- `historical_note`: Electrostatics to tensor component.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Locate \(\mathbf E\) in \(F_{\mu\nu}\).
+2. Explain frame dependence.
+3. State the operational meaning.
+4. Compute a one-dimensional electrostatic example.
+5. Identify convention-sensitive signs and factors.
+6. Name the safer covariant object.
+
+### References
+
+- TTM SR/CF: electric field as part of the relativistic electromagnetic field;
+  precise locator needed.
+- TRR: frame-dependent electric/magnetic split; precise locator needed.
+
+### Graphics
+
+The existing graphic showing electric field arrows is acceptable. Retain for
+this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Potential-form definitions of \(\mathbf E\) and \(\mathbf B\) need a shared
+  convention note in the future notation glossary.
+
+#### Atlas Issues
+
+- A later Lorentz-force concept owns the full force law; this section only uses
+  the force-at-rest interpretation.
+
+
+## 7.4 `sr.magnetic_field`: Magnetic field
+
+### Scope
+
+This concept explains the magnetic field as the frame-dependent spatial
+antisymmetric part of the electromagnetic field tensor. It should connect to
+currents, moving charges, and \(\mathbf B=\nabla\times\mathbf A\), without
+taking over the full Lorentz-force or Maxwell-equation treatments.
+
+### Exposition
+
+The magnetic field is the part of the electromagnetic field associated with
+currents and with sideways forces on moving charges. In a chosen inertial
+frame, it is read from the purely spatial components of the field tensor.
+
+The spatial block \(F_{ij}\) is antisymmetric. In three spatial dimensions an
+antisymmetric \(3\times3\) block has three independent components, and those
+components can be encoded as the magnetic field vector \(\mathbf B\).
+
+In ordinary potential language,
+\[
+\mathbf B=\nabla\times\mathbf A.
+\]
+This is the spatial curl-like part of the antisymmetric derivative used to
+construct \(F_{\mu\nu}\). It also hints at the homogeneous Maxwell equation
+\[
+\nabla\cdot\mathbf B=0,
+\]
+since the divergence of a curl vanishes for smooth potentials.
+
+The familiar magnetic-force term is proportional to
+\[
+\mathbf v\times\mathbf B.
+\]
+That expression makes the frame dependence vivid: magnetic effects in one
+frame may appear with a different mixture of electric and magnetic components
+in another. The covariant object is \(F_{\mu\nu}\), not a separate magnetic
+substance.
+
+### Block Plan
+
+- `overview`: Motion and current.
+- `definition`: Spatial components of \(F_{\mu\nu}\).
+- `construction`: Spatial antisymmetry.
+- `derivation`: \(\mathbf B=\nabla\times\mathbf A\).
+- `intuition`: Sideways force.
+- `example`: Current-carrying wire.
+- `warning`: Frame-dependent split.
+- `explanation`: No-monopole hint.
+- `misconception`: Not a separate substance.
+- `historical_note`: Magnetism to electromagnetism.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Locate \(\mathbf B\) in \(F_{\mu\nu}\).
+2. Explain why electric and magnetic fields are not separate substances.
+3. Count antisymmetric spatial components.
+4. Compute a curl example.
+5. Interpret motion-dependent force.
+6. Connect \(\mathbf B=\nabla\times\mathbf A\) to \(\nabla\cdot\mathbf B=0\).
+
+### References
+
+- TTM SR/CF: magnetic field as spatial part of the electromagnetic tensor;
+  precise locator needed.
+- TRR: relativistic electric/magnetic mixing; precise locator needed.
+
+### Graphics
+
+The existing graphic showing a circulating magnetic pattern is appropriate.
+Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- The Levi-Civita mapping between antisymmetric spatial tensor components and
+  the \(\mathbf B\) vector may need an optional detail or glossary entry later.
+
+#### Atlas Issues
+
+- Magnetic monopoles are intentionally only hinted at here; there is no
+  separate concept for monopole extensions.
+
+
+## 7.5 `sr.electromagnetic_field`: Electromagnetic field
+
+### Scope
+
+This concept synthesises electric field, magnetic field, and field tensor into
+the unified relativistic electromagnetic field. It should emphasise the
+observer-dependent split and the local-field viewpoint without deriving
+Maxwell's equations.
+
+### Exposition
+
+The electromagnetic field is one physical field. In relativistic notation it is
+represented by the antisymmetric field tensor \(F_{\mu\nu}\). After an inertial
+frame is chosen, its six independent components are read as
+\[
+\mathbf E \quad\hbox{and}\quad \mathbf B.
+\]
+The tensor is the package; the electric and magnetic fields are one observer's
+unpacking.
+
+This is more than tidy notation. A Lorentz boost mixes time and space
+directions. Since electric components are time-space parts of \(F_{\mu\nu}\)
+and magnetic components are space-space parts, a boost can mix what observers
+call electric and magnetic. The separate three-vector fields are therefore
+frame-dependent descriptions of one covariant object.
+
+The field is also local. Electromagnetic influence is represented by field
+values throughout spacetime and by local differential equations, not by direct
+instantaneous action between distant charges. Later concepts use this field to
+write Maxwell's equations, field energy density, Poynting flux, and the
+electromagnetic stress-energy tensor.
+
+Historically, Maxwell unified electricity, magnetism, and light dynamically.
+Special relativity and Minkowski spacetime made the unification geometrically
+explicit.
+
+### Block Plan
+
+- `overview`: One field, two frame faces.
+- `definition`: \(F_{\mu\nu}\), \(\mathbf E\), and \(\mathbf B\).
+- `construction`: Six-component package.
+- `intuition`: Observer-dependent decomposition.
+- `explanation`: Lorentz mixing.
+- `explanation`: Local physical field.
+- `example`: Energy and momentum preview.
+- `misconception`: Not two substances.
+- `historical_note`: Maxwell, Einstein, Minkowski.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Identify the covariant electromagnetic object.
+2. Explain observer-dependent decomposition.
+3. Explain the six-component count.
+4. Count components in a frame example.
+5. Explain local field language.
+6. State the corrected misconception.
+
+### References
+
+- TTM SR/CF: unified electromagnetic field and field tensor; precise locator
+  needed.
+- TRR: relativistic unification of electric and magnetic fields; precise
+  locator needed.
+
+### Graphics
+
+The existing graphic presenting \(E\), \(B\), and \(F\) as one structure is
+appropriate. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Some future view may want to show the same \(F_{\mu\nu}\) decomposed by two
+  observers side by side.
+
+#### Atlas Issues
+
+- This is a synthesis concept; edge types may later distinguish packaging,
+  decomposition, and prerequisite relations more carefully.
+
+
+## 7.6 `sr.four_current`: Four-current
+
+### Scope
+
+This concept introduces \(j^\mu\) as the covariant source object for
+electromagnetism. It should connect charge density, current density, Maxwell's
+equations, and local charge conservation.
+
+### Exposition
+
+Charge density by itself is not a relativistic source. If charges are moving,
+different inertial observers can disagree about what part of the description
+looks like density and what part looks like current. The covariant object is
+the four-current:
+\[
+j^\mu=(c\rho,\mathbf j).
+\]
+
+The factor \(c\) gives the time component the same dimensional character as the
+spatial current components and fits the four-vector transformation law. The
+time component records local charge density. The spatial components record
+charge flux through small surfaces.
+
+The four-current is the source in covariant Maxwell equations:
+\[
+\partial_\mu F^{\mu\nu}=\mu_0 j^\nu.
+\]
+This equation says the electromagnetic field is sourced locally by charge and
+current at the same spacetime event.
+
+Charge conservation has an especially compact form:
+\[
+\partial_\mu j^\mu=0.
+\]
+Expanding this gives the ordinary continuity equation
+\[
+\frac{\partial\rho}{\partial t}+\nabla\cdot\mathbf j=0.
+\]
+Charge in a small region can change only because charge flows through the
+boundary.
+
+### Block Plan
+
+- `overview`: Charge flow as a four-vector.
+- `definition`: \(j^\mu=(c\rho,\mathbf j)\).
+- `explanation`: Why \(c\rho\).
+- `misconception`: Charge density alone is not enough.
+- `intuition`: Local charge flow.
+- `construction`: Four-divergence and conservation.
+- `example`: Source for the field.
+- `example`: Wire intuition.
+- `historical_note`: Sources made covariant.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Identify the four-current.
+2. Explain why charge density alone is insufficient.
+3. Interpret \(\partial_\mu j^\mu=0\).
+4. Compute \(j^\mu\) from \(\rho\) and \(\mathbf j\).
+5. Locate \(j^\mu\) in Maxwell equations.
+6. Give the geometric interpretation.
+
+### References
+
+- TTM SR/CF: four-current definition and source role; precise locator needed.
+- TRR: relativistic packaging of charge and current density; precise locator
+  needed.
+
+### Graphics
+
+The existing source-flow graphic is appropriate. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Source units and SI/natural-unit conventions need consistent notation
+  glossary handling.
+
+#### Atlas Issues
+
+- Later charge-conservation content owns the detailed derivation from Maxwell's
+  equations; this concept only introduces the continuity form.
+
+
+## 7.7 `sr.maxwells_equations`: Maxwell's equations
+
+### Scope
+
+This concept presents Maxwell's equations as the local relativistic field
+equations of electromagnetism. It should show the covariant source equation,
+the homogeneous identity, the relation to the usual four equations, and the
+links to charge conservation and waves.
+
+### Exposition
+
+Maxwell's equations are the field equations governing the electromagnetic
+field. In relativistic notation, much of their structure is compressed into two
+covariant statements.
+
+The sourced equation is
+\[
+\partial_\mu F^{\mu\nu}=\mu_0 j^\nu,
+\]
+in SI-style conventions. It relates local derivatives of the electromagnetic
+field tensor to the local four-current source.
+
+The homogeneous equation is
+\[
+\partial_\lambda F_{\mu\nu}
++\partial_\mu F_{\nu\lambda}
++\partial_\nu F_{\lambda\mu}=0.
+\]
+This follows from the construction
+\[
+F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+\]
+When the cyclic derivative is expanded, second-derivative terms cancel in
+pairs because partial derivatives commute.
+
+After choosing an inertial frame, these compact equations become the familiar
+four Maxwell equations: Gauss's law for electricity, Gauss's law for magnetism,
+Faraday's law, and the Ampere-Maxwell law. The covariant form shows why the
+four equations belong together.
+
+The equations are also internally consistent with charge conservation. Taking
+the divergence of the sourced equation gives
+\[
+\partial_\nu\partial_\mu F^{\mu\nu}=\mu_0\partial_\nu j^\nu.
+\]
+The left side vanishes because a symmetric double derivative is contracted
+with an antisymmetric tensor, so
+\[
+\partial_\mu j^\mu=0.
+\]
+
+In source-free regions, \(j^\mu=0\), Maxwell's equations still allow nonzero
+field configurations. Those solutions include electromagnetic waves travelling
+at the invariant light speed.
+
+### Block Plan
+
+- `overview`: Local laws of electromagnetism.
+- `definition`: Maxwell's equations govern the electromagnetic field.
+- `definition`: Sourced equation.
+- `definition`: Homogeneous equation.
+- `derivation`: From the field action.
+- `derivation_step`: Homogeneous cancellation.
+- `explanation`: Usual four equations.
+- `construction`: Charge conservation.
+- `example`: Source-free waves.
+- `misconception`: Not four unrelated formulas.
+- `historical_note`: Maxwell and light.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Explain the advantage of covariant form.
+2. Interpret the sourced equation.
+3. Explain the homogeneous cancellation.
+4. Reduce the sourced equation in a source-free region.
+5. Derive charge-conservation consistency.
+6. Explain why the four usual equations belong together.
+
+### References
+
+- TTM SR/CF: covariant Maxwell equations and four-current source; precise
+  locator needed.
+- TRR: Maxwell theory, light, and relativistic field structure; precise
+  locator needed.
+
+### Graphics
+
+The existing Maxwell graphic is adequate for this pass. Later we may want a
+more explicit covariant-pair-to-four-equations graphic.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- This section would benefit from foldable convention notes for SI vs natural
+  units and sign conventions.
+
+#### Atlas Issues
+
+- A future richer edge vocabulary should distinguish "component split",
+  "source equation", and "identity from construction".
+
+
+## 8.1 `sr.gauge_invariance`: Gauge invariance
+
+### Scope
+
+This concept introduces electromagnetic gauge invariance as redundancy in the
+potential description. It should prove the invariance of \(F_{\mu\nu}\), explain
+why this is not a physical change, and prepare gauge fixing and minimal
+coupling.
+
+### Exposition
+
+Gauge invariance says that the electromagnetic potential contains redundancy.
+The transformation
+\[
+A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
+\]
+changes the potential, but not the electromagnetic field tensor.
+
+To see this, substitute the transformed potential into
+\[
+F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+\]
+The added terms are
+\[
+\partial_\mu\partial_\nu\Lambda-\partial_\nu\partial_\mu\Lambda.
+\]
+For a smooth gauge function \(\Lambda\), partial derivatives commute, so this
+difference vanishes. Therefore \(F_{\mu\nu}\) is unchanged.
+
+This is conceptually important. We are used to thinking that changing a field
+variable changes the physical situation. Gauge invariance says that not every
+change in \(A_\mu\) is physical. Gauge-related potentials are different
+representatives of the same electromagnetic field.
+
+In classical electromagnetism, the physical field strength is \(F_{\mu\nu}\),
+or the electric and magnetic fields read from it after a frame is chosen.
+The potential remains structurally important, especially in action principles
+and in coupling to charged matter, but its gauge-dependent part is redundant.
+
+This redundancy explains why gauge fixing is possible: one may impose an extra
+condition to choose a convenient representative without changing the field.
+It also constrains interactions, because charged matter must couple in a way
+that respects the gauge redundancy.
+
+### Block Plan
+
+- `overview`: Redundancy without physical change.
+- `definition`: \(A_\mu\rightarrow A_\mu+\partial_\mu\Lambda\).
+- `derivation`: Cancellation in \(F_{\mu\nu}\).
+- `intuition`: Many descriptions, one field.
+- `misconception`: Not every change in \(A_\mu\) is physical.
+- `explanation`: Observable quantities.
+- `construction`: Why gauge fixing exists.
+- `example`: Constraint on interactions.
+- `historical_note`: From potential freedom to gauge theory.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize gauge invariance.
+2. Explain the derivative cancellation.
+3. Interpret redundancy of the potential.
+4. Compute a simple mixed-derivative cancellation.
+5. Explain why gauge fixing is allowed.
+6. Connect gauge invariance to interactions.
+
+### References
+
+- TTM SR/CF: gauge transformation of the electromagnetic potential; precise
+  locator needed.
+- TRR: gauge freedom as a structural principle in field theory; precise locator
+  needed.
+
+### Graphics
+
+The existing gauge-equivalent-potential graphic is appropriate. Retain for this
+pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Gauge function notation \(\Lambda\) should be included in the future notation
+  glossary.
+
+#### Atlas Issues
+
+- The missing 8.2 slot remains unresolved; it may eventually hold a bridge
+  concept such as "gauge freedom" or "potential equivalence class".
+
+
+## 8.3 `sr.minimal_coupling`: Minimal coupling
+
+### Scope
+
+This concept explains minimal coupling as the economical, local,
+gauge-compatible way to introduce electromagnetic interaction into charged
+particle dynamics. It should prepare the Lorentz force law without doing that
+full derivation.
+
+### Exposition
+
+Minimal coupling is the standard prescription for making a charged particle
+interact with electromagnetism. In momentum language it is often represented by
+a potential-dependent combination such as
+\[
+p_\mu-eA_\mu.
+\]
+In action language the interaction term can be written proportionally to
+\[
+eA_\mu dx^\mu.
+\]
+
+The word minimal means that the simplest local coupling is used. We do not add
+extra higher-order or nonlocal terms unless there is a separate physical reason
+to do so. The vector potential enters directly because it is the local field
+variable that couples to charge.
+
+The contraction \(A_\mu dx^\mu\) is a Lorentz scalar, so it can be added to the
+action without selecting a preferred inertial frame. Gauge invariance also
+constrains the coupling: gauge-related potentials must not lead to different
+physical predictions.
+
+Minimal coupling also explains why canonical and mechanical momentum can
+differ. Once the Lagrangian contains the vector potential, the momentum
+conjugate to position can include \(A_\mu\)-dependent pieces. The mechanical
+momentum still tracks the particle's motion.
+
+Varying the minimally coupled action produces the Lorentz force law. In that
+calculation, derivatives of \(A_\mu\) combine into the field tensor
+\(F_{\mu\nu}\).
+
+### Block Plan
+
+- `overview`: Economical electromagnetic interaction.
+- `definition`: \(p_\mu-eA_\mu\).
+- `explanation`: What minimal means.
+- `construction`: Worldline coupling.
+- `construction`: Momentum replacement.
+- `intuition`: Gauge compatibility.
+- `example`: Canonical versus mechanical momentum.
+- `derivation`: Toward the force law.
+- `misconception`: Not an arbitrary substitution trick.
+- `historical_note`: Bridge to modern gauge theory.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize minimal coupling.
+2. Explain "minimal".
+3. Explain why \(eA_\mu dx^\mu\) is relativistically natural.
+4. Compute a simple \(p-eA\) combination.
+5. Explain canonical versus mechanical momentum.
+6. Connect to the Lorentz force law.
+
+### References
+
+- TTM SR/CF: minimal coupling of charged particles to electromagnetic
+  potentials; precise locator needed.
+- TRR: gauge-compatible coupling as a field-theory principle; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic showing potential insertion into particle dynamics is
+appropriate. Retain for this pass.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Sign conventions for \(p_\mu-eA_\mu\) and charge \(e\) should be handled in
+  the future notation glossary.
+
+#### Atlas Issues
+
+- The missing 8.2 slot may affect layer narrative: gauge invariance jumps
+  directly to minimal coupling without a separate gauge-freedom bridge.
+
+
+## 8.4 `sr.lorentz_force_law`: Lorentz force law
+
+### Scope
+
+This concept explains how an electromagnetic field moves a charged particle.
+It should connect minimal coupling to the covariant force law, relate that
+equation to the familiar three-vector expression, and avoid taking over the
+later radiation-reaction concept.
+
+### Exposition
+
+The Lorentz force law is the bridge from field to particle motion. In covariant
+form it is
+\[
+\frac{dp^\mu}{d\tau}=qF^\mu{}_{\nu}U^\nu,
+\]
+where \(p^\mu\) is the particle's momentum four-vector, \(U^\nu\) is its
+velocity four-vector, \(F^\mu{}_{\nu}\) is the electromagnetic field tensor,
+and \(q\) is the charge.
+
+In a chosen inertial frame the spatial part becomes the familiar three-vector
+law
+\[
+\mathbf F=q(\mathbf E+\mathbf v\times\mathbf B).
+\]
+The electric field contributes a force along the field direction. The magnetic
+field contributes a sideways, velocity-dependent force.
+
+The covariant law follows from the action principle applied to a charged
+particle with minimal coupling. In the worldline variation, derivative terms
+from the potential combine as
+\[
+\partial_\mu A_\nu-\partial_\nu A_\mu,
+\]
+which is precisely \(F_{\mu\nu}\). Thus the force law depends on the
+gauge-invariant field tensor, not on a gauge-dependent part of the potential.
+
+The electric and magnetic pieces have different roles in an inertial frame. A
+charge at rest feels no magnetic force, because the magnetic term contains the
+velocity. In a magnetic-only situation the force is perpendicular to the
+velocity. Taking the dot product with \(\mathbf v\),
+\[
+\mathbf F\cdot\mathbf v
+=q\mathbf E\cdot\mathbf v+q(\mathbf v\times\mathbf B)\cdot\mathbf v,
+\]
+and the magnetic term is zero. In that frame, the electric field is the part
+that changes the particle's energy directly.
+
+Signs and factors of \(c\) depend on metric signature, index placement, charge
+convention, and the convention used to place \(\mathbf E\) and \(\mathbf B\)
+inside \(F_{\mu\nu}\). The physical content is unchanged when the convention
+is used consistently.
+
+The basic Lorentz force law does not solve every problem involving a charged
+particle. In particular, it does not by itself include the reaction of an
+accelerating charge to its own emitted radiation. That is the separate
+radiation-reaction problem.
+
+### Block Plan
+
+- `overview`: How fields move charges.
+- `definition`: Covariant Lorentz force law.
+- `explanation`: Three-vector form.
+- `construction`: From the action.
+- `derivation_step`: Why the field tensor appears.
+- `intuition`: Electric and magnetic roles.
+- `derivation`: Power delivered to the particle.
+- `warning`: Conventions matter.
+- `misconception`: Not the whole story for an emitting charge.
+- `historical_note`: Lorentz's synthesis.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize the three-vector law.
+2. Interpret the covariant equation.
+3. Compute a simple \(\mathbf E+\mathbf v\times\mathbf B\) force.
+4. Explain why magnetic force does no work in a magnetic-only case.
+5. Explain why \(F_{\mu\nu}\) appears.
+6. Identify what radiation reaction adds beyond the basic law.
+
+### References
+
+- TTM SR/CF: covariant and ordinary Lorentz force law; precise locator needed.
+- TRR: relativistic electrodynamics and field tensor context; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic is adequate for this pass. A future revision could show a
+charged trajectory curving in a magnetic field beside the covariant tensor
+equation.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Sign conventions for the field tensor and the charge \(q\) should be covered
+  by the future notation glossary.
+
+#### Atlas Issues
+
+- Radiation reaction is intentionally kept out of this concept except as a
+  boundary note.
+
+
+## 8.5 `sr.charge_conservation`: Charge conservation
+
+### Scope
+
+This concept treats charge conservation as a local continuity equation. It
+should explain the physical bookkeeping meaning, show how the equation follows
+from Maxwell's sourced field equation, and avoid turning into a full account of
+electric charge or four-current.
+
+### Exposition
+
+Charge conservation says more than that the total charge of a complete isolated
+system stays fixed. It says charge can leave a region only by flowing through
+the boundary of that region. Locally, the relativistic statement is
+\[
+\partial_\mu j^\mu=0,
+\]
+where \(j^\mu\) is the four-current.
+
+In ordinary vector notation this becomes
+\[
+\frac{\partial \rho}{\partial t}+\nabla\cdot\mathbf j=0.
+\]
+If \(\nabla\cdot\mathbf j\) is positive, more current is flowing out than in,
+so the charge density decreases. If it is negative, current is converging and
+the charge density increases.
+
+Integrating the local equation over a fixed volume \(V\) gives
+\[
+\frac{d}{dt}\int_V\rho\,d^3x
+=-\int_V\nabla\cdot\mathbf j\,d^3x.
+\]
+Using the divergence theorem,
+\[
+\frac{dQ_V}{dt}=-\oint_{\partial V}\mathbf j\cdot d\mathbf a.
+\]
+The charge inside the volume changes by the negative of the outward current
+flux.
+
+In Maxwell theory charge conservation is also a consistency condition. Taking
+the divergence of the sourced equation
+\[
+\partial_\mu F^{\mu\nu}=\mu_0j^\nu
+\]
+gives
+\[
+\partial_\nu\partial_\mu F^{\mu\nu}=\mu_0\partial_\nu j^\nu.
+\]
+The left-hand side vanishes because \(F^{\mu\nu}\) is antisymmetric, while the
+commuting double derivative is symmetric in the two indices. Therefore
+\[
+\partial_\nu j^\nu=0.
+\]
+
+A global conservation law alone would allow too much. It might say the total
+charge is unchanged, but not how charge gets from one place to another. The
+local continuity equation forbids charge from disappearing here and reappearing
+elsewhere without a current connecting the events.
+
+### Block Plan
+
+- `overview`: Local bookkeeping.
+- `definition`: Covariant and ordinary continuity equation.
+- `intuition`: What the equation says.
+- `derivation_step`: From local to integral form.
+- `derivation`: Consistency of Maxwell's equations.
+- `explanation`: Why antisymmetry matters.
+- `misconception`: Not just a global rule.
+- `warning`: Sources must be compatible.
+- `historical_note`: From circuits to fields.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize \(\partial_\mu j^\mu=0\).
+2. Interpret the ordinary continuity equation.
+3. Compute a simple one-dimensional density change.
+4. Explain the Maxwell-equation derivation.
+5. Distinguish local and global conservation.
+6. Explain why inconsistent sources are forbidden.
+
+### References
+
+- TTM SR/CF: four-current and continuity equation; precise locator needed.
+- TRR: charge conservation as a consistency condition of Maxwell theory;
+  precise locator needed.
+
+### Graphics
+
+The existing graphic showing current flux out of a region remains appropriate.
+A future refinement could make the local-to-integral relationship more explicit.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Divergence theorem notation may eventually deserve a mathematical sidebar or
+  linked mathematics concept.
+
+#### Atlas Issues
+
+- Four-current remains the main prerequisite; no new concept split needed here.
+
+
+## 8.6 `sr.lorenz_gauge`: Lorenz gauge
+
+### Scope
+
+This concept explains the Lorenz gauge as a covariant condition on the
+electromagnetic potential. It should connect gauge fixing, gauge invariance,
+and the wave-equation form of Maxwell's equations, while avoiding the later
+full wave-equation and electromagnetic-wave concepts.
+
+### Exposition
+
+The Lorenz gauge is the condition
+\[
+\partial_\mu A^\mu=0
+\]
+imposed on the vector potential. It is a particular gauge choice: it chooses a
+convenient representative from a gauge-equivalent family of potentials.
+
+This is allowed because the electromagnetic potential has gauge redundancy.
+Gauge-related potentials represent the same physical electromagnetic field.
+The gauge condition changes the description, not \(F_{\mu\nu}\).
+
+The Lorenz gauge is especially useful in relativity because
+\(\partial_\mu A^\mu\) is a scalar contraction. If it is zero in one inertial
+frame, it remains zero in every Lorentz-related inertial frame. Thus the gauge
+choice keeps covariance manifest.
+
+In potential form, the sourced Maxwell equation contains a term schematically
+like
+\[
+\Box A^\nu-\partial^\nu(\partial_\mu A^\mu)=\mu_0j^\nu.
+\]
+Imposing \(\partial_\mu A^\mu=0\) removes the second term, leaving a wave
+equation for each component of the potential, up to sign and unit conventions.
+
+The Lorenz gauge may not remove all gauge freedom. A further transformation
+\[
+A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
+\]
+preserves the condition if \(\Box\Lambda=0\). The remaining freedom is usually
+manageable, but it is worth remembering that gauge fixing is not always a
+complete elimination of redundancy.
+
+Finally, the spelling matters. This is the Lorenz gauge, named after Ludvig
+Lorenz, not Hendrik Lorentz. The confusion is natural because the condition is
+Lorentz-covariant.
+
+### Block Plan
+
+- `overview`: A covariant gauge choice.
+- `definition`: \(\partial_\mu A^\mu=0\).
+- `explanation`: Why a gauge condition is allowed.
+- `intuition`: Why this gauge is relativistic.
+- `derivation`: Maxwell equations become wave equations.
+- `warning`: It may not fix everything.
+- `misconception`: Not a new physical law.
+- `historical_note`: Lorenz, not Lorentz.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize the Lorenz gauge condition.
+2. Explain why gauge fixing is legitimate.
+3. Explain why the condition is covariant.
+4. Check a toy divergence condition.
+5. Explain the Maxwell-equation simplification.
+6. Avoid the Lorenz/Lorentz naming confusion.
+
+### References
+
+- TTM SR/CF: Lorenz gauge and potential form of Maxwell equations; precise
+  locator needed.
+- TRR: gauge conditions and covariant electrodynamics context; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic is adequate. A future version could show a family of
+gauge-equivalent potentials with the Lorenz-gauge slice highlighted.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Residual gauge freedom may need a future optional derivation or linked
+  mathematical side note.
+
+#### Atlas Issues
+
+- The connection to the wave equation is deliberately preparatory; the full
+  wave-equation concept remains in layer 10.
+
+
+## 9.1 `sr.energy_momentum_tensor`: Energy--momentum tensor
+
+### Scope
+
+This concept introduces \(T^{\mu\nu}\) as the general local bookkeeping object
+for energy and momentum in fields and continuous systems. It should derive the
+idea from spacetime translation symmetry and prepare the electromagnetic
+specializations in 9.2 to 9.4.
+
+### Exposition
+
+The energy-momentum tensor records how energy and momentum are stored and
+transported. It is a rank-two tensor \(T^{\mu\nu}\). For an isolated system its
+local conservation law is
+\[
+\partial_\mu T^{\mu\nu}=0.
+\]
+
+Roughly, one index describes the spacetime direction through which something
+flows, and the other describes which component of energy-momentum is being
+transported. \(T^{00}\) is energy density. Mixed time-space components encode
+energy flux or momentum density. Spatial-spatial components encode stresses:
+the flow of momentum through surfaces.
+
+The tensor arises naturally from Noether's theorem. Time translation symmetry
+gives energy conservation; spatial translation symmetry gives momentum
+conservation. In field theory these four conserved currents are assembled into
+one two-index object.
+
+For fields \(\phi_a\) with Lagrangian density
+\(\mathcal L(\phi_a,\partial_\mu\phi_a)\), a canonical expression is
+\[
+T^\mu{}_{\nu}
+=\frac{\partial\mathcal L}{\partial(\partial_\mu\phi_a)}
+\partial_\nu\phi_a-\delta^\mu{}_{\nu}\mathcal L.
+\]
+This formula displays the Noether-current origin of the tensor.
+
+The canonical tensor is not always the final physical form. It may not be
+symmetric, gauge-invariant, or the most useful representative. One can often
+add an improvement term whose divergence vanishes identically, so the conserved
+total energy and momentum do not change.
+
+For electromagnetism the useful symmetric tensor is built from the field
+tensor. In natural units and one common sign convention,
+\[
+T^{\mu\nu}
+=-F^{\mu\lambda}F^\nu{}_{\lambda}
++\frac14\eta^{\mu\nu}F^{\alpha\beta}F_{\alpha\beta}.
+\]
+Its components contain electromagnetic energy density, momentum density, flux,
+and stress.
+
+The most important idea is local flow. Energy or momentum does not disappear at
+a point. If a small region loses it, the loss is balanced by a flux through the
+boundary.
+
+### Block Plan
+
+- `overview`: Local energy-momentum bookkeeping.
+- `definition`: \(T^{\mu\nu}\) and \(\partial_\mu T^{\mu\nu}=0\).
+- `explanation`: What the indices mean.
+- `derivation`: Origin in translation symmetry.
+- `derivation_step`: Canonical form.
+- `intuition`: Conservation as flow.
+- `warning`: Canonical is not always final.
+- `example`: Electromagnetic example.
+- `misconception`: Not just energy density.
+- `historical_note`: From conservation laws to tensors.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize what the tensor packages.
+2. Interpret \(\partial_\mu T^{\mu\nu}=0\).
+3. Connect the tensor to Noether's theorem.
+4. Compute a simple one-dimensional conservation balance.
+5. Explain why improvement terms may be used.
+6. Avoid reducing the tensor to \(T^{00}\) only.
+
+### References
+
+- TTM SR/CF: energy-momentum tensor and translation symmetry; precise locator
+  needed.
+- TRR: stress-energy tensor in field theory and electromagnetism; precise
+  locator needed.
+
+### Graphics
+
+The existing graphic is acceptable. A future refinement could show a small
+spacetime box with energy density, energy flux, momentum density, and stress
+labels on different tensor components.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Tensor component interpretation would benefit from future richer graphics or
+  a table-like viewer block.
+
+#### Atlas Issues
+
+- The distinction between canonical, symmetric, and Hilbert stress-energy
+  tensors is compressed here. It may deserve a later advanced concept.
+
+
+## 9.2 `sr.poynting_vector`: Momentum density (Poynting vector)
+
+### Scope
+
+This concept explains the Poynting vector as electromagnetic energy flux and
+connects it to momentum density. It should prepare the stress-energy and energy
+density concepts without replacing them.
+
+### Exposition
+
+The Poynting vector tells us where electromagnetic energy is flowing. In SI
+units it is
+\[
+\mathbf S=\frac{1}{\mu_0}\mathbf E\times\mathbf B.
+\]
+It measures energy crossing unit area per unit time.
+
+The cross product is physically useful. It points perpendicular to both the
+electric and magnetic fields. In a plane wave with \(\mathbf E\) along \(y\)
+and \(\mathbf B\) along \(z\), \(\mathbf S\) points along \(x\), the direction
+of propagation.
+
+The Poynting vector is not the stored field energy. Energy density tells us how
+much electromagnetic energy is present in a small volume. \(\mathbf S\) tells
+us how quickly that energy flows through a surface and in which direction.
+
+In the electromagnetic energy-momentum tensor, the Poynting vector appears in
+the mixed time-space components. When those components are decomposed into
+\(\mathbf E\) and \(\mathbf B\), the combination \(\mathbf E\times\mathbf B\)
+appears.
+
+Relativity links energy flow and momentum density. In SI units the field
+momentum density is
+\[
+\mathbf g=\frac{\mathbf S}{c^2}.
+\]
+In natural units, \(c=1\), the relationship is less cluttered, though index and
+unit conventions still matter.
+
+A beam of light can exert radiation pressure because the electromagnetic field
+carries momentum. Absorbing or reflecting the beam transfers that momentum to
+matter.
+
+### Block Plan
+
+- `overview`: Energy in motion.
+- `definition`: SI formula.
+- `intuition`: Direction from a cross product.
+- `explanation`: Flux, not stored energy.
+- `derivation`: Origin in the energy-momentum tensor.
+- `definition`: Momentum density.
+- `example`: Radiation pressure.
+- `warning`: Unit conventions.
+- `misconception`: Not a stream of little arrows.
+- `historical_note`: Poynting's theorem.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize the SI formula.
+2. State the physical meaning.
+3. Compute a simple cross product.
+4. Relate \(\mathbf S\) to momentum density.
+5. Explain radiation pressure.
+6. Avoid the literal-arrow misconception.
+
+### References
+
+- TTM SR/CF: Poynting vector and electromagnetic momentum density; precise
+  locator needed.
+- TRR: electromagnetic energy flow and field momentum context; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic is appropriate. A future refinement could explicitly show
+energy flux through a small surface element.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Cross-product orientation could benefit from an interactive or animated
+  graphic later.
+
+#### Atlas Issues
+
+- The node title includes "Momentum density" although the concept also covers
+  energy flux. The current title is acceptable but slightly asymmetrical.
+
+
+## 9.3 `sr.em_stress_energy`: Stress-energy of EM field
+
+### Scope
+
+This concept treats the electromagnetic stress-energy tensor as the
+electromagnetic instance of the general energy-momentum tensor. It should
+explain the formula, the component interpretation, and the observer-dependent
+split without taking over the separate Poynting-vector or field-energy-density
+concepts.
+
+### Exposition
+
+The electromagnetic stress-energy tensor is the complete local accounting
+object for electromagnetic energy and momentum. It is the electromagnetic-field
+instance of the general energy-momentum tensor.
+
+It is built from the field tensor and the metric tensor. With the \(+---\)
+metric convention and suppressing unit-dependent constants, one common form is
+\[
+T^{\mu\nu}
+=-F^{\mu\lambda}F^\nu{}_{\lambda}
++\frac14\eta^{\mu\nu}F^{\alpha\beta}F_{\alpha\beta}.
+\]
+
+The expression is quadratic in \(F_{\mu\nu}\). That is physically natural:
+reversing the electromagnetic field should not reverse the sign of the field
+energy. Quadratic contractions are the simplest Lorentz-covariant way to build
+that behaviour while retaining two free indices for density, flow, and stress.
+
+In a chosen inertial frame, \(T^{00}\) is field energy density. Mixed
+time-space components describe energy flux and momentum density.
+Spatial-spatial components describe stresses: momentum flowing across surfaces.
+Radiation pressure is a concrete example. Light striking a surface carries
+momentum, so it can push.
+
+The split into energy density, momentum density, flux, and stress is
+frame-dependent. Different observers decompose the same tensor differently.
+The covariant object is \(T^{\mu\nu}\) itself.
+
+The stress-energy tensor is not an additional electromagnetic field. It is
+built from \(F_{\mu\nu}\) to describe what energy and momentum that field
+carries and transfers.
+
+### Block Plan
+
+- `overview`: The field's accounting tensor.
+- `definition`: Electromagnetic instance of \(T^{\mu\nu}\).
+- `derivation`: Tensor formula.
+- `intuition`: Why it is quadratic.
+- `explanation`: Component meaning.
+- `example`: Stress and pressure.
+- `warning`: Observer-dependent split.
+- `misconception`: Not a new electromagnetic field.
+- `historical_note`: Electromagnetic momentum made local.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize why the tensor is richer than energy density.
+2. Identify construction from \(F_{\mu\nu}\) and the metric.
+3. Explain the quadratic dependence.
+4. Compute a simple radiation-pressure value.
+5. Explain observer-dependent component splits.
+6. Avoid treating the tensor as a new field.
+
+### References
+
+- TTM SR/CF: electromagnetic stress-energy tensor formula; precise locator
+  needed.
+- TRR: stress-energy tensor and frame-dependent component decomposition;
+  precise locator needed.
+
+### Graphics
+
+The current component-grid graphic is adequate. A future version could use
+colour-coded tensor blocks for density, flux, momentum density, and stress.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- This concept would benefit from a table-style mathematical block in the
+  viewer for component interpretation.
+
+#### Atlas Issues
+
+- A future advanced concept may distinguish Maxwell stress tensor, Hilbert
+  stress-energy tensor, and canonical tensor more carefully.
+
+
+## 9.4 `sr.em_energy_density`: Energy density of EM field
+
+### Scope
+
+This concept explains the local energy density of the electromagnetic field. It
+should give the familiar SI formula, connect it to \(T^{00}\), and emphasize
+that field energy is locally stored and transported.
+
+### Exposition
+
+Electromagnetic fields can store energy locally, even in a region where no
+charged particles are present. In SI units the energy density is
+\[
+u=\frac12\left(\epsilon_0E^2+\frac{1}{\mu_0}B^2\right).
+\]
+Here \(\mathbf E\) and \(\mathbf B\) are the electric and magnetic fields.
+
+In a chosen inertial frame, this energy density is the time-time component of
+the electromagnetic energy-momentum tensor:
+\[
+T^{00}=u.
+\]
+Substituting the electric and magnetic components of the field tensor gives the
+squared-field formula.
+
+The squared dependence is natural. Reversing the sign of \(\mathbf E\) or
+\(\mathbf B\) should not make stored energy negative. The leading local
+quantities with the right behaviour are \(E^2\) and \(B^2\).
+
+This is a conceptual step beyond treating fields only as devices for exerting
+forces on charges. Energy can be stored in the field between charges and can
+flow through space. Electromagnetic waves make that point vivid: field energy
+travels.
+
+In a plane wave, the electric and magnetic contributions to the energy density
+are equal in SI units. The energy is shared between the two field components
+while the wave propagates.
+
+Energy density is still a frame-dependent component. Another inertial observer
+decomposes the same stress-energy tensor differently. The covariant account is
+the full tensor, not \(u\) alone.
+
+### Block Plan
+
+- `overview`: Energy stored in fields.
+- `definition`: SI formula.
+- `derivation`: The \(T^{00}\) component.
+- `intuition`: Why squared fields appear.
+- `explanation`: Energy beyond particles.
+- `example`: Plane-wave balance.
+- `warning`: Energy density is frame-dependent.
+- `misconception`: Not just potential energy between charges.
+- `historical_note`: Maxwell's field energy.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. State what energy density measures.
+2. Explain squared field strengths.
+3. Compute a simplified energy density.
+4. Relate \(u\) to \(T^{00}\).
+5. Explain energy in fields rather than only particles.
+6. Explain why \(u\) is not the full covariant account.
+
+### References
+
+- TTM SR/CF: electromagnetic energy density formula; precise locator needed.
+- TRR: field energy and electromagnetic radiation context; precise locator
+  needed.
+
+### Graphics
+
+The current graphic is adequate. A future version could pair local field energy
+density with nearby Poynting-vector flow arrows.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- The viewer may later benefit from equation-callout styling for formulas that
+  are intended as key results.
+
+#### Atlas Issues
+
+- This concept naturally points to electromagnetic waves, but detailed wave
+  structure is left to layer 10.
+
+
+## 10.1 `sr.wave_equation`: Wave equation
+
+### Scope
+
+This concept introduces the relativistic wave equation as a mathematical
+structure for finite-speed propagation. It should show how Maxwell's equations
+lead to a potential wave equation in Lorenz gauge and prepare the specific
+electromagnetic-wave concept.
+
+### Exposition
+
+The wave equation is the mathematical pattern for disturbances that propagate
+through spacetime at a finite speed. In relativity it uses the d'Alembertian
+operator
+\[
+\Box=\partial_\mu\partial^\mu
+=\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2
+\]
+for the \(+---\) metric convention. A source-free scalar component satisfies
+\[
+\Box\psi=0.
+\]
+
+The d'Alembertian is built from the metric. Its time and spatial parts enter
+with opposite signs, encoding the light-cone structure of relativistic
+propagation.
+
+In electromagnetism, write the field in terms of the vector potential and
+impose the Lorenz gauge. The potential form of Maxwell's equations then becomes
+schematically
+\[
+\Box A^\mu=\mu_0j^\mu.
+\]
+If the four-current vanishes in a region, this reduces to
+\[
+\Box A^\mu=0.
+\]
+
+Plane waves show the propagation speed directly. Trying
+\[
+\psi=e^{i(kx-\omega t)}
+\]
+in \(\Box\psi=0\) gives
+\[
+-\frac{\omega^2}{c^2}+k^2=0,
+\]
+so \(\omega=ck\).
+
+The source-free wave equation describes free propagation. With sources present,
+the equation describes how charges and currents generate or drive fields.
+
+### Block Plan
+
+- `overview`: Finite-speed propagation.
+- `definition`: D'Alembertian and source-free equation.
+- `explanation`: Metric structure.
+- `derivation`: From Maxwell equations.
+- `derivation_step`: Source-free region.
+- `example`: Plane-wave test.
+- `warning`: Sources change the equation.
+- `misconception`: Not every oscillation is a wave equation.
+- `historical_note`: Maxwell's prediction of light.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize the d'Alembertian.
+2. Explain the Lorenz-gauge simplification.
+3. Compute \(\omega=ck\).
+4. Explain source terms.
+5. Explain why the metric matters.
+6. Distinguish a wave equation from mere oscillation.
+
+### References
+
+- TTM SR/CF: wave equation from Maxwell equations in Lorenz gauge; precise
+  locator needed.
+- TRR: Maxwell wave equation and light context; precise locator needed.
+
+### Graphics
+
+The current graphic is adequate. A future version could show light-cone
+propagation beside a sinusoidal plane-wave slice.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- D'Alembertian sign conventions belong in the notation glossary.
+
+#### Atlas Issues
+
+- This concept is deliberately mathematical; electromagnetic polarization and
+  energy transport are left to 10.2.
+
+
+## 10.2 `sr.electromagnetic_waves`: Electromagnetic waves
+
+### Scope
+
+This concept explains electromagnetic waves as source-free propagating
+disturbances of the electromagnetic field. It should connect Maxwell's
+equations, the wave equation, transverse field structure, and energy-momentum
+transport.
+
+### Exposition
+
+Electromagnetic waves are self-propagating disturbances of the electromagnetic
+field. In a chosen frame they appear as coupled oscillations of the electric
+and magnetic fields, travelling at speed \(c\) in vacuum.
+
+In a region where the four-current vanishes, source-free Maxwell equations
+imply a wave equation for the field or for the potential in a suitable gauge.
+For the potential this can be written schematically as
+\[
+\Box A^\mu=0.
+\]
+
+For a plane wave moving in direction \(\mathbf k\), the source-free divergence
+equations imply
+\[
+\mathbf k\cdot\mathbf E=0,
+\qquad
+\mathbf k\cdot\mathbf B=0.
+\]
+Both the electric and magnetic components are transverse to the direction of
+propagation.
+
+In a simple plane wave, \(\mathbf E\), \(\mathbf B\), and the propagation
+direction form a mutually perpendicular triad. The direction of energy flow is
+given by the right-hand-rule direction of \(\mathbf E\times\mathbf B\).
+
+The wave equation gives the dispersion relation \(\omega=ck\). The speed is
+not the speed of a disturbance through an ether-like mechanical medium. It is
+fixed by Maxwell's equations and by the spacetime structure of special
+relativity.
+
+An electromagnetic wave carries energy and momentum. That is why light can heat
+a surface, exert radiation pressure, and transport energy across empty space.
+
+The wave is not an electric wave plus an independent magnetic wave. It is one
+electromagnetic field disturbance whose components are constrained by Maxwell's
+equations.
+
+### Block Plan
+
+- `overview`: Light as a field disturbance.
+- `definition`: Propagating source-free disturbance.
+- `derivation`: Source-free Maxwell equations.
+- `explanation`: Transverse fields.
+- `intuition`: The wave triad.
+- `derivation_step`: Speed \(c\).
+- `explanation`: Energy and momentum.
+- `misconception`: Not two separate waves.
+- `historical_note`: Maxwell and light.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize the transverse triad.
+2. Explain source-free.
+3. Use the right-hand rule for propagation direction.
+4. Explain why the fields are transverse.
+5. Connect waves to radiation pressure.
+6. Avoid treating \(E\) and \(B\) as independent waves.
+
+### References
+
+- TTM SR/CF: electromagnetic waves from source-free Maxwell equations; precise
+  locator needed.
+- TRR: Maxwell's identification of light as electromagnetic radiation; precise
+  locator needed.
+
+### Graphics
+
+The current improved graphic should be retained. It shows mutually
+perpendicular electric and magnetic oscillations with propagation/energy-flow
+direction.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- This concept is an excellent future candidate for interactive graphics:
+  polarization, phase, and propagation direction would all benefit.
+
+#### Atlas Issues
+
+- Polarization may deserve its own concept when the atlas expands.
+
+
+## 10.3 `sr.radiation_reaction`: Radiation reaction
+
+### Scope
+
+This concept introduces radiation reaction as the back-effect of emitted
+radiation on an accelerating charged particle. It should explain the
+energy-momentum-balance motivation and the conceptual difficulty without
+turning into a full advanced treatment of Abraham-Lorentz-Dirac theory.
+
+### Exposition
+
+Radiation reaction is the correction to a charged particle's motion caused by
+the energy and momentum it radiates away. An accelerating charge emits
+electromagnetic waves. Those waves carry energy and momentum.
+
+The ordinary Lorentz force describes how an external electromagnetic field acts
+on a charge. Radiation reaction asks a harder question: how does the charge
+respond to the field generated by its own accelerated motion?
+
+Energy-momentum balance gives the motivation. Radiation carries energy and
+momentum away from the particle-field system. If total energy-momentum is
+conserved, the particle's motion cannot be exactly the same as it would have
+been under only the applied external Lorentz force.
+
+A driven charged oscillator gives the right intuition. Some work done by the
+driver leaves as radiation rather than remaining as mechanical energy of the
+particle. The motion therefore behaves as if there is a radiation-related
+damping effect.
+
+This is not ordinary friction against a material medium. It comes from the
+charge's coupling to its own electromagnetic field.
+
+The technical problem is subtle. Naive point-particle self-force equations can
+produce unphysical runaway solutions or apparent pre-acceleration. These
+pathologies signal that the idealization of a point charge and its self-field
+must be handled with care.
+
+In many practical regimes, radiation reaction is treated as a small correction
+within an approximation. The aim is to preserve energy-momentum balance without
+trusting the point-particle idealization outside its domain.
+
+### Block Plan
+
+- `overview`: When the charge feels its own radiation.
+- `definition`: Back-reaction from emitted electromagnetic waves.
+- `derivation`: Energy-momentum balance.
+- `explanation`: External force versus self-effect.
+- `intuition`: Radiative damping.
+- `misconception`: Not ordinary friction.
+- `warning`: Runaways and pre-acceleration.
+- `explanation`: Effective-theory viewpoint.
+- `historical_note`: A long-standing classical problem.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize radiation reaction.
+2. Explain the energy-momentum motivation.
+3. Compute radiated energy from power and time.
+4. Distinguish radiation reaction from ordinary friction.
+5. Explain why runaway solutions are worrying.
+6. Explain why approximate treatments are common.
+
+### References
+
+- TTM SR/CF: radiation reaction and energy-momentum balance; precise locator
+  needed.
+- TRR: classical self-force and radiation-reaction context; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic is adequate. A future refinement could show a charged
+particle trajectory, outgoing wavefronts, and a small recoil/damping cue.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- This concept could use an advanced/details disclosure mode when the viewer
+  supports more nuanced optional mathematical material.
+
+#### Atlas Issues
+
+- Abraham-Lorentz-Dirac and Landau-Lifshitz equations should probably become
+  advanced descendant concepts if the atlas later expands into radiation theory.
+
+
+## 11.2 `sr.gauge_fixing`: Gauge fixing
+
+### Scope
+
+This concept explains gauge fixing as the general act of choosing one
+representative from a gauge-equivalent family. It should distinguish gauge
+choice from physical change, use Lorenz gauge as an example, and keep the
+observable/gauge-invariant boundary clear.
+
+### Exposition
+
+Gauge fixing is the imposition of an extra condition on the vector potential to
+remove redundant descriptive freedom. It is needed because gauge invariance
+says that many potentials can represent the same physical electromagnetic
+field.
+
+The transformation
+\[
+A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
+\]
+can leave the field tensor \(F_{\mu\nu}\) unchanged. A gauge condition chooses
+one convenient representative from that equivalence class. It should simplify
+calculation without changing the physical field.
+
+This is why gauge fixing is not an extra law of nature. It does not add a force,
+remove the electromagnetic field, or change the charge distribution. It removes
+redundancy from the description.
+
+The Lorenz gauge is a useful example:
+\[
+\partial_\mu A^\mu=0.
+\]
+It respects Lorentz invariance and simplifies Maxwell's equations for the
+potential into a wave-equation form.
+
+Gauge fixing does not always remove every redundant degree of freedom. In
+Lorenz gauge, a further transformation
+\[
+A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
+\]
+preserves the condition when
+\[
+\Box\Lambda=0.
+\]
+This is residual gauge freedom.
+
+After fixing a gauge, physical predictions should still be expressible in
+gauge-invariant terms. If a result changes under a remaining gauge
+transformation, it may be a description-dependent quantity rather than an
+observable.
+
+Gauge fixing is similar in spirit to choosing coordinates: a convenient
+description can make a calculation simpler. The analogy is not perfect, because
+gauge redundancy acts on field variables rather than directly on spacetime
+labels.
+
+### Block Plan
+
+- `overview`: Choosing one description from many.
+- `definition`: Gauge fixing.
+- `explanation`: Why it is needed.
+- `intuition`: Representative, not new physics.
+- `example`: Lorenz gauge example.
+- `warning`: Residual freedom can remain.
+- `construction`: Keep observables gauge-invariant.
+- `intuition`: Coordinate analogy and its limit.
+- `misconception`: Not an extra law of nature.
+- `historical_note`: From electromagnetic convenience to gauge theory.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize gauge fixing.
+2. Explain why gauge invariance makes it possible.
+3. Check a residual-gauge condition.
+4. Explain why it is not an extra physical assumption.
+5. Explain why Lorenz gauge is useful.
+6. Apply gauge-invariant reasoning to two equivalent potentials.
+
+### References
+
+- TTM SR/CF: gauge fixing and gauge-equivalent potentials; precise locator
+  needed.
+- TRR: gauge choice and gauge-independent physical predictions; precise locator
+  needed.
+
+### Graphics
+
+The existing graphic is adequate. A future refinement could show an
+equivalence class of potentials with one gauge slice selecting a representative.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Add precise TTM and TRR locators.
+
+#### Schema/View Issues
+
+- Residual gauge freedom could eventually be shown as a folded derivation or
+  advanced side note, but the current block kinds are sufficient.
+
+#### Atlas Issues
+
+- Future gauge-theory material will need a broader gauge-choice concept that is
+  not limited to electromagnetism.
+
 ## Template
 
 ```markdown

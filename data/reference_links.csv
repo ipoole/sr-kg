@@ -38,3 +38,53 @@ content_block,sr.hamiltonian_formalism.definition,ttm.sr_cf,,Hamiltonian formali
 content_block,sr.hamiltonian_formalism.why_it_matters,penrose.rtr,,Hamiltonian mechanics as phase-space structure and route toward quantum theory; add precise locator during source review.
 content_block,sr.noether_theorem.definition,ttm.sr_cf,,Noether theorem and action symmetries; add precise locator during source review.
 content_block,sr.noether_theorem.historical_context,penrose.rtr,,"Noether theorem, conservation laws, and symmetry in modern field theory; add precise locator during source review."
+content_block,sr.scalar_field.definition,ttm.sr_cf,,Scalar fields as simple relativistic field variables; add precise locator during source review.
+content_block,sr.scalar_field.vector_contrast,penrose.rtr,,Scalar versus vector/tensor transformation behavior; add precise locator during source review.
+content_block,sr.vector_field.definition,ttm.sr_cf,,Relativistic vector-field transformation rule; add precise locator during source review.
+content_block,sr.vector_field.scalar_contrast,penrose.rtr,,Scalar/vector/tensor distinction; add precise locator during source review.
+content_block,sr.field_lagrangian.definition,ttm.sr_cf,,Field action and Lagrangian-density formulation; add precise locator during source review.
+content_block,sr.field_lagrangian.scalar_action,penrose.rtr,,Invariant action and covariant field-theory construction; add precise locator during source review.
+content_block,sr.field_equations.euler_lagrange,ttm.sr_cf,,Field Euler-Lagrange equations and field action; add precise locator during source review.
+content_block,sr.field_equations.wave_operator,penrose.rtr,,Covariant wave operator and field equations; add precise locator during source review.
+content_block,sr.vector_potential.definition,ttm.sr_cf,,Four-potential convention and electromagnetic potential formulation; add precise locator during source review.
+content_block,sr.vector_potential.gauge_freedom,penrose.rtr,,"Potential, field strength, and gauge redundancy; add precise locator during source review."
+content_block,sr.field_tensor.definition,ttm.sr_cf,,Electromagnetic field tensor construction from the four-potential; add precise locator during source review.
+content_block,sr.field_tensor.lorentz_mixing,penrose.rtr,,Unification and Lorentz mixing of electric and magnetic components; add precise locator during source review.
+content_block,sr.electric_field.definition,ttm.sr_cf,,Electric field as part of the relativistic electromagnetic field; add precise locator during source review.
+content_block,sr.electric_field.frame_choice,penrose.rtr,,Frame-dependent electric/magnetic split; add precise locator during source review.
+content_block,sr.magnetic_field.definition,ttm.sr_cf,,Magnetic field as spatial part of the electromagnetic tensor; add precise locator during source review.
+content_block,sr.magnetic_field.frame_dependence,penrose.rtr,,Relativistic electric/magnetic mixing; add precise locator during source review.
+content_block,sr.electromagnetic_field.definition,ttm.sr_cf,,Unified electromagnetic field and field tensor; add precise locator during source review.
+content_block,sr.electromagnetic_field.lorentz_mixing,penrose.rtr,,Relativistic unification of electric and magnetic fields; add precise locator during source review.
+content_block,sr.four_current.definition,ttm.sr_cf,,Four-current definition and source role; add precise locator during source review.
+content_block,sr.four_current.not_density_alone,penrose.rtr,,Relativistic packaging of charge and current density; add precise locator during source review.
+content_block,sr.maxwells_equations.sourced_equation,ttm.sr_cf,,Covariant Maxwell equations and four-current source; add precise locator during source review.
+content_block,sr.maxwells_equations.historical_context,penrose.rtr,,"Maxwell theory, light, and relativistic field structure; add precise locator during source review."
+content_block,sr.gauge_invariance.definition,ttm.sr_cf,,Gauge transformation of the electromagnetic potential; add precise locator during source review.
+content_block,sr.gauge_invariance.historical_context,penrose.rtr,,Gauge freedom as a structural principle in field theory; add precise locator during source review.
+content_block,sr.minimal_coupling.definition,ttm.sr_cf,,Minimal coupling of charged particles to electromagnetic potentials; add precise locator during source review.
+content_block,sr.minimal_coupling.historical_context,penrose.rtr,,Gauge-compatible coupling as a field-theory principle; add precise locator during source review.
+content_block,sr.lorentz_force_law.definition,ttm.sr_cf,,Covariant and three-vector Lorentz force law; add precise locator during source review.
+content_block,sr.lorentz_force_law.historical_context,penrose.rtr,,"Lorentz force, field tensor, and relativistic electrodynamics context; add precise locator during source review."
+content_block,sr.charge_conservation.definition,ttm.sr_cf,,Four-current and continuity equation; add precise locator during source review.
+content_block,sr.charge_conservation.maxwell_derivation,penrose.rtr,,Charge conservation as a consistency condition of Maxwell theory; add precise locator during source review.
+content_block,sr.lorenz_gauge.definition,ttm.sr_cf,,Lorenz gauge condition and potential form of Maxwell equations; add precise locator during source review.
+content_block,sr.lorenz_gauge.spelling,penrose.rtr,,Gauge conditions and covariant electrodynamics context; add precise locator during source review.
+content_block,sr.energy_momentum_tensor.noether_origin,ttm.sr_cf,,Energy-momentum tensor and translation symmetry; add precise locator during source review.
+content_block,sr.energy_momentum_tensor.em_bridge,penrose.rtr,,Stress-energy tensor in field theory and electromagnetism; add precise locator during source review.
+content_block,sr.poynting_vector.definition,ttm.sr_cf,,Poynting vector and electromagnetic momentum density; add precise locator during source review.
+content_block,sr.poynting_vector.historical_context,penrose.rtr,,Electromagnetic energy flow and field momentum context; add precise locator during source review.
+content_block,sr.em_stress_energy.formula,ttm.sr_cf,,Electromagnetic stress-energy tensor formula; add precise locator during source review.
+content_block,sr.em_stress_energy.observer_split,penrose.rtr,,Stress-energy tensor and frame-dependent component decomposition; add precise locator during source review.
+content_block,sr.em_energy_density.definition,ttm.sr_cf,,Electromagnetic energy density formula; add precise locator during source review.
+content_block,sr.em_energy_density.field_not_particle,penrose.rtr,,Field energy and electromagnetic radiation context; add precise locator during source review.
+content_block,sr.wave_equation.maxwell_origin,ttm.sr_cf,,Wave equation from Maxwell equations in Lorenz gauge; add precise locator during source review.
+content_block,sr.wave_equation.historical_context,penrose.rtr,,Maxwell wave equation and light context; add precise locator during source review.
+content_block,sr.electromagnetic_waves.maxwell_origin,ttm.sr_cf,,Electromagnetic waves from source-free Maxwell equations; add precise locator during source review.
+content_block,sr.electromagnetic_waves.historical_context,penrose.rtr,,Maxwell's identification of light as electromagnetic radiation; add precise locator during source review.
+content_block,sr.radiation_reaction.energy_balance,ttm.sr_cf,,Radiation reaction and energy-momentum balance; add precise locator during source review.
+content_block,sr.radiation_reaction.historical_context,penrose.rtr,,Classical self-force and radiation-reaction context; add precise locator during source review.
+content_block,sr.lorentz_invariance.relativity_principle,ttm.sr_cf,,Lorentz invariance as the mathematical form of the relativity principle; add precise locator during source review.
+content_block,sr.lorentz_invariance.historical_context,penrose.rtr,,Lorentz covariance and Minkowski spacetime context; add precise locator during source review.
+content_block,sr.gauge_fixing.definition,ttm.sr_cf,,Gauge fixing and gauge-equivalent potentials; add precise locator during source review.
+content_block,sr.gauge_fixing.historical_context,penrose.rtr,,Gauge choice and gauge-independent physical predictions; add precise locator during source review.

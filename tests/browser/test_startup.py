@@ -332,7 +332,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     splash_text = page.locator("#kg_splash_dialog").inner_text()
     assert "Knowledge graph browser" in splash_text
-    assert "deeper block-based content for layers 1 to 5" in splash_text
+    assert "deeper block-based content for all layers" in splash_text
     assert "Preview linked concepts" in splash_text
     assert "Study questions are visible with answers folded closed" in splash_text
     assert page.locator("#kg_splash_dialog .kg-new-badge").count() >= 3
