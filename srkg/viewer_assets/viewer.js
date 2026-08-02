@@ -13,17 +13,21 @@
 
       var GraphViewMode = Object.freeze({
         ALL: "all",
+        FOCUSED: "focused",
         HIGHLIGHT: "highlight",
         HIDE: "hide",
         NEIGHBOURHOOD: "neighbourhood",
-        DESCENDANTS: "descendants"
+        DESCENDANTS: "descendants",
+        DERIVATION_TRACE: "derivation-trace"
       });
       var GraphViewSelectValue = Object.freeze({
         ALL: "all",
+        FOCUSED: "focused",
         HIDE: "hide",
         NEIGHBOURHOOD_1: "neighbourhood-1",
         NEIGHBOURHOOD_2: "neighbourhood-2",
-        DESCENDANTS: "descendants"
+        DESCENDANTS: "descendants",
+        DERIVATION_TRACE: "derivation-trace"
       });
 
       function clampNeighbourhoodRadius(radius) {
@@ -56,6 +60,9 @@
 
       function graphViewHistoryMode(view) {
         if (!view) { return GraphViewMode.HIGHLIGHT; }
+        if (graphViewIs(view, GraphViewMode.FOCUSED)) {
+          return GraphViewSelectValue.FOCUSED;
+        }
         if (graphViewIs(view, GraphViewMode.NEIGHBOURHOOD)) {
           return "neighbourhood-" + String(graphViewRadius(view));
         }
@@ -64,14 +71,7 @@
 
       function graphViewSelectValue(view) {
         if (graphViewIs(view, GraphViewMode.HIDE)) { return GraphViewSelectValue.HIDE; }
-        if (graphViewIs(view, GraphViewMode.NEIGHBOURHOOD)) {
-          return graphViewRadius(view) === 2
-            ? GraphViewSelectValue.NEIGHBOURHOOD_2
-            : GraphViewSelectValue.NEIGHBOURHOOD_1;
-        }
-        if (graphViewIs(view, GraphViewMode.DESCENDANTS)) {
-          return GraphViewSelectValue.DESCENDANTS;
-        }
+        if (graphViewIs(view, GraphViewMode.FOCUSED)) { return GraphViewSelectValue.FOCUSED; }
         return GraphViewSelectValue.ALL;
       }
 
@@ -79,14 +79,20 @@
         if (mode === GraphViewMode.HIDE) {
           return createGraphView(GraphViewMode.HIDE, nodeId);
         }
+        if (mode === GraphViewMode.FOCUSED || mode === GraphViewSelectValue.FOCUSED) {
+          return createGraphView(GraphViewMode.FOCUSED, nodeId);
+        }
         if (mode === GraphViewMode.NEIGHBOURHOOD || mode === GraphViewSelectValue.NEIGHBOURHOOD_1) {
-          return createGraphView(GraphViewMode.NEIGHBOURHOOD, nodeId, {radius: 1});
+          return createGraphView(GraphViewMode.FOCUSED, nodeId);
         }
         if (mode === GraphViewSelectValue.NEIGHBOURHOOD_2) {
-          return createGraphView(GraphViewMode.NEIGHBOURHOOD, nodeId, {radius: 2});
+          return createGraphView(GraphViewMode.FOCUSED, nodeId);
         }
         if (mode === GraphViewMode.DESCENDANTS) {
-          return createGraphView(GraphViewMode.DESCENDANTS, nodeId);
+          return createGraphView(GraphViewMode.FOCUSED, nodeId);
+        }
+        if (mode === GraphViewMode.DERIVATION_TRACE) {
+          return createGraphView(GraphViewMode.FOCUSED, nodeId);
         }
         return createGraphView(GraphViewMode.HIGHLIGHT, nodeId);
       }
@@ -127,6 +133,8 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
+        var transientConceptHighlight = null;
+        var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
         var noteEditingStorageKey = kgStorageKeys.noteEditing;
         var splashDismissedStorageKey = kgStorageKeys.splashDismissed;
@@ -134,6 +142,10 @@
         var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
         var infoPanelPinchState = null;
+        var readingMode = "full";
+        var activeConceptSectionContext = "neighbourhood";
+        var derivedFromFullTreeEnabled = false;
+        var backlinksFullTreeEnabled = false;
 
         /*
          * Custom node rendering
@@ -275,6 +287,7 @@
             var node = nodes.get(id);
             var pos = positions[id];
             if (!node || !pos || node.hidden || visibleFontSize <= kgNodeLabelConfig.hideBelowPx) {
+              el.classList.remove("kg-node-label-transient");
               el.style.display = "none";
               return;
             }
@@ -296,6 +309,10 @@
             el.style.left = (labelCenterX - labelWidth / 2) + "px";
             el.style.top = labelTopY + "px";
             el.style.opacity = node.opacity === undefined ? "1" : String(node.opacity);
+            el.classList.toggle(
+              "kg-node-label-transient",
+              Boolean(transientConceptHighlight && transientConceptHighlight.nodeId === String(id))
+            );
           });
         }
         window.kgUpdateNodeLabelPositions = updateNodeLabelPositions;
@@ -311,6 +328,8 @@
             var baseRadius = Number(node.visualSize) || 18;
             var isActive = node.id === activeNodeId;
             var radius = isActive ? baseRadius * activeNodeRadiusScale : baseRadius;
+            var isTransient = transientConceptHighlight &&
+              transientConceptHighlight.nodeId === String(node.id);
             var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
             var color = node.visualColor || {};
             var fill = color.background || "#999999";
@@ -352,6 +371,14 @@
             ctx.lineWidth = isActive ? activeNodeBorderWidth : (svgImage ? 4 : 1.5);
             ctx.strokeStyle = isActive ? "#000000" : (svgImage ? fill : border);
             ctx.stroke();
+
+            if (isTransient) {
+              ctx.beginPath();
+              ctx.arc(pos.x, pos.y, radius + 6, 0, 2 * Math.PI, false);
+              ctx.lineWidth = 4;
+              ctx.strokeStyle = "#174ea6";
+              ctx.stroke();
+            }
             ctx.restore();
           });
         }
@@ -467,6 +494,9 @@
 
         function renderFoldDown(options) {
           var attrs = "";
+          if (options.anchorId) {
+            attrs += ' id="' + escapeHtml(options.anchorId) + '"';
+          }
           if (options.id) {
             attrs += ' data-note-id="' + escapeHtml(options.id) + '"';
           }
@@ -766,6 +796,14 @@
           return null;
         }
 
+        function contentAnchorId(conceptId, title) {
+          var slug = String(conceptId || "") + "-" + String(title || "");
+          slug = slug.toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          return "kg-toc-" + (slug || "section");
+        }
+
         function findNextDisplayMathBlock(text, cursor) {
           var open = "\\[";
           var close = "\\]";
@@ -851,7 +889,8 @@
           var raw = String(text || "");
           if (!raw) { return ""; }
           var blocks = splitConceptBlocks(raw);
-          var html = "<h3>" + escapeHtml(title) + "</h3>";
+          var html = '<h3 id="' + escapeHtml(contentAnchorId(conceptId, title)) + '">' +
+            escapeHtml(title) + "</h3>";
           html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
           html += renderNotesAtAnchor(conceptId, title, 0, "");
           blocks.forEach(function(block, index) {
@@ -958,7 +997,7 @@
 
         function refreshActiveConcept() {
           if (activeNodeId && getConcept(activeNodeId)) {
-            showConcept(activeNodeId);
+            showConcept(activeNodeId, {preserveSectionContext: true});
           }
         }
 
@@ -1609,6 +1648,85 @@
           summary: {mode: "inline"}
         });
 
+        var readingModeDefinitions = Object.freeze({
+          full: {
+            label: "Full",
+            blockKinds: null,
+            questionTypes: null
+          },
+          core: {
+            label: "Core",
+            blockKinds: {
+              overview: true,
+              definition: true,
+              intuition: true,
+              explanation: true,
+              construction: true,
+              derivation: true,
+              example: true,
+              summary: true
+            },
+            questionTypes: {
+              short_answer: true
+            }
+          },
+          maths: {
+            label: "Maths",
+            blockKinds: {
+              derivation: true,
+              derivation_step: true,
+              worked_example: true
+            },
+            questionTypes: {
+              calculation: true
+            }
+          },
+          context: {
+            label: "Context",
+            blockKinds: {
+              misconception: true,
+              warning: true,
+              historical_note: true
+            },
+            questionTypes: {
+              multiple_choice: true
+            }
+          },
+          practice: {
+            label: "Practice",
+            blockKinds: {
+              example: true,
+              worked_example: true,
+              derivation_step: true,
+              summary: true
+            },
+            questionTypes: null
+          }
+        });
+
+        function currentReadingModeDefinition() {
+          return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
+        }
+
+        function blockVisibleInReadingMode(block) {
+          var allowed = currentReadingModeDefinition().blockKinds;
+          return !allowed || allowed[block.kind] === true;
+        }
+
+        function questionVisibleInReadingMode(question) {
+          var allowed = currentReadingModeDefinition().questionTypes;
+          if (!allowed) { return true; }
+          return allowed[String((question && question.question_type) || "")] === true;
+        }
+
+        function filteredStudyQuestions(studyQuestions) {
+          return studyQuestions.filter(questionVisibleInReadingMode);
+        }
+
+        function filteredContentBlocks(concept) {
+          return conceptContentBlocks(concept).filter(blockVisibleInReadingMode);
+        }
+
         function contentBlockPresentationFor(kind) {
           return contentBlockPresentation[kind] || {mode: "inline"};
         }
@@ -1671,19 +1789,22 @@
         function renderContentBlock(conceptId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var presentation = contentBlockPresentationFor(block.kind);
+          var anchorId = contentAnchorId(conceptId, title);
           if (presentation.mode === "folded") {
             var bodyClass = "concept-body content-block-fold-body";
             if (presentation.note) {
               bodyClass += " content-block-note-body";
             }
             return renderFoldDown({
+              anchorId: anchorId,
               className: contentBlockClassName(block, presentation),
               title: title,
               bodyClass: bodyClass,
               bodyHtml: renderConceptText(block.body)
             });
           }
-          var html = '<section class="' + escapeHtml(contentBlockClassName(block, presentation)) + '">';
+          var html = '<section id="' + escapeHtml(anchorId) + '" class="' +
+            escapeHtml(contentBlockClassName(block, presentation)) + '">';
           html += "<h3>" + renderConceptText(title) + "</h3>";
           var blocks = splitConceptBlocks(block.body);
           html += '<div class="concept-body content-block-body">';
@@ -1704,11 +1825,154 @@
           return html;
         }
 
+        function conceptTocItems(conceptId, concept, studyQuestions, conceptReferences) {
+          var items = [];
+          if (shouldRenderContentBlocks(concept)) {
+            filteredContentBlocks(concept).forEach(function(block) {
+              var title = block.title || contentBlockKindLabel(block.kind);
+              items.push({
+                id: contentAnchorId(conceptId, title),
+                title: title,
+                graphContext: "neighbourhood"
+              });
+            });
+          } else {
+            conceptSections(concept).forEach(function(section) {
+              if (!section.text) { return; }
+              items.push({
+                id: contentAnchorId(conceptId, section.title),
+                title: section.title,
+                graphContext: "neighbourhood"
+              });
+            });
+          }
+
+          if (derivedFromEdgesFor(conceptId).length > 0) {
+            items.push({
+              id: contentAnchorId(conceptId, "Derived From"),
+              title: "Derived from",
+              graphContext: "derived-from"
+            });
+          }
+          if (backlinkGroupsFor(conceptId).length > 0) {
+            items.push({
+              id: contentAnchorId(conceptId, "Where This Is Used"),
+              title: "Where this is used",
+              graphContext: "where-used"
+            });
+          }
+          if (studyQuestions.length > 0) {
+            items.push({
+              id: contentAnchorId(conceptId, "Study Questions"),
+              title: "Study Questions",
+              graphContext: "neighbourhood"
+            });
+          }
+          if (conceptReferences.length > 0) {
+            items.push({
+              id: contentAnchorId(conceptId, "References"),
+              title: "References",
+              graphContext: "neighbourhood"
+            });
+          }
+          return items;
+        }
+
+        function renderConceptToc(items) {
+          if (!Array.isArray(items) || items.length < 2) { return ""; }
+          var html = '<details class="concept-toc" aria-label="Concept contents" open>';
+          html += '<summary class="concept-toc-title">Contents</summary>';
+          html += '<div class="concept-toc-links">';
+          items.forEach(function(item) {
+            html += '<a href="#' + escapeHtml(item.id) +
+              '" class="concept-toc-link" data-toc-target="' +
+              escapeHtml(item.id) + '" data-graph-context="' +
+              escapeHtml(item.graphContext || "neighbourhood") + '">' +
+              renderConceptText(item.title) +
+              "</a>";
+          });
+          html += "</div></details>";
+          return html;
+        }
+
+        function renderReadingModeOptions() {
+          return Object.keys(readingModeDefinitions).map(function(value) {
+            var definition = readingModeDefinitions[value];
+            return '<option value="' + escapeHtml(value) + '"' +
+              (value === readingMode ? " selected" : "") + ">" +
+              escapeHtml(definition.label) +
+              "</option>";
+          }).join("");
+        }
+
+        function renderConceptMasthead(nodeId, concept, tocItems) {
+          var html = '<div class="concept-sticky-header">';
+          html += '<div class="concept-title-row">';
+          html += '<h2 class="concept-title">' +
+            escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
+            "</h2>";
+          html += '<div class="concept-title-actions">';
+          html += '<label class="concept-reading-mode">' +
+            '<span>Reading</span>' +
+            '<select class="concept-reading-mode-select" aria-label="Reading mode">' +
+            renderReadingModeOptions() +
+            "</select></label>";
+          html += '<button type="button" class="concept-graph-focus" data-concept-id="' +
+            escapeHtml(nodeId) +
+            '" title="Focus this concept in the graph" aria-label="Focus this concept in the graph">' +
+            "Graph</button>";
+          html += "</div></div>";
+          html += renderConceptToc(tocItems);
+          html += "</div>";
+          return html;
+        }
+
+        function openTargetForToc(target) {
+          if (!target) { return; }
+          if (target.tagName === "DETAILS") {
+            target.open = true;
+            return;
+          }
+          var closedDetails = target.closest && target.closest("details:not([open])");
+          if (closedDetails) {
+            closedDetails.open = true;
+          }
+        }
+
+        function scrollInfoPanelTargetBelowStickyToc(target) {
+          var panel = document.getElementById("info_panel");
+          if (!panel || !target) { return; }
+
+          var panelRect = panel.getBoundingClientRect();
+          var targetRect = target.getBoundingClientRect();
+          var stickyHeader = panel.querySelector(".concept-sticky-header");
+          var toc = panel.querySelector(".concept-toc");
+          var stickyOffset = 0;
+          if (stickyHeader) {
+            stickyOffset = stickyHeader.getBoundingClientRect().bottom - panelRect.top + 8;
+          } else if (toc) {
+            stickyOffset = toc.getBoundingClientRect().bottom - panelRect.top + 8;
+          }
+
+          var targetTop = targetRect.top - panelRect.top + panel.scrollTop;
+          panel.scrollTo({
+            top: Math.max(0, targetTop - stickyOffset),
+            behavior: "smooth"
+          });
+        }
+
         function renderConceptContent(conceptId, concept) {
           if (shouldRenderContentBlocks(concept)) {
-            return conceptContentBlocks(concept).map(function(block) {
+            var blocks = filteredContentBlocks(concept);
+            if (blocks.length === 0) {
+              return '<p class="reading-mode-empty">No content blocks match this reading mode.</p>';
+            }
+            return blocks.map(function(block) {
               return renderContentBlock(conceptId, block);
             }).join("");
+          }
+          if (readingMode !== "full" && readingMode !== "core") {
+            return '<p class="reading-mode-empty">Legacy content is available in Full and Core modes.</p>';
           }
           return conceptSections(concept).map(function(section) {
             return renderConceptSection(conceptId, section.title, section.text);
@@ -1867,6 +2131,7 @@
           conceptPreviewPinned = false;
           conceptPreviewAnchor = null;
           conceptPreview.classList.remove("concept-preview-pinned");
+          clearTransientConceptHighlight();
           conceptPreview.style.display = "none";
           conceptPreview.innerHTML = "";
         }
@@ -1891,7 +2156,12 @@
           conceptPreview.innerHTML = conceptPreviewHtml(id);
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
           positionConceptPreview(link);
+          applyTransientConceptHighlight(id);
           scheduleConceptPreviewTypeset();
+        }
+
+        function conceptPreviewTriggerFromEventTarget(target) {
+          return target.closest(".concept-link, .edge-detail-concept");
         }
 
         function refreshNodeTooltips() {
@@ -2038,7 +2308,160 @@
           if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
             return edgeRelationDirected(edge);
           }
+          if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
+            return edgeRelation(edge) === "DERIVES_FROM";
+          }
           return true;
+        }
+
+        function visibleGraphNode(nodeId) {
+          var node = nodes.get(String(nodeId));
+          return Boolean(node && !node.hidden);
+        }
+
+        function visibleGraphEdge(edge) {
+          return Boolean(
+            edge &&
+            !edge.hidden &&
+            edgeRelationEnabled(edge) &&
+            visibleGraphNode(edge.from) &&
+            visibleGraphNode(edge.to)
+          );
+        }
+
+        function visibleDirectEdgeIds(sourceId, targetId) {
+          sourceId = String(sourceId);
+          targetId = String(targetId);
+          return edges.get().filter(function(edge) {
+            if (!visibleGraphEdge(edge)) { return false; }
+            return (
+              String(edge.from) === sourceId && String(edge.to) === targetId
+            ) || (
+              String(edge.from) === targetId && String(edge.to) === sourceId
+            );
+          }).map(function(edge) {
+            return edge.id;
+          });
+        }
+
+        function visiblePathEdgeIds(sourceId, targetId) {
+          sourceId = String(sourceId);
+          targetId = String(targetId);
+          if (
+            !sourceId ||
+            !targetId ||
+            sourceId === targetId ||
+            !visibleGraphNode(sourceId) ||
+            !visibleGraphNode(targetId)
+          ) {
+            return [];
+          }
+
+          var direct = visibleDirectEdgeIds(sourceId, targetId);
+          if (direct.length > 0) {
+            return direct;
+          }
+
+          var adjacency = {};
+          edges.get().forEach(function(edge) {
+            if (!visibleGraphEdge(edge)) { return; }
+            var from = String(edge.from);
+            var to = String(edge.to);
+            if (!adjacency[from]) { adjacency[from] = []; }
+            if (!adjacency[to]) { adjacency[to] = []; }
+            adjacency[from].push({nodeId: to, edgeId: edge.id});
+            adjacency[to].push({nodeId: from, edgeId: edge.id});
+          });
+
+          var seen = {};
+          var previous = {};
+          var queue = [sourceId];
+          seen[sourceId] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            if (current === targetId) { break; }
+
+            (adjacency[current] || []).forEach(function(item) {
+              if (seen[item.nodeId]) { return; }
+              seen[item.nodeId] = true;
+              previous[item.nodeId] = {nodeId: current, edgeId: item.edgeId};
+              queue.push(item.nodeId);
+            });
+          }
+
+          if (!seen[targetId]) { return []; }
+
+          var edgeIds = [];
+          var cursor = targetId;
+          while (cursor !== sourceId && previous[cursor]) {
+            edgeIds.unshift(previous[cursor].edgeId);
+            cursor = previous[cursor].nodeId;
+          }
+          return edgeIds;
+        }
+
+        function clearTransientConceptHighlight(options) {
+          options = options || {};
+          var hadHighlight = Boolean(transientConceptHighlight) ||
+            Object.keys(transientEdgeSnapshots).length > 0;
+          if (!hadHighlight) { return; }
+
+          if (!options.skipEdgeRestore) {
+            Object.keys(transientEdgeSnapshots).forEach(function(edgeId) {
+              if (edges.get(edgeId)) {
+                edges.update(Object.assign({}, transientEdgeSnapshots[edgeId]));
+              }
+            });
+          }
+          transientConceptHighlight = null;
+          transientEdgeSnapshots = {};
+          updateNodeLabelPositions();
+          if (network && network.redraw) {
+            network.redraw();
+          }
+        }
+
+        function applyTransientConceptHighlight(nodeId) {
+          clearTransientConceptHighlight();
+          nodeId = String(nodeId);
+          if (!visibleGraphNode(nodeId)) {
+            return;
+          }
+
+          var edgeIds = activeNodeId && visibleGraphNode(activeNodeId)
+            ? visiblePathEdgeIds(activeNodeId, nodeId)
+            : [];
+          transientConceptHighlight = {
+            nodeId: nodeId,
+            edgeIds: edgeIds
+          };
+
+          edgeIds.forEach(function(edgeId) {
+            var edge = edges.get(edgeId);
+            if (!edge) { return; }
+            if (!Object.prototype.hasOwnProperty.call(transientEdgeSnapshots, edgeId)) {
+              transientEdgeSnapshots[edgeId] = Object.assign({}, edge);
+            }
+            var currentWidth = Number(edge.width);
+            if (!Number.isFinite(currentWidth) || currentWidth <= 0) {
+              currentWidth = 1;
+            }
+            edges.update(Object.assign({}, edge, {
+              width: Math.max(currentWidth, edgeHoverWidth),
+              color: Object.assign({}, edge.color || {}, {
+                color: "#174ea6",
+                highlight: "#174ea6",
+                hover: "#174ea6",
+                opacity: 1.0
+              })
+            }));
+          });
+
+          updateNodeLabelPositions();
+          if (network && network.redraw) {
+            network.redraw();
+          }
         }
 
         function enabledConnectedNodes(nodeId) {
@@ -2049,6 +2472,61 @@
             if (edge.to == nodeId) { connected[edge.from] = true; }
           });
           return Object.keys(connected);
+        }
+
+        function emptySectionGraphContext(nodeId, label) {
+          var keep = {};
+          keep[String(nodeId)] = true;
+          return {
+            label: label,
+            keep: keep,
+            edgeKeep: {},
+            showEdgesWithinKeep: false
+          };
+        }
+
+        function sectionGraphContext(nodeId) {
+          nodeId = String(nodeId);
+
+          if (activeConceptSectionContext === "derived-from") {
+            var sourceContext = emptySectionGraphContext(nodeId, "derived-from ancestry");
+            derivedFromEdgesFor(nodeId, derivedFromFullTreeEnabled).forEach(function(item) {
+              sourceContext.keep[String(item.nodeId)] = true;
+              sourceContext.edgeKeep[item.edge.id] = true;
+            });
+            return sourceContext;
+          }
+
+          if (activeConceptSectionContext === "where-used") {
+            var usedContext = emptySectionGraphContext(nodeId, "derived-from descendants");
+            derivedFromThisEntriesFor(nodeId, backlinksFullTreeEnabled).forEach(function(item) {
+              usedContext.keep[String(item.nodeId)] = true;
+              usedContext.edgeKeep[item.edge.id] = true;
+            });
+            return usedContext;
+          }
+
+          var keep = {};
+          keep[nodeId] = true;
+          enabledConnectedNodes(nodeId).forEach(function(connectedId) {
+            keep[String(connectedId)] = true;
+          });
+          return {
+            label: "immediate neighbours",
+            keep: keep,
+            edgeKeep: {},
+            showEdgesWithinKeep: true
+          };
+        }
+
+        function sectionContextEdgeHighlighted(edge, context) {
+          if (!context || !edge) { return false; }
+          if (context.edgeKeep[edge.id]) { return true; }
+          return Boolean(
+            context.showEdgesWithinKeep &&
+            context.keep[String(edge.from)] &&
+            context.keep[String(edge.to)]
+          );
         }
 
         function enabledDirectedDescendants(nodeId) {
@@ -2070,6 +2548,40 @@
           }
 
           return keep;
+        }
+
+        function derivationTrace(nodeId) {
+          var keep = {};
+          var traceEdges = {};
+          var orderedEdges = [];
+          var queue = [String(nodeId)];
+          keep[String(nodeId)] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            allEdges
+              .filter(function(edge) {
+                return String(edge.from) === current &&
+                  edgeRelation(edge) === "DERIVES_FROM";
+              })
+              .sort(function(a, b) {
+                return compareConceptIds(String(a.to), String(b.to));
+              })
+              .forEach(function(edge) {
+                var target = String(edge.to);
+                traceEdges[edge.id] = true;
+                orderedEdges.push(edge);
+                if (keep[target]) { return; }
+                keep[target] = true;
+                queue.push(target);
+              });
+          }
+
+          return {
+            nodes: keep,
+            edges: traceEdges,
+            orderedEdges: orderedEdges
+          };
         }
 
         function relationColour(relation) {
@@ -2111,12 +2623,20 @@
             kgHighlight(currentView.nodeId, true);
             return;
           }
+          if (graphViewIs(currentView, GraphViewMode.FOCUSED) && graphViewHasNode(currentView)) {
+            applySectionGraphView(currentView.nodeId, {compact: true, preserveStatus: true});
+            return;
+          }
           if (graphViewIs(currentView, GraphViewMode.NEIGHBOURHOOD) && graphViewHasNode(currentView)) {
             kgApplyNeighbourhood(currentView.nodeId, true, graphViewRadius(currentView));
             return;
           }
           if (graphViewIs(currentView, GraphViewMode.DESCENDANTS) && graphViewHasNode(currentView)) {
             kgApplyDescendants(currentView.nodeId, true);
+            return;
+          }
+          if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE) && graphViewHasNode(currentView)) {
+            kgApplyDerivationTrace(currentView.nodeId, true);
             return;
           }
           kgReset(true);
@@ -2155,9 +2675,311 @@
           edges.update(hoverStyle);
         }
 
+        function relationshipConceptHtml(nodeId) {
+          var concept = getConcept(nodeId);
+          var label = concept ? concept.label || "" : "";
+          return '<button type="button" class="edge-detail-concept" data-edge-concept-id="' +
+            escapeHtml(nodeId) + '" data-concept-id="' +
+            escapeHtml(nodeId) +
+            '" aria-haspopup="dialog" aria-controls="kg_concept_preview">' +
+            escapeHtml(conceptDisplayId(nodeId)) +
+            (label ? " " + renderConceptText(label) : "") +
+            "</button>";
+        }
+
+        function renderDerivationTracePanel(nodeId) {
+          var trace = derivationTrace(nodeId);
+          var html = '<section class="derivation-trace-panel">';
+          html += "<h3>Derivation trace</h3>";
+
+          if (trace.orderedEdges.length === 0) {
+            html += '<p class="reading-mode-empty">No DERIVES_FROM links are recorded for this concept.</p>';
+            html += "</section>";
+            return html;
+          }
+
+          html += '<ol class="derivation-trace-list">';
+          trace.orderedEdges.forEach(function(edge) {
+            html += "<li>";
+            html += relationshipConceptHtml(edge.from) +
+              ' <span class="derivation-trace-relation">derives from</span> ' +
+              relationshipConceptHtml(edge.to);
+            if (edge.note) {
+              html += '<div class="derivation-trace-note">' + renderConceptText(edge.note) + "</div>";
+            }
+            html += "</li>";
+          });
+          html += "</ol></section>";
+          return html;
+        }
+
+        function backlinkGroupTitle(relation) {
+          if (relation === "DERIVES_FROM") { return "Derived from this"; }
+          if (relation === "PREREQUISITE" || relation === "DEPENDS_ON") { return "Requires this"; }
+          if (relation === "RELATED") { return "Related concepts"; }
+          return relation || "Related concepts";
+        }
+
+        function derivedFromEdgesFor(nodeId, fullTree) {
+          nodeId = String(nodeId);
+          var entries = [];
+          var queue = [{nodeId: nodeId, depth: 0}];
+          var visitedNodes = {};
+          var seenEdges = {};
+          visitedNodes[nodeId] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            allEdges
+              .filter(function(edge) {
+                return String(edge.from) === current.nodeId &&
+                  edgeRelation(edge) === "DERIVES_FROM" &&
+                  getConcept(edge.to);
+              })
+              .sort(function(a, b) {
+                return compareConceptIds(String(a.to), String(b.to));
+              })
+              .forEach(function(edge) {
+                var target = String(edge.to);
+                if (!seenEdges[edge.id]) {
+                  entries.push({
+                    edge: edge,
+                    nodeId: target,
+                    depth: current.depth + 1
+                  });
+                  seenEdges[edge.id] = true;
+                }
+                if (!fullTree || visitedNodes[target]) { return; }
+                visitedNodes[target] = true;
+                queue.push({nodeId: target, depth: current.depth + 1});
+              });
+          }
+
+          return entries;
+        }
+
+        function derivedFromThisEntriesFor(nodeId, fullTree) {
+          nodeId = String(nodeId);
+          var entries = [];
+          var queue = [{nodeId: nodeId, depth: 0}];
+          var visitedNodes = {};
+          var seenEdges = {};
+          visitedNodes[nodeId] = true;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            allEdges
+              .filter(function(edge) {
+                return String(edge.to) === current.nodeId &&
+                  edgeRelation(edge) === "DERIVES_FROM" &&
+                  getConcept(edge.from);
+              })
+              .sort(function(a, b) {
+                return compareConceptIds(String(a.from), String(b.from));
+              })
+              .forEach(function(edge) {
+                var source = String(edge.from);
+                if (!seenEdges[edge.id]) {
+                  entries.push({
+                    edge: edge,
+                    nodeId: source,
+                    depth: current.depth + 1
+                  });
+                  seenEdges[edge.id] = true;
+                }
+                if (!fullTree || visitedNodes[source]) { return; }
+                visitedNodes[source] = true;
+                queue.push({nodeId: source, depth: current.depth + 1});
+              });
+          }
+
+          return entries;
+        }
+
+        function treeIndentStyle(item) {
+          var depth = Math.max(0, Number((item && item.depth) || 1) - 1);
+          return ' style="--tree-depth:' + String(depth) + '"';
+        }
+
+        function fullTreeToggleHtml(className, checked) {
+          return '<label class="concept-full-tree-toggle">' +
+            '<input type="checkbox" class="' + escapeHtml(className) + '"' +
+            (checked ? " checked" : "") + "> Full tree</label>";
+        }
+
+        function derivedFromTreeItemHtml(item, noteClassName) {
+          var html = "<li" + treeIndentStyle(item) + ">";
+          html += relationshipConceptHtml(item.nodeId);
+          if (item.edge.note) {
+            html += '<div class="' + escapeHtml(noteClassName) + '">' +
+              renderConceptText(item.edge.note) + "</div>";
+          }
+          html += "</li>";
+          return html;
+        }
+
+        function sortedBacklinkItems(items) {
+          return items.sort(function(a, b) {
+            var depthDiff = (Number(a.depth) || 1) - (Number(b.depth) || 1);
+            if (depthDiff !== 0) { return depthDiff; }
+            return compareConceptIds(a.nodeId, b.nodeId);
+          });
+        }
+
+        function immediateBacklinkEntry(edge, nodeId) {
+          return {
+            nodeId: String(nodeId),
+            edge: edge,
+            depth: 1
+          };
+        }
+
+        function backLinkRelationGroupsObject(nodeId) {
+          nodeId = String(nodeId);
+          var groups = {};
+          var derivedEntries = derivedFromThisEntriesFor(nodeId, backlinksFullTreeEnabled);
+          if (derivedEntries.length > 0) {
+            groups.DERIVES_FROM = derivedEntries;
+          }
+
+          allEdges.forEach(function(edge) {
+            var relation = edgeRelation(edge);
+            var relatedNodeId = null;
+            if (relation === "DERIVES_FROM") { return; }
+            if (edgeRelationDirected(edge)) {
+              if (String(edge.to) !== nodeId) { return; }
+              relatedNodeId = String(edge.from);
+            } else {
+              if (String(edge.from) === nodeId) {
+                relatedNodeId = String(edge.to);
+              } else if (String(edge.to) === nodeId) {
+                relatedNodeId = String(edge.from);
+              } else {
+                return;
+              }
+            }
+            if (!getConcept(relatedNodeId)) { return; }
+
+            if (!groups[relation]) { groups[relation] = []; }
+            groups[relation].push(immediateBacklinkEntry(edge, relatedNodeId));
+          });
+
+          return groups;
+        }
+
+        function renderConceptDerivedFrom(nodeId) {
+          var sourceEdges = derivedFromEdgesFor(nodeId, derivedFromFullTreeEnabled);
+          if (sourceEdges.length === 0) { return ""; }
+
+          var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
+            '" class="concept-derived-from" open>';
+          html += "<summary>Derived from</summary>";
+          html += fullTreeToggleHtml(
+            "concept-derived-from-full-tree",
+            derivedFromFullTreeEnabled
+          );
+          html += '<ul class="concept-derived-from-list">';
+          sourceEdges.forEach(function(item) {
+            html += derivedFromTreeItemHtml(item, "concept-derived-from-note");
+          });
+          html += "</ul></details>";
+          return html;
+        }
+
+        function backlinkGroupsFor(nodeId) {
+          nodeId = String(nodeId);
+          var groups = backLinkRelationGroupsObject(nodeId);
+          var relationOrder = ["DERIVES_FROM", "PREREQUISITE", "DEPENDS_ON", "RELATED"];
+
+          return Object.keys(groups)
+            .sort(function(a, b) {
+              var ai = relationOrder.indexOf(a);
+              var bi = relationOrder.indexOf(b);
+              ai = ai === -1 ? relationOrder.length : ai;
+              bi = bi === -1 ? relationOrder.length : bi;
+              return ai - bi || a.localeCompare(b);
+            })
+            .map(function(relation) {
+              return {
+                relation: relation,
+                title: backlinkGroupTitle(relation),
+                items: sortedBacklinkItems(groups[relation])
+              };
+            });
+        }
+
+        function renderConceptBacklinks(nodeId) {
+          var groups = backlinkGroupsFor(nodeId);
+          if (groups.length === 0) { return ""; }
+
+          var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
+            '" class="concept-backlinks" open>';
+          html += "<summary>Where this is used</summary>";
+          html += fullTreeToggleHtml(
+            "concept-backlinks-full-tree",
+            backlinksFullTreeEnabled
+          );
+          groups.forEach(function(group) {
+            html += '<section class="concept-backlink-group">';
+            html += '<div class="concept-backlink-group-title">' + escapeHtml(group.title) + "</div>";
+            html += '<ul class="concept-backlink-list">';
+            group.items.forEach(function(item) {
+              html += derivedFromTreeItemHtml(item, "concept-backlink-note");
+            });
+            html += "</ul></section>";
+          });
+          html += "</details>";
+          return html;
+        }
+
+        function showEdgeDetails(edgeId) {
+          var edge = edges.get(edgeId);
+          if (!edge || !visibleGraphEdge(edge)) { return; }
+
+          hideConceptPreview(true);
+          restoreHoveredEdge();
+          setInfoPanelVisible(true);
+
+          var relation = edgeRelation(edge);
+          var relationInfo = edgeKey[relation] || {};
+          var relationColourValue = relationColour(relation);
+          var html = "";
+          html += "<h2>Relationship</h2>";
+          html += '<section class="edge-detail">';
+          html += '<div class="edge-detail-route">' +
+            relationshipConceptHtml(edge.from) +
+            '<span class="edge-detail-arrow">' + (relationInfo.directed ? "->" : "-") + "</span>" +
+            relationshipConceptHtml(edge.to) +
+            "</div>";
+          html += '<dl class="edge-detail-meta">';
+          html += "<dt>Relation</dt><dd>" +
+            '<span class="edge-colour-swatch" style="background:' +
+            escapeHtml(relationColourValue) + '"></span>' +
+            escapeHtml(relation || "Unlabelled") + "</dd>";
+          if (relationInfo.category) {
+            html += "<dt>Category</dt><dd>" + escapeHtml(relationInfo.category) + "</dd>";
+          }
+          if (relationInfo.meaning) {
+            html += "<dt>Meaning</dt><dd>" + escapeHtml(relationInfo.meaning) + "</dd>";
+          }
+          if (edge.note) {
+            html += "<dt>Note</dt><dd>" + renderConceptText(edge.note) + "</dd>";
+          }
+          html += "</dl>";
+          html += "</section>";
+
+          var panel = document.getElementById("info_panel");
+          panel.innerHTML = html;
+          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
+          typesetInfoPanel();
+        }
+
         function showConcept(nodeId, options) {
           options = options || {};
           hideConceptPreview(true);
+          if (!options.preserveSectionContext) {
+            activeConceptSectionContext = "neighbourhood";
+          }
           var concept = getConcept(nodeId);
           if (!concept) {
             document.getElementById("info_panel").innerHTML =
@@ -2171,10 +2993,20 @@
           if (concept.layer) { layerParts.push("Layer " + escapeHtml(concept.layer)); }
           if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
 
+          var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
+          studyQuestions = filteredStudyQuestions(studyQuestions);
+          var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
+          var tocItems = conceptTocItems(
+            nodeId,
+            concept,
+            studyQuestions,
+            conceptReferences
+          );
+
           var html = "";
-          html += "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) + "</h2>";
+          html += renderConceptMasthead(nodeId, concept, tocItems);
           if (layerParts.length > 0) {
-            html += "<p>" + layerParts.join(" - ") + "</p>";
+            html += '<p class="concept-layer-context">' + layerParts.join(" - ") + "</p>";
           }
           var svgDetail = concept.svg_detail || concept.svg_graphic || concept.svg_icon || "";
           if (svgDetail) {
@@ -2187,10 +3019,15 @@
             html += "</figure>";
           }
           html += "<hr>";
+          if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
+            html += renderDerivationTracePanel(nodeId);
+          }
           html += renderConceptContent(nodeId, concept);
-          var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
+          html += renderConceptDerivedFrom(nodeId);
+          html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
-            html += '<details class="study-questions" open>';
+            html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
+              '" class="study-questions" open>';
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
               var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
@@ -2209,9 +3046,9 @@
             });
             html += "</details>";
           }
-          var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
           if (conceptReferences.length > 0) {
-            html += '<details class="concept-references">';
+            html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "References")) +
+              '" class="concept-references">';
             html += "<summary>References</summary>";
             html += '<ul class="concept-reference-list">';
             conceptReferences.forEach(function(item) {
@@ -2530,7 +3367,8 @@
           setTimeout(updateNodeLabelPositions, options.animation === false ? 0 : 260);
         }
 
-        function fitHighlightedSelection(nodeId) {
+        function fitHighlightedSelection(nodeId, options) {
+          options = options || {};
           var fitIds = [String(nodeId)];
           enabledConnectedNodes(nodeId).forEach(function(id) {
             if (originalNodes[id] && fitIds.indexOf(id) === -1) {
@@ -2538,7 +3376,10 @@
             }
           });
 
-          fitNodesToAvailableRect(fitIds, {maxScale: 0.7});
+          fitNodesToAvailableRect(fitIds, {
+            maxScale: 0.7,
+            animation: options.animation
+          });
         }
 
         function visibleNodeIds() {
@@ -2555,7 +3396,9 @@
           } else if (
             (
               graphViewIs(currentView, GraphViewMode.NEIGHBOURHOOD) ||
-              graphViewIs(currentView, GraphViewMode.DESCENDANTS)
+              graphViewIs(currentView, GraphViewMode.FOCUSED) ||
+              graphViewIs(currentView, GraphViewMode.DESCENDANTS) ||
+              graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)
             ) &&
             graphViewHasNode(currentView)
           ) {
@@ -2620,6 +3463,26 @@
             focusHiddenConcept(nodeId, statusPrefix, options);
             return;
           }
+          if (activeNodeId !== String(nodeId)) {
+            activeConceptSectionContext = "neighbourhood";
+          }
+          if (graphViewIs(currentView, GraphViewMode.FOCUSED)) {
+            activeNodeId = nodeId;
+            applySectionGraphView(nodeId, {compact: true, preserveStatus: true});
+            showConcept(nodeId, {
+              searchQuery: options.searchQuery,
+              scrollToSearchMatch: options.scrollToSearchMatch
+            });
+            setActiveConceptItem(nodeId);
+            if (!options.skipHistory) {
+              pushConceptHistory(nodeId, graphViewHistoryMode(currentView));
+            }
+            if (statusPrefix) {
+              document.getElementById("kg_status").innerText =
+                statusPrefix + " " + conceptDisplayId(nodeId) + ".";
+            }
+            return;
+          }
           activeNodeId = nodeId;
           kgHighlight(nodeId, true);
           showConcept(nodeId, {
@@ -2627,7 +3490,6 @@
             scrollToSearchMatch: options.scrollToSearchMatch
           });
           setActiveConceptItem(nodeId);
-          fitHighlightedSelection(nodeId);
           if (!options.skipHistory) {
             pushConceptHistory(nodeId, graphViewHistoryMode(currentView));
           }
@@ -2635,6 +3497,16 @@
             document.getElementById("kg_status").innerText =
               statusPrefix + " " + conceptDisplayId(nodeId) + ".";
           }
+        }
+
+        function focusConceptInGraph(nodeId) {
+          if (!getConcept(nodeId)) { return; }
+          applySectionGraphView(nodeId, {compact: false, preserveStatus: true});
+          showConcept(nodeId);
+          setActiveConceptItem(nodeId);
+          pushConceptHistory(nodeId, graphViewHistoryMode(currentView));
+          document.getElementById("kg_status").innerText =
+            "Focused " + conceptDisplayId(nodeId) + " in graph.";
         }
 
         function focusNeighbourhood(nodeId, statusPrefix, options) {
@@ -2674,6 +3546,26 @@
             "Descendants mode: " + displayId + " plus " + descendantCount +
             " reachable node" + (descendantCount === 1 ? "" : "s") +
             ". Click a visible node to walk one step.";
+        }
+
+        function focusDerivationTrace(nodeId, statusPrefix, options) {
+          options = options || {};
+          if (!getConcept(nodeId)) { return; }
+          kgApplyDerivationTrace(nodeId, true);
+          showConcept(nodeId);
+          setActiveConceptItem(nodeId);
+          if (!options.skipHistory) {
+            pushConceptHistory(nodeId, graphViewHistoryMode(currentView));
+          }
+
+          var trace = derivationTrace(nodeId);
+          var traceNodeCount = Math.max(0, Object.keys(trace.nodes).length - 1);
+          var displayId = conceptDisplayId(nodeId);
+          document.getElementById("kg_status").innerText =
+            (statusPrefix ? statusPrefix + " " + displayId + ". " : "") +
+            "Derivation trace: " + displayId + " plus " + traceNodeCount +
+            " derived-from node" + (traceNodeCount === 1 ? "" : "s") +
+            ". Click a visible node to trace from it.";
         }
 
         function buildConceptList(filterText) {
@@ -2726,6 +3618,7 @@
         }
 
         window.kgReset = function(preserveStatus) {
+          clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
           network.unselectAll();
@@ -2760,28 +3653,18 @@
           if (value === GraphViewSelectValue.HIDE) {
             kgHideGraph();
           } else if (value === GraphViewSelectValue.ALL) {
-            kgReset();
-          } else if (
-            value === GraphViewSelectValue.NEIGHBOURHOOD_1 ||
-            value === GraphViewSelectValue.NEIGHBOURHOOD_2
-          ) {
+            if (!nodeId) {
+              kgReset();
+              return;
+            }
+            applySectionGraphView(nodeId, {compact: false});
+          } else if (value === GraphViewSelectValue.FOCUSED) {
             if (!nodeId) {
               document.getElementById("kg_status").innerText = "Select a node first.";
               updateGraphViewControls();
               return;
             }
-            focusNeighbourhood(
-              nodeId,
-              null,
-              {radius: value === GraphViewSelectValue.NEIGHBOURHOOD_2 ? 2 : 1}
-            );
-          } else if (value === GraphViewSelectValue.DESCENDANTS) {
-            if (!nodeId) {
-              document.getElementById("kg_status").innerText = "Select a node first.";
-              updateGraphViewControls();
-              return;
-            }
-            focusDescendants(nodeId);
+            applySectionGraphView(nodeId, {compact: true});
           } else {
             updateGraphViewControls();
           }
@@ -2820,12 +3703,15 @@
             focusHiddenConcept(nodeId, statusPrefix, options);
           } else if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
             focusDescendants(nodeId, statusPrefix, options);
+          } else if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
+            focusDerivationTrace(nodeId, statusPrefix, options);
           } else {
             focusConcept(nodeId, statusPrefix, options);
           }
         }
 
         window.kgHideGraph = function(preserveStatus) {
+          clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
           var nodeId = activeNodeId || (currentView && currentView.nodeId) || null;
@@ -2869,18 +3755,25 @@
             "Found " + matches.length + " match(es). Showing first: " + (concept.label || id);
         };
 
-        window.kgHighlight = function(nodeId, preserveStatus) {
+        function applySectionGraphView(nodeId, options) {
+          options = options || {};
+          var compact = options.compact === true;
+          clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
+          hideNodeTooltip();
           activeNodeId = nodeId;
-          setCurrentView(createGraphView(GraphViewMode.HIGHLIGHT, nodeId));
-          var connected = enabledConnectedNodes(nodeId);
-          var keep = {};
-          keep[nodeId] = true;
-          connected.forEach(function(id) { keep[id] = true; });
+          setCurrentView(createGraphView(compact ? GraphViewMode.FOCUSED : GraphViewMode.HIGHLIGHT, nodeId));
+          var context = sectionGraphContext(nodeId);
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return context.keep[id];
+          });
+          var compactPositions = compact ? buildCompactLayerPositions(visibleIds) : {};
 
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
-            if (keep[n.id]) {
+            var inContext = context.keep[String(n.id)] === true;
+            o.hidden = compact && !inContext;
+            if (inContext) {
               o.opacity = 1.0;
               o.font = Object.assign({}, o.font || {}, {color: "#111111"});
             } else {
@@ -2891,8 +3784,11 @@
                 border: "#d0d0d0"
               };
             }
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
             o = applyCollisionNodeStyle(o);
-            o.hidden = false;
             return o;
           }));
 
@@ -2900,10 +3796,12 @@
             var o = Object.assign({}, originalEdges[e.id]);
             if (!edgeRelationEnabled(e)) {
               return setEdgeHidden(o, true);
-            } else if (e.from == nodeId || e.to == nodeId) {
+            } else if (sectionContextEdgeHighlighted(e, context)) {
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
               return setEdgeHidden(o, false);
+            } else if (compact) {
+              return setEdgeHidden(o, true);
             } else {
               o.color = {
                 color: "#cccccc",
@@ -2917,12 +3815,22 @@
             }
           }));
           network.unselectAll();
+          if (compact) {
+            fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+          } else {
+            fitHighlightedSelection(nodeId, {animation: false});
+          }
           updateNodeLabelPositions();
 
-          if (!preserveStatus) {
+          if (!options.preserveStatus) {
             document.getElementById("kg_status").innerText =
-              "Selected " + conceptDisplayId(nodeId) + ": showing immediate neighbours.";
+              (compact ? "Focussed graph: " : "All graph: ") +
+              conceptDisplayId(nodeId) + " with " + context.label + ".";
           }
+        }
+
+        window.kgHighlight = function(nodeId, preserveStatus) {
+          applySectionGraphView(nodeId, {compact: false, preserveStatus: preserveStatus});
         };
 
         function enabledNeighbourhoodNodes(nodeId, radius) {
@@ -2946,6 +3854,7 @@
         }
 
         function kgApplyNeighbourhood(nodeId, preserveStatus, radius) {
+          clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
           radius = clampNeighbourhoodRadius(radius);
@@ -2983,6 +3892,7 @@
         }
 
         function kgApplyDescendants(nodeId, preserveStatus) {
+          clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
           setCurrentView(createGraphView(GraphViewMode.DESCENDANTS, nodeId));
@@ -3023,6 +3933,48 @@
           }
         }
 
+        function kgApplyDerivationTrace(nodeId, preserveStatus) {
+          clearTransientConceptHighlight({skipEdgeRestore: true});
+          restoreHoveredEdge();
+          activeNodeId = nodeId;
+          setCurrentView(createGraphView(GraphViewMode.DERIVATION_TRACE, nodeId));
+          var trace = derivationTrace(nodeId);
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return trace.nodes[id];
+          });
+          var compactPositions = buildCompactLayerPositions(visibleIds);
+
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            o.hidden = !trace.nodes[n.id];
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
+            return o;
+          }));
+
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            var visible = edgeRelation(e) === "DERIVES_FROM" && trace.edges[e.id];
+            if (visible) {
+              o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
+              o.width = Math.max(Number(o.width) || 0, 3.0);
+            }
+            return setEdgeHidden(o, !visible);
+          }));
+
+          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+          updateNodeLabelPositions();
+          if (!preserveStatus) {
+            var traceNodeCount = Math.max(0, visibleIds.length - 1);
+            document.getElementById("kg_status").innerText =
+              "Derivation trace: " + conceptDisplayId(nodeId) + " plus " + traceNodeCount +
+              " derived-from node" + (traceNodeCount === 1 ? "" : "s") +
+              ". Click a visible node to trace from it.";
+          }
+        }
+
         window.kgFocusSelected = function() {
           var nodeId = selectedOrActiveNodeId();
           if (!nodeId) {
@@ -3045,6 +3997,10 @@
 
         /* Browser event wiring. */
         network.on("click", function(params) {
+            if (params.nodes.length === 0 && params.edges && params.edges.length > 0) {
+                showEdgeDetails(params.edges[0]);
+                return;
+            }
 
             if (params.nodes.length === 0)
                 return;
@@ -3055,6 +4011,8 @@
               focusNeighbourhood(nodeId, null, {radius: graphViewRadius(currentView)});
             } else if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
               focusDescendants(nodeId);
+            } else if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
+              focusDerivationTrace(nodeId);
             } else {
               focusConcept(nodeId, "Selected");
             }
@@ -3107,6 +4065,10 @@
             var historyView = graphViewFromHistoryMode(mode, nodeId);
             if (graphViewIs(historyView, GraphViewMode.HIDE)) {
               focusHiddenConcept(nodeId, null, {skipHistory: true});
+            } else if (graphViewIs(historyView, GraphViewMode.FOCUSED)) {
+              applySectionGraphView(nodeId, {compact: true, preserveStatus: true});
+              showConcept(nodeId);
+              setActiveConceptItem(nodeId);
             } else if (graphViewIs(historyView, GraphViewMode.NEIGHBOURHOOD)) {
               focusNeighbourhood(nodeId, null, {
                 skipHistory: true,
@@ -3114,6 +4076,8 @@
               });
             } else if (graphViewIs(historyView, GraphViewMode.DESCENDANTS)) {
               focusDescendants(nodeId, null, {skipHistory: true});
+            } else if (graphViewIs(historyView, GraphViewMode.DERIVATION_TRACE)) {
+              focusDerivationTrace(nodeId, null, {skipHistory: true});
             } else {
               focusConcept(nodeId, "Selected", {skipHistory: true});
             }
@@ -3217,13 +4181,13 @@
         });
 
         document.getElementById("info_panel").addEventListener("pointerover", function(e) {
-          var link = e.target.closest(".concept-link");
+          var link = conceptPreviewTriggerFromEventTarget(e.target);
           if (!link || e.pointerType === "touch") { return; }
           showConceptPreview(link, {pinned: false});
         });
 
         document.getElementById("info_panel").addEventListener("pointerout", function(e) {
-          var link = e.target.closest(".concept-link");
+          var link = conceptPreviewTriggerFromEventTarget(e.target);
           if (!link || conceptPreviewPinned) { return; }
           var related = e.relatedTarget;
           if (related && (link.contains(related) || conceptPreview.contains(related))) {
@@ -3233,13 +4197,13 @@
         });
 
         document.getElementById("info_panel").addEventListener("focusin", function(e) {
-          var link = e.target.closest(".concept-link");
+          var link = conceptPreviewTriggerFromEventTarget(e.target);
           if (!link) { return; }
           showConceptPreview(link, {pinned: false});
         });
 
         document.getElementById("info_panel").addEventListener("focusout", function(e) {
-          var link = e.target.closest(".concept-link");
+          var link = conceptPreviewTriggerFromEventTarget(e.target);
           if (!link || conceptPreviewPinned) { return; }
           var related = e.relatedTarget;
           if (related && (link.contains(related) || conceptPreview.contains(related))) {
@@ -3250,7 +4214,7 @@
 
         document.addEventListener("click", function(e) {
           if (!conceptPreview || conceptPreview.style.display === "none") { return; }
-          if (e.target.closest(".concept-link") || conceptPreview.contains(e.target)) {
+          if (conceptPreviewTriggerFromEventTarget(e.target) || conceptPreview.contains(e.target)) {
             return;
           }
           hideConceptPreview(true);
@@ -3263,6 +4227,21 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var tocLink = e.target.closest(".concept-toc-link");
+          if (tocLink) {
+            e.preventDefault();
+            var target = document.getElementById(tocLink.getAttribute("data-toc-target"));
+            if (target) {
+              activeConceptSectionContext = tocLink.getAttribute("data-graph-context") || "neighbourhood";
+              openTargetForToc(target);
+              applyCurrentView();
+              window.requestAnimationFrame(function() {
+                scrollInfoPanelTargetBelowStickyToc(target);
+              });
+            }
+            return;
+          }
+
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
@@ -3294,6 +4273,22 @@
             return;
           }
 
+          var edgeConceptButton = e.target.closest(".edge-detail-concept");
+          if (edgeConceptButton) {
+            e.preventDefault();
+            var edgeConceptId = edgeConceptButton.getAttribute("data-edge-concept-id");
+            if (!getConcept(edgeConceptId)) { return; }
+            navigateToConcept(edgeConceptId, "Selected");
+            return;
+          }
+
+          var graphFocusButton = e.target.closest(".concept-graph-focus");
+          if (graphFocusButton) {
+            e.preventDefault();
+            focusConceptInGraph(graphFocusButton.getAttribute("data-concept-id"));
+            return;
+          }
+
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
 
@@ -3301,6 +4296,37 @@
           var id = link.getAttribute("data-concept-id");
           if (!getConcept(id)) { return; }
           showConceptPreview(link, {pinned: true});
+        });
+
+        document.getElementById("info_panel").addEventListener("change", function(e) {
+          var readingModeSelect = e.target.closest(".concept-reading-mode-select");
+          if (readingModeSelect) {
+            var value = String(readingModeSelect.value || "full");
+            readingMode = readingModeDefinitions[value] ? value : "full";
+            activeConceptSectionContext = "neighbourhood";
+            if (activeNodeId && getConcept(activeNodeId)) {
+              showConcept(activeNodeId, {preserveSectionContext: true});
+              applyCurrentView();
+            }
+            document.getElementById("kg_status").innerText =
+              "Reading mode: " + currentReadingModeDefinition().label + ".";
+            return;
+          }
+
+          var derivedFromFullTree = e.target.closest(".concept-derived-from-full-tree");
+          if (derivedFromFullTree) {
+            derivedFromFullTreeEnabled = derivedFromFullTree.checked;
+            refreshActiveConcept();
+            applyCurrentView();
+            return;
+          }
+
+          var backlinksFullTree = e.target.closest(".concept-backlinks-full-tree");
+          if (backlinksFullTree) {
+            backlinksFullTreeEnabled = backlinksFullTree.checked;
+            refreshActiveConcept();
+            applyCurrentView();
+          }
         });
 
         document.getElementById("info_panel").addEventListener("input", function(e) {

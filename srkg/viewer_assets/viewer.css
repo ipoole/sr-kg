@@ -95,6 +95,19 @@
         margin-right: 4px;
         padding: 4px 8px;
       }
+      .kg-control-row {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        margin-top: 8px;
+      }
+      .kg-control-row select {
+        box-sizing: border-box;
+        font: inherit;
+        max-width: 150px;
+        padding: 3px 5px;
+      }
       #kg_status {
         margin-top: 6px;
         font-size: 0.923em;
@@ -260,6 +273,15 @@
         font-variant-numeric: tabular-nums;
         font-weight: 700;
       }
+
+      .kg-node-label-transient {
+        color: #174ea6;
+        font-weight: 700;
+      }
+
+      .kg-node-label-transient .kg-node-label-id {
+        color: #174ea6;
+      }
     
     #info_panel {
         position: fixed;
@@ -313,6 +335,135 @@
 
     #info_panel .concept-section {
         margin: 0;
+    }
+
+    #info_panel .concept-sticky-header {
+        background: rgba(255,255,255,0.96);
+        border-bottom: 1px solid #ddd;
+        margin: 0 -16px 0.75em;
+        padding: 8px 16px 9px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    #info_panel .concept-title-row {
+        align-items: flex-start;
+        display: flex;
+        gap: 0.75em;
+        justify-content: space-between;
+    }
+
+    #info_panel .concept-title {
+        font-size: 1.25em;
+        line-height: 1.2;
+        margin: 0;
+        min-width: 0;
+    }
+
+    #info_panel .concept-title-actions {
+        align-items: center;
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: flex-end;
+        max-width: 42%;
+    }
+
+    #info_panel .concept-reading-mode,
+    #info_panel .concept-graph-focus {
+        border: 1px solid #ccd6e5;
+        border-radius: 4px;
+        font-size: 0.78em;
+        line-height: 1.2;
+        padding: 3px 6px;
+        white-space: nowrap;
+    }
+
+    #info_panel .concept-reading-mode {
+        align-items: center;
+        background: #f5f7fb;
+        color: #555;
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    #info_panel .concept-reading-mode select {
+        background: transparent;
+        border: 0;
+        color: #174ea6;
+        font: inherit;
+        font-weight: 700;
+        padding: 0;
+    }
+
+    #info_panel .concept-graph-focus {
+        background: #174ea6;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .concept-graph-focus:hover,
+    #info_panel .concept-graph-focus:focus {
+        background: #0d3f8f;
+        outline: none;
+    }
+
+    #info_panel .concept-toc {
+        margin: 0.55em 0 0;
+        padding: 0;
+    }
+
+    #info_panel .concept-toc-title {
+        color: #555;
+        cursor: pointer;
+        font-size: 0.84em;
+        font-weight: 700;
+        margin-bottom: 0.35em;
+        text-transform: uppercase;
+    }
+
+    #info_panel .concept-toc-title:hover,
+    #info_panel .concept-toc-title:focus {
+        color: #174ea6;
+        outline: none;
+    }
+
+    #info_panel .concept-toc-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px 7px;
+    }
+
+    #info_panel .concept-toc-link {
+        background: #f3f6fb;
+        border: 1px solid #c9d6ea;
+        border-radius: 4px;
+        color: #174ea6;
+        font-size: 0.92em;
+        line-height: 1.2;
+        padding: 3px 6px;
+        text-decoration: none;
+    }
+
+    #info_panel .concept-toc-link:hover,
+    #info_panel .concept-toc-link:focus {
+        background: #e7effc;
+        outline: none;
+        text-decoration: underline;
+    }
+
+    #info_panel .concept-layer-context {
+        color: #555;
+        margin: 0 0 0.75em;
+    }
+
+    #info_panel .reading-mode-empty {
+        color: #666;
+        font-style: italic;
+        margin: 0.75em 0 1em;
     }
 
     #info_panel .content-block {
@@ -567,6 +718,86 @@
         white-space: pre-wrap;
     }
 
+    #info_panel .concept-derived-from {
+        border-top: 1px solid #ddd;
+        margin-top: 1em;
+        padding-top: 0.75em;
+    }
+
+    #info_panel .concept-derived-from > summary {
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .concept-derived-from-list {
+        list-style: none;
+        margin: 0.65em 0 0;
+        padding: 0;
+    }
+
+    #info_panel .concept-derived-from-list li {
+        margin-bottom: 0.65em;
+    }
+
+    #info_panel .concept-derived-from-note {
+        color: #444;
+        margin-top: 0.25em;
+    }
+
+    #info_panel .concept-backlinks {
+        border-top: 1px solid #ddd;
+        margin-top: 1em;
+        padding-top: 0.75em;
+    }
+
+    #info_panel .concept-backlinks > summary {
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #info_panel .concept-backlink-group {
+        margin-top: 0.75em;
+    }
+
+    #info_panel .concept-backlink-group-title {
+        color: #555;
+        font-weight: 700;
+        margin-bottom: 0.35em;
+    }
+
+    #info_panel .concept-backlink-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    #info_panel .concept-backlink-list li {
+        margin-bottom: 0.65em;
+    }
+
+    #info_panel .concept-derived-from-list li,
+    #info_panel .concept-backlink-list li {
+        margin-left: calc(var(--tree-depth, 0) * 1.15em);
+    }
+
+    #info_panel .concept-full-tree-toggle {
+        align-items: center;
+        color: #555;
+        display: inline-flex;
+        font-size: 0.92em;
+        gap: 0.35em;
+        margin-top: 0.55em;
+    }
+
+    #info_panel .concept-full-tree-toggle input {
+        margin: 0;
+    }
+
+    #info_panel .concept-backlink-note {
+        color: #444;
+        margin-top: 0.25em;
+    }
+
     #info_panel .concept-references {
         border-top: 1px solid #ddd;
         margin-top: 1em;
@@ -756,6 +987,89 @@
         margin-right: 6px;
         vertical-align: -1px;
         width: 18px;
+    }
+
+    #info_panel .edge-detail {
+        border-top: 1px solid #ddd;
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+
+    #info_panel .edge-detail-route {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    #info_panel .edge-detail-arrow {
+        color: #555;
+        font-family: monospace;
+        font-weight: 700;
+    }
+
+    #info_panel .edge-detail-concept {
+        background: #eef3fd;
+        border: 1px solid #9db3d4;
+        border-radius: 4px;
+        color: #174ea6;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        padding: 5px 8px;
+        text-align: left;
+    }
+
+    #info_panel .edge-detail-concept:hover,
+    #info_panel .edge-detail-concept:focus {
+        outline: 2px solid #8da9db;
+        outline-offset: 1px;
+    }
+
+    #info_panel .edge-detail-meta {
+        display: grid;
+        gap: 7px 10px;
+        grid-template-columns: max-content 1fr;
+        margin: 0;
+    }
+
+    #info_panel .edge-detail-meta dt {
+        color: #555;
+        font-weight: 700;
+    }
+
+    #info_panel .edge-detail-meta dd {
+        margin: 0;
+    }
+
+    #info_panel .derivation-trace-panel {
+        border-left: 3px solid #6a7b8f;
+        margin: 0 0 1em;
+        padding-left: 0.75em;
+    }
+
+    #info_panel .derivation-trace-panel h3 {
+        margin-top: 0;
+    }
+
+    #info_panel .derivation-trace-list {
+        margin: 0.4em 0 0;
+        padding-left: 1.4em;
+    }
+
+    #info_panel .derivation-trace-list li {
+        margin-bottom: 0.75em;
+    }
+
+    #info_panel .derivation-trace-relation {
+        color: #555;
+        font-weight: 700;
+    }
+
+    #info_panel .derivation-trace-note {
+        color: #444;
+        margin-top: 0.25em;
     }
 
     div.vis-tooltip {
@@ -972,6 +1286,25 @@
 
         #info_panel h2 {
             font-size: 1.15em;
+        }
+
+        #info_panel .concept-sticky-header {
+            margin: 0 -10px 0.75em;
+            padding: 7px 10px 8px;
+        }
+
+        #info_panel .concept-title-row {
+            display: block;
+        }
+
+        #info_panel .concept-title {
+            font-size: 1.08em;
+        }
+
+        #info_panel .concept-title-actions {
+            justify-content: flex-start;
+            margin-top: 0.45em;
+            max-width: none;
         }
 
         #info_panel h3 {

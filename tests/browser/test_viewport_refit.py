@@ -30,29 +30,28 @@ def _wait_for_refit(page):
     page.wait_for_timeout(700)
 
 
-def _enter_browsing_mode(page, mode):
-    page.locator('.kg-concept-item[data-concept-id="3.1"]').click()
+def _enter_browsing_mode(browser_graph, mode):
+    page = browser_graph.page
+    browser_graph.click_concept("3.1")
     _wait_for_refit(page)
 
     if mode == "all":
         return
-    if mode == "neighbourhood":
-        page.locator("#kg_graph_view_select").select_option("neighbourhood-1")
-    elif mode == "descendants":
-        page.locator("#kg_graph_view_select").select_option("descendants")
+    if mode == "focused":
+        page.locator("#kg_graph_view_select").select_option("focused")
     else:
         raise AssertionError(f"unknown mode: {mode}")
     _wait_for_refit(page)
 
 
 @pytest.mark.browser
-@pytest.mark.parametrize("mode", ["all", "neighbourhood", "descendants"])
+@pytest.mark.parametrize("mode", ["all", "focused"])
 def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
     browser_graph,
     mode,
 ):
     page = browser_graph.page
-    _enter_browsing_mode(page, mode)
+    _enter_browsing_mode(browser_graph, mode)
 
     panels_visible = _view_state(page)
     page.locator("#kg_info_toggle").click()
@@ -77,28 +76,21 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
             "2.2": False,
             "3.1": False,
         }
-    elif mode == "neighbourhood":
+    else:
         assert panels_visible["hiddenNodes"] == {
             "1.1": True,
             "2.1": False,
             "2.2": False,
             "3.1": False,
         }
-    else:
-        assert panels_visible["hiddenNodes"] == {
-            "1.1": False,
-            "2.1": False,
-            "2.2": False,
-            "3.1": False,
-        }
-        assert [
+        assert sorted([
             (edge["from"], edge["to"], edge["relation"])
             for edge in panels_visible["hiddenEdges"]
             if not edge["hidden"]
-        ] == [
+        ]) == [
             ("3.1", "2.1", "DEPENDS_ON"),
-            ("2.1", "1.1", "DEPENDS_ON"),
             ("3.1", "2.2", "DEPENDS_ON"),
+            ("3.1", "2.2", "DERIVES_FROM"),
         ]
 
 

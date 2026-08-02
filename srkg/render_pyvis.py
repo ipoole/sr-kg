@@ -205,6 +205,7 @@ def write_pyvis_html(
             target,
             title=make_edge_tooltip(rel, note),
             relation=rel,
+            note=note,
             arrows="to" if directed else "",
             color={
                 "color": edge_colour,

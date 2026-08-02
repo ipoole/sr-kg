@@ -38,6 +38,19 @@ class BrowserGraph:
     page_errors: list[str]
     console_errors: list[str]
 
+    def open_control_section(self, section_id: str) -> None:
+        self.page.locator(f"#{section_id}").evaluate("el => { el.open = true; }")
+
+    def open_edge_filters(self) -> None:
+        self.open_control_section("kg_edge_filters_section")
+
+    def open_search(self) -> None:
+        self.open_control_section("kg_search_section")
+
+    def click_concept(self, concept_id: str) -> None:
+        self.open_search()
+        self.page.locator(f'.kg-concept-item[data-concept-id="{concept_id}"]').click()
+
 
 def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     (tmp_path / "manifest.yaml").write_text(
@@ -178,6 +191,18 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "note": "Delta depends on beta",
         },
         {
+            "source": "3.1",
+            "target": "2.2",
+            "relation": "DERIVES_FROM",
+            "note": "Delta derives from gamma",
+        },
+        {
+            "source": "2.2",
+            "target": "1.1",
+            "relation": "DERIVES_FROM",
+            "note": "Gamma derives from alpha",
+        },
+        {
             "source": "2.1",
             "target": "1.1",
             "relation": "DEPENDS_ON",
@@ -211,6 +236,13 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "meaning": "source is related to target",
             "example": "Alpha is related to Beta",
         },
+        {
+            "relation": "DERIVES_FROM",
+            "directed": "true",
+            "category": "knowledge",
+            "meaning": "source can be mathematically derived from target",
+            "example": "Delta derives from Gamma",
+        },
     ]).to_csv(edge_key_path, index=False)
     pd.DataFrame([
         {
@@ -220,6 +252,30 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "question_type": "short_answer",
             "prompt": "Beta question?\\n\\nA. First option\\nB. Second option",
             "answer": "Beta answer.",
+        },
+        {
+            "question_id": "2.2.q1",
+            "concept_id": "2.2",
+            "sequence": 10,
+            "question_type": "short_answer",
+            "prompt": "Gamma short-answer question?",
+            "answer": "Gamma short-answer answer.",
+        },
+        {
+            "question_id": "2.2.q2",
+            "concept_id": "2.2",
+            "sequence": 20,
+            "question_type": "calculation",
+            "prompt": "Gamma calculation question?",
+            "answer": "Gamma calculation answer.",
+        },
+        {
+            "question_id": "2.2.q3",
+            "concept_id": "2.2",
+            "sequence": 30,
+            "question_type": "multiple_choice",
+            "prompt": "Gamma multiple-choice question?",
+            "answer": "Gamma multiple-choice answer.",
         },
     ]).to_csv(study_questions_path, index=False)
     pd.DataFrame(columns=[

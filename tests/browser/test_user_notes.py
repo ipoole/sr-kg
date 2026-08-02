@@ -20,7 +20,7 @@ def _hover_beta_node(page):
 def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(browser_graph):
     page = browser_graph.page
 
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
 
     page.locator("#kg_notes_section summary").click()
@@ -81,7 +81,7 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
           typeof edges !== "undefined"
         """
     )
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Check this derivation"
     )
@@ -91,7 +91,7 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
 def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph):
     page = browser_graph.page
 
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
     page.locator("#kg_notes_edit_toggle").check()
     page.locator("#info_panel .kg-add-note").first.click()
@@ -112,7 +112,7 @@ def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph
 def test_notes_panel_list_navigates_to_note_concept(browser_graph):
     page = browser_graph.page
 
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
     page.locator("#kg_notes_edit_toggle").check()
     page.locator("#info_panel .kg-add-note").first.click()
@@ -120,7 +120,7 @@ def test_notes_panel_list_navigates_to_note_concept(browser_graph):
     page.locator("#info_panel .user-note-body-input").fill("Remember beta.")
     page.locator("#info_panel .user-note-close").click()
 
-    page.locator('.kg-concept-item[data-concept-id="1.1"]').click()
+    browser_graph.click_concept("1.1")
     page.locator("#info_panel .kg-add-note").first.click()
     page.locator("#info_panel .user-note-title-input").fill("Alpha note")
     page.locator("#info_panel .user-note-body-input").fill("Remember alpha.")
@@ -145,7 +145,7 @@ def test_notes_panel_list_navigates_to_note_concept(browser_graph):
 def test_user_notes_export_and_import_csv(browser_graph):
     page = browser_graph.page
 
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
     page.locator("#kg_notes_edit_toggle").check()
     page.locator("#info_panel .kg-add-note").first.click()
@@ -178,7 +178,7 @@ def test_user_notes_export_and_import_csv(browser_graph):
         writer.writerow(imported_row)
 
     page.locator("#kg_notes_import_input").set_input_files(str(import_path))
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Imported title"
     )
@@ -190,7 +190,7 @@ def test_user_notes_export_and_import_csv(browser_graph):
 def test_note_hooks_follow_optional_details_and_display_equations(browser_graph):
     page = browser_graph.page
 
-    page.locator('.kg-concept-item[data-concept-id="2.1"]').click()
+    browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
     page.locator("#kg_notes_edit_toggle").check()
 
