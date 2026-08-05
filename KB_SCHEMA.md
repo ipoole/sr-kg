@@ -27,6 +27,9 @@ The default project root is `data/`.
 For drafting style and concept-by-concept authoring workflow, see
 `docs/AUTHORING_GUIDE.md`. Readable exposition drafts live in
 `docs/concept_expositions.md` before or alongside their split into CSV blocks.
+Recurring notation conventions are collected in `docs/NOTATION_GLOSSARY.md`.
+Broad or missing source locators are tracked in
+`docs/SOURCE_REVIEW_WORKLIST.md`.
 
 ## manifest.yaml
 

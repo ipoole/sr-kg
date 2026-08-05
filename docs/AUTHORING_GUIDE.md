@@ -24,14 +24,17 @@ Before authoring a concept:
    likely descendants.
 3. Decide the scope boundary. The concept should explain itself, but avoid
    taking over material that belongs naturally to a neighbouring concept.
-4. Check `KB_SCHEMA.md` for the current source schema and accepted block
-   `kind` values. The implementation source of the same vocabulary is
-   `CONTENT_BLOCK_KIND_DESCRIPTIONS` in `srkg/kb.py`.
+4. Check the project-root `KB_SCHEMA.md` for the current source schema and
+   accepted block `kind` values. The implementation source of the same
+   vocabulary is `CONTENT_BLOCK_KIND_DESCRIPTIONS` in `srkg/kb.py`.
 5. Check `docs/concept_expositions.md` for any existing draft exposition for
    the concept, and update that draft before splitting it into CSV blocks.
-6. Check whether TTM, TRR, or another registered source should be linked. Add
-   broad reference hooks while drafting if precise locations are not yet known,
-   and mark those links for later locator tightening.
+6. Check whether TTM, TRR, or another registered source should be linked. Use
+   `docs/SOURCE_REVIEW_WORKLIST.md` when tightening source locators. Add broad
+   reference hooks while drafting if precise locations are not yet known, and
+   mark those links for later locator tightening.
+7. Check `docs/NOTATION_GLOSSARY.md` for recurring notation and convention
+   choices before introducing or revising symbols.
 
 After authoring each concept, pause for a small local consistency check before
 moving on to the next one: block count and kinds, block titles, question count
@@ -113,7 +116,7 @@ When deriving:
 - End by naming the result and saying what it tells the reader.
 
 If notation is shared across many concepts or likely to become a recurring
-source of confusion, note it as a candidate for the future notation glossary.
+source of confusion, add or update an entry in `docs/NOTATION_GLOSSARY.md`.
 
 ## Draft Expositions
 
@@ -150,6 +153,9 @@ For longer concepts, group drafting issues under short subheadings where useful:
   questions.
 - `Atlas Issues`: missing concepts, concept splits/merges, numbering gaps, or
   weak concept-edge vocabulary.
+Use `docs/SOURCE_REVIEW_WORKLIST.md` and `docs/NOTATION_GLOSSARY.md` to collect
+issues that recur across many concepts, rather than repeating the same generic
+note in every concept.
 
 ## Block Splitting
 
@@ -289,6 +295,7 @@ Before finishing a concept, check:
 - The concept has a clear scope and does not trespass heavily into neighbouring
   concepts.
 - Definitions, equations, assumptions, and conventions are explicit.
+- Recurring notation agrees with `docs/NOTATION_GLOSSARY.md`.
 - The prose is readable as a coherent book-like section.
 - Blocks have good titles and appropriate semantic kinds.
 - `sequence` reflects the intended narrative order.
@@ -299,6 +306,7 @@ Before finishing a concept, check:
 - The concept has 3 to 6 study questions, with no more than three calculation
   or symbol-manipulation questions.
 - Study questions start easy and become progressively more challenging.
-- References are linked at the most specific useful level.
+- References are linked at the most specific useful level; broad source
+  locators are recorded in `docs/SOURCE_REVIEW_WORKLIST.md`.
 - Any graphic need or graphic defect is recorded.
 - Validation and tests pass after CSV edits.

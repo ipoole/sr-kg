@@ -10,6 +10,11 @@ block boundaries, block kinds, or viewer presentation rules change later.
 Use one section per concept, labelled with display ID, semantic ID, and title.
 Keep concepts in atlas order where practical.
 
+Generic source-locator and notation issues are now collected in
+`docs/SOURCE_REVIEW_WORKLIST.md` and `docs/NOTATION_GLOSSARY.md`. Keep
+concept-specific issues below, but avoid repeating generic notes once they are
+covered by those worklists.
+
 ## 1.1 `sr.inertial_frames`: Inertial frames
 
 ### Scope
