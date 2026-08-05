@@ -308,8 +308,8 @@ id,display_id,label,layer,layer_title
 visible numbering, sorting, and layout.
 
 `data/content_blocks.csv` is the canonical source for concept prose in the manifest-backed KB.
-For drafting style and concept-by-concept workflow, see `docs/AUTHORING_GUIDE.md`.
-Readable draft expositions are kept in `docs/concept_expositions.md` before or
+For drafting style and concept-by-concept workflow, see `docs/authoring/AUTHORING_GUIDE.md`.
+Readable draft expositions are kept in `docs/authoring/concept_expositions.md` before or
 alongside their split into CSV blocks.
 
 `data/content_blocks.csv` expects:

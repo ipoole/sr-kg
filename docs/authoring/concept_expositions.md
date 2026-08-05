@@ -11,7 +11,7 @@ Use one section per concept, labelled with display ID, semantic ID, and title.
 Keep concepts in atlas order where practical.
 
 Generic source-locator and notation issues are now collected in
-`docs/SOURCE_REVIEW_WORKLIST.md` and `docs/NOTATION_GLOSSARY.md`. Keep
+`docs/authoring/SOURCE_REVIEW_WORKLIST.md` and `docs/authoring/NOTATION_GLOSSARY.md`. Keep
 concept-specific issues below, but avoid repeating generic notes once they are
 covered by those worklists.
 
@@ -446,8 +446,7 @@ concept. No SVG code change is needed in this pass.
 
 ### Drafting Issues
 
-- The reference link intentionally has no precise locator yet. Add a specific
-  TTM or other source locator during source review.
+- Section-level source locator is now recorded in `data/reference_links.csv`.
 - We may eventually want a sharper atlas edge type for "motivates field
   description" or "enforces finite propagation"; for now the current
   `PREREQUISITE` and `RELATED` links are adequate.
@@ -560,8 +559,7 @@ misconception correction.
 ### References
 
 Linked broadly to `TTM II` for the flat Minkowski metric convention and to `TRR`
-for the metric-as-geometry bridge. Precise locators should be added during
-source review.
+for the metric-as-geometry bridge. Section-level locators are now recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -573,7 +571,7 @@ fed through \(\eta\) to produce an \(s^2\) interval expression.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -688,8 +686,7 @@ calculations, and one invariant-versus-components misconception check.
 ### References
 
 Linked broadly to `TTM II` for the interval definition and `TRR` for interval
-and causal-classification background. Precise locators should be added during
-source review.
+and causal-classification background. Section-level locators are now recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -701,7 +698,7 @@ right visual emphasis for this concept.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -857,7 +854,7 @@ correction.
 
 Linked to `TTM II, 1.3 General Lorentz Transformation` for the standard boost
 formula and broadly to `TRR` for the metric-preservation/matrix viewpoint.
-Precise TRR locator should be added during source review.
+Section-level TRR locator is now recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -869,7 +866,7 @@ No SVG code change is needed in this pass.
 
 #### Source Issues
 
-- Add precise TRR locator for the matrix/metric preservation viewpoint.
+- Section-level TRR locator for the matrix/metric preservation viewpoint is recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -970,8 +967,7 @@ misconception check.
 ### References
 
 Linked broadly to `TTM II` for null separations/light cones and to `TRR` for
-causal-structure background. Precise locators should be added during source
-review.
+causal-structure background. Section-level locators are now recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -982,7 +978,7 @@ boundary should dominate, and the current graphic keeps that geometry clean.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1074,8 +1070,7 @@ visual readings.
 ### References
 
 Linked broadly to `TTM II` for spacetime diagrams and to `TRR` for broader
-spacetime-geometry background. Precise locators should be added during source
-review.
+spacetime-geometry background. Section-level locators are now recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1087,7 +1082,7 @@ full light-cone graphic.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1195,8 +1190,8 @@ spacetime.
 
 ### References
 
-- TTM SR/CF: proper time from the invariant interval; precise locator needed.
-- TRR: Minkowski/proper-time geometric background; precise locator needed.
+- TTM SR/CF: proper time from the invariant interval; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Minkowski/proper-time geometric background; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1207,7 +1202,7 @@ retained unless visual inspection shows a concrete defect.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1308,9 +1303,8 @@ quantity.
 
 ### References
 
-- TTM SR/CF: four-vector transformation law; precise locator needed.
-- TRR: Minkowski scalar products and relativistic vector notation; precise
-  locator needed.
+- TTM SR/CF: four-vector transformation law; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Minkowski scalar products and relativistic vector notation; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1321,12 +1315,12 @@ component column. Retain unless visual inspection exposes a layout problem.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Upper/lower indices, repeated-index summation, and the \(+---\) convention
-  are now covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as
   the glossary evolves.
 
 #### Atlas Issues
@@ -1416,9 +1410,8 @@ events; they are the starting point for relativistic kinematics.
 
 ### References
 
-- TTM SR/CF: position four-vector and event coordinates; precise locator needed.
-- TRR: spacetime position/displacement vector background; precise locator
-  needed.
+- TTM SR/CF: position four-vector and event coordinates; section-level locator recorded in `data/reference_links.csv`.
+- TRR: spacetime position/displacement vector background; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1429,12 +1422,12 @@ Retain unless visual inspection shows a layout problem.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - \(x^\mu\), \(\Delta x^\mu\), and the convention of using \(ct\) are now
-  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the
   glossary evolves.
 
 #### Atlas Issues
@@ -1527,8 +1520,8 @@ the dynamics of energy, momentum, and force.
 
 ### References
 
-- TTM SR/CF: four-velocity definition and components; precise locator needed.
-- TRR: timelike worldline and four-velocity geometry; precise locator needed.
+- TTM SR/CF: four-velocity definition and components; section-level locator recorded in `data/reference_links.csv`.
+- TRR: timelike worldline and four-velocity geometry; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1539,7 +1532,7 @@ visual inspection shows label crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1639,9 +1632,8 @@ For them \(p_\mu p^\mu=0\) and \(E=|\mathbf p|c\).
 
 ### References
 
-- TTM SR/CF: four-momentum and energy-momentum relation; precise locator
-  needed.
-- TRR: mass shell/four-momentum geometry; precise locator needed.
+- TTM SR/CF: four-momentum and energy-momentum relation; section-level locator recorded in `data/reference_links.csv`.
+- TRR: mass shell/four-momentum geometry; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1652,7 +1644,7 @@ The existing graphic correctly pairs a \(p^\mu\) arrow with \(E/c\) and
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1763,10 +1755,8 @@ the spatial momentum vanishes.
 
 ### References
 
-- TTM SR/CF: mass-energy relation from four-momentum norm; precise locator
-  needed.
-- TRR: relativistic energy-momentum and mass-energy discussion; precise locator
-  needed.
+- TTM SR/CF: mass-energy relation from four-momentum norm; section-level locator recorded in `data/reference_links.csv`.
+- TRR: relativistic energy-momentum and mass-energy discussion; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1777,7 +1767,7 @@ four-momentum norm below. Retain unless visual inspection shows crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -1877,9 +1867,8 @@ symmetries of the action become conservation laws through Noether's theorem.
 
 ### References
 
-- TTM SR/CF: Lagrangian and action setup; precise locator needed.
-- TRR: Lagrangian/action and invariant-building background; precise locator
-  needed.
+- TTM SR/CF: Lagrangian and action setup; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Lagrangian/action and invariant-building background; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1890,12 +1879,12 @@ meaning. Retain unless visual inspection shows layout problems.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - \(L\), action \(S\), and field Lagrangian density \(\mathcal L\) are now
-  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the
   glossary evolves.
 
 #### Atlas Issues
@@ -1981,8 +1970,8 @@ Euler-Lagrange equations.
 
 ### References
 
-- TTM SR/CF: action principle setup; precise locator needed.
-- TRR: stationary action and variational principles; precise locator needed.
+- TTM SR/CF: action principle setup; section-level locator recorded in `data/reference_links.csv`.
+- TRR: stationary action and variational principles; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -1993,7 +1982,7 @@ meaning. Retain unless visual inspection shows a concrete defect.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -2101,10 +2090,8 @@ generalized coordinates and, later, to fields.
 
 ### References
 
-- TTM SR/CF: Euler-Lagrange equations from stationary action; precise locator
-  needed.
-- TRR: variational calculus and Euler-Lagrange derivation; precise locator
-  needed.
+- TTM SR/CF: Euler-Lagrange equations from stationary action; section-level locator recorded in `data/reference_links.csv`.
+- TRR: variational calculus and Euler-Lagrange derivation; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2115,7 +2102,7 @@ inspection shows crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -2221,9 +2208,8 @@ used, and which Lagrangian derivative defines this \(p\)?
 ### References
 
 - TTM SR/CF: canonical momentum in the transition to Hamiltonian mechanics;
-  precise locator needed.
-- TRR: conjugate momentum and Hamiltonian phase-space background; precise
-  locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
+- TRR: conjugate momentum and Hamiltonian phase-space background; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2235,12 +2221,12 @@ enough room for the derivative notation.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Canonical momentum and four-momentum are now covered in
-  `docs/NOTATION_GLOSSARY.md`; mechanical momentum and relativistic
+  `docs/authoring/NOTATION_GLOSSARY.md`; mechanical momentum and relativistic
   three-momentum may still deserve explicit entries when the atlas develops
   mechanics notation further.
 
@@ -2359,10 +2345,9 @@ mechanics.
 
 ### References
 
-- TTM SR/CF: Hamiltonian formalism and Legendre transform; precise locator
-  needed.
+- TTM SR/CF: Hamiltonian formalism and Legendre transform; section-level locator recorded in `data/reference_links.csv`.
 - TRR: Hamiltonian mechanics as phase-space structure and route toward quantum
-  theory; precise locator needed.
+  theory; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2373,7 +2358,7 @@ unless visual inspection shows label or arrow crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -2494,9 +2479,9 @@ theoretical physics.
 
 ### References
 
-- TTM SR/CF: Noether theorem and action symmetries; precise locator needed.
+- TTM SR/CF: Noether theorem and action symmetries; section-level locator recorded in `data/reference_links.csv`.
 - TRR: Noether theorem, conservation laws, and symmetry in modern field theory;
-  precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2508,7 +2493,7 @@ inspection shows label crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -2590,10 +2575,8 @@ setting.
 
 ### References
 
-- TTM SR/CF: scalar fields as simple relativistic field variables; precise
-  locator needed.
-- TRR: scalar versus vector/tensor transformation behavior; precise locator
-  needed.
+- TTM SR/CF: scalar fields as simple relativistic field variables; section-level locator recorded in `data/reference_links.csv`.
+- TRR: scalar versus vector/tensor transformation behavior; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2604,12 +2587,12 @@ grid, matches the concept. Retain unless review shows crowding.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - The event \(x\), coordinate tuple \(x^\mu\), and scalar field value
-  \(\phi(x)\) are now covered in `docs/NOTATION_GLOSSARY.md`; keep this concept
+  \(\phi(x)\) are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept
   aligned as the glossary evolves.
 
 #### Atlas Issues
@@ -2681,9 +2664,8 @@ tensor description of electromagnetism.
 
 ### References
 
-- TTM SR/CF: relativistic vector-field transformation rule; precise locator
-  needed.
-- TRR: scalar/vector/tensor distinction; precise locator needed.
+- TTM SR/CF: relativistic vector-field transformation rule; section-level locator recorded in `data/reference_links.csv`.
+- TRR: scalar/vector/tensor distinction; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2694,12 +2676,12 @@ right local-field idea. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Contravariant \(A^\mu\), covariant \(A_\mu\), and the electromagnetic
-  potential convention are now covered in `docs/NOTATION_GLOSSARY.md`; keep
+  potential convention are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep
   this concept aligned as the glossary evolves.
 
 #### Atlas Issues
@@ -2774,10 +2756,8 @@ the energy-momentum tensor, a later concept.
 
 ### References
 
-- TTM SR/CF: field action and Lagrangian-density formulation; precise locator
-  needed.
-- TRR: invariant action and covariant field-theory construction; precise
-  locator needed.
+- TTM SR/CF: field action and Lagrangian-density formulation; section-level locator recorded in `data/reference_links.csv`.
+- TRR: invariant action and covariant field-theory construction; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2788,12 +2768,12 @@ Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - \(L\), \(\mathcal L\), action \(S\), and \(d^4x\) are now covered in
-  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the glossary
+  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the glossary
   evolves.
 
 #### Atlas Issues
@@ -2875,9 +2855,8 @@ express field propagation locally through spacetime.
 
 ### References
 
-- TTM SR/CF: field Euler-Lagrange equations and field action; precise locator
-  needed.
-- TRR: covariant wave operator and field equations; precise locator needed.
+- TTM SR/CF: field Euler-Lagrange equations and field action; section-level locator recorded in `data/reference_links.csv`.
+- TRR: covariant wave operator and field equations; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2888,12 +2867,12 @@ pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - The d'Alembertian \(\Box\) is now covered in
-  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
   evolve.
 
 #### Atlas Issues
@@ -2971,8 +2950,8 @@ redundancy.
 ### References
 
 - TTM SR/CF: four-potential convention and electromagnetic potential
-  formulation; precise locator needed.
-- TRR: potential, field strength, and gauge redundancy; precise locator needed.
+  formulation; section-level locator recorded in `data/reference_links.csv`.
+- TRR: potential, field strength, and gauge redundancy; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -2983,12 +2962,12 @@ construction. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Gauge-related notation \(\Lambda\), \(A_\mu\), and \(F_{\mu\nu}\) is now
-  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as
   convention handling evolves.
 
 #### Atlas Issues
@@ -3068,9 +3047,9 @@ equations.
 ### References
 
 - TTM SR/CF: electromagnetic field tensor construction from the four-potential;
-  precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
 - TRR: unification and Lorentz mixing of electric and magnetic components;
-  precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3080,12 +3059,12 @@ The existing tensor-matrix graphic is appropriate. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Sign conventions for \(F_{\mu\nu}\), \(F^{\mu\nu}\), and the \(E/B\) split
-  are now flagged in `docs/NOTATION_GLOSSARY.md`; continue stating local
+  are now flagged in `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local
   conventions near detailed calculations.
 
 #### Atlas Issues
@@ -3155,8 +3134,8 @@ useful, but it is not the whole invariant electromagnetic object.
 ### References
 
 - TTM SR/CF: electric field as part of the relativistic electromagnetic field;
-  precise locator needed.
-- TRR: frame-dependent electric/magnetic split; precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
+- TRR: frame-dependent electric/magnetic split; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3167,12 +3146,12 @@ this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Potential-form definitions of \(\mathbf E\) and \(\mathbf B\) are now flagged
-  in `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near
+  in `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near
   detailed calculations.
 
 #### Atlas Issues
@@ -3246,8 +3225,8 @@ substance.
 ### References
 
 - TTM SR/CF: magnetic field as spatial part of the electromagnetic tensor;
-  precise locator needed.
-- TRR: relativistic electric/magnetic mixing; precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
+- TRR: relativistic electric/magnetic mixing; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3258,7 +3237,7 @@ Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -3331,10 +3310,8 @@ explicit.
 
 ### References
 
-- TTM SR/CF: unified electromagnetic field and field tensor; precise locator
-  needed.
-- TRR: relativistic unification of electric and magnetic fields; precise
-  locator needed.
+- TTM SR/CF: unified electromagnetic field and field tensor; section-level locator recorded in `data/reference_links.csv`.
+- TRR: relativistic unification of electric and magnetic fields; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3345,7 +3322,7 @@ appropriate. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -3423,9 +3400,8 @@ boundary.
 
 ### References
 
-- TTM SR/CF: four-current definition and source role; precise locator needed.
-- TRR: relativistic packaging of charge and current density; precise locator
-  needed.
+- TTM SR/CF: four-current definition and source role; section-level locator recorded in `data/reference_links.csv`.
+- TRR: relativistic packaging of charge and current density; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3435,7 +3411,7 @@ The existing source-flow graphic is appropriate. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -3529,10 +3505,8 @@ at the invariant light speed.
 
 ### References
 
-- TTM SR/CF: covariant Maxwell equations and four-current source; precise
-  locator needed.
-- TRR: Maxwell theory, light, and relativistic field structure; precise
-  locator needed.
+- TTM SR/CF: covariant Maxwell equations and four-current source; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Maxwell theory, light, and relativistic field structure; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3543,7 +3517,7 @@ more explicit covariant-pair-to-four-equations graphic.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -3624,10 +3598,8 @@ that respects the gauge redundancy.
 
 ### References
 
-- TTM SR/CF: gauge transformation of the electromagnetic potential; precise
-  locator needed.
-- TRR: gauge freedom as a structural principle in field theory; precise locator
-  needed.
+- TTM SR/CF: gauge transformation of the electromagnetic potential; section-level locator recorded in `data/reference_links.csv`.
+- TRR: gauge freedom as a structural principle in field theory; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3638,7 +3610,7 @@ pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -3718,9 +3690,8 @@ calculation, derivatives of \(A_\mu\) combine into the field tensor
 ### References
 
 - TTM SR/CF: minimal coupling of charged particles to electromagnetic
-  potentials; precise locator needed.
-- TRR: gauge-compatible coupling as a field-theory principle; precise locator
-  needed.
+  potentials; section-level locator recorded in `data/reference_links.csv`.
+- TRR: gauge-compatible coupling as a field-theory principle; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3731,12 +3702,12 @@ appropriate. Retain for this pass.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Sign conventions for \(p_\mu-eA_\mu\), \(q\), and \(e\) are now flagged in
-  `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
   calculations.
 
 #### Atlas Issues
@@ -3828,9 +3799,8 @@ radiation-reaction problem.
 
 ### References
 
-- TTM SR/CF: covariant and ordinary Lorentz force law; precise locator needed.
-- TRR: relativistic electrodynamics and field tensor context; precise locator
-  needed.
+- TTM SR/CF: covariant and ordinary Lorentz force law; section-level locator recorded in `data/reference_links.csv`.
+- TRR: relativistic electrodynamics and field tensor context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3842,12 +3812,12 @@ equation.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - Sign conventions for the field tensor and the charge \(q\) are now flagged in
-  `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
   calculations.
 
 #### Atlas Issues
@@ -3939,9 +3909,9 @@ elsewhere without a current connecting the events.
 
 ### References
 
-- TTM SR/CF: four-current and continuity equation; precise locator needed.
+- TTM SR/CF: four-current and continuity equation; section-level locator recorded in `data/reference_links.csv`.
 - TRR: charge conservation as a consistency condition of Maxwell theory;
-  precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -3952,7 +3922,7 @@ A future refinement could make the local-to-integral relationship more explicit.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4034,10 +4004,8 @@ Lorentz-covariant.
 
 ### References
 
-- TTM SR/CF: Lorenz gauge and potential form of Maxwell equations; precise
-  locator needed.
-- TRR: gauge conditions and covariant electrodynamics context; precise locator
-  needed.
+- TTM SR/CF: Lorenz gauge and potential form of Maxwell equations; section-level locator recorded in `data/reference_links.csv`.
+- TRR: gauge conditions and covariant electrodynamics context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4048,7 +4016,7 @@ gauge-equivalent potentials with the Lorenz-gauge slice highlighted.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4143,10 +4111,8 @@ boundary.
 
 ### References
 
-- TTM SR/CF: energy-momentum tensor and translation symmetry; precise locator
-  needed.
-- TRR: stress-energy tensor in field theory and electromagnetism; precise
-  locator needed.
+- TTM SR/CF: energy-momentum tensor and translation symmetry; section-level locator recorded in `data/reference_links.csv`.
+- TRR: stress-energy tensor in field theory and electromagnetism; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4158,7 +4124,7 @@ labels on different tensor components.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4239,10 +4205,8 @@ matter.
 
 ### References
 
-- TTM SR/CF: Poynting vector and electromagnetic momentum density; precise
-  locator needed.
-- TRR: electromagnetic energy flow and field momentum context; precise locator
-  needed.
+- TTM SR/CF: Poynting vector and electromagnetic momentum density; section-level locator recorded in `data/reference_links.csv`.
+- TRR: electromagnetic energy flow and field momentum context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4253,7 +4217,7 @@ energy flux through a small surface element.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4333,10 +4297,9 @@ carries and transfers.
 
 ### References
 
-- TTM SR/CF: electromagnetic stress-energy tensor formula; precise locator
-  needed.
+- TTM SR/CF: electromagnetic stress-energy tensor formula; section-level locator recorded in `data/reference_links.csv`.
 - TRR: stress-energy tensor and frame-dependent component decomposition;
-  precise locator needed.
+  section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4347,7 +4310,7 @@ colour-coded tensor blocks for density, flux, momentum density, and stress.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4426,9 +4389,8 @@ the full tensor, not \(u\) alone.
 
 ### References
 
-- TTM SR/CF: electromagnetic energy density formula; precise locator needed.
-- TRR: field energy and electromagnetic radiation context; precise locator
-  needed.
+- TTM SR/CF: electromagnetic energy density formula; section-level locator recorded in `data/reference_links.csv`.
+- TRR: field energy and electromagnetic radiation context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4439,7 +4401,7 @@ density with nearby Poynting-vector flow arrows.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4527,9 +4489,8 @@ the equation describes how charges and currents generate or drive fields.
 
 ### References
 
-- TTM SR/CF: wave equation from Maxwell equations in Lorenz gauge; precise
-  locator needed.
-- TRR: Maxwell wave equation and light context; precise locator needed.
+- TTM SR/CF: wave equation from Maxwell equations in Lorenz gauge; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Maxwell wave equation and light context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4540,12 +4501,12 @@ propagation beside a sinusoidal plane-wave slice.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
 - D'Alembertian sign conventions are now covered in
-  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
   evolve.
 
 #### Atlas Issues
@@ -4626,10 +4587,8 @@ equations.
 
 ### References
 
-- TTM SR/CF: electromagnetic waves from source-free Maxwell equations; precise
-  locator needed.
-- TRR: Maxwell's identification of light as electromagnetic radiation; precise
-  locator needed.
+- TTM SR/CF: electromagnetic waves from source-free Maxwell equations; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Maxwell's identification of light as electromagnetic radiation; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4641,7 +4600,7 @@ direction.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4718,10 +4677,8 @@ trusting the point-particle idealization outside its domain.
 
 ### References
 
-- TTM SR/CF: radiation reaction and energy-momentum balance; precise locator
-  needed.
-- TRR: classical self-force and radiation-reaction context; precise locator
-  needed.
+- TTM SR/CF: radiation reaction and energy-momentum balance; section-level locator recorded in `data/reference_links.csv`.
+- TRR: classical self-force and radiation-reaction context; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4732,7 +4689,7 @@ particle trajectory, outgoing wavefronts, and a small recoil/damping cue.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 
@@ -4826,10 +4783,8 @@ labels.
 
 ### References
 
-- TTM SR/CF: gauge fixing and gauge-equivalent potentials; precise locator
-  needed.
-- TRR: gauge choice and gauge-independent physical predictions; precise locator
-  needed.
+- TTM SR/CF: gauge fixing and gauge-equivalent potentials; section-level locator recorded in `data/reference_links.csv`.
+- TRR: gauge choice and gauge-independent physical predictions; section-level locator recorded in `data/reference_links.csv`.
 
 ### Graphics
 
@@ -4840,7 +4795,7 @@ equivalence class of potentials with one gauge slice selecting a representative.
 
 #### Source Issues
 
-- Add precise TTM and TRR locators.
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
 
 #### Schema/View Issues
 

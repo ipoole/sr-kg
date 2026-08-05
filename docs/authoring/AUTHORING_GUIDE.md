@@ -27,13 +27,13 @@ Before authoring a concept:
 4. Check the project-root `KB_SCHEMA.md` for the current source schema and
    accepted block `kind` values. The implementation source of the same
    vocabulary is `CONTENT_BLOCK_KIND_DESCRIPTIONS` in `srkg/kb.py`.
-5. Check `docs/concept_expositions.md` for any existing draft exposition for
+5. Check `docs/authoring/concept_expositions.md` for any existing draft exposition for
    the concept, and update that draft before splitting it into CSV blocks.
 6. Check whether TTM, TRR, or another registered source should be linked. Use
-   `docs/SOURCE_REVIEW_WORKLIST.md` when tightening source locators. Add broad
+   `docs/authoring/SOURCE_REVIEW_WORKLIST.md` when tightening source locators. Add broad
    reference hooks while drafting if precise locations are not yet known, and
    mark those links for later locator tightening.
-7. Check `docs/NOTATION_GLOSSARY.md` for recurring notation and convention
+7. Check `docs/authoring/NOTATION_GLOSSARY.md` for recurring notation and convention
    choices before introducing or revising symbols.
 
 After authoring each concept, pause for a small local consistency check before
@@ -116,7 +116,7 @@ When deriving:
 - End by naming the result and saying what it tells the reader.
 
 If notation is shared across many concepts or likely to become a recurring
-source of confusion, add or update an entry in `docs/NOTATION_GLOSSARY.md`.
+source of confusion, add or update an entry in `docs/authoring/NOTATION_GLOSSARY.md`.
 For generic four-vector examples, prefer neutral symbols such as \(V^\mu\) and
 \(W^\mu\). Reserve \(A^\mu\) and \(A_\mu\) for the electromagnetic
 four-potential, or for a non-electromagnetic vector field only when the context
@@ -125,7 +125,7 @@ is explicit.
 ## Draft Expositions
 
 Keep a readable exposition draft before or alongside the CSV block split. The
-current home for these drafts is `docs/concept_expositions.md`.
+current home for these drafts is `docs/authoring/concept_expositions.md`.
 
 Use one top-level section per concept, labelled with display ID, semantic ID,
 and title. Within that section, use ordinary Markdown subsections where helpful.
@@ -157,7 +157,7 @@ For longer concepts, group drafting issues under short subheadings where useful:
   questions.
 - `Atlas Issues`: missing concepts, concept splits/merges, numbering gaps, or
   weak concept-edge vocabulary.
-Use `docs/SOURCE_REVIEW_WORKLIST.md` and `docs/NOTATION_GLOSSARY.md` to collect
+Use `docs/authoring/SOURCE_REVIEW_WORKLIST.md` and `docs/authoring/NOTATION_GLOSSARY.md` to collect
 issues that recur across many concepts, rather than repeating the same generic
 note in every concept.
 
@@ -206,7 +206,8 @@ When adding or revising concept edges:
 - Use `RELATED` sparingly when the connection is real but not yet a sharper
   relation.
 - Note recurring cases where `RELATED` feels too vague; those are candidates
-  for future edge-type design.
+  for future edge-type design. Collect edge-type review notes in
+  `docs/authoring/EDGE_TYPE_REVIEW_WORKLIST.md`.
 
 Keep the derivation tree in mind. One long-term goal is to trace important
 concepts back toward postulates, axioms, and foundational definitions.
@@ -299,7 +300,7 @@ Before finishing a concept, check:
 - The concept has a clear scope and does not trespass heavily into neighbouring
   concepts.
 - Definitions, equations, assumptions, and conventions are explicit.
-- Recurring notation agrees with `docs/NOTATION_GLOSSARY.md`.
+- Recurring notation agrees with `docs/authoring/NOTATION_GLOSSARY.md`.
 - The prose is readable as a coherent book-like section.
 - Blocks have good titles and appropriate semantic kinds.
 - `sequence` reflects the intended narrative order.
@@ -311,6 +312,6 @@ Before finishing a concept, check:
   or symbol-manipulation questions.
 - Study questions start easy and become progressively more challenging.
 - References are linked at the most specific useful level; broad source
-  locators are recorded in `docs/SOURCE_REVIEW_WORKLIST.md`.
+  locators are recorded in `docs/authoring/SOURCE_REVIEW_WORKLIST.md`.
 - Any graphic need or graphic defect is recorded.
 - Validation and tests pass after CSV edits.

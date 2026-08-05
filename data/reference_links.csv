@@ -1,90 +1,90 @@
 source_type,source_id,reference_id,locator,note
 content_block,sr.lorentz_transformations.boost_formula,ttm.sr_cf,1.3 General Lorentz Transformation,
-content_block,sr.inertial_frames.definition,ttm.sr_cf,Ch. 1,Reference-frame discussion; tighten locator during source review.
-content_block,sr.constancy_of_speed_of_light.definition,ttm.sr_cf,Ch. 1,Light-speed postulate discussion; tighten locator during source review.
-content_block,sr.principle_of_relativity.definition,ttm.sr_cf,Ch. 1,Relativity-principle discussion; tighten locator during source review.
-content_block,sr.spacetime_event.definition,ttm.sr_cf,Ch. 1,Spacetime-coordinate discussion; tighten locator during source review.
-content_block,sr.principle_of_locality.definition,ttm.sr_cf,,General field-theory locality background; add precise locator during source review.
-content_block,sr.metric_tensor.definition,ttm.sr_cf,,Minkowski metric/sign-convention discussion; add precise locator during source review.
-content_block,sr.metric_tensor.gr_bridge,penrose.rtr,,Metric as spacetime geometry background; add precise locator during source review.
-content_block,sr.spacetime_interval.definition,ttm.sr_cf,,Spacetime interval discussion; add precise locator during source review.
-content_block,sr.spacetime_interval.classification,penrose.rtr,,Minkowski interval and causal classification background; add precise locator during source review.
-content_block,sr.lorentz_transformations.matrix_form,penrose.rtr,,Lorentz transformations and metric preservation background; add precise locator during source review.
-content_block,sr.light_cone.definition,ttm.sr_cf,,Light-cone/null-separation discussion; add precise locator during source review.
-content_block,sr.light_cone.causal_regions,penrose.rtr,,Light cone and causal structure background; add precise locator during source review.
-content_block,sr.minkowski_diagram.definition,ttm.sr_cf,,Minkowski diagram/spacetime graph discussion; add precise locator during source review.
-content_block,sr.minkowski_diagram.not_ordinary_graph,penrose.rtr,,Spacetime diagram geometry background; add precise locator during source review.
-content_block,sr.proper_time.definition,ttm.sr_cf,,Proper time from invariant interval; add precise locator during source review.
-content_block,sr.proper_time.historical_context,penrose.rtr,,Proper time and Minkowski spacetime geometry background; add precise locator during source review.
-content_block,sr.four_vectors.definition,ttm.sr_cf,,Four-vector transformation law; add precise locator during source review.
-content_block,sr.four_vectors.scalar_products,penrose.rtr,,Minkowski scalar products and relativistic vector notation background; add precise locator during source review.
-content_block,sr.position_four_vector.definition,ttm.sr_cf,,Position four-vector and event coordinates; add precise locator during source review.
-content_block,sr.position_four_vector.displacements,penrose.rtr,,Spacetime position/displacement vector background; add precise locator during source review.
-content_block,sr.velocity_four_vector.definition,ttm.sr_cf,,Four-velocity definition and components; add precise locator during source review.
-content_block,sr.velocity_four_vector.fixed_norm,penrose.rtr,,Four-velocity norm and timelike worldline geometry background; add precise locator during source review.
-content_block,sr.momentum_four_vector.definition,ttm.sr_cf,,Four-momentum definition and energy-momentum relation; add precise locator during source review.
-content_block,sr.momentum_four_vector.invariant_norm,penrose.rtr,,Four-momentum norm and mass shell background; add precise locator during source review.
-content_block,sr.mass_energy_equivalence.from_momentum,ttm.sr_cf,,Mass-energy relation from four-momentum norm; add precise locator during source review.
-content_block,sr.mass_energy_equivalence.historical_context,penrose.rtr,,Mass-energy equivalence and relativistic energy-momentum background; add precise locator during source review.
-content_block,sr.lagrangian.definition,ttm.sr_cf,,Lagrangian and action setup; add precise locator during source review.
-content_block,sr.lagrangian.relativistic_building_blocks,penrose.rtr,,Lagrangian/action and relativistic invariant-building background; add precise locator during source review.
-content_block,sr.action_principle.definition,ttm.sr_cf,,Action principle setup; add precise locator during source review.
-content_block,sr.action_principle.historical_context,penrose.rtr,,Stationary action and variational principles background; add precise locator during source review.
-content_block,sr.euler_lagrange_equations.definition,ttm.sr_cf,,Euler-Lagrange equations from stationary action; add precise locator during source review.
-content_block,sr.euler_lagrange_equations.integration_by_parts,penrose.rtr,,Variational calculus and Euler-Lagrange derivation background; add precise locator during source review.
-content_block,sr.canonical_momentum.definition,ttm.sr_cf,,Canonical momentum in the transition from Lagrangian to Hamiltonian mechanics; add precise locator during source review.
-content_block,sr.canonical_momentum.hamiltonian_role,penrose.rtr,,Conjugate momentum and Hamiltonian phase-space background; add precise locator during source review.
-content_block,sr.hamiltonian_formalism.definition,ttm.sr_cf,,Hamiltonian formalism and Legendre transform from Lagrangian mechanics; add precise locator during source review.
-content_block,sr.hamiltonian_formalism.why_it_matters,penrose.rtr,,Hamiltonian mechanics as phase-space structure and route toward quantum theory; add precise locator during source review.
-content_block,sr.noether_theorem.definition,ttm.sr_cf,,Noether theorem and action symmetries; add precise locator during source review.
-content_block,sr.noether_theorem.historical_context,penrose.rtr,,"Noether theorem, conservation laws, and symmetry in modern field theory; add precise locator during source review."
-content_block,sr.scalar_field.definition,ttm.sr_cf,,Scalar fields as simple relativistic field variables; add precise locator during source review.
-content_block,sr.scalar_field.vector_contrast,penrose.rtr,,Scalar versus vector/tensor transformation behavior; add precise locator during source review.
-content_block,sr.vector_field.definition,ttm.sr_cf,,Relativistic vector-field transformation rule; add precise locator during source review.
-content_block,sr.vector_field.scalar_contrast,penrose.rtr,,Scalar/vector/tensor distinction; add precise locator during source review.
-content_block,sr.field_lagrangian.definition,ttm.sr_cf,,Field action and Lagrangian-density formulation; add precise locator during source review.
-content_block,sr.field_lagrangian.scalar_action,penrose.rtr,,Invariant action and covariant field-theory construction; add precise locator during source review.
-content_block,sr.field_equations.euler_lagrange,ttm.sr_cf,,Field Euler-Lagrange equations and field action; add precise locator during source review.
-content_block,sr.field_equations.wave_operator,penrose.rtr,,Covariant wave operator and field equations; add precise locator during source review.
-content_block,sr.vector_potential.definition,ttm.sr_cf,,Four-potential convention and electromagnetic potential formulation; add precise locator during source review.
-content_block,sr.vector_potential.gauge_freedom,penrose.rtr,,"Potential, field strength, and gauge redundancy; add precise locator during source review."
-content_block,sr.field_tensor.definition,ttm.sr_cf,,Electromagnetic field tensor construction from the four-potential; add precise locator during source review.
-content_block,sr.field_tensor.lorentz_mixing,penrose.rtr,,Unification and Lorentz mixing of electric and magnetic components; add precise locator during source review.
-content_block,sr.electric_field.definition,ttm.sr_cf,,Electric field as part of the relativistic electromagnetic field; add precise locator during source review.
-content_block,sr.electric_field.frame_choice,penrose.rtr,,Frame-dependent electric/magnetic split; add precise locator during source review.
-content_block,sr.magnetic_field.definition,ttm.sr_cf,,Magnetic field as spatial part of the electromagnetic tensor; add precise locator during source review.
-content_block,sr.magnetic_field.frame_dependence,penrose.rtr,,Relativistic electric/magnetic mixing; add precise locator during source review.
-content_block,sr.electromagnetic_field.definition,ttm.sr_cf,,Unified electromagnetic field and field tensor; add precise locator during source review.
-content_block,sr.electromagnetic_field.lorentz_mixing,penrose.rtr,,Relativistic unification of electric and magnetic fields; add precise locator during source review.
-content_block,sr.four_current.definition,ttm.sr_cf,,Four-current definition and source role; add precise locator during source review.
-content_block,sr.four_current.not_density_alone,penrose.rtr,,Relativistic packaging of charge and current density; add precise locator during source review.
-content_block,sr.maxwells_equations.sourced_equation,ttm.sr_cf,,Covariant Maxwell equations and four-current source; add precise locator during source review.
-content_block,sr.maxwells_equations.historical_context,penrose.rtr,,"Maxwell theory, light, and relativistic field structure; add precise locator during source review."
-content_block,sr.gauge_invariance.definition,ttm.sr_cf,,Gauge transformation of the electromagnetic potential; add precise locator during source review.
-content_block,sr.gauge_invariance.historical_context,penrose.rtr,,Gauge freedom as a structural principle in field theory; add precise locator during source review.
-content_block,sr.minimal_coupling.definition,ttm.sr_cf,,Minimal coupling of charged particles to electromagnetic potentials; add precise locator during source review.
-content_block,sr.minimal_coupling.historical_context,penrose.rtr,,Gauge-compatible coupling as a field-theory principle; add precise locator during source review.
-content_block,sr.lorentz_force_law.definition,ttm.sr_cf,,Covariant and three-vector Lorentz force law; add precise locator during source review.
-content_block,sr.lorentz_force_law.historical_context,penrose.rtr,,"Lorentz force, field tensor, and relativistic electrodynamics context; add precise locator during source review."
-content_block,sr.charge_conservation.definition,ttm.sr_cf,,Four-current and continuity equation; add precise locator during source review.
-content_block,sr.charge_conservation.maxwell_derivation,penrose.rtr,,Charge conservation as a consistency condition of Maxwell theory; add precise locator during source review.
-content_block,sr.lorenz_gauge.definition,ttm.sr_cf,,Lorenz gauge condition and potential form of Maxwell equations; add precise locator during source review.
-content_block,sr.lorenz_gauge.spelling,penrose.rtr,,Gauge conditions and covariant electrodynamics context; add precise locator during source review.
-content_block,sr.energy_momentum_tensor.noether_origin,ttm.sr_cf,,Energy-momentum tensor and translation symmetry; add precise locator during source review.
-content_block,sr.energy_momentum_tensor.em_bridge,penrose.rtr,,Stress-energy tensor in field theory and electromagnetism; add precise locator during source review.
-content_block,sr.poynting_vector.definition,ttm.sr_cf,,Poynting vector and electromagnetic momentum density; add precise locator during source review.
-content_block,sr.poynting_vector.historical_context,penrose.rtr,,Electromagnetic energy flow and field momentum context; add precise locator during source review.
-content_block,sr.em_stress_energy.formula,ttm.sr_cf,,Electromagnetic stress-energy tensor formula; add precise locator during source review.
-content_block,sr.em_stress_energy.observer_split,penrose.rtr,,Stress-energy tensor and frame-dependent component decomposition; add precise locator during source review.
-content_block,sr.em_energy_density.definition,ttm.sr_cf,,Electromagnetic energy density formula; add precise locator during source review.
-content_block,sr.em_energy_density.field_not_particle,penrose.rtr,,Field energy and electromagnetic radiation context; add precise locator during source review.
-content_block,sr.wave_equation.maxwell_origin,ttm.sr_cf,,Wave equation from Maxwell equations in Lorenz gauge; add precise locator during source review.
-content_block,sr.wave_equation.historical_context,penrose.rtr,,Maxwell wave equation and light context; add precise locator during source review.
-content_block,sr.electromagnetic_waves.maxwell_origin,ttm.sr_cf,,Electromagnetic waves from source-free Maxwell equations; add precise locator during source review.
-content_block,sr.electromagnetic_waves.historical_context,penrose.rtr,,Maxwell's identification of light as electromagnetic radiation; add precise locator during source review.
-content_block,sr.radiation_reaction.energy_balance,ttm.sr_cf,,Radiation reaction and energy-momentum balance; add precise locator during source review.
-content_block,sr.radiation_reaction.historical_context,penrose.rtr,,Classical self-force and radiation-reaction context; add precise locator during source review.
-content_block,sr.lorentz_invariance.relativity_principle,ttm.sr_cf,,Lorentz invariance as the mathematical form of the relativity principle; add precise locator during source review.
-content_block,sr.lorentz_invariance.historical_context,penrose.rtr,,Lorentz covariance and Minkowski spacetime context; add precise locator during source review.
-content_block,sr.gauge_fixing.definition,ttm.sr_cf,,Gauge fixing and gauge-equivalent potentials; add precise locator during source review.
-content_block,sr.gauge_fixing.historical_context,penrose.rtr,,Gauge choice and gauge-independent physical predictions; add precise locator during source review.
+content_block,sr.inertial_frames.definition,ttm.sr_cf,1.2 Inertial Reference Frames,
+content_block,sr.constancy_of_speed_of_light.definition,ttm.sr_cf,Introduction,
+content_block,sr.principle_of_relativity.definition,ttm.sr_cf,Introduction,
+content_block,sr.spacetime_event.definition,ttm.sr_cf,1.5 Minkowski's World,
+content_block,sr.principle_of_locality.definition,ttm.sr_cf,10.2.1 Locality,
+content_block,sr.metric_tensor.definition,ttm.sr_cf,6.2.4 Raising and Lowering Indices,
+content_block,sr.metric_tensor.gr_bridge,penrose.rtr,§18.1 Euclidean and Minkowskian 4-space,
+content_block,sr.spacetime_interval.definition,ttm.sr_cf,1.5.3 Spacetime Interval,
+content_block,sr.spacetime_interval.classification,penrose.rtr,§17.7 Light cones,
+content_block,sr.lorentz_transformations.matrix_form,penrose.rtr,§18.2 The symmetry groups of Minkowski space,
+content_block,sr.light_cone.definition,ttm.sr_cf,1.5.1 Minkowski and the Light Cone,
+content_block,sr.light_cone.causal_regions,penrose.rtr,§17.7 Light cones,
+content_block,sr.minkowski_diagram.definition,ttm.sr_cf,1.2.2 SR Frames,
+content_block,sr.minkowski_diagram.not_ordinary_graph,penrose.rtr,§18.1 Euclidean and Minkowskian 4-space,
+content_block,sr.proper_time.definition,ttm.sr_cf,1.5.2 The Physical Meaning of Proper Time,
+content_block,sr.proper_time.historical_context,penrose.rtr,§18.3 Lorentzian orthogonality; the clock paradox,
+content_block,sr.four_vectors.definition,ttm.sr_cf,2.2.2 Introduction to 4-Vectors,
+content_block,sr.four_vectors.scalar_products,penrose.rtr,§18.1 Euclidean and Minkowskian 4-space,
+content_block,sr.position_four_vector.definition,ttm.sr_cf,2.2.2 Introduction to 4-Vectors,
+content_block,sr.position_four_vector.displacements,penrose.rtr,§18.1 Euclidean and Minkowskian 4-space,
+content_block,sr.velocity_four_vector.definition,ttm.sr_cf,3.2 A Slower Look at 4-Velocity,
+content_block,sr.velocity_four_vector.fixed_norm,penrose.rtr,§18.3 Lorentzian orthogonality; the clock paradox,
+content_block,sr.momentum_four_vector.definition,ttm.sr_cf,3.5 Relativistic Energy,
+content_block,sr.momentum_four_vector.invariant_norm,penrose.rtr,§18.7 Relativistic energy and (angular) momentum,
+content_block,sr.mass_energy_equivalence.from_momentum,ttm.sr_cf,3.5.1 Slow Particles,
+content_block,sr.mass_energy_equivalence.historical_context,penrose.rtr,§18.7 Relativistic energy and (angular) momentum,
+content_block,sr.lagrangian.definition,ttm.sr_cf,3.4.2 A Quick Review of Nonrelativistic Action,
+content_block,sr.lagrangian.relativistic_building_blocks,penrose.rtr,§20.1 The magical Lagrangian formalism,
+content_block,sr.action_principle.definition,ttm.sr_cf,3.4.1 Principle of Least Action,
+content_block,sr.action_principle.historical_context,penrose.rtr,§20.1 The magical Lagrangian formalism,
+content_block,sr.euler_lagrange_equations.definition,ttm.sr_cf,4.3.3 More About Euler-Lagrange Equations,
+content_block,sr.euler_lagrange_equations.integration_by_parts,penrose.rtr,§20.1 The magical Lagrangian formalism,
+content_block,sr.canonical_momentum.definition,ttm.sr_cf,11.2.2 Canonical Momentum,
+content_block,sr.canonical_momentum.hamiltonian_role,penrose.rtr,§20.2 The more symmetrical Hamiltonian picture,
+content_block,sr.hamiltonian_formalism.definition,ttm.sr_cf,11.4.3 Hamiltonian for Fields,
+content_block,sr.hamiltonian_formalism.why_it_matters,penrose.rtr,§20.2 The more symmetrical Hamiltonian picture,
+content_block,sr.noether_theorem.definition,ttm.sr_cf,11.2.3 Noether Momentum,
+content_block,sr.noether_theorem.historical_context,penrose.rtr,§20.6 How Lagrangians drive modern theory,
+content_block,sr.scalar_field.definition,ttm.sr_cf,5.5 Scalar Field Conventions,
+content_block,sr.scalar_field.vector_contrast,penrose.rtr,"§12.3 Scalars, vectors, and covectors",
+content_block,sr.vector_field.definition,ttm.sr_cf,4.4.1 Field Transformation Properties,
+content_block,sr.vector_field.scalar_contrast,penrose.rtr,"§12.3 Scalars, vectors, and covectors",
+content_block,sr.field_lagrangian.definition,ttm.sr_cf,4.2 Fields and Action,
+content_block,sr.field_lagrangian.scalar_action,penrose.rtr,§20.5 Lagrangian treatment of fields,
+content_block,sr.field_equations.euler_lagrange,ttm.sr_cf,4.3.3 More About Euler-Lagrange Equations,
+content_block,sr.field_equations.wave_operator,penrose.rtr,§20.5 Lagrangian treatment of fields,
+content_block,sr.vector_potential.definition,ttm.sr_cf,6.3.1 The Action Integral and the Vector Potential,
+content_block,sr.vector_potential.gauge_freedom,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
+content_block,sr.field_tensor.definition,ttm.sr_cf,6.4 Interlude on the Field Tensor,
+content_block,sr.field_tensor.lorentz_mixing,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.electric_field.definition,ttm.sr_cf,8.2.3 Electric Field,
+content_block,sr.electric_field.frame_choice,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.magnetic_field.definition,ttm.sr_cf,8.2.2 Magnetic Field,
+content_block,sr.magnetic_field.frame_dependence,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.electromagnetic_field.definition,ttm.sr_cf,8.2 Introduction to Maxwell's Equations,
+content_block,sr.electromagnetic_field.lorentz_mixing,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.four_current.definition,ttm.sr_cf,8.2.5 Charge Density and Current Density,
+content_block,sr.four_current.not_density_alone,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.maxwells_equations.sourced_equation,ttm.sr_cf,8.2.7 Maxwell's Equations: Tensor Form,
+content_block,sr.maxwells_equations.historical_context,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.gauge_invariance.definition,ttm.sr_cf,7.2 Gauge Invariance,
+content_block,sr.gauge_invariance.historical_context,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
+content_block,sr.minimal_coupling.definition,ttm.sr_cf,6.3.1 The Action Integral and the Vector Potential,
+content_block,sr.minimal_coupling.historical_context,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
+content_block,sr.lorentz_force_law.definition,ttm.sr_cf,6.3.4 Lorentz Invariant Equations,
+content_block,sr.lorentz_force_law.historical_context,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.charge_conservation.definition,ttm.sr_cf,8.2.6 Conservation of Charge,
+content_block,sr.charge_conservation.maxwell_derivation,penrose.rtr,§19.3 Conservation and flux laws in Maxwell theory,
+content_block,sr.lorenz_gauge.definition,ttm.sr_cf,11.4.5 Electromagnetic Fields via Gauge Invariance,
+content_block,sr.lorenz_gauge.spelling,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
+content_block,sr.energy_momentum_tensor.noether_origin,ttm.sr_cf,11.5.3 The Energy-Momentum Tensor,
+content_block,sr.energy_momentum_tensor.em_bridge,penrose.rtr,§19.5 The energy-momentum tensor,
+content_block,sr.poynting_vector.definition,ttm.sr_cf,11.5.1 Locally Conserved Quantities,
+content_block,sr.poynting_vector.historical_context,penrose.rtr,§19.5 The energy-momentum tensor,
+content_block,sr.em_stress_energy.formula,ttm.sr_cf,11.5.3 The Energy-Momentum Tensor,
+content_block,sr.em_stress_energy.observer_split,penrose.rtr,§19.5 The energy-momentum tensor,
+content_block,sr.em_energy_density.definition,ttm.sr_cf,11.1 Field Energy and Momentum,
+content_block,sr.em_energy_density.field_not_particle,penrose.rtr,§19.5 The energy-momentum tensor,
+content_block,sr.wave_equation.maxwell_origin,ttm.sr_cf,10.1 Electromagnetic Waves,
+content_block,sr.wave_equation.historical_context,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.electromagnetic_waves.maxwell_origin,ttm.sr_cf,10.1 Electromagnetic Waves,
+content_block,sr.electromagnetic_waves.historical_context,penrose.rtr,§19.2 Maxwell's electromagnetic theory,
+content_block,sr.radiation_reaction.energy_balance,ttm.sr_cf,10.1 Electromagnetic Waves,Broad background only; checked text has no dedicated radiation-reaction section.
+content_block,sr.radiation_reaction.historical_context,penrose.rtr,§19.5 The energy-momentum tensor,Broad background only; checked text has no dedicated classical radiation-reaction section.
+content_block,sr.lorentz_invariance.relativity_principle,ttm.sr_cf,1.3 General Lorentz Transformation,
+content_block,sr.lorentz_invariance.historical_context,penrose.rtr,§18.2 The symmetry groups of Minkowski space,
+content_block,sr.gauge_fixing.definition,ttm.sr_cf,11.4.5 Electromagnetic Fields via Gauge Invariance,
+content_block,sr.gauge_fixing.historical_context,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
