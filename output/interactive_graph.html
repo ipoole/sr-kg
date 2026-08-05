@@ -210,17 +210,24 @@
         display: flex;
         gap: 5px;
         margin: 3px 0;
+        min-width: 0;
       }
       .kg-edge-filter input {
+        flex: 0 0 auto;
+        width: auto;
+      }
+      #kg_controls .kg-edge-filter input {
         width: auto;
       }
       .kg-edge-filter-swatch {
         border: 1px solid #777;
+        flex: 0 0 auto;
         display: inline-block;
         height: 9px;
         width: 16px;
       }
       .kg-edge-filter-label {
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -503,15 +510,42 @@
     }
 
     #info_panel .concept-toc-link {
+        --toc-accent: #7a8797;
+        align-items: center;
         background: #f3f6fb;
         border: 1px solid #c9d6ea;
         border-radius: 4px;
         color: #174ea6;
+        display: inline-flex;
         font-size: 0.92em;
+        gap: 5px;
         line-height: 1.2;
         padding: 3px 6px;
         text-decoration: none;
     }
+
+    #info_panel .concept-toc-kind-dot {
+        background: var(--toc-accent);
+        border-radius: 999px;
+        display: inline-block;
+        flex: 0 0 auto;
+        height: 0.62em;
+        width: 0.62em;
+    }
+
+    #info_panel .concept-toc-link-overview { --toc-accent: #3e6fbc; }
+    #info_panel .concept-toc-link-definition { --toc-accent: #115f9a; }
+    #info_panel .concept-toc-link-intuition { --toc-accent: #16836b; }
+    #info_panel .concept-toc-link-explanation { --toc-accent: #6a7b8f; }
+    #info_panel .concept-toc-link-construction { --toc-accent: #536a87; }
+    #info_panel .concept-toc-link-derivation,
+    #info_panel .concept-toc-link-derivation_step { --toc-accent: #5f4aa8; }
+    #info_panel .concept-toc-link-example,
+    #info_panel .concept-toc-link-worked_example { --toc-accent: #28713f; }
+    #info_panel .concept-toc-link-warning { --toc-accent: #b86d00; }
+    #info_panel .concept-toc-link-misconception { --toc-accent: #bf2e2e; }
+    #info_panel .concept-toc-link-historical_note { --toc-accent: #7251a4; }
+    #info_panel .concept-toc-link-summary { --toc-accent: #4f6b2a; }
 
     #info_panel .concept-toc-link:hover,
     #info_panel .concept-toc-link:focus {
@@ -532,48 +566,259 @@
     }
 
     #info_panel .content-block {
-        margin: 0 0 1em;
+        --block-accent: #6a7b8f;
+        --block-accent-dark: #34495f;
+        --block-bg: transparent;
+        --block-border: transparent;
+        --block-label-bg: #eef2f7;
+        --block-label-color: #34495f;
+        --block-mark-bg: #f2f5f8;
+        --block-mark-color: #34495f;
+        border-left: 3px solid var(--block-accent);
+        margin: 0 0 1.05em;
+        padding: 0 0 0 0.85em;
     }
 
-    #info_panel .content-block h3 {
-        margin-bottom: 0.35em;
+    #info_panel .content-block h3,
+    #info_panel .content-block-fold > summary {
+        color: var(--block-accent-dark);
+        font-weight: 700;
+        margin-bottom: 0.38em;
+    }
+
+    #info_panel .content-block-title-line {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35em 0.45em;
+        min-width: 0;
+    }
+
+    #info_panel .content-block-kind-mark {
+        align-items: center;
+        background: var(--block-mark-bg);
+        border: 1px solid var(--block-label-bg);
+        border-radius: 999px;
+        color: var(--block-mark-color);
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 0.78em;
+        font-weight: 800;
+        height: 1.55em;
+        justify-content: center;
+        line-height: 1;
+        min-width: 1.55em;
+        padding: 0 0.18em;
+    }
+
+    #info_panel .content-block-kind-mark::before {
+        content: "\2022";
+    }
+
+    #info_panel .content-block-overview .content-block-kind-mark::before { content: "\2192"; }
+    #info_panel .content-block-definition .content-block-kind-mark::before { content: ":="; }
+    #info_panel .content-block-intuition .content-block-kind-mark::before { content: "\25C7"; }
+    #info_panel .content-block-explanation .content-block-kind-mark::before { content: "i"; }
+    #info_panel .content-block-construction .content-block-kind-mark::before { content: "+"; }
+    #info_panel .content-block-derivation .content-block-kind-mark::before,
+    #info_panel .content-block-derivation_step .content-block-kind-mark::before { content: "\21D2"; }
+    #info_panel .content-block-example .content-block-kind-mark::before,
+    #info_panel .content-block-worked_example .content-block-kind-mark::before { content: "Ex"; }
+    #info_panel .content-block-warning .content-block-kind-mark::before { content: "\26A0"; }
+    #info_panel .content-block-misconception .content-block-kind-mark::before { content: "!"; }
+    #info_panel .content-block-historical_note .content-block-kind-mark::before { content: "H"; }
+    #info_panel .content-block-summary .content-block-kind-mark::before { content: "\2713"; }
+
+    #info_panel .content-block-title-text {
+        min-width: 0;
+    }
+
+    #info_panel .content-block-kind-label {
+        background: var(--block-label-bg);
+        border-radius: 999px;
+        color: var(--block-label-color);
+        flex: 0 0 auto;
+        font-size: 0.68em;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.2;
+        padding: 0.18em 0.48em;
+        text-transform: uppercase;
+    }
+
+    #info_panel .content-block-kind-label::before {
+        content: attr(data-label);
+    }
+
+    #info_panel .content-block-body {
+        padding-top: 0.05em;
     }
 
     #info_panel .content-block-fold {
-        border-left: 3px solid #d7d7d7;
-        margin: 0 0 1em;
-        padding-left: 0.75em;
+        border-left-color: var(--block-accent);
+        margin: 0 0 1.05em;
+        padding: 0 0 0 0.85em;
     }
 
     #info_panel .content-block-fold > summary {
         cursor: pointer;
-        font-weight: 700;
+        list-style-position: outside;
     }
 
     #info_panel .content-block-fold > summary:hover,
     #info_panel .content-block-fold > summary:focus {
-        color: #174ea6;
+        color: var(--block-accent-dark);
         outline: none;
     }
 
+    #info_panel .content-block-overview {
+        --block-accent: #3e6fbc;
+        --block-accent-dark: #244f91;
+        --block-label-bg: #eaf1ff;
+        --block-label-color: #244f91;
+        --block-mark-bg: #f0f5ff;
+        --block-mark-color: #244f91;
+    }
+
+    #info_panel .content-block-definition {
+        --block-accent: #115f9a;
+        --block-accent-dark: #0e4f80;
+        --block-label-bg: #e6f2fb;
+        --block-label-color: #0e4f80;
+        --block-mark-bg: #eff7fc;
+        --block-mark-color: #0e4f80;
+    }
+
+    #info_panel .content-block-intuition {
+        --block-accent: #16836b;
+        --block-accent-dark: #0d6653;
+        --block-bg: #f1faf7;
+        --block-border: #c7e7dc;
+        --block-label-bg: #dff4ed;
+        --block-label-color: #0d6653;
+        --block-mark-bg: #e9f8f3;
+        --block-mark-color: #0d6653;
+    }
+
+    #info_panel .content-block-explanation {
+        --block-accent: #7a8797;
+        --block-accent-dark: #4d5c6b;
+        --block-label-bg: #eef2f6;
+        --block-label-color: #4d5c6b;
+        --block-mark-bg: #f5f7fa;
+        --block-mark-color: #4d5c6b;
+    }
+
+    #info_panel .content-block-construction {
+        --block-accent: #536a87;
+        --block-accent-dark: #364d69;
+        --block-label-bg: #e9eef5;
+        --block-label-color: #364d69;
+        --block-mark-bg: #f2f5f9;
+        --block-mark-color: #364d69;
+    }
+
+    #info_panel .content-block-derivation,
     #info_panel .content-block-derivation_step {
-        border-left-color: #6a7b8f;
+        --block-accent: #5f4aa8;
+        --block-accent-dark: #4b378f;
+        --block-bg: #f7f5ff;
+        --block-border: #d8d0f2;
+        --block-label-bg: #eee9ff;
+        --block-label-color: #4b378f;
+        --block-mark-bg: #f2eeff;
+        --block-mark-color: #4b378f;
+    }
+
+    #info_panel .content-block-example,
+    #info_panel .content-block-worked_example {
+        --block-accent: #28713f;
+        --block-accent-dark: #1c5c31;
+        --block-bg: #f3faf4;
+        --block-border: #c9e7cf;
+        --block-label-bg: #e2f3e5;
+        --block-label-color: #1c5c31;
+        --block-mark-bg: #ecf8ee;
+        --block-mark-color: #1c5c31;
     }
 
     #info_panel .content-block-warning {
-        border-left-color: #c78a00;
+        --block-accent: #b86d00;
+        --block-accent-dark: #8c5100;
+        --block-bg: #fff8e8;
+        --block-border: #efd49f;
+        --block-label-bg: #ffedc1;
+        --block-label-color: #8c5100;
+        --block-mark-bg: #fff1c9;
+        --block-mark-color: #8c5100;
     }
 
     #info_panel .content-block-misconception {
-        border-left-color: #d22f2f;
+        --block-accent: #bf2e2e;
+        --block-accent-dark: #922020;
+        --block-bg: #fff2f1;
+        --block-border: #efc0bc;
+        --block-label-bg: #ffe1de;
+        --block-label-color: #922020;
+        --block-mark-bg: #ffe8e5;
+        --block-mark-color: #922020;
     }
 
     #info_panel .content-block-historical_note {
-        border-left-color: #1f4fbf;
+        --block-accent: #7251a4;
+        --block-accent-dark: #573984;
+        --block-bg: #f7f3fb;
+        --block-border: #d9caeb;
+        --block-label-bg: #eee4f7;
+        --block-label-color: #573984;
+        --block-mark-bg: #f3ebfa;
+        --block-mark-color: #573984;
+    }
+
+    #info_panel .content-block-summary {
+        --block-accent: #4f6b2a;
+        --block-accent-dark: #3e541f;
+        --block-bg: #f6faef;
+        --block-border: #d7e7bd;
+        --block-label-bg: #eaf4d9;
+        --block-label-color: #3e541f;
+        --block-mark-bg: #f1f8e5;
+        --block-mark-color: #3e541f;
+    }
+
+    #info_panel .content-block-intuition,
+    #info_panel .content-block-derivation,
+    #info_panel .content-block-example,
+    #info_panel .content-block-worked_example,
+    #info_panel .content-block-warning,
+    #info_panel .content-block-misconception,
+    #info_panel .content-block-historical_note,
+    #info_panel .content-block-summary {
+        background: var(--block-bg);
+        border: 1px solid var(--block-border);
+        border-left: 5px solid var(--block-accent);
+        border-radius: 6px;
+        padding: 0.72em 0.8em 0.78em 0.9em;
+    }
+
+    #info_panel .content-block-fold.content-block-note,
+    #info_panel .content-block-fold.content-block-derivation_step {
+        margin-bottom: 0.8em;
+        padding: 0.42em 0.65em 0.48em 0.75em;
+    }
+
+    #info_panel .content-block-fold .content-block-title-line {
+        gap: 0.25em 0.35em;
+    }
+
+    #info_panel .content-block-fold .content-block-kind-mark {
+        font-size: 0.72em;
+        height: 1.42em;
+        min-width: 1.42em;
     }
 
     #info_panel .content-block-fold-body {
-        margin-top: 0.45em;
+        margin-top: 0.55em;
     }
 
     #info_panel .concept-line {
@@ -1413,7 +1658,7 @@
 
 
     <body>
-    <div id="kg_view_title">Knowledge Graph</div>
+    <div id="kg_view_title">Special Relativity and Classical Fields</div>
     <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
     <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
     <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
@@ -1460,7 +1705,7 @@
     </div>
 
     <div id="info_panel">
-      <h2>Knowledge Graph</h2>
+      <h2>Special Relativity and Classical Fields</h2>
       <p>Click a concept node to view details.</p>
     </div>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
@@ -1533,7 +1778,7 @@
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 280, "maximum": 280}, "heightConstraint": {"minimum": 170, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": true, "tooltipDelay": 120}};
+                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 280, "maximum": 280}, "heightConstraint": {"minimum": 170, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "endPointOffset": {"to": 36}, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": true, "tooltipDelay": 120}};
 
                   
 
@@ -1705,6 +1950,7 @@
         var activeConceptSectionContext = "neighbourhood";
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
+        var pendingGraphSectionContext = null;
 
         /*
          * Custom node rendering
@@ -2062,8 +2308,11 @@
           if (options.open) {
             attrs += " open";
           }
+          var summaryHtml = options.summaryHtml !== undefined
+            ? options.summaryHtml
+            : renderConceptText(options.title || "");
           return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
-            "<summary>" + renderConceptText(options.title || "") + "</summary>" +
+            "<summary>" + summaryHtml + "</summary>" +
             '<div class="' + escapeHtml(options.bodyClass || "") + '">' +
             (options.bodyHtml || "") +
             "</div></details>";
@@ -2968,6 +3217,11 @@
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function shouldStartWithConceptTocOpen() {
+          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
+        }
+
         /* Graph view state and compact subgraph layout. */
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
@@ -3345,6 +3599,47 @@
             .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
         }
 
+        var contentBlockKindMeta = Object.freeze({
+          overview: {label: "Roadmap"},
+          definition: {label: "Definition"},
+          intuition: {label: "Think"},
+          explanation: {label: "Explanation"},
+          construction: {label: "Build"},
+          derivation: {label: "Derivation"},
+          derivation_step: {label: "Step"},
+          example: {label: "Example"},
+          worked_example: {label: "Worked"},
+          misconception: {label: "Common trap"},
+          warning: {label: "Careful"},
+          historical_note: {label: "Context"},
+          summary: {label: "Takeaway"}
+        });
+
+        function contentBlockMetaFor(kind) {
+          return contentBlockKindMeta[kind] || {
+            label: contentBlockKindLabel(kind)
+          };
+        }
+
+        function contentBlockKindClass(kind) {
+          return String(kind || "")
+            .replace(/[^a-zA-Z0-9_-]/g, "-")
+            .replace(/^-+|-+$/g, "") || "unknown";
+        }
+
+        function renderContentBlockHeading(block, title) {
+          var meta = contentBlockMetaFor(block.kind);
+          return '<span class="content-block-title-line">' +
+            '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
+            '<span class="content-block-title-text">' +
+            renderConceptText(title) +
+            "</span>" +
+            '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
+            escapeHtml(meta.label) +
+            '"></span>' +
+            "</span>";
+        }
+
         function renderContentBlock(conceptId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var presentation = contentBlockPresentationFor(block.kind);
@@ -3357,14 +3652,14 @@
             return renderFoldDown({
               anchorId: anchorId,
               className: contentBlockClassName(block, presentation),
-              title: title,
+              summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
               bodyHtml: renderConceptText(block.body)
             });
           }
           var html = '<section id="' + escapeHtml(anchorId) + '" class="' +
             escapeHtml(contentBlockClassName(block, presentation)) + '">';
-          html += "<h3>" + renderConceptText(title) + "</h3>";
+          html += "<h3>" + renderContentBlockHeading(block, title) + "</h3>";
           var blocks = splitConceptBlocks(block.body);
           html += '<div class="concept-body content-block-body">';
           html += renderNotesAtAnchor(conceptId, title, 0, "");
@@ -3392,6 +3687,7 @@
               items.push({
                 id: contentAnchorId(conceptId, title),
                 title: title,
+                kind: block.kind,
                 graphContext: "neighbourhood"
               });
             });
@@ -3439,14 +3735,17 @@
 
         function renderConceptToc(items) {
           if (!Array.isArray(items) || items.length < 2) { return ""; }
-          var html = '<details class="concept-toc" aria-label="Concept contents" open>';
+          var openAttr = shouldStartWithConceptTocOpen() ? " open" : "";
+          var html = '<details class="concept-toc" aria-label="Concept contents"' + openAttr + ">";
           html += '<summary class="concept-toc-title">Contents</summary>';
           html += '<div class="concept-toc-links">';
           items.forEach(function(item) {
+            var kindClass = item.kind ? " concept-toc-link-" + contentBlockKindClass(item.kind) : "";
             html += '<a href="#' + escapeHtml(item.id) +
-              '" class="concept-toc-link" data-toc-target="' +
+              '" class="concept-toc-link' + escapeHtml(kindClass) + '" data-toc-target="' +
               escapeHtml(item.id) + '" data-graph-context="' +
               escapeHtml(item.graphContext || "neighbourhood") + '">' +
+              (item.kind ? '<span class="concept-toc-kind-dot" aria-hidden="true"></span>' : "") +
               renderConceptText(item.title) +
               "</a>";
           });
@@ -4201,6 +4500,29 @@
           kgReset(true);
         }
 
+        function activateConceptSectionContext(context) {
+          activeConceptSectionContext = context || "neighbourhood";
+          applyCurrentView();
+        }
+
+        function graphContextForDetailsSection(section) {
+          if (!section) { return null; }
+          if (section.classList.contains("concept-derived-from")) {
+            return "derived-from";
+          }
+          if (section.classList.contains("concept-backlinks")) {
+            return "where-used";
+          }
+          return null;
+        }
+
+        function markPendingGraphSectionContext(target) {
+          var summary = target && target.closest ? target.closest("summary") : null;
+          pendingGraphSectionContext = summary
+            ? graphContextForDetailsSection(summary.parentElement)
+            : null;
+        }
+
         function restoreHoveredEdge() {
           if (hoveredEdgeId === null || hoveredEdgeBeforeHover === null) {
             return;
@@ -4586,7 +4908,7 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions" open>';
+              '" class="study-questions"' + (readingMode === "practice" ? " open" : "") + ">";
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
               var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
@@ -5785,15 +6107,24 @@
           }
         });
 
+        document.getElementById("info_panel").addEventListener("pointerdown", function(e) {
+          markPendingGraphSectionContext(e.target);
+        });
+
+        document.getElementById("info_panel").addEventListener("keydown", function(e) {
+          if (e.key === "Enter" || e.key === " ") {
+            markPendingGraphSectionContext(e.target);
+          }
+        });
+
         document.getElementById("info_panel").addEventListener("click", function(e) {
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
             var target = document.getElementById(tocLink.getAttribute("data-toc-target"));
             if (target) {
-              activeConceptSectionContext = tocLink.getAttribute("data-graph-context") || "neighbourhood";
+              activateConceptSectionContext(tocLink.getAttribute("data-graph-context") || "neighbourhood");
               openTargetForToc(target);
-              applyCurrentView();
               window.requestAnimationFrame(function() {
                 scrollInfoPanelTargetBelowStickyToc(target);
               });
@@ -5929,6 +6260,21 @@
             ) {
               closeUserNote(e.target.getAttribute("data-note-id"));
               return;
+            }
+            var graphContext = graphContextForDetailsSection(e.target);
+            if (graphContext) {
+              if (!e.target.open) {
+                e.target.setAttribute("data-section-user-closed", "true");
+              } else if (
+                pendingGraphSectionContext === graphContext ||
+                e.target.getAttribute("data-section-user-closed") === "true"
+              ) {
+                e.target.removeAttribute("data-section-user-closed");
+                activateConceptSectionContext(graphContext);
+              }
+            }
+            if (graphContext) {
+              pendingGraphSectionContext = null;
             }
             schedulePanelContentRefit();
           }

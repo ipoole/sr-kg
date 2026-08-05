@@ -20,6 +20,7 @@ import pandas as pd
 from pyvis.network import Network
 
 from srkg.config import (
+    EDGE_ARROW_ENDPOINT_OFFSET,
     EDGE_WIDTH,
     LAYER_COLOURS,
     NODE_CIRCLE_BASE_SIZE,
@@ -103,6 +104,9 @@ def write_pyvis_html(
       },
       "edges": {
         "chosen": false,
+        "endPointOffset": {
+          "to": __EDGE_ARROW_ENDPOINT_OFFSET__
+        },
         "selectionWidth": 0,
         "hoverWidth": 0,
         "arrows": {
@@ -135,7 +139,16 @@ def write_pyvis_html(
         "tooltipDelay": 120
       }
     }
-    """.replace("__NODE_COLLISION_WIDTH__", str(NODE_COLLISION_WIDTH)).replace("__NODE_COLLISION_HEIGHT__", str(NODE_COLLISION_HEIGHT)))
+    """.replace(
+        "__NODE_COLLISION_WIDTH__",
+        str(NODE_COLLISION_WIDTH),
+    ).replace(
+        "__NODE_COLLISION_HEIGHT__",
+        str(NODE_COLLISION_HEIGHT),
+    ).replace(
+        "__EDGE_ARROW_ENDPOINT_OFFSET__",
+        str(EDGE_ARROW_ENDPOINT_OFFSET),
+    ))
 
     for _, row in nodes_df.iterrows():
         cid = row["id"]

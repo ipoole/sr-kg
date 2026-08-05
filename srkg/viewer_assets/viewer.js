@@ -146,6 +146,7 @@
         var activeConceptSectionContext = "neighbourhood";
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
+        var pendingGraphSectionContext = null;
 
         /*
          * Custom node rendering
@@ -503,8 +504,11 @@
           if (options.open) {
             attrs += " open";
           }
+          var summaryHtml = options.summaryHtml !== undefined
+            ? options.summaryHtml
+            : renderConceptText(options.title || "");
           return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
-            "<summary>" + renderConceptText(options.title || "") + "</summary>" +
+            "<summary>" + summaryHtml + "</summary>" +
             '<div class="' + escapeHtml(options.bodyClass || "") + '">' +
             (options.bodyHtml || "") +
             "</div></details>";
@@ -1409,6 +1413,11 @@
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function shouldStartWithConceptTocOpen() {
+          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
+        }
+
         /* Graph view state and compact subgraph layout. */
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
@@ -1786,6 +1795,47 @@
             .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
         }
 
+        var contentBlockKindMeta = Object.freeze({
+          overview: {label: "Roadmap"},
+          definition: {label: "Definition"},
+          intuition: {label: "Think"},
+          explanation: {label: "Explanation"},
+          construction: {label: "Build"},
+          derivation: {label: "Derivation"},
+          derivation_step: {label: "Step"},
+          example: {label: "Example"},
+          worked_example: {label: "Worked"},
+          misconception: {label: "Common trap"},
+          warning: {label: "Careful"},
+          historical_note: {label: "Context"},
+          summary: {label: "Takeaway"}
+        });
+
+        function contentBlockMetaFor(kind) {
+          return contentBlockKindMeta[kind] || {
+            label: contentBlockKindLabel(kind)
+          };
+        }
+
+        function contentBlockKindClass(kind) {
+          return String(kind || "")
+            .replace(/[^a-zA-Z0-9_-]/g, "-")
+            .replace(/^-+|-+$/g, "") || "unknown";
+        }
+
+        function renderContentBlockHeading(block, title) {
+          var meta = contentBlockMetaFor(block.kind);
+          return '<span class="content-block-title-line">' +
+            '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
+            '<span class="content-block-title-text">' +
+            renderConceptText(title) +
+            "</span>" +
+            '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
+            escapeHtml(meta.label) +
+            '"></span>' +
+            "</span>";
+        }
+
         function renderContentBlock(conceptId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var presentation = contentBlockPresentationFor(block.kind);
@@ -1798,14 +1848,14 @@
             return renderFoldDown({
               anchorId: anchorId,
               className: contentBlockClassName(block, presentation),
-              title: title,
+              summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
               bodyHtml: renderConceptText(block.body)
             });
           }
           var html = '<section id="' + escapeHtml(anchorId) + '" class="' +
             escapeHtml(contentBlockClassName(block, presentation)) + '">';
-          html += "<h3>" + renderConceptText(title) + "</h3>";
+          html += "<h3>" + renderContentBlockHeading(block, title) + "</h3>";
           var blocks = splitConceptBlocks(block.body);
           html += '<div class="concept-body content-block-body">';
           html += renderNotesAtAnchor(conceptId, title, 0, "");
@@ -1833,6 +1883,7 @@
               items.push({
                 id: contentAnchorId(conceptId, title),
                 title: title,
+                kind: block.kind,
                 graphContext: "neighbourhood"
               });
             });
@@ -1880,14 +1931,17 @@
 
         function renderConceptToc(items) {
           if (!Array.isArray(items) || items.length < 2) { return ""; }
-          var html = '<details class="concept-toc" aria-label="Concept contents" open>';
+          var openAttr = shouldStartWithConceptTocOpen() ? " open" : "";
+          var html = '<details class="concept-toc" aria-label="Concept contents"' + openAttr + ">";
           html += '<summary class="concept-toc-title">Contents</summary>';
           html += '<div class="concept-toc-links">';
           items.forEach(function(item) {
+            var kindClass = item.kind ? " concept-toc-link-" + contentBlockKindClass(item.kind) : "";
             html += '<a href="#' + escapeHtml(item.id) +
-              '" class="concept-toc-link" data-toc-target="' +
+              '" class="concept-toc-link' + escapeHtml(kindClass) + '" data-toc-target="' +
               escapeHtml(item.id) + '" data-graph-context="' +
               escapeHtml(item.graphContext || "neighbourhood") + '">' +
+              (item.kind ? '<span class="concept-toc-kind-dot" aria-hidden="true"></span>' : "") +
               renderConceptText(item.title) +
               "</a>";
           });
@@ -2642,6 +2696,29 @@
           kgReset(true);
         }
 
+        function activateConceptSectionContext(context) {
+          activeConceptSectionContext = context || "neighbourhood";
+          applyCurrentView();
+        }
+
+        function graphContextForDetailsSection(section) {
+          if (!section) { return null; }
+          if (section.classList.contains("concept-derived-from")) {
+            return "derived-from";
+          }
+          if (section.classList.contains("concept-backlinks")) {
+            return "where-used";
+          }
+          return null;
+        }
+
+        function markPendingGraphSectionContext(target) {
+          var summary = target && target.closest ? target.closest("summary") : null;
+          pendingGraphSectionContext = summary
+            ? graphContextForDetailsSection(summary.parentElement)
+            : null;
+        }
+
         function restoreHoveredEdge() {
           if (hoveredEdgeId === null || hoveredEdgeBeforeHover === null) {
             return;
@@ -3027,7 +3104,7 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions" open>';
+              '" class="study-questions"' + (readingMode === "practice" ? " open" : "") + ">";
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
               var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
@@ -4226,15 +4303,24 @@
           }
         });
 
+        document.getElementById("info_panel").addEventListener("pointerdown", function(e) {
+          markPendingGraphSectionContext(e.target);
+        });
+
+        document.getElementById("info_panel").addEventListener("keydown", function(e) {
+          if (e.key === "Enter" || e.key === " ") {
+            markPendingGraphSectionContext(e.target);
+          }
+        });
+
         document.getElementById("info_panel").addEventListener("click", function(e) {
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
             var target = document.getElementById(tocLink.getAttribute("data-toc-target"));
             if (target) {
-              activeConceptSectionContext = tocLink.getAttribute("data-graph-context") || "neighbourhood";
+              activateConceptSectionContext(tocLink.getAttribute("data-graph-context") || "neighbourhood");
               openTargetForToc(target);
-              applyCurrentView();
               window.requestAnimationFrame(function() {
                 scrollInfoPanelTargetBelowStickyToc(target);
               });
@@ -4370,6 +4456,21 @@
             ) {
               closeUserNote(e.target.getAttribute("data-note-id"));
               return;
+            }
+            var graphContext = graphContextForDetailsSection(e.target);
+            if (graphContext) {
+              if (!e.target.open) {
+                e.target.setAttribute("data-section-user-closed", "true");
+              } else if (
+                pendingGraphSectionContext === graphContext ||
+                e.target.getAttribute("data-section-user-closed") === "true"
+              ) {
+                e.target.removeAttribute("data-section-user-closed");
+                activateConceptSectionContext(graphContext);
+              }
+            }
+            if (graphContext) {
+              pendingGraphSectionContext = null;
             }
             schedulePanelContentRefit();
           }

@@ -118,6 +118,28 @@ def test_revised_concept_renders_note_block_kinds_folded(browser_graph):
 
 
 @pytest.mark.browser
+def test_folded_content_blocks_use_compact_callout_spacing(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    spacing = page.locator("#info_panel details.content-block-note").first.evaluate(
+        """el => {
+          const style = getComputedStyle(el);
+          return {
+            paddingTop: parseFloat(style.paddingTop),
+            paddingBottom: parseFloat(style.paddingBottom),
+            marginBottom: parseFloat(style.marginBottom)
+          };
+        }"""
+    )
+
+    assert spacing["paddingTop"] <= 8
+    assert spacing["paddingBottom"] <= 9
+    assert spacing["marginBottom"] <= 16
+
+
+@pytest.mark.browser
 def test_revised_concept_renders_derivation_steps_folded(browser_graph):
     page = browser_graph.page
 
@@ -169,6 +191,18 @@ def test_revised_concept_renders_sticky_masthead_and_content_toc(browser_graph):
         "Study Questions",
     ]
     assert page.locator("#info_panel #kg-toc-2-2-gamma-history").count() == 1
+
+
+@pytest.mark.browser
+def test_concept_toc_starts_closed_on_phone_viewport(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(browser_graph.output_path.as_uri() + "#concept-2.2", wait_until="domcontentloaded")
+    page.wait_for_selector("#info_panel .concept-toc")
+
+    toc = page.locator("#info_panel .concept-toc")
+    assert not toc.evaluate("el => el.open")
 
 
 @pytest.mark.browser
@@ -248,9 +282,13 @@ def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
     assert "Gamma warning body" not in panel_text
     assert "Gamma derivation-step body" not in panel_text
     assert "Gamma history body" not in panel_text
-    assert "Gamma short-answer question?" in panel_text
-    assert "Gamma calculation question?" not in panel_text
-    assert "Gamma multiple-choice question?" not in panel_text
+    questions = page.locator("#info_panel details.study-questions")
+    assert not questions.evaluate("node => node.open")
+    questions.locator(":scope > summary").click()
+    questions_text = questions.inner_text()
+    assert "Gamma short-answer question?" in questions_text
+    assert "Gamma calculation question?" not in questions_text
+    assert "Gamma multiple-choice question?" not in questions_text
 
 
 @pytest.mark.browser
@@ -276,9 +314,13 @@ def test_reading_mode_maths_filters_blocks_and_study_questions(browser_graph):
     assert step.locator("summary").inner_text() == "Gamma algebra step"
     step.locator("summary").click()
     assert "Gamma derivation-step body" in step.inner_text()
-    assert "Gamma calculation question?" in panel_text
-    assert "Gamma short-answer question?" not in panel_text
-    assert "Gamma multiple-choice question?" not in panel_text
+    questions = page.locator("#info_panel details.study-questions")
+    assert not questions.evaluate("node => node.open")
+    questions.locator(":scope > summary").click()
+    questions_text = questions.inner_text()
+    assert "Gamma calculation question?" in questions_text
+    assert "Gamma short-answer question?" not in questions_text
+    assert "Gamma multiple-choice question?" not in questions_text
 
 
 @pytest.mark.browser
@@ -300,7 +342,11 @@ def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
 
     questions = page.locator("#info_panel details.study-questions")
     assert questions.count() == 1
-    assert questions.evaluate("node => node.open")
+    assert not questions.evaluate("node => node.open")
+    assert not questions.locator(".study-question").is_visible()
+
+    questions.locator(":scope > summary").click()
+
     assert "Beta question?" in questions.inner_text()
     assert "\\n" not in questions.inner_text()
     assert questions.locator(".study-question .concept-line").evaluate_all(
@@ -315,6 +361,20 @@ def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
 
     assert answer.locator(".study-answer-body").is_visible()
     assert "Beta answer." in answer.inner_text()
+
+
+@pytest.mark.browser
+def test_practice_reading_mode_opens_study_questions_by_default(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    page.locator("#info_panel .concept-reading-mode-select").select_option("practice")
+
+    questions = page.locator("#info_panel details.study-questions")
+    assert questions.count() == 1
+    assert questions.evaluate("node => node.open")
+    assert questions.locator(".study-question").first.is_visible()
+    assert "Gamma short-answer question?" in questions.inner_text()
 
 
 @pytest.mark.browser
@@ -649,6 +709,30 @@ def test_toc_sections_drive_focussed_derivation_context(browser_graph):
 
 
 @pytest.mark.browser
+def test_opening_derived_from_section_drives_focussed_derivation_context(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    derived_from = page.locator("#info_panel .concept-derived-from")
+    derived_from.locator("summary").click()
+    assert not derived_from.evaluate("el => el.open")
+
+    derived_from.locator("summary").click()
+
+    page.wait_for_function(
+        """() => {
+          const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
+          return hidden["1.1"] === true &&
+            hidden["2.1"] === true &&
+            hidden["2.2"] === false &&
+            hidden["3.1"] === false;
+        }"""
+    )
+
+
+@pytest.mark.browser
 def test_hovering_section_context_edge_does_not_move_or_zoom_graph(browser_graph):
     page = browser_graph.page
 
@@ -720,6 +804,30 @@ def test_toc_sections_drive_focussed_where_used_context(browser_graph):
 
 
 @pytest.mark.browser
+def test_opening_where_used_section_drives_focussed_descendant_context(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("1.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    backlinks = page.locator("#info_panel .concept-backlinks")
+    backlinks.locator("summary").click()
+    assert not backlinks.evaluate("el => el.open")
+
+    backlinks.locator("summary").click()
+
+    page.wait_for_function(
+        """() => {
+          const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
+          return hidden["1.1"] === false &&
+            hidden["2.1"] === true &&
+            hidden["2.2"] === false &&
+            hidden["3.1"] === true;
+        }"""
+    )
+
+
+@pytest.mark.browser
 def test_graph_view_selector_hides_derivation_trace_mode(browser_graph):
     page = browser_graph.page
 
@@ -780,3 +888,30 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     page.locator("#kg_features_button").click()
     assert page.locator("#kg_splash_dialog[open]").count() == 1
+
+
+@pytest.mark.browser
+def test_phone_edge_filter_labels_stay_inside_controls_panel(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(browser_graph.output_path.as_uri(), wait_until="domcontentloaded")
+    page.wait_for_selector("#kg_controls", state="attached")
+    page.locator("#kg_controls_toggle").click()
+    browser_graph.open_edge_filters()
+    page.locator("#kg_edge_filters .kg-edge-filter-label").first.evaluate(
+        """el => { el.textContent = "VERY_LONG_DIRECTED_RELATION_NAME_USED_ON_PHONE"; }"""
+    )
+
+    metrics = page.evaluate(
+        """() => {
+          const panel = document.getElementById("kg_controls").getBoundingClientRect();
+          return Array.from(document.querySelectorAll("#kg_edge_filters .kg-edge-filter-label"))
+            .map(label => ({
+              labelRight: label.getBoundingClientRect().right,
+              panelRight: panel.right
+            }));
+        }"""
+    )
+
+    assert all(item["labelRight"] <= item["panelRight"] + 0.5 for item in metrics)

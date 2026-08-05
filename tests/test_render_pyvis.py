@@ -114,6 +114,7 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
     assert undirected["arrows"] == ""
     assert undirected["color"]["color"] == "#abcdef"
     assert undirected["title"] == ""
+    assert '"endPointOffset"' in html_text
 
 
 def test_write_pyvis_html_uses_fallbacks_for_unknown_layer_position_and_relation(tmp_path):
