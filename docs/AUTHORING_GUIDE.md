@@ -117,6 +117,10 @@ When deriving:
 
 If notation is shared across many concepts or likely to become a recurring
 source of confusion, add or update an entry in `docs/NOTATION_GLOSSARY.md`.
+For generic four-vector examples, prefer neutral symbols such as \(V^\mu\) and
+\(W^\mu\). Reserve \(A^\mu\) and \(A_\mu\) for the electromagnetic
+four-potential, or for a non-electromagnetic vector field only when the context
+is explicit.
 
 ## Draft Expositions
 

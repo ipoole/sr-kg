@@ -500,16 +500,16 @@ mean that we sum over the four components. In the standard inertial coordinates
 used for special relativity the metric is diagonal, so there are no cross terms
 such as \(dt\,dx\).
 
-The same metric lowers indices. If \(A^\mu=(A^0,A^1,A^2,A^3)\), then
+The same metric lowers indices. If \(V^\mu=(V^0,V^1,V^2,V^3)\), then
 
 \[
-A_\mu=\eta_{\mu\nu}A^\nu=(A^0,-A^1,-A^2,-A^3)
+V_\mu=\eta_{\mu\nu}V^\nu=(V^0,-V^1,-V^2,-V^3)
 \]
 
 in the \(+---\) convention. This is why the scalar product is written
 
 \[
-A_\mu A^\mu=(A^0)^2-(A^1)^2-(A^2)^2-(A^3)^2.
+V_\mu V^\mu=(V^0)^2-(V^1)^2-(V^2)^2-(V^3)^2.
 \]
 
 Lowering an index is not just typographical tidying; it applies the metric
@@ -1258,11 +1258,11 @@ geometric object, not four independent measurements glued together.
 The metric gives four-vectors their invariant scalar products. With the \(+---\)
 metric convention,
 \[
-A_\mu B^\mu=\eta_{\mu\nu}A^\mu B^\nu.
+V_\mu W^\mu=\eta_{\mu\nu}V^\mu W^\nu.
 \]
 Lorentz transformations preserve \(\eta\), so
 \[
-A'_\mu B'^\mu=A_\mu B^\mu.
+V'_\mu W'^\mu=V_\mu W^\mu.
 \]
 This is the same structural role played by dot products of ordinary vectors
 under rotations, except that the spacetime metric has one time sign and three
@@ -1271,11 +1271,11 @@ space signs.
 The distinction between upper and lower components matters. The metric lowers
 an index:
 \[
-A_\mu=\eta_{\mu\nu}A^\nu.
+V_\mu=\eta_{\mu\nu}V^\nu.
 \]
-In standard coordinates this turns \(A^\mu=(A^0,A^1,A^2,A^3)\) into
+In standard coordinates this turns \(V^\mu=(V^0,V^1,V^2,V^3)\) into
 \[
-A_\mu=(A^0,-A^1,-A^2,-A^3).
+V_\mu=(V^0,-V^1,-V^2,-V^3).
 \]
 The minus signs are what prevent the scalar product from becoming an ordinary
 Euclidean length.
@@ -1325,8 +1325,9 @@ component column. Retain unless visual inspection exposes a layout problem.
 
 #### Schema/View Issues
 
-- A future notation glossary should include upper/lower indices, repeated-index
-  summation, and the \(+---\) convention.
+- Upper/lower indices, repeated-index summation, and the \(+---\) convention
+  are now covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  the glossary evolves.
 
 #### Atlas Issues
 
@@ -1432,8 +1433,9 @@ Retain unless visual inspection shows a layout problem.
 
 #### Schema/View Issues
 
-- A notation glossary should explain \(x^\mu\), \(\Delta x^\mu\), and the
-  convention of using \(ct\).
+- \(x^\mu\), \(\Delta x^\mu\), and the convention of using \(ct\) are now
+  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  glossary evolves.
 
 #### Atlas Issues
 
@@ -1892,8 +1894,9 @@ meaning. Retain unless visual inspection shows layout problems.
 
 #### Schema/View Issues
 
-- A future notation glossary should distinguish \(L\), action \(S\), and field
-  Lagrangian density \(\mathcal L\).
+- \(L\), action \(S\), and field Lagrangian density \(\mathcal L\) are now
+  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  glossary evolves.
 
 #### Atlas Issues
 
@@ -2236,8 +2239,10 @@ enough room for the derivative notation.
 
 #### Schema/View Issues
 
-- A future notation glossary should distinguish canonical momentum, mechanical
-  momentum, relativistic three-momentum, and four-momentum.
+- Canonical momentum and four-momentum are now covered in
+  `docs/NOTATION_GLOSSARY.md`; mechanical momentum and relativistic
+  three-momentum may still deserve explicit entries when the atlas develops
+  mechanics notation further.
 
 #### Atlas Issues
 
@@ -2603,8 +2608,9 @@ grid, matches the concept. Retain unless review shows crowding.
 
 #### Schema/View Issues
 
-- A future notation glossary should distinguish the event \(x\), the coordinate
-  tuple \(x^\mu\), and the scalar value \(\phi(x)\).
+- The event \(x\), coordinate tuple \(x^\mu\), and scalar field value
+  \(\phi(x)\) are now covered in `docs/NOTATION_GLOSSARY.md`; keep this concept
+  aligned as the glossary evolves.
 
 #### Atlas Issues
 
@@ -2692,8 +2698,9 @@ right local-field idea. Retain for this pass.
 
 #### Schema/View Issues
 
-- A future notation glossary should record contravariant \(A^\mu\), covariant
-  \(A_\mu\), and how this relates to the electromagnetic potential convention.
+- Contravariant \(A^\mu\), covariant \(A_\mu\), and the electromagnetic
+  potential convention are now covered in `docs/NOTATION_GLOSSARY.md`; keep
+  this concept aligned as the glossary evolves.
 
 #### Atlas Issues
 
@@ -2785,8 +2792,9 @@ Retain for this pass.
 
 #### Schema/View Issues
 
-- A notation glossary should distinguish \(L\), \(\mathcal L\), action \(S\),
-  and the measure \(d^4x\).
+- \(L\), \(\mathcal L\), action \(S\), and \(d^4x\) are now covered in
+  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as the glossary
+  evolves.
 
 #### Atlas Issues
 
@@ -2884,7 +2892,9 @@ pass.
 
 #### Schema/View Issues
 
-- The d'Alembertian \(\Box\) is a good candidate for the notation glossary.
+- The d'Alembertian \(\Box\) is now covered in
+  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  evolve.
 
 #### Atlas Issues
 
@@ -2916,9 +2926,10 @@ electromagnetic field tensor:
 \[
 F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
-The antisymmetry is doing real work. It keeps the curl-like part of the
-potential's variation and leaves six independent components, which become the
-three electric and three magnetic components after an inertial frame is chosen.
+With the potential convention used here, this antisymmetry is doing real work.
+It keeps the curl-like part of the potential's variation and leaves six
+independent components, which become the three electric and three magnetic
+components after an inertial frame is chosen.
 
 The vector potential is not simply the observed electromagnetic field. The
 field strength is \(F_{\mu\nu}\), not \(A_\mu\) itself. Moreover, different
@@ -2976,8 +2987,9 @@ construction. Retain for this pass.
 
 #### Schema/View Issues
 
-- Gauge-related notation \(\Lambda\), \(A_\mu\), and \(F_{\mu\nu}\) should be
-  candidates for the notation glossary.
+- Gauge-related notation \(\Lambda\), \(A_\mu\), and \(F_{\mu\nu}\) is now
+  covered in `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  convention handling evolves.
 
 #### Atlas Issues
 
@@ -3002,6 +3014,8 @@ electromagnetism. Starting from the vector potential,
 \[
 F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
+This is the local potential convention used in this atlas; signs and factors
+are fixed only after the potential and coordinate conventions are fixed.
 This immediately gives
 \[
 F_{\mu\nu}=-F_{\nu\mu}.
@@ -3071,7 +3085,8 @@ The existing tensor-matrix graphic is appropriate. Retain for this pass.
 #### Schema/View Issues
 
 - Sign conventions for \(F_{\mu\nu}\), \(F^{\mu\nu}\), and the \(E/B\) split
-  are a notation-glossary priority.
+  are now flagged in `docs/NOTATION_GLOSSARY.md`; continue stating local
+  conventions near detailed calculations.
 
 #### Atlas Issues
 
@@ -3156,8 +3171,9 @@ this pass.
 
 #### Schema/View Issues
 
-- Potential-form definitions of \(\mathbf E\) and \(\mathbf B\) need a shared
-  convention note in the future notation glossary.
+- Potential-form definitions of \(\mathbf E\) and \(\mathbf B\) are now flagged
+  in `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near
+  detailed calculations.
 
 #### Atlas Issues
 
@@ -3719,8 +3735,9 @@ appropriate. Retain for this pass.
 
 #### Schema/View Issues
 
-- Sign conventions for \(p_\mu-eA_\mu\) and charge \(e\) should be handled in
-  the future notation glossary.
+- Sign conventions for \(p_\mu-eA_\mu\), \(q\), and \(e\) are now flagged in
+  `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  calculations.
 
 #### Atlas Issues
 
@@ -3829,8 +3846,9 @@ equation.
 
 #### Schema/View Issues
 
-- Sign conventions for the field tensor and the charge \(q\) should be covered
-  by the future notation glossary.
+- Sign conventions for the field tensor and the charge \(q\) are now flagged in
+  `docs/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  calculations.
 
 #### Atlas Issues
 
@@ -4526,7 +4544,9 @@ propagation beside a sinusoidal plane-wave slice.
 
 #### Schema/View Issues
 
-- D'Alembertian sign conventions belong in the notation glossary.
+- D'Alembertian sign conventions are now covered in
+  `docs/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  evolve.
 
 #### Atlas Issues
 
