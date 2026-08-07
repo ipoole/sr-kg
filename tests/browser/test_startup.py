@@ -1153,10 +1153,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     splash_text = page.locator("#kg_splash_dialog").inner_text()
     assert "Knowledge graph browser" in splash_text
-    assert "deeper block-based content for all layers" in splash_text
-    assert "Preview linked concepts" in splash_text
-    assert "Study questions are visible with answers folded closed" in splash_text
-    assert page.locator("#kg_splash_dialog .kg-new-badge").count() >= 3
+    assert "two linked views" in splash_text
+    assert "focus lens summarises how the graph focus is being chosen" in splash_text
+    assert "Drag the divider" in splash_text
+    assert "Coming soon: General Relativity!" in splash_text
+    assert page.locator("#kg_splash_dialog .kg-new-badge").count() == 0
 
     page.locator("#kg_splash_dismiss").click()
     assert page.evaluate("""() => localStorage.getItem("srkg.splash.dismissed.v1")""") == "true"
