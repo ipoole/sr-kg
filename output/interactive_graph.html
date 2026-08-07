@@ -63,9 +63,77 @@
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
 <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      #kg_app_header {
+        align-items: center;
+        background: #ffffff;
+        border-bottom: 1px solid #cfd6e0;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.10);
+        box-sizing: border-box;
+        display: grid;
+        gap: 0;
+        grid-template-columns: minmax(240px, var(--kg-graph-pane-width, 50%)) var(--kg-splitter-width, 7px) minmax(260px, 1fr);
+        height: 52px;
+        left: 0;
+        padding: 8px 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 10000;
+      }
+      .kg-shell-control {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        min-width: 0;
+      }
+      .kg-shell-control label {
+        color: #263241;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .kg-shell-graph-control {
+        grid-column: 1;
+        justify-content: center;
+        padding-left: 0;
+      }
+      .kg-shell-details-control {
+        grid-column: 3;
+        justify-content: center;
+      }
+      .kg-shell-button {
+        border: 1px solid #b8c2d4;
+        border-radius: 7px;
+        background: #f8fafc;
+        color: #222;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        padding: 5px 9px;
+      }
+      .kg-shell-tools-button {
+        left: 12px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+      .kg-shell-button:hover,
+      .kg-shell-button:focus,
+      .kg-canvas-select:hover,
+      .kg-canvas-select:focus {
+        background: #eef3fd;
+        outline: none;
+      }
       #kg_controls {
         position: fixed;
-        top: 48px;
+        top: 64px;
         left: 12px;
         z-index: 9999;
         background: rgba(255, 255, 255, 0.94);
@@ -80,72 +148,36 @@
       #kg_controls.kg-hidden {
         display: none;
       }
-      .kg-canvas-toggle {
-        position: fixed;
-        top: 12px;
-        z-index: 10000;
-        padding: 5px 9px;
-        border: 1px solid #bbb;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.96);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
-        color: #222;
-        cursor: pointer;
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-      }
-      #kg_controls_toggle {
-        left: 12px;
-      }
-      #kg_info_toggle {
-        left: 128px;
-      }
       #kg_graph_view_select {
-        left: 244px;
-        min-width: 170px;
+        min-width: 132px;
       }
-      .kg-canvas-toggle:hover,
-      .kg-canvas-toggle:focus,
-      .kg-canvas-select:hover,
-      .kg-canvas-select:focus {
-        background: #eef3fd;
-        outline: none;
+      #kg_details_view_select {
+        min-width: 132px;
       }
       .kg-canvas-select {
-        position: fixed;
-        top: 12px;
-        z-index: 10000;
         padding: 5px 8px;
         border: 1px solid #bbb;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.96);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+        border-radius: 7px;
+        background: #ffffff;
         color: #222;
         cursor: pointer;
         font-family: Arial, sans-serif;
         font-size: 13px;
       }
       #kg_view_title {
-        position: fixed;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9997;
-        max-width: min(760px, 42vw);
-        padding: 7px 12px;
-        border: 1px solid rgba(0,0,0,0.12);
-        border-radius: 8px;
-        background: rgba(255,255,255,0.94);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.14);
         color: #222;
         font-family: Arial, sans-serif;
         font-size: 18px;
         font-weight: 700;
+        left: 50%;
         line-height: 1.2;
+        max-width: min(34vw, 460px);
         overflow: hidden;
-        pointer-events: none;
+        position: absolute;
         text-align: center;
         text-overflow: ellipsis;
+        top: 50%;
+        transform: translate(-50%, -50%);
         white-space: nowrap;
       }
       #kg_controls input {
@@ -178,6 +210,219 @@
         font-size: 0.923em;
         color: #333;
       }
+      .kg-focus-lens {
+        border: 1px solid #d2d8e2;
+        border-radius: 8px;
+        background: #f8fafc;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        max-width: min(250px, calc(100% - 20px));
+        padding: 7px;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        z-index: 20;
+      }
+      .kg-focus-lens[data-selected-concept=""] {
+        display: none;
+      }
+      body.kg-focus-lens-hidden .kg-focus-lens {
+        display: none;
+      }
+      .kg-focus-lens-head {
+        align-items: baseline;
+        display: flex;
+        gap: 6px;
+        justify-content: space-between;
+        min-width: 0;
+      }
+      .kg-focus-lens-title {
+        color: #111827;
+        font-size: 0.846em;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .kg-focus-lens-background {
+        color: #526070;
+        font-size: 0.846em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .kg-focus-lens-purpose {
+        color: #1f2937;
+        font-size: 0.923em;
+        font-weight: 700;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .kg-focus-lens-map {
+        display: grid;
+        gap: 4px;
+        grid-template-rows: auto auto auto;
+        margin-top: 7px;
+        min-width: 0;
+      }
+      .kg-focus-lens-directed {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        min-height: 58px;
+        min-width: 0;
+      }
+      .kg-focus-lens-middle {
+        align-items: center;
+        display: grid;
+        gap: 9px;
+        grid-template-columns: 78px minmax(0, 1fr);
+        min-width: 0;
+      }
+      .kg-focus-lens-center {
+        align-items: center;
+        aspect-ratio: 1;
+        background: #ffffff;
+        border: 2px solid #1f2937;
+        border-radius: 50%;
+        color: #111827;
+        display: flex;
+        flex-direction: column;
+        font-size: 0.923em;
+        font-weight: 700;
+        gap: 2px;
+        justify-content: center;
+        line-height: 1.05;
+        min-width: 0;
+        overflow: hidden;
+        padding: 5px;
+        text-align: center;
+        text-overflow: ellipsis;
+      }
+      .kg-focus-lens-center-id,
+      .kg-focus-lens-center-name {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kg-focus-lens-center-name {
+        font-size: 0.846em;
+        font-weight: 600;
+      }
+      .kg-focus-lens-undirected {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+      }
+      .kg-focus-lens-relation {
+        --edge-color: #777777;
+        align-items: center;
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+      .kg-focus-lens-incoming .kg-focus-lens-relation,
+      .kg-focus-lens-outgoing .kg-focus-lens-relation {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        width: 54px;
+      }
+      .kg-focus-lens-incoming .kg-focus-lens-relation {
+        grid-template-areas:
+          "abbrev"
+          "node"
+          "edge"
+          "state";
+      }
+      .kg-focus-lens-outgoing .kg-focus-lens-relation {
+        grid-template-areas:
+          "edge"
+          "node"
+          "abbrev"
+          "state";
+      }
+      .kg-focus-lens-undirected .kg-focus-lens-relation {
+        gap: 5px;
+        grid-template-areas: "edge node abbrev state";
+        grid-template-columns: 28px 18px minmax(22px, auto) minmax(0, 1fr);
+        min-height: 19px;
+      }
+      .kg-focus-lens-edge {
+        background: var(--edge-color);
+        display: block;
+        opacity: 0.95;
+        position: relative;
+      }
+      .kg-focus-lens-incoming .kg-focus-lens-edge,
+      .kg-focus-lens-outgoing .kg-focus-lens-edge {
+        grid-area: edge;
+        height: 16px;
+        width: 2px;
+      }
+      .kg-focus-lens-undirected .kg-focus-lens-edge {
+        grid-area: edge;
+        height: 2px;
+        width: 28px;
+      }
+      .kg-focus-lens-incoming .kg-focus-lens-edge::after,
+      .kg-focus-lens-outgoing .kg-focus-lens-edge::after {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 6px solid var(--edge-color);
+        border-bottom: 4px solid transparent;
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .kg-focus-lens-node {
+        background: #ffffff;
+        border: 2px solid var(--edge-color);
+        display: block;
+        grid-area: node;
+        height: 13px;
+        position: relative;
+        width: 13px;
+      }
+      .kg-focus-lens-relation[data-state="tree"] .kg-focus-lens-node::before {
+        background: #ffffff;
+        border: 2px solid var(--edge-color);
+        content: "";
+        height: 9px;
+        left: -5px;
+        position: absolute;
+        top: -5px;
+        width: 9px;
+      }
+      .kg-focus-lens-abbrev {
+        color: #111827;
+        font-size: 0.846em;
+        font-weight: 700;
+        grid-area: abbrev;
+        white-space: nowrap;
+      }
+      .kg-focus-lens-state {
+        color: #526070;
+        font-size: 0.846em;
+        grid-area: state;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .kg-focus-lens-relation[data-state="none"] {
+        opacity: 0.34;
+      }
+      .kg-focus-lens-relation[data-state="none"] .kg-focus-lens-edge::after,
+      .kg-focus-lens-undirected .kg-focus-lens-edge::after {
+        display: none;
+      }
+      .kg-focus-lens-empty {
+        color: #526070;
+        font-size: 0.923em;
+        margin-top: 4px;
+      }
       #kg_search_block {
         padding-top: 6px;
       }
@@ -200,9 +445,6 @@
       #kg_legend {
         max-height: 180px;
         overflow-y: auto;
-        padding-top: 4px;
-      }
-      #kg_edge_filters {
         padding-top: 4px;
       }
       .kg-edge-filter {
@@ -231,6 +473,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .kg-edge-filter input:disabled + .kg-edge-filter-swatch,
+      .kg-edge-filter input:disabled ~ .kg-edge-filter-label {
+        opacity: 0.62;
       }
       #kg_concept_list {
         max-height: 260px;
@@ -302,6 +548,89 @@
         position: relative;
       }
 
+      #kg_workspace {
+        background: #edf1f5;
+        box-sizing: border-box;
+        display: grid;
+        gap: 0;
+        grid-template-columns: minmax(240px, var(--kg-graph-pane-width, 50%)) var(--kg-splitter-width, 7px) minmax(260px, 1fr);
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 52px;
+        bottom: 0;
+      }
+      .kg-workspace-pane {
+        background: #ffffff;
+        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
+        position: relative;
+      }
+      #kg_graph_pane {
+        border-right: 0;
+      }
+      #kg_pane_splitter {
+        background: #d8dee8;
+        cursor: col-resize;
+        min-width: var(--kg-splitter-width, 7px);
+        position: relative;
+        touch-action: none;
+      }
+      #kg_pane_splitter::after {
+        background: #9aa7b8;
+        border-radius: 999px;
+        content: "";
+        height: 44px;
+        left: 50%;
+        opacity: 0.72;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 3px;
+      }
+      #kg_pane_splitter:hover,
+      #kg_pane_splitter:focus,
+      body.kg-splitter-dragging #kg_pane_splitter {
+        background: #c5cfdd;
+        outline: none;
+      }
+      body.kg-splitter-dragging {
+        cursor: col-resize;
+        user-select: none;
+      }
+      #kg_graph_surface {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      #kg_workspace #mynetwork {
+        border: 0 !important;
+        box-sizing: border-box;
+        float: none !important;
+        height: 100% !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      #kg_details_pane {
+        display: flex;
+        min-height: 0;
+      }
+      body.kg-graph-hidden #kg_workspace,
+      body.kg-details-hidden #kg_workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      body.kg-graph-hidden #kg_pane_splitter,
+      body.kg-details-hidden #kg_pane_splitter {
+        display: none;
+      }
+      body.kg-graph-hidden #kg_graph_pane,
+      body.kg-details-hidden #kg_details_pane {
+        display: none;
+      }
+
       #kg_node_labels {
         bottom: 0;
         left: 0;
@@ -356,26 +685,26 @@
       }
     
     #info_panel {
-        position: fixed;
-        top: 12px;
-        right: 12px;
-        width: clamp(420px, 34vw, 620px);
-        height: 90vh;
+        box-sizing: border-box;
+        flex: 1 1 auto;
+        height: 100%;
+        min-height: 0;
+        min-width: 0;
         overflow-y: auto;
 
-        background: rgba(255,255,255,0.97);
-        border: 1px solid #ccc;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 0;
+        border-radius: 0;
 
-        padding: 12px;
+        padding: 14px 16px;
 
         font-family: Arial, sans-serif;
         font-size: 18px;
         touch-action: pan-y;
 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        box-shadow: none;
 
-        z-index: 9998;
+        z-index: 1;
     }
 
     #info_panel.kg-hidden {
@@ -433,18 +762,7 @@
         min-width: 0;
     }
 
-    #info_panel .concept-title-actions {
-        align-items: center;
-        display: flex;
-        flex: 0 0 auto;
-        flex-wrap: wrap;
-        gap: 5px;
-        justify-content: flex-end;
-        max-width: 42%;
-    }
-
-    #info_panel .concept-reading-mode,
-    #info_panel .concept-graph-focus {
+    #info_panel .concept-reading-mode {
         border: 1px solid #ccd6e5;
         border-radius: 4px;
         font-size: 0.78em;
@@ -468,19 +786,6 @@
         font: inherit;
         font-weight: 700;
         padding: 0;
-    }
-
-    #info_panel .concept-graph-focus {
-        background: #174ea6;
-        color: #fff;
-        cursor: pointer;
-        font-weight: 700;
-    }
-
-    #info_panel .concept-graph-focus:hover,
-    #info_panel .concept-graph-focus:focus {
-        background: #0d3f8f;
-        outline: none;
     }
 
     #info_panel .concept-toc {
@@ -552,6 +857,14 @@
         background: #e7effc;
         outline: none;
         text-decoration: underline;
+    }
+
+    #info_panel .concept-toc-link.active {
+        background: #dfeafe;
+        border-color: var(--toc-accent);
+        box-shadow: inset 0 0 0 1px var(--toc-accent);
+        color: #0d3f8f;
+        font-weight: 700;
     }
 
     #info_panel .concept-layer-context {
@@ -1437,8 +1750,7 @@
     }
 
     body.kg-graph-hidden #mynetwork,
-    body.kg-graph-hidden #kg_node_labels,
-    body.kg-graph-hidden #kg_view_title {
+    body.kg-graph-hidden #kg_node_labels {
         opacity: 0;
         pointer-events: none;
     }
@@ -1653,28 +1965,167 @@
             width: min(390px, 42vw);
         }
     }
+
+    @media (max-width: 850px) {
+        #kg_app_header {
+            gap: 6px 8px;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            height: 84px;
+            padding: 7px 8px;
+        }
+
+        .kg-shell-control label {
+            font-size: 12px;
+        }
+
+        .kg-shell-graph-control {
+            grid-column: 1;
+            grid-row: 1;
+            justify-content: flex-start;
+            padding-left: 50px;
+        }
+
+        .kg-shell-details-control {
+            grid-column: 2;
+            grid-row: 1;
+            justify-content: flex-end;
+        }
+
+        #kg_graph_view_select,
+        #kg_details_view_select {
+            min-width: 0;
+            width: min(128px, 38vw);
+        }
+
+        #kg_controls_toggle {
+            padding: 5px 7px;
+        }
+
+        #kg_view_title {
+            display: block;
+            font-size: 14px;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            left: auto;
+            max-width: none;
+            position: static;
+            transform: none;
+        }
+
+        #kg_workspace {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: minmax(200px, 42vh) minmax(0, 1fr);
+            top: 84px;
+        }
+
+        body.kg-graph-hidden #kg_workspace,
+        body.kg-details-hidden #kg_workspace {
+            grid-template-rows: minmax(0, 1fr);
+        }
+
+        #kg_pane_splitter {
+            display: none;
+        }
+
+        #kg_graph_pane {
+            border-bottom: 1px solid #cfd6e0;
+            border-right: 0;
+        }
+
+        #kg_controls {
+            top: calc(84px + 8px);
+        }
+
+        #info_panel {
+            bottom: auto;
+            font-size: 11px;
+            height: 100%;
+            left: auto;
+            max-height: none;
+            padding: 10px;
+            position: static;
+            right: auto;
+            top: auto;
+            width: 100%;
+        }
+
+        body.kg-graph-hidden #info_panel {
+            max-height: none;
+            top: auto;
+        }
+
+        .kg-focus-lens {
+            max-width: min(210px, calc(100% - 16px));
+            padding: 6px;
+            right: 8px;
+            top: 8px;
+            transform: scale(0.86);
+            transform-origin: top right;
+        }
+    }
+
+    @media (max-width: 850px) and (orientation: landscape) {
+        #kg_workspace {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr);
+        }
+
+        body.kg-graph-hidden #kg_workspace,
+        body.kg-details-hidden #kg_workspace {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #kg_graph_pane {
+            border-bottom: 0;
+            border-right: 1px solid #cfd6e0;
+        }
+
+        #info_panel {
+            bottom: auto;
+            left: auto;
+            max-height: none;
+            right: auto;
+            top: auto;
+            width: 100%;
+        }
+    }
 </style>
 </head>
 
 
     <body>
-    <div id="kg_view_title">&#x27;Special Relativity and Classival Fields</div>
-    <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
-    <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
-    <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
-      <option value="hide">Hide graph</option>
-      <option value="all" selected>All</option>
-      <option value="focused">Focussed</option>
-    </select>
+    <header id="kg_app_header" aria-label="Knowledge graph workspace controls">
+      <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
+      <div class="kg-shell-control kg-shell-graph-control">
+        <label for="kg_graph_view_select">Graph</label>
+        <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
+          <option value="hide">Hide</option>
+          <option value="all" selected>All</option>
+          <option value="focused">Focussed</option>
+        </select>
+        <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="true">Lens</button>
+      </div>
+      <div id="kg_view_title">Special Relativity and Classical Fields</div>
+      <div class="kg-shell-control kg-shell-details-control">
+        <label for="kg_details_view_select">Details</label>
+        <select id="kg_details_view_select" class="kg-canvas-select" aria-label="Details view">
+          <option value="hide">Hide</option>
+          <option value="full" selected>Full</option>
+          <option value="core">Core</option>
+          <option value="maths">Maths</option>
+          <option value="context">Context</option>
+          <option value="practice">Practice</option>
+        </select>
+      </div>
+    </header>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
+      <button id="kg_info_toggle" type="button" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <details id="kg_edge_filters_section" class="kg-fold">
-        <summary>Edge types</summary>
-        <div id="kg_edge_filters"></div>
-      </details>
+      <div id="kg_focus_lens" class="kg-focus-lens" aria-live="polite"></div>
       <details id="kg_legend_section" class="kg-fold">
         <summary>Layers</summary>
         <div id="kg_legend"></div>
@@ -1705,7 +2156,7 @@
     </div>
 
     <div id="info_panel">
-      <h2>&#x27;Special Relativity and Classival Fields</h2>
+      <h2>Special Relativity and Classical Fields</h2>
       <p>Click a concept node to view details.</p>
     </div>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
@@ -1714,7 +2165,7 @@
       <ul>
         <li>Click graph nodes or the searchable concept list to open concept details.</li>
         <li>Switch graph views between all concepts, focussed context, or hidden graph.</li>
-        <li>Filter edge types, click edges for relationship details, and inspect relation meanings from the edge key. <span class="kg-new-badge">NEW</span></li>
+        <li>Use the focus lens, click edges for relationship details, and inspect relation meanings from the edge key. <span class="kg-new-badge">NEW</span></li>
         <li>Read block-aware concept pages with sticky contents navigation and folded warnings, misconceptions, historical notes, and derivation steps. <span class="kg-new-badge">NEW</span></li>
         <li>Preview linked concepts from inline references, with visible graph targets and paths highlighted. <span class="kg-new-badge">NEW</span></li>
         <li>Choose reading modes to focus on full, core, maths, context, or practice material. <span class="kg-new-badge">NEW</span></li>
@@ -1778,7 +2229,7 @@
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 280, "maximum": 280}, "heightConstraint": {"minimum": 170, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "endPointOffset": {"to": 36}, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": true, "tooltipDelay": 120}};
+                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 280, "maximum": 280}, "heightConstraint": {"minimum": 170, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "endPointOffset": {"to": 36}, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": false, "tooltipDelay": 120}};
 
                   
 
@@ -1909,9 +2360,13 @@
         var nodeTooltip = document.createElement("div");
         var conceptPreview = document.createElement("div");
         var nodeLabelEls = {};
+        var defaultViewTitle = document.getElementById("kg_view_title")
+          ? document.getElementById("kg_view_title").textContent
+          : "";
 
         nodeLabelLayer.id = "kg_node_labels";
         graphContainer.appendChild(nodeLabelLayer);
+        buildWorkspaceShell();
         nodeTooltip.id = "kg_node_tooltip";
         nodeTooltip.setAttribute("role", "tooltip");
         document.body.appendChild(nodeTooltip);
@@ -1948,9 +2403,17 @@
         var infoPanelPinchState = null;
         var readingMode = "full";
         var activeConceptSectionContext = "neighbourhood";
+        var activeConceptSectionTargetId = null;
+        var activeConceptSectionLensLabel = "Neighbourhood";
+        var currentConceptTocItems = [];
+        var detailScrollSyncTimer = null;
+        var detailScrollSyncSuppressedUntil = 0;
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var pendingGraphSectionContext = null;
+        var focusLensVisible = true;
+        var workspaceSplitPercent = 50;
+        var workspaceSplitterPointerId = null;
 
         /*
          * Custom node rendering
@@ -2244,6 +2707,10 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+        }
+
+        function cssAttributeValueEscape(s) {
+          return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
         }
 
         function renderSimpleConceptText(s) {
@@ -3071,13 +3538,204 @@
           }
         }
 
+        function buildWorkspaceShell() {
+          if (document.getElementById("kg_workspace")) { return; }
+          var panel = document.getElementById("info_panel");
+          var focusLens = document.getElementById("kg_focus_lens");
+          var originalGraphParent = graphContainer.parentElement;
+          var shell = document.createElement("main");
+          var graphPane = document.createElement("section");
+          var graphSurface = document.createElement("div");
+          var splitter = document.createElement("div");
+          var detailsPane = document.createElement("section");
+
+          shell.id = "kg_workspace";
+          shell.setAttribute("aria-label", "Knowledge graph and concept details");
+          graphPane.id = "kg_graph_pane";
+          graphPane.className = "kg-workspace-pane";
+          graphPane.setAttribute("aria-label", "Graph view");
+          graphSurface.id = "kg_graph_surface";
+          splitter.id = "kg_pane_splitter";
+          splitter.setAttribute("role", "separator");
+          splitter.setAttribute("aria-label", "Resize graph and details panes");
+          splitter.setAttribute("aria-orientation", "vertical");
+          splitter.setAttribute("aria-valuemin", "28");
+          splitter.setAttribute("aria-valuemax", "72");
+          splitter.setAttribute("tabindex", "0");
+          detailsPane.id = "kg_details_pane";
+          detailsPane.className = "kg-workspace-pane";
+          detailsPane.setAttribute("aria-label", "Details view");
+
+          originalGraphParent.parentNode.insertBefore(shell, originalGraphParent);
+          shell.appendChild(graphPane);
+          shell.appendChild(splitter);
+          shell.appendChild(detailsPane);
+          graphPane.appendChild(graphSurface);
+          graphSurface.appendChild(graphContainer);
+          if (focusLens) {
+            graphPane.appendChild(focusLens);
+          }
+          detailsPane.appendChild(panel);
+          if (
+            originalGraphParent &&
+            originalGraphParent !== graphContainer &&
+            originalGraphParent.parentNode &&
+            originalGraphParent.children.length === 0
+          ) {
+            originalGraphParent.parentNode.removeChild(originalGraphParent);
+          }
+          setupWorkspaceSplitter(splitter);
+          applyWorkspaceSplit();
+        }
+
+        function clampWorkspaceSplitPercent(value) {
+          var numeric = Number(value);
+          if (!Number.isFinite(numeric)) { return 50; }
+          return Math.max(28, Math.min(72, numeric));
+        }
+
+        function applyWorkspaceSplit(value) {
+          if (Number.isFinite(Number(value))) {
+            workspaceSplitPercent = clampWorkspaceSplitPercent(value);
+          } else if (!Number.isFinite(Number(workspaceSplitPercent))) {
+            workspaceSplitPercent = 50;
+          }
+          var splitWidth = workspaceSplitPercent.toFixed(2) + "%";
+          var shell = document.getElementById("kg_workspace");
+          var splitter = document.getElementById("kg_pane_splitter");
+          if (shell) {
+            var rect = shell.getBoundingClientRect();
+            var splitterWidth = splitter ? splitter.getBoundingClientRect().width : 0;
+            var availableWidth = rect.width - splitterWidth;
+            if (availableWidth > 0) {
+              splitWidth = (availableWidth * workspaceSplitPercent / 100).toFixed(2) + "px";
+            }
+          }
+          document.body.style.setProperty(
+            "--kg-graph-pane-width",
+            splitWidth
+          );
+          if (splitter) {
+            splitter.setAttribute("aria-valuenow", String(Math.round(workspaceSplitPercent)));
+          }
+        }
+
+        function setWorkspaceSplitFromClientX(clientX) {
+          var shell = document.getElementById("kg_workspace");
+          if (!shell) { return; }
+          var rect = shell.getBoundingClientRect();
+          if (!rect.width) { return; }
+          applyWorkspaceSplit(((clientX - rect.left) / rect.width) * 100);
+          scheduleViewportRefit();
+        }
+
+        function setupWorkspaceSplitter(splitter) {
+          if (!splitter) { return; }
+          splitter.addEventListener("pointerdown", function(e) {
+            if (window.matchMedia("(max-width: 850px)").matches) { return; }
+            e.preventDefault();
+            workspaceSplitterPointerId = e.pointerId;
+            splitter.setPointerCapture(e.pointerId);
+            document.body.classList.add("kg-splitter-dragging");
+            setWorkspaceSplitFromClientX(e.clientX);
+          });
+          splitter.addEventListener("pointermove", function(e) {
+            if (workspaceSplitterPointerId !== e.pointerId) { return; }
+            e.preventDefault();
+            setWorkspaceSplitFromClientX(e.clientX);
+          });
+          function stopDragging(e) {
+            if (workspaceSplitterPointerId !== e.pointerId) { return; }
+            workspaceSplitterPointerId = null;
+            document.body.classList.remove("kg-splitter-dragging");
+            if (splitter.hasPointerCapture(e.pointerId)) {
+              splitter.releasePointerCapture(e.pointerId);
+            }
+            scheduleViewportRefit();
+          }
+          splitter.addEventListener("pointerup", stopDragging);
+          splitter.addEventListener("pointercancel", stopDragging);
+          splitter.addEventListener("keydown", function(e) {
+            if (e.altKey || e.metaKey || e.ctrlKey) { return; }
+            if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              applyWorkspaceSplit(workspaceSplitPercent - 4);
+              scheduleViewportRefit();
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              applyWorkspaceSplit(workspaceSplitPercent + 4);
+              scheduleViewportRefit();
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              applyWorkspaceSplit(28);
+              scheduleViewportRefit();
+            } else if (e.key === "End") {
+              e.preventDefault();
+              applyWorkspaceSplit(72);
+              scheduleViewportRefit();
+            }
+          });
+        }
+
+        function detailsAreVisible() {
+          var panel = document.getElementById("info_panel");
+          return Boolean(panel && !panel.classList.contains("kg-hidden"));
+        }
+
+        function updateSelectedConceptHeader(nodeId) {
+          var title = document.getElementById("kg_view_title");
+          if (!title) { return; }
+          if (nodeId && getConcept(nodeId)) {
+            title.textContent = conceptDisplayId(nodeId) + " " + (getConcept(nodeId).label || "");
+          } else {
+            title.textContent = defaultViewTitle;
+          }
+        }
+
+        function updateDetailsViewControls() {
+          var select = document.getElementById("kg_details_view_select");
+          if (!select) { return; }
+          select.value = detailsAreVisible() ? readingMode : "hide";
+        }
+
+        function setDetailsView(value) {
+          value = String(value || "full");
+          if (value === "hide") {
+            setInfoPanelVisible(false);
+            refitCurrentViewForPanels(true);
+            return;
+          }
+
+          readingMode = readingModeDefinitions[value] ? value : "full";
+          setInfoPanelVisible(true);
+          activeConceptSectionContext = "neighbourhood";
+          activeConceptSectionLensLabel = "Neighbourhood";
+          if (activeNodeId && getConcept(activeNodeId)) {
+            showConcept(activeNodeId, {preserveSectionContext: true});
+            applyCurrentView();
+          }
+          updateDetailsViewControls();
+          document.getElementById("kg_status").innerText =
+            "Details mode: " + currentReadingModeDefinition().label + ".";
+          refitCurrentViewForPanels(true);
+        }
+
         function setInfoPanelVisible(visible) {
           var panel = document.getElementById("info_panel");
           var button = document.getElementById("kg_info_toggle");
+          if (!visible && graphViewIs(currentView, GraphViewMode.HIDE)) {
+            visible = true;
+            document.getElementById("kg_status").innerText =
+              "Details remain visible while the graph is hidden.";
+          }
           panel.classList.toggle("kg-hidden", !visible);
+          document.body.classList.toggle("kg-details-hidden", !visible);
           if (button) {
             button.innerText = visible ? "Hide details" : "Show details";
           }
+          updateDetailsViewControls();
+          updateFocusLensDisplay();
+          return visible;
         }
 
         function setControlsVisible(visible) {
@@ -3085,7 +3743,7 @@
           var button = document.getElementById("kg_controls_toggle");
           panel.classList.toggle("kg-hidden", !visible);
           if (button) {
-            button.innerText = visible ? "Hide controls" : "Show controls";
+            button.innerText = visible ? "Hide tools" : "Tools";
           }
         }
 
@@ -3222,6 +3880,21 @@
           return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function updateFocusLensVisibilityControls() {
+          document.body.classList.toggle("kg-focus-lens-hidden", !focusLensVisible);
+          var button = document.getElementById("kg_focus_lens_toggle");
+          if (!button) { return; }
+          button.setAttribute("aria-pressed", focusLensVisible ? "true" : "false");
+          button.textContent = focusLensVisible ? "Lens" : "Show lens";
+          button.title = focusLensVisible ? "Hide focus lens" : "Show focus lens";
+        }
+
+        function setFocusLensVisible(visible) {
+          focusLensVisible = Boolean(visible);
+          updateFocusLensVisibilityControls();
+          updateFocusLensDisplay();
+        }
+
         /* Graph view state and compact subgraph layout. */
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
@@ -3282,6 +3955,27 @@
             return;
           }
           window.history.pushState(state, "", hash);
+        }
+
+        function browserHistoryShortcutDirection(e) {
+          if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) { return 0; }
+          if (e.key === "ArrowLeft") { return -1; }
+          if (e.key === "ArrowRight") { return 1; }
+          return 0;
+        }
+
+        function allowBrowserHistoryShortcut(e) {
+          var direction = browserHistoryShortcutDirection(e);
+          if (!direction || e.defaultPrevented) { return; }
+          var beforeUrl = window.location.href;
+          window.setTimeout(function() {
+            if (window.location.href !== beforeUrl) { return; }
+            if (direction < 0) {
+              window.history.back();
+            } else {
+              window.history.forward();
+            }
+          }, 0);
         }
 
         function conceptIdParts(id) {
@@ -3688,7 +4382,8 @@
                 id: contentAnchorId(conceptId, title),
                 title: title,
                 kind: block.kind,
-                graphContext: "neighbourhood"
+                graphContext: "neighbourhood",
+                lensLabel: "Neighbourhood"
               });
             });
           } else {
@@ -3697,7 +4392,8 @@
               items.push({
                 id: contentAnchorId(conceptId, section.title),
                 title: section.title,
-                graphContext: "neighbourhood"
+                graphContext: "neighbourhood",
+                lensLabel: "Neighbourhood"
               });
             });
           }
@@ -3706,28 +4402,32 @@
             items.push({
               id: contentAnchorId(conceptId, "Derived From"),
               title: "Derived from",
-              graphContext: "derived-from"
+              graphContext: "derived-from",
+              lensLabel: "Derivation step"
             });
           }
           if (backlinkGroupsFor(conceptId).length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "Where This Is Used"),
               title: "Where this is used",
-              graphContext: "where-used"
+              graphContext: "where-used",
+              lensLabel: "Immediate usage"
             });
           }
           if (studyQuestions.length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "Study Questions"),
               title: "Study Questions",
-              graphContext: "neighbourhood"
+              graphContext: "neighbourhood",
+              lensLabel: "Neighbourhood"
             });
           }
           if (conceptReferences.length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "References"),
               title: "References",
-              graphContext: "neighbourhood"
+              graphContext: "neighbourhood",
+              lensLabel: "Neighbourhood"
             });
           }
           return items;
@@ -3744,7 +4444,8 @@
             html += '<a href="#' + escapeHtml(item.id) +
               '" class="concept-toc-link' + escapeHtml(kindClass) + '" data-toc-target="' +
               escapeHtml(item.id) + '" data-graph-context="' +
-              escapeHtml(item.graphContext || "neighbourhood") + '">' +
+              escapeHtml(item.graphContext || "neighbourhood") + '" data-lens-label="' +
+              escapeHtml(item.lensLabel || "Neighbourhood") + '">' +
               (item.kind ? '<span class="concept-toc-kind-dot" aria-hidden="true"></span>' : "") +
               renderConceptText(item.title) +
               "</a>";
@@ -3769,17 +4470,7 @@
           html += '<h2 class="concept-title">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
-          html += '<div class="concept-title-actions">';
-          html += '<label class="concept-reading-mode">' +
-            '<span>Reading</span>' +
-            '<select class="concept-reading-mode-select" aria-label="Reading mode">' +
-            renderReadingModeOptions() +
-            "</select></label>";
-          html += '<button type="button" class="concept-graph-focus" data-concept-id="' +
-            escapeHtml(nodeId) +
-            '" title="Focus this concept in the graph" aria-label="Focus this concept in the graph">' +
-            "Graph</button>";
-          html += "</div></div>";
+          html += "</div>";
           html += renderConceptToc(tocItems);
           html += "</div>";
           return html;
@@ -3817,6 +4508,120 @@
             top: Math.max(0, targetTop - stickyOffset),
             behavior: "smooth"
           });
+        }
+
+        function updateConceptTocActive(targetId) {
+          var panel = document.getElementById("info_panel");
+          if (!panel) { return; }
+          panel.querySelectorAll(".concept-toc-link.active").forEach(function(link) {
+            link.classList.remove("active");
+            link.removeAttribute("aria-current");
+          });
+          if (!targetId) { return; }
+          var link = panel.querySelector(
+            '.concept-toc-link[data-toc-target="' + cssAttributeValueEscape(targetId) + '"]'
+          );
+          if (!link) { return; }
+          link.classList.add("active");
+          link.setAttribute("aria-current", "true");
+        }
+
+        function lensLabelForContext(context) {
+          if (context === "derived-from") {
+            return derivedFromFullTreeEnabled ? "Derivation tree" : "Derivation step";
+          }
+          if (context === "where-used") {
+            return backlinksFullTreeEnabled ? "Usage tree" : "Immediate usage";
+          }
+          return "Neighbourhood";
+        }
+
+        function setActiveConceptSection(targetId, context, options) {
+          options = options || {};
+          var nextTargetId = targetId ? String(targetId) : null;
+          var nextContext = context || "neighbourhood";
+          var nextLensLabel = options.lensLabel || lensLabelForContext(nextContext);
+          var contextChanged = activeConceptSectionContext !== nextContext;
+          var targetChanged = activeConceptSectionTargetId !== nextTargetId;
+          var labelChanged = activeConceptSectionLensLabel !== nextLensLabel;
+          activeConceptSectionTargetId = nextTargetId;
+          activeConceptSectionContext = nextContext;
+          activeConceptSectionLensLabel = nextLensLabel;
+          if (targetChanged) {
+            updateConceptTocActive(nextTargetId);
+          }
+          if (!options.skipGraphUpdate && (contextChanged || options.forceGraphUpdate)) {
+            applyCurrentView();
+          }
+          if (targetChanged || contextChanged || labelChanged || options.forceGraphUpdate) {
+            updateFocusLensDisplay();
+          }
+        }
+
+        function firstTocItemForContext(context) {
+          return currentConceptTocItems.find(function(item) {
+            return (item.graphContext || "neighbourhood") === context;
+          }) || null;
+        }
+
+        function initialTocItem(tocItems) {
+          if (!Array.isArray(tocItems) || tocItems.length === 0) { return null; }
+          if (activeConceptSectionTargetId) {
+            var previous = tocItems.find(function(item) {
+              return item.id === activeConceptSectionTargetId;
+            });
+            if (previous) { return previous; }
+          }
+          return firstTocItemForContext(activeConceptSectionContext) || tocItems[0];
+        }
+
+        function activeTocItemFromScroll() {
+          var panel = document.getElementById("info_panel");
+          if (!panel || currentConceptTocItems.length === 0) { return null; }
+          var panelRect = panel.getBoundingClientRect();
+          var stickyHeader = panel.querySelector(".concept-sticky-header");
+          var stickyBottom = stickyHeader
+            ? stickyHeader.getBoundingClientRect().bottom
+            : panelRect.top;
+          var cursorY = stickyBottom + 12;
+          var best = null;
+          var bestTop = -Infinity;
+          var firstVisible = null;
+
+          currentConceptTocItems.forEach(function(item) {
+            var target = document.getElementById(item.id);
+            if (!target) { return; }
+            var rect = target.getBoundingClientRect();
+            if (rect.bottom < panelRect.top || rect.top > panelRect.bottom) { return; }
+            if (!firstVisible || rect.top < firstVisible.top) {
+              firstVisible = {item: item, top: rect.top};
+            }
+            if (rect.top <= cursorY && rect.top >= bestTop) {
+              best = item;
+              bestTop = rect.top;
+            }
+          });
+
+          return best || (firstVisible && firstVisible.item) || null;
+        }
+
+        function updateActiveSectionFromScroll() {
+          var item = activeTocItemFromScroll();
+          if (!item) { return; }
+          setActiveConceptSection(item.id, item.graphContext || "neighbourhood", {
+            lensLabel: item.lensLabel
+          });
+        }
+
+        function scheduleDetailScrollSync() {
+          if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
+          if (detailScrollSyncTimer !== null) {
+            clearTimeout(detailScrollSyncTimer);
+          }
+          detailScrollSyncTimer = setTimeout(function() {
+            detailScrollSyncTimer = null;
+            updateActiveSectionFromScroll();
+          }, 80);
         }
 
         function renderConceptContent(conceptId, concept) {
@@ -4127,8 +4932,7 @@
         }
 
         function edgeRelationEnabled(edge) {
-          var relation = edgeRelation(edge);
-          return enabledEdgeRelations[relation] !== false;
+          return true;
         }
 
         function edgeRelationDirected(edge) {
@@ -4447,29 +5251,198 @@
           return item.colour || "#999999";
         }
 
-        function buildEdgeFilters() {
-          var relations = Object.keys(edgeKey).sort();
-          var html = "";
+        function relationAbbreviation(relation) {
+          var abbreviations = {
+            DERIVES_FROM: "DF",
+            PREREQUISITE: "PR",
+            DEPENDS_ON: "DO",
+            RELATED: "R"
+          };
+          relation = String(relation || "");
+          if (abbreviations[relation]) { return abbreviations[relation]; }
 
-          if (relations.length === 0) {
-            html += '<div style="color:#555;">No edge key loaded.</div>';
-            document.getElementById("kg_edge_filters").innerHTML = html;
+          var parts = relation.split(/[^A-Za-z0-9]+/).filter(Boolean);
+          if (parts.length === 0) { return "?"; }
+          if (parts.length === 1) {
+            return parts[0].slice(0, 2).toUpperCase();
+          }
+          return parts.slice(0, 2).map(function(part) {
+            return part.charAt(0).toUpperCase();
+          }).join("");
+        }
+
+        function orderedRelations() {
+          var preferred = ["DERIVES_FROM", "PREREQUISITE", "DEPENDS_ON", "RELATED"];
+          return Object.keys(edgeKey).sort(function(a, b) {
+            var ai = preferred.indexOf(a);
+            var bi = preferred.indexOf(b);
+            ai = ai === -1 ? preferred.length : ai;
+            bi = bi === -1 ? preferred.length : bi;
+            return ai - bi || a.localeCompare(b);
+          });
+        }
+
+        function focusLensBackgroundState() {
+          if (graphViewIs(currentView, GraphViewMode.HIDE)) { return "graph-hidden"; }
+          if (graphViewIs(currentView, GraphViewMode.FOCUSED)) { return "hidden"; }
+          return "visible";
+        }
+
+        function focusLensBackgroundLabel() {
+          var background = focusLensBackgroundState();
+          if (background === "graph-hidden") { return "graph hidden"; }
+          if (background === "hidden") { return "background hidden"; }
+          return "background visible";
+        }
+
+        function focusLensContextLabel() {
+          return activeConceptSectionLensLabel ||
+            lensLabelForContext(activeConceptSectionContext || "neighbourhood");
+        }
+
+        function relationIsDirected(relation) {
+          return edgeKey[relation] && edgeKey[relation].directed === true;
+        }
+
+        function focusLensRelationState(relation, direction) {
+          relation = String(relation || "");
+          direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
+          if (activeConceptSectionContext === "derived-from") {
+            return {
+              state: relation === "DERIVES_FROM" && direction === "outgoing"
+                ? (derivedFromFullTreeEnabled ? "tree" : "immediate")
+                : "none",
+              direction: direction
+            };
+          }
+          if (activeConceptSectionContext === "where-used") {
+            return {
+              state: relation === "DERIVES_FROM" && direction === "incoming"
+                ? (backlinksFullTreeEnabled ? "tree" : "immediate")
+                : "none",
+              direction: direction
+            };
+          }
+          return {
+            state: "immediate",
+            direction: direction
+          };
+        }
+
+        function focusLensStateLabel(state) {
+          if (state === "tree") { return "tree"; }
+          if (state === "immediate") { return "1-hop"; }
+          return "off";
+        }
+
+        function focusLensRelationTitle(relation, lens) {
+          var state = lens.state === "tree" ? "tree" :
+            lens.state === "immediate" ? "immediate" : "not in focus";
+          var direction = lens.direction === "incoming" ? ", incoming" :
+            lens.direction === "outgoing" ? ", outgoing" :
+            lens.direction === "undirected" ? ", undirected" : "";
+          return relation + ": " + state + direction;
+        }
+
+        function focusLensRelationHtml(relation, direction) {
+          var relationLens = focusLensRelationState(relation, direction);
+          return '<div class="kg-focus-lens-relation kg-focus-lens-dir-' +
+            escapeHtml(relationLens.direction) + '" data-relation="' +
+            escapeHtml(relation) + '" data-state="' +
+            escapeHtml(relationLens.state) + '" data-direction="' +
+            escapeHtml(relationLens.direction) + '" style="--edge-color:' +
+            escapeHtml(relationColour(relation)) + '" title="' +
+            escapeHtml(focusLensRelationTitle(relation, relationLens)) + '">' +
+            '<span class="kg-focus-lens-abbrev">' +
+            escapeHtml(relationAbbreviation(relation)) + '</span>' +
+            '<span class="kg-focus-lens-node"></span>' +
+            '<span class="kg-focus-lens-edge"></span>' +
+            '<span class="kg-focus-lens-state">' +
+            escapeHtml(focusLensStateLabel(relationLens.state)) + '</span>' +
+            '</div>';
+        }
+
+        function focusLensConceptLabel(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return concept.label || conceptDisplayId(nodeId);
+        }
+
+        function abbreviatedConceptName(nodeId) {
+          var label = String(focusLensConceptLabel(nodeId) || "").trim();
+          if (!label) { return ""; }
+          if (label.length <= 15) { return label; }
+
+          var words = label.split(/[\s/_-]+/).filter(Boolean);
+          if (words.length === 0) { return label.slice(0, 14) + "."; }
+          if (words.length === 1) { return words[0].slice(0, 14) + "."; }
+
+          var first = words[0];
+          var second = words[1];
+          var abbreviated = first + " " + second.slice(0, Math.min(5, second.length)) + ".";
+          if (abbreviated.length <= 16) { return abbreviated; }
+          return words.slice(0, 2).map(function(word) {
+            return word.charAt(0).toUpperCase();
+          }).join("");
+        }
+
+        function updateFocusLensDisplay() {
+          var lensEl = document.getElementById("kg_focus_lens");
+          if (!lensEl) { return; }
+
+          var selectedId = activeNodeId && getConcept(activeNodeId) ? String(activeNodeId) : "";
+          var background = focusLensBackgroundState();
+          var lensLabel = focusLensContextLabel();
+          lensEl.setAttribute("data-selected-concept", selectedId);
+          lensEl.setAttribute("data-lens-context", activeConceptSectionContext || "neighbourhood");
+          lensEl.setAttribute("data-lens-label", lensLabel);
+          lensEl.setAttribute("data-background", background);
+
+          var html = '<div class="kg-focus-lens-head">' +
+            '<span class="kg-focus-lens-title">Focus lens</span>' +
+            '<span class="kg-focus-lens-background">' + escapeHtml(focusLensBackgroundLabel()) + '</span>' +
+            '</div>';
+          html += '<div class="kg-focus-lens-purpose">' + escapeHtml(lensLabel) + '</div>';
+
+          if (!selectedId) {
+            lensEl.setAttribute("aria-label", "Focus lens: no concept selected");
+            lensEl.innerHTML = html + '<div class="kg-focus-lens-empty">No concept selected</div>';
             return;
           }
 
-          relations.forEach(function(relation) {
-            var inputId = "kg_edge_filter_" + relation.replace(/[^a-zA-Z0-9_-]/g, "_");
-            var checked = enabledEdgeRelations[relation] !== false ? " checked" : "";
-            html += '<label class="kg-edge-filter" for="' + escapeHtml(inputId) + '">' +
-              '<input type="checkbox" id="' + escapeHtml(inputId) +
-              '" data-edge-relation="' + escapeHtml(relation) + '"' + checked + '>' +
-              '<span class="kg-edge-filter-swatch" style="background:' +
-              escapeHtml(relationColour(relation)) + '"></span>' +
-              '<span class="kg-edge-filter-label">' + escapeHtml(relation) + "</span>" +
-              "</label>";
+          var relations = orderedRelations();
+          var directedRelations = relations.filter(relationIsDirected);
+          var undirectedRelations = relations.filter(function(relation) {
+            return !relationIsDirected(relation);
           });
 
-          document.getElementById("kg_edge_filters").innerHTML = html;
+          html += '<div class="kg-focus-lens-map">';
+          html += '<div class="kg-focus-lens-directed kg-focus-lens-incoming" aria-label="Incoming relation states">';
+          directedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "incoming");
+          });
+          html += '</div>';
+          html += '<div class="kg-focus-lens-middle">';
+          html += '<div class="kg-focus-lens-center" title="' +
+            escapeHtml(focusLensConceptLabel(selectedId)) + '">' +
+            '<span class="kg-focus-lens-center-id">' + escapeHtml(conceptDisplayId(selectedId)) + '</span>' +
+            '<span class="kg-focus-lens-center-name">' +
+            escapeHtml(abbreviatedConceptName(selectedId)) + '</span></div>';
+          html += '<div class="kg-focus-lens-undirected" aria-label="Undirected relation states">';
+          undirectedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "undirected");
+          });
+          html += '</div></div>';
+          html += '<div class="kg-focus-lens-directed kg-focus-lens-outgoing" aria-label="Outgoing relation states">';
+          directedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "outgoing");
+          });
+          html += '</div></div>';
+          lensEl.setAttribute(
+            "aria-label",
+            "Focus lens: " + conceptDisplayId(selectedId) + ", " +
+              focusLensContextLabel() + ", " + focusLensBackgroundLabel()
+          );
+          lensEl.innerHTML = html;
         }
 
         function applyCurrentView() {
@@ -4501,8 +5474,11 @@
         }
 
         function activateConceptSectionContext(context) {
-          activeConceptSectionContext = context || "neighbourhood";
-          applyCurrentView();
+          var item = firstTocItemForContext(context || "neighbourhood");
+          setActiveConceptSection(item ? item.id : null, context || "neighbourhood", {
+            lensLabel: item ? item.lensLabel : lensLabelForContext(context || "neighbourhood"),
+            forceGraphUpdate: true
+          });
         }
 
         function graphContextForDetailsSection(section) {
@@ -4753,7 +5729,8 @@
           if (sourceEdges.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
-            '" class="concept-derived-from" open>';
+            '" class="concept-derived-from" data-lens-label="' +
+            escapeHtml(lensLabelForContext("derived-from")) + '" open>';
           html += "<summary>Derived from</summary>";
           html += fullTreeToggleHtml(
             "concept-derived-from-full-tree",
@@ -4794,7 +5771,8 @@
           if (groups.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
-            '" class="concept-backlinks" open>';
+            '" class="concept-backlinks" data-lens-label="' +
+            escapeHtml(lensLabelForContext("where-used")) + '" open>';
           html += "<summary>Where this is used</summary>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
@@ -4860,12 +5838,21 @@
           hideConceptPreview(true);
           if (!options.preserveSectionContext) {
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionLensLabel = "Neighbourhood";
           }
           var concept = getConcept(nodeId);
           if (!concept) {
-            document.getElementById("info_panel").innerHTML =
+            currentConceptTocItems = [];
+            setActiveConceptSection(null, "neighbourhood", {
+              lensLabel: "Neighbourhood",
+              skipGraphUpdate: true
+            });
+            var missingPanel = document.getElementById("info_panel");
+            missingPanel.innerHTML =
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
               "<p>No concept data was found for this node.</p>";
+            missingPanel.setAttribute("data-concept-id", String(nodeId));
+            missingPanel.scrollTop = 0;
             typesetInfoPanel(options);
             return;
           }
@@ -4883,6 +5870,7 @@
             studyQuestions,
             conceptReferences
           );
+          currentConceptTocItems = tocItems.slice();
 
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
@@ -4948,9 +5936,27 @@
             html += "</details>";
           }
           var panel = document.getElementById("info_panel");
+          var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           panel.innerHTML = html;
+          panel.setAttribute("data-concept-id", String(nodeId));
+          if (previousPanelConceptId !== String(nodeId) && !options.scrollToSearchMatch) {
+            panel.scrollTop = 0;
+          }
+          detailScrollSyncSuppressedUntil = Date.now() + 350;
           panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           openUserNoteId = null;
+          var initialItem = initialTocItem(tocItems);
+          if (initialItem) {
+            setActiveConceptSection(initialItem.id, initialItem.graphContext || "neighbourhood", {
+              lensLabel: initialItem.lensLabel,
+              skipGraphUpdate: true
+            });
+          } else {
+            setActiveConceptSection(null, "neighbourhood", {
+              lensLabel: "Neighbourhood",
+              skipGraphUpdate: true
+            });
+          }
           typesetInfoPanel(options);
         }
 
@@ -5104,34 +6110,11 @@
           var viewport = visualViewportRect();
           var baseAbs = intersectRects(containerRect, viewport) || containerRect;
           var margin = 28;
-          var insets = {
-            left: margin,
-            top: margin,
-            right: margin,
-            bottom: margin
-          };
-
-          visiblePanelRects().forEach(function(panel) {
-            var overlap = intersectRects(baseAbs, panel.rect);
-            if (!overlap) { return; }
-
-            var edge = panelOcclusionEdge(panel, baseAbs, overlap);
-            if (edge === "left") {
-              insets.left = Math.max(insets.left, overlap.right - baseAbs.left + margin);
-            } else if (edge === "right") {
-              insets.right = Math.max(insets.right, baseAbs.right - overlap.left + margin);
-            } else if (edge === "top") {
-              insets.top = Math.max(insets.top, overlap.bottom - baseAbs.top + margin);
-            } else if (edge === "bottom") {
-              insets.bottom = Math.max(insets.bottom, baseAbs.bottom - overlap.top + margin);
-            }
-          });
-
           var availableAbs = {
-            left: baseAbs.left + insets.left,
-            top: baseAbs.top + insets.top,
-            right: baseAbs.right - insets.right,
-            bottom: baseAbs.bottom - insets.bottom
+            left: baseAbs.left + margin,
+            top: baseAbs.top + margin,
+            right: baseAbs.right - margin,
+            bottom: baseAbs.bottom - margin
           };
           var availableWidth = availableAbs.right - availableAbs.left;
           var availableHeight = availableAbs.bottom - availableAbs.top;
@@ -5309,6 +6292,11 @@
           }, 420);
         }
 
+        function handleViewportResize() {
+          applyWorkspaceSplit();
+          scheduleViewportRefit();
+        }
+
         var panelContentRefitTimer = null;
         var panelContentRefitSettledTimer = null;
         function schedulePanelContentRefresh() {
@@ -5346,6 +6334,8 @@
           }
           if (activeNodeId !== String(nodeId)) {
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionTargetId = null;
+            activeConceptSectionLensLabel = "Neighbourhood";
           }
           if (graphViewIs(currentView, GraphViewMode.FOCUSED)) {
             activeNodeId = nodeId;
@@ -5505,6 +6495,7 @@
           network.unselectAll();
           setCurrentView(createGraphView(GraphViewMode.ALL));
           activeNodeId = null;
+          updateSelectedConceptHeader(null);
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
@@ -5520,6 +6511,7 @@
             document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           }
           setActiveConceptItem(null);
+          updateFocusLensDisplay();
         };
 
         window.kgShowAll = window.kgReset;
@@ -5555,6 +6547,7 @@
           options = options || {};
           if (!getConcept(nodeId)) { return; }
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           kgHideGraph(true);
           showConcept(nodeId, {
@@ -5596,6 +6589,9 @@
           restoreHoveredEdge();
           hideNodeTooltip();
           var nodeId = activeNodeId || (currentView && currentView.nodeId) || null;
+          if (!detailsAreVisible()) {
+            setInfoPanelVisible(true);
+          }
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           network.unselectAll();
           nodes.update(allNodes.map(function(n) {
@@ -5608,6 +6604,7 @@
             return setEdgeHidden(o, true);
           }));
           updateNodeLabelPositions();
+          updateFocusLensDisplay();
           if (!preserveStatus) {
             document.getElementById("kg_status").innerText =
               "Graph hidden. Use the concept list or detail links to browse details.";
@@ -5643,6 +6640,7 @@
           restoreHoveredEdge();
           hideNodeTooltip();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(compact ? GraphViewMode.FOCUSED : GraphViewMode.HIGHLIGHT, nodeId));
           var context = sectionGraphContext(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -5702,6 +6700,7 @@
             fitHighlightedSelection(nodeId, {animation: false});
           }
           updateNodeLabelPositions();
+          updateFocusLensDisplay();
 
           if (!options.preserveStatus) {
             document.getElementById("kg_status").innerText =
@@ -5738,6 +6737,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           radius = clampNeighbourhoodRadius(radius);
           setCurrentView(createGraphView(GraphViewMode.NEIGHBOURHOOD, nodeId, {radius: radius}));
           var keep = enabledNeighbourhoodNodes(nodeId, radius);
@@ -5776,6 +6776,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.DESCENDANTS, nodeId));
           var keep = enabledDirectedDescendants(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -5818,6 +6819,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.DERIVATION_TRACE, nodeId));
           var trace = derivationTrace(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -5924,10 +6926,10 @@
         network.on("dragEnd", updateNodeLabelPositions);
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
-        window.addEventListener("resize", scheduleViewportRefit);
-        window.addEventListener("orientationchange", scheduleViewportRefit);
+        window.addEventListener("resize", handleViewportResize);
+        window.addEventListener("orientationchange", handleViewportResize);
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", scheduleViewportRefit);
+          window.visualViewport.addEventListener("resize", handleViewportResize);
           window.visualViewport.addEventListener("scroll", scheduleViewportRefit);
         }
         graphContainer.addEventListener("mouseleave", function() {
@@ -5967,6 +6969,8 @@
           }
         });
 
+        document.addEventListener("keydown", allowBrowserHistoryShortcut, true);
+
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
         });
@@ -5978,6 +6982,15 @@
         document.getElementById("kg_graph_view_select").addEventListener("change", function(e) {
           kgSetGraphView(e.target.value);
         });
+
+        document.getElementById("kg_details_view_select").addEventListener("change", function(e) {
+          setDetailsView(e.target.value);
+        });
+
+        document.getElementById("kg_focus_lens_toggle").addEventListener("click", function() {
+          setFocusLensVisible(!focusLensVisible);
+        });
+        updateFocusLensVisibilityControls();
 
         document.getElementById("kg_splash_dismiss").addEventListener("click", dismissSplash);
 
@@ -6021,14 +7034,6 @@
             e.target.value = "";
           };
           reader.readAsText(file);
-        });
-
-        document.getElementById("kg_edge_filters").addEventListener("change", function(e) {
-          var input = e.target.closest("input[data-edge-relation]");
-          if (!input) { return; }
-
-          enabledEdgeRelations[input.getAttribute("data-edge-relation")] = input.checked;
-          applyCurrentView();
         });
 
         document.getElementById("kg_concept_list").addEventListener("click", function(e) {
@@ -6121,9 +7126,18 @@
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
-            var target = document.getElementById(tocLink.getAttribute("data-toc-target"));
+            var tocTargetId = tocLink.getAttribute("data-toc-target");
+            var target = document.getElementById(tocTargetId);
             if (target) {
-              activateConceptSectionContext(tocLink.getAttribute("data-graph-context") || "neighbourhood");
+              setActiveConceptSection(
+                tocTargetId,
+                tocLink.getAttribute("data-graph-context") || "neighbourhood",
+                {
+                  lensLabel: tocLink.getAttribute("data-lens-label") ||
+                    lensLabelForContext(tocLink.getAttribute("data-graph-context") || "neighbourhood"),
+                  forceGraphUpdate: true
+                }
+              );
               openTargetForToc(target);
               window.requestAnimationFrame(function() {
                 scrollInfoPanelTargetBelowStickyToc(target);
@@ -6172,13 +7186,6 @@
             return;
           }
 
-          var graphFocusButton = e.target.closest(".concept-graph-focus");
-          if (graphFocusButton) {
-            e.preventDefault();
-            focusConceptInGraph(graphFocusButton.getAttribute("data-concept-id"));
-            return;
-          }
-
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
 
@@ -6194,6 +7201,7 @@
             var value = String(readingModeSelect.value || "full");
             readingMode = readingModeDefinitions[value] ? value : "full";
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionLensLabel = "Neighbourhood";
             if (activeNodeId && getConcept(activeNodeId)) {
               showConcept(activeNodeId, {preserveSectionContext: true});
               applyCurrentView();
@@ -6205,17 +7213,35 @@
 
           var derivedFromFullTree = e.target.closest(".concept-derived-from-full-tree");
           if (derivedFromFullTree) {
+            var derivedSection = derivedFromFullTree.closest(".concept-derived-from");
+            var derivedSectionId = derivedSection ? derivedSection.id : null;
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
+            setActiveConceptSection(derivedSectionId, "derived-from", {
+              lensLabel: lensLabelForContext("derived-from"),
+              skipGraphUpdate: true
+            });
             refreshActiveConcept();
-            applyCurrentView();
+            setActiveConceptSection(derivedSectionId, "derived-from", {
+              lensLabel: lensLabelForContext("derived-from"),
+              forceGraphUpdate: true
+            });
             return;
           }
 
           var backlinksFullTree = e.target.closest(".concept-backlinks-full-tree");
           if (backlinksFullTree) {
+            var backlinksSection = backlinksFullTree.closest(".concept-backlinks");
+            var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
             backlinksFullTreeEnabled = backlinksFullTree.checked;
+            setActiveConceptSection(backlinksSectionId, "where-used", {
+              lensLabel: lensLabelForContext("where-used"),
+              skipGraphUpdate: true
+            });
             refreshActiveConcept();
-            applyCurrentView();
+            setActiveConceptSection(backlinksSectionId, "where-used", {
+              lensLabel: lensLabelForContext("where-used"),
+              forceGraphUpdate: true
+            });
           }
         });
 
@@ -6238,6 +7264,8 @@
           e.stopPropagation();
           adjustInfoPanelTextZoom(e.deltaY);
         }, {passive: false});
+
+        document.getElementById("info_panel").addEventListener("scroll", scheduleDetailScrollSync, {passive: true});
 
         document.getElementById("kg_controls").addEventListener("wheel", function(e) {
           if (!e.ctrlKey && !e.metaKey) { return; }
@@ -6270,7 +7298,11 @@
                 e.target.getAttribute("data-section-user-closed") === "true"
               ) {
                 e.target.removeAttribute("data-section-user-closed");
-                activateConceptSectionContext(graphContext);
+                setActiveConceptSection(e.target.id || null, graphContext, {
+                  lensLabel: e.target.getAttribute("data-lens-label") ||
+                    lensLabelForContext(graphContext),
+                  forceGraphUpdate: true
+                });
               }
             }
             if (graphContext) {
@@ -6298,13 +7330,12 @@
         });
         legend.innerHTML = html;
         buildNodeLabels();
-        buildEdgeFilters();
         buildConceptList("");
         renderNotesOverview();
         updateGraphViewControls();
-        if (shouldStartWithControlsHidden()) {
-          setControlsVisible(false);
-        }
+        updateDetailsViewControls();
+        updateFocusLensDisplay();
+        setControlsVisible(!shouldStartWithControlsHidden());
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
           return setEdgeHidden(o, !edgeRelationEnabled(e));

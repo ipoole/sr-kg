@@ -1,20 +1,34 @@
-    __TITLE_HTML__
-    <button id="kg_controls_toggle" class="kg-canvas-toggle" onclick="kgToggleControls()">Hide controls</button>
-    <button id="kg_info_toggle" class="kg-canvas-toggle" onclick="kgToggleInfoPanel()">Hide details</button>
-    <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
-      <option value="hide">Hide graph</option>
-      <option value="all" selected>All</option>
-      <option value="focused">Focussed</option>
-    </select>
+    <header id="kg_app_header" aria-label="Knowledge graph workspace controls">
+      <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
+      <div class="kg-shell-control kg-shell-graph-control">
+        <label for="kg_graph_view_select">Graph</label>
+        <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
+          <option value="hide">Hide</option>
+          <option value="all" selected>All</option>
+          <option value="focused">Focussed</option>
+        </select>
+        <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="true">Lens</button>
+      </div>
+      __TITLE_HTML__
+      <div class="kg-shell-control kg-shell-details-control">
+        <label for="kg_details_view_select">Details</label>
+        <select id="kg_details_view_select" class="kg-canvas-select" aria-label="Details view">
+          <option value="hide">Hide</option>
+          <option value="full" selected>Full</option>
+          <option value="core">Core</option>
+          <option value="maths">Maths</option>
+          <option value="context">Context</option>
+          <option value="practice">Practice</option>
+        </select>
+      </div>
+    </header>
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
+      <button id="kg_info_toggle" type="button" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <details id="kg_edge_filters_section" class="kg-fold">
-        <summary>Edge types</summary>
-        <div id="kg_edge_filters"></div>
-      </details>
+      <div id="kg_focus_lens" class="kg-focus-lens" aria-live="polite"></div>
       <details id="kg_legend_section" class="kg-fold">
         <summary>Layers</summary>
         <div id="kg_legend"></div>
@@ -54,7 +68,7 @@
       <ul>
         <li>Click graph nodes or the searchable concept list to open concept details.</li>
         <li>Switch graph views between all concepts, focussed context, or hidden graph.</li>
-        <li>Filter edge types, click edges for relationship details, and inspect relation meanings from the edge key. <span class="kg-new-badge">NEW</span></li>
+        <li>Use the focus lens, click edges for relationship details, and inspect relation meanings from the edge key. <span class="kg-new-badge">NEW</span></li>
         <li>Read block-aware concept pages with sticky contents navigation and folded warnings, misconceptions, historical notes, and derivation steps. <span class="kg-new-badge">NEW</span></li>
         <li>Preview linked concepts from inline references, with visible graph targets and paths highlighted. <span class="kg-new-badge">NEW</span></li>
         <li>Choose reading modes to focus on full, core, maths, context, or practice material. <span class="kg-new-badge">NEW</span></li>

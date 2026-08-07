@@ -105,9 +105,13 @@
         var nodeTooltip = document.createElement("div");
         var conceptPreview = document.createElement("div");
         var nodeLabelEls = {};
+        var defaultViewTitle = document.getElementById("kg_view_title")
+          ? document.getElementById("kg_view_title").textContent
+          : "";
 
         nodeLabelLayer.id = "kg_node_labels";
         graphContainer.appendChild(nodeLabelLayer);
+        buildWorkspaceShell();
         nodeTooltip.id = "kg_node_tooltip";
         nodeTooltip.setAttribute("role", "tooltip");
         document.body.appendChild(nodeTooltip);
@@ -144,9 +148,17 @@
         var infoPanelPinchState = null;
         var readingMode = "full";
         var activeConceptSectionContext = "neighbourhood";
+        var activeConceptSectionTargetId = null;
+        var activeConceptSectionLensLabel = "Neighbourhood";
+        var currentConceptTocItems = [];
+        var detailScrollSyncTimer = null;
+        var detailScrollSyncSuppressedUntil = 0;
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var pendingGraphSectionContext = null;
+        var focusLensVisible = true;
+        var workspaceSplitPercent = 50;
+        var workspaceSplitterPointerId = null;
 
         /*
          * Custom node rendering
@@ -440,6 +452,10 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+        }
+
+        function cssAttributeValueEscape(s) {
+          return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
         }
 
         function renderSimpleConceptText(s) {
@@ -1267,13 +1283,204 @@
           }
         }
 
+        function buildWorkspaceShell() {
+          if (document.getElementById("kg_workspace")) { return; }
+          var panel = document.getElementById("info_panel");
+          var focusLens = document.getElementById("kg_focus_lens");
+          var originalGraphParent = graphContainer.parentElement;
+          var shell = document.createElement("main");
+          var graphPane = document.createElement("section");
+          var graphSurface = document.createElement("div");
+          var splitter = document.createElement("div");
+          var detailsPane = document.createElement("section");
+
+          shell.id = "kg_workspace";
+          shell.setAttribute("aria-label", "Knowledge graph and concept details");
+          graphPane.id = "kg_graph_pane";
+          graphPane.className = "kg-workspace-pane";
+          graphPane.setAttribute("aria-label", "Graph view");
+          graphSurface.id = "kg_graph_surface";
+          splitter.id = "kg_pane_splitter";
+          splitter.setAttribute("role", "separator");
+          splitter.setAttribute("aria-label", "Resize graph and details panes");
+          splitter.setAttribute("aria-orientation", "vertical");
+          splitter.setAttribute("aria-valuemin", "28");
+          splitter.setAttribute("aria-valuemax", "72");
+          splitter.setAttribute("tabindex", "0");
+          detailsPane.id = "kg_details_pane";
+          detailsPane.className = "kg-workspace-pane";
+          detailsPane.setAttribute("aria-label", "Details view");
+
+          originalGraphParent.parentNode.insertBefore(shell, originalGraphParent);
+          shell.appendChild(graphPane);
+          shell.appendChild(splitter);
+          shell.appendChild(detailsPane);
+          graphPane.appendChild(graphSurface);
+          graphSurface.appendChild(graphContainer);
+          if (focusLens) {
+            graphPane.appendChild(focusLens);
+          }
+          detailsPane.appendChild(panel);
+          if (
+            originalGraphParent &&
+            originalGraphParent !== graphContainer &&
+            originalGraphParent.parentNode &&
+            originalGraphParent.children.length === 0
+          ) {
+            originalGraphParent.parentNode.removeChild(originalGraphParent);
+          }
+          setupWorkspaceSplitter(splitter);
+          applyWorkspaceSplit();
+        }
+
+        function clampWorkspaceSplitPercent(value) {
+          var numeric = Number(value);
+          if (!Number.isFinite(numeric)) { return 50; }
+          return Math.max(28, Math.min(72, numeric));
+        }
+
+        function applyWorkspaceSplit(value) {
+          if (Number.isFinite(Number(value))) {
+            workspaceSplitPercent = clampWorkspaceSplitPercent(value);
+          } else if (!Number.isFinite(Number(workspaceSplitPercent))) {
+            workspaceSplitPercent = 50;
+          }
+          var splitWidth = workspaceSplitPercent.toFixed(2) + "%";
+          var shell = document.getElementById("kg_workspace");
+          var splitter = document.getElementById("kg_pane_splitter");
+          if (shell) {
+            var rect = shell.getBoundingClientRect();
+            var splitterWidth = splitter ? splitter.getBoundingClientRect().width : 0;
+            var availableWidth = rect.width - splitterWidth;
+            if (availableWidth > 0) {
+              splitWidth = (availableWidth * workspaceSplitPercent / 100).toFixed(2) + "px";
+            }
+          }
+          document.body.style.setProperty(
+            "--kg-graph-pane-width",
+            splitWidth
+          );
+          if (splitter) {
+            splitter.setAttribute("aria-valuenow", String(Math.round(workspaceSplitPercent)));
+          }
+        }
+
+        function setWorkspaceSplitFromClientX(clientX) {
+          var shell = document.getElementById("kg_workspace");
+          if (!shell) { return; }
+          var rect = shell.getBoundingClientRect();
+          if (!rect.width) { return; }
+          applyWorkspaceSplit(((clientX - rect.left) / rect.width) * 100);
+          scheduleViewportRefit();
+        }
+
+        function setupWorkspaceSplitter(splitter) {
+          if (!splitter) { return; }
+          splitter.addEventListener("pointerdown", function(e) {
+            if (window.matchMedia("(max-width: 850px)").matches) { return; }
+            e.preventDefault();
+            workspaceSplitterPointerId = e.pointerId;
+            splitter.setPointerCapture(e.pointerId);
+            document.body.classList.add("kg-splitter-dragging");
+            setWorkspaceSplitFromClientX(e.clientX);
+          });
+          splitter.addEventListener("pointermove", function(e) {
+            if (workspaceSplitterPointerId !== e.pointerId) { return; }
+            e.preventDefault();
+            setWorkspaceSplitFromClientX(e.clientX);
+          });
+          function stopDragging(e) {
+            if (workspaceSplitterPointerId !== e.pointerId) { return; }
+            workspaceSplitterPointerId = null;
+            document.body.classList.remove("kg-splitter-dragging");
+            if (splitter.hasPointerCapture(e.pointerId)) {
+              splitter.releasePointerCapture(e.pointerId);
+            }
+            scheduleViewportRefit();
+          }
+          splitter.addEventListener("pointerup", stopDragging);
+          splitter.addEventListener("pointercancel", stopDragging);
+          splitter.addEventListener("keydown", function(e) {
+            if (e.altKey || e.metaKey || e.ctrlKey) { return; }
+            if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              applyWorkspaceSplit(workspaceSplitPercent - 4);
+              scheduleViewportRefit();
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              applyWorkspaceSplit(workspaceSplitPercent + 4);
+              scheduleViewportRefit();
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              applyWorkspaceSplit(28);
+              scheduleViewportRefit();
+            } else if (e.key === "End") {
+              e.preventDefault();
+              applyWorkspaceSplit(72);
+              scheduleViewportRefit();
+            }
+          });
+        }
+
+        function detailsAreVisible() {
+          var panel = document.getElementById("info_panel");
+          return Boolean(panel && !panel.classList.contains("kg-hidden"));
+        }
+
+        function updateSelectedConceptHeader(nodeId) {
+          var title = document.getElementById("kg_view_title");
+          if (!title) { return; }
+          if (nodeId && getConcept(nodeId)) {
+            title.textContent = conceptDisplayId(nodeId) + " " + (getConcept(nodeId).label || "");
+          } else {
+            title.textContent = defaultViewTitle;
+          }
+        }
+
+        function updateDetailsViewControls() {
+          var select = document.getElementById("kg_details_view_select");
+          if (!select) { return; }
+          select.value = detailsAreVisible() ? readingMode : "hide";
+        }
+
+        function setDetailsView(value) {
+          value = String(value || "full");
+          if (value === "hide") {
+            setInfoPanelVisible(false);
+            refitCurrentViewForPanels(true);
+            return;
+          }
+
+          readingMode = readingModeDefinitions[value] ? value : "full";
+          setInfoPanelVisible(true);
+          activeConceptSectionContext = "neighbourhood";
+          activeConceptSectionLensLabel = "Neighbourhood";
+          if (activeNodeId && getConcept(activeNodeId)) {
+            showConcept(activeNodeId, {preserveSectionContext: true});
+            applyCurrentView();
+          }
+          updateDetailsViewControls();
+          document.getElementById("kg_status").innerText =
+            "Details mode: " + currentReadingModeDefinition().label + ".";
+          refitCurrentViewForPanels(true);
+        }
+
         function setInfoPanelVisible(visible) {
           var panel = document.getElementById("info_panel");
           var button = document.getElementById("kg_info_toggle");
+          if (!visible && graphViewIs(currentView, GraphViewMode.HIDE)) {
+            visible = true;
+            document.getElementById("kg_status").innerText =
+              "Details remain visible while the graph is hidden.";
+          }
           panel.classList.toggle("kg-hidden", !visible);
+          document.body.classList.toggle("kg-details-hidden", !visible);
           if (button) {
             button.innerText = visible ? "Hide details" : "Show details";
           }
+          updateDetailsViewControls();
+          updateFocusLensDisplay();
+          return visible;
         }
 
         function setControlsVisible(visible) {
@@ -1281,7 +1488,7 @@
           var button = document.getElementById("kg_controls_toggle");
           panel.classList.toggle("kg-hidden", !visible);
           if (button) {
-            button.innerText = visible ? "Hide controls" : "Show controls";
+            button.innerText = visible ? "Hide tools" : "Tools";
           }
         }
 
@@ -1418,6 +1625,21 @@
           return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function updateFocusLensVisibilityControls() {
+          document.body.classList.toggle("kg-focus-lens-hidden", !focusLensVisible);
+          var button = document.getElementById("kg_focus_lens_toggle");
+          if (!button) { return; }
+          button.setAttribute("aria-pressed", focusLensVisible ? "true" : "false");
+          button.textContent = focusLensVisible ? "Lens" : "Show lens";
+          button.title = focusLensVisible ? "Hide focus lens" : "Show focus lens";
+        }
+
+        function setFocusLensVisible(visible) {
+          focusLensVisible = Boolean(visible);
+          updateFocusLensVisibilityControls();
+          updateFocusLensDisplay();
+        }
+
         /* Graph view state and compact subgraph layout. */
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
@@ -1478,6 +1700,27 @@
             return;
           }
           window.history.pushState(state, "", hash);
+        }
+
+        function browserHistoryShortcutDirection(e) {
+          if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) { return 0; }
+          if (e.key === "ArrowLeft") { return -1; }
+          if (e.key === "ArrowRight") { return 1; }
+          return 0;
+        }
+
+        function allowBrowserHistoryShortcut(e) {
+          var direction = browserHistoryShortcutDirection(e);
+          if (!direction || e.defaultPrevented) { return; }
+          var beforeUrl = window.location.href;
+          window.setTimeout(function() {
+            if (window.location.href !== beforeUrl) { return; }
+            if (direction < 0) {
+              window.history.back();
+            } else {
+              window.history.forward();
+            }
+          }, 0);
         }
 
         function conceptIdParts(id) {
@@ -1884,7 +2127,8 @@
                 id: contentAnchorId(conceptId, title),
                 title: title,
                 kind: block.kind,
-                graphContext: "neighbourhood"
+                graphContext: "neighbourhood",
+                lensLabel: "Neighbourhood"
               });
             });
           } else {
@@ -1893,7 +2137,8 @@
               items.push({
                 id: contentAnchorId(conceptId, section.title),
                 title: section.title,
-                graphContext: "neighbourhood"
+                graphContext: "neighbourhood",
+                lensLabel: "Neighbourhood"
               });
             });
           }
@@ -1902,28 +2147,32 @@
             items.push({
               id: contentAnchorId(conceptId, "Derived From"),
               title: "Derived from",
-              graphContext: "derived-from"
+              graphContext: "derived-from",
+              lensLabel: "Derivation step"
             });
           }
           if (backlinkGroupsFor(conceptId).length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "Where This Is Used"),
               title: "Where this is used",
-              graphContext: "where-used"
+              graphContext: "where-used",
+              lensLabel: "Immediate usage"
             });
           }
           if (studyQuestions.length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "Study Questions"),
               title: "Study Questions",
-              graphContext: "neighbourhood"
+              graphContext: "neighbourhood",
+              lensLabel: "Neighbourhood"
             });
           }
           if (conceptReferences.length > 0) {
             items.push({
               id: contentAnchorId(conceptId, "References"),
               title: "References",
-              graphContext: "neighbourhood"
+              graphContext: "neighbourhood",
+              lensLabel: "Neighbourhood"
             });
           }
           return items;
@@ -1940,7 +2189,8 @@
             html += '<a href="#' + escapeHtml(item.id) +
               '" class="concept-toc-link' + escapeHtml(kindClass) + '" data-toc-target="' +
               escapeHtml(item.id) + '" data-graph-context="' +
-              escapeHtml(item.graphContext || "neighbourhood") + '">' +
+              escapeHtml(item.graphContext || "neighbourhood") + '" data-lens-label="' +
+              escapeHtml(item.lensLabel || "Neighbourhood") + '">' +
               (item.kind ? '<span class="concept-toc-kind-dot" aria-hidden="true"></span>' : "") +
               renderConceptText(item.title) +
               "</a>";
@@ -1965,17 +2215,7 @@
           html += '<h2 class="concept-title">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
-          html += '<div class="concept-title-actions">';
-          html += '<label class="concept-reading-mode">' +
-            '<span>Reading</span>' +
-            '<select class="concept-reading-mode-select" aria-label="Reading mode">' +
-            renderReadingModeOptions() +
-            "</select></label>";
-          html += '<button type="button" class="concept-graph-focus" data-concept-id="' +
-            escapeHtml(nodeId) +
-            '" title="Focus this concept in the graph" aria-label="Focus this concept in the graph">' +
-            "Graph</button>";
-          html += "</div></div>";
+          html += "</div>";
           html += renderConceptToc(tocItems);
           html += "</div>";
           return html;
@@ -2013,6 +2253,120 @@
             top: Math.max(0, targetTop - stickyOffset),
             behavior: "smooth"
           });
+        }
+
+        function updateConceptTocActive(targetId) {
+          var panel = document.getElementById("info_panel");
+          if (!panel) { return; }
+          panel.querySelectorAll(".concept-toc-link.active").forEach(function(link) {
+            link.classList.remove("active");
+            link.removeAttribute("aria-current");
+          });
+          if (!targetId) { return; }
+          var link = panel.querySelector(
+            '.concept-toc-link[data-toc-target="' + cssAttributeValueEscape(targetId) + '"]'
+          );
+          if (!link) { return; }
+          link.classList.add("active");
+          link.setAttribute("aria-current", "true");
+        }
+
+        function lensLabelForContext(context) {
+          if (context === "derived-from") {
+            return derivedFromFullTreeEnabled ? "Derivation tree" : "Derivation step";
+          }
+          if (context === "where-used") {
+            return backlinksFullTreeEnabled ? "Usage tree" : "Immediate usage";
+          }
+          return "Neighbourhood";
+        }
+
+        function setActiveConceptSection(targetId, context, options) {
+          options = options || {};
+          var nextTargetId = targetId ? String(targetId) : null;
+          var nextContext = context || "neighbourhood";
+          var nextLensLabel = options.lensLabel || lensLabelForContext(nextContext);
+          var contextChanged = activeConceptSectionContext !== nextContext;
+          var targetChanged = activeConceptSectionTargetId !== nextTargetId;
+          var labelChanged = activeConceptSectionLensLabel !== nextLensLabel;
+          activeConceptSectionTargetId = nextTargetId;
+          activeConceptSectionContext = nextContext;
+          activeConceptSectionLensLabel = nextLensLabel;
+          if (targetChanged) {
+            updateConceptTocActive(nextTargetId);
+          }
+          if (!options.skipGraphUpdate && (contextChanged || options.forceGraphUpdate)) {
+            applyCurrentView();
+          }
+          if (targetChanged || contextChanged || labelChanged || options.forceGraphUpdate) {
+            updateFocusLensDisplay();
+          }
+        }
+
+        function firstTocItemForContext(context) {
+          return currentConceptTocItems.find(function(item) {
+            return (item.graphContext || "neighbourhood") === context;
+          }) || null;
+        }
+
+        function initialTocItem(tocItems) {
+          if (!Array.isArray(tocItems) || tocItems.length === 0) { return null; }
+          if (activeConceptSectionTargetId) {
+            var previous = tocItems.find(function(item) {
+              return item.id === activeConceptSectionTargetId;
+            });
+            if (previous) { return previous; }
+          }
+          return firstTocItemForContext(activeConceptSectionContext) || tocItems[0];
+        }
+
+        function activeTocItemFromScroll() {
+          var panel = document.getElementById("info_panel");
+          if (!panel || currentConceptTocItems.length === 0) { return null; }
+          var panelRect = panel.getBoundingClientRect();
+          var stickyHeader = panel.querySelector(".concept-sticky-header");
+          var stickyBottom = stickyHeader
+            ? stickyHeader.getBoundingClientRect().bottom
+            : panelRect.top;
+          var cursorY = stickyBottom + 12;
+          var best = null;
+          var bestTop = -Infinity;
+          var firstVisible = null;
+
+          currentConceptTocItems.forEach(function(item) {
+            var target = document.getElementById(item.id);
+            if (!target) { return; }
+            var rect = target.getBoundingClientRect();
+            if (rect.bottom < panelRect.top || rect.top > panelRect.bottom) { return; }
+            if (!firstVisible || rect.top < firstVisible.top) {
+              firstVisible = {item: item, top: rect.top};
+            }
+            if (rect.top <= cursorY && rect.top >= bestTop) {
+              best = item;
+              bestTop = rect.top;
+            }
+          });
+
+          return best || (firstVisible && firstVisible.item) || null;
+        }
+
+        function updateActiveSectionFromScroll() {
+          var item = activeTocItemFromScroll();
+          if (!item) { return; }
+          setActiveConceptSection(item.id, item.graphContext || "neighbourhood", {
+            lensLabel: item.lensLabel
+          });
+        }
+
+        function scheduleDetailScrollSync() {
+          if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
+          if (detailScrollSyncTimer !== null) {
+            clearTimeout(detailScrollSyncTimer);
+          }
+          detailScrollSyncTimer = setTimeout(function() {
+            detailScrollSyncTimer = null;
+            updateActiveSectionFromScroll();
+          }, 80);
         }
 
         function renderConceptContent(conceptId, concept) {
@@ -2323,8 +2677,7 @@
         }
 
         function edgeRelationEnabled(edge) {
-          var relation = edgeRelation(edge);
-          return enabledEdgeRelations[relation] !== false;
+          return true;
         }
 
         function edgeRelationDirected(edge) {
@@ -2643,29 +2996,198 @@
           return item.colour || "#999999";
         }
 
-        function buildEdgeFilters() {
-          var relations = Object.keys(edgeKey).sort();
-          var html = "";
+        function relationAbbreviation(relation) {
+          var abbreviations = {
+            DERIVES_FROM: "DF",
+            PREREQUISITE: "PR",
+            DEPENDS_ON: "DO",
+            RELATED: "R"
+          };
+          relation = String(relation || "");
+          if (abbreviations[relation]) { return abbreviations[relation]; }
 
-          if (relations.length === 0) {
-            html += '<div style="color:#555;">No edge key loaded.</div>';
-            document.getElementById("kg_edge_filters").innerHTML = html;
+          var parts = relation.split(/[^A-Za-z0-9]+/).filter(Boolean);
+          if (parts.length === 0) { return "?"; }
+          if (parts.length === 1) {
+            return parts[0].slice(0, 2).toUpperCase();
+          }
+          return parts.slice(0, 2).map(function(part) {
+            return part.charAt(0).toUpperCase();
+          }).join("");
+        }
+
+        function orderedRelations() {
+          var preferred = ["DERIVES_FROM", "PREREQUISITE", "DEPENDS_ON", "RELATED"];
+          return Object.keys(edgeKey).sort(function(a, b) {
+            var ai = preferred.indexOf(a);
+            var bi = preferred.indexOf(b);
+            ai = ai === -1 ? preferred.length : ai;
+            bi = bi === -1 ? preferred.length : bi;
+            return ai - bi || a.localeCompare(b);
+          });
+        }
+
+        function focusLensBackgroundState() {
+          if (graphViewIs(currentView, GraphViewMode.HIDE)) { return "graph-hidden"; }
+          if (graphViewIs(currentView, GraphViewMode.FOCUSED)) { return "hidden"; }
+          return "visible";
+        }
+
+        function focusLensBackgroundLabel() {
+          var background = focusLensBackgroundState();
+          if (background === "graph-hidden") { return "graph hidden"; }
+          if (background === "hidden") { return "background hidden"; }
+          return "background visible";
+        }
+
+        function focusLensContextLabel() {
+          return activeConceptSectionLensLabel ||
+            lensLabelForContext(activeConceptSectionContext || "neighbourhood");
+        }
+
+        function relationIsDirected(relation) {
+          return edgeKey[relation] && edgeKey[relation].directed === true;
+        }
+
+        function focusLensRelationState(relation, direction) {
+          relation = String(relation || "");
+          direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
+          if (activeConceptSectionContext === "derived-from") {
+            return {
+              state: relation === "DERIVES_FROM" && direction === "outgoing"
+                ? (derivedFromFullTreeEnabled ? "tree" : "immediate")
+                : "none",
+              direction: direction
+            };
+          }
+          if (activeConceptSectionContext === "where-used") {
+            return {
+              state: relation === "DERIVES_FROM" && direction === "incoming"
+                ? (backlinksFullTreeEnabled ? "tree" : "immediate")
+                : "none",
+              direction: direction
+            };
+          }
+          return {
+            state: "immediate",
+            direction: direction
+          };
+        }
+
+        function focusLensStateLabel(state) {
+          if (state === "tree") { return "tree"; }
+          if (state === "immediate") { return "1-hop"; }
+          return "off";
+        }
+
+        function focusLensRelationTitle(relation, lens) {
+          var state = lens.state === "tree" ? "tree" :
+            lens.state === "immediate" ? "immediate" : "not in focus";
+          var direction = lens.direction === "incoming" ? ", incoming" :
+            lens.direction === "outgoing" ? ", outgoing" :
+            lens.direction === "undirected" ? ", undirected" : "";
+          return relation + ": " + state + direction;
+        }
+
+        function focusLensRelationHtml(relation, direction) {
+          var relationLens = focusLensRelationState(relation, direction);
+          return '<div class="kg-focus-lens-relation kg-focus-lens-dir-' +
+            escapeHtml(relationLens.direction) + '" data-relation="' +
+            escapeHtml(relation) + '" data-state="' +
+            escapeHtml(relationLens.state) + '" data-direction="' +
+            escapeHtml(relationLens.direction) + '" style="--edge-color:' +
+            escapeHtml(relationColour(relation)) + '" title="' +
+            escapeHtml(focusLensRelationTitle(relation, relationLens)) + '">' +
+            '<span class="kg-focus-lens-abbrev">' +
+            escapeHtml(relationAbbreviation(relation)) + '</span>' +
+            '<span class="kg-focus-lens-node"></span>' +
+            '<span class="kg-focus-lens-edge"></span>' +
+            '<span class="kg-focus-lens-state">' +
+            escapeHtml(focusLensStateLabel(relationLens.state)) + '</span>' +
+            '</div>';
+        }
+
+        function focusLensConceptLabel(nodeId) {
+          var concept = getConcept(nodeId) || {};
+          return concept.label || conceptDisplayId(nodeId);
+        }
+
+        function abbreviatedConceptName(nodeId) {
+          var label = String(focusLensConceptLabel(nodeId) || "").trim();
+          if (!label) { return ""; }
+          if (label.length <= 15) { return label; }
+
+          var words = label.split(/[\s/_-]+/).filter(Boolean);
+          if (words.length === 0) { return label.slice(0, 14) + "."; }
+          if (words.length === 1) { return words[0].slice(0, 14) + "."; }
+
+          var first = words[0];
+          var second = words[1];
+          var abbreviated = first + " " + second.slice(0, Math.min(5, second.length)) + ".";
+          if (abbreviated.length <= 16) { return abbreviated; }
+          return words.slice(0, 2).map(function(word) {
+            return word.charAt(0).toUpperCase();
+          }).join("");
+        }
+
+        function updateFocusLensDisplay() {
+          var lensEl = document.getElementById("kg_focus_lens");
+          if (!lensEl) { return; }
+
+          var selectedId = activeNodeId && getConcept(activeNodeId) ? String(activeNodeId) : "";
+          var background = focusLensBackgroundState();
+          var lensLabel = focusLensContextLabel();
+          lensEl.setAttribute("data-selected-concept", selectedId);
+          lensEl.setAttribute("data-lens-context", activeConceptSectionContext || "neighbourhood");
+          lensEl.setAttribute("data-lens-label", lensLabel);
+          lensEl.setAttribute("data-background", background);
+
+          var html = '<div class="kg-focus-lens-head">' +
+            '<span class="kg-focus-lens-title">Focus lens</span>' +
+            '<span class="kg-focus-lens-background">' + escapeHtml(focusLensBackgroundLabel()) + '</span>' +
+            '</div>';
+          html += '<div class="kg-focus-lens-purpose">' + escapeHtml(lensLabel) + '</div>';
+
+          if (!selectedId) {
+            lensEl.setAttribute("aria-label", "Focus lens: no concept selected");
+            lensEl.innerHTML = html + '<div class="kg-focus-lens-empty">No concept selected</div>';
             return;
           }
 
-          relations.forEach(function(relation) {
-            var inputId = "kg_edge_filter_" + relation.replace(/[^a-zA-Z0-9_-]/g, "_");
-            var checked = enabledEdgeRelations[relation] !== false ? " checked" : "";
-            html += '<label class="kg-edge-filter" for="' + escapeHtml(inputId) + '">' +
-              '<input type="checkbox" id="' + escapeHtml(inputId) +
-              '" data-edge-relation="' + escapeHtml(relation) + '"' + checked + '>' +
-              '<span class="kg-edge-filter-swatch" style="background:' +
-              escapeHtml(relationColour(relation)) + '"></span>' +
-              '<span class="kg-edge-filter-label">' + escapeHtml(relation) + "</span>" +
-              "</label>";
+          var relations = orderedRelations();
+          var directedRelations = relations.filter(relationIsDirected);
+          var undirectedRelations = relations.filter(function(relation) {
+            return !relationIsDirected(relation);
           });
 
-          document.getElementById("kg_edge_filters").innerHTML = html;
+          html += '<div class="kg-focus-lens-map">';
+          html += '<div class="kg-focus-lens-directed kg-focus-lens-incoming" aria-label="Incoming relation states">';
+          directedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "incoming");
+          });
+          html += '</div>';
+          html += '<div class="kg-focus-lens-middle">';
+          html += '<div class="kg-focus-lens-center" title="' +
+            escapeHtml(focusLensConceptLabel(selectedId)) + '">' +
+            '<span class="kg-focus-lens-center-id">' + escapeHtml(conceptDisplayId(selectedId)) + '</span>' +
+            '<span class="kg-focus-lens-center-name">' +
+            escapeHtml(abbreviatedConceptName(selectedId)) + '</span></div>';
+          html += '<div class="kg-focus-lens-undirected" aria-label="Undirected relation states">';
+          undirectedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "undirected");
+          });
+          html += '</div></div>';
+          html += '<div class="kg-focus-lens-directed kg-focus-lens-outgoing" aria-label="Outgoing relation states">';
+          directedRelations.forEach(function(relation) {
+            html += focusLensRelationHtml(relation, "outgoing");
+          });
+          html += '</div></div>';
+          lensEl.setAttribute(
+            "aria-label",
+            "Focus lens: " + conceptDisplayId(selectedId) + ", " +
+              focusLensContextLabel() + ", " + focusLensBackgroundLabel()
+          );
+          lensEl.innerHTML = html;
         }
 
         function applyCurrentView() {
@@ -2697,8 +3219,11 @@
         }
 
         function activateConceptSectionContext(context) {
-          activeConceptSectionContext = context || "neighbourhood";
-          applyCurrentView();
+          var item = firstTocItemForContext(context || "neighbourhood");
+          setActiveConceptSection(item ? item.id : null, context || "neighbourhood", {
+            lensLabel: item ? item.lensLabel : lensLabelForContext(context || "neighbourhood"),
+            forceGraphUpdate: true
+          });
         }
 
         function graphContextForDetailsSection(section) {
@@ -2949,7 +3474,8 @@
           if (sourceEdges.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
-            '" class="concept-derived-from" open>';
+            '" class="concept-derived-from" data-lens-label="' +
+            escapeHtml(lensLabelForContext("derived-from")) + '" open>';
           html += "<summary>Derived from</summary>";
           html += fullTreeToggleHtml(
             "concept-derived-from-full-tree",
@@ -2990,7 +3516,8 @@
           if (groups.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
-            '" class="concept-backlinks" open>';
+            '" class="concept-backlinks" data-lens-label="' +
+            escapeHtml(lensLabelForContext("where-used")) + '" open>';
           html += "<summary>Where this is used</summary>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
@@ -3056,12 +3583,21 @@
           hideConceptPreview(true);
           if (!options.preserveSectionContext) {
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionLensLabel = "Neighbourhood";
           }
           var concept = getConcept(nodeId);
           if (!concept) {
-            document.getElementById("info_panel").innerHTML =
+            currentConceptTocItems = [];
+            setActiveConceptSection(null, "neighbourhood", {
+              lensLabel: "Neighbourhood",
+              skipGraphUpdate: true
+            });
+            var missingPanel = document.getElementById("info_panel");
+            missingPanel.innerHTML =
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
               "<p>No concept data was found for this node.</p>";
+            missingPanel.setAttribute("data-concept-id", String(nodeId));
+            missingPanel.scrollTop = 0;
             typesetInfoPanel(options);
             return;
           }
@@ -3079,6 +3615,7 @@
             studyQuestions,
             conceptReferences
           );
+          currentConceptTocItems = tocItems.slice();
 
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
@@ -3144,9 +3681,27 @@
             html += "</details>";
           }
           var panel = document.getElementById("info_panel");
+          var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           panel.innerHTML = html;
+          panel.setAttribute("data-concept-id", String(nodeId));
+          if (previousPanelConceptId !== String(nodeId) && !options.scrollToSearchMatch) {
+            panel.scrollTop = 0;
+          }
+          detailScrollSyncSuppressedUntil = Date.now() + 350;
           panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           openUserNoteId = null;
+          var initialItem = initialTocItem(tocItems);
+          if (initialItem) {
+            setActiveConceptSection(initialItem.id, initialItem.graphContext || "neighbourhood", {
+              lensLabel: initialItem.lensLabel,
+              skipGraphUpdate: true
+            });
+          } else {
+            setActiveConceptSection(null, "neighbourhood", {
+              lensLabel: "Neighbourhood",
+              skipGraphUpdate: true
+            });
+          }
           typesetInfoPanel(options);
         }
 
@@ -3300,34 +3855,11 @@
           var viewport = visualViewportRect();
           var baseAbs = intersectRects(containerRect, viewport) || containerRect;
           var margin = 28;
-          var insets = {
-            left: margin,
-            top: margin,
-            right: margin,
-            bottom: margin
-          };
-
-          visiblePanelRects().forEach(function(panel) {
-            var overlap = intersectRects(baseAbs, panel.rect);
-            if (!overlap) { return; }
-
-            var edge = panelOcclusionEdge(panel, baseAbs, overlap);
-            if (edge === "left") {
-              insets.left = Math.max(insets.left, overlap.right - baseAbs.left + margin);
-            } else if (edge === "right") {
-              insets.right = Math.max(insets.right, baseAbs.right - overlap.left + margin);
-            } else if (edge === "top") {
-              insets.top = Math.max(insets.top, overlap.bottom - baseAbs.top + margin);
-            } else if (edge === "bottom") {
-              insets.bottom = Math.max(insets.bottom, baseAbs.bottom - overlap.top + margin);
-            }
-          });
-
           var availableAbs = {
-            left: baseAbs.left + insets.left,
-            top: baseAbs.top + insets.top,
-            right: baseAbs.right - insets.right,
-            bottom: baseAbs.bottom - insets.bottom
+            left: baseAbs.left + margin,
+            top: baseAbs.top + margin,
+            right: baseAbs.right - margin,
+            bottom: baseAbs.bottom - margin
           };
           var availableWidth = availableAbs.right - availableAbs.left;
           var availableHeight = availableAbs.bottom - availableAbs.top;
@@ -3505,6 +4037,11 @@
           }, 420);
         }
 
+        function handleViewportResize() {
+          applyWorkspaceSplit();
+          scheduleViewportRefit();
+        }
+
         var panelContentRefitTimer = null;
         var panelContentRefitSettledTimer = null;
         function schedulePanelContentRefresh() {
@@ -3542,6 +4079,8 @@
           }
           if (activeNodeId !== String(nodeId)) {
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionTargetId = null;
+            activeConceptSectionLensLabel = "Neighbourhood";
           }
           if (graphViewIs(currentView, GraphViewMode.FOCUSED)) {
             activeNodeId = nodeId;
@@ -3701,6 +4240,7 @@
           network.unselectAll();
           setCurrentView(createGraphView(GraphViewMode.ALL));
           activeNodeId = null;
+          updateSelectedConceptHeader(null);
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
             o.hidden = false;
@@ -3716,6 +4256,7 @@
             document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           }
           setActiveConceptItem(null);
+          updateFocusLensDisplay();
         };
 
         window.kgShowAll = window.kgReset;
@@ -3751,6 +4292,7 @@
           options = options || {};
           if (!getConcept(nodeId)) { return; }
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           kgHideGraph(true);
           showConcept(nodeId, {
@@ -3792,6 +4334,9 @@
           restoreHoveredEdge();
           hideNodeTooltip();
           var nodeId = activeNodeId || (currentView && currentView.nodeId) || null;
+          if (!detailsAreVisible()) {
+            setInfoPanelVisible(true);
+          }
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           network.unselectAll();
           nodes.update(allNodes.map(function(n) {
@@ -3804,6 +4349,7 @@
             return setEdgeHidden(o, true);
           }));
           updateNodeLabelPositions();
+          updateFocusLensDisplay();
           if (!preserveStatus) {
             document.getElementById("kg_status").innerText =
               "Graph hidden. Use the concept list or detail links to browse details.";
@@ -3839,6 +4385,7 @@
           restoreHoveredEdge();
           hideNodeTooltip();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(compact ? GraphViewMode.FOCUSED : GraphViewMode.HIGHLIGHT, nodeId));
           var context = sectionGraphContext(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -3898,6 +4445,7 @@
             fitHighlightedSelection(nodeId, {animation: false});
           }
           updateNodeLabelPositions();
+          updateFocusLensDisplay();
 
           if (!options.preserveStatus) {
             document.getElementById("kg_status").innerText =
@@ -3934,6 +4482,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           radius = clampNeighbourhoodRadius(radius);
           setCurrentView(createGraphView(GraphViewMode.NEIGHBOURHOOD, nodeId, {radius: radius}));
           var keep = enabledNeighbourhoodNodes(nodeId, radius);
@@ -3972,6 +4521,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.DESCENDANTS, nodeId));
           var keep = enabledDirectedDescendants(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -4014,6 +4564,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           activeNodeId = nodeId;
+          updateSelectedConceptHeader(nodeId);
           setCurrentView(createGraphView(GraphViewMode.DERIVATION_TRACE, nodeId));
           var trace = derivationTrace(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -4120,10 +4671,10 @@
         network.on("dragEnd", updateNodeLabelPositions);
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
-        window.addEventListener("resize", scheduleViewportRefit);
-        window.addEventListener("orientationchange", scheduleViewportRefit);
+        window.addEventListener("resize", handleViewportResize);
+        window.addEventListener("orientationchange", handleViewportResize);
         if (window.visualViewport) {
-          window.visualViewport.addEventListener("resize", scheduleViewportRefit);
+          window.visualViewport.addEventListener("resize", handleViewportResize);
           window.visualViewport.addEventListener("scroll", scheduleViewportRefit);
         }
         graphContainer.addEventListener("mouseleave", function() {
@@ -4163,6 +4714,8 @@
           }
         });
 
+        document.addEventListener("keydown", allowBrowserHistoryShortcut, true);
+
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
         });
@@ -4174,6 +4727,15 @@
         document.getElementById("kg_graph_view_select").addEventListener("change", function(e) {
           kgSetGraphView(e.target.value);
         });
+
+        document.getElementById("kg_details_view_select").addEventListener("change", function(e) {
+          setDetailsView(e.target.value);
+        });
+
+        document.getElementById("kg_focus_lens_toggle").addEventListener("click", function() {
+          setFocusLensVisible(!focusLensVisible);
+        });
+        updateFocusLensVisibilityControls();
 
         document.getElementById("kg_splash_dismiss").addEventListener("click", dismissSplash);
 
@@ -4217,14 +4779,6 @@
             e.target.value = "";
           };
           reader.readAsText(file);
-        });
-
-        document.getElementById("kg_edge_filters").addEventListener("change", function(e) {
-          var input = e.target.closest("input[data-edge-relation]");
-          if (!input) { return; }
-
-          enabledEdgeRelations[input.getAttribute("data-edge-relation")] = input.checked;
-          applyCurrentView();
         });
 
         document.getElementById("kg_concept_list").addEventListener("click", function(e) {
@@ -4317,9 +4871,18 @@
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
-            var target = document.getElementById(tocLink.getAttribute("data-toc-target"));
+            var tocTargetId = tocLink.getAttribute("data-toc-target");
+            var target = document.getElementById(tocTargetId);
             if (target) {
-              activateConceptSectionContext(tocLink.getAttribute("data-graph-context") || "neighbourhood");
+              setActiveConceptSection(
+                tocTargetId,
+                tocLink.getAttribute("data-graph-context") || "neighbourhood",
+                {
+                  lensLabel: tocLink.getAttribute("data-lens-label") ||
+                    lensLabelForContext(tocLink.getAttribute("data-graph-context") || "neighbourhood"),
+                  forceGraphUpdate: true
+                }
+              );
               openTargetForToc(target);
               window.requestAnimationFrame(function() {
                 scrollInfoPanelTargetBelowStickyToc(target);
@@ -4368,13 +4931,6 @@
             return;
           }
 
-          var graphFocusButton = e.target.closest(".concept-graph-focus");
-          if (graphFocusButton) {
-            e.preventDefault();
-            focusConceptInGraph(graphFocusButton.getAttribute("data-concept-id"));
-            return;
-          }
-
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
 
@@ -4390,6 +4946,7 @@
             var value = String(readingModeSelect.value || "full");
             readingMode = readingModeDefinitions[value] ? value : "full";
             activeConceptSectionContext = "neighbourhood";
+            activeConceptSectionLensLabel = "Neighbourhood";
             if (activeNodeId && getConcept(activeNodeId)) {
               showConcept(activeNodeId, {preserveSectionContext: true});
               applyCurrentView();
@@ -4401,17 +4958,35 @@
 
           var derivedFromFullTree = e.target.closest(".concept-derived-from-full-tree");
           if (derivedFromFullTree) {
+            var derivedSection = derivedFromFullTree.closest(".concept-derived-from");
+            var derivedSectionId = derivedSection ? derivedSection.id : null;
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
+            setActiveConceptSection(derivedSectionId, "derived-from", {
+              lensLabel: lensLabelForContext("derived-from"),
+              skipGraphUpdate: true
+            });
             refreshActiveConcept();
-            applyCurrentView();
+            setActiveConceptSection(derivedSectionId, "derived-from", {
+              lensLabel: lensLabelForContext("derived-from"),
+              forceGraphUpdate: true
+            });
             return;
           }
 
           var backlinksFullTree = e.target.closest(".concept-backlinks-full-tree");
           if (backlinksFullTree) {
+            var backlinksSection = backlinksFullTree.closest(".concept-backlinks");
+            var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
             backlinksFullTreeEnabled = backlinksFullTree.checked;
+            setActiveConceptSection(backlinksSectionId, "where-used", {
+              lensLabel: lensLabelForContext("where-used"),
+              skipGraphUpdate: true
+            });
             refreshActiveConcept();
-            applyCurrentView();
+            setActiveConceptSection(backlinksSectionId, "where-used", {
+              lensLabel: lensLabelForContext("where-used"),
+              forceGraphUpdate: true
+            });
           }
         });
 
@@ -4434,6 +5009,8 @@
           e.stopPropagation();
           adjustInfoPanelTextZoom(e.deltaY);
         }, {passive: false});
+
+        document.getElementById("info_panel").addEventListener("scroll", scheduleDetailScrollSync, {passive: true});
 
         document.getElementById("kg_controls").addEventListener("wheel", function(e) {
           if (!e.ctrlKey && !e.metaKey) { return; }
@@ -4466,7 +5043,11 @@
                 e.target.getAttribute("data-section-user-closed") === "true"
               ) {
                 e.target.removeAttribute("data-section-user-closed");
-                activateConceptSectionContext(graphContext);
+                setActiveConceptSection(e.target.id || null, graphContext, {
+                  lensLabel: e.target.getAttribute("data-lens-label") ||
+                    lensLabelForContext(graphContext),
+                  forceGraphUpdate: true
+                });
               }
             }
             if (graphContext) {
@@ -4494,13 +5075,12 @@
         });
         legend.innerHTML = html;
         buildNodeLabels();
-        buildEdgeFilters();
         buildConceptList("");
         renderNotesOverview();
         updateGraphViewControls();
-        if (shouldStartWithControlsHidden()) {
-          setControlsVisible(false);
-        }
+        updateDetailsViewControls();
+        updateFocusLensDisplay();
+        setControlsVisible(!shouldStartWithControlsHidden());
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
           return setEdgeHidden(o, !edgeRelationEnabled(e));

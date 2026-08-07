@@ -117,6 +117,34 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
     assert '"endPointOffset"' in html_text
 
 
+def test_write_pyvis_html_does_not_enable_graph_keyboard_capture(tmp_path):
+    out_path = tmp_path / "graph.html"
+    nodes_df = pd.DataFrame([
+        {"id": "1.1", "label": "Alpha", "layer": "1"},
+        {"id": "2.1", "label": "Beta", "layer": "2"},
+    ])
+    edges_df = pd.DataFrame([
+        {"source": "2.1", "target": "1.1", "relation": "DEPENDS_ON", "note": ""},
+    ])
+
+    write_pyvis_html(
+        nodes_df=nodes_df,
+        edges_df=edges_df,
+        edge_key={"DEPENDS_ON": {"directed": True}},
+        edge_colour_map={"DEPENDS_ON": "#123456"},
+        hierarchy_levels={"1.1": 1, "2.1": 0},
+        hierarchy_positions={"1.1": (10, 20), "2.1": (30, 40)},
+        out_path=out_path,
+        height="400px",
+        width="500px",
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+
+    assert '"keyboard": false' in html_text
+    assert '"keyboard": true' not in html_text
+
+
 def test_write_pyvis_html_uses_fallbacks_for_unknown_layer_position_and_relation(tmp_path):
     out_path = tmp_path / "graph.html"
     nodes_df = pd.DataFrame([

@@ -41,9 +41,6 @@ class BrowserGraph:
     def open_control_section(self, section_id: str) -> None:
         self.page.locator(f"#{section_id}").evaluate("el => { el.open = true; }")
 
-    def open_edge_filters(self) -> None:
-        self.open_control_section("kg_edge_filters_section")
-
     def open_search(self) -> None:
         self.open_control_section("kg_search_section")
 

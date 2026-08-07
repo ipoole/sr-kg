@@ -53,31 +53,26 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
     page = browser_graph.page
     _enter_browsing_mode(browser_graph, mode)
 
-    panels_visible = _view_state(page)
-    page.locator("#kg_info_toggle").click()
+    panes_visible = _view_state(page)
+    graph_pane_visible = page.locator("#kg_graph_pane").bounding_box()
+    shell = page.locator("#kg_workspace").bounding_box()
+    page.locator("#kg_details_view_select").select_option("hide")
     _wait_for_refit(page)
-    details_hidden = _view_state(page)
-    page.locator("#kg_controls_toggle").click()
-    _wait_for_refit(page)
-    both_hidden = _view_state(page)
+    graph_pane_expanded = page.locator("#kg_graph_pane").bounding_box()
 
-    assert page.locator("#info_panel").evaluate("el => el.classList.contains('kg-hidden')")
-    assert page.locator("#kg_controls").evaluate("el => el.classList.contains('kg-hidden')")
-    assert _view_distance(panels_visible, details_hidden) > 10
-    assert _view_distance(details_hidden, both_hidden) > 10
-    assert abs(panels_visible["scale"] - details_hidden["scale"]) > 0.001 or (
-        _view_distance(panels_visible, details_hidden) > 25
-    )
+    assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
+    assert graph_pane_visible["width"] < shell["width"] * 0.55
+    assert graph_pane_expanded["width"] > shell["width"] * 0.95
 
     if mode == "all":
-        assert panels_visible["hiddenNodes"] == {
+        assert panes_visible["hiddenNodes"] == {
             "1.1": False,
             "2.1": False,
             "2.2": False,
             "3.1": False,
         }
     else:
-        assert panels_visible["hiddenNodes"] == {
+        assert panes_visible["hiddenNodes"] == {
             "1.1": True,
             "2.1": False,
             "2.2": False,
@@ -85,7 +80,7 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
         }
         assert sorted([
             (edge["from"], edge["to"], edge["relation"])
-            for edge in panels_visible["hiddenEdges"]
+            for edge in panes_visible["hiddenEdges"]
             if not edge["hidden"]
         ]) == [
             ("3.1", "2.1", "DEPENDS_ON"),
@@ -109,11 +104,12 @@ def test_phone_portrait_and_landscape_use_different_panel_layouts(browser_graph)
           document.querySelector("#kg_node_labels")
         """
     )
-    portrait_info = page.locator("#info_panel").bounding_box()
+    portrait_graph = page.locator("#kg_graph_pane").bounding_box()
+    portrait_details = page.locator("#kg_details_pane").bounding_box()
     assert page.locator("#kg_controls").evaluate("el => el.classList.contains('kg-hidden')")
-    assert portrait_info["width"] > 340
-    assert portrait_info["x"] < 20
-    assert portrait_info["y"] > 380
+    assert portrait_graph["width"] > 360
+    assert portrait_details["width"] > 360
+    assert portrait_details["y"] > portrait_graph["y"]
 
     page.set_viewport_size({"width": 800, "height": 390})
     page.reload(wait_until="domcontentloaded")
@@ -126,9 +122,10 @@ def test_phone_portrait_and_landscape_use_different_panel_layouts(browser_graph)
           document.querySelector("#kg_node_labels")
         """
     )
-    landscape_info = page.locator("#info_panel").bounding_box()
+    landscape_graph = page.locator("#kg_graph_pane").bounding_box()
+    landscape_details = page.locator("#kg_details_pane").bounding_box()
     assert page.locator("#kg_controls").evaluate("el => el.classList.contains('kg-hidden')")
-    assert landscape_info["width"] < 390
-    assert landscape_info["x"] > 430
-    assert landscape_info["y"] < 20
-    assert landscape_info["height"] > 340
+    assert landscape_details["x"] > landscape_graph["x"]
+    assert abs(landscape_graph["width"] - landscape_details["width"]) <= 2
+    assert landscape_graph["height"] > 290
+    assert landscape_details["height"] > 290

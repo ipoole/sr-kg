@@ -7,12 +7,17 @@ def test_generated_viewer_boots_and_initializes_in_browser(browser_graph):
 
     assert browser_graph.page_errors == []
     assert browser_graph.console_errors == []
+    assert page.locator("#kg_app_header").count() == 1
+    assert page.locator("#kg_workspace").count() == 1
+    assert page.locator("#kg_graph_pane").count() == 1
+    assert page.locator("#kg_details_pane").count() == 1
     assert page.locator("#kg_controls").count() == 1
     assert page.locator("#info_panel").count() == 1
+    assert page.locator("#kg_focus_lens").count() == 1
     assert page.locator("#kg_node_labels .kg-node-label").count() == 4
     assert page.locator("#kg_concept_list .kg-concept-item").count() == 4
-    assert page.locator("#kg_edge_filters input[data-edge-relation]").count() == 3
-    assert not page.locator("#kg_edge_filters_section").evaluate("el => el.open")
+    assert page.locator("#kg_edge_filters_section").count() == 0
+    assert page.locator("#kg_edge_filters").count() == 0
     assert not page.locator("#kg_legend_section").evaluate("el => el.open")
     assert not page.locator("#kg_notes_section").evaluate("el => el.open")
     assert not page.locator("#kg_search_section").evaluate("el => el.open")
@@ -20,6 +25,7 @@ def test_generated_viewer_boots_and_initializes_in_browser(browser_graph):
     assert page.evaluate("() => nodes.length") == 4
     assert page.evaluate("() => edges.length") == 6
     assert page.locator("#kg_graph_view_select").input_value() == "all"
+    assert page.locator("#kg_details_view_select").input_value() == "full"
 
 
 @pytest.mark.browser
@@ -167,8 +173,8 @@ def test_revised_concept_renders_sticky_masthead_and_content_toc(browser_graph):
     assert masthead.evaluate("el => getComputedStyle(el).position") == "sticky"
     assert "2.2 Gamma" in masthead.inner_text()
     assert "Layer 2" not in masthead.inner_text()
-    assert "Reading" in masthead.inner_text()
-    assert masthead.locator(".concept-reading-mode-select").input_value() == "full"
+    assert "Reading" not in masthead.inner_text()
+    assert page.locator("#kg_details_view_select").input_value() == "full"
 
     toc = page.locator("#info_panel .concept-toc")
     assert toc.count() == 1
@@ -255,18 +261,256 @@ def test_concept_toc_opens_folded_target(browser_graph):
 
 
 @pytest.mark.browser
-def test_concept_masthead_graph_focus_reveals_hidden_graph(browser_graph):
+def test_concept_toc_marks_active_detail_section(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    definition_link = page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-definition"]'
+    )
+    warning_link = page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
+    )
+    assert definition_link.evaluate("el => el.classList.contains('active')")
+
+    warning_link.click()
+
+    assert warning_link.evaluate("el => el.classList.contains('active')")
+    assert warning_link.evaluate("el => el.getAttribute('aria-current')") == "true"
+    assert not definition_link.evaluate("el => el.classList.contains('active')")
+
+
+@pytest.mark.browser
+def test_scrolling_details_updates_focussed_graph_context(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    page.locator("#info_panel").evaluate(
+        """panel => {
+          panel.style.height = "170px";
+          panel.scrollTop = 0;
+        }"""
+    )
+    page.wait_for_timeout(400)
+    page.evaluate(
+        """() => {
+          const panel = document.getElementById("info_panel");
+          const target = document.getElementById("kg-toc-3-1-derived-from");
+          panel.scrollTop = target.offsetTop - 40;
+          panel.dispatchEvent(new Event("scroll"));
+        }"""
+    )
+
+    page.wait_for_function(
+        """() => {
+          const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
+          const link = document.querySelector(
+            '#info_panel .concept-toc-link[data-toc-target="kg-toc-3-1-derived-from"]'
+          );
+          return hidden["1.1"] === true &&
+            hidden["2.1"] === true &&
+            hidden["2.2"] === false &&
+            hidden["3.1"] === false &&
+            link &&
+            link.classList.contains("active");
+        }"""
+    )
+
+
+@pytest.mark.browser
+def test_concept_masthead_no_longer_contains_graph_focus_button(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    assert page.locator("#info_panel .concept-graph-focus").count() == 0
+
+
+@pytest.mark.browser
+def test_workspace_header_controls_are_centered_over_their_panes(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    metrics = page.evaluate(
+        """() => {
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
+          const graphControl = document.querySelector(".kg-shell-graph-control").getBoundingClientRect();
+          const detailsControl = document.querySelector(".kg-shell-details-control").getBoundingClientRect();
+          return {graph, details, graphControl, detailsControl};
+        }"""
+    )
+
+    graph_center = metrics["graph"]["x"] + metrics["graph"]["width"] / 2
+    details_center = metrics["details"]["x"] + metrics["details"]["width"] / 2
+    graph_control_center = metrics["graphControl"]["x"] + metrics["graphControl"]["width"] / 2
+    details_control_center = metrics["detailsControl"]["x"] + metrics["detailsControl"]["width"] / 2
+
+    assert abs(graph_control_center - graph_center) <= 6
+    assert abs(details_control_center - details_center) <= 6
+    assert page.locator("#kg_controls_toggle").bounding_box()["x"] <= 16
+
+
+@pytest.mark.browser
+def test_focus_lens_toggle_hides_and_shows_focus_lens(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    lens = page.locator("#kg_focus_lens")
+    toggle = page.locator("#kg_focus_lens_toggle")
+
+    assert lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "true"
+
+    toggle.click()
+
+    assert not lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "false"
+
+    toggle.click()
+
+    assert lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "true"
+
+
+@pytest.mark.browser
+def test_workspace_splitter_resizes_graph_and_details_panes(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    splitter = page.locator("#kg_pane_splitter")
+    before = page.evaluate(
+        """() => {
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
+          return {graphWidth: graph.width, detailsWidth: details.width};
+        }"""
+    )
+    box = splitter.bounding_box()
+
+    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+    page.mouse.down()
+    page.mouse.move(box["x"] + box["width"] / 2 + 120, box["y"] + box["height"] / 2)
+    page.mouse.up()
+    page.wait_for_timeout(100)
+
+    after = page.evaluate(
+        """() => {
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
+          const graphControl = document.querySelector(".kg-shell-graph-control").getBoundingClientRect();
+          return {
+            graphWidth: graph.width,
+            detailsWidth: details.width,
+            graphCenter: graph.x + graph.width / 2,
+            graphControlCenter: graphControl.x + graphControl.width / 2
+          };
+        }"""
+    )
+
+    assert after["graphWidth"] > before["graphWidth"] + 70
+    assert after["detailsWidth"] < before["detailsWidth"] - 70
+    assert abs(after["graphControlCenter"] - after["graphCenter"]) <= 6
+
+
+@pytest.mark.browser
+def test_alt_left_arrow_is_not_intercepted(browser_graph):
+    page = browser_graph.page
+
+    default_prevented = page.evaluate(
+        """() => {
+          const event = new KeyboardEvent("keydown", {
+            key: "ArrowLeft",
+            altKey: true,
+            bubbles: true,
+            cancelable: true
+          });
+          document.dispatchEvent(event);
+          return event.defaultPrevented;
+        }"""
+    )
+
+    assert not default_prevented
+
+
+@pytest.mark.browser
+def test_alt_left_arrow_navigates_browser_history(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("1.1")
+    browser_graph.click_concept("2.1")
+    assert page.evaluate("() => window.location.hash") == "#concept-2.1"
+
+    page.keyboard.press("Alt+ArrowLeft")
+
+    page.wait_for_function("""() => window.location.hash === '#concept-1.1'""")
+    assert page.locator("#info_panel h2").inner_text() == "1.1 Alpha"
+
+
+@pytest.mark.browser
+def test_details_panel_scrolls_to_top_when_new_concept_selected(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    page.locator("#info_panel").evaluate("panel => { panel.scrollTop = 400; }")
+    assert page.locator("#info_panel").evaluate("panel => panel.scrollTop") > 0
+
+    browser_graph.click_concept("3.1")
+
+    page.wait_for_function("""() => document.getElementById("info_panel").scrollTop === 0""")
+
+
+@pytest.mark.browser
+def test_workspace_presents_graph_and_details_as_peer_panes(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    metrics = page.evaluate(
+        """() => {
+          const shell = document.getElementById("kg_workspace").getBoundingClientRect();
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
+          return {shell, graph, details};
+        }"""
+    )
+
+    assert page.locator("#kg_view_title").inner_text() == "2.2 Gamma"
+    assert abs(metrics["graph"]["width"] - metrics["details"]["width"]) <= 2
+    assert abs(metrics["graph"]["x"] - metrics["shell"]["x"]) <= 1
+    assert metrics["details"]["x"] > metrics["graph"]["x"]
+    assert abs(metrics["graph"]["y"] - metrics["details"]["y"]) <= 1
+
+    page.locator("#kg_details_view_select").select_option("hide")
+
+    assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
+    graph_only = page.locator("#kg_graph_pane").bounding_box()
+    assert graph_only["width"] > metrics["shell"]["width"] * 0.95
+
+    page.locator("#kg_details_view_select").select_option("full")
+    page.locator("#kg_graph_view_select").select_option("hide")
+
+    assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
+    details_only = page.locator("#kg_details_pane").bounding_box()
+    assert details_only["width"] > metrics["shell"]["width"] * 0.95
+
+
+@pytest.mark.browser
+def test_details_hide_does_not_blank_workspace_when_graph_is_hidden(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
     page.locator("#kg_graph_view_select").select_option("hide")
+    page.locator("#kg_details_view_select").select_option("hide")
+
     assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
-
-    page.locator("#info_panel .concept-graph-focus").click()
-
-    assert not page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
-    assert page.locator("#kg_graph_view_select").input_value() == "all"
-    assert page.locator("#info_panel h2").inner_text() == "2.2 Gamma"
+    assert not page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
+    assert page.locator("#kg_details_view_select").input_value() == "full"
+    assert page.locator("#info_panel").is_visible()
 
 
 @pytest.mark.browser
@@ -274,7 +518,7 @@ def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
-    page.locator("#info_panel .concept-reading-mode-select").select_option("core")
+    page.locator("#kg_details_view_select").select_option("core")
 
     panel_text = page.locator("#info_panel").inner_text()
     assert "Gamma definition" in panel_text
@@ -296,7 +540,7 @@ def test_reading_mode_maths_filters_blocks_and_study_questions(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
-    page.locator("#info_panel .concept-reading-mode-select").select_option("maths")
+    page.locator("#kg_details_view_select").select_option("maths")
 
     toc_titles = page.locator("#info_panel .concept-toc .concept-toc-link").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
@@ -368,7 +612,7 @@ def test_practice_reading_mode_opens_study_questions_by_default(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
-    page.locator("#info_panel .concept-reading-mode-select").select_option("practice")
+    page.locator("#kg_details_view_select").select_option("practice")
 
     questions = page.locator("#info_panel details.study-questions")
     assert questions.count() == 1
@@ -630,24 +874,12 @@ def test_search_finds_definition_text_and_highlights_detail_match(browser_graph)
 
 
 @pytest.mark.browser
-def test_edge_filter_hides_and_restores_relation_edges(browser_graph):
+def test_edge_type_tools_section_is_removed_in_integrated_mode(browser_graph):
     page = browser_graph.page
 
-    browser_graph.open_edge_filters()
-    assert page.locator('input[data-edge-relation="DEPENDS_ON"]').is_checked()
-    assert page.evaluate(
-        """() => edges.get().find(edge => edge.relation === "DEPENDS_ON").hidden === false"""
-    )
-
-    page.locator('input[data-edge-relation="DEPENDS_ON"]').uncheck()
-    assert page.evaluate(
-        """() => edges.get().find(edge => edge.relation === "DEPENDS_ON").hidden === true"""
-    )
-
-    page.locator('input[data-edge-relation="DEPENDS_ON"]').check()
-    assert page.evaluate(
-        """() => edges.get().find(edge => edge.relation === "DEPENDS_ON").hidden === false"""
-    )
+    assert page.locator("#kg_edge_filters_section").count() == 0
+    assert page.locator("#kg_edge_filters").count() == 0
+    assert "Edge types" not in page.locator("#kg_controls").inner_text()
 
 
 @pytest.mark.browser
@@ -670,11 +902,57 @@ def test_focussed_mode_hides_non_neighbourhood_context(browser_graph):
         """() => edges.get().filter(edge => !edge.hidden).length"""
     ) > 0
 
-    browser_graph.open_edge_filters()
-    page.locator('input[data-edge-relation="DEPENDS_ON"]').uncheck()
-    assert page.evaluate(
-        """() => edges.get().filter(edge => !edge.hidden).every(edge => edge.relation !== "DEPENDS_ON")"""
+    assert page.locator("#kg_focus_lens").get_attribute("data-background") == "hidden"
+
+
+@pytest.mark.browser
+def test_focus_lens_display_tracks_active_detail_section(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    lens = page.locator("#kg_focus_lens")
+    assert lens.get_attribute("data-selected-concept") == "3.1"
+    assert lens.get_attribute("data-lens-context") == "neighbourhood"
+    assert lens.get_attribute("data-lens-label") == "Neighbourhood"
+    assert lens.get_attribute("data-background") == "hidden"
+    assert "Delta" in page.locator("#kg_focus_lens .kg-focus-lens-center").inner_text()
+    assert page.locator(
+        '#kg_focus_lens .kg-focus-lens-incoming '
+        '.kg-focus-lens-relation[data-relation="DEPENDS_ON"][data-direction="incoming"]'
+    ).get_attribute("data-state") == "immediate"
+    assert page.locator(
+        '#kg_focus_lens .kg-focus-lens-outgoing '
+        '.kg-focus-lens-relation[data-relation="DEPENDS_ON"][data-direction="outgoing"]'
+    ).get_attribute("data-state") == "immediate"
+
+    page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-3-1-derived-from"]'
+    ).click()
+
+    derived_incoming = page.locator(
+        '#kg_focus_lens .kg-focus-lens-incoming '
+        '.kg-focus-lens-relation[data-relation="DERIVES_FROM"][data-direction="incoming"]'
     )
+    derived_outgoing = page.locator(
+        '#kg_focus_lens .kg-focus-lens-outgoing '
+        '.kg-focus-lens-relation[data-relation="DERIVES_FROM"][data-direction="outgoing"]'
+    )
+    related = page.locator(
+        '#kg_focus_lens .kg-focus-lens-undirected '
+        '.kg-focus-lens-relation[data-relation="RELATED"][data-direction="undirected"]'
+    )
+    assert lens.get_attribute("data-lens-context") == "derived-from"
+    assert lens.get_attribute("data-lens-label") == "Derivation step"
+    assert derived_incoming.get_attribute("data-state") == "none"
+    assert derived_outgoing.get_attribute("data-state") == "immediate"
+    assert related.get_attribute("data-state") == "none"
+
+    page.locator("#info_panel .concept-derived-from-full-tree").check()
+
+    assert lens.get_attribute("data-lens-label") == "Derivation tree"
+    assert derived_outgoing.get_attribute("data-state") == "tree"
 
 
 @pytest.mark.browser
@@ -888,30 +1166,3 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     page.locator("#kg_features_button").click()
     assert page.locator("#kg_splash_dialog[open]").count() == 1
-
-
-@pytest.mark.browser
-def test_phone_edge_filter_labels_stay_inside_controls_panel(browser_graph):
-    page = browser_graph.page
-
-    page.set_viewport_size({"width": 390, "height": 800})
-    page.goto(browser_graph.output_path.as_uri(), wait_until="domcontentloaded")
-    page.wait_for_selector("#kg_controls", state="attached")
-    page.locator("#kg_controls_toggle").click()
-    browser_graph.open_edge_filters()
-    page.locator("#kg_edge_filters .kg-edge-filter-label").first.evaluate(
-        """el => { el.textContent = "VERY_LONG_DIRECTED_RELATION_NAME_USED_ON_PHONE"; }"""
-    )
-
-    metrics = page.evaluate(
-        """() => {
-          const panel = document.getElementById("kg_controls").getBoundingClientRect();
-          return Array.from(document.querySelectorAll("#kg_edge_filters .kg-edge-filter-label"))
-            .map(label => ({
-              labelRight: label.getBoundingClientRect().right,
-              panelRight: panel.right
-            }));
-        }"""
-    )
-
-    assert all(item["labelRight"] <= item["panelRight"] + 0.5 for item in metrics)

@@ -135,7 +135,7 @@ def write_pyvis_html(
         "hoverConnectedEdges": false,
         "selectConnectedEdges": false,
         "navigationButtons": false,
-        "keyboard": true,
+        "keyboard": false,
         "tooltipDelay": 120
       }
     }
