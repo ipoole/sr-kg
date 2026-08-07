@@ -1903,55 +1903,74 @@
 
     @media (max-width: 850px) {
         #kg_app_header {
-            gap: 6px 8px;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            grid-template-rows: auto auto;
-            height: 84px;
-            padding: 7px 8px;
+            display: flex;
+            gap: 4px;
+            height: 52px;
+            padding: 7px 6px;
         }
 
         .kg-shell-control label {
-            font-size: 12px;
+            display: none;
         }
 
         .kg-shell-graph-control {
-            grid-column: 1;
-            grid-row: 1;
+            flex: 1 1 auto;
             justify-content: flex-start;
-            padding-left: 50px;
+            padding-left: 0;
         }
 
         .kg-shell-details-control {
-            grid-column: 2;
-            grid-row: 1;
+            flex: 0 1 auto;
             justify-content: flex-end;
+        }
+
+        .kg-shell-control {
+            gap: 4px;
+        }
+
+        .kg-shell-button,
+        .kg-canvas-select {
+            font-size: 12px;
+            padding: 4px 5px;
+        }
+
+        .kg-shell-tools-button {
+            flex: 0 0 auto;
+            left: auto;
+            position: static;
+            top: auto;
+            transform: none;
+        }
+
+        #kg_focus_lens_toggle {
+            flex: 0 0 auto;
         }
 
         #kg_graph_view_select,
         #kg_details_view_select {
             min-width: 0;
-            width: min(128px, 38vw);
+        }
+
+        #kg_graph_view_select {
+            width: min(86px, 27vw);
+        }
+
+        #kg_details_view_select {
+            width: min(96px, 30vw);
         }
 
         #kg_controls_toggle {
-            padding: 5px 7px;
+            padding: 4px 5px;
         }
 
         #kg_view_title {
-            display: block;
-            font-size: 14px;
-            grid-column: 1 / -1;
-            grid-row: 2;
-            left: auto;
-            max-width: none;
-            position: static;
-            transform: none;
+            display: none;
         }
 
         #kg_workspace {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: minmax(200px, 42vh) minmax(0, 1fr);
-            top: 84px;
+            top: 52px;
         }
 
         body.kg-graph-hidden #kg_workspace,
@@ -1969,7 +1988,7 @@
         }
 
         #kg_controls {
-            top: calc(84px + 8px);
+            top: calc(52px + 8px);
         }
 
         #info_panel {

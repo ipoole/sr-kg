@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 import re
 import shutil
@@ -320,28 +321,25 @@ def _use_local_vis_assets(html_text: str) -> str:
     )
 
 
-@pytest.fixture
-def browser_graph(tmp_path):
-    playwright_api = pytest.importorskip(
-        "playwright.sync_api",
-        reason="Playwright is not installed in the sr-kg environment",
-    )
-
-    _write_browser_fixture(tmp_path)
+def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path:
     output_path = tmp_path / "viewer.html"
     generate_viewer_from_root(
-        data_root=str(tmp_path),
+        data_root=str(data_root),
         out_path=str(output_path),
         height="100vh",
         width="100vw",
-        title="Browser Harness",
+        title=title,
     )
     _copy_local_browser_assets(tmp_path)
     output_path.write_text(
         _use_local_vis_assets(output_path.read_text(encoding="utf-8")),
         encoding="utf-8",
     )
+    return output_path
 
+
+@contextmanager
+def _open_browser_graph(playwright_api, output_path: Path):
     page_errors: list[str] = []
     console_errors: list[str] = []
     with playwright_api.sync_playwright() as playwright:
@@ -395,3 +393,32 @@ def browser_graph(tmp_path):
             )
         finally:
             browser.close()
+
+
+@pytest.fixture
+def browser_graph(tmp_path):
+    playwright_api = pytest.importorskip(
+        "playwright.sync_api",
+        reason="Playwright is not installed in the sr-kg environment",
+    )
+
+    _write_browser_fixture(tmp_path)
+    output_path = _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
+    with _open_browser_graph(playwright_api, output_path) as graph:
+        yield graph
+
+
+@pytest.fixture
+def repo_browser_graph(tmp_path):
+    playwright_api = pytest.importorskip(
+        "playwright.sync_api",
+        reason="Playwright is not installed in the sr-kg environment",
+    )
+
+    output_path = _prepare_browser_output(
+        tmp_path,
+        REPO_ROOT / "data",
+        "Special Relativity and Classical Fields",
+    )
+    with _open_browser_graph(playwright_api, output_path) as graph:
+        yield graph

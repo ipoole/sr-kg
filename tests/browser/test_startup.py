@@ -204,7 +204,10 @@ def test_concept_toc_starts_closed_on_phone_viewport(browser_graph):
     page = browser_graph.page
 
     page.set_viewport_size({"width": 390, "height": 800})
-    page.goto(browser_graph.output_path.as_uri() + "#concept-2.2", wait_until="domcontentloaded")
+    page.goto(
+        browser_graph.output_path.as_uri() + "?phone-lens#concept-2.2",
+        wait_until="domcontentloaded",
+    )
     page.wait_for_selector("#info_panel .concept-toc")
 
     toc = page.locator("#info_panel .concept-toc")
@@ -365,16 +368,124 @@ def test_focus_lens_toggle_hides_and_shows_focus_lens(browser_graph):
 
     assert lens.is_visible()
     assert toggle.get_attribute("aria-pressed") == "true"
+    assert toggle.inner_text() == "Hide lens"
 
     toggle.click()
 
     assert not lens.is_visible()
     assert toggle.get_attribute("aria-pressed") == "false"
+    assert toggle.inner_text() == "Show lens"
 
     toggle.click()
 
     assert lens.is_visible()
     assert toggle.get_attribute("aria-pressed") == "true"
+    assert toggle.inner_text() == "Hide lens"
+
+
+@pytest.mark.browser
+def test_phone_starts_with_focus_lens_hidden(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(
+        browser_graph.output_path.as_uri() + "?phone-lens#concept-2.2",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_selector("#kg_workspace")
+
+    lens = page.locator("#kg_focus_lens")
+    toggle = page.locator("#kg_focus_lens_toggle")
+
+    assert page.locator("body").evaluate("el => el.classList.contains('kg-focus-lens-hidden')")
+    assert not lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "false"
+    assert toggle.inner_text() == "Show lens"
+
+    toggle.click()
+
+    assert not page.locator("body").evaluate("el => el.classList.contains('kg-focus-lens-hidden')")
+    assert lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "true"
+    assert toggle.inner_text() == "Hide lens"
+
+
+@pytest.mark.browser
+def test_phone_header_uses_single_row_compact_controls(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(browser_graph.output_path.as_uri() + "?phone-header", wait_until="domcontentloaded")
+    page.wait_for_selector("#kg_workspace")
+
+    header = page.locator("#kg_app_header").bounding_box()
+    workspace = page.locator("#kg_workspace").bounding_box()
+    assert header["height"] <= 58
+    assert abs(workspace["y"] - header["height"]) <= 1
+    assert not page.locator(".kg-shell-graph-control label").is_visible()
+    assert not page.locator(".kg-shell-details-control label").is_visible()
+    assert page.locator("#kg_graph_view_select option:checked").inner_text() == "Full graph"
+    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full details"
+
+    metrics = page.evaluate(
+        """() => {
+          const ids = [
+            "kg_controls_toggle",
+            "kg_graph_view_select",
+            "kg_focus_lens_toggle",
+            "kg_details_view_select"
+          ];
+          return Object.fromEntries(ids.map(id => {
+            const rect = document.getElementById(id).getBoundingClientRect();
+            return [id, {
+              x: rect.x,
+              y: rect.y,
+              right: rect.right,
+              bottom: rect.bottom
+            }];
+          }));
+        }"""
+    )
+    overlaps = []
+    ids = list(metrics)
+    for index, first in enumerate(ids):
+        for second in ids[index + 1:]:
+            a = metrics[first]
+            b = metrics[second]
+            if max(a["x"], b["x"]) < min(a["right"], b["right"]) and max(
+                a["y"], b["y"]
+            ) < min(a["bottom"], b["bottom"]):
+                overlaps.append((first, second))
+
+    assert not overlaps
+    assert all(rect["x"] >= 0 and rect["right"] <= 390 for rect in metrics.values())
+
+
+@pytest.mark.browser
+def test_default_startup_selects_magnetic_field(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.wait_for_function("""() => window.location.hash === '#concept-sr.magnetic_field'""")
+
+    assert page.locator("#info_panel h2").inner_text() == "7.4 Magnetic field"
+    assert page.locator("#kg_view_title").inner_text() == "7.4 Magnetic field"
+    assert page.locator('.kg-concept-item[data-concept-id="sr.magnetic_field"]').evaluate(
+        "el => el.classList.contains('active')"
+    )
+
+
+@pytest.mark.browser
+def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.goto(
+        repo_browser_graph.output_path.as_uri() + "#concept-sr.electric_field",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_function("""() => window.location.hash === '#concept-sr.electric_field'""")
+
+    assert page.locator("#info_panel h2").inner_text() == "7.3 Electric field"
+    assert page.locator("#kg_view_title").inner_text() == "7.3 Electric field"
 
 
 @pytest.mark.browser

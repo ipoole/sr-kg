@@ -1968,55 +1968,74 @@
 
     @media (max-width: 850px) {
         #kg_app_header {
-            gap: 6px 8px;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            grid-template-rows: auto auto;
-            height: 84px;
-            padding: 7px 8px;
+            display: flex;
+            gap: 4px;
+            height: 52px;
+            padding: 7px 6px;
         }
 
         .kg-shell-control label {
-            font-size: 12px;
+            display: none;
         }
 
         .kg-shell-graph-control {
-            grid-column: 1;
-            grid-row: 1;
+            flex: 1 1 auto;
             justify-content: flex-start;
-            padding-left: 50px;
+            padding-left: 0;
         }
 
         .kg-shell-details-control {
-            grid-column: 2;
-            grid-row: 1;
+            flex: 0 1 auto;
             justify-content: flex-end;
+        }
+
+        .kg-shell-control {
+            gap: 4px;
+        }
+
+        .kg-shell-button,
+        .kg-canvas-select {
+            font-size: 12px;
+            padding: 4px 5px;
+        }
+
+        .kg-shell-tools-button {
+            flex: 0 0 auto;
+            left: auto;
+            position: static;
+            top: auto;
+            transform: none;
+        }
+
+        #kg_focus_lens_toggle {
+            flex: 0 0 auto;
         }
 
         #kg_graph_view_select,
         #kg_details_view_select {
             min-width: 0;
-            width: min(128px, 38vw);
+        }
+
+        #kg_graph_view_select {
+            width: min(86px, 27vw);
+        }
+
+        #kg_details_view_select {
+            width: min(96px, 30vw);
         }
 
         #kg_controls_toggle {
-            padding: 5px 7px;
+            padding: 4px 5px;
         }
 
         #kg_view_title {
-            display: block;
-            font-size: 14px;
-            grid-column: 1 / -1;
-            grid-row: 2;
-            left: auto;
-            max-width: none;
-            position: static;
-            transform: none;
+            display: none;
         }
 
         #kg_workspace {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: minmax(200px, 42vh) minmax(0, 1fr);
-            top: 84px;
+            top: 52px;
         }
 
         body.kg-graph-hidden #kg_workspace,
@@ -2034,7 +2053,7 @@
         }
 
         #kg_controls {
-            top: calc(84px + 8px);
+            top: calc(52px + 8px);
         }
 
         #info_panel {
@@ -2100,18 +2119,18 @@
       <div class="kg-shell-control kg-shell-graph-control">
         <label for="kg_graph_view_select">Graph</label>
         <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
-          <option value="hide">Hide</option>
-          <option value="all" selected>All</option>
+          <option value="hide">Hide graph</option>
+          <option value="all" selected>Full graph</option>
           <option value="focused">Focussed</option>
         </select>
-        <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="true">Lens</button>
+        <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="true">Hide lens</button>
       </div>
       <div id="kg_view_title">Special Relativity and Classical Fields</div>
       <div class="kg-shell-control kg-shell-details-control">
         <label for="kg_details_view_select">Details</label>
         <select id="kg_details_view_select" class="kg-canvas-select" aria-label="Details view">
-          <option value="hide">Hide</option>
-          <option value="full" selected>Full</option>
+          <option value="hide">Hide details</option>
+          <option value="full" selected>Full details</option>
           <option value="core">Core</option>
           <option value="maths">Maths</option>
           <option value="context">Context</option>
@@ -2392,6 +2411,7 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
+        var defaultStartupConceptId = "sr.magnetic_field";
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
@@ -2411,7 +2431,7 @@
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var pendingGraphSectionContext = null;
-        var focusLensVisible = true;
+        var focusLensVisible = !shouldStartWithFocusLensHidden();
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
 
@@ -3880,12 +3900,17 @@
           return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function shouldStartWithFocusLensHidden() {
+          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
+        }
+
         function updateFocusLensVisibilityControls() {
           document.body.classList.toggle("kg-focus-lens-hidden", !focusLensVisible);
           var button = document.getElementById("kg_focus_lens_toggle");
           if (!button) { return; }
           button.setAttribute("aria-pressed", focusLensVisible ? "true" : "false");
-          button.textContent = focusLensVisible ? "Lens" : "Show lens";
+          button.textContent = focusLensVisible ? "Hide lens" : "Show lens";
           button.title = focusLensVisible ? "Hide focus lens" : "Show focus lens";
         }
 
@@ -7351,7 +7376,17 @@
           );
           focusConcept(initialNodeId, "Selected", {skipHistory: true});
         } else {
-          window.history.replaceState({}, "", window.location.href);
+          var defaultNodeId = getConcept(defaultStartupConceptId) ? defaultStartupConceptId : null;
+          if (defaultNodeId) {
+            window.history.replaceState(
+              {nodeId: String(defaultNodeId), mode: GraphViewMode.HIGHLIGHT},
+              "",
+              conceptHash(defaultNodeId)
+            );
+            focusConcept(defaultNodeId, "Selected", {skipHistory: true});
+          } else {
+            window.history.replaceState({}, "", window.location.href);
+          }
         }
         showSplashOnFirstLoad();
       }

@@ -137,6 +137,7 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
+        var defaultStartupConceptId = "sr.magnetic_field";
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
@@ -156,7 +157,7 @@
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var pendingGraphSectionContext = null;
-        var focusLensVisible = true;
+        var focusLensVisible = !shouldStartWithFocusLensHidden();
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
 
@@ -1625,12 +1626,17 @@
           return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
         }
 
+        function shouldStartWithFocusLensHidden() {
+          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
+        }
+
         function updateFocusLensVisibilityControls() {
           document.body.classList.toggle("kg-focus-lens-hidden", !focusLensVisible);
           var button = document.getElementById("kg_focus_lens_toggle");
           if (!button) { return; }
           button.setAttribute("aria-pressed", focusLensVisible ? "true" : "false");
-          button.textContent = focusLensVisible ? "Lens" : "Show lens";
+          button.textContent = focusLensVisible ? "Hide lens" : "Show lens";
           button.title = focusLensVisible ? "Hide focus lens" : "Show focus lens";
         }
 
@@ -5096,7 +5102,17 @@
           );
           focusConcept(initialNodeId, "Selected", {skipHistory: true});
         } else {
-          window.history.replaceState({}, "", window.location.href);
+          var defaultNodeId = getConcept(defaultStartupConceptId) ? defaultStartupConceptId : null;
+          if (defaultNodeId) {
+            window.history.replaceState(
+              {nodeId: String(defaultNodeId), mode: GraphViewMode.HIGHLIGHT},
+              "",
+              conceptHash(defaultNodeId)
+            );
+            focusConcept(defaultNodeId, "Selected", {skipHistory: true});
+          } else {
+            window.history.replaceState({}, "", window.location.href);
+          }
         }
         showSplashOnFirstLoad();
       }
