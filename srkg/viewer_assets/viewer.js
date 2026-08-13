@@ -122,7 +122,6 @@
 
         var originalNodes = {};
         var originalEdges = {};
-        var enabledEdgeRelations = {};
         var currentView = createGraphView(GraphViewMode.ALL);
         var activeNodeId = null;
         var hoveredEdgeId = null;
@@ -441,10 +440,6 @@
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
         refreshNodeTooltips();
-        Object.keys(edgeKey).forEach(function(relation) {
-          enabledEdgeRelations[relation] = edgeKey[relation].directed !== false;
-        });
-
         /* Text parsing and concept markup. */
         function escapeHtml(s) {
           return String(s || "")
@@ -518,17 +513,25 @@
           if (options.id) {
             attrs += ' data-note-id="' + escapeHtml(options.id) + '"';
           }
+          if (options.sectionRole) {
+            attrs += ' data-section-role="' + escapeHtml(options.sectionRole) + '"';
+            attrs += ' data-graph-context="' +
+              escapeHtml(graphContextForSectionRole(options.sectionRole)) + '"';
+            attrs += ' data-lens-label="' +
+              escapeHtml(lensLabelForSectionRole(options.sectionRole)) + '"';
+          }
           if (options.open) {
             attrs += " open";
           }
           var summaryHtml = options.summaryHtml !== undefined
             ? options.summaryHtml
             : renderConceptText(options.title || "");
+          var bodyTag = options.bodyTag || "div";
           return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
             "<summary>" + summaryHtml + "</summary>" +
-            '<div class="' + escapeHtml(options.bodyClass || "") + '">' +
+            "<" + bodyTag + ' class="' + escapeHtml(options.bodyClass || "") + '">' +
             (options.bodyHtml || "") +
-            "</div></details>";
+            "</" + bodyTag + "></details>";
         }
 
         function renderOptionalDetail(summary, body) {
@@ -1890,20 +1893,81 @@
           explanation: true
         };
 
-        var contentBlockPresentation = Object.freeze({
-          overview: {mode: "inline"},
-          definition: {mode: "inline"},
-          intuition: {mode: "inline"},
-          explanation: {mode: "inline"},
-          construction: {mode: "inline"},
-          derivation: {mode: "inline"},
-          derivation_step: {mode: "folded"},
-          example: {mode: "inline"},
-          worked_example: {mode: "inline"},
-          misconception: {mode: "folded", note: true},
-          warning: {mode: "folded", note: true},
-          historical_note: {mode: "folded", note: true},
-          summary: {mode: "inline"}
+        /*
+         * Viewer policy tables.
+         *
+         * Add new content block kinds in contentBlockKindPolicy, then add any
+         * matching CSS and reading-mode membership below. Add new relation
+         * display/semantic behaviour in edgeRelationPolicy; edge_key data still
+         * supplies direction, colour, category, and explanatory text.
+         */
+        var contentBlockKindPolicy = Object.freeze({
+          overview: {label: "Roadmap", mode: "inline"},
+          definition: {label: "Definition", mode: "inline"},
+          intuition: {label: "Think", mode: "inline"},
+          explanation: {label: "Explanation", mode: "inline"},
+          construction: {label: "Build", mode: "inline"},
+          derivation: {label: "Derivation", mode: "inline"},
+          derivation_step: {label: "Step", mode: "folded"},
+          example: {label: "Example", mode: "inline"},
+          worked_example: {label: "Worked", mode: "inline"},
+          misconception: {label: "Common trap", mode: "folded", note: true},
+          warning: {label: "Careful", mode: "folded", note: true},
+          historical_note: {label: "Context", mode: "folded", note: true},
+          summary: {label: "Takeaway", mode: "inline"}
+        });
+
+        var DetailSectionRole = Object.freeze({
+          CONTENT: "content",
+          DERIVED_FROM: "derived-from",
+          WHERE_USED: "where-used",
+          STUDY_QUESTIONS: "study-questions",
+          REFERENCES: "references"
+        });
+
+        var detailSectionGraphPolicy = Object.freeze({
+          content: {graphContext: "neighbourhood", lensLabel: "Neighbourhood"},
+          "derived-from": {
+            graphContext: "derived-from",
+            relation: "DERIVES_FROM",
+            focusDirection: "outgoing",
+            lensLabel: "Derivation step",
+            treeLensLabel: "Derivation tree"
+          },
+          "where-used": {
+            graphContext: "where-used",
+            relation: "DERIVES_FROM",
+            focusDirection: "incoming",
+            lensLabel: "Immediate usage",
+            treeLensLabel: "Usage tree"
+          },
+          "study-questions": {graphContext: "neighbourhood", lensLabel: "Neighbourhood"},
+          references: {graphContext: "neighbourhood", lensLabel: "Neighbourhood"}
+        });
+
+        var edgeRelationPolicy = Object.freeze({
+          DERIVES_FROM: {
+            abbreviation: "DF",
+            sortOrder: 10,
+            backlinkTitle: "Derived from this",
+            derivationTree: true,
+            tracePhrase: "derives from"
+          },
+          PREREQUISITE: {
+            abbreviation: "PR",
+            sortOrder: 20,
+            backlinkTitle: "Requires this"
+          },
+          DEPENDS_ON: {
+            abbreviation: "DO",
+            sortOrder: 30,
+            backlinkTitle: "Requires this"
+          },
+          RELATED: {
+            abbreviation: "R",
+            sortOrder: 40,
+            backlinkTitle: "Related concepts"
+          }
         });
 
         var readingModeDefinitions = Object.freeze({
@@ -1985,16 +2049,76 @@
           return conceptContentBlocks(concept).filter(blockVisibleInReadingMode);
         }
 
-        function contentBlockPresentationFor(kind) {
-          return contentBlockPresentation[kind] || {mode: "inline"};
+        function contentBlockPolicyFor(kind) {
+          return contentBlockKindPolicy[kind] || {
+            label: contentBlockKindLabel(kind),
+            mode: "inline"
+          };
         }
 
-        function contentBlockClassName(block, presentation) {
+        function detailSectionGraphPolicyFor(role) {
+          return detailSectionGraphPolicy[role] || detailSectionGraphPolicy.content;
+        }
+
+        function edgeRelationPolicyFor(relation) {
+          return edgeRelationPolicy[relation] || {};
+        }
+
+        function graphContextForSectionRole(role) {
+          return detailSectionGraphPolicyFor(role).graphContext || "neighbourhood";
+        }
+
+        function relationForSectionRole(role) {
+          return detailSectionGraphPolicyFor(role).relation || null;
+        }
+
+        function focusDirectionForSectionRole(role) {
+          return detailSectionGraphPolicyFor(role).focusDirection || null;
+        }
+
+        function derivationRelation() {
+          return relationForSectionRole(DetailSectionRole.DERIVED_FROM) || "DERIVES_FROM";
+        }
+
+        function relationHasDerivationTreeSemantics(relation) {
+          return edgeRelationPolicyFor(relation).derivationTree === true;
+        }
+
+        function lensLabelForSectionRole(role) {
+          var policy = detailSectionGraphPolicyFor(role);
+          if (role === DetailSectionRole.DERIVED_FROM && derivedFromFullTreeEnabled) {
+            return policy.treeLensLabel || policy.lensLabel;
+          }
+          if (role === DetailSectionRole.WHERE_USED && backlinksFullTreeEnabled) {
+            return policy.treeLensLabel || policy.lensLabel;
+          }
+          return policy.lensLabel || "Neighbourhood";
+        }
+
+        function sectionRoleForGraphContext(context) {
+          if (context === "derived-from") { return DetailSectionRole.DERIVED_FROM; }
+          if (context === "where-used") { return DetailSectionRole.WHERE_USED; }
+          return DetailSectionRole.CONTENT;
+        }
+
+        function tocGraphPolicyFields(role) {
+          return {
+            sectionRole: role,
+            graphContext: graphContextForSectionRole(role),
+            lensLabel: lensLabelForSectionRole(role)
+          };
+        }
+
+        function conceptGraphicSvg(concept) {
+          return concept.svg_detail || concept.svg_graphic || concept.svg_icon || "";
+        }
+
+        function contentBlockClassName(block, policy) {
           var className = "content-block content-block-" + block.kind;
-          if (presentation.mode === "folded") {
+          if (policy.mode === "folded") {
             className += " content-block-fold";
           }
-          if (presentation.note) {
+          if (policy.note) {
             className += " content-block-note";
           }
           return className;
@@ -2044,28 +2168,6 @@
             .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
         }
 
-        var contentBlockKindMeta = Object.freeze({
-          overview: {label: "Roadmap"},
-          definition: {label: "Definition"},
-          intuition: {label: "Think"},
-          explanation: {label: "Explanation"},
-          construction: {label: "Build"},
-          derivation: {label: "Derivation"},
-          derivation_step: {label: "Step"},
-          example: {label: "Example"},
-          worked_example: {label: "Worked"},
-          misconception: {label: "Common trap"},
-          warning: {label: "Careful"},
-          historical_note: {label: "Context"},
-          summary: {label: "Takeaway"}
-        });
-
-        function contentBlockMetaFor(kind) {
-          return contentBlockKindMeta[kind] || {
-            label: contentBlockKindLabel(kind)
-          };
-        }
-
         function contentBlockKindClass(kind) {
           return String(kind || "")
             .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -2073,113 +2175,112 @@
         }
 
         function renderContentBlockHeading(block, title) {
-          var meta = contentBlockMetaFor(block.kind);
+          var policy = contentBlockPolicyFor(block.kind);
           return '<span class="content-block-title-line">' +
             '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
             '<span class="content-block-title-text">' +
             renderConceptText(title) +
             "</span>" +
             '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
-            escapeHtml(meta.label) +
+            escapeHtml(policy.label) +
             '"></span>' +
             "</span>";
         }
 
         function renderContentBlock(conceptId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
-          var presentation = contentBlockPresentationFor(block.kind);
+          var policy = contentBlockPolicyFor(block.kind);
           var anchorId = contentAnchorId(conceptId, title);
-          if (presentation.mode === "folded") {
-            var bodyClass = "concept-body content-block-fold-body";
-            if (presentation.note) {
+          var bodyClass = "concept-body content-block-body";
+          if (policy.mode === "folded") {
+            bodyClass = "concept-body content-block-fold-body";
+            if (policy.note) {
               bodyClass += " content-block-note-body";
             }
             return renderFoldDown({
               anchorId: anchorId,
-              className: contentBlockClassName(block, presentation),
+              className: contentBlockClassName(block, policy),
+              sectionRole: DetailSectionRole.CONTENT,
               summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
               bodyHtml: renderConceptText(block.body)
             });
           }
-          var html = '<section id="' + escapeHtml(anchorId) + '" class="' +
-            escapeHtml(contentBlockClassName(block, presentation)) + '">';
-          html += "<h3>" + renderContentBlockHeading(block, title) + "</h3>";
           var blocks = splitConceptBlocks(block.body);
-          html += '<div class="concept-body content-block-body">';
-          html += renderNotesAtAnchor(conceptId, title, 0, "");
+          var bodyHtml = "";
+          bodyHtml += renderNotesAtAnchor(conceptId, title, 0, "");
           blocks.forEach(function(textBlock, index) {
-            html += '<div class="concept-line">' +
+            bodyHtml += '<div class="concept-line">' +
               (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
               "</div>";
-            html += renderNotesAtAnchor(
+            bodyHtml += renderNotesAtAnchor(
               conceptId,
               title,
               index + 1,
               textBlock.text.slice(0, 160)
             );
           });
-          html += "</div>";
-          html += "</section>";
-          return html;
+          return renderFoldDown({
+            anchorId: anchorId,
+            className: contentBlockClassName(block, policy),
+            sectionRole: DetailSectionRole.CONTENT,
+            open: true,
+            summaryHtml: renderContentBlockHeading(block, title),
+            bodyClass: bodyClass,
+            bodyHtml: bodyHtml
+          });
         }
 
         function conceptTocItems(conceptId, concept, studyQuestions, conceptReferences) {
           var items = [];
+          if (conceptGraphicSvg(concept)) {
+            items.push(Object.assign({
+              id: contentAnchorId(conceptId, "Graphic"),
+              title: "Graphic"
+            }, tocGraphPolicyFields(DetailSectionRole.CONTENT)));
+          }
           if (shouldRenderContentBlocks(concept)) {
             filteredContentBlocks(concept).forEach(function(block) {
               var title = block.title || contentBlockKindLabel(block.kind);
-              items.push({
+              items.push(Object.assign({
                 id: contentAnchorId(conceptId, title),
                 title: title,
-                kind: block.kind,
-                graphContext: "neighbourhood",
-                lensLabel: "Neighbourhood"
-              });
+                kind: block.kind
+              }, tocGraphPolicyFields(DetailSectionRole.CONTENT)));
             });
           } else {
             conceptSections(concept).forEach(function(section) {
               if (!section.text) { return; }
-              items.push({
+              items.push(Object.assign({
                 id: contentAnchorId(conceptId, section.title),
-                title: section.title,
-                graphContext: "neighbourhood",
-                lensLabel: "Neighbourhood"
-              });
+                title: section.title
+              }, tocGraphPolicyFields(DetailSectionRole.CONTENT)));
             });
           }
 
           if (derivedFromEdgesFor(conceptId).length > 0) {
-            items.push({
+            items.push(Object.assign({
               id: contentAnchorId(conceptId, "Derived From"),
-              title: "Derived from",
-              graphContext: "derived-from",
-              lensLabel: "Derivation step"
-            });
+              title: "Derived from"
+            }, tocGraphPolicyFields(DetailSectionRole.DERIVED_FROM)));
           }
           if (backlinkGroupsFor(conceptId).length > 0) {
-            items.push({
+            items.push(Object.assign({
               id: contentAnchorId(conceptId, "Where This Is Used"),
-              title: "Where this is used",
-              graphContext: "where-used",
-              lensLabel: "Immediate usage"
-            });
+              title: "Where this is used"
+            }, tocGraphPolicyFields(DetailSectionRole.WHERE_USED)));
           }
           if (studyQuestions.length > 0) {
-            items.push({
+            items.push(Object.assign({
               id: contentAnchorId(conceptId, "Study Questions"),
-              title: "Study Questions",
-              graphContext: "neighbourhood",
-              lensLabel: "Neighbourhood"
-            });
+              title: "Study Questions"
+            }, tocGraphPolicyFields(DetailSectionRole.STUDY_QUESTIONS)));
           }
           if (conceptReferences.length > 0) {
-            items.push({
+            items.push(Object.assign({
               id: contentAnchorId(conceptId, "References"),
-              title: "References",
-              graphContext: "neighbourhood",
-              lensLabel: "Neighbourhood"
-            });
+              title: "References"
+            }, tocGraphPolicyFields(DetailSectionRole.REFERENCES)));
           }
           return items;
         }
@@ -2192,9 +2293,11 @@
           html += '<div class="concept-toc-links">';
           items.forEach(function(item) {
             var kindClass = item.kind ? " concept-toc-link-" + contentBlockKindClass(item.kind) : "";
+            var sectionRole = item.sectionRole || DetailSectionRole.CONTENT;
             html += '<a href="#' + escapeHtml(item.id) +
               '" class="concept-toc-link' + escapeHtml(kindClass) + '" data-toc-target="' +
-              escapeHtml(item.id) + '" data-graph-context="' +
+              escapeHtml(item.id) + '" data-section-role="' +
+              escapeHtml(sectionRole) + '" data-graph-context="' +
               escapeHtml(item.graphContext || "neighbourhood") + '" data-lens-label="' +
               escapeHtml(item.lensLabel || "Neighbourhood") + '">' +
               (item.kind ? '<span class="concept-toc-kind-dot" aria-hidden="true"></span>' : "") +
@@ -2203,16 +2306,6 @@
           });
           html += "</div></details>";
           return html;
-        }
-
-        function renderReadingModeOptions() {
-          return Object.keys(readingModeDefinitions).map(function(value) {
-            var definition = readingModeDefinitions[value];
-            return '<option value="' + escapeHtml(value) + '"' +
-              (value === readingMode ? " selected" : "") + ">" +
-              escapeHtml(definition.label) +
-              "</option>";
-          }).join("");
         }
 
         function renderConceptMasthead(nodeId, concept, tocItems) {
@@ -2225,6 +2318,29 @@
           html += renderConceptToc(tocItems);
           html += "</div>";
           return html;
+        }
+
+        function renderConceptGraphic(conceptId, concept) {
+          var svgDetail = conceptGraphicSvg(concept);
+          if (!svgDetail) { return ""; }
+
+          var graphicCaption = concept.svg_detail_caption || concept.svg_icon_caption || "";
+          var bodyHtml = '<div class="concept-graphic">' + svgDetail + "</div>";
+          if (graphicCaption) {
+            bodyHtml += '<figcaption class="concept-graphic-caption">' +
+              renderCaptionText(graphicCaption) +
+              "</figcaption>";
+          }
+          return renderFoldDown({
+            anchorId: contentAnchorId(conceptId, "Graphic"),
+            className: "concept-figure",
+            sectionRole: DetailSectionRole.CONTENT,
+            open: true,
+            title: "Graphic",
+            bodyTag: "figure",
+            bodyClass: "concept-figure-body",
+            bodyHtml: bodyHtml
+          });
         }
 
         function openTargetForToc(target) {
@@ -2278,13 +2394,7 @@
         }
 
         function lensLabelForContext(context) {
-          if (context === "derived-from") {
-            return derivedFromFullTreeEnabled ? "Derivation tree" : "Derivation step";
-          }
-          if (context === "where-used") {
-            return backlinksFullTreeEnabled ? "Usage tree" : "Immediate usage";
-          }
-          return "Neighbourhood";
+          return lensLabelForSectionRole(sectionRoleForGraphContext(context));
         }
 
         function setActiveConceptSection(targetId, context, options) {
@@ -2371,6 +2481,7 @@
           }
           detailScrollSyncTimer = setTimeout(function() {
             detailScrollSyncTimer = null;
+            if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
             updateActiveSectionFromScroll();
           }, 80);
         }
@@ -2677,13 +2788,9 @@
             (end < value.length ? " ..." : "");
         }
 
-        /* Edge filtering and relation-aware visibility. */
+        /* Relation-aware visibility. */
         function edgeRelation(edge) {
           return String(edge.relation || "");
-        }
-
-        function edgeRelationEnabled(edge) {
-          return true;
         }
 
         function edgeRelationDirected(edge) {
@@ -2712,7 +2819,7 @@
         }
 
         function edgeHoverableInCurrentView(edge) {
-          if (!edge || edge.hidden || !edgeRelationEnabled(edge)) {
+          if (!edge || edge.hidden) {
             return false;
           }
           if (graphViewIs(currentView, GraphViewMode.HIGHLIGHT) && graphViewHasNode(currentView)) {
@@ -2722,7 +2829,7 @@
             return edgeRelationDirected(edge);
           }
           if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
-            return edgeRelation(edge) === "DERIVES_FROM";
+            return relationHasDerivationTreeSemantics(edgeRelation(edge));
           }
           return true;
         }
@@ -2736,7 +2843,6 @@
           return Boolean(
             edge &&
             !edge.hidden &&
-            edgeRelationEnabled(edge) &&
             visibleGraphNode(edge.from) &&
             visibleGraphNode(edge.to)
           );
@@ -2880,7 +2986,6 @@
         function enabledConnectedNodes(nodeId) {
           var connected = {};
           allEdges.forEach(function(edge) {
-            if (!edgeRelationEnabled(edge)) { return; }
             if (edge.from == nodeId) { connected[edge.to] = true; }
             if (edge.to == nodeId) { connected[edge.from] = true; }
           });
@@ -2950,7 +3055,7 @@
           while (queue.length > 0) {
             var current = queue.shift();
             allEdges.forEach(function(edge) {
-              if (!edgeRelationEnabled(edge) || !edgeRelationDirected(edge)) { return; }
+              if (!edgeRelationDirected(edge)) { return; }
               if (String(edge.from) !== current) { return; }
 
               var target = String(edge.to);
@@ -2975,7 +3080,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.from) === current &&
-                  edgeRelation(edge) === "DERIVES_FROM";
+                  edgeRelation(edge) === derivationRelation();
               })
               .sort(function(a, b) {
                 return compareConceptIds(String(a.to), String(b.to));
@@ -3003,14 +3108,9 @@
         }
 
         function relationAbbreviation(relation) {
-          var abbreviations = {
-            DERIVES_FROM: "DF",
-            PREREQUISITE: "PR",
-            DEPENDS_ON: "DO",
-            RELATED: "R"
-          };
           relation = String(relation || "");
-          if (abbreviations[relation]) { return abbreviations[relation]; }
+          var policy = edgeRelationPolicyFor(relation);
+          if (policy.abbreviation) { return policy.abbreviation; }
 
           var parts = relation.split(/[^A-Za-z0-9]+/).filter(Boolean);
           if (parts.length === 0) { return "?"; }
@@ -3022,15 +3122,17 @@
           }).join("");
         }
 
+        function relationSortOrder(relation) {
+          var order = Number(edgeRelationPolicyFor(relation).sortOrder);
+          return Number.isFinite(order) ? order : 1000;
+        }
+
+        function compareRelations(a, b) {
+          return relationSortOrder(a) - relationSortOrder(b) || a.localeCompare(b);
+        }
+
         function orderedRelations() {
-          var preferred = ["DERIVES_FROM", "PREREQUISITE", "DEPENDS_ON", "RELATED"];
-          return Object.keys(edgeKey).sort(function(a, b) {
-            var ai = preferred.indexOf(a);
-            var bi = preferred.indexOf(b);
-            ai = ai === -1 ? preferred.length : ai;
-            bi = bi === -1 ? preferred.length : bi;
-            return ai - bi || a.localeCompare(b);
-          });
+          return Object.keys(edgeKey).sort(compareRelations);
         }
 
         function focusLensBackgroundState() {
@@ -3059,16 +3161,20 @@
           relation = String(relation || "");
           direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
           if (activeConceptSectionContext === "derived-from") {
+            var derivedFromRelation = relationForSectionRole(DetailSectionRole.DERIVED_FROM);
+            var derivedFromDirection = focusDirectionForSectionRole(DetailSectionRole.DERIVED_FROM);
             return {
-              state: relation === "DERIVES_FROM" && direction === "outgoing"
+              state: relation === derivedFromRelation && direction === derivedFromDirection
                 ? (derivedFromFullTreeEnabled ? "tree" : "immediate")
                 : "none",
               direction: direction
             };
           }
           if (activeConceptSectionContext === "where-used") {
+            var whereUsedRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
+            var whereUsedDirection = focusDirectionForSectionRole(DetailSectionRole.WHERE_USED);
             return {
-              state: relation === "DERIVES_FROM" && direction === "incoming"
+              state: relation === whereUsedRelation && direction === whereUsedDirection
                 ? (backlinksFullTreeEnabled ? "tree" : "immediate")
                 : "none",
               direction: direction
@@ -3232,15 +3338,24 @@
           });
         }
 
-        function graphContextForDetailsSection(section) {
+        function detailSectionRoleForDetailsSection(section) {
           if (!section) { return null; }
+          var sectionRole = section.getAttribute("data-section-role");
+          if (sectionRole && detailSectionGraphPolicy[sectionRole]) {
+            return sectionRole;
+          }
           if (section.classList.contains("concept-derived-from")) {
-            return "derived-from";
+            return DetailSectionRole.DERIVED_FROM;
           }
           if (section.classList.contains("concept-backlinks")) {
-            return "where-used";
+            return DetailSectionRole.WHERE_USED;
           }
           return null;
+        }
+
+        function graphContextForDetailsSection(section) {
+          var sectionRole = detailSectionRoleForDetailsSection(section);
+          return sectionRole ? graphContextForSectionRole(sectionRole) : null;
         }
 
         function markPendingGraphSectionContext(target) {
@@ -3301,7 +3416,9 @@
           html += "<h3>Derivation trace</h3>";
 
           if (trace.orderedEdges.length === 0) {
-            html += '<p class="reading-mode-empty">No DERIVES_FROM links are recorded for this concept.</p>';
+            html += '<p class="reading-mode-empty">No ' +
+              escapeHtml(derivationRelation()) +
+              " links are recorded for this concept.</p>";
             html += "</section>";
             return html;
           }
@@ -3310,7 +3427,9 @@
           trace.orderedEdges.forEach(function(edge) {
             html += "<li>";
             html += relationshipConceptHtml(edge.from) +
-              ' <span class="derivation-trace-relation">derives from</span> ' +
+              ' <span class="derivation-trace-relation">' +
+              escapeHtml(edgeRelationPolicyFor(edgeRelation(edge)).tracePhrase || "relates to") +
+              "</span> " +
               relationshipConceptHtml(edge.to);
             if (edge.note) {
               html += '<div class="derivation-trace-note">' + renderConceptText(edge.note) + "</div>";
@@ -3322,14 +3441,14 @@
         }
 
         function backlinkGroupTitle(relation) {
-          if (relation === "DERIVES_FROM") { return "Derived from this"; }
-          if (relation === "PREREQUISITE" || relation === "DEPENDS_ON") { return "Requires this"; }
-          if (relation === "RELATED") { return "Related concepts"; }
+          var policy = edgeRelationPolicyFor(relation);
+          if (policy.backlinkTitle) { return policy.backlinkTitle; }
           return relation || "Related concepts";
         }
 
         function derivedFromEdgesFor(nodeId, fullTree) {
           nodeId = String(nodeId);
+          var sourceRelation = relationForSectionRole(DetailSectionRole.DERIVED_FROM);
           var entries = [];
           var queue = [{nodeId: nodeId, depth: 0}];
           var visitedNodes = {};
@@ -3341,7 +3460,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.from) === current.nodeId &&
-                  edgeRelation(edge) === "DERIVES_FROM" &&
+                  edgeRelation(edge) === sourceRelation &&
                   getConcept(edge.to);
               })
               .sort(function(a, b) {
@@ -3368,6 +3487,7 @@
 
         function derivedFromThisEntriesFor(nodeId, fullTree) {
           nodeId = String(nodeId);
+          var usageRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
           var entries = [];
           var queue = [{nodeId: nodeId, depth: 0}];
           var visitedNodes = {};
@@ -3379,7 +3499,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.to) === current.nodeId &&
-                  edgeRelation(edge) === "DERIVES_FROM" &&
+                  edgeRelation(edge) === usageRelation &&
                   getConcept(edge.from);
               })
               .sort(function(a, b) {
@@ -3445,15 +3565,16 @@
         function backLinkRelationGroupsObject(nodeId) {
           nodeId = String(nodeId);
           var groups = {};
+          var usageRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
           var derivedEntries = derivedFromThisEntriesFor(nodeId, backlinksFullTreeEnabled);
           if (derivedEntries.length > 0) {
-            groups.DERIVES_FROM = derivedEntries;
+            groups[usageRelation] = derivedEntries;
           }
 
           allEdges.forEach(function(edge) {
             var relation = edgeRelation(edge);
             var relatedNodeId = null;
-            if (relation === "DERIVES_FROM") { return; }
+            if (relation === usageRelation) { return; }
             if (edgeRelationDirected(edge)) {
               if (String(edge.to) !== nodeId) { return; }
               relatedNodeId = String(edge.from);
@@ -3480,8 +3601,11 @@
           if (sourceEdges.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
-            '" class="concept-derived-from" data-lens-label="' +
-            escapeHtml(lensLabelForContext("derived-from")) + '" open>';
+            '" class="concept-derived-from" data-section-role="' +
+            escapeHtml(DetailSectionRole.DERIVED_FROM) + '" data-graph-context="' +
+            escapeHtml(graphContextForSectionRole(DetailSectionRole.DERIVED_FROM)) +
+            '" data-lens-label="' +
+            escapeHtml(lensLabelForSectionRole(DetailSectionRole.DERIVED_FROM)) + '" open>';
           html += "<summary>Derived from</summary>";
           html += fullTreeToggleHtml(
             "concept-derived-from-full-tree",
@@ -3498,16 +3622,9 @@
         function backlinkGroupsFor(nodeId) {
           nodeId = String(nodeId);
           var groups = backLinkRelationGroupsObject(nodeId);
-          var relationOrder = ["DERIVES_FROM", "PREREQUISITE", "DEPENDS_ON", "RELATED"];
 
           return Object.keys(groups)
-            .sort(function(a, b) {
-              var ai = relationOrder.indexOf(a);
-              var bi = relationOrder.indexOf(b);
-              ai = ai === -1 ? relationOrder.length : ai;
-              bi = bi === -1 ? relationOrder.length : bi;
-              return ai - bi || a.localeCompare(b);
-            })
+            .sort(compareRelations)
             .map(function(relation) {
               return {
                 relation: relation,
@@ -3522,8 +3639,11 @@
           if (groups.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
-            '" class="concept-backlinks" data-lens-label="' +
-            escapeHtml(lensLabelForContext("where-used")) + '" open>';
+            '" class="concept-backlinks" data-section-role="' +
+            escapeHtml(DetailSectionRole.WHERE_USED) + '" data-graph-context="' +
+            escapeHtml(graphContextForSectionRole(DetailSectionRole.WHERE_USED)) +
+            '" data-lens-label="' +
+            escapeHtml(lensLabelForSectionRole(DetailSectionRole.WHERE_USED)) + '" open>';
           html += "<summary>Where this is used</summary>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
@@ -3628,16 +3748,7 @@
           if (layerParts.length > 0) {
             html += '<p class="concept-layer-context">' + layerParts.join(" - ") + "</p>";
           }
-          var svgDetail = concept.svg_detail || concept.svg_graphic || concept.svg_icon || "";
-          if (svgDetail) {
-            html += '<figure class="concept-figure">';
-            html += '<div class="concept-graphic">' + svgDetail + "</div>";
-            var graphicCaption = concept.svg_detail_caption || concept.svg_icon_caption || "";
-            if (graphicCaption) {
-              html += '<figcaption class="concept-graphic-caption">' + renderCaptionText(graphicCaption) + "</figcaption>";
-            }
-            html += "</figure>";
-          }
+          html += renderConceptGraphic(nodeId, concept);
           html += "<hr>";
           if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
             html += renderDerivationTracePanel(nodeId);
@@ -3647,7 +3758,12 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions"' + (readingMode === "practice" ? " open" : "") + ">";
+              '" class="study-questions" data-section-role="' +
+              escapeHtml(DetailSectionRole.STUDY_QUESTIONS) + '" data-graph-context="' +
+              escapeHtml(graphContextForSectionRole(DetailSectionRole.STUDY_QUESTIONS)) +
+              '" data-lens-label="' +
+              escapeHtml(lensLabelForSectionRole(DetailSectionRole.STUDY_QUESTIONS)) + '"' +
+              (readingMode === "practice" ? " open" : "") + ">";
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
               var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
@@ -3668,7 +3784,11 @@
           }
           if (conceptReferences.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "References")) +
-              '" class="concept-references">';
+              '" class="concept-references" data-section-role="' +
+              escapeHtml(DetailSectionRole.REFERENCES) + '" data-graph-context="' +
+              escapeHtml(graphContextForSectionRole(DetailSectionRole.REFERENCES)) +
+              '" data-lens-label="' +
+              escapeHtml(lensLabelForSectionRole(DetailSectionRole.REFERENCES)) + '">';
             html += "<summary>References</summary>";
             html += '<ul class="concept-reference-list">';
             conceptReferences.forEach(function(item) {
@@ -3688,9 +3808,10 @@
           }
           var panel = document.getElementById("info_panel");
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
+          var conceptChanged = previousPanelConceptId !== String(nodeId);
           panel.innerHTML = html;
           panel.setAttribute("data-concept-id", String(nodeId));
-          if (previousPanelConceptId !== String(nodeId) && !options.scrollToSearchMatch) {
+          if (conceptChanged && !options.scrollToSearchMatch) {
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
@@ -3707,6 +3828,9 @@
               lensLabel: "Neighbourhood",
               skipGraphUpdate: true
             });
+          }
+          if (conceptChanged && !options.scrollToSearchMatch) {
+            panel.scrollTop = 0;
           }
           typesetInfoPanel(options);
         }
@@ -4255,7 +4379,7 @@
           }));
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            return setEdgeHidden(o, !edgeRelationEnabled(e));
+            return setEdgeHidden(o, false);
           }));
           updateNodeLabelPositions();
           if (!preserveStatus) {
@@ -4424,9 +4548,7 @@
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            if (!edgeRelationEnabled(e)) {
-              return setEdgeHidden(o, true);
-            } else if (sectionContextEdgeHighlighted(e, context)) {
+            if (sectionContextEdgeHighlighted(e, context)) {
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
               return setEdgeHidden(o, false);
@@ -4509,7 +4631,7 @@
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            return setEdgeHidden(o, !(edgeRelationEnabled(e) && keep[e.from] && keep[e.to]));
+            return setEdgeHidden(o, !(keep[e.from] && keep[e.to]));
           }));
 
           fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
@@ -4548,7 +4670,6 @@
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
             return setEdgeHidden(o, !(
-              edgeRelationEnabled(e) &&
               edgeRelationDirected(e) &&
               keep[String(e.from)] &&
               keep[String(e.to)]
@@ -4590,7 +4711,7 @@
 
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
-            var visible = edgeRelation(e) === "DERIVES_FROM" && trace.edges[e.id];
+            var visible = relationHasDerivationTreeSemantics(edgeRelation(e)) && trace.edges[e.id];
             if (visible) {
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
@@ -4608,26 +4729,6 @@
               ". Click a visible node to trace from it.";
           }
         }
-
-        window.kgFocusSelected = function() {
-          var nodeId = selectedOrActiveNodeId();
-          if (!nodeId) {
-            document.getElementById("kg_status").innerText = "Select a node first.";
-            return;
-          }
-
-          focusNeighbourhood(nodeId, null, {radius: graphViewRadius(currentView)});
-        };
-
-        window.kgFocusDescendantsSelected = function() {
-          var nodeId = selectedOrActiveNodeId();
-          if (!nodeId) {
-            document.getElementById("kg_status").innerText = "Select a node first.";
-            return;
-          }
-
-          focusDescendants(nodeId);
-        };
 
         /* Browser event wiring. */
         network.on("click", function(params) {
@@ -4880,12 +4981,14 @@
             var tocTargetId = tocLink.getAttribute("data-toc-target");
             var target = document.getElementById(tocTargetId);
             if (target) {
+              var tocSectionRole = tocLink.getAttribute("data-section-role") ||
+                sectionRoleForGraphContext(tocLink.getAttribute("data-graph-context"));
+              var tocGraphContext = graphContextForSectionRole(tocSectionRole);
               setActiveConceptSection(
                 tocTargetId,
-                tocLink.getAttribute("data-graph-context") || "neighbourhood",
+                tocGraphContext,
                 {
-                  lensLabel: tocLink.getAttribute("data-lens-label") ||
-                    lensLabelForContext(tocLink.getAttribute("data-graph-context") || "neighbourhood"),
+                  lensLabel: lensLabelForSectionRole(tocSectionRole),
                   forceGraphUpdate: true
                 }
               );
@@ -4947,33 +5050,17 @@
         });
 
         document.getElementById("info_panel").addEventListener("change", function(e) {
-          var readingModeSelect = e.target.closest(".concept-reading-mode-select");
-          if (readingModeSelect) {
-            var value = String(readingModeSelect.value || "full");
-            readingMode = readingModeDefinitions[value] ? value : "full";
-            activeConceptSectionContext = "neighbourhood";
-            activeConceptSectionLensLabel = "Neighbourhood";
-            if (activeNodeId && getConcept(activeNodeId)) {
-              showConcept(activeNodeId, {preserveSectionContext: true});
-              applyCurrentView();
-            }
-            document.getElementById("kg_status").innerText =
-              "Reading mode: " + currentReadingModeDefinition().label + ".";
-            return;
-          }
-
           var derivedFromFullTree = e.target.closest(".concept-derived-from-full-tree");
           if (derivedFromFullTree) {
             var derivedSection = derivedFromFullTree.closest(".concept-derived-from");
             var derivedSectionId = derivedSection ? derivedSection.id : null;
+            var derivedSectionRole = DetailSectionRole.DERIVED_FROM;
+            var derivedGraphContext = graphContextForSectionRole(derivedSectionRole);
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
-            setActiveConceptSection(derivedSectionId, "derived-from", {
-              lensLabel: lensLabelForContext("derived-from"),
-              skipGraphUpdate: true
-            });
             refreshActiveConcept();
-            setActiveConceptSection(derivedSectionId, "derived-from", {
-              lensLabel: lensLabelForContext("derived-from"),
+            detailScrollSyncSuppressedUntil = Date.now() + 1000;
+            setActiveConceptSection(derivedSectionId, derivedGraphContext, {
+              lensLabel: lensLabelForSectionRole(derivedSectionRole),
               forceGraphUpdate: true
             });
             return;
@@ -4983,14 +5070,13 @@
           if (backlinksFullTree) {
             var backlinksSection = backlinksFullTree.closest(".concept-backlinks");
             var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
+            var backlinksSectionRole = DetailSectionRole.WHERE_USED;
+            var backlinksGraphContext = graphContextForSectionRole(backlinksSectionRole);
             backlinksFullTreeEnabled = backlinksFullTree.checked;
-            setActiveConceptSection(backlinksSectionId, "where-used", {
-              lensLabel: lensLabelForContext("where-used"),
-              skipGraphUpdate: true
-            });
             refreshActiveConcept();
-            setActiveConceptSection(backlinksSectionId, "where-used", {
-              lensLabel: lensLabelForContext("where-used"),
+            detailScrollSyncSuppressedUntil = Date.now() + 1000;
+            setActiveConceptSection(backlinksSectionId, backlinksGraphContext, {
+              lensLabel: lensLabelForSectionRole(backlinksSectionRole),
               forceGraphUpdate: true
             });
           }
@@ -5040,7 +5126,8 @@
               closeUserNote(e.target.getAttribute("data-note-id"));
               return;
             }
-            var graphContext = graphContextForDetailsSection(e.target);
+            var sectionRole = detailSectionRoleForDetailsSection(e.target);
+            var graphContext = sectionRole ? graphContextForSectionRole(sectionRole) : null;
             if (graphContext) {
               if (!e.target.open) {
                 e.target.setAttribute("data-section-user-closed", "true");
@@ -5050,8 +5137,7 @@
               ) {
                 e.target.removeAttribute("data-section-user-closed");
                 setActiveConceptSection(e.target.id || null, graphContext, {
-                  lensLabel: e.target.getAttribute("data-lens-label") ||
-                    lensLabelForContext(graphContext),
+                  lensLabel: lensLabelForSectionRole(sectionRole),
                   forceGraphUpdate: true
                 });
               }
@@ -5089,7 +5175,7 @@
         setControlsVisible(!shouldStartWithControlsHidden());
         edges.update(allEdges.map(function(e) {
           var o = Object.assign({}, e);
-          return setEdgeHidden(o, !edgeRelationEnabled(e));
+          return setEdgeHidden(o, false);
         }));
         allEdges = edges.get();
 

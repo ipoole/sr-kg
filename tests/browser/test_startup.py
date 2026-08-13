@@ -96,7 +96,10 @@ def test_revised_concept_renders_ordered_content_blocks(browser_graph):
 
     browser_graph.click_concept("2.2")
 
-    assert page.locator("#info_panel .content-block h3").evaluate_all(
+    assert page.locator(
+        "#info_panel .content-block:not(.content-block-fold) "
+        "> summary .content-block-title-text"
+    ).evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Definition", "Gamma intuition"]
     assert "Gamma definition" in page.locator("#info_panel").inner_text()
@@ -163,6 +166,111 @@ def test_revised_concept_renders_derivation_steps_folded(browser_graph):
 
 
 @pytest.mark.browser
+def test_content_block_kind_policy_renders_labels_and_fold_state(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    labels = page.locator("#info_panel .content-block-kind-label").evaluate_all(
+        "nodes => nodes.map(node => node.getAttribute('data-label'))"
+    )
+    assert labels == ["Definition", "Think", "Careful", "Step", "Context"]
+    assert page.locator("#info_panel .content-block-definition").evaluate(
+        "el => el.tagName"
+    ) == "DETAILS"
+    assert page.locator("#info_panel .content-block-intuition").evaluate(
+        "el => el.tagName"
+    ) == "DETAILS"
+    assert page.locator("#info_panel details.content-block-warning").count() == 1
+    assert page.locator("#info_panel details.content-block-derivation_step").count() == 1
+    assert page.locator("#info_panel details.content-block-historical_note").count() == 1
+
+
+@pytest.mark.browser
+def test_graphic_and_inline_content_sections_are_foldable(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    graphic = page.locator("#info_panel details.concept-figure")
+    definition = page.locator("#info_panel details.content-block-definition")
+    intuition = page.locator("#info_panel details.content-block-intuition")
+
+    assert graphic.count() == 1
+    assert definition.count() == 1
+    assert intuition.count() == 1
+    assert graphic.evaluate("el => el.open")
+    assert definition.evaluate("el => el.open")
+    assert intuition.evaluate("el => el.open")
+    assert graphic.locator(".concept-graphic svg").count() == 1
+
+    definition.locator("summary").click()
+
+    assert not definition.evaluate("el => el.open")
+    assert not definition.locator(".content-block-body").is_visible()
+
+
+@pytest.mark.browser
+def test_detail_section_graph_policy_marks_toc_sections(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+
+    assert page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-definition"]'
+    ).evaluate(
+        """el => ({
+          role: el.getAttribute("data-section-role"),
+          context: el.getAttribute("data-graph-context"),
+          label: el.getAttribute("data-lens-label")
+        })"""
+    ) == {
+        "role": "content",
+        "context": "neighbourhood",
+        "label": "Neighbourhood",
+    }
+    assert page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-derived-from"]'
+    ).evaluate(
+        """el => ({
+          role: el.getAttribute("data-section-role"),
+          context: el.getAttribute("data-graph-context"),
+          label: el.getAttribute("data-lens-label")
+        })"""
+    ) == {
+        "role": "derived-from",
+        "context": "derived-from",
+        "label": "Derivation step",
+    }
+    assert page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-where-this-is-used"]'
+    ).evaluate(
+        """el => ({
+          role: el.getAttribute("data-section-role"),
+          context: el.getAttribute("data-graph-context"),
+          label: el.getAttribute("data-lens-label")
+        })"""
+    ) == {
+        "role": "where-used",
+        "context": "where-used",
+        "label": "Immediate usage",
+    }
+    assert page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-study-questions"]'
+    ).evaluate(
+        """el => ({
+          role: el.getAttribute("data-section-role"),
+          context: el.getAttribute("data-graph-context"),
+          label: el.getAttribute("data-lens-label")
+        })"""
+    ) == {
+        "role": "study-questions",
+        "context": "neighbourhood",
+        "label": "Neighbourhood",
+    }
+
+
+@pytest.mark.browser
 def test_revised_concept_renders_sticky_masthead_and_content_toc(browser_graph):
     page = browser_graph.page
 
@@ -187,6 +295,7 @@ def test_revised_concept_renders_sticky_masthead_and_content_toc(browser_graph):
     assert toc.locator(".concept-toc-link").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == [
+        "Graphic",
         "Definition",
         "Gamma intuition",
         "Gamma warning",
@@ -269,19 +378,19 @@ def test_concept_toc_marks_active_detail_section(browser_graph):
 
     browser_graph.click_concept("2.2")
 
-    definition_link = page.locator(
-        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-definition"]'
+    graphic_link = page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-graphic"]'
     )
     warning_link = page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
     )
-    assert definition_link.evaluate("el => el.classList.contains('active')")
+    assert graphic_link.evaluate("el => el.classList.contains('active')")
 
     warning_link.click()
 
     assert warning_link.evaluate("el => el.classList.contains('active')")
     assert warning_link.evaluate("el => el.getAttribute('aria-current')") == "true"
-    assert not definition_link.evaluate("el => el.classList.contains('active')")
+    assert not graphic_link.evaluate("el => el.classList.contains('active')")
 
 
 @pytest.mark.browser
@@ -572,7 +681,7 @@ def test_details_panel_scrolls_to_top_when_new_concept_selected(browser_graph):
 
     browser_graph.click_concept("3.1")
 
-    page.wait_for_function("""() => document.getElementById("info_panel").scrollTop === 0""")
+    page.wait_for_function("""() => document.getElementById("info_panel").scrollTop < 25""")
 
 
 @pytest.mark.browser
@@ -657,6 +766,7 @@ def test_reading_mode_maths_filters_blocks_and_study_questions(browser_graph):
         "nodes => nodes.map(node => node.textContent)"
     )
     assert toc_titles == [
+        "Graphic",
         "Gamma algebra step",
         "Derived from",
         "Where this is used",

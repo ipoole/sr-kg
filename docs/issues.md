@@ -7,7 +7,7 @@ Things to be fixed, batched together
 3. DONE - Remove the "Graph" button in details
 4. DONE - Provide some means of hiding/showing the Focus lens gliph
 5. DONE - Allow division between graph and details view to be adjusted - allowing more/less space to each.
-6. Add folding to all sections including the graphic.
+6. DONE - Add folding to all sections including the graphic.
 7. Add a "Folded" reading mode - all fields are initially folded closed
 8. DONE - Glitch: ensure details panel scrolls to top when new concept selected; currently seems to keep position from previous selection.
 9. DONE - "Lens" button should be "Hide lens"

@@ -382,35 +382,27 @@
         overflow-y: auto;
         padding-top: 4px;
       }
-      .kg-edge-filter {
+      .kg-notes-toggle {
         align-items: center;
         display: flex;
         gap: 5px;
         margin: 3px 0;
         min-width: 0;
       }
-      .kg-edge-filter input {
+      .kg-notes-toggle input {
         flex: 0 0 auto;
         width: auto;
       }
-      #kg_controls .kg-edge-filter input {
+      #kg_controls .kg-notes-toggle input {
         width: auto;
       }
-      .kg-edge-filter-swatch {
-        border: 1px solid #777;
-        flex: 0 0 auto;
-        display: inline-block;
-        height: 9px;
-        width: 16px;
-      }
-      .kg-edge-filter-label {
+      .kg-notes-toggle-label {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      .kg-edge-filter input:disabled + .kg-edge-filter-swatch,
-      .kg-edge-filter input:disabled ~ .kg-edge-filter-label {
+      .kg-notes-toggle input:disabled ~ .kg-notes-toggle-label {
         opacity: 0.62;
       }
       #kg_concept_list {
@@ -697,32 +689,6 @@
         min-width: 0;
     }
 
-    #info_panel .concept-reading-mode {
-        border: 1px solid #ccd6e5;
-        border-radius: 4px;
-        font-size: 0.78em;
-        line-height: 1.2;
-        padding: 3px 6px;
-        white-space: nowrap;
-    }
-
-    #info_panel .concept-reading-mode {
-        align-items: center;
-        background: #f5f7fb;
-        color: #555;
-        display: inline-flex;
-        gap: 4px;
-    }
-
-    #info_panel .concept-reading-mode select {
-        background: transparent;
-        border: 0;
-        color: #174ea6;
-        font: inherit;
-        font-weight: 700;
-        padding: 0;
-    }
-
     #info_panel .concept-toc {
         margin: 0.55em 0 0;
         padding: 0;
@@ -827,10 +793,11 @@
         padding: 0 0 0 0.85em;
     }
 
-    #info_panel .content-block h3,
-    #info_panel .content-block-fold > summary {
+    #info_panel .content-block > summary {
         color: var(--block-accent-dark);
+        cursor: pointer;
         font-weight: 700;
+        list-style-position: outside;
         margin-bottom: 0.38em;
     }
 
@@ -908,13 +875,8 @@
         padding: 0 0 0 0.85em;
     }
 
-    #info_panel .content-block-fold > summary {
-        cursor: pointer;
-        list-style-position: outside;
-    }
-
-    #info_panel .content-block-fold > summary:hover,
-    #info_panel .content-block-fold > summary:focus {
+    #info_panel .content-block > summary:hover,
+    #info_panel .content-block > summary:focus {
         color: var(--block-accent-dark);
         outline: none;
     }
@@ -1382,7 +1344,23 @@
     }
 
     #info_panel .concept-figure {
+        border: 1px solid #dbe4ef;
+        border-left: 5px solid #5f7fa5;
+        border-radius: 6px;
         margin: 0.1em 0 0.85em;
+        padding: 0.55em 0.75em 0.65em;
+    }
+
+    #info_panel .concept-figure > summary {
+        color: #3f5876;
+        cursor: pointer;
+        font-weight: 700;
+        list-style-position: outside;
+        margin-bottom: 0.25em;
+    }
+
+    #info_panel .concept-figure-body {
+        margin: 0;
     }
 
     #info_panel .concept-graphic {
