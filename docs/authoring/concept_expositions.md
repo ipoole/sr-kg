@@ -135,7 +135,7 @@ picture.
 The constancy of the speed of light is the postulate that light in vacuum is
 measured to travel at the same speed \(c\) by every
 \cref{Inertial frame}{sr.inertial_frames}, independent of the motion of the
-source or the observer. In SI units \(c=299\,792\,458\,\mathrm{m\,s^{-1}}\)
+source or the observer. In SI units \(c\overset{\text{SI definition}}{=}299\,792\,458\,\mathrm{m\,s^{-1}}\)
 exactly, because the metre is defined using this speed.
 
 The claim is not merely that light is very fast. The radical statement is that
@@ -150,7 +150,7 @@ time \(t\), the lightfront has radius \(ct\). In one-space-one-time language,
 light rays satisfy
 
 \[
-x=\pm ct.
+x\overset{\text{light}}{=}\pm ct.
 \]
 
 The postulate says that any other inertial observer, using their own coordinates
@@ -473,7 +473,7 @@ sign. Minkowski spacetime uses a different rule.
 With the \(+---\) convention used here, the flat spacetime metric is
 
 \[
-\eta_{\mu\nu}=\mathrm{diag}(1,-1,-1,-1).
+\eta_{\mu\nu}\coloneqq\mathrm{diag}(1,-1,-1,-1).
 \]
 
 The first entry belongs to the time component, written as \(ct\) when all four
@@ -484,14 +484,15 @@ spacetime geometry different from four-dimensional Euclidean geometry.
 For a displacement
 
 \[
-\Delta x^\mu=(c\Delta t,\Delta x,\Delta y,\Delta z),
+\Delta x^\mu\coloneqq(c\Delta t,\Delta x,\Delta y,\Delta z),
 \]
 
 the metric gives
 
 \[
-\Delta s^2=\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu
-          =c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
+\Delta s^2\equiv\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu
+          \overset{\text{metric}}{=}
+          c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
 \]
 
 This is the invariant interval between the two events. The repeated indices
@@ -499,16 +500,20 @@ mean that we sum over the four components. In the standard inertial coordinates
 used for special relativity the metric is diagonal, so there are no cross terms
 such as \(dt\,dx\).
 
-The same metric lowers indices. If \(V^\mu=(V^0,V^1,V^2,V^3)\), then
+The same metric lowers indices. If \(V^\mu\coloneqq(V^0,V^1,V^2,V^3)\), then
 
 \[
-V_\mu=\eta_{\mu\nu}V^\nu=(V^0,-V^1,-V^2,-V^3)
+V_\mu\coloneqq\eta_{\mu\nu}V^\nu
+\overset{+---}{=}
+(V^0,-V^1,-V^2,-V^3)
 \]
 
 in the \(+---\) convention. This is why the scalar product is written
 
 \[
-V_\mu V^\mu=(V^0)^2-(V^1)^2-(V^2)^2-(V^3)^2.
+V_\mu V^\mu
+\overset{\text{metric}}{=}
+(V^0)^2-(V^1)^2-(V^2)^2-(V^3)^2.
 \]
 
 Lowering an index is not just typographical tidying; it applies the metric
@@ -527,7 +532,7 @@ inertial-frame transformations that preserve this metric structure. In matrix
 notation the condition is
 
 \[
-\Lambda^T\eta\Lambda=\eta.
+\Lambda^T\eta\Lambda\overset{\text{Lorentz}}{=}\eta.
 \]
 
 This equation means that although the components of a vector change between
@@ -604,20 +609,20 @@ but they agree on the metric combination that defines the interval.
 With the \(+---\) convention, the interval between two events is
 
 \[
-\Delta s^2=c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
+\Delta s^2\coloneqq c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
 \]
 
 Equivalently, using the \cref{Metric tensor}{sr.metric_tensor},
 
 \[
-\Delta s^2=\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu.
+\Delta s^2\equiv\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu.
 \]
 
 The interval is built from a separation, not from one event in isolation. If
 two events have coordinates \(x_1^\mu\) and \(x_2^\mu\), form
 
 \[
-\Delta x^\mu=x_2^\mu-x_1^\mu.
+\Delta x^\mu\coloneqq x_2^\mu-x_1^\mu.
 \]
 
 This removes the arbitrary choice of coordinate origin and leaves the
@@ -627,14 +632,16 @@ Contracting the separation with the metric gives the usual interval formula.
 For
 
 \[
-\Delta x^\mu=(c\Delta t,\Delta x,\Delta y,\Delta z)
+\Delta x^\mu\coloneqq(c\Delta t,\Delta x,\Delta y,\Delta z)
 \]
 
-and \(\eta_{\mu\nu}=\mathrm{diag}(1,-1,-1,-1)\), the contraction
+and \(\eta_{\mu\nu}\coloneqq\mathrm{diag}(1,-1,-1,-1)\), the contraction
 \(\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu\) expands to
 
 \[
-\Delta s^2=c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
+\Delta s^2
+\overset{\text{metric}}{=}
+c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
 \]
 
 The sign of \(\Delta s^2\) classifies the separation. With the convention used
@@ -654,7 +661,7 @@ c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2.
 This is like rotating an ordinary vector: the separate \(x\) and \(y\)
 components change, but the length \(x^2+y^2\) does not.
 
-For light travelling in one spatial dimension, \(\Delta x=c\Delta t\), so the
+For light travelling in one spatial dimension, \(\Delta x\overset{\text{light}}{=}c\Delta t\), so the
 interval is zero. That null condition leads to the
 \cref{Light cone}{sr.light_cone}. For a massive clock following a timelike path,
 the interval along the path defines \cref{Proper time}{sr.proper_time}. Thus
@@ -740,11 +747,11 @@ For the standard boost, take two inertial frames \(S\) and \(S'\), with \(S'\)
 moving at speed \(v\) in the \(+x\) direction relative to \(S\). Write
 
 \[
-\beta=\frac{v}{c}, \qquad
-\gamma=\frac{1}{\sqrt{1-\beta^2}}.
+\beta\coloneqq\frac{v}{c}, \qquad
+\gamma\coloneqq\frac{1}{\sqrt{1-\beta^2}}.
 \]
 
-The origins coincide at \(t=t'=0\), and only the \(ct\) and \(x\) coordinates
+The origins coincide at \(t\overset{\text{shared origin}}{=}t'\overset{\text{shared origin}}{=}0\), and only the \(ct\) and \(x\) coordinates
 mix; \(y\) and \(z\) remain unchanged.
 
 Homogeneity of space and time motivates linear transformations. There is no
@@ -758,8 +765,9 @@ every inertial frame. The stronger geometric statement is that the full interval
 is preserved:
 
 \[
-ds^2=c^2dt^2-dx^2-dy^2-dz^2
-    =c^2dt'^2-dx'^2-dy'^2-dz'^2.
+ds^2\coloneqq c^2dt^2-dx^2-dy^2-dz^2
+    \overset{\text{Lorentz invariant}}{=}
+    c^2dt'^2-dx'^2-dy'^2-dz'^2.
 \]
 
 This interval-preservation condition is what turns the relativity postulates
@@ -768,12 +776,14 @@ into a spacetime transformation law.
 For a boost along the \(x\)-axis, the Lorentz transformation is
 
 \[
-ct'=\gamma(ct-\beta x), \qquad
-x'=\gamma(x-\beta ct), \qquad
-y'=y, \qquad
-z'=z.
+ct'\overset{\text{boost}}{=}\gamma(ct-\beta x), \qquad
+x'\overset{\text{boost}}{=}\gamma(x-\beta ct), \qquad
+y'\overset{\text{boost}}{=}y, \qquad
+z'\overset{\text{boost}}{=}z.
 \]
 
+The \(\text{boost}\) label marks that these equalities use the standard \(x\)-directed
+Lorentz boost, not an arbitrary algebraic rearrangement.
 The inverse transformation is obtained by replacing \(\beta\) with \(-\beta\).
 The factor \(\gamma\) becomes large as \(v\) approaches \(c\), encoding the
 growing difference between Galilean and relativistic kinematics.
@@ -783,39 +793,45 @@ The interval check is worth seeing once. Substitute the boost equations into
 
 \[
 c^2dt'^2-dx'^2
-=\gamma^2[(cdt-\beta dx)^2-(dx-\beta cdt)^2].
+\overset{\text{boost}}{=}
+\gamma^2[(cdt-\beta dx)^2-(dx-\beta cdt)^2].
 \]
 
 Expanding and cancelling the cross terms gives
 
 \[
-\gamma^2(1-\beta^2)(c^2dt^2-dx^2)=c^2dt^2-dx^2,
+\gamma^2(1-\beta^2)(c^2dt^2-dx^2)
+\overset{\gamma}{=}
+c^2dt^2-dx^2,
 \]
 
-because \(\gamma^2(1-\beta^2)=1\). The unchanged \(y\) and \(z\) components
+because \(\gamma^2(1-\beta^2)\equiv1\). The unchanged \(y\) and \(z\) components
 complete the four-dimensional interval check.
 
-In four-vector notation, with \(x^\mu=(ct,x,y,z)\), a Lorentz transformation is
+In four-vector notation, with \(x^\mu\coloneqq(ct,x,y,z)\), a Lorentz transformation is
 written
 
 \[
-x'^\mu=\Lambda^\mu{}_{\nu}x^\nu.
+x'^\mu\overset{\text{Lorentz}}{=}\Lambda^\mu{}_{\nu}x^\nu.
 \]
 
+The \(\text{Lorentz}\) label marks the transformation law for four-vector components.
 Preservation of the metric is expressed by
 
 \[
 \eta_{\alpha\beta}\Lambda^\alpha{}_{\mu}\Lambda^\beta{}_{\nu}
-=\eta_{\mu\nu},
+\overset{\text{metric preservation}}{=}\eta_{\mu\nu},
 \]
 
 or, in matrix notation,
 
 \[
-\Lambda^T\eta\Lambda=\eta.
+\Lambda^T\eta\Lambda\overset{\text{metric preservation}}{=}\eta.
 \]
 
-This is the compact version of the interval-preservation rule.
+The \(\text{metric preservation}\) label names the condition that makes \(\Lambda\) a
+Lorentz transformation. This is the compact version of the
+interval-preservation rule.
 
 A Lorentz transformation does not move the physical event. It changes the
 coordinate description assigned by one inertial frame into the coordinate
@@ -905,13 +921,14 @@ directions, which cannot be connected by causal signals moving at or below
 The cone is derived by setting the interval from a chosen event to zero:
 
 \[
-\Delta s^2=c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2=0.
+\Delta s^2\coloneqq c^2\Delta t^2-\Delta x^2-\Delta y^2-\Delta z^2
+\overset{\text{null}}{=}0.
 \]
 
 Equivalently,
 
 \[
-|\Delta \mathbf x|=c|\Delta t|.
+|\Delta \mathbf x|\overset{\text{null}}{=}c|\Delta t|.
 \]
 
 This is the condition for a signal moving exactly at speed \(c\), either away
@@ -928,7 +945,7 @@ are spacelike-separated events, where any influence would need to outrun light.
 This inside/on/outside classification is the practical causal meaning of the
 interval sign.
 
-The light cone is defined by \(\Delta s^2=0\), and
+The light cone is defined by \(\Delta s^2\overset{\text{null}}{=}0\), and
 \cref{Lorentz transformations}{sr.lorentz_transformations} preserve
 \(\Delta s^2\). Different inertial observers may draw different coordinate axes
 through the same event, but they agree which separations are timelike,
@@ -940,7 +957,7 @@ a signal to reach it. A distant event can be inside the future cone if enough
 time has elapsed. The comparison is always between spatial separation and
 elapsed time multiplied by \(c\).
 
-In a one-space-one-time diagram, light satisfies \(x=\pm ct\), so the cone
+In a one-space-one-time diagram, light satisfies \(x\overset{\text{light}}{=}\pm ct\), so the cone
 boundary is drawn as two 45-degree lines. With two space dimensions plus time,
 those lines become a cone. In three space dimensions, each moment after the
 event gives an expanding sphere of light; stacking those spheres through time
@@ -1015,7 +1032,7 @@ The vertical axis is usually \(ct\), not \(t\), so both axes have units of
 length. With equal scales on \(x\) and \(ct\), light rays satisfy
 
 \[
-x=\pm ct
+x\overset{\text{light}}{=}\pm ct
 \]
 
 and appear as 45-degree lines. This convention makes the causal structure
@@ -1028,8 +1045,8 @@ motion. A 45-degree worldline represents light.
 
 Axes for a moving inertial frame are drawn using the Lorentz transformations.
 The \(ct'\)-axis is the worldline of the moving frame's spatial origin, so it
-satisfies \(x'=0\), which gives \(x=vt\). The \(x'\)-axis is the line of
-simultaneity \(t'=0\), which gives \(ct=\beta x\) for a standard boost.
+satisfies \(x'\overset{ct'\text{-axis}}{=}0\), which gives \(x\overset{x'=0}{=}vt\). The \(x'\)-axis is the line of
+simultaneity \(t'\overset{x'\text{-axis}}{=}0\), which gives \(ct\overset{t'=0}{=}\beta x\) for a standard boost.
 
 A Minkowski diagram is not ordinary graph paper with a time label attached.
 Vertical and horizontal page distances are not themselves invariant lengths.
@@ -1115,27 +1132,27 @@ clocks. Proper time belongs to the travelling clock itself.
 The definition comes directly from the spacetime interval. With the sign
 convention used in this atlas,
 \[
-ds^2=c^2dt^2-d\mathbf x^2.
+ds^2\overset{\text{interval}}{=}c^2dt^2-d\mathbf x^2.
 \]
 For a timelike segment we define
 \[
-ds^2=c^2d\tau^2,
+ds^2\coloneqq c^2d\tau^2,
 \]
 so \(d\tau\) is the small amount of proper time accumulated along that segment
 of the worldline. For a finite path, the clock reading is obtained by summing,
 or integrating, those small contributions:
 \[
-\Delta\tau=\int d\tau.
+\Delta\tau\coloneqq\int d\tau.
 \]
 
-For motion at speed \(v\) in one inertial frame, \(d\mathbf x^2=v^2dt^2\), so
+For motion at speed \(v\coloneqq|d\mathbf x|/dt\) in one inertial frame, \(d\mathbf x^2=v^2dt^2\), so
 \[
-c^2d\tau^2=c^2dt^2-v^2dt^2
+c^2d\tau^2\overset{\text{proper time}}{=}c^2dt^2-v^2dt^2
   =c^2dt^2\left(1-\frac{v^2}{c^2}\right).
 \]
 Taking the future-directed positive root gives
 \[
-d\tau=dt\sqrt{1-\frac{v^2}{c^2}}=\frac{dt}{\gamma}.
+d\tau=dt\sqrt{1-\frac{v^2}{c^2}}\overset{\gamma}{=}\frac{dt}{\gamma}.
 \]
 This is the familiar moving-clock result, but here it is not an isolated rule.
 It is a direct consequence of measuring timelike length with the spacetime
@@ -1155,7 +1172,7 @@ time means. When clocks reunite at the same event and compare readings, no
 light-travel correction remains to be made. Any difference in readings is a
 worldline property.
 
-Lightlike paths are a useful warning. For light, \(ds^2=0\), so the interval
+Lightlike paths are a useful warning. For light, \(ds^2\overset{\text{null}}{=}0\), so the interval
 would give \(d\tau=0\). This is not a license to imagine a photon's rest-frame
 clock. There is no inertial rest frame for light. Proper time is defined for
 timelike worldlines of massive clocks and particles; null worldlines sit at the
@@ -1185,7 +1202,7 @@ spacetime.
 1. Identify proper time as the reading of a clock along its worldline.
 2. Explain why reunited clocks can disagree.
 3. Calculate \(d\tau\) for constant speed.
-4. Calculate \(d\tau\) from a simple interval in units where \(c=1\).
+4. Calculate \(d\tau\) from a simple interval in units where \(c\overset{\text{units}}{=}1\).
 5. Distinguish proper-time difference from signal delay.
 
 ### References
@@ -1233,15 +1250,15 @@ observer is replaced by another.
 
 The prototype is the displacement between two spacetime events,
 \[
-\Delta x^\mu=(c\Delta t,\Delta x,\Delta y,\Delta z).
+\Delta x^\mu\coloneqq(c\Delta t,\Delta x,\Delta y,\Delta z).
 \]
 Under a Lorentz transformation,
 \[
-\Delta x'^\mu=\Lambda^\mu{}_\nu\Delta x^\nu.
+\Delta x'^\mu\overset{\text{Lorentz}}{=}\Lambda^\mu{}_\nu\Delta x^\nu.
 \]
 Any object \(A^\mu\) that transforms by the same rule,
 \[
-A'^\mu=\Lambda^\mu{}_\nu A^\nu,
+A'^\mu\overset{\text{Lorentz}}{=}\Lambda^\mu{}_\nu A^\nu,
 \]
 is called a four-vector.
 
@@ -1253,11 +1270,11 @@ geometric object, not four independent measurements glued together.
 The metric gives four-vectors their invariant scalar products. With the \(+---\)
 metric convention,
 \[
-V_\mu W^\mu=\eta_{\mu\nu}V^\mu W^\nu.
+V_\mu W^\mu\coloneqq\eta_{\mu\nu}V^\mu W^\nu.
 \]
 Lorentz transformations preserve \(\eta\), so
 \[
-V'_\mu W'^\mu=V_\mu W^\mu.
+V'_\mu W'^\mu\overset{\text{Lorentz}}{=}V_\mu W^\mu.
 \]
 This is the same structural role played by dot products of ordinary vectors
 under rotations, except that the spacetime metric has one time sign and three
@@ -1266,11 +1283,11 @@ space signs.
 The distinction between upper and lower components matters. The metric lowers
 an index:
 \[
-V_\mu=\eta_{\mu\nu}V^\nu.
+V_\mu\coloneqq\eta_{\mu\nu}V^\nu.
 \]
-In standard coordinates this turns \(V^\mu=(V^0,V^1,V^2,V^3)\) into
+In standard coordinates this turns \(V^\mu\coloneqq(V^0,V^1,V^2,V^3)\) into
 \[
-V_\mu=(V^0,-V^1,-V^2,-V^3).
+V_\mu\overset{+---}{=}(V^0,-V^1,-V^2,-V^3).
 \]
 The minus signs are what prevent the scalar product from becoming an ordinary
 Euclidean length.
@@ -1343,11 +1360,11 @@ intervals.
 The position four-vector is the first concrete four-vector most learners meet.
 In an inertial frame, an event \(P\) is assigned coordinates
 \[
-x^\mu=(ct,x,y,z).
+x^\mu\coloneqq(ct,x,y,z).
 \]
 The first component is \(ct\), not just \(t\), so that all four components have
 dimensions of length. In one-space-one-time diagrams this convention also makes
-light rays satisfy \(x=\pm ct\).
+light rays satisfy \(x\overset{\text{light}}{=}\pm ct\).
 
 The phrase position four-vector needs care. It is not merely the ordinary
 spatial position \(\mathbf x\). It is the spacetime coordinate of an event
@@ -1357,7 +1374,7 @@ relative to a chosen origin event. If the origin changes, the components of
 If two inertial frames share an origin event, their coordinate descriptions of
 another event are related by the Lorentz transformation law
 \[
-x'^\mu=\Lambda^\mu{}_\nu x^\nu.
+x'^\mu\overset{\text{Lorentz}}{=}\Lambda^\mu{}_\nu x^\nu.
 \]
 For a boost along the \(x\)-axis, \(ct\) and \(x\) mix. This is the concrete
 reason time and space coordinates are treated as components of one object.
@@ -1365,23 +1382,23 @@ reason time and space coordinates are treated as components of one object.
 The most physical use of position four-vectors is usually in differences. For
 two events,
 \[
-\Delta x^\mu=x_2^\mu-x_1^\mu.
+\Delta x^\mu\coloneqq x_2^\mu-x_1^\mu.
 \]
 This displacement does not depend on the arbitrary choice of coordinate origin.
 Contracting it with the metric gives the spacetime interval:
 \[
-\Delta s^2=\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu.
+\Delta s^2\equiv\eta_{\mu\nu}\Delta x^\mu\Delta x^\nu.
 \]
 So the position four-vector provides the coordinate packaging, while
 displacements between position four-vectors supply invariant spacetime
 geometry.
 
 For example, if an event occurs at \(t=2\,\mathrm{ns}\), \(x=0.30\,\mathrm m\),
-\(y=z=0\), then with \(c=3.0\times10^8\,\mathrm{m\,s^{-1}}\),
+\(y=z=0\), then with \(c\overset{\text{SI}}{=}3.0\times10^8\,\mathrm{m\,s^{-1}}\),
 \[
 ct=0.60\,\mathrm m,
 \]
-so \(x^\mu=(0.60\,\mathrm m,0.30\,\mathrm m,0,0)\) relative to the chosen
+so \(x^\mu\coloneqq(0.60\,\mathrm m,0.30\,\mathrm m,0,0)\) relative to the chosen
 origin.
 
 The later velocity four-vector is obtained by differentiating \(x^\mu\) with
@@ -1391,7 +1408,7 @@ events; they are the starting point for relativistic kinematics.
 ### Block Plan
 
 - `overview`: Event coordinates as one object.
-- `definition`: \(x^\mu=(ct,x,y,z)\).
+- `definition`: \(x^\mu\coloneqq(ct,x,y,z)\).
 - `construction`: Why use \(ct\).
 - `explanation`: Dependence on origin event.
 - `derivation`: Lorentz transformation of position.
@@ -1445,7 +1462,7 @@ force; those belong later.
 
 ### Exposition
 
-Ordinary velocity is \(\mathbf v=d\mathbf x/dt\). It is useful, but it is tied
+Ordinary velocity is \(\mathbf v\coloneqq d\mathbf x/dt\). It is useful, but it is tied
 to one inertial frame's coordinate time. A relativistic velocity object should
 transform as a four-vector, so its denominator must not depend on a particular
 observer's clock grid. The invariant clock along a massive particle's worldline
@@ -1453,17 +1470,19 @@ is proper time.
 
 The velocity four-vector is therefore defined by
 \[
-U^\mu=\frac{dx^\mu}{d\tau},
+U^\mu\coloneqq\frac{dx^\mu}{d\tau},
 \]
 where \(x^\mu\) is the position four-vector and \(\tau\) is proper time. Since
 \(x^\mu\) is a four-vector and \(d\tau\) is invariant, \(U^\mu\) transforms as
 a four-vector.
 
-Writing \(x^\mu=(ct,\mathbf x)\), we have
+Writing \(x^\mu\coloneqq(ct,\mathbf x)\), we have
 \[
-U^\mu=\left(c\frac{dt}{d\tau},\frac{d\mathbf x}{d\tau}\right).
+U^\mu
+\overset{\text{components}}{=}
+\left(c\frac{dt}{d\tau},\frac{d\mathbf x}{d\tau}\right).
 \]
-Because \(dt/d\tau=\gamma\), and
+Because \(dt/d\tau\overset{\text{proper time}}{=}\gamma\), and
 \[
 \frac{d\mathbf x}{d\tau}
  =\frac{d\mathbf x}{dt}\frac{dt}{d\tau}
@@ -1471,13 +1490,20 @@ Because \(dt/d\tau=\gamma\), and
 \]
 the components in one inertial frame are
 \[
-U^\mu=\gamma(c,\mathbf v).
+U^\mu\overset{\text{proper time}}{=}\gamma(c,\mathbf v).
 \]
 
 The fixed norm is an important check. With the \(+---\) metric,
 \[
-U_\mu U^\mu=\gamma^2(c^2-v^2)=c^2.
+U_\mu U^\mu
+\overset{\text{metric}}{=}
+\gamma^2(c^2-v^2)
+\overset{\gamma}{=}
+c^2.
 \]
+The \(\text{metric}\) label marks the Minkowski contraction, where the spatial part enters
+with a minus sign. The \(\gamma\) label marks use of the definition of the
+Lorentz factor.
 So all massive particles have four-velocity of invariant magnitude \(c\), even
 though their ordinary speeds may be different. This is not saying every
 particle moves through space at speed \(c\). It is saying that every massive
@@ -1486,10 +1512,10 @@ proper time.
 
 Geometrically, four-velocity is the future-directed tangent to the particle's
 worldline. If the particle accelerates, this tangent changes from event to
-event. For a particle at rest in a chosen frame, \(\mathbf v=0\) and
-\(\gamma=1\), so
+event. For a particle at rest in a chosen frame, \(\mathbf v\overset{\text{rest frame}}{=}0\) and
+\(\gamma\overset{\mathbf v=0}{=}1\), so
 \[
-U^\mu=(c,0,0,0).
+U^\mu\overset{\text{rest frame}}{=}(c,0,0,0).
 \]
 The spatial part vanishes, but the particle is still moving along its timelike
 worldline.
@@ -1501,10 +1527,10 @@ the dynamics of energy, momentum, and force.
 ### Block Plan
 
 - `overview`: Tangent per unit proper time.
-- `definition`: \(U^\mu=dx^\mu/d\tau\).
+- `definition`: \(U^\mu\coloneqq dx^\mu/d\tau\).
 - `explanation`: Why proper time is the denominator.
-- `derivation`: \(U^\mu=\gamma(c,\mathbf v)\).
-- `derivation`: Fixed norm \(U_\mu U^\mu=c^2\).
+- `derivation`: \(U^\mu\overset{\text{proper time}}{=}\gamma(c,\mathbf v)\).
+- `derivation`: Fixed norm \(U_\mu U^\mu\overset{\gamma}{=}c^2\).
 - `intuition`: Worldline tangent picture.
 - `misconception`: Not \((c,\mathbf v)\).
 - `example`: Particle at rest.
@@ -1550,7 +1576,7 @@ visual inspection shows label crowding.
 
 This concept packages energy and momentum as one four-vector and derives the
 energy-momentum relation. It should prepare mass-energy equivalence but leave
-the interpretation of \(E_0=mc^2\) mainly to 4.6.
+the interpretation of \(E_0\coloneqq mc^2\) mainly to 4.6.
 
 ### Exposition
 
@@ -1558,37 +1584,43 @@ Four-velocity is kinematic: it describes the tangent to a particle's worldline.
 Four-momentum is dynamical: it combines energy and momentum into one
 relativistic object. For a massive particle,
 \[
-p^\mu=mU^\mu.
+p^\mu\coloneqq mU^\mu.
 \]
-Since \(U^\mu=\gamma(c,\mathbf v)\), this gives
+Since \(U^\mu\overset{\text{proper time}}{=}\gamma(c,\mathbf v)\), this gives
 \[
 p^\mu=(\gamma mc,\gamma m\mathbf v).
 \]
 Identifying
 \[
-\mathbf p=\gamma m\mathbf v,\qquad E=\gamma mc^2,
+\mathbf p\coloneqq\gamma m\mathbf v,\qquad E\coloneqq\gamma mc^2,
 \]
 we write
 \[
-p^\mu=(E/c,\mathbf p).
+p^\mu\coloneqq(E/c,\mathbf p).
 \]
 
 The invariant norm gives the key relation. With the \(+---\) metric,
 \[
-p_\mu p^\mu=\frac{E^2}{c^2}-\mathbf p^2.
+p_\mu p^\mu\overset{\text{metric}}{=}\frac{E^2}{c^2}-\mathbf p^2.
 \]
-But \(p^\mu=mU^\mu\), and \(U_\mu U^\mu=c^2\), so
+The \(\text{metric}\) label marks the expansion of the four-momentum contraction using the
+\(+---\) metric.
+But \(p^\mu\coloneqq mU^\mu\), and \(U_\mu U^\mu\overset{\text{four-velocity}}{=}c^2\), so
 \[
-p_\mu p^\mu=m^2c^2.
+p_\mu p^\mu\overset{p=mU}{=}m^2c^2.
 \]
+The \(p=mU\) label marks substituting the definition of four-momentum and the
+fixed norm of four-velocity.
 Equating these two expressions gives
 \[
-\frac{E^2}{c^2}-\mathbf p^2=m^2c^2,
+\frac{E^2}{c^2}-\mathbf p^2\overset{\text{mass shell}}{=}m^2c^2,
 \]
 or
 \[
-E^2=\mathbf p^2c^2+m^2c^4.
+E^2\overset{\text{mass shell}}{=}\mathbf p^2c^2+m^2c^4.
 \]
+The \(\text{mass shell}\) label names the physical invariant-mass condition for the
+particle, rewritten here as an energy relation.
 
 Energy and three-momentum are therefore not separate relativistic bookkeeping
 systems. They are components of one four-vector. Different observers may assign
@@ -1596,22 +1628,22 @@ different values of \(E\) and \(\mathbf p\), but they are describing the same
 object, and they agree on its invariant norm.
 
 The rest frame makes the structure especially clear. In the rest frame of a
-massive particle, \(\mathbf v=0\), \(\gamma=1\), and \(\mathbf p=0\), so
+massive particle, \(\mathbf v\overset{\text{rest frame}}{=}0\), \(\gamma\overset{\mathbf v=0}{=}1\), and \(\mathbf p\overset{\text{rest frame}}{=}0\), so
 \[
-p^\mu=(mc,\mathbf 0).
+p^\mu\overset{\text{rest frame}}{=}(mc,\mathbf 0).
 \]
 The time component remains nonzero. This is the immediate doorway to rest
 energy and mass-energy equivalence.
 
-There is one important warning. The construction \(p^\mu=mU^\mu\) assumes a
+There is one important warning. The construction \(p^\mu\coloneqq mU^\mu\) assumes a
 massive particle with proper time along its worldline. Massless particles have
 no rest frame and no proper time parameter, but they still have four-momentum.
-For them \(p_\mu p^\mu=0\) and \(E=|\mathbf p|c\).
+For them \(p_\mu p^\mu\overset{\text{massless}}{=}0\) and \(E\overset{\text{massless}}{=}|\mathbf p|c\).
 
 ### Block Plan
 
 - `overview`: Energy and momentum as one object.
-- `definition`: \(p^\mu=mU^\mu=(E/c,\mathbf p)\).
+- `definition`: \(p^\mu\coloneqq mU^\mu\coloneqq(E/c,\mathbf p)\).
 - `derivation`: Components from four-velocity.
 - `derivation`: Invariant norm.
 - `derivation_step`: Energy-momentum relation.
@@ -1623,7 +1655,7 @@ For them \(p_\mu p^\mu=0\) and \(E=|\mathbf p|c\).
 
 ### Study Questions
 
-1. Identify \(p^\mu=mU^\mu=(E/c,\mathbf p)\).
+1. Identify \(p^\mu\coloneqq mU^\mu\coloneqq(E/c,\mathbf p)\).
 2. Explain frame-dependent energy/momentum components.
 3. Compute \(E\) and \(|\mathbf p|\) for a simple massive particle.
 4. Check the invariant mass relation.
@@ -1660,7 +1692,7 @@ The existing graphic correctly pairs a \(p^\mu\) arrow with \(E/c\) and
 
 ### Scope
 
-This concept explains \(E_0=mc^2\) as rest energy derived from the
+This concept explains \(E_0\coloneqq mc^2\) as rest energy derived from the
 four-momentum norm. It should include interpretation and common mistakes, but
 not become a full treatment of nuclear physics, binding energy calculations, or
 particle reactions.
@@ -1670,22 +1702,28 @@ particle reactions.
 Mass-energy equivalence is the statement that invariant mass corresponds to
 rest energy:
 \[
-E_0=mc^2.
+E_0\coloneqq mc^2.
 \]
 The subscript is useful. This is rest energy, the energy of a massive system in
 the frame where its total three-momentum is zero.
 
 The clean derivation comes from four-momentum. Write
 \[
-p^\mu=(E/c,\mathbf p).
+p^\mu\coloneqq(E/c,\mathbf p).
 \]
-Its invariant norm is
+Its invariant norm is computed using the Minkowski metric; the \(\text{metric}\) label
+marks that expansion:
 \[
-p_\mu p^\mu=\frac{E^2}{c^2}-\mathbf p^2.
+p_\mu p^\mu
+\overset{\text{metric}}{=}
+\frac{E^2}{c^2}-\mathbf p^2.
 \]
-For a particle or system of invariant mass \(m\), this norm is \(m^2c^2\), so
+For a particle or system of invariant mass \(m\), the \(\text{mass shell}\) label marks
+the physical condition that this invariant norm is fixed by the rest mass:
 \[
-\frac{E^2}{c^2}-\mathbf p^2=m^2c^2.
+p_\mu p^\mu
+\overset{\text{mass shell}}{=}
+m^2c^2.
 \]
 Multiplying by \(c^2\) gives the energy-momentum relation
 \[
@@ -1694,16 +1732,18 @@ E^2=\mathbf p^2c^2+m^2c^4.
 
 Now choose the rest frame, where the total spatial momentum vanishes:
 \[
-\mathbf p=0.
+\mathbf p\overset{\text{rest frame}}{=}0.
 \]
-Then
+Substituting that zero momentum into the energy-momentum relation removes the
+momentum term:
 \[
-E^2=m^2c^4.
+E^2\overset{\mathbf p=0}{=}m^2c^4.
 \]
 Taking the positive physical root gives
 \[
-E_0=mc^2.
+E_0\coloneqq E\big|_{\mathbf p=0}\overset{E>0}{=}mc^2.
 \]
+The \(E>0\) label marks the choice of the positive energy branch.
 
 This is easy to remember and easy to misread. It is not saying that total
 energy is always just \(mc^2\). For a moving massive particle, total energy is
@@ -1713,9 +1753,10 @@ full relation.
 It is also not best understood as a magical conversion of one substance called
 mass into another substance called energy. In relativity, invariant mass is a
 measure of a system's total energy-momentum content. If a closed system loses
-rest energy \(\Delta E_0\), its invariant mass decreases by
+rest energy \(\Delta E_0\), the rest-energy formula can be read as a relation
+between energy change and mass change:
 \[
-\Delta m=\frac{\Delta E_0}{c^2}.
+\Delta m\overset{E_0=mc^2}{=}\frac{\Delta E_0}{c^2}.
 \]
 Conversely, adding internal energy to a closed system, for example by heating
 it, increases its invariant mass by a tiny amount.
@@ -1734,12 +1775,12 @@ the spatial momentum vanishes.
 ### Block Plan
 
 - `overview`: Rest energy is mass energy.
-- `definition`: \(E_0=mc^2\) and the full relation.
+- `definition`: \(E_0\coloneqq mc^2\) and the full relation.
 - `derivation`: From four-momentum norm.
 - `derivation_step`: Rest-frame limit.
 - `explanation`: Applies to systems.
 - `misconception`: Not magic substance conversion.
-- `example`: \(\Delta m=\Delta E_0/c^2\).
+- `example`: \(\Delta m\overset{E_0=mc^2}{=}\Delta E_0/c^2\).
 - `warning`: Total energy is not always \(mc^2\).
 - `historical_note`: Einstein's 1905 result.
 - `summary`: Why it matters.
@@ -1748,7 +1789,7 @@ the spatial momentum vanishes.
 
 1. Identify rest energy.
 2. Explain why the full energy-momentum relation matters.
-3. Derive \(E_0=mc^2\) by setting \(\mathbf p=0\).
+3. Derive \(E_0\coloneqq mc^2\) by setting \(\mathbf p=0\).
 4. Calculate \(\Delta m\) from an energy loss.
 5. Explain why heating a sealed box changes invariant mass.
 6. Explain why "mass turns into energy" can mislead.
@@ -1799,7 +1840,7 @@ L(q,\dot q,t).
 \]
 Its accumulated value is the action,
 \[
-S=\int L(q,\dot q,t)\,dt.
+S\coloneqq\int L(q,\dot q,t)\,dt.
 \]
 The action principle then asks which histories make \(S\) stationary.
 
@@ -1832,7 +1873,7 @@ Lagrangians can therefore encode the same dynamics.
 In relativistic theories the Lagrangian, or sometimes the action directly,
 should be built from invariant ingredients. Proper time, spacetime intervals,
 and scalar contractions of four-vectors are natural building blocks. Setting
-\(c=1\) often makes the symmetry clearer, but \(c\) can be restored when
+\(c\overset{\text{units}}{=}1\) often makes the symmetry clearer, but \(c\) can be restored when
 dimensional interpretation matters.
 
 There is no universal machine that derives the correct Lagrangian from nothing.
@@ -1848,7 +1889,7 @@ symmetries of the action become conservation laws through Noether's theorem.
 ### Block Plan
 
 - `overview`: The local rule inside an action.
-- `definition`: \(L(q,\dot q,t)\) and \(S=\int Ldt\).
+- `definition`: \(L(q,\dot q,t)\) and \(S\coloneqq\int Ldt\).
 - `explanation`: Local-to-global role.
 - `warning`: Non-uniqueness under total derivatives.
 - `example`: Simple \(T-V\) model.
@@ -1906,12 +1947,12 @@ integration-by-parts derivation to 5.3.
 The action principle describes motion by comparing whole possible histories.
 For particle mechanics, a history \(q(t)\) is assigned an action
 \[
-S[q]=\int_{t_1}^{t_2}L(q,\dot q,t)\,dt.
+S[q]\coloneqq\int_{t_1}^{t_2}L(q,\dot q,t)\,dt.
 \]
 The physical history is the one for which the first-order change in \(S\)
 vanishes under small allowed variations:
 \[
-\delta S=0.
+\delta S\overset{\text{stationary}}{=}0.
 \]
 
 The standard picture is a family of nearby paths between the same endpoints.
@@ -1926,12 +1967,12 @@ least action.
 
 In the standard derivation the endpoint values are fixed. If the varied path is
 \[
-q_a(t)=q(t)+a\,\eta(t),
+q_a(t)\coloneqq q(t)+a\,\eta(t),
 \]
-then \(\eta(t_1)=\eta(t_2)=0\). The action becomes a function \(S(a)\), and
+then \(\eta(t_1)\overset{\text{fixed endpoints}}{=}\eta(t_2)\overset{\text{fixed endpoints}}{=}0\). The action becomes a function \(S(a)\), and
 stationarity of the original path is
 \[
-\left.\frac{dS}{da}\right|_{a=0}=0.
+\left.\frac{dS}{da}\right|_{a=0}\overset{\text{stationary}}{=}0.
 \]
 Those fixed endpoints are what make boundary terms vanish when the
 Euler-Lagrange equations are derived.
@@ -1950,7 +1991,7 @@ Euler-Lagrange equations.
 ### Block Plan
 
 - `overview`: Choosing a whole history.
-- `definition`: \(S[q]=\int Ldt\), \(\delta S=0\).
+- `definition`: \(S[q]\coloneqq\int Ldt\), \(\delta S\overset{\text{stationary}}{=}0\).
 - `intuition`: Compare nearby histories.
 - `misconception`: Stationary is not always smallest.
 - `construction`: Fixed endpoints.
@@ -1961,7 +2002,7 @@ Euler-Lagrange equations.
 
 ### Study Questions
 
-1. Recognize \(\delta S=0\).
+1. Recognize \(\delta S\overset{\text{stationary}}{=}0\).
 2. Explain fixed endpoints.
 3. Explain why "least" can mislead.
 4. Check stationarity for a quadratic \(S(a)\).
@@ -1986,7 +2027,7 @@ meaning. Retain unless visual inspection shows a concrete defect.
 
 #### Schema/View Issues
 
-- A future derivation trace could show \(L\rightarrow S\rightarrow\delta S=0
+- A future derivation trace could show \(L\rightarrow S\rightarrow\delta S\overset{\text{stationary}}{=}0
   \rightarrow\) Euler-Lagrange equations.
 
 #### Atlas Issues
@@ -2004,32 +2045,33 @@ though it may point forward to field equations.
 
 ### Exposition
 
-The action principle says \(\delta S=0\). The Euler-Lagrange equations are what
+The action principle says \(\delta S\overset{\text{stationary}}{=}0\). The Euler-Lagrange equations are what
 that statement becomes as local differential equations of motion.
 
 For one coordinate, start from
 \[
-S=\int_{t_1}^{t_2}L(q,\dot q,t)\,dt.
+S\coloneqq\int_{t_1}^{t_2}L(q,\dot q,t)\,dt.
 \]
 Vary the path while holding the endpoints fixed:
 \[
 q(t)\rightarrow q(t)+\delta q(t),\qquad
-\delta q(t_1)=\delta q(t_2)=0.
+\delta q(t_1)\overset{\text{fixed endpoints}}{=}\delta q(t_2)\overset{\text{fixed endpoints}}{=}0.
 \]
 The velocity varies too, so \(\dot q\rightarrow \dot q+\delta\dot q\).
 
 The first-order variation of the action is
 \[
-\delta S=\int_{t_1}^{t_2}\left(
+\delta S\overset{\text{variation}}{=}\int_{t_1}^{t_2}\left(
 \frac{\partial L}{\partial q}\delta q+
 \frac{\partial L}{\partial\dot q}\delta\dot q
 \right)dt.
 \]
 The second term contains \(\delta\dot q\). Since
-\(\delta\dot q=d(\delta q)/dt\), integrate by parts:
+\(\delta\dot q\coloneqq d(\delta q)/dt\), integrate by parts:
 \[
 \int_{t_1}^{t_2}\frac{\partial L}{\partial\dot q}\delta\dot q\,dt
-=\left[\frac{\partial L}{\partial\dot q}\delta q\right]_{t_1}^{t_2}
+\overset{\text{parts}}{=}
+\left[\frac{\partial L}{\partial\dot q}\delta q\right]_{t_1}^{t_2}
 -\int_{t_1}^{t_2}
 \frac{d}{dt}\left(\frac{\partial L}{\partial\dot q}\right)\delta q\,dt.
 \]
@@ -2037,18 +2079,20 @@ The boundary term vanishes because the endpoint variations are zero.
 
 So
 \[
-\delta S=\int_{t_1}^{t_2}\left[
+\delta S\overset{\text{parts}}{=}\int_{t_1}^{t_2}\left[
 \frac{\partial L}{\partial q}
 -\frac{d}{dt}\left(\frac{\partial L}{\partial\dot q}\right)
 \right]\delta q\,dt.
 \]
 The variation \(\delta q(t)\) can be chosen freely between the endpoints. The
-only way for \(\delta S\) to vanish for every such variation is for the bracket
+only way for \(\delta S\overset{\text{stationary}}{=}0\) to hold for every such variation is for the bracket
 to vanish at every time:
 \[
 \frac{d}{dt}\left(\frac{\partial L}{\partial\dot q}\right)
--\frac{\partial L}{\partial q}=0.
+-\frac{\partial L}{\partial q}\overset{\text{stationary action}}{=}0.
 \]
+The \(\text{stationary action}\) label marks that this equation is imposed by requiring
+the first variation of the action to vanish for arbitrary allowed variations.
 
 For a familiar check, take
 \[
@@ -2130,7 +2174,7 @@ Canonical momentum is the momentum-like quantity paired with a coordinate in
 the Lagrangian and Hamiltonian descriptions. For a coordinate \(q_i\) with
 velocity \(\dot q_i\), the canonical momentum conjugate to \(q_i\) is
 \[
-p_i=\frac{\partial L}{\partial \dot q_i}.
+p_i\coloneqq\frac{\partial L}{\partial \dot q_i}.
 \]
 For several generalized coordinates, each \(q_i\) has its own conjugate
 momentum \(p_i\).
@@ -2151,7 +2195,7 @@ L=\frac12m\dot x^2-V(x),
 \]
 the canonical momentum is
 \[
-p=\frac{\partial L}{\partial\dot x}=m\dot x.
+p\coloneqq\frac{\partial L}{\partial\dot x}=m\dot x.
 \]
 In this simple case canonical momentum agrees with ordinary mechanical
 momentum. That agreement is useful, but it is not the definition.
@@ -2163,7 +2207,7 @@ L=\frac12m\mathbf v^2+e\mathbf A\cdot\mathbf v-e\phi,
 \]
 the canonical momentum is
 \[
-\mathbf p_{\rm can}=m\mathbf v+e\mathbf A.
+\mathbf p_{\rm can}\coloneqq m\mathbf v+e\mathbf A.
 \]
 The mechanical momentum is still \(m\mathbf v\), while the canonical momentum
 also contains the vector potential. This is not a paradox: canonical momentum
@@ -2172,7 +2216,7 @@ belongs to the variational and Hamiltonian structure.
 Canonical momentum is the hinge used to pass to Hamiltonian mechanics. If the
 relations
 \[
-p_i=\frac{\partial L}{\partial\dot q_i}
+p_i\coloneqq\frac{\partial L}{\partial\dot q_i}
 \]
 can be inverted to express the velocities in terms of \(q_i,p_i,t\), then a
 Legendre transform replaces velocity dependence by momentum dependence. The
@@ -2186,7 +2230,7 @@ used, and which Lagrangian derivative defines this \(p\)?
 ### Block Plan
 
 - `overview`: A coordinate's dynamical partner.
-- `definition`: \(p_i=\partial L/\partial\dot q_i\).
+- `definition`: \(p_i\coloneqq\partial L/\partial\dot q_i\).
 - `construction`: Boundary origin in the variation.
 - `example`: Simple mechanical agreement with \(m\dot x\).
 - `example`: Velocity-dependent electromagnetic interaction.
@@ -2260,12 +2304,12 @@ This pair is the state of the system in phase space.
 
 The construction starts from canonical momentum:
 \[
-p_i=\frac{\partial L}{\partial\dot q_i}.
+p_i\coloneqq\frac{\partial L}{\partial\dot q_i}.
 \]
 If these relations can be solved for the velocities \(\dot q_i\) in terms of
 \(q_i,p_i,t\), define
 \[
-H(q,p,t)=\sum_i p_i\dot q_i-L(q,\dot q,t),
+H(q,p,t)\coloneqq\sum_i p_i\dot q_i-L(q,\dot q,t),
 \]
 where the velocities on the right have been re-expressed in terms of
 \(q,p,t\). This is a Legendre transform. It changes the independent variables
@@ -2277,25 +2321,27 @@ The Hamiltonian determines the flow of this curve.
 
 The equations of motion are Hamilton's equations:
 \[
-\dot q_i=\frac{\partial H}{\partial p_i},\qquad
-\dot p_i=-\frac{\partial H}{\partial q_i}.
+\dot q_i\overset{\text{Hamilton}}{=}\frac{\partial H}{\partial p_i},\qquad
+\dot p_i\overset{\text{Hamilton}}{=}-\frac{\partial H}{\partial q_i}.
 \]
+The \(\text{Hamilton}\) labels mark that these are Hamilton's evolution equations, not
+definitions of the partial derivatives.
 They are first-order equations in phase space. When the Legendre transform is
 valid, they are equivalent to the Euler-Lagrange equations.
 
 For one coordinate, the structure can be seen by differentiating
 \[
-H=p\dot q-L.
+H\coloneqq p\dot q-L.
 \]
 Treat \(\dot q\) as the velocity already expressed in terms of \(q,p,t\). Then
 \[
 dH=\dot q\,dp+p\,d\dot q-\frac{\partial L}{\partial q}dq
 -\frac{\partial L}{\partial\dot q}d\dot q.
 \]
-Because \(p=\partial L/\partial\dot q\), the two \(d\dot q\) terms cancel.
-Using the Euler-Lagrange equation, \(dp/dt=\partial L/\partial q\), gives
+Because \(p\coloneqq\partial L/\partial\dot q\), the two \(d\dot q\) terms cancel.
+Using the Euler-Lagrange equation, \(dp/dt\overset{\text{Euler-Lagrange}}{=}\partial L/\partial q\), gives
 \[
-dH=\dot q\,dp-\dot p\,dq,
+dH\overset{\text{Euler-Lagrange}}{=}\dot q\,dp-\dot p\,dq,
 \]
 which is Hamilton's equation in differential form.
 
@@ -2303,9 +2349,9 @@ For
 \[
 L=\frac12m\dot x^2-V(x),
 \]
-we have \(p=m\dot x\), so \(\dot x=p/m\). The Hamiltonian becomes
+we have \(p\coloneqq m\dot x\), so \(\dot x=p/m\). The Hamiltonian becomes
 \[
-H=p\dot x-L
+H\coloneqq p\dot x-L
 =\frac{p^2}{m}-\left(\frac{p^2}{2m}-V(x)\right)
 =\frac{p^2}{2m}+V(x).
 \]
@@ -2339,7 +2385,7 @@ mechanics.
 1. Identify the primary variables.
 2. Explain the Legendre transform.
 3. Explain phase space.
-4. Compute \(\dot x\) from \(H=p^2/(2m)+V(x)\).
+4. Compute \(\dot x\) from \(H\coloneqq p^2/(2m)+V(x)\).
 5. Compute \(\dot p\) from the same Hamiltonian.
 6. Explain why \(H\) is not simply defined as energy.
 
@@ -2404,13 +2450,14 @@ The derivation has a common shape. Take a one-parameter transformation of the
 dynamical variables and compute the corresponding variation of the action. If
 the transformation is a symmetry, this variation vanishes, apart from possible
 boundary terms. On histories that satisfy the equations of motion, the bulk
-terms disappear. What remains is a total derivative:
+terms disappear. What remains is a total derivative. The \(\text{conservation}\) label
+marks the step where that derivative is zero on physical solutions:
 \[
-\frac{dQ}{dt}=0
+\frac{dQ}{dt}\overset{\text{conservation}}{=}0
 \]
 in mechanics, or
 \[
-\partial_\mu J^\mu=0
+\partial_\mu J^\mu\overset{\text{conservation}}{=}0
 \]
 in field theory. The remaining object \(Q\), or current \(J^\mu\), is the
 conserved quantity.
@@ -2422,21 +2469,25 @@ angular momentum. The slogan is not "symmetry is pretty"; it is "continuous
 symmetry of the action implies conserved quantity."
 
 A simple mechanics example is a cyclic coordinate. If \(q\) does not appear in
-the Lagrangian, then
+the Lagrangian, the \(\text{cyclic}\) label marks that the Lagrangian has no direct
+dependence on that coordinate:
 \[
-\frac{\partial L}{\partial q}=0.
+\frac{\partial L}{\partial q}\overset{\text{cyclic}}{=}0.
 \]
-The Euler-Lagrange equation gives
+The Euler-Lagrange equation then turns this absence into a conservation
+statement:
 \[
-\frac{d}{dt}\left(\frac{\partial L}{\partial\dot q}\right)=0.
+\frac{d}{dt}\left(\frac{\partial L}{\partial\dot q}\right)
+\overset{\text{Euler-Lagrange}}{=}0.
 \]
 But \(\partial L/\partial\dot q\) is the canonical momentum \(p\). Therefore
 the momentum conjugate to that coordinate is conserved. Translation symmetry is
 the familiar case where this gives conservation of linear momentum.
 
-In field theory, Noether's theorem usually produces a conserved current:
+In field theory, Noether's theorem usually produces a conserved current. The
+conservation condition is local: the four-divergence of the current vanishes,
 \[
-\partial_\mu J^\mu=0.
+\partial_\mu J^\mu\overset{\text{conservation}}{=}0.
 \]
 This is a local conservation law. It says that the quantity is not disappearing
 at a point; it is balanced by flow. Spacetime translation symmetry gives the
@@ -2527,8 +2578,10 @@ everywhere. It is that the value assigned to a particular physical event is the
 same for every inertial observer. If one observer labels the event by \(x\) and
 another by \(x'\), then
 \[
-\phi'(x')=\phi(x).
+\phi'(x')\overset{\text{scalar}}{=}\phi(x).
 \]
+The \(\text{scalar}\) label marks that the field value is invariant even though
+the coordinate label of the event changes.
 
 This is why a temperature field is a useful analogy. At each place and time
 there is one temperature value, not an arrow. The temperature can still vary
@@ -2554,7 +2607,7 @@ setting.
 ### Block Plan
 
 - `overview`: One number at each event.
-- `definition`: \(\phi(x)\) and \(\phi'(x')=\phi(x)\).
+- `definition`: \(\phi(x)\) and \(\phi'(x')\overset{\text{scalar}}{=}\phi(x)\).
 - `intuition`: Local value, not one global number.
 - `explanation`: Same event, different coordinates.
 - `explanation`: Contrast with four-vectors.
@@ -2567,7 +2620,7 @@ setting.
 ### Study Questions
 
 1. Recognize a scalar field.
-2. Interpret \(\phi'(x')=\phi(x)\).
+2. Interpret \(\phi'(x')\overset{\text{scalar}}{=}\phi(x)\).
 3. Explain why scalar does not mean constant.
 4. Evaluate a simple scalar field at an event.
 5. Contrast scalar and four-vector transformation behavior.
@@ -2620,8 +2673,10 @@ A^\mu(x).
 The field can vary from event to event, but at each event its components must
 transform as a four-vector:
 \[
-A'^\mu(x')=\Lambda^\mu{}_{\nu}A^\nu(x).
+A'^\mu(x')\overset{\text{Lorentz}}{=}\Lambda^\mu{}_{\nu}A^\nu(x).
 \]
+The \(\text{Lorentz}\) label marks the four-vector transformation law applied
+at the same physical event.
 
 This notation contains two ideas at once. The argument \(x\) is the coordinate
 label of the event, and that label changes to \(x'\) for another inertial
@@ -2643,7 +2698,7 @@ tensor description of electromagnetism.
 ### Block Plan
 
 - `overview`: A vector at every event.
-- `definition`: \(A'^\mu(x')=\Lambda^\mu{}_\nu A^\nu(x)\).
+- `definition`: \(A'^\mu(x')\overset{\text{Lorentz}}{=}\Lambda^\mu{}_\nu A^\nu(x)\).
 - `intuition`: Local vectors, not one arrow.
 - `explanation`: Contrast with scalar fields.
 - `warning`: Both argument and components transform.
@@ -2703,12 +2758,12 @@ doing the full field Euler-Lagrange derivation.
 A field Lagrangian is the field-theory version of the Lagrangian idea. For a
 particle, the action is an integral over a path:
 \[
-S=\int L\,dt.
+S\coloneqq\int L\,dt.
 \]
 For a field, there are degrees of freedom at every spacetime event, so the
 action is built from a density:
 \[
-S[\phi]=\int \mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
+S[\phi]\coloneqq\int \mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
 \]
 
 The word density matters. \(\mathcal L\) is not just another symbol for \(L\);
@@ -2734,7 +2789,7 @@ the energy-momentum tensor, a later concept.
 ### Block Plan
 
 - `overview`: Action density for fields.
-- `definition`: \(S=\int\mathcal L\,d^4x\).
+- `definition`: \(S[\phi]\coloneqq\int\mathcal L\,d^4x\).
 - `intuition`: Why a density.
 - `construction`: Local building blocks.
 - `explanation`: Scalar action.
@@ -2797,7 +2852,7 @@ unknown may be a path \(q(t)\). In field theory the unknown is a function over
 spacetime, such as \(\phi_a(x)\). The action is a functional of that whole
 field configuration:
 \[
-S[\phi]=\int\mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
+S[\phi]\coloneqq\int\mathcal L(\phi_a,\partial_\mu\phi_a,x)\,d^4x.
 \]
 
 Varying this action gives the field Euler-Lagrange equations:
@@ -2805,8 +2860,10 @@ Varying this action gives the field Euler-Lagrange equations:
 \frac{\partial \mathcal L}{\partial \phi_a}
 -\partial_\mu\left(
 \frac{\partial \mathcal L}{\partial(\partial_\mu\phi_a)}
-\right)=0.
+\right)\overset{\text{stationary action}}{=}0.
 \]
+The \(\text{stationary action}\) label marks that this field equation is
+imposed by requiring the first variation of the field action to vanish.
 The derivation follows the same logic as particle mechanics, but with
 spacetime derivatives replacing ordinary time derivatives. The variation
 contains terms involving \(\partial_\mu\delta\phi_a\); integration by parts
@@ -2820,9 +2877,12 @@ differential equations.
 
 Relativistic field equations often contain the d'Alembertian
 \[
-\Box=\partial_\mu\partial^\mu
-=\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2.
+\Box\coloneqq\partial_\mu\partial^\mu
+\overset{\text{components}}{=}
+\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2.
 \]
+The \(\text{components}\) label marks the expansion of the covariant operator
+in the chosen coordinate convention.
 This operator carries the spacetime sign structure and is central in wave-like
 relativistic field equations.
 
@@ -2849,7 +2909,7 @@ express field propagation locally through spacetime.
 1. Recognize field equations as local equations of motion.
 2. Compare particle and field Euler-Lagrange ideas.
 3. Explain the integration-by-parts step.
-4. Derive the plane-wave dispersion relation for \(\Box\phi=0\).
+4. Derive the plane-wave dispersion relation for \(\Box\phi\overset{\text{wave equation}}{=}0\).
 5. Explain locality.
 6. Connect to Maxwell's equations.
 
@@ -2895,7 +2955,7 @@ leaving detailed gauge fixing to later concepts.
 The electromagnetic vector potential \(A_\mu\) is a four-vector field over
 spacetime. With one common convention,
 \[
-A^\mu=(\phi/c,\mathbf A),\qquad A_\mu=(\phi/c,-\mathbf A),
+A^\mu\coloneqq(\phi/c,\mathbf A),\qquad A_\mu\coloneqq(\phi/c,-\mathbf A),
 \]
 where \(\phi\) is the scalar potential and \(\mathbf A\) the ordinary
 three-vector potential.
@@ -2903,9 +2963,10 @@ three-vector potential.
 The potential is important because its spacetime derivatives build the
 electromagnetic field tensor:
 \[
-F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+F_{\mu\nu}\coloneqq\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
-With the potential convention used here, this antisymmetry is doing real work.
+The definition sign marks the local potential convention used here. With that
+convention, this antisymmetry is doing real work.
 It keeps the curl-like part of the potential's variation and leaves six
 independent components, which become the three electric and three magnetic
 components after an inertial frame is chosen.
@@ -2991,14 +3052,16 @@ electric and magnetic fields.
 The electromagnetic field tensor is the covariant package for classical
 electromagnetism. Starting from the vector potential,
 \[
-F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+F_{\mu\nu}\coloneqq\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
 This is the local potential convention used in this atlas; signs and factors
 are fixed only after the potential and coordinate conventions are fixed.
 This immediately gives
 \[
-F_{\mu\nu}=-F_{\nu\mu}.
+F_{\mu\nu}\overset{\text{antisymmetry}}{=}-F_{\nu\mu}.
 \]
+The \(\text{antisymmetry}\) label marks the consequence of swapping the two
+derivative terms.
 
 Antisymmetry is not decorative. A general \(4\times4\) tensor has sixteen
 entries. Antisymmetry sets the four diagonal entries to zero and pairs each
@@ -3024,7 +3087,7 @@ equations.
 ### Block Plan
 
 - `overview`: One tensor for electromagnetism.
-- `definition`: \(F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu\).
+- `definition`: \(F_{\mu\nu}\coloneqq\partial_\mu A_\nu-\partial_\nu A_\mu\).
 - `construction`: Antisymmetry.
 - `intuition`: Six components.
 - `explanation`: Frame split into \(\mathbf E\) and \(\mathbf B\).
@@ -3098,8 +3161,10 @@ depending on convention.
 
 In ordinary potential language,
 \[
-\mathbf E=-\nabla\phi-\frac{\partial\mathbf A}{\partial t}.
+\mathbf E\overset{\text{potentials}}{=}
+-\nabla\phi-\frac{\partial\mathbf A}{\partial t}.
 \]
+The \(\text{potentials}\) label marks the chosen potential convention.
 The first term is familiar from electrostatics: the electric field points down
 the scalar-potential gradient for a positive test charge. The second term shows
 that a time-varying vector potential also contributes to the electric field.
@@ -3115,7 +3180,7 @@ useful, but it is not the whole invariant electromagnetic object.
 - `definition`: Force per unit charge and tensor location.
 - `warning`: Frame choice.
 - `construction`: Time-space components.
-- `derivation`: \(\mathbf E=-\nabla\phi-\partial_t\mathbf A\).
+- `derivation`: \(\mathbf E\overset{\text{potentials}}{=}-\nabla\phi-\partial_t\mathbf A\).
 - `example`: Static potential.
 - `intuition`: Force meaning.
 - `misconception`: Not absolute by itself.
@@ -3166,7 +3231,7 @@ this pass.
 
 This concept explains the magnetic field as the frame-dependent spatial
 antisymmetric part of the electromagnetic field tensor. It should connect to
-currents, moving charges, and \(\mathbf B=\nabla\times\mathbf A\), without
+currents, moving charges, and \(\mathbf B\overset{\text{potentials}}{=}\nabla\times\mathbf A\), without
 taking over the full Lorentz-force or Maxwell-equation treatments.
 
 ### Exposition
@@ -3181,14 +3246,16 @@ components can be encoded as the magnetic field vector \(\mathbf B\).
 
 In ordinary potential language,
 \[
-\mathbf B=\nabla\times\mathbf A.
+\mathbf B\overset{\text{potentials}}{=}\nabla\times\mathbf A.
 \]
+The \(\text{potentials}\) label marks the chosen potential convention.
 This is the spatial curl-like part of the antisymmetric derivative used to
 construct \(F_{\mu\nu}\). It also hints at the homogeneous Maxwell equation
 \[
-\nabla\cdot\mathbf B=0,
+\nabla\cdot\mathbf B\overset{\text{curl}}{=}0,
 \]
 since the divergence of a curl vanishes for smooth potentials.
+The \(\text{curl}\) label marks that mathematical identity.
 
 The familiar magnetic-force term is proportional to
 \[
@@ -3204,7 +3271,7 @@ substance.
 - `overview`: Motion and current.
 - `definition`: Spatial components of \(F_{\mu\nu}\).
 - `construction`: Spatial antisymmetry.
-- `derivation`: \(\mathbf B=\nabla\times\mathbf A\).
+- `derivation`: \(\mathbf B\overset{\text{potentials}}{=}\nabla\times\mathbf A\).
 - `intuition`: Sideways force.
 - `example`: Current-carrying wire.
 - `warning`: Frame-dependent split.
@@ -3220,7 +3287,7 @@ substance.
 3. Count antisymmetric spatial components.
 4. Compute a curl example.
 5. Interpret motion-dependent force.
-6. Connect \(\mathbf B=\nabla\times\mathbf A\) to \(\nabla\cdot\mathbf B=0\).
+6. Connect \(\mathbf B\overset{\text{potentials}}{=}\nabla\times\mathbf A\) to \(\nabla\cdot\mathbf B\overset{\text{curl}}{=}0\).
 
 ### References
 
@@ -3350,7 +3417,7 @@ different inertial observers can disagree about what part of the description
 looks like density and what part looks like current. The covariant object is
 the four-current:
 \[
-j^\mu=(c\rho,\mathbf j).
+j^\mu\coloneqq(c\rho,\mathbf j).
 \]
 
 The factor \(c\) gives the time component the same dimensional character as the
@@ -3360,18 +3427,21 @@ charge flux through small surfaces.
 
 The four-current is the source in covariant Maxwell equations:
 \[
-\partial_\mu F^{\mu\nu}=\mu_0 j^\nu.
+\partial_\mu F^{\mu\nu}\overset{\text{Maxwell}}{=}\mu_0 j^\nu.
 \]
 This equation says the electromagnetic field is sourced locally by charge and
 current at the same spacetime event.
 
 Charge conservation has an especially compact form:
 \[
-\partial_\mu j^\mu=0.
+\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0.
 \]
+The \(\text{charge conservation}\) label marks this as the local conservation
+law for charge.
 Expanding this gives the ordinary continuity equation
 \[
-\frac{\partial\rho}{\partial t}+\nabla\cdot\mathbf j=0.
+\frac{\partial\rho}{\partial t}+\nabla\cdot\mathbf j
+\overset{\text{continuity}}{=}0.
 \]
 Charge in a small region can change only because charge flows through the
 boundary.
@@ -3379,7 +3449,7 @@ boundary.
 ### Block Plan
 
 - `overview`: Charge flow as a four-vector.
-- `definition`: \(j^\mu=(c\rho,\mathbf j)\).
+- `definition`: \(j^\mu\coloneqq(c\rho,\mathbf j)\).
 - `explanation`: Why \(c\rho\).
 - `misconception`: Charge density alone is not enough.
 - `intuition`: Local charge flow.
@@ -3393,7 +3463,7 @@ boundary.
 
 1. Identify the four-current.
 2. Explain why charge density alone is insufficient.
-3. Interpret \(\partial_\mu j^\mu=0\).
+3. Interpret \(\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0\).
 4. Compute \(j^\mu\) from \(\rho\) and \(\mathbf j\).
 5. Locate \(j^\mu\) in Maxwell equations.
 6. Give the geometric interpretation.
@@ -3441,20 +3511,24 @@ covariant statements.
 
 The sourced equation is
 \[
-\partial_\mu F^{\mu\nu}=\mu_0 j^\nu,
+\partial_\mu F^{\mu\nu}\overset{\text{Maxwell}}{=}\mu_0 j^\nu,
 \]
 in SI-style conventions. It relates local derivatives of the electromagnetic
 field tensor to the local four-current source.
+The \(\text{Maxwell}\) label marks this as a field law, not an algebraic
+identity.
 
 The homogeneous equation is
 \[
 \partial_\lambda F_{\mu\nu}
 +\partial_\mu F_{\nu\lambda}
-+\partial_\nu F_{\lambda\mu}=0.
++\partial_\nu F_{\lambda\mu}\overset{\text{homogeneous}}{=}0.
 \]
+The \(\text{homogeneous}\) label marks the source-free identity that follows
+from the potential construction.
 This follows from the construction
 \[
-F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+F_{\mu\nu}\coloneqq\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
 When the cyclic derivative is expanded, second-derivative terms cancel in
 pairs because partial derivatives commute.
@@ -3467,17 +3541,20 @@ four equations belong together.
 The equations are also internally consistent with charge conservation. Taking
 the divergence of the sourced equation gives
 \[
-\partial_\nu\partial_\mu F^{\mu\nu}=\mu_0\partial_\nu j^\nu.
+\partial_\nu\partial_\mu F^{\mu\nu}\overset{\text{Maxwell}}{=}\mu_0\partial_\nu j^\nu.
 \]
+The \(\text{Maxwell}\) label marks use of the sourced field equation.
 The left side vanishes because a symmetric double derivative is contracted
 with an antisymmetric tensor, so
 \[
-\partial_\mu j^\mu=0.
+\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0.
 \]
 
-In source-free regions, \(j^\mu=0\), Maxwell's equations still allow nonzero
+In source-free regions, \(j^\mu\overset{\text{source-free}}{=}0\), Maxwell's equations still allow nonzero
 field configurations. Those solutions include electromagnetic waves travelling
 at the invariant light speed.
+The \(\text{source-free}\) label marks a physical condition on the source, not
+the absence of the electromagnetic field.
 
 ### Block Plan
 
@@ -3550,14 +3627,15 @@ changes the potential, but not the electromagnetic field tensor.
 
 To see this, substitute the transformed potential into
 \[
-F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu.
+F_{\mu\nu}\coloneqq\partial_\mu A_\nu-\partial_\nu A_\mu.
 \]
 The added terms are
 \[
-\partial_\mu\partial_\nu\Lambda-\partial_\nu\partial_\mu\Lambda.
+\partial_\mu\partial_\nu\Lambda-\partial_\nu\partial_\mu\Lambda
+\overset{\text{commuting partials}}{=}0.
 \]
-For a smooth gauge function \(\Lambda\), partial derivatives commute, so this
-difference vanishes. Therefore \(F_{\mu\nu}\) is unchanged.
+The \(\text{commuting partials}\) label marks the mathematical identity
+responsible for gauge invariance. Therefore \(F_{\mu\nu}\) is unchanged.
 
 This is conceptually important. We are used to thinking that changing a field
 variable changes the physical situation. Gauge invariance says that not every
@@ -3730,17 +3808,20 @@ later radiation-reaction concept.
 The Lorentz force law is the bridge from field to particle motion. In covariant
 form it is
 \[
-\frac{dp^\mu}{d\tau}=qF^\mu{}_{\nu}U^\nu,
+\frac{dp^\mu}{d\tau}\overset{\text{Lorentz force}}{=}qF^\mu{}_{\nu}U^\nu,
 \]
 where \(p^\mu\) is the particle's momentum four-vector, \(U^\nu\) is its
 velocity four-vector, \(F^\mu{}_{\nu}\) is the electromagnetic field tensor,
 and \(q\) is the charge.
+The \(\text{Lorentz force}\) label marks the dynamical law being imposed.
 
 In a chosen inertial frame the spatial part becomes the familiar three-vector
 law
 \[
-\mathbf F=q(\mathbf E+\mathbf v\times\mathbf B).
+\mathbf F\overset{\text{3-vector}}{=}q(\mathbf E+\mathbf v\times\mathbf B).
 \]
+The \(\text{3-vector}\) label marks the frame-dependent decomposition of the
+covariant force law.
 The electric field contributes a force along the field direction. The magnetic
 field contributes a sideways, velocity-dependent force.
 
@@ -3759,9 +3840,11 @@ velocity. In a magnetic-only situation the force is perpendicular to the
 velocity. Taking the dot product with \(\mathbf v\),
 \[
 \mathbf F\cdot\mathbf v
-=q\mathbf E\cdot\mathbf v+q(\mathbf v\times\mathbf B)\cdot\mathbf v,
+\overset{\text{Lorentz force}}{=}
+q\mathbf E\cdot\mathbf v+q(\mathbf v\times\mathbf B)\cdot\mathbf v,
 \]
-and the magnetic term is zero. In that frame, the electric field is the part
+and the magnetic term is zero. The \(\text{Lorentz force}\) label marks
+substitution of the three-vector force law. In that frame, the electric field is the part
 that changes the particle's energy directly.
 
 Signs and factors of \(c\) depend on metric signature, index placement, charge
@@ -3841,26 +3924,42 @@ Charge conservation says more than that the total charge of a complete isolated
 system stays fixed. It says charge can leave a region only by flowing through
 the boundary of that region. Locally, the relativistic statement is
 \[
-\partial_\mu j^\mu=0,
+\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0,
 \]
 where \(j^\mu\) is the four-current.
 
-In ordinary vector notation this becomes
+In ordinary vector notation the four-divergence expands as
 \[
-\frac{\partial \rho}{\partial t}+\nabla\cdot\mathbf j=0.
+\partial_\mu j^\mu
+\equiv
+\frac{\partial \rho}{\partial t}+\nabla\cdot\mathbf j,
 \]
+so the same conservation law becomes
+\[
+\frac{\partial \rho}{\partial t}+\nabla\cdot\mathbf j
+\overset{\text{continuity}}{=}0.
+\]
+The \(\text{continuity}\) label marks the ordinary vector form of the same
+local conservation law.
 If \(\nabla\cdot\mathbf j\) is positive, more current is flowing out than in,
 so the charge density decreases. If it is negative, current is converging and
 the charge density increases.
 
-Integrating the local equation over a fixed volume \(V\) gives
+Define the charge inside a fixed volume by
+\[
+Q_V\coloneqq\int_V\rho\,d^3x.
+\]
+Integrating the local equation over \(V\) gives
 \[
 \frac{d}{dt}\int_V\rho\,d^3x
-=-\int_V\nabla\cdot\mathbf j\,d^3x.
+\overset{\text{continuity}}{=}
+-\int_V\nabla\cdot\mathbf j\,d^3x.
 \]
 Using the divergence theorem,
 \[
-\frac{dQ_V}{dt}=-\oint_{\partial V}\mathbf j\cdot d\mathbf a.
+\frac{dQ_V}{dt}
+\overset{\text{Gauss theorem}}{=}
+-\oint_{\partial V}\mathbf j\cdot d\mathbf a.
 \]
 The charge inside the volume changes by the negative of the outward current
 flux.
@@ -3868,17 +3967,31 @@ flux.
 In Maxwell theory charge conservation is also a consistency condition. Taking
 the divergence of the sourced equation
 \[
-\partial_\mu F^{\mu\nu}=\mu_0j^\nu
+\partial_\mu F^{\mu\nu}\overset{\text{Maxwell}}{=}\mu_0j^\nu
 \]
 gives
 \[
-\partial_\nu\partial_\mu F^{\mu\nu}=\mu_0\partial_\nu j^\nu.
+\partial_\nu\partial_\mu F^{\mu\nu}
+\overset{\text{Maxwell}}{=}
+\mu_0\partial_\nu j^\nu.
 \]
 The left-hand side vanishes because \(F^{\mu\nu}\) is antisymmetric, while the
 commuting double derivative is symmetric in the two indices. Therefore
 \[
-\partial_\nu j^\nu=0.
+\partial_\nu j^\nu\overset{\text{charge conservation}}{=}0.
 \]
+The \(\text{charge conservation}\) label marks the local continuity condition
+forced by Maxwell consistency.
+Equivalently, let
+\[
+C\coloneqq\partial_\nu\partial_\mu F^{\mu\nu}.
+\]
+Swapping the two dummy indices gives
+\[
+C\overset{\mu\leftrightarrow\nu}{=}-C,
+\]
+so \(C\overset{C=-C}{=}0\). The \(C=-C\) label marks the final consequence of
+the antisymmetry argument.
 
 A global conservation law alone would allow too much. It might say the total
 charge is unchanged, but not how charge gets from one place to another. The
@@ -3900,7 +4013,7 @@ elsewhere without a current connecting the events.
 
 ### Study Questions
 
-1. Recognize \(\partial_\mu j^\mu=0\).
+1. Recognize \(\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0\).
 2. Interpret the ordinary continuity equation.
 3. Compute a simple one-dimensional density change.
 4. Explain the Maxwell-equation derivation.
@@ -3947,10 +4060,11 @@ full wave-equation and electromagnetic-wave concepts.
 
 The Lorenz gauge is the condition
 \[
-\partial_\mu A^\mu=0
+\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0
 \]
 imposed on the vector potential. It is a particular gauge choice: it chooses a
 convenient representative from a gauge-equivalent family of potentials.
+The \(\text{Lorenz gauge}\) label marks a gauge choice, not a new physical law.
 
 This is allowed because the electromagnetic potential has gauge redundancy.
 Gauge-related potentials represent the same physical electromagnetic field.
@@ -3964,16 +4078,22 @@ choice keeps covariance manifest.
 In potential form, the sourced Maxwell equation contains a term schematically
 like
 \[
-\Box A^\nu-\partial^\nu(\partial_\mu A^\mu)=\mu_0j^\nu.
+\Box A^\nu-\partial^\nu(\partial_\mu A^\mu)
+\overset{\text{Maxwell}}{=}\mu_0j^\nu.
 \]
-Imposing \(\partial_\mu A^\mu=0\) removes the second term, leaving a wave
-equation for each component of the potential, up to sign and unit conventions.
+The \(\text{Maxwell}\) label marks that this is the sourced field equation
+rewritten in terms of the potential.
+Imposing \(\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0\) removes the
+second term, leaving a wave equation for each component of the potential, up
+to sign and unit conventions. The \(\text{Lorenz gauge}\) label marks the
+condition being used to simplify the potential equation.
 
 The Lorenz gauge may not remove all gauge freedom. A further transformation
 \[
 A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
 \]
-preserves the condition if \(\Box\Lambda=0\). The remaining freedom is usually
+preserves the condition if \(\Box\Lambda\overset{\text{residual gauge}}{=}0\).
+The \(\text{residual gauge}\) label marks the extra condition on the gauge function. The remaining freedom is usually
 manageable, but it is worth remembering that gauge fixing is not always a
 complete elimination of redundancy.
 
@@ -3984,7 +4104,7 @@ Lorentz-covariant.
 ### Block Plan
 
 - `overview`: A covariant gauge choice.
-- `definition`: \(\partial_\mu A^\mu=0\).
+- `definition`: \(\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0\).
 - `explanation`: Why a gauge condition is allowed.
 - `intuition`: Why this gauge is relativistic.
 - `derivation`: Maxwell equations become wave equations.
@@ -4044,8 +4164,10 @@ The energy-momentum tensor records how energy and momentum are stored and
 transported. It is a rank-two tensor \(T^{\mu\nu}\). For an isolated system its
 local conservation law is
 \[
-\partial_\mu T^{\mu\nu}=0.
+\partial_\mu T^{\mu\nu}\overset{\text{energy-momentum conservation}}{=}0.
 \]
+The \(\text{energy-momentum conservation}\) label marks the local balance law
+for energy and momentum.
 
 Roughly, one index describes the spacetime direction through which something
 flows, and the other describes which component of energy-momentum is being
@@ -4062,10 +4184,12 @@ For fields \(\phi_a\) with Lagrangian density
 \(\mathcal L(\phi_a,\partial_\mu\phi_a)\), a canonical expression is
 \[
 T^\mu{}_{\nu}
-=\frac{\partial\mathcal L}{\partial(\partial_\mu\phi_a)}
+\overset{\text{Noether}}{=}
+\frac{\partial\mathcal L}{\partial(\partial_\mu\phi_a)}
 \partial_\nu\phi_a-\delta^\mu{}_{\nu}\mathcal L.
 \]
-This formula displays the Noether-current origin of the tensor.
+The \(\text{Noether}\) label marks that this canonical tensor comes from
+spacetime translation symmetry.
 
 The canonical tensor is not always the final physical form. It may not be
 symmetric, gauge-invariant, or the most useful representative. One can often
@@ -4076,9 +4200,12 @@ For electromagnetism the useful symmetric tensor is built from the field
 tensor. In natural units and one common sign convention,
 \[
 T^{\mu\nu}
-=-F^{\mu\lambda}F^\nu{}_{\lambda}
+\overset{\text{EM tensor}}{=}
+-F^{\mu\lambda}F^\nu{}_{\lambda}
 +\frac14\eta^{\mu\nu}F^{\alpha\beta}F_{\alpha\beta}.
 \]
+The \(\text{EM tensor}\) label marks the electromagnetic stress-energy
+construction in that convention.
 Its components contain electromagnetic energy density, momentum density, flux,
 and stress.
 
@@ -4089,7 +4216,7 @@ boundary.
 ### Block Plan
 
 - `overview`: Local energy-momentum bookkeeping.
-- `definition`: \(T^{\mu\nu}\) and \(\partial_\mu T^{\mu\nu}=0\).
+- `definition`: \(T^{\mu\nu}\) and \(\partial_\mu T^{\mu\nu}\overset{\text{energy-momentum conservation}}{=}0\).
 - `explanation`: What the indices mean.
 - `derivation`: Origin in translation symmetry.
 - `derivation_step`: Canonical form.
@@ -4103,7 +4230,7 @@ boundary.
 ### Study Questions
 
 1. Recognize what the tensor packages.
-2. Interpret \(\partial_\mu T^{\mu\nu}=0\).
+2. Interpret \(\partial_\mu T^{\mu\nu}\overset{\text{energy-momentum conservation}}{=}0\).
 3. Connect the tensor to Noether's theorem.
 4. Compute a simple one-dimensional conservation balance.
 5. Explain why improvement terms may be used.
@@ -4150,8 +4277,10 @@ density concepts without replacing them.
 The Poynting vector tells us where electromagnetic energy is flowing. In SI
 units it is
 \[
-\mathbf S=\frac{1}{\mu_0}\mathbf E\times\mathbf B.
+\mathbf S\overset{\text{SI}}{=}\frac{1}{\mu_0}\mathbf E\times\mathbf B.
 \]
+The \(\text{SI}\) label marks the unit convention responsible for the factor
+\(1/\mu_0\).
 It measures energy crossing unit area per unit time.
 
 The cross product is physically useful. It points perpendicular to both the
@@ -4171,9 +4300,11 @@ appears.
 Relativity links energy flow and momentum density. In SI units the field
 momentum density is
 \[
-\mathbf g=\frac{\mathbf S}{c^2}.
+\mathbf g\overset{\text{SI}}{=}\frac{\mathbf S}{c^2}.
 \]
-In natural units, \(c=1\), the relationship is less cluttered, though index and
+The \(\text{SI}\) label marks the conventional SI relation between field
+momentum density and energy flux.
+In natural units, \(c\overset{\text{units}}{=}1\), the relationship is less cluttered, though index and
 unit conventions still matter.
 
 A beam of light can exert radiation pressure because the electromagnetic field
@@ -4250,9 +4381,12 @@ It is built from the field tensor and the metric tensor. With the \(+---\)
 metric convention and suppressing unit-dependent constants, one common form is
 \[
 T^{\mu\nu}
-=-F^{\mu\lambda}F^\nu{}_{\lambda}
+\overset{\text{EM tensor}}{=}
+-F^{\mu\lambda}F^\nu{}_{\lambda}
 +\frac14\eta^{\mu\nu}F^{\alpha\beta}F_{\alpha\beta}.
 \]
+The \(\text{EM tensor}\) label marks the electromagnetic stress-energy
+construction in the stated convention.
 
 The expression is quadratic in \(F_{\mu\nu}\). That is physically natural:
 reversing the electromagnetic field should not reverse the sign of the field
@@ -4336,15 +4470,20 @@ that field energy is locally stored and transported.
 Electromagnetic fields can store energy locally, even in a region where no
 charged particles are present. In SI units the energy density is
 \[
-u=\frac12\left(\epsilon_0E^2+\frac{1}{\mu_0}B^2\right).
+u\overset{\text{SI}}{=}
+\frac12\left(\epsilon_0E^2+\frac{1}{\mu_0}B^2\right).
 \]
 Here \(\mathbf E\) and \(\mathbf B\) are the electric and magnetic fields.
+The \(\text{SI}\) label marks the unit convention built into the constants
+\(\epsilon_0\) and \(\mu_0\).
 
 In a chosen inertial frame, this energy density is the time-time component of
 the electromagnetic energy-momentum tensor:
 \[
-T^{00}=u.
+T^{00}\overset{\text{frame}}{=}u.
 \]
+The \(\text{frame}\) label marks that this component identification depends on
+the observer's time-space split.
 Substituting the electric and magnetic components of the field tensor gives the
 squared-field formula.
 
@@ -4429,13 +4568,17 @@ The wave equation is the mathematical pattern for disturbances that propagate
 through spacetime at a finite speed. In relativity it uses the d'Alembertian
 operator
 \[
-\Box=\partial_\mu\partial^\mu
-=\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2
+\Box\coloneqq\partial_\mu\partial^\mu
+\overset{\text{components}}{=}
+\frac{1}{c^2}\frac{\partial^2}{\partial t^2}-\nabla^2
 \]
 for the \(+---\) metric convention. A source-free scalar component satisfies
 \[
-\Box\psi=0.
+\Box\psi\overset{\text{wave equation}}{=}0.
 \]
+The \(\text{components}\) label marks the coordinate expansion of the
+covariant operator. The \(\text{wave equation}\) label marks imposition of the
+source-free wave equation.
 
 The d'Alembertian is built from the metric. Its time and spatial parts enter
 with opposite signs, encoding the light-cone structure of relativistic
@@ -4445,22 +4588,28 @@ In electromagnetism, write the field in terms of the vector potential and
 impose the Lorenz gauge. The potential form of Maxwell's equations then becomes
 schematically
 \[
-\Box A^\mu=\mu_0j^\mu.
+\Box A^\mu\overset{\text{Maxwell + Lorenz gauge}}{=}\mu_0j^\mu.
 \]
+The \(\text{Maxwell + Lorenz gauge}\) label marks that this form uses
+Maxwell's equations together with the gauge condition.
 If the four-current vanishes in a region, this reduces to
 \[
-\Box A^\mu=0.
+\Box A^\mu\overset{\text{source-free}}{=}0.
 \]
+The \(\text{source-free}\) label marks the condition \(j^\mu=0\).
 
 Plane waves show the propagation speed directly. Trying
 \[
-\psi=e^{i(kx-\omega t)}
+\psi\coloneqq e^{i(kx-\omega t)}
 \]
-in \(\Box\psi=0\) gives
+in \(\Box\psi\overset{\text{wave equation}}{=}0\) gives
 \[
--\frac{\omega^2}{c^2}+k^2=0,
+-\frac{\omega^2}{c^2}+k^2\overset{\text{wave equation}}{=}0,
 \]
-so \(\omega=ck\).
+so \(\omega\overset{\text{dispersion}}{=}ck\).
+The \(\text{wave equation}\) label marks imposition of the source-free equation,
+and the \(\text{dispersion}\) label marks the resulting relation between
+frequency and wave number.
 
 The source-free wave equation describes free propagation. With sources present,
 the equation describes how charges and currents generate or drive fields.
@@ -4482,7 +4631,7 @@ the equation describes how charges and currents generate or drive fields.
 
 1. Recognize the d'Alembertian.
 2. Explain the Lorenz-gauge simplification.
-3. Compute \(\omega=ck\).
+3. Compute \(\omega\overset{\text{dispersion}}{=}ck\).
 4. Explain source terms.
 5. Explain why the metric matters.
 6. Distinguish a wave equation from mere oscillation.
@@ -4534,24 +4683,26 @@ In a region where the four-current vanishes, source-free Maxwell equations
 imply a wave equation for the field or for the potential in a suitable gauge.
 For the potential this can be written schematically as
 \[
-\Box A^\mu=0.
+\Box A^\mu\overset{\text{source-free}}{=}0.
 \]
+The \(\text{source-free}\) label marks that the current source has been set to
+zero.
 
 For a plane wave moving in direction \(\mathbf k\), the source-free divergence
 equations imply
 \[
-\mathbf k\cdot\mathbf E=0,
+\mathbf k\cdot\mathbf E\overset{\text{transverse}}{=}0,
 \qquad
-\mathbf k\cdot\mathbf B=0.
+\mathbf k\cdot\mathbf B\overset{\text{transverse}}{=}0.
 \]
-Both the electric and magnetic components are transverse to the direction of
-propagation.
+The \(\text{transverse}\) label marks that both field components are
+perpendicular to the propagation direction.
 
 In a simple plane wave, \(\mathbf E\), \(\mathbf B\), and the propagation
 direction form a mutually perpendicular triad. The direction of energy flow is
 given by the right-hand-rule direction of \(\mathbf E\times\mathbf B\).
 
-The wave equation gives the dispersion relation \(\omega=ck\). The speed is
+The wave equation gives the dispersion relation \(\omega\overset{\text{wave equation}}{=}ck\). The speed is
 not the speed of a disturbance through an ether-like mechanical medium. It is
 fixed by Maxwell's equations and by the spacetime structure of special
 relativity.
@@ -4702,6 +4853,101 @@ particle trajectory, outgoing wavefronts, and a small recoil/damping cue.
   advanced descendant concepts if the atlas later expands into radiation theory.
 
 
+## 11.1 `sr.lorentz_invariance`: Lorentz invariance
+
+### Scope
+
+This concept presents Lorentz invariance as the mathematical expression of the
+relativity principle in special relativity. It should connect the principle of
+relativity, Lorentz transformations, metric preservation, invariant scalars,
+and covariant tensor equations without becoming a full group-theory treatment.
+
+### Exposition
+
+Lorentz invariance is the precise mathematical form of the claim that no
+inertial frame is privileged in the laws of physics. A physical law should keep
+the same content when rewritten between inertial frames related by Lorentz
+transformations.
+
+The principle of relativity says inertial frames are physically equivalent.
+Lorentz invariance implements that idea in spacetime: the allowed frame changes
+are those preserving the Minkowski interval. In matrix form, a Lorentz
+transformation \(\Lambda\) preserves the metric:
+\[
+\Lambda^T\eta\Lambda\overset{\text{Lorentz}}{=}\eta.
+\]
+The \(\text{Lorentz}\) label marks the metric-preservation condition that
+defines Lorentz transformations.
+
+This is why scalar products such as \(A^\mu B_\mu\) have the same value in
+every Lorentz-related inertial frame. A scalar invariant is unchanged as a
+number; a vector or tensor usually has different components in different
+frames, but transforms according to a consistent rule.
+
+Tensor notation makes Lorentz invariance visible. If both sides of an equation
+are tensors of the same type, changing frame transforms both sides in the same
+way. The component values may change, but the equation remains true.
+
+Electromagnetism is the central example in this atlas. Electric and magnetic
+fields mix under Lorentz transformations, but the electromagnetic field tensor
+transforms as one object. Maxwell theory can therefore be Lorentz-invariant
+even though \(\mathbf E\) and \(\mathbf B\) separately look frame-dependent.
+
+Lorentz invariance is not merely a tidy notation choice. In special relativity
+it is a basic constraint on candidate laws: a law that singles out one inertial
+frame needs a physical reason or it is suspect.
+
+### Block Plan
+
+- `overview`: Same laws in every inertial frame.
+- `definition`: Laws keep form under Lorentz transformations.
+- `explanation`: Relativity principle made mathematical.
+- `derivation`: Metric preservation \(\Lambda^T\eta\Lambda\overset{\text{Lorentz}}{=}\eta\).
+- `construction`: Writing covariant tensor equations.
+- `example`: Four-vectors, field tensor, and energy-momentum tensor.
+- `warning`: Invariant is not the same as unchanged components.
+- `intuition`: Why electromagnetism fits.
+- `misconception`: Not an optional decoration.
+- `historical_note`: From covariance to spacetime structure.
+- `summary`: Takeaway.
+
+### Study Questions
+
+1. Recognize Lorentz invariance as a constraint on laws.
+2. Relate Lorentz invariance to the principle of relativity.
+3. Use an invariant contraction to infer invariant mass.
+4. Explain why tensor notation helps.
+5. Distinguish invariant scalars from covariant vector/tensor equations.
+6. Explain why Maxwell theory remains Lorentz-invariant when \(\mathbf E\) and \(\mathbf B\) mix.
+
+### References
+
+- TTM SR/CF: Lorentz covariance of relativistic equations; section-level locator recorded in `data/reference_links.csv`.
+- TRR: Lorentz invariance and spacetime structure; section-level locator recorded in `data/reference_links.csv`.
+
+### Graphics
+
+The existing graphic is adequate. A future version could show the same tensor
+equation in two frames beside the preserved light cone or metric.
+
+### Drafting Issues
+
+#### Source Issues
+
+- Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
+
+#### Schema/View Issues
+
+- A future notation view could distinguish invariant scalar, covariant vector
+  equation, and tensor equation examples.
+
+#### Atlas Issues
+
+- This concept overlaps with the principle of relativity and Lorentz
+  transformations; keep it focused on laws and equations rather than coordinate
+  transformation mechanics.
+
+
 ## 11.2 `sr.gauge_fixing`: Gauge fixing
 
 ### Scope
@@ -4732,10 +4978,11 @@ redundancy from the description.
 
 The Lorenz gauge is a useful example:
 \[
-\partial_\mu A^\mu=0.
+\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0.
 \]
-It respects Lorentz invariance and simplifies Maxwell's equations for the
-potential into a wave-equation form.
+The \(\text{Lorenz gauge}\) label marks this as a gauge choice. It respects
+Lorentz invariance and simplifies Maxwell's equations for the potential into a
+wave-equation form.
 
 Gauge fixing does not always remove every redundant degree of freedom. In
 Lorenz gauge, a further transformation
@@ -4744,9 +4991,10 @@ A_\mu\rightarrow A_\mu+\partial_\mu\Lambda
 \]
 preserves the condition when
 \[
-\Box\Lambda=0.
+\Box\Lambda\overset{\text{residual gauge}}{=}0.
 \]
-This is residual gauge freedom.
+The \(\text{residual gauge}\) label marks the extra condition on the gauge
+function. This is residual gauge freedom.
 
 After fixing a gauge, physical predictions should still be expressible in
 gauge-invariant terms. If a result changes under a remaining gauge
@@ -4764,8 +5012,8 @@ labels.
 - `definition`: Gauge fixing.
 - `explanation`: Why it is needed.
 - `intuition`: Representative, not new physics.
-- `example`: Lorenz gauge example.
-- `warning`: Residual freedom can remain.
+- `example`: Lorenz gauge example \(\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0\).
+- `warning`: Residual freedom can remain, \(\Box\Lambda\overset{\text{residual gauge}}{=}0\).
 - `construction`: Keep observables gauge-invariant.
 - `intuition`: Coordinate analogy and its limit.
 - `misconception`: Not an extra law of nature.
@@ -4776,7 +5024,7 @@ labels.
 
 1. Recognize gauge fixing.
 2. Explain why gauge invariance makes it possible.
-3. Check a residual-gauge condition.
+3. Check a residual-gauge condition \(\Box\Lambda\overset{\text{residual gauge}}{=}0\).
 4. Explain why it is not an extra physical assumption.
 5. Explain why Lorenz gauge is useful.
 6. Apply gauge-invariant reasoning to two equivalent potentials.

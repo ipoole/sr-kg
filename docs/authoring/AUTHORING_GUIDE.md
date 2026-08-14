@@ -35,6 +35,10 @@ Before authoring a concept:
    mark those links for later locator tightening.
 7. Check `docs/authoring/NOTATION_GLOSSARY.md` for recurring notation and convention
    choices before introducing or revising symbols.
+8. For derivations with significant equality steps, check
+   `docs/authoring/equality_annotation_style.md` and decide where annotated
+   equals signs would help the learner see which result, convention, condition,
+   or frame choice is being used.
 
 After authoring each concept, pause for a small local consistency check before
 moving on to the next one: block count and kinds, block titles, question count
@@ -96,14 +100,44 @@ Use MathJax notation consistently with nearby concepts. If a convention matters,
 state it near first use. Examples include metric signature, index placement,
 units, coordinate ordering, and whether \(c\) is explicit.
 
-Use natural units, \(c=1\), as the default working convention once the learner
-has enough context for it. This reduces algebraic clutter and makes spacetime
-symmetry clearer. Keep \(c\) explicit when it is pedagogically important:
+Use natural units, \(c\overset{\text{units}}{=}1\), as the default working
+convention once the learner has enough context for it. This reduces algebraic
+clutter and makes spacetime symmetry clearer. Keep \(c\) explicit when it is
+pedagogically important:
 early introductions to \(ct\), dimensional checks, source terms such as
 \(j^\mu=(c\rho,\mathbf j)\), and physically famous or interpretive results
-such as \(E_0=mc^2\), \(E^2=\mathbf p^2c^2+m^2c^4\), or
-\(\Delta m=\Delta E/c^2\). If a block switches convention, say so near the
-first equation: for example, "Setting \(c=1\)" or "Restoring \(c\)".
+such as \(E_0\coloneqq mc^2\),
+\(E^2\overset{\text{mass shell}}{=}\mathbf p^2c^2+m^2c^4\), or
+\(\Delta m\overset{E_0=mc^2}{=}\Delta E/c^2\). If a block switches
+convention, say so near the first equation: for example, "Setting
+\(c\overset{\text{units}}{=}1\)" or "Restoring \(c\)".
+
+Treat `=` as the unmarked exact equality, not as the universal mathematical
+relation. When revising equations, ask what licenses each equality. Use
+\(\coloneqq\) for definitions, \(\equiv\) for identities, and annotated
+equals signs such as \(\overset{\text{metric}}{=}\),
+\(\overset{\text{Lorentz}}{=}\), \(\overset{\text{rest frame}}{=}\), or
+\(\overset{\text{stationary}}{=}\) when the equality depends on a convention,
+previous result, physical law, frame choice, gauge choice, or constraint. Leave
+routine algebra and arithmetic plain unless the provenance is the teaching
+point. Use \(\simeq\) for approximations, and reserve \(\sim\) for a stated
+equivalence or asymptotic relation.
+
+Annotated equality labels should be compact signposts, not the explanation
+itself. Explain the label in ordinary prose near the equation, especially when
+the equality uses a result or condition that a learner may not reconstruct
+automatically. For example, if a derivation uses
+\(\overset{\text{metric}}{=}\) and \(\overset{\text{mass shell}}{=}\), the
+surrounding text should say that the first label expands a contraction using
+the Minkowski metric and the second imposes the invariant-mass condition. Avoid
+putting essential explanation only in UI hover text or trying to hide a long
+sentence above the equals sign.
+
+When an equality annotation corresponds to another concept, link that concept
+in prose with `\cref{label}{id}` rather than putting a `\cref` inside
+`\overset`. The authored text should remain understandable in Markdown, CSV,
+printed output, and any future viewer. See
+`docs/authoring/equality_annotation_style.md` for the full house style.
 
 When deriving:
 
@@ -248,7 +282,7 @@ A healthy question set usually includes:
 - One conceptual check.
 - One common-misconception check, where relevant.
 - One short calculation or symbolic manipulation, where relevant.
-- One convention or dimensional check, such as setting \(c=1\) or restoring
+- One convention or dimensional check, such as setting \(c\overset{\text{units}}{=}1\) or restoring
   factors of \(c\), where relevant.
 - One connection question linking to nearby concepts, where useful.
 

@@ -37,6 +37,7 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert "<h2>SR &lt;Graph&gt; &amp; Fields</h2>" in injected
     assert 'id="kg_controls"' in injected
     assert 'id="info_panel"' in injected
+    assert 'coloneqq: "\\\\mathrel{:=}"' in injected
     assert "function kgAfterReady()" in injected
     assert "var conceptData = {};" in injected
     assert "var edgeKey = {};" in injected

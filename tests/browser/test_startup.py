@@ -475,12 +475,6 @@ def test_focus_lens_toggle_hides_and_shows_focus_lens(browser_graph):
     lens = page.locator("#kg_focus_lens")
     toggle = page.locator("#kg_focus_lens_toggle")
 
-    assert lens.is_visible()
-    assert toggle.get_attribute("aria-pressed") == "true"
-    assert toggle.inner_text() == "Hide lens"
-
-    toggle.click()
-
     assert not lens.is_visible()
     assert toggle.get_attribute("aria-pressed") == "false"
     assert toggle.inner_text() == "Show lens"
@@ -490,6 +484,12 @@ def test_focus_lens_toggle_hides_and_shows_focus_lens(browser_graph):
     assert lens.is_visible()
     assert toggle.get_attribute("aria-pressed") == "true"
     assert toggle.inner_text() == "Hide lens"
+
+    toggle.click()
+
+    assert not lens.is_visible()
+    assert toggle.get_attribute("aria-pressed") == "false"
+    assert toggle.inner_text() == "Show lens"
 
 
 @pytest.mark.browser
@@ -571,16 +571,13 @@ def test_phone_header_uses_single_row_compact_controls(browser_graph):
 
 
 @pytest.mark.browser
-def test_default_startup_selects_magnetic_field(repo_browser_graph):
+def test_default_startup_has_no_selected_concept(repo_browser_graph):
     page = repo_browser_graph.page
 
-    page.wait_for_function("""() => window.location.hash === '#concept-sr.magnetic_field'""")
+    page.wait_for_function("""() => window.location.hash === ''""")
 
-    assert page.locator("#info_panel h2").inner_text() == "7.4 Magnetic field"
-    assert page.locator("#kg_view_title").inner_text() == "7.4 Magnetic field"
-    assert page.locator('.kg-concept-item[data-concept-id="sr.magnetic_field"]').evaluate(
-        "el => el.classList.contains('active')"
-    )
+    assert "Select a concept" in page.locator("#info_panel").inner_text()
+    assert page.locator(".kg-concept-item.active").count() == 0
 
 
 @pytest.mark.browser

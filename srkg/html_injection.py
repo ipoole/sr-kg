@@ -42,7 +42,10 @@ MATHJAX_ASSET = """
     tex: {
       inlineMath: [['\\\\(', '\\\\)']],
       displayMath: [['\\\\[', '\\\\]']],
-      processEscapes: true
+      processEscapes: true,
+      macros: {
+        coloneqq: "\\\\mathrel{:=}"
+      }
     },
     svg: {
       fontCache: 'global'

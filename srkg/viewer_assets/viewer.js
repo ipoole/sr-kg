@@ -136,7 +136,7 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
-        var defaultStartupConceptId = "sr.magnetic_field";
+        var defaultStartupConceptId = null;
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
@@ -156,7 +156,7 @@
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var pendingGraphSectionContext = null;
-        var focusLensVisible = !shouldStartWithFocusLensHidden();
+        var focusLensVisible = false;
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
 
@@ -5188,7 +5188,8 @@
           );
           focusConcept(initialNodeId, "Selected", {skipHistory: true});
         } else {
-          var defaultNodeId = getConcept(defaultStartupConceptId) ? defaultStartupConceptId : null;
+          var defaultNodeId = defaultStartupConceptId && getConcept(defaultStartupConceptId) ?
+            defaultStartupConceptId : null;
           if (defaultNodeId) {
             window.history.replaceState(
               {nodeId: String(defaultNodeId), mode: GraphViewMode.HIGHLIGHT},
