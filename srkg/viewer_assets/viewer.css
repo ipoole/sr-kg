@@ -1710,6 +1710,11 @@
         margin-bottom: 0.45em;
     }
 
+    div.vis-tooltip .kg-tooltip-relation,
+    #kg_node_tooltip .kg-tooltip-relation {
+        font-weight: 700;
+    }
+
     div.vis-tooltip .kg-tooltip-definition,
     #kg_node_tooltip .kg-tooltip-definition {
         margin-bottom: 0.45em;

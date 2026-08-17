@@ -963,12 +963,101 @@ def test_edge_click_shows_relationship_detail_panel(shared_browser_graph):
     panel_text = page.locator("#info_panel").inner_text()
     assert "2.1 Beta" in panel_text
     assert "1.1 Alpha" in panel_text
+    assert page.locator("#info_panel .edge-detail-route").count() == 0
     assert page.locator("#info_panel .edge-detail-statement").get_attribute(
         "aria-label"
     ) == "2.1 Beta depends on 1.1 Alpha."
-    assert "Depends on" in panel_text
     assert "DEPENDS_ON" in panel_text
-    assert "Beta depends on alpha" in panel_text
+    assert "Category" not in panel_text
+    assert "knowledge" not in panel_text
+    assert "Specific" in panel_text
+    assert "Note" not in panel_text
+    assert "Noether's theorem" in panel_text
+    assert page.locator("#info_panel .edge-detail-meta mjx-container").count() >= 1
+
+
+@pytest.mark.browser
+def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(browser_graph):
+    page = browser_graph.page
+
+    page.evaluate(
+        """() => {
+          const edge = edges.get().find(item =>
+            String(item.from) === "2.1" &&
+            String(item.to) === "1.1" &&
+            item.relation === "DEPENDS_ON"
+          );
+          network.emit("hoverEdge", {
+            edge: edge.id,
+            pointer: {DOM: {x: 120, y: 90}, canvas: {x: 0, y: 0}}
+          });
+        }"""
+    )
+
+    page.wait_for_selector("#kg_node_tooltip", state="visible")
+    page.wait_for_selector("#kg_node_tooltip mjx-container")
+    tooltip = page.locator("#kg_node_tooltip")
+    assert tooltip.locator(".kg-tooltip-title").inner_text() == "Beta depends on Alpha"
+    assert tooltip.locator(".kg-tooltip-relation").evaluate(
+        "el => getComputedStyle(el).color !== 'rgb(34, 34, 34)'"
+    )
+    tooltip_text = tooltip.inner_text()
+    assert "Noether's theorem" in tooltip_text
+    assert "DEPENDS_ON" not in tooltip_text
+    assert "\\(" not in tooltip_text
+
+
+@pytest.mark.browser
+def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("3.1")
+    before = page.evaluate(
+        """() => {
+          const edge = edges.get().find(item =>
+            String(item.from) === "2.1" &&
+            String(item.to) === "1.1" &&
+            item.relation === "DEPENDS_ON"
+          );
+          return {
+            width: edge.width,
+            color: edge.color && edge.color.color,
+            opacity: edge.color && edge.color.opacity
+          };
+        }"""
+    )
+    page.evaluate(
+        """() => {
+          const edge = edges.get().find(item =>
+            String(item.from) === "2.1" &&
+            String(item.to) === "1.1" &&
+            item.relation === "DEPENDS_ON"
+          );
+          network.emit("hoverEdge", {
+            edge: edge.id,
+            pointer: {DOM: {x: 140, y: 100}, canvas: {x: 0, y: 0}}
+          });
+        }"""
+    )
+
+    page.wait_for_timeout(100)
+    after = page.evaluate(
+        """() => {
+          const edge = edges.get().find(item =>
+            String(item.from) === "2.1" &&
+            String(item.to) === "1.1" &&
+            item.relation === "DEPENDS_ON"
+          );
+          return {
+            width: edge.width,
+            color: edge.color && edge.color.color,
+            opacity: edge.color && edge.color.opacity
+          };
+        }"""
+    )
+
+    assert after == before
+    assert not page.locator("#kg_node_tooltip").is_visible()
 
 
 @pytest.mark.browser
@@ -995,7 +1084,7 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_b
     assert page.locator("#info_panel .edge-detail-statement").get_attribute(
         "aria-label"
     ) == "7.2 Field tensor \\(F_{\\mu\\nu}\\) is constructed from 7.1 Vector potential \\(A_\\mu\\)."
-    assert "Constructed from" in panel_text
+    assert "is constructed from" in panel_text
     assert "CONSTRUCTED_FROM" in panel_text
 
 

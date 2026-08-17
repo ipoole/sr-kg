@@ -1778,6 +1778,11 @@
         margin-bottom: 0.45em;
     }
 
+    div.vis-tooltip .kg-tooltip-relation,
+    #kg_node_tooltip .kg-tooltip-relation {
+        font-weight: 700;
+    }
+
     div.vis-tooltip .kg-tooltip-definition,
     #kg_node_tooltip .kg-tooltip-definition {
         margin-bottom: 0.45em;
@@ -2171,7 +2176,7 @@
         </select>
         <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="false">Show lens</button>
       </div>
-      <div id="kg_view_title">Special Relativity and Classical Fields</div>
+      <div id="kg_view_title">&#x27;Special Relativity and Classival Fields</div>
       <div class="kg-shell-control kg-shell-details-control">
         <label for="kg_details_view_select">Details</label>
         <select id="kg_details_view_select" class="kg-canvas-select" aria-label="Details view">
@@ -2221,7 +2226,7 @@
     </div>
 
     <div id="info_panel">
-      <h2>Special Relativity and Classical Fields</h2>
+      <h2>&#x27;Special Relativity and Classival Fields</h2>
       <p>Select a concept...</p>
     </div>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
@@ -2294,7 +2299,7 @@
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 280, "maximum": 280}, "heightConstraint": {"minimum": 170, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "endPointOffset": {"to": 36}, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": false, "tooltipDelay": 120}};
+                  var options = {"nodes": {"shape": "box", "borderWidth": 0, "font": {"size": 1, "face": "arial", "multi": true, "color": "rgba(0,0,0,0)"}, "margin": {"top": 0, "right": 0, "bottom": 0, "left": 0}, "widthConstraint": {"minimum": 230, "maximum": 230}, "heightConstraint": {"minimum": 150, "valign": "middle"}, "color": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)", "highlight": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}, "hover": {"background": "rgba(255,255,255,0)", "border": "rgba(255,255,255,0)"}}}, "layout": {"improvedLayout": false}, "edges": {"chosen": false, "endPointOffset": {"to": 36}, "selectionWidth": 0, "hoverWidth": 0, "arrows": {"to": {"enabled": false, "scaleFactor": 2.0}}, "smooth": {"enabled": true, "type": "cubicBezier", "forceDirection": "vertical", "roundness": 0.35}, "color": {"color": "#999999", "opacity": 0.35}, "width": 1}, "physics": {"enabled": false}, "interaction": {"hover": true, "hoverConnectedEdges": false, "selectConnectedEdges": false, "navigationButtons": false, "keyboard": false, "tooltipDelay": 120}};
 
                   
 
@@ -2597,6 +2602,16 @@
           scheduleTooltipTypeset();
         }
 
+        function showEdgeTooltip(edgeId, pointer) {
+          var edge = edges.get(edgeId);
+          if (!nodeTooltip || !edgeHoverableInCurrentView(edge)) { return; }
+          hideConceptPreview(true);
+          nodeTooltip.innerHTML = edgeTooltipHtml(edge);
+          nodeTooltip.style.display = "block";
+          positionNodeTooltip(pointer);
+          scheduleTooltipTypeset();
+        }
+
         function hideNodeTooltip() {
           if (tooltipTypesetTimer) {
             clearTimeout(tooltipTypesetTimer);
@@ -2757,6 +2772,10 @@
 
         nodes.update(allNodes.map(applyCollisionNodeStyle));
         allNodes = nodes.get();
+        edges.update(allEdges.map(function(e) {
+          return {id: e.id, title: ""};
+        }));
+        allEdges = edges.get();
         allNodes.forEach(function(n) { originalNodes[n.id] = Object.assign({}, n); });
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
         refreshNodeTooltips();
@@ -4922,6 +4941,35 @@
           return html;
         }
 
+        function relationshipConceptNameText(nodeId) {
+          var concept = getConcept(nodeId);
+          if (concept && concept.label) { return searchDisplayText(concept.label); }
+          return conceptDisplayId(nodeId);
+        }
+
+        function relationshipPhrase(edge) {
+          var relation = edgeRelation(edge);
+          var policy = edgeRelationPolicyFor(relation);
+          return policy.phrase ||
+            (edgeRelationDirected(edge) ? relationDisplayLabel(relation).toLowerCase() : "is related to");
+        }
+
+        function edgeTooltipHtml(edge) {
+          var relation = edgeRelation(edge);
+          var phrase = relationshipPhrase(edge);
+          var colour = relationColour(relation);
+          var title = renderTooltipText(relationshipConceptNameText(edge.from)) +
+            ' <span class="kg-tooltip-relation" style="color:' +
+            escapeHtml(colour) + '">' + escapeHtml(phrase) + "</span> " +
+            renderTooltipText(relationshipConceptNameText(edge.to));
+          var html = '<div class="kg-tooltip-title kg-edge-tooltip-title">' + title + "</div>";
+          if (edge.note) {
+            html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
+              renderTooltipText(edge.note) + "</div>";
+          }
+          return html;
+        }
+
         function conceptPreviewSourceText(concept) {
           var blocks = conceptContentBlocks(concept);
           var definitionBlock = blocks.find(function(block) {
@@ -5187,8 +5235,10 @@
           edge.hidden = hidden;
           if (hidden) {
             edge.title = "";
+            edge.kgHoverable = false;
           } else if (originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
             edge.title = originalEdges[edge.id].title;
+            edge.kgHoverable = true;
           }
           return edge;
         }
@@ -5196,26 +5246,16 @@
         function setEdgeTooltipEnabled(edge, enabled) {
           if (enabled && originalEdges[edge.id] && originalEdges[edge.id].title !== undefined) {
             edge.title = originalEdges[edge.id].title;
+            edge.kgHoverable = true;
           } else if (!enabled) {
             edge.title = "";
+            edge.kgHoverable = false;
           }
           return edge;
         }
 
         function edgeHoverableInCurrentView(edge) {
-          if (!edge || edge.hidden) {
-            return false;
-          }
-          if (graphViewIs(currentView, GraphViewMode.HIGHLIGHT) && graphViewHasNode(currentView)) {
-            return edge.from == currentView.nodeId || edge.to == currentView.nodeId;
-          }
-          if (graphViewIs(currentView, GraphViewMode.DESCENDANTS)) {
-            return edgeRelationDirected(edge);
-          }
-          if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
-            return relationHasDerivationTreeSemantics(edgeRelation(edge));
-          }
-          return true;
+          return visibleGraphEdge(edge) && edge.kgHoverable !== false;
         }
 
         function visibleGraphNode(nodeId) {
@@ -5847,15 +5887,14 @@
 
         function relationshipStatementHtml(edge) {
           var relation = edgeRelation(edge);
-          var policy = edgeRelationPolicyFor(relation);
-          var phrase = policy.phrase ||
-            (edgeRelationDirected(edge) ? relationDisplayLabel(relation).toLowerCase() : "is related to");
+          var phrase = relationshipPhrase(edge);
           var sentence = relationshipConceptText(edge.from) + " " + phrase + " " +
             relationshipConceptText(edge.to) + ".";
           return '<div class="edge-detail-statement" aria-label="' +
             escapeHtml(sentence) + '">' +
             relationshipConceptHtml(edge.from) +
-            ' <span class="edge-detail-phrase">' + escapeHtml(phrase) + "</span> " +
+            ' <span class="edge-detail-phrase" style="color:' +
+            escapeHtml(relationColour(relation)) + '">' + escapeHtml(phrase) + "</span> " +
             relationshipConceptHtml(edge.to) +
             ".</div>";
         }
@@ -6126,27 +6165,17 @@
           var html = "";
           html += "<h2>Relationship</h2>";
           html += '<section class="edge-detail">';
-          html += '<div class="edge-detail-route">' +
-            relationshipConceptHtml(edge.from) +
-            '<span class="edge-detail-arrow">' + (relationInfo.directed ? "->" : "-") + "</span>" +
-            relationshipConceptHtml(edge.to) +
-            "</div>";
           html += relationshipStatementHtml(edge);
           html += '<dl class="edge-detail-meta">';
           html += "<dt>Relation</dt><dd>" +
             '<span class="edge-colour-swatch" style="background:' +
             escapeHtml(relationColourValue) + '"></span>' +
-            escapeHtml(relationDisplayLabel(relation)) +
-            (relation ? ' <code class="edge-detail-relation-code">' +
-              escapeHtml(relation) + "</code>" : "") + "</dd>";
-          if (relationInfo.category) {
-            html += "<dt>Category</dt><dd>" + escapeHtml(relationInfo.category) + "</dd>";
-          }
+            escapeHtml(relation) + "</dd>";
           if (relationInfo.meaning) {
             html += "<dt>Meaning</dt><dd>" + escapeHtml(relationInfo.meaning) + "</dd>";
           }
           if (edge.note) {
-            html += "<dt>Note</dt><dd>" + renderConceptText(edge.note) + "</dd>";
+            html += "<dt>Specific</dt><dd>" + renderConceptText(edge.note) + "</dd>";
           }
           html += "</dl>";
           html += "</section>";
@@ -7215,6 +7244,7 @@
         network.on("hoverEdge", function(params) {
           if (params.edge !== undefined && params.edge !== null) {
             highlightHoveredEdge(params.edge);
+            showEdgeTooltip(params.edge, params.pointer);
           }
         });
 
@@ -7222,6 +7252,7 @@
           if (params.edge === hoveredEdgeId) {
             restoreHoveredEdge();
           }
+          hideNodeTooltip();
         });
 
         network.on("afterDrawing", function(ctx) {

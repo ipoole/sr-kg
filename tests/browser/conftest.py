@@ -204,7 +204,7 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "source": "2.1",
             "target": "1.1",
             "relation": "DEPENDS_ON",
-            "note": "Beta depends on alpha",
+            "note": "Beta depends on alpha through Noether's theorem \\(E=mc^2\\)",
         },
         {
             "source": "1.1",
