@@ -11,9 +11,12 @@ The atlas currently uses a deliberately small relation vocabulary:
 
 | Relation | Count | Current Role |
 | --- | ---: | --- |
-| `DERIVES_FROM` | 56 | A can be mathematically derived from B. |
-| `PREREQUISITE` | 49 | A requires prior understanding of B. |
-| `RELATED` | 37 | A and B are closely associated, without a sharper relation. |
+| `DERIVES_FROM` | 37 | A can be mathematically derived from B. |
+| `REQUIRES` | 52 | A requires knowledge of B. |
+| `CONSTRUCTED_FROM` | 8 | A is built structurally from B without necessarily being derived as a theorem. |
+| `COMPONENT_OF` | 4 | A is a component, frame split, or extracted part of B. |
+| `INSTANCE_OF` | 7 | A is a concrete example, special case, or named instance of B. |
+| `RELATED` | 33 | A and B are closely associated, without a sharper relation. |
 
 This has kept the graph manageable, but `RELATED` and some broad
 `DERIVES_FROM` edges are now carrying several distinct meanings. Sharper edge
@@ -27,16 +30,18 @@ and future curation without making ordinary authoring fussy.
 - Keep `DERIVES_FROM` strict. Use it when there is a defensible mathematical or
   logical derivation dependency, not merely when a formula mentions another
   object.
-- Keep `PREREQUISITE` for essential prior understanding. Avoid using it for
+- Keep `REQUIRES` for essential prior knowledge. Avoid using it for
   loose connections, examples, or every object appearing in an equation.
 - Keep `RELATED` as a last resort, not a dumping ground.
 - Add only a few relation types at a time. A relation type should earn its
   place by improving multiple edges and by supporting a plausible viewer
   feature.
 
-## Proposed First-Pass Vocabulary
+## Adopted First-Pass Vocabulary
 
-These are the strongest candidates for near-term migration.
+These relations have been added to `data/edges_key.csv`. The first migrations
+have deliberately been limited to high-confidence and structurally obvious
+edges, with later-layer candidates left for separate review.
 
 | Relation | Directed | Meaning | Example |
 | --- | --- | --- | --- |
@@ -64,29 +69,58 @@ shows they are worth the extra concept count.
 
 ## Candidate CSV Edits
 
-These are proposed edits, not yet applied. The `note` text can usually remain
-unchanged for a first migration.
+These are proposed edits, some of which have now been applied. The `note` text
+can usually remain unchanged for a first migration.
 
-### High Confidence
+### Applied In Layer 1-4 First Pass
 
-| Source | Target | Current | Proposed | Reason |
+| Source | Target | Previous | Current | Reason |
 | --- | --- | --- | --- | --- |
+| `sr.position_four_vector` | `sr.four_vectors` | `REQUIRES` | `INSTANCE_OF` | Position four-vector is a specific four-vector. |
+| `sr.velocity_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Velocity four-vector is a specific four-vector. |
+| `sr.momentum_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Momentum four-vector is a specific four-vector. |
+
+### Applied In Layer 5-8 First Pass
+
+| Source | Target | Previous | Current | Reason |
+| --- | --- | --- | --- | --- |
+| `sr.vector_potential` | `sr.vector_field` | `REQUIRES` | `INSTANCE_OF` | Vector potential is a specific relativistic vector field. |
 | `sr.field_tensor` | `sr.vector_potential` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | \(F_{\mu\nu}\) is constructed from derivatives of \(A_\mu\). |
 | `sr.electric_field` | `sr.field_tensor` | `DERIVES_FROM` | `COMPONENT_OF` | \(\mathbf E\) is a frame-dependent time-space split of \(F_{\mu\nu}\). |
 | `sr.magnetic_field` | `sr.field_tensor` | `DERIVES_FROM` | `COMPONENT_OF` | \(\mathbf B\) is a frame-dependent spatial split of \(F_{\mu\nu}\). |
 | `sr.four_current` | `sr.four_vectors` | `DERIVES_FROM` | `INSTANCE_OF` | Four-current is a particular four-vector, not derived from the general concept. |
 | `sr.minimal_coupling` | `sr.vector_potential` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | Minimal coupling is built by introducing \(A_\mu\). |
+| `sr.lorenz_gauge` | `sr.gauge_fixing` | `RELATED` | `INSTANCE_OF` | Lorenz gauge is a specific gauge fixing. |
+
+### Applied In Layer 9-11 First Pass
+
+| Source | Target | Previous | Current | Reason |
+| --- | --- | --- | --- | --- |
 | `sr.em_energy_density` | `sr.electric_field` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | EM energy density is algebraically built from field squares. |
 | `sr.em_energy_density` | `sr.magnetic_field` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | EM energy density is algebraically built from field squares. |
 | `sr.em_energy_density` | `sr.energy_momentum_tensor` | `DERIVES_FROM` | `COMPONENT_OF` | EM energy density is the time-time component of the tensor. |
+| `sr.poynting_vector` | `sr.energy_momentum_tensor` | `DERIVES_FROM` | `COMPONENT_OF` | Poynting vector and momentum flow appear in mixed time-space tensor components. |
 | `sr.em_stress_energy` | `sr.metric_tensor` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | The EM tensor formula uses the metric to contract and raise/lower indices. |
 | `sr.em_stress_energy` | `sr.field_tensor` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | The EM tensor is algebraically built from \(F_{\mu\nu}\). |
+| `sr.em_stress_energy` | `sr.energy_momentum_tensor` | `RELATED` | `INSTANCE_OF` | EM stress-energy is the electromagnetic-field instance of the general tensor. |
 | `sr.poynting_vector` | `sr.electric_field` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | \(\mathbf S\) is built from \(\mathbf E\times\mathbf B\). |
 | `sr.poynting_vector` | `sr.magnetic_field` | `DERIVES_FROM` | `CONSTRUCTED_FROM` | \(\mathbf S\) is built from \(\mathbf E\times\mathbf B\). |
-| `sr.lorenz_gauge` | `sr.gauge_fixing` | `RELATED` | `INSTANCE_OF` | Lorenz gauge is a specific gauge fixing. |
-| `sr.em_stress_energy` | `sr.energy_momentum_tensor` | `RELATED` | `INSTANCE_OF` | EM stress-energy is the electromagnetic-field instance of the general tensor. |
-| `sr.velocity_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Velocity four-vector is a specific four-vector. |
-| `sr.momentum_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Momentum four-vector is a specific four-vector. |
+
+### Applied During Edge-Note Review
+
+| Source | Target | Previous | Current | Reason |
+| --- | --- | --- | --- | --- |
+| `sr.lorenz_gauge` | `sr.vector_potential` | `DERIVES_FROM` | `REQUIRES` | The condition is imposed on the potential, but is not derived from it alone. |
+| `sr.lorentz_force_law` | `sr.velocity_four_vector` | `DERIVES_FROM` | `REQUIRES` | Four-velocity appears in the covariant equation; this is closer to a formulation dependency. |
+| `sr.lorentz_force_law` | `sr.momentum_four_vector` | `DERIVES_FROM` | `REQUIRES` | Four-momentum is the quantity whose rate of change is described by the law. |
+| `sr.lorentz_force_law` | `sr.field_tensor` | `DERIVES_FROM` | `REQUIRES` | The field tensor appears in the law, but the derivation comes through the action/minimal-coupling route. |
+| `sr.poynting_vector` | `sr.electromagnetic_field` | `DERIVES_FROM` | `REQUIRES` | The vector is an energy-flow quantity for electromagnetic field configurations, not derived from the abstract field concept alone. |
+| `sr.energy_momentum_tensor` | `sr.field_tensor` | `DERIVES_FROM` | `RELATED` | The general tensor concept is broader; the field-tensor construction belongs to the electromagnetic instance. |
+
+### High Confidence
+
+No remaining high-confidence rows are currently pending after the first
+layer-based passes.
 
 ### Medium Confidence
 
@@ -95,22 +129,15 @@ before migration.
 
 | Source | Target | Current | Proposed | Reason / Question |
 | --- | --- | --- | --- | --- |
-| `sr.position_four_vector` | `sr.four_vectors` | `PREREQUISITE` | `INSTANCE_OF` | Position four-vector is a specific four-vector; may still be useful as a prerequisite. |
-| `sr.vector_potential` | `sr.vector_field` | `PREREQUISITE` | `INSTANCE_OF` | Vector potential is a specific relativistic vector field. |
-| `sr.electromagnetic_field` | `sr.field_tensor` | `PREREQUISITE` | `COMPONENT_OF` or keep `PREREQUISITE` | The EM field is represented by the tensor; `COMPONENT_OF` direction is not quite right. |
-| `sr.electromagnetic_field` | `sr.electric_field` | `PREREQUISITE` | `CONSTRUCTED_FROM` or keep `PREREQUISITE` | The unified EM field packages electric and magnetic fields, but the direction is pedagogical. |
-| `sr.electromagnetic_field` | `sr.magnetic_field` | `PREREQUISITE` | `CONSTRUCTED_FROM` or keep `PREREQUISITE` | Same issue as electric field. |
-| `sr.spacetime_interval` | `sr.position_four_vector` | `RELATED` | `CONSTRUCTED_FROM` | The interval is computed from displacement vectors plus the metric. |
+| `sr.electromagnetic_field` | `sr.field_tensor` | `REQUIRES` | `COMPONENT_OF` or keep `REQUIRES` | The EM field is represented by the tensor; `COMPONENT_OF` direction is not quite right. |
+| `sr.electromagnetic_field` | `sr.electric_field` | `REQUIRES` | `CONSTRUCTED_FROM` or keep `REQUIRES` | The unified EM field packages electric and magnetic fields, but the direction is pedagogical. |
+| `sr.electromagnetic_field` | `sr.magnetic_field` | `REQUIRES` | `CONSTRUCTED_FROM` or keep `REQUIRES` | Same issue as electric field. |
 | `sr.position_four_vector` | `sr.metric_tensor` | `RELATED` | `CONSTRUCTED_FROM` or keep `RELATED` | Metric contractions give intervals between position vectors; the concept itself is not constructed from the metric. |
 | `sr.lagrangian` | `sr.proper_time` | `RELATED` | `CONSTRUCTED_FROM` or keep `RELATED` | Relativistic particle Lagrangians may use proper time, but the general concept does not. |
 | `sr.action_principle` | `sr.proper_time` | `RELATED` | `CONSTRUCTED_FROM` or keep `RELATED` | Relativistic actions often use proper time, but the action principle is broader. |
 | `sr.action_principle` | `sr.four_vectors` | `RELATED` | `CONSTRUCTED_FROM` or keep `RELATED` | Relativistic actions use Lorentz scalars from four-vectors, but this may be too broad. |
 | `sr.hamiltonian_formalism` | `sr.lagrangian` | `DERIVES_FROM` | `REFORMULATES` | Strong candidate if `REFORMULATES` is adopted later. |
 | `sr.hamiltonian_formalism` | `sr.euler_lagrange_equations` | `RELATED` | `REFORMULATES` | Hamilton's equations are equivalent when the Legendre transform is valid. |
-| `sr.lorentz_force_law` | `sr.velocity_four_vector` | `DERIVES_FROM` | keep or future `FORMULATED_WITH` | The law uses \(U^\mu\), but is not derived from four-velocity alone. |
-| `sr.lorentz_force_law` | `sr.momentum_four_vector` | `DERIVES_FROM` | keep or future `FORMULATED_WITH` | The law gives \(dp^\mu/d\tau\), but is not derived from momentum alone. |
-| `sr.lorentz_force_law` | `sr.field_tensor` | `DERIVES_FROM` | keep or future `FORMULATED_WITH` | The law is built from \(F^\mu{}_\nu\), but also follows from minimal coupling/action. |
-| `sr.energy_momentum_tensor` | `sr.field_tensor` | `DERIVES_FROM` | `CONSTRUCTED_FROM` or remove | The general concept is not EM-specific; this edge may belong only to `sr.em_stress_energy`. |
 
 ### Probably Keep As `RELATED`
 
@@ -131,15 +158,14 @@ These seem genuinely associative or pedagogical rather than structural.
 
 ## Suggested Migration Sequence
 
-1. Add only `CONSTRUCTED_FROM`, `COMPONENT_OF`, and `INSTANCE_OF` to
-   `data/edges_key.csv`.
-2. Apply only the high-confidence candidate edits.
-3. Regenerate and inspect the viewer, especially edge filters, derivation
-   sections, and graph highlighting.
-4. Decide whether the viewer should treat `CONSTRUCTED_FROM` as derivation-like
+1. Continue applying the remaining high-confidence edits in small layer-based
+   passes.
+2. Regenerate and inspect the viewer after each pass, especially derivation
+   sections and graph highlighting.
+3. Decide whether the viewer should treat `CONSTRUCTED_FROM` as derivation-like
    in some modes, or whether strict derivation traces should continue to use
    only `DERIVES_FROM`.
-5. Revisit medium-confidence edges after using the new vocabulary on real
+4. Revisit medium-confidence edges after using the new vocabulary on real
    content for a while.
 
 ## Open Questions

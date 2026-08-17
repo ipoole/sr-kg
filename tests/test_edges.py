@@ -98,3 +98,19 @@ def test_make_edge_tooltip_wraps_and_escapes_note_text():
         "&lt;tag&gt; gamma",
         "delta",
     ]
+
+
+def test_make_edge_tooltip_adds_relation_heading_without_concept_ids():
+    tooltip = make_edge_tooltip(
+        "REQUIRES",
+        "Use <carefully>",
+        source_label="Position four-vector",
+        target_label="Spacetime event",
+        width=30,
+    )
+
+    assert tooltip.splitlines() == [
+        "Position four-vector REQUIRES Spacetime event",
+        "",
+        "Use &lt;carefully&gt;",
+    ]

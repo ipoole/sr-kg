@@ -227,6 +227,17 @@ schema explicitly supports them.
 Multiple blocks with the same `kind` are allowed. For example, a concept may
 have several `derivation_step` or `example` blocks.
 
+Use the richer structural kinds sparingly:
+
+- Use `result` for a central equation, theorem statement, named conclusion, or
+  formula that the learner should be able to find again quickly. Do not use it
+  for every intermediate equation.
+- Use `decomposition` when an object is explicitly split into components,
+  frame-dependent parts, or extracted pieces.
+- Use `convention` for local notation, sign, unit, coordinate, or gauge
+  conventions. A convention is not necessarily a warning; reserve `warning` for
+  traps, caveats, and limitations.
+
 ## Cross-References And Edges
 
 Use concept links deliberately. A `\cref` should help the learner move to a
@@ -236,7 +247,14 @@ When adding or revising concept edges:
 
 - Prefer edges to earlier or prerequisite concepts where possible.
 - Use `DERIVES_FROM` only when there is a defensible derivation dependency.
-- Use `PREREQUISITE` for concepts a learner should know first.
+- Use `CONSTRUCTED_FROM` when a concept is built algebraically,
+  differentially, or structurally from another concept, but the relationship is
+  weaker than a theorem-style derivation.
+- Use `COMPONENT_OF` when a concept is a component, frame split, or extracted
+  part of another concept.
+- Use `INSTANCE_OF` when a concept is a concrete example, named instance, or
+  special case of a more general concept.
+- Use `REQUIRES` for concepts a learner should know first.
 - Use `RELATED` sparingly when the connection is real but not yet a sharper
   relation.
 - Note recurring cases where `RELATED` feels too vague; those are candidates

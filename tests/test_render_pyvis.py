@@ -109,7 +109,7 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
         "highlight": "#123456",
         "hover": "#123456",
     }
-    assert directed["title"] == "Use &lt;carefully&gt;"
+    assert directed["title"] == "Beta DEPENDS_ON Alpha\n\nUse &lt;carefully&gt;"
     assert directed["width"] == EDGE_WIDTH
     assert undirected["arrows"] == ""
     assert undirected["color"]["color"] == "#abcdef"

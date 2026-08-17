@@ -1,4 +1,7 @@
 relation,directed,category,meaning,example
-PREREQUISITE,true,knowledge,"A requires prior understanding of B. Only include essential, non-redundant dependencies.",10.2 Electromagnetic waves -> 10.1 Wave equation
+REQUIRES,true,knowledge,"A requires knowledge of B. Only include essential, non-redundant dependencies.",10.2 Electromagnetic waves -> 10.1 Wave equation
 DERIVES_FROM,true,knowledge,A can be mathematically derived from B.,10.1 Wave equation -> 7.7 Maxwell's equations
+CONSTRUCTED_FROM,true,knowledge,"A is algebraically, differentially, or structurally built from B, without necessarily being derived as a theorem.",7.2 Field tensor -> 7.1 Vector potential
+COMPONENT_OF,true,knowledge,"A is a component, frame split, or extracted part of B.",7.3 Electric field -> 7.2 Field tensor
+INSTANCE_OF,true,knowledge,"A is a concrete example, special case, or named instance of B.",4.4 Velocity four-vector -> 4.2 Four-vectors
 RELATED,false,association,"A and B are closely associated, but neither is a prerequisite of the other.",3.5 Minkowski diagram -- 3.4 Light cone

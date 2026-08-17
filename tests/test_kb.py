@@ -55,13 +55,13 @@ def _write_minimal_kb(root):
         {
             "source": "test.beta",
             "target": "test.alpha",
-            "relation": "PREREQUISITE",
+            "relation": "REQUIRES",
             "note": "",
         },
     ]).to_csv(root / "edges.csv", index=False)
     pd.DataFrame([
         {
-            "relation": "PREREQUISITE",
+            "relation": "REQUIRES",
             "directed": "true",
             "category": "knowledge",
             "meaning": "source requires target",
@@ -312,6 +312,18 @@ def test_load_knowledge_base_rejects_invalid_content_block_kind(tmp_path):
     assert str(exc.value) == (
         "content_blocks.csv has invalid kind value(s): sidebar"
     )
+
+
+@pytest.mark.parametrize("kind", ["result", "decomposition", "convention"])
+def test_load_knowledge_base_accepts_structural_content_block_kinds(tmp_path, kind):
+    _write_minimal_kb(tmp_path)
+    blocks = pd.read_csv(tmp_path / "content_blocks.csv").fillna("")
+    blocks.loc[0, "kind"] = kind
+    blocks.to_csv(tmp_path / "content_blocks.csv", index=False)
+
+    kb = load_knowledge_base(tmp_path)
+
+    assert kb.content_blocks_for("test.alpha")[0].kind == kind
 
 
 def test_load_knowledge_base_rejects_non_numeric_content_block_sequence(tmp_path):

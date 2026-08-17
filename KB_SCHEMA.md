@@ -94,10 +94,10 @@ source for concept prose in manifest-backed KB roots.
 
 `content_blocks.csv` contains smaller authored teaching units attached to
 concepts. It is the canonical concept-prose source for manifest-backed KB
-roots. The loader groups current block kinds back into the visible Definition,
-Derivation, and Explanation sections for the existing viewer. Later viewer
-policies may map `kind` values to folded sections, callouts, local contents, or
-other presentation choices, but those choices are not authored in the KB.
+roots. The viewer renders blocks directly and maps `kind` values to section
+labels, folded notes, reading modes, local contents entries, and graph-focus
+lenses. Those presentation choices remain viewer policy; the KB authors the
+semantic `kind`, not display instructions.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
@@ -117,6 +117,9 @@ Allowed `kind` values:
 | `intuition` | A qualitative mental model or physical interpretation. |
 | `explanation` | General explanatory prose that develops the concept. |
 | `construction` | A setup or construction that builds an object or argument. |
+| `result` | A central result, formula, theorem statement, or named conclusion. |
+| `decomposition` | A breakdown of an object into components, frame splits, or parts. |
+| `convention` | A notation, sign, unit, coordinate, or gauge convention used locally. |
 | `derivation` | A coherent mathematical derivation or proof. |
 | `derivation_step` | A smaller algebraic or logical step inside a derivation. |
 | `example` | A short illustrative example. |
@@ -197,7 +200,18 @@ blocks, or study questions.
 | `note` | No | Edge note shown in the hover tooltip. |
 
 For directed relation types, the stored direction is `source -> target`.
-For example, `A PREREQUISITE B` means concept A requires concept B.
+For example, `A REQUIRES B` means concept A requires concept B.
+
+Current relation types are:
+
+| Relation | Direction | Meaning |
+| --- | --- | --- |
+| `REQUIRES` | Directed | A requires knowledge of B. |
+| `DERIVES_FROM` | Directed | A can be mathematically derived from B. |
+| `CONSTRUCTED_FROM` | Directed | A is algebraically, differentially, or structurally built from B, without necessarily being derived as a theorem. |
+| `COMPONENT_OF` | Directed | A is a component, frame split, or extracted part of B. |
+| `INSTANCE_OF` | Directed | A is a concrete example, special case, or named instance of B. |
+| `RELATED` | Undirected | A and B are closely associated, without a sharper relation. |
 
 ## edges_key.csv
 

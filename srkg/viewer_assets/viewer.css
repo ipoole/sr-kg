@@ -744,6 +744,9 @@
     #info_panel .concept-toc-link-intuition { --toc-accent: #16836b; }
     #info_panel .concept-toc-link-explanation { --toc-accent: #6a7b8f; }
     #info_panel .concept-toc-link-construction { --toc-accent: #536a87; }
+    #info_panel .concept-toc-link-result { --toc-accent: #1c6b72; }
+    #info_panel .concept-toc-link-decomposition { --toc-accent: #7a5a12; }
+    #info_panel .concept-toc-link-convention { --toc-accent: #6b6470; }
     #info_panel .concept-toc-link-derivation,
     #info_panel .concept-toc-link-derivation_step { --toc-accent: #5f4aa8; }
     #info_panel .concept-toc-link-example,
@@ -835,6 +838,9 @@
     #info_panel .content-block-intuition .content-block-kind-mark::before { content: "\25C7"; }
     #info_panel .content-block-explanation .content-block-kind-mark::before { content: "i"; }
     #info_panel .content-block-construction .content-block-kind-mark::before { content: "+"; }
+    #info_panel .content-block-result .content-block-kind-mark::before { content: "="; }
+    #info_panel .content-block-decomposition .content-block-kind-mark::before { content: "\25EB"; }
+    #info_panel .content-block-convention .content-block-kind-mark::before { content: "C"; }
     #info_panel .content-block-derivation .content-block-kind-mark::before,
     #info_panel .content-block-derivation_step .content-block-kind-mark::before { content: "\21D2"; }
     #info_panel .content-block-example .content-block-kind-mark::before,
@@ -928,6 +934,39 @@
         --block-mark-color: #364d69;
     }
 
+    #info_panel .content-block-result {
+        --block-accent: #1c6b72;
+        --block-accent-dark: #12515a;
+        --block-bg: #f0fafb;
+        --block-border: #bee3e7;
+        --block-label-bg: #daf3f5;
+        --block-label-color: #12515a;
+        --block-mark-bg: #e7f8fa;
+        --block-mark-color: #12515a;
+    }
+
+    #info_panel .content-block-decomposition {
+        --block-accent: #7a5a12;
+        --block-accent-dark: #5c430a;
+        --block-bg: #fbf8ee;
+        --block-border: #e4d6a7;
+        --block-label-bg: #f2e8c8;
+        --block-label-color: #5c430a;
+        --block-mark-bg: #f7efd3;
+        --block-mark-color: #5c430a;
+    }
+
+    #info_panel .content-block-convention {
+        --block-accent: #6b6470;
+        --block-accent-dark: #514b57;
+        --block-bg: #f7f6f8;
+        --block-border: #d8d3dc;
+        --block-label-bg: #ebe7ee;
+        --block-label-color: #514b57;
+        --block-mark-bg: #f0edf2;
+        --block-mark-color: #514b57;
+    }
+
     #info_panel .content-block-derivation,
     #info_panel .content-block-derivation_step {
         --block-accent: #5f4aa8;
@@ -997,6 +1036,9 @@
     }
 
     #info_panel .content-block-intuition,
+    #info_panel .content-block-result,
+    #info_panel .content-block-decomposition,
+    #info_panel .content-block-convention,
     #info_panel .content-block-derivation,
     #info_panel .content-block-example,
     #info_panel .content-block-worked_example,
@@ -1012,7 +1054,8 @@
     }
 
     #info_panel .content-block-fold.content-block-note,
-    #info_panel .content-block-fold.content-block-derivation_step {
+    #info_panel .content-block-fold.content-block-derivation_step,
+    #info_panel .content-block-fold.content-block-convention {
         margin-bottom: 0.8em;
         padding: 0.42em 0.65em 0.48em 0.75em;
     }
@@ -1545,6 +1588,22 @@
         font-weight: 700;
     }
 
+    #info_panel .edge-detail-statement {
+        align-items: center;
+        background: #f7f9fc;
+        border: 1px solid #d8e1ef;
+        border-radius: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35em 0.45em;
+        margin: 0 0 12px;
+        padding: 0.65em 0.75em;
+    }
+
+    #info_panel .edge-detail-phrase {
+        color: #333;
+    }
+
     #info_panel .edge-detail-concept {
         background: #eef3fd;
         border: 1px solid #9db3d4;
@@ -1577,6 +1636,12 @@
 
     #info_panel .edge-detail-meta dd {
         margin: 0;
+    }
+
+    #info_panel .edge-detail-relation-code {
+        color: #666;
+        font-size: 0.88em;
+        margin-left: 0.35em;
     }
 
     #info_panel .derivation-trace-panel {

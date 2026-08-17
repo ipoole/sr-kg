@@ -44,7 +44,7 @@ Near-Term High-Value Directions
 
    This would turn the graph from a reference tool into a study tool. The graph could visually show what you know, what depends on unknown material, and what is ready to learn next.
 
-3. Prerequisite-aware study planning
+3. Requirement-aware study planning
    
    Given a target concept, the system could generate a study path:
 
@@ -54,7 +54,7 @@ Near-Term High-Value Directions
 
 4. Better distinction between relation types
    
-   Current relation types are a good start: PREREQUISITE, DERIVES_FROM, RELATED.
+   Current relation types are a good start: REQUIRES, DERIVES_FROM, RELATED.
 
    I’d consider adding richer physics-learning relations:
 

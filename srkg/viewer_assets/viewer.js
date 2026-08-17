@@ -1906,9 +1906,12 @@
           definition: {label: "Definition", mode: "inline"},
           intuition: {label: "Think", mode: "inline"},
           explanation: {label: "Explanation", mode: "inline"},
-          construction: {label: "Build", mode: "inline"},
-          derivation: {label: "Derivation", mode: "inline"},
-          derivation_step: {label: "Step", mode: "folded"},
+          construction: {label: "Build", mode: "inline", sectionRole: "construction"},
+          result: {label: "Result", mode: "inline", sectionRole: "derived-from"},
+          decomposition: {label: "Parts", mode: "inline", sectionRole: "components"},
+          convention: {label: "Convention", mode: "folded"},
+          derivation: {label: "Derivation", mode: "inline", sectionRole: "derived-from"},
+          derivation_step: {label: "Step", mode: "folded", sectionRole: "derived-from"},
           example: {label: "Example", mode: "inline"},
           worked_example: {label: "Worked", mode: "inline"},
           misconception: {label: "Common trap", mode: "folded", note: true},
@@ -1919,6 +1922,9 @@
 
         var DetailSectionRole = Object.freeze({
           CONTENT: "content",
+          CONSTRUCTION: "construction",
+          COMPONENTS: "components",
+          INSTANCES: "instances",
           DERIVED_FROM: "derived-from",
           WHERE_USED: "where-used",
           STUDY_QUESTIONS: "study-questions",
@@ -1927,6 +1933,24 @@
 
         var detailSectionGraphPolicy = Object.freeze({
           content: {graphContext: "neighbourhood", lensLabel: "Neighbourhood"},
+          construction: {
+            graphContext: "constructed-from",
+            relation: "CONSTRUCTED_FROM",
+            focusDirection: "outgoing",
+            lensLabel: "Construction inputs"
+          },
+          components: {
+            graphContext: "components",
+            relation: "COMPONENT_OF",
+            focusDirection: "outgoing",
+            lensLabel: "Components"
+          },
+          instances: {
+            graphContext: "instances",
+            relation: "INSTANCE_OF",
+            focusDirection: "incoming",
+            lensLabel: "Instances"
+          },
           "derived-from": {
             graphContext: "derived-from",
             relation: "DERIVES_FROM",
@@ -1947,25 +1971,54 @@
 
         var edgeRelationPolicy = Object.freeze({
           DERIVES_FROM: {
+            label: "Derived from",
+            phrase: "is derived from",
             abbreviation: "DF",
             sortOrder: 10,
             backlinkTitle: "Derived from this",
             derivationTree: true,
             tracePhrase: "derives from"
           },
-          PREREQUISITE: {
-            abbreviation: "PR",
+          REQUIRES: {
+            label: "Requires",
+            phrase: "requires",
+            abbreviation: "RQ",
             sortOrder: 20,
             backlinkTitle: "Requires this"
           },
           DEPENDS_ON: {
+            label: "Depends on",
+            phrase: "depends on",
             abbreviation: "DO",
-            sortOrder: 30,
+            sortOrder: 25,
             backlinkTitle: "Requires this"
           },
-          RELATED: {
-            abbreviation: "R",
+          CONSTRUCTED_FROM: {
+            label: "Constructed from",
+            phrase: "is constructed from",
+            abbreviation: "CF",
+            sortOrder: 30,
+            backlinkTitle: "Built from this"
+          },
+          COMPONENT_OF: {
+            label: "Component of",
+            phrase: "is a component of",
+            abbreviation: "CO",
             sortOrder: 40,
+            backlinkTitle: "Has component"
+          },
+          INSTANCE_OF: {
+            label: "Instance of",
+            phrase: "is an instance of",
+            abbreviation: "IO",
+            sortOrder: 50,
+            backlinkTitle: "Has instance"
+          },
+          RELATED: {
+            label: "Related",
+            phrase: "is related to",
+            abbreviation: "R",
+            sortOrder: 90,
             backlinkTitle: "Related concepts"
           }
         });
@@ -1984,6 +2037,8 @@
               intuition: true,
               explanation: true,
               construction: true,
+              result: true,
+              decomposition: true,
               derivation: true,
               example: true,
               summary: true
@@ -1997,6 +2052,8 @@
             blockKinds: {
               derivation: true,
               derivation_step: true,
+              result: true,
+              decomposition: true,
               worked_example: true
             },
             questionTypes: {
@@ -2008,7 +2065,8 @@
             blockKinds: {
               misconception: true,
               warning: true,
-              historical_note: true
+              historical_note: true,
+              convention: true
             },
             questionTypes: {
               multiple_choice: true
@@ -2020,6 +2078,7 @@
               example: true,
               worked_example: true,
               derivation_step: true,
+              result: true,
               summary: true
             },
             questionTypes: null
@@ -2096,6 +2155,9 @@
         }
 
         function sectionRoleForGraphContext(context) {
+          if (context === "constructed-from") { return DetailSectionRole.CONSTRUCTION; }
+          if (context === "components") { return DetailSectionRole.COMPONENTS; }
+          if (context === "instances") { return DetailSectionRole.INSTANCES; }
           if (context === "derived-from") { return DetailSectionRole.DERIVED_FROM; }
           if (context === "where-used") { return DetailSectionRole.WHERE_USED; }
           return DetailSectionRole.CONTENT;
@@ -2190,6 +2252,7 @@
         function renderContentBlock(conceptId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
+          var sectionRole = policy.sectionRole || DetailSectionRole.CONTENT;
           var anchorId = contentAnchorId(conceptId, title);
           var bodyClass = "concept-body content-block-body";
           if (policy.mode === "folded") {
@@ -2200,7 +2263,7 @@
             return renderFoldDown({
               anchorId: anchorId,
               className: contentBlockClassName(block, policy),
-              sectionRole: DetailSectionRole.CONTENT,
+              sectionRole: sectionRole,
               summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
               bodyHtml: renderConceptText(block.body)
@@ -2223,7 +2286,7 @@
           return renderFoldDown({
             anchorId: anchorId,
             className: contentBlockClassName(block, policy),
-            sectionRole: DetailSectionRole.CONTENT,
+            sectionRole: sectionRole,
             open: true,
             summaryHtml: renderContentBlockHeading(block, title),
             bodyClass: bodyClass,
@@ -2242,11 +2305,12 @@
           if (shouldRenderContentBlocks(concept)) {
             filteredContentBlocks(concept).forEach(function(block) {
               var title = block.title || contentBlockKindLabel(block.kind);
+              var role = contentBlockPolicyFor(block.kind).sectionRole || DetailSectionRole.CONTENT;
               items.push(Object.assign({
                 id: contentAnchorId(conceptId, title),
                 title: title,
                 kind: block.kind
-              }, tocGraphPolicyFields(DetailSectionRole.CONTENT)));
+              }, tocGraphPolicyFields(role)));
             });
           } else {
             conceptSections(concept).forEach(function(section) {
@@ -3003,6 +3067,28 @@
           };
         }
 
+        function relationSectionGraphContext(nodeId, role) {
+          var policy = detailSectionGraphPolicyFor(role);
+          var relation = policy.relation;
+          var direction = policy.focusDirection;
+          if (!relation || !direction) {
+            return null;
+          }
+
+          var context = emptySectionGraphContext(nodeId, policy.lensLabel || relation);
+          allEdges.forEach(function(edge) {
+            if (edgeRelation(edge) !== relation) { return; }
+            if (direction === "outgoing" && String(edge.from) === nodeId && getConcept(edge.to)) {
+              context.keep[String(edge.to)] = true;
+              context.edgeKeep[edge.id] = true;
+            } else if (direction === "incoming" && String(edge.to) === nodeId && getConcept(edge.from)) {
+              context.keep[String(edge.from)] = true;
+              context.edgeKeep[edge.id] = true;
+            }
+          });
+          return context;
+        }
+
         function sectionGraphContext(nodeId) {
           nodeId = String(nodeId);
 
@@ -3022,6 +3108,12 @@
               usedContext.edgeKeep[item.edge.id] = true;
             });
             return usedContext;
+          }
+
+          var role = sectionRoleForGraphContext(activeConceptSectionContext);
+          var relationContext = relationSectionGraphContext(nodeId, role);
+          if (relationContext) {
+            return relationContext;
           }
 
           var keep = {};
@@ -3122,6 +3214,13 @@
           }).join("");
         }
 
+        function relationDisplayLabel(relation) {
+          relation = String(relation || "");
+          var policy = edgeRelationPolicyFor(relation);
+          if (policy.label) { return policy.label; }
+          return contentBlockKindLabel(relation.toLowerCase());
+        }
+
         function relationSortOrder(relation) {
           var order = Number(edgeRelationPolicyFor(relation).sortOrder);
           return Number.isFinite(order) ? order : 1000;
@@ -3176,6 +3275,16 @@
             return {
               state: relation === whereUsedRelation && direction === whereUsedDirection
                 ? (backlinksFullTreeEnabled ? "tree" : "immediate")
+                : "none",
+              direction: direction
+            };
+          }
+          var role = sectionRoleForGraphContext(activeConceptSectionContext);
+          var policy = detailSectionGraphPolicyFor(role);
+          if (policy.relation && policy.focusDirection) {
+            return {
+              state: relation === policy.relation && direction === policy.focusDirection
+                ? "immediate"
                 : "none",
               direction: direction
             };
@@ -3408,6 +3517,27 @@
             escapeHtml(conceptDisplayId(nodeId)) +
             (label ? " " + renderConceptText(label) : "") +
             "</button>";
+        }
+
+        function relationshipConceptText(nodeId) {
+          var concept = getConcept(nodeId);
+          var label = concept ? concept.label || "" : "";
+          return conceptDisplayId(nodeId) + (label ? " " + label : "");
+        }
+
+        function relationshipStatementHtml(edge) {
+          var relation = edgeRelation(edge);
+          var policy = edgeRelationPolicyFor(relation);
+          var phrase = policy.phrase ||
+            (edgeRelationDirected(edge) ? relationDisplayLabel(relation).toLowerCase() : "is related to");
+          var sentence = relationshipConceptText(edge.from) + " " + phrase + " " +
+            relationshipConceptText(edge.to) + ".";
+          return '<div class="edge-detail-statement" aria-label="' +
+            escapeHtml(sentence) + '">' +
+            relationshipConceptHtml(edge.from) +
+            ' <span class="edge-detail-phrase">' + escapeHtml(phrase) + "</span> " +
+            relationshipConceptHtml(edge.to) +
+            ".</div>";
         }
 
         function renderDerivationTracePanel(nodeId) {
@@ -3681,11 +3811,14 @@
             '<span class="edge-detail-arrow">' + (relationInfo.directed ? "->" : "-") + "</span>" +
             relationshipConceptHtml(edge.to) +
             "</div>";
+          html += relationshipStatementHtml(edge);
           html += '<dl class="edge-detail-meta">';
           html += "<dt>Relation</dt><dd>" +
             '<span class="edge-colour-swatch" style="background:' +
             escapeHtml(relationColourValue) + '"></span>' +
-            escapeHtml(relation || "Unlabelled") + "</dd>";
+            escapeHtml(relationDisplayLabel(relation)) +
+            (relation ? ' <code class="edge-detail-relation-code">' +
+              escapeHtml(relation) + "</code>" : "") + "</dd>";
           if (relationInfo.category) {
             html += "<dt>Category</dt><dd>" + escapeHtml(relationInfo.category) + "</dd>";
           }

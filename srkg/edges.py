@@ -63,7 +63,14 @@ def relation_is_directed(relation: str, edge_key: dict[str, dict[str, str | bool
     return bool(edge_key.get(relation, {}).get("directed", True))
 
 
-def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_WIDTH) -> str:
+def make_edge_tooltip(
+    relation: str,
+    note: str,
+    width: int = EDGE_TOOLTIP_LINE_WIDTH,
+    *,
+    source_label: str | None = None,
+    target_label: str | None = None,
+) -> str:
     """Build readable wrapped tooltip text for an edge note."""
     note = str(note or "").strip()
     if not note:
@@ -75,4 +82,13 @@ def make_edge_tooltip(relation: str, note: str, width: int = EDGE_TOOLTIP_LINE_W
         break_long_words=False,
         break_on_hyphens=False,
     )
-    return "\n".join(html.escape(line) for line in wrapped_note)
+    tooltip_lines = []
+    source_label = str(source_label or "").strip()
+    target_label = str(target_label or "").strip()
+    if source_label and target_label:
+        tooltip_lines.append(
+            f"{html.escape(source_label)} {html.escape(str(relation))} {html.escape(target_label)}"
+        )
+        tooltip_lines.append("")
+    tooltip_lines.extend(html.escape(line) for line in wrapped_note)
+    return "\n".join(tooltip_lines)

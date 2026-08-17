@@ -138,7 +138,7 @@ It also emits warning-level diagnostics for likely data-quality issues, such as 
 
 ## Review Directed DAGs
 
-Relations marked `directed=true` in `edges_key.csv` are checked as directed graph edges. Their CSV direction is `source -> target`; for example, `A PREREQUISITE B` means A requires B.
+Relations marked `directed=true` in `edges_key.csv` are checked as directed graph edges. Their CSV direction is `source -> target`; for example, `A REQUIRES B` means A requires B.
 
 Print DAG diagnostics without regenerating the viewer:
 

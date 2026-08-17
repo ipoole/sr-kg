@@ -948,8 +948,40 @@ def test_edge_click_shows_relationship_detail_panel(browser_graph):
     panel_text = page.locator("#info_panel").inner_text()
     assert "2.1 Beta" in panel_text
     assert "1.1 Alpha" in panel_text
+    assert page.locator("#info_panel .edge-detail-statement").get_attribute(
+        "aria-label"
+    ) == "2.1 Beta depends on 1.1 Alpha."
+    assert "Depends on" in panel_text
     assert "DEPENDS_ON" in panel_text
     assert "Beta depends on alpha" in panel_text
+
+
+@pytest.mark.browser
+def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.evaluate(
+        """() => {
+          const edge = edges.get().find(item =>
+            String(item.from) === "sr.spacetime_interval" &&
+            String(item.to) === "sr.position_four_vector" &&
+            item.relation === "CONSTRUCTED_FROM"
+          );
+          network.emit("click", {
+            nodes: [],
+            edges: [edge.id],
+            pointer: {DOM: {x: 0, y: 0}, canvas: {x: 0, y: 0}}
+          });
+        }"""
+    )
+
+    assert page.locator("#info_panel h2").inner_text() == "Relationship"
+    panel_text = page.locator("#info_panel").inner_text()
+    assert page.locator("#info_panel .edge-detail-statement").get_attribute(
+        "aria-label"
+    ) == "3.2 Spacetime interval is constructed from 4.3 Position four-vector."
+    assert "Constructed from" in panel_text
+    assert "CONSTRUCTED_FROM" in panel_text
 
 
 @pytest.mark.browser

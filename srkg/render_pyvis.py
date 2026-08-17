@@ -150,10 +150,13 @@ def write_pyvis_html(
         str(EDGE_ARROW_ENDPOINT_OFFSET),
     ))
 
+    node_labels = {}
+
     for _, row in nodes_df.iterrows():
         cid = row["id"]
         display_id = str(row.get("display_id", "")).strip() or str(cid)
         label = str(row.get("label", "")).strip()
+        node_labels[str(cid)] = label or str(cid)
         layer = str(row.get("layer", "")).strip()
 
         try:
@@ -216,7 +219,12 @@ def write_pyvis_html(
         net.add_edge(
             source,
             target,
-            title=make_edge_tooltip(rel, note),
+            title=make_edge_tooltip(
+                rel,
+                note,
+                source_label=node_labels.get(str(source), str(source)),
+                target_label=node_labels.get(str(target), str(target)),
+            ),
             relation=rel,
             note=note,
             arrows="to" if directed else "",

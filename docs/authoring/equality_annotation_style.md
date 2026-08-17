@@ -456,7 +456,7 @@ Instead:
 1. Put provenance directly into authored mathematical notation.
 2. Explain provenance in the surrounding prose.
 3. Hyperlink ordinary prose to existing concepts where appropriate.
-4. Continue using concept-level `PREREQUISITE`, `DERIVES_FROM`, and `RELATED` edges for atlas structure.
+4. Continue using concept-level `REQUIRES`, `DERIVES_FROM`, and `RELATED` edges for atlas structure.
 5. Note cases where equality annotations expose missing concepts or weak concept edges.
 
 This provides much of the benefit of a derivation graph without committing the schema to one.

@@ -341,7 +341,7 @@ packages an event's coordinates into a relativistic vector.
 - `sr.spacetime_event.definition`, `definition`, "Definition".
 - `sr.spacetime_event.coordinate_label`, `explanation`, "Coordinates label the event".
 - `sr.spacetime_event.not_a_process`, `warning`, "Event, not process".
-- `sr.spacetime_event.ct_coordinate`, `explanation`, "Using \(ct\) as a time coordinate".
+- `sr.spacetime_event.ct_coordinate`, `convention`, "Using \(ct\) as a time coordinate".
 - `sr.spacetime_event.frame_dependence`, `misconception`, "Frame-dependent is not unreal".
 - `sr.spacetime_event.role_in_spacetime`, `explanation`, "Atoms of spacetime reasoning".
 
@@ -449,7 +449,7 @@ concept. No SVG code change is needed in this pass.
 - Section-level source locator is now recorded in `data/reference_links.csv`.
 - We may eventually want a sharper atlas edge type for "motivates field
   description" or "enforces finite propagation"; for now the current
-  `PREREQUISITE` and `RELATED` links are adequate.
+  `REQUIRES` and `RELATED` links are adequate.
 
 ## 3.1 `sr.metric_tensor`: Metric tensor
 
@@ -679,7 +679,7 @@ classify separations.
 - `sr.spacetime_interval.definition`, `definition`, "Definition".
 - `sr.spacetime_interval.constructing_delta`, `construction`, "Start with two events".
 - `sr.spacetime_interval.metric_derivation`, `derivation`, "Metric contraction".
-- `sr.spacetime_interval.classification`, `explanation`, "Timelike lightlike spacelike".
+- `sr.spacetime_interval.classification`, `result`, "Timelike lightlike spacelike".
 - `sr.spacetime_interval.invariant_not_components`, `misconception`, "Invariant does not mean unchanged components".
 - `sr.spacetime_interval.light_and_proper_time`, `explanation`, "Light and clocks".
 - `sr.spacetime_interval.why_it_matters`, `summary`, "Why the interval matters".
@@ -853,7 +853,7 @@ spacetime interval.
 - `sr.lorentz_transformations.setup`, `construction`, "Standard boost setup".
 - `sr.lorentz_transformations.why_linear`, `explanation`, "Why the transformation is linear".
 - `sr.lorentz_transformations.interval_condition`, `derivation`, "Preserve the interval".
-- `sr.lorentz_transformations.boost_formula`, `derivation`, "Boost along \(x\)".
+- `sr.lorentz_transformations.boost_formula`, `result`, "Boost along \(x\)".
 - `sr.lorentz_transformations.interval_check`, `derivation_step`, "Checking the boost".
 - `sr.lorentz_transformations.matrix_form`, `construction`, "Matrix form".
 - `sr.lorentz_transformations.not_moving_events`, `misconception`, "Not moving the event".
@@ -967,7 +967,7 @@ gives the cone picture.
 
 - `sr.light_cone.overview`, `overview`, "Causal map from one event".
 - `sr.light_cone.definition`, `definition`, "Definition".
-- `sr.light_cone.null_condition`, `derivation`, "Null interval condition".
+- `sr.light_cone.null_condition`, `result`, "Null interval condition".
 - `sr.light_cone.future_past`, `explanation`, "Future and past cones".
 - `sr.light_cone.causal_regions`, `explanation`, "Inside on outside".
 - `sr.light_cone.invariant_cone`, `explanation`, "Same cone for all inertial observers".
@@ -1070,7 +1070,7 @@ inertial frame?
 
 - `sr.minkowski_diagram.overview`, `overview`, "Spacetime as a working plot".
 - `sr.minkowski_diagram.definition`, `definition`, "Definition".
-- `sr.minkowski_diagram.axes`, `construction`, "Axes and units".
+- `sr.minkowski_diagram.axes`, `convention`, "Axes and units".
 - `sr.minkowski_diagram.events_worldlines`, `explanation`, "Events and worldlines".
 - `sr.minkowski_diagram.primed_axes`, `derivation`, "Moving-frame axes".
 - `sr.minkowski_diagram.not_ordinary_graph`, `misconception`, "Not ordinary graph paper".
@@ -1190,7 +1190,7 @@ spacetime.
 - `overview`: Time carried by a clock.
 - `definition`: Interval definition and finite path integral.
 - `explanation`: Coordinate time versus clock time.
-- `derivation`: Constant-speed relation \(d\tau=dt/\gamma\).
+- `result`: Constant-speed relation \(d\tau=dt/\gamma\).
 - `explanation`: Path dependence.
 - `misconception`: Not merely light-signal delay.
 - `warning`: Null paths and the absence of a photon rest clock.
@@ -1304,7 +1304,7 @@ quantity.
 - `definition`: Lorentz transformation law.
 - `construction`: Prototype from spacetime displacement.
 - `explanation`: Transformation law as the test.
-- `derivation`: Invariant scalar products.
+- `result`: Invariant scalar products.
 - `construction`: Upper and lower components.
 - `misconception`: Not any four numbers.
 - `example`: Recurring examples.
@@ -1409,9 +1409,9 @@ events; they are the starting point for relativistic kinematics.
 
 - `overview`: Event coordinates as one object.
 - `definition`: \(x^\mu\coloneqq(ct,x,y,z)\).
-- `construction`: Why use \(ct\).
+- `convention`: Why use \(ct\).
 - `explanation`: Dependence on origin event.
-- `derivation`: Lorentz transformation of position.
+- `result`: Lorentz transformation of position.
 - `explanation`: Differences and intervals.
 - `misconception`: Not just ordinary spatial position.
 - `example`: Simple coordinate conversion.
@@ -1530,7 +1530,7 @@ the dynamics of energy, momentum, and force.
 - `definition`: \(U^\mu\coloneqq dx^\mu/d\tau\).
 - `explanation`: Why proper time is the denominator.
 - `derivation`: \(U^\mu\overset{\text{proper time}}{=}\gamma(c,\mathbf v)\).
-- `derivation`: Fixed norm \(U_\mu U^\mu\overset{\gamma}{=}c^2\).
+- `result`: Fixed norm \(U_\mu U^\mu\overset{\gamma}{=}c^2\).
 - `intuition`: Worldline tangent picture.
 - `misconception`: Not \((c,\mathbf v)\).
 - `example`: Particle at rest.
@@ -1646,7 +1646,7 @@ For them \(p_\mu p^\mu\overset{\text{massless}}{=}0\) and \(E\overset{\text{mass
 - `definition`: \(p^\mu\coloneqq mU^\mu\coloneqq(E/c,\mathbf p)\).
 - `derivation`: Components from four-velocity.
 - `derivation`: Invariant norm.
-- `derivation_step`: Energy-momentum relation.
+- `result`: Energy-momentum relation.
 - `explanation`: Frame-dependent components.
 - `example`: Rest frame.
 - `misconception`: Not Newtonian momentum plus a label.
@@ -1777,7 +1777,7 @@ the spatial momentum vanishes.
 - `overview`: Rest energy is mass energy.
 - `definition`: \(E_0\coloneqq mc^2\) and the full relation.
 - `derivation`: From four-momentum norm.
-- `derivation_step`: Rest-frame limit.
+- `result`: Rest-frame limit.
 - `explanation`: Applies to systems.
 - `misconception`: Not magic substance conversion.
 - `example`: \(\Delta m\overset{E_0=mc^2}{=}\Delta E_0/c^2\).

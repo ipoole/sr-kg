@@ -151,7 +151,7 @@ hide, or move together. Do not add it until real curated content demonstrates
 the need.
 
 Richer atlas-level concept edge types also remain deferred. The current graph
-uses `PREREQUISITE`, `DERIVES_FROM`, and `RELATED`. During curation, note where
+uses `REQUIRES`, `DERIVES_FROM`, and `RELATED`. During curation, note where
 `RELATED` feels too vague. Promote only recurring relationships into new edge
 types, such as:
 
