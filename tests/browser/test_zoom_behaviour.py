@@ -5,6 +5,30 @@ def _center(box):
     return box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
 
 
+def _font_size(page, selector):
+    return page.locator(selector).evaluate("el => parseFloat(getComputedStyle(el).fontSize)")
+
+
+def _wait_for_font_size_above(page, selector, initial_size):
+    page.wait_for_function(
+        """arg => {
+          const element = document.querySelector(arg.selector);
+          return element && parseFloat(getComputedStyle(element).fontSize) > arg.initialSize;
+        }""",
+        arg={"selector": selector, "initialSize": initial_size},
+    )
+
+
+def _wait_for_font_size_below(page, selector, initial_size):
+    page.wait_for_function(
+        """arg => {
+          const element = document.querySelector(arg.selector);
+          return element && parseFloat(getComputedStyle(element).fontSize) < arg.initialSize;
+        }""",
+        arg={"selector": selector, "initialSize": initial_size},
+    )
+
+
 @pytest.mark.browser
 def test_mouse_wheel_over_graph_changes_network_zoom(browser_graph):
     page = browser_graph.page
@@ -14,7 +38,7 @@ def test_mouse_wheel_over_graph_changes_network_zoom(browser_graph):
 
     page.mouse.move(x, y)
     page.mouse.wheel(0, -600)
-    page.wait_for_timeout(250)
+    page.wait_for_function("scale => network.getScale() > scale + 0.01", arg=initial_scale)
 
     zoomed_scale = page.evaluate("() => network.getScale()")
     assert zoomed_scale > initial_scale + 0.01
@@ -67,9 +91,7 @@ def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_g
           scale: network.getScale()
         })"""
     )
-    initial_font_size = page.locator("#info_panel").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    initial_font_size = _font_size(page, "#info_panel")
 
     page.locator("#info_panel").evaluate(
         """panel => panel.dispatchEvent(new WheelEvent("wheel", {
@@ -79,7 +101,7 @@ def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_g
           deltaY: -600
         }))"""
     )
-    page.wait_for_timeout(250)
+    _wait_for_font_size_above(page, "#info_panel", initial_font_size)
 
     zoomed_view = page.evaluate(
         """() => ({
@@ -87,9 +109,7 @@ def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_g
           scale: network.getScale()
         })"""
     )
-    zoomed_font_size = page.locator("#info_panel").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    zoomed_font_size = _font_size(page, "#info_panel")
     assert abs(zoomed_view["scale"] - initial_view["scale"]) < 0.001
     assert abs(zoomed_view["position"]["x"] - initial_view["position"]["x"]) < 0.001
     assert abs(zoomed_view["position"]["y"] - initial_view["position"]["y"]) < 0.001
@@ -115,15 +135,9 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
           scale: network.getScale()
         })"""
     )
-    initial_font_size = page.locator("#kg_controls").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
-    initial_status_font_size = page.locator("#kg_status").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
-    initial_list_font_size = page.locator("#kg_concept_list").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    initial_font_size = _font_size(page, "#kg_controls")
+    initial_status_font_size = _font_size(page, "#kg_status")
+    initial_list_font_size = _font_size(page, "#kg_concept_list")
 
     wheel_was_cancelled = page.locator("#kg_controls").evaluate(
         """panel => panel.dispatchEvent(new WheelEvent("wheel", {
@@ -133,7 +147,7 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
           deltaY: -600
         })) === false"""
     )
-    page.wait_for_timeout(250)
+    _wait_for_font_size_above(page, "#kg_controls", initial_font_size)
 
     zoomed_view = page.evaluate(
         """() => ({
@@ -141,15 +155,9 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
           scale: network.getScale()
         })"""
     )
-    zoomed_font_size = page.locator("#kg_controls").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
-    zoomed_status_font_size = page.locator("#kg_status").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
-    zoomed_list_font_size = page.locator("#kg_concept_list").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    zoomed_font_size = _font_size(page, "#kg_controls")
+    zoomed_status_font_size = _font_size(page, "#kg_status")
+    zoomed_list_font_size = _font_size(page, "#kg_concept_list")
     assert wheel_was_cancelled
     assert abs(zoomed_view["scale"] - initial_view["scale"]) < 0.001
     assert abs(zoomed_view["position"]["x"] - initial_view["position"]["x"]) < 0.001
@@ -169,9 +177,7 @@ def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_
         pytest.skip("Browser does not support synthetic TouchEvent construction")
 
     initial_scale = page.evaluate("() => network.getScale()")
-    initial_font_size = page.locator("#info_panel").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    initial_font_size = _font_size(page, "#info_panel")
 
     move_was_cancelled = page.locator("#info_panel").evaluate(
         """panel => {
@@ -216,12 +222,10 @@ def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_
           return moveResult === false;
         }"""
     )
-    page.wait_for_timeout(250)
+    _wait_for_font_size_above(page, "#info_panel", initial_font_size)
 
     zoomed_scale = page.evaluate("() => network.getScale()")
-    zoomed_font_size = page.locator("#info_panel").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    zoomed_font_size = _font_size(page, "#info_panel")
     assert move_was_cancelled
     assert abs(zoomed_scale - initial_scale) < 0.001
     assert zoomed_font_size > initial_font_size
@@ -266,9 +270,7 @@ def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_
           dispatch("touchend", []);
         }"""
     )
-    page.wait_for_timeout(250)
+    _wait_for_font_size_below(page, "#info_panel", zoomed_font_size)
 
-    reduced_font_size = page.locator("#info_panel").evaluate(
-        "el => parseFloat(getComputedStyle(el).fontSize)"
-    )
+    reduced_font_size = _font_size(page, "#info_panel")
     assert reduced_font_size < zoomed_font_size

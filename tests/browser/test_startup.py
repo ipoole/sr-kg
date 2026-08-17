@@ -2,11 +2,11 @@ import pytest
 
 
 @pytest.mark.browser
-def test_generated_viewer_boots_and_initializes_in_browser(browser_graph):
-    page = browser_graph.page
+def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    assert browser_graph.page_errors == []
-    assert browser_graph.console_errors == []
+    assert shared_browser_graph.page_errors == []
+    assert shared_browser_graph.console_errors == []
     assert page.locator("#kg_app_header").count() == 1
     assert page.locator("#kg_workspace").count() == 1
     assert page.locator("#kg_graph_pane").count() == 1
@@ -29,8 +29,8 @@ def test_generated_viewer_boots_and_initializes_in_browser(browser_graph):
 
 
 @pytest.mark.browser
-def test_node_builtin_title_is_disabled_for_custom_tooltips(browser_graph):
-    page = browser_graph.page
+def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph):
+    page = shared_browser_graph.page
 
     title = page.evaluate("""() => nodes.get("2.1").title""")
 
@@ -63,10 +63,10 @@ def test_node_hover_tooltip_typesets_mathjax(browser_graph):
 
 
 @pytest.mark.browser
-def test_concept_list_click_populates_details_and_hash(browser_graph):
-    page = browser_graph.page
+def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.1")
+    shared_browser_graph.click_concept("2.1")
 
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
     assert "Layer 2 - Applications" in page.locator("#info_panel").inner_text()
@@ -79,10 +79,10 @@ def test_concept_list_click_populates_details_and_hash(browser_graph):
 
 
 @pytest.mark.browser
-def test_legacy_concept_uses_coarse_details_sections(browser_graph):
-    page = browser_graph.page
+def test_legacy_concept_uses_coarse_details_sections(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.1")
+    shared_browser_graph.click_concept("2.1")
 
     assert page.locator("#info_panel h3").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
@@ -91,10 +91,10 @@ def test_legacy_concept_uses_coarse_details_sections(browser_graph):
 
 
 @pytest.mark.browser
-def test_revised_concept_renders_ordered_content_blocks(browser_graph):
-    page = browser_graph.page
+def test_revised_concept_renders_ordered_content_blocks(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     assert page.locator(
         "#info_panel .content-block:not(.content-block-fold) "
@@ -108,10 +108,10 @@ def test_revised_concept_renders_ordered_content_blocks(browser_graph):
 
 
 @pytest.mark.browser
-def test_revised_concept_renders_note_block_kinds_folded(browser_graph):
-    page = browser_graph.page
+def test_revised_concept_renders_note_block_kinds_folded(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     notes = page.locator("#info_panel details.content-block-note")
     assert notes.count() == 2
@@ -127,10 +127,10 @@ def test_revised_concept_renders_note_block_kinds_folded(browser_graph):
 
 
 @pytest.mark.browser
-def test_folded_content_blocks_use_compact_callout_spacing(browser_graph):
-    page = browser_graph.page
+def test_folded_content_blocks_use_compact_callout_spacing(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     spacing = page.locator("#info_panel details.content-block-note").first.evaluate(
         """el => {
@@ -149,10 +149,10 @@ def test_folded_content_blocks_use_compact_callout_spacing(browser_graph):
 
 
 @pytest.mark.browser
-def test_revised_concept_renders_derivation_steps_folded(browser_graph):
-    page = browser_graph.page
+def test_revised_concept_renders_derivation_steps_folded(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     step = page.locator("#info_panel details.content-block-derivation_step")
     assert step.count() == 1
@@ -166,10 +166,10 @@ def test_revised_concept_renders_derivation_steps_folded(browser_graph):
 
 
 @pytest.mark.browser
-def test_content_block_kind_policy_renders_labels_and_fold_state(browser_graph):
-    page = browser_graph.page
+def test_content_block_kind_policy_renders_labels_and_fold_state(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     labels = page.locator("#info_panel .content-block-kind-label").evaluate_all(
         "nodes => nodes.map(node => node.getAttribute('data-label'))"
@@ -187,10 +187,10 @@ def test_content_block_kind_policy_renders_labels_and_fold_state(browser_graph):
 
 
 @pytest.mark.browser
-def test_graphic_and_inline_content_sections_are_foldable(browser_graph):
-    page = browser_graph.page
+def test_graphic_and_inline_content_sections_are_foldable(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     graphic = page.locator("#info_panel details.concept-figure")
     definition = page.locator("#info_panel details.content-block-definition")
@@ -211,10 +211,10 @@ def test_graphic_and_inline_content_sections_are_foldable(browser_graph):
 
 
 @pytest.mark.browser
-def test_detail_section_graph_policy_marks_toc_sections(browser_graph):
-    page = browser_graph.page
+def test_detail_section_graph_policy_marks_toc_sections(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     assert page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-definition"]'
@@ -271,10 +271,10 @@ def test_detail_section_graph_policy_marks_toc_sections(browser_graph):
 
 
 @pytest.mark.browser
-def test_revised_concept_renders_sticky_masthead_and_content_toc(browser_graph):
-    page = browser_graph.page
+def test_revised_concept_renders_sticky_masthead_and_content_toc(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     masthead = page.locator("#info_panel .concept-sticky-header")
     assert masthead.count() == 1
@@ -338,8 +338,15 @@ def test_concept_toc_scroll_places_target_below_sticky_masthead(browser_graph):
     page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
     ).click()
-    page.wait_for_function("""() => document.getElementById("info_panel").scrollTop > 0""")
-    page.wait_for_timeout(450)
+    page.wait_for_function(
+        """() => {
+          const panel = document.getElementById("info_panel");
+          const masthead = panel.querySelector(".concept-sticky-header");
+          const target = document.getElementById("kg-toc-2-2-gamma-warning");
+          return panel.scrollTop > 0 &&
+            target.getBoundingClientRect().top >= masthead.getBoundingClientRect().bottom + 4;
+        }"""
+    )
 
     metrics = page.evaluate(
         """() => {
@@ -613,7 +620,15 @@ def test_workspace_splitter_resizes_graph_and_details_panes(browser_graph):
     page.mouse.down()
     page.mouse.move(box["x"] + box["width"] / 2 + 120, box["y"] + box["height"] / 2)
     page.mouse.up()
-    page.wait_for_timeout(100)
+    page.wait_for_function(
+        """before => {
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
+          return graph.width > before.graphWidth + 70 &&
+            details.width < before.detailsWidth - 70;
+        }""",
+        arg=before,
+    )
 
     after = page.evaluate(
         """() => {
@@ -926,8 +941,8 @@ def test_concept_link_preview_does_not_highlight_hidden_graph_target(browser_gra
 
 
 @pytest.mark.browser
-def test_edge_click_shows_relationship_detail_panel(browser_graph):
-    page = browser_graph.page
+def test_edge_click_shows_relationship_detail_panel(shared_browser_graph):
+    page = shared_browser_graph.page
 
     page.evaluate(
         """() => {
@@ -963,8 +978,8 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_b
     page.evaluate(
         """() => {
           const edge = edges.get().find(item =>
-            String(item.from) === "sr.spacetime_interval" &&
-            String(item.to) === "sr.position_four_vector" &&
+            String(item.from) === "sr.field_tensor" &&
+            String(item.to) === "sr.vector_potential" &&
             item.relation === "CONSTRUCTED_FROM"
           );
           network.emit("click", {
@@ -979,16 +994,16 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_b
     panel_text = page.locator("#info_panel").inner_text()
     assert page.locator("#info_panel .edge-detail-statement").get_attribute(
         "aria-label"
-    ) == "3.2 Spacetime interval is constructed from 4.3 Position four-vector."
+    ) == "7.2 Field tensor \\(F_{\\mu\\nu}\\) is constructed from 7.1 Vector potential \\(A_\\mu\\)."
     assert "Constructed from" in panel_text
     assert "CONSTRUCTED_FROM" in panel_text
 
 
 @pytest.mark.browser
-def test_concept_details_show_backlinks_grouped_by_relation(browser_graph):
-    page = browser_graph.page
+def test_concept_details_show_backlinks_grouped_by_relation(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("1.1")
+    shared_browser_graph.click_concept("1.1")
 
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.count() == 1
@@ -1006,10 +1021,10 @@ def test_concept_details_show_backlinks_grouped_by_relation(browser_graph):
 
 
 @pytest.mark.browser
-def test_concept_details_show_derived_from_links_only(browser_graph):
-    page = browser_graph.page
+def test_concept_details_show_derived_from_links_only(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.2")
+    shared_browser_graph.click_concept("2.2")
 
     derived_from = page.locator("#info_panel .concept-derived-from")
     assert derived_from.count() == 1
@@ -1091,10 +1106,10 @@ def test_backlink_concept_hover_shows_preview(browser_graph):
 
 
 @pytest.mark.browser
-def test_optional_details_do_not_create_whitespace_only_lines(browser_graph):
-    page = browser_graph.page
+def test_optional_details_do_not_create_whitespace_only_lines(shared_browser_graph):
+    page = shared_browser_graph.page
 
-    browser_graph.click_concept("2.1")
+    shared_browser_graph.click_concept("2.1")
 
     whitespace_lines = page.locator("#info_panel .concept-line").evaluate_all(
         """lines => lines

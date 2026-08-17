@@ -339,16 +339,12 @@ def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path
 
 
 @contextmanager
-def _open_browser_graph(playwright_api, output_path: Path):
+def _open_browser_graph(playwright_api, browser, output_path: Path):
     page_errors: list[str] = []
     console_errors: list[str] = []
-    with playwright_api.sync_playwright() as playwright:
-        try:
-            browser = playwright.chromium.launch(timeout=5000)
-        except playwright_api.Error as exc:
-            pytest.skip(f"Playwright Chromium is not available: {exc}")
-
-        page = browser.new_page(viewport={"width": 1280, "height": 800})
+    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    try:
+        page = context.new_page()
         page.set_default_timeout(5000)
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on(
@@ -360,14 +356,6 @@ def _open_browser_graph(playwright_api, output_path: Path):
             ),
         )
         page.goto(output_path.as_uri(), wait_until="domcontentloaded")
-        page.evaluate(
-            """() => {
-              localStorage.removeItem("srkg.userNotes.v1");
-              localStorage.removeItem("srkg.noteEditing.v1");
-              localStorage.removeItem("srkg.splash.dismissed.v1");
-            }"""
-        )
-        page.reload(wait_until="domcontentloaded")
         page.wait_for_selector("#kg_controls", state="attached")
         page.wait_for_selector("#info_panel", state="attached")
         page.wait_for_function(
@@ -384,41 +372,68 @@ def _open_browser_graph(playwright_api, output_path: Path):
         except playwright_api.TimeoutError:
             pass
 
+        yield BrowserGraph(
+            page=page,
+            output_path=output_path,
+            page_errors=page_errors,
+            console_errors=console_errors,
+        )
+    finally:
+        context.close()
+
+
+@pytest.fixture(scope="session")
+def playwright_browser():
+    playwright_api = pytest.importorskip(
+        "playwright.sync_api",
+        reason="Playwright is not installed in the sr-kg environment",
+    )
+
+    with playwright_api.sync_playwright() as playwright:
         try:
-            yield BrowserGraph(
-                page=page,
-                output_path=output_path,
-                page_errors=page_errors,
-                console_errors=console_errors,
-            )
+            browser = playwright.chromium.launch(timeout=5000)
+        except playwright_api.Error as exc:
+            pytest.skip(f"Playwright Chromium is not available: {exc}")
+
+        try:
+            yield playwright_api, browser
         finally:
             browser.close()
 
 
-@pytest.fixture
-def browser_graph(tmp_path):
-    playwright_api = pytest.importorskip(
-        "playwright.sync_api",
-        reason="Playwright is not installed in the sr-kg environment",
-    )
-
+@pytest.fixture(scope="session")
+def browser_fixture_output(tmp_path_factory):
+    tmp_path = tmp_path_factory.mktemp("browser-fixture")
     _write_browser_fixture(tmp_path)
-    output_path = _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
-    with _open_browser_graph(playwright_api, output_path) as graph:
-        yield graph
+    return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
 
 
-@pytest.fixture
-def repo_browser_graph(tmp_path):
-    playwright_api = pytest.importorskip(
-        "playwright.sync_api",
-        reason="Playwright is not installed in the sr-kg environment",
-    )
-
-    output_path = _prepare_browser_output(
+@pytest.fixture(scope="session")
+def repo_browser_output(tmp_path_factory):
+    tmp_path = tmp_path_factory.mktemp("repo-browser")
+    return _prepare_browser_output(
         tmp_path,
         REPO_ROOT / "data",
         "Special Relativity and Classical Fields",
     )
-    with _open_browser_graph(playwright_api, output_path) as graph:
+
+
+@pytest.fixture
+def browser_graph(browser_fixture_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(playwright_api, browser, browser_fixture_output) as graph:
+        yield graph
+
+
+@pytest.fixture(scope="module")
+def shared_browser_graph(browser_fixture_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(playwright_api, browser, browser_fixture_output) as graph:
+        yield graph
+
+
+@pytest.fixture
+def repo_browser_graph(repo_browser_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(playwright_api, browser, repo_browser_output) as graph:
         yield graph
