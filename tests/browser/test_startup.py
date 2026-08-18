@@ -602,6 +602,23 @@ def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
 
 
 @pytest.mark.browser
+def test_masthead_title_typesets_concept_label_equations(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.goto(
+        repo_browser_graph.output_path.as_uri() + "#concept-sr.field_tensor",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_function("""() => window.location.hash === '#concept-sr.field_tensor'""")
+    page.wait_for_selector("#kg_view_title mjx-container")
+
+    masthead_text = page.locator("#kg_view_title").inner_text()
+    assert masthead_text.startswith("7.2 Field tensor")
+    assert "\\(" not in masthead_text
+    assert "\\)" not in masthead_text
+
+
+@pytest.mark.browser
 def test_workspace_splitter_resizes_graph_and_details_panes(browser_graph):
     page = browser_graph.page
 

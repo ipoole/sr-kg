@@ -2510,6 +2510,7 @@
         var nodeLabelWidth = kgNodeLabelConfig.width;
         var nodeLabelFontSize = kgNodeLabelConfig.fontSize;
         var tooltipTypesetTimer = null;
+        var selectedConceptHeaderTypesetTimer = null;
         var conceptPreviewTypesetTimer = null;
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
@@ -3826,11 +3827,41 @@
         function updateSelectedConceptHeader(nodeId) {
           var title = document.getElementById("kg_view_title");
           if (!title) { return; }
+          if (window.MathJax && MathJax.typesetClear) {
+            MathJax.typesetClear([title]);
+          }
           if (nodeId && getConcept(nodeId)) {
-            title.textContent = conceptDisplayId(nodeId) + " " + (getConcept(nodeId).label || "");
+            title.innerHTML = escapeHtml(conceptDisplayId(nodeId)) + " " +
+              renderConceptText(getConcept(nodeId).label || "");
+            scheduleSelectedConceptHeaderTypeset();
           } else {
             title.textContent = defaultViewTitle;
           }
+        }
+
+        function typesetSelectedConceptHeader() {
+          var title = document.getElementById("kg_view_title");
+          if (!title) { return; }
+          if (window.MathJax && MathJax.typesetPromise) {
+            if (MathJax.typesetClear) {
+              MathJax.typesetClear([title]);
+            }
+            MathJax.typesetPromise([title]).catch(function(err) {
+              console.warn("MathJax title typesetting failed:", err);
+            });
+          } else {
+            scheduleSelectedConceptHeaderTypeset();
+          }
+        }
+
+        function scheduleSelectedConceptHeaderTypeset() {
+          if (selectedConceptHeaderTypesetTimer) {
+            clearTimeout(selectedConceptHeaderTypesetTimer);
+          }
+          selectedConceptHeaderTypesetTimer = setTimeout(function() {
+            selectedConceptHeaderTypesetTimer = null;
+            typesetSelectedConceptHeader();
+          }, 250);
         }
 
         function updateDetailsViewControls() {
