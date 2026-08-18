@@ -1507,10 +1507,16 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     splash_text = page.locator("#kg_splash_dialog").inner_text()
     assert "Knowledge graph browser" in splash_text
-    assert "two linked views" in splash_text
-    assert "focus lens summarises how the graph focus is being chosen" in splash_text
+    assert "two peer views" in splash_text
+    assert "Navigation and layout" in splash_text
+    assert "Study content" in splash_text
+    assert "Graph semantics" in splash_text
+    assert "Math and graphics" in splash_text
+    assert "focus lens summarises how the active detail section defines graph focus" in splash_text
+    assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
     assert "Drag the divider" in splash_text
     assert "Coming soon: General Relativity!" in splash_text
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 4
     assert page.locator("#kg_splash_dialog .kg-new-badge").count() == 0
 
     page.locator("#kg_splash_dismiss").click()

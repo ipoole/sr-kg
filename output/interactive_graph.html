@@ -1816,7 +1816,7 @@
         box-shadow: 0 16px 42px rgba(0,0,0,0.28);
         color: #222;
         font-family: Arial, sans-serif;
-        max-width: min(560px, calc(100vw - 32px));
+        max-width: min(760px, calc(100vw - 32px));
         padding: 18px 20px;
     }
 
@@ -1825,13 +1825,34 @@
         margin: 0 0 0.6rem;
     }
 
+    .kg-splash h3 {
+        font-size: 0.92rem;
+        margin: 0 0 0.35rem;
+    }
+
+    .kg-splash p {
+        margin: 0 0 0.85rem;
+    }
+
+    .kg-splash-feature-grid {
+        display: grid;
+        gap: 0.85rem 1.1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 0.85rem 0 1rem;
+    }
+
+    .kg-splash-feature-grid section {
+        border-left: 3px solid #6e87b8;
+        padding-left: 0.7rem;
+    }
+
     .kg-splash ul {
-        margin: 0.65rem 0 1rem;
+        margin: 0;
         padding-left: 1.25rem;
     }
 
     .kg-splash li {
-        margin: 0.35rem 0;
+        margin: 0.28rem 0;
     }
 
     .kg-new-badge {
@@ -1849,6 +1870,12 @@
     .kg-splash-actions {
         display: flex;
         justify-content: flex-end;
+    }
+
+    @media (max-width: 680px) {
+        .kg-splash-feature-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 1100px) {
@@ -2231,17 +2258,43 @@
     </div>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
       <h2 id="kg_splash_title">Knowledge graph browser</h2>
-      <p>Explore the physics knowledge base through two linked views: the graph shows concept relationships, while the details pane gives the study text for the selected concept.</p>
-      <ul>
-        <li>Select a concept from the graph or searchable concept list to update both views.</li>
-        <li>Use the Graph menu to show all concepts, hide the graph, or focus on the selected concept's current context.</li>
-        <li>Use the Details menu to switch between full, core, maths, context, and practice reading modes.</li>
-        <li>The focus lens summarises how the graph focus is being chosen for the active detail section.</li>
-        <li>Derived-from and where-used sections can drive the graph focus, including optional full-tree views.</li>
-        <li>Drag the divider to give more space to the graph or the details pane.</li>
-        <li>Preview linked concepts inline, inspect edge meanings from the edge key, and click edges for relationship details.</li>
-        <li>Add browser-local notes, then export or import them as CSV.</li>
-      </ul>
+      <p>Explore the physics knowledge base through two peer views: the graph shows concept relationships, while the details pane gives the study text for the selected concept.</p>
+      <div class="kg-splash-feature-grid">
+        <section>
+          <h3>Navigation and layout</h3>
+          <ul>
+            <li>Select from the graph, searchable concept list, or concept links.</li>
+            <li>Use browser back and forward to retrace selected concepts.</li>
+            <li>Show, hide, or focus the graph; show, hide, or filter details.</li>
+            <li>Drag the divider to rebalance graph and details space.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Study content</h3>
+          <ul>
+            <li>Reading modes switch between full, core, maths, context, and practice views.</li>
+            <li>Semantic blocks render as textbook-style callouts, folded notes, and study questions.</li>
+            <li>Preview linked concepts inline without leaving the current concept.</li>
+            <li>Add browser-local notes, then export or import them as CSV.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Graph semantics</h3>
+          <ul>
+            <li>The focus lens summarises how the active detail section defines graph focus.</li>
+            <li>Derived-from and where-used sections can show immediate links or full trees.</li>
+            <li>Inspect relation colours and meanings from the edge key.</li>
+            <li>Hover edges for MathJax-rendered notes or click them for relationship details.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Math and graphics</h3>
+          <ul>
+            <li>MathJax renders equations in details, graph labels, previews, and edge notes.</li>
+            <li>Generated SVG concept graphics appear in details and graph nodes where available.</li>
+          </ul>
+        </section>
+      </div>
       <h3>Coming soon: General Relativity!</h3>
       <div class="kg-splash-actions">
         <button id="kg_splash_dismiss" type="button">Dismiss</button>
