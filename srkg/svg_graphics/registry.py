@@ -53,6 +53,18 @@ from srkg.svg_graphics.concepts import (
     create_9_2_poynting_vector,
     create_9_3_em_stress_energy,
     create_9_4_em_energy_density,
+    create_gr_1_1_gravity_as_geometry,
+    create_gr_1_2_equivalence_principle,
+    create_gr_1_3_local_inertial_frame,
+    create_gr_1_4_freely_falling_observer,
+    create_gr_1_5_tidal_gravity,
+    create_m_1_1_manifold,
+    create_m_1_2_coordinate_chart,
+    create_m_1_3_coordinate_transformation,
+    create_m_1_4_worldline,
+    create_m_1_5_tangent_space,
+    create_m_1_6_cotangent_space,
+    create_m_2_1_tensor_field,
 )
 
 IMPLEMENTED_NODE_IDS = (
@@ -103,6 +115,18 @@ IMPLEMENTED_NODE_IDS = (
     '10.3',
     '11.1',
     '11.2',
+    'M 1.1',
+    'M 1.2',
+    'M 1.3',
+    'M 1.4',
+    'M 1.5',
+    'M 1.6',
+    'M 2.1',
+    'GR 1.1',
+    'GR 1.2',
+    'GR 1.3',
+    'GR 1.4',
+    'GR 1.5',
 )
 
 CREATORS: dict[str, Callable[[str], str]] = {
@@ -153,7 +177,24 @@ CREATORS: dict[str, Callable[[str], str]] = {
     '10.3': create_10_3_radiation_reaction,
     '11.1': create_11_1_lorentz_invariance,
     '11.2': create_11_2_gauge_fixing,
+    'M 1.1': create_m_1_1_manifold,
+    'M 1.2': create_m_1_2_coordinate_chart,
+    'M 1.3': create_m_1_3_coordinate_transformation,
+    'M 1.4': create_m_1_4_worldline,
+    'M 1.5': create_m_1_5_tangent_space,
+    'M 1.6': create_m_1_6_cotangent_space,
+    'M 2.1': create_m_2_1_tensor_field,
+    'GR 1.1': create_gr_1_1_gravity_as_geometry,
+    'GR 1.2': create_gr_1_2_equivalence_principle,
+    'GR 1.3': create_gr_1_3_local_inertial_frame,
+    'GR 1.4': create_gr_1_4_freely_falling_observer,
+    'GR 1.5': create_gr_1_5_tidal_gravity,
 }
+
+
+def _svg_filename_id(node_id: str) -> str:
+    """Return the file-safe id fragment used by saved SVG review files."""
+    return node_id.replace(" ", "_").replace(".", "_")
 
 
 def create_svg_graphic(node_id: str, variant: str = "icon") -> str | None:
@@ -171,7 +212,7 @@ def save_svg_graphics(output_dir: str | Path = ".") -> None:
     for node_id in IMPLEMENTED_NODE_IDS:
         svg = create_svg_graphic(node_id, variant="icon")
         if svg is not None:
-            (output / f"image_{node_id.replace('.', '_')}.svg").write_text(svg, encoding="utf-8")
+            (output / f"image_{_svg_filename_id(node_id)}.svg").write_text(svg, encoding="utf-8")
 
 
 __all__ = ["CREATORS", "IMPLEMENTED_NODE_IDS", "create_svg_graphic", "save_svg_graphics"]

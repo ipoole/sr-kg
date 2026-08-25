@@ -8,7 +8,7 @@ This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
 
 Expected manifest-backed nodes.csv columns:
-    id,display_id,label,layer,layer_title
+    id,display_id,label,layer,layer_title,domain,domain_title
 
 Expected manifest-backed content_blocks.csv columns:
     block_id,concept_id,sequence,kind,title,body
@@ -111,6 +111,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Treat validation warnings as failures.",
     )
+    parser.add_argument(
+        "--domains",
+        nargs="+",
+        default=None,
+        help=(
+            "Only render concepts from the listed domain(s). Uses nodes.csv "
+            "'domain' when present, otherwise the semantic id prefix before '.'."
+        ),
+    )
+    parser.add_argument(
+        "--also-load-linked-concepts",
+        action="store_true",
+        help="When --domains is used, also render one-hop concepts linked to the selected domain concepts.",
+    )
     return parser
 
 
@@ -148,6 +162,8 @@ def main(argv: list[str] | None = None) -> None:
             height=args.height,
             width=args.width,
             title=" ".join(args.title),
+            domains=args.domains,
+            also_load_linked_concepts=args.also_load_linked_concepts,
         )
     )
 

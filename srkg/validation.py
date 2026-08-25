@@ -30,6 +30,8 @@ NODE_REQUIRED_COLUMNS = (
     "label",
     "layer",
     "layer_title",
+    "domain",
+    "domain_title",
 )
 SUPPORTED_CUSTOM_MACROS = {"cref", "optional_details"}
 CONTROL_CHARS = tuple(chr(code) for code in range(32) if chr(code) not in ("\r", "\n"))
@@ -164,7 +166,7 @@ def _validate_nodes(nodes_df: pd.DataFrame) -> list[ValidationIssue]:
     for row_index, row in nodes_df.iterrows():
         node_id = str(row["id"]).strip()
         location = _node_location(row_index, node_id)
-        for column in ("id", "label", "layer", "layer_title"):
+        for column in ("id", "label", "layer", "layer_title", "domain", "domain_title"):
             if not str(row.get(column, "")).strip():
                 issues.append(
                     _issue("error", "node-required-value", f"Concept has empty {column}", location)

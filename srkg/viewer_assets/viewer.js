@@ -2275,6 +2275,10 @@
             .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
         }
 
+        function authoringStatusLabel(status) {
+          return contentBlockKindLabel(status);
+        }
+
         function contentBlockKindClass(kind) {
           return String(kind || "")
             .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -2423,6 +2427,12 @@
           html += '<h2 class="concept-title">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
+          if (concept.authoring_status) {
+            html += '<span class="concept-authoring-status concept-authoring-status-' +
+              escapeHtml(contentBlockKindClass(concept.authoring_status)) + '">' +
+              escapeHtml(authoringStatusLabel(concept.authoring_status)) +
+              "</span>";
+          }
           html += "</div>";
           html += renderConceptToc(tocItems);
           html += "</div>";

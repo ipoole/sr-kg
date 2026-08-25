@@ -18,6 +18,8 @@ GRAPHIC_NODE_IDS = [
     "9.1", "9.2", "9.3", "9.4",
     "10.1", "10.2", "10.3",
     "11.1", "11.2",
+    "M 1.1", "M 1.2", "M 1.3", "M 1.4", "M 1.5", "M 1.6", "M 2.1",
+    "GR 1.1", "GR 1.2", "GR 1.3", "GR 1.4", "GR 1.5",
 ]
 SVG_NS = "{http://www.w3.org/2000/svg}"
 
@@ -66,6 +68,18 @@ def test_public_svg_api_delegates_to_registry():
         ("7.7", "Maxwell's equations"),
         ("8.6", "Lorenz gauge"),
         ("11.2", "Gauge fixing"),
+        ("M 1.1", "Manifold"),
+        ("M 1.2", "Coordinate chart"),
+        ("M 1.3", "Coordinate transformation"),
+        ("M 1.4", "Worldline"),
+        ("M 1.5", "Tangent space"),
+        ("M 1.6", "Cotangent space"),
+        ("M 2.1", "Tensor field"),
+        ("GR 1.1", "Gravity as geometry"),
+        ("GR 1.2", "Equivalence principle"),
+        ("GR 1.3", "Local inertial frame"),
+        ("GR 1.4", "Freely falling observer"),
+        ("GR 1.5", "Tidal gravity"),
     ],
 )
 def test_create_svg_graphic_uses_expected_accessible_titles(node_id, expected_title):
@@ -98,7 +112,7 @@ def test_save_svg_graphics_writes_current_icon_set(tmp_path):
 
     saved_files = {path.name for path in tmp_path.glob("image_*.svg")}
     assert saved_files == {
-        f"image_{node_id.replace('.', '_')}.svg"
+        f"image_{node_id.replace(' ', '_').replace('.', '_')}.svg"
         for node_id in GRAPHIC_NODE_IDS
     }
     assert (tmp_path / "image_1_1.svg").read_text(encoding="utf-8") == createSvgGraphic(

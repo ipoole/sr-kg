@@ -676,10 +676,11 @@
     }
 
     #info_panel .concept-title-row {
-        align-items: flex-start;
+        align-items: baseline;
         display: flex;
-        gap: 0.75em;
-        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.45em 0.65em;
+        justify-content: flex-start;
     }
 
     #info_panel .concept-title {
@@ -774,6 +775,31 @@
     #info_panel .concept-layer-context {
         color: #555;
         margin: 0 0 0.75em;
+    }
+
+    #info_panel .concept-authoring-status {
+        background: #eef2f7;
+        border: 1px solid #ccd6e2;
+        border-radius: 999px;
+        color: #3a4654;
+        flex: 0 0 auto;
+        font-size: 0.72em;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.32em 0.55em;
+        text-transform: uppercase;
+    }
+
+    #info_panel .concept-authoring-status-seed {
+        background: #fff7e6;
+        border-color: #e4bf74;
+        color: #78540d;
+    }
+
+    #info_panel .concept-authoring-status-prerequisite_support {
+        background: #eef7f2;
+        border-color: #a8d2b7;
+        color: #245b38;
     }
 
     #info_panel .reading-mode-empty {

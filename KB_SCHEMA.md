@@ -89,6 +89,14 @@ source for concept prose in manifest-backed KB roots.
 | `label` | Yes | Display label shown in the graph and details panel. |
 | `layer` | Yes | Pedagogical/layout layer. Used for navigation and initial graph layout. |
 | `layer_title` | Yes | Human-readable title for the layer. |
+| `domain` | Yes | Short domain key used for authoring subsets and broad atlas grouping, such as `sr`, `gr`, or `math`. |
+| `domain_title` | Yes | Human-readable domain title, such as `Special Relativity and Classical Fields` or `General Relativity`. |
+| `authoring_status` | No | Temporary authoring workflow marker. Current values in use are `seed` for placeholder runtime content and `prerequisite_support` for maths concepts included only to support nearby physics content. Blank means no status has been recorded. |
+
+Display numbering is local to the domain in the authored atlas. Existing SR
+concepts currently keep bare display IDs such as `4.6`; new parallel domains
+should use a compact prefix such as `GR 1.1` or `M 1.1` so display IDs remain
+unambiguous in the combined viewer.
 
 ## content_blocks.csv
 

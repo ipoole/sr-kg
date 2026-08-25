@@ -12,6 +12,8 @@ Lower-level modules should not import it.
 
 from pathlib import Path
 
+import pandas as pd
+
 from srkg.kb import KnowledgeBase, load_knowledge_base
 from srkg.edges import build_edge_colour_map, enrich_edge_key_with_colours
 from srkg.html_injection import inject_controls
@@ -30,15 +32,86 @@ def generate_viewer_from_root(
     height: str,
     width: str,
     title: str,
+    domains: list[str] | tuple[str, ...] | None = None,
+    also_load_linked_concepts: bool = False,
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a knowledge-base data root."""
     kb = load_knowledge_base(data_root)
+    kb = filter_knowledge_base_by_domains(
+        kb,
+        domains=domains,
+        also_load_linked_concepts=also_load_linked_concepts,
+    )
     return generate_viewer_from_kb(
         kb=kb,
         out_path=out_path,
         height=height,
         width=width,
         title=title,
+    )
+
+
+def concept_domain(row: pd.Series) -> str:
+    """Return a concept domain from an explicit column or semantic id prefix."""
+    if "domain" in row.index:
+        domain = str(row.get("domain", "") or "").strip()
+        if domain:
+            return domain
+
+    concept_id = str(row.get("id", "") or "").strip()
+    if "." in concept_id:
+        return concept_id.split(".", 1)[0]
+    return ""
+
+
+def filter_knowledge_base_by_domains(
+    kb: KnowledgeBase,
+    *,
+    domains: list[str] | tuple[str, ...] | None,
+    also_load_linked_concepts: bool = False,
+) -> KnowledgeBase:
+    """Return a view of the KB containing only selected domains and links."""
+    requested_domains = {str(domain).strip() for domain in domains or [] if str(domain).strip()}
+    if not requested_domains:
+        return kb
+
+    domain_by_id = {
+        str(row["id"]).strip(): concept_domain(row)
+        for _, row in kb.nodes_df.iterrows()
+    }
+    selected_ids = {
+        concept_id
+        for concept_id, domain in domain_by_id.items()
+        if domain in requested_domains
+    }
+    if not selected_ids:
+        raise ValueError(
+            "No concepts matched domain(s): " + ", ".join(sorted(requested_domains))
+        )
+
+    if also_load_linked_concepts:
+        for row in kb.edges_df.itertuples(index=False):
+            source = str(row.source)
+            target = str(row.target)
+            if source in selected_ids or target in selected_ids:
+                selected_ids.add(source)
+                selected_ids.add(target)
+
+    filtered_nodes = kb.nodes_df[kb.nodes_df["id"].astype(str).isin(selected_ids)].copy()
+    filtered_edges = kb.edges_df[
+        kb.edges_df["source"].astype(str).isin(selected_ids)
+        & kb.edges_df["target"].astype(str).isin(selected_ids)
+    ].copy()
+    filtered_concepts = tuple(
+        concept for concept in kb.concepts if concept.id in selected_ids
+    )
+
+    return KnowledgeBase(
+        paths=kb.paths,
+        nodes_df=filtered_nodes,
+        edges_df=filtered_edges,
+        edge_key=kb.edge_key,
+        concepts=filtered_concepts,
     )
 
 

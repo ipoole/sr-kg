@@ -7,7 +7,12 @@ from math import cos, radians, sin
 from srkg.svg_graphics.motifs import (
     _axis_arrow_defs,
     _draw_axes,
+    _draw_chart_plane,
     _draw_grid,
+    _draw_manifold_patch,
+    _draw_tangent_basis,
+    _draw_tangent_plane,
+    _draw_tensor_glyph,
     _implies_symbol,
     _label_tile,
     _paren_column,
@@ -2028,6 +2033,461 @@ def create_11_2_gauge_fixing(variant: str = "icon") -> str:
     return _svg(node_id, "Gauge fixing", body, defs)
 
 
+# ---------------------------------------------------------------------------
+# Reusable mathematics for GR
+# ---------------------------------------------------------------------------
+
+
+def create_m_1_1_manifold(variant: str = "icon") -> str:
+    """Node: M 1.1. Title: Manifold."""
+    node_id = "M 1.1"
+    body: list[str] = []
+    body.extend(_draw_manifold_patch(62, 156, 388, 214))
+    body.append(_circle(244, 260, 9, fill=RED, stroke=BLACK, stroke_width=2))
+    body.append(_text(266, 254, "p", font_size=30, font_family=FONT,
+                      font_style="italic", fill=RED))
+
+    if variant == "detail":
+        body.append(_circle(244, 260, 58, fill="#ffffff", stroke=BLUE,
+                            stroke_width=4, opacity="0.62"))
+        body.append(_text(244, 344, "local patch", font_size=29,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+        body.append(_text(368, 168, "M", font_size=42, font_family=FONT,
+                          font_style="italic", fill=BLUE, text_anchor="middle"))
+    else:
+        body.append(_text(364, 178, "M", font_size=46, font_family=FONT,
+                          font_style="italic", fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Manifold", body)
+
+
+def create_m_1_2_coordinate_chart(variant: str = "icon") -> str:
+    """Node: M 1.2. Title: Coordinate chart."""
+    node_id = "M 1.2"
+    arrow = f"{_sid(node_id)}_chart_arrow"
+    defs = [_arrow_marker(arrow, colour=BLUE, size=6)]
+    body: list[str] = []
+
+    body.extend(_draw_manifold_patch(46, 138, 210, 164, stroke=BLUE,
+                                     stroke_width=4))
+    body.append(_circle(144, 222, 8, fill=RED, stroke=BLACK, stroke_width=2))
+    if variant == "detail":
+        body.append(_text(116, 158, "U", font_size=33, font_family=FONT,
+                          font_style="italic", fill=BLUE, text_anchor="middle"))
+
+    body.append(_line(264, 236, 324, 236, stroke=BLUE, stroke_width=6,
+                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
+    body.append(_text(294, 212, "φ", font_size=36, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+
+    body.extend(_draw_chart_plane(334, 148, 132, 164))
+    body.append(_circle(394, 232, 7, fill=RED, stroke=BLACK, stroke_width=2))
+    if variant == "detail":
+        body.append(_text(404, 338, "ℝⁿ", font_size=31, font_family=FONT,
+                          fill=BLACK, text_anchor="middle"))
+        body.append(_math_text(394, 122, "x", sup="μ", font_size=32,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+    else:
+        body.append(_math_text(402, 344, "x", sup="μ", font_size=34,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+
+    return _svg(node_id, "Coordinate chart", body, defs)
+
+
+def create_m_1_3_coordinate_transformation(variant: str = "icon") -> str:
+    """Node: M 1.3. Title: Coordinate transformation."""
+    node_id = "M 1.3"
+    arrow = f"{_sid(node_id)}_coord_arrow"
+    point_arrow = f"{_sid(node_id)}_point_arrow"
+    defs = [
+        _arrow_marker(arrow, colour=BLUE, size=6),
+        _arrow_marker(point_arrow, colour=RED, size=5),
+    ]
+    body: list[str] = []
+
+    body.extend(_draw_chart_plane(58, 142, 142, 170, stroke=BLUE))
+    body.extend(_draw_chart_plane(314, 142, 142, 170, stroke=GREEN))
+    body.append(_circle(136, 226, 7, fill=RED, stroke=BLACK, stroke_width=2))
+    body.append(_circle(392, 214, 7, fill=RED, stroke=BLACK, stroke_width=2))
+
+    body.append(_line(216, 226, 296, 218, stroke=BLUE, stroke_width=6,
+                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
+    body.append(_text(256, 200, "x′(x)", font_size=31, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+
+    body.append(_line(136, 226, 392, 214, stroke=RED, stroke_width=3,
+                      stroke_dasharray="7 7", opacity="0.68",
+                      marker_end=f"url(#{point_arrow})"))
+
+    body.append(_math_text(128, 342, "x", sup="μ", font_size=34,
+                           font_family=FONT, font_style="italic",
+                           fill=BLUE, text_anchor="middle"))
+    body.append(_math_text(386, 342, "x′", sup="μ", font_size=34,
+                           font_family=FONT, font_style="italic",
+                           fill=GREEN, text_anchor="middle"))
+
+    if variant == "detail":
+        body.append(_text(256, 86, "same point", font_size=30,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+        body.append(_text(130, 126, "chart 1", font_size=25,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+        body.append(_text(386, 126, "chart 2", font_size=25,
+                          font_family=FONT, fill=GREEN, text_anchor="middle"))
+        body.append(_text(256, 392, "new labels", font_size=28,
+                          font_family=FONT, fill=GREY, text_anchor="middle"))
+
+    return _svg(node_id, "Coordinate transformation", body, defs)
+
+
+def create_m_1_4_worldline(variant: str = "icon") -> str:
+    """Node: M 1.4. Title: Worldline."""
+    node_id = "M 1.4"
+    marker, defs = _axis_arrow_defs(node_id, BLACK)
+    path_marker = f"{_sid(node_id)}_worldline_arrow"
+    defs.append(_arrow_marker(path_marker, colour=BLUE, size=6))
+    body: list[str] = []
+
+    body.extend(_draw_axes(94, 414, 314, 304, marker,
+                           x_label="x", y_label="ct", stroke_width=5))
+    worldline = "M144,368 C166,306 226,286 246,224 C266,164 322,150 368,92"
+    body.append(_path(worldline, fill="none", stroke=BLUE, stroke_width=8,
+                      stroke_linecap="round", marker_end=f"url(#{path_marker})"))
+    for x, y, label in [(144, 368, "A"), (246, 224, "p"), (368, 92, "B")]:
+        body.append(_circle(x, y, 10, fill=RED, stroke=BLACK, stroke_width=2))
+        if variant == "detail":
+            body.append(_text(x + 16, y - 10, label, font_size=26,
+                              font_family=FONT, font_style="italic", fill=RED))
+
+    if variant == "detail":
+        for x, y, angle in [(178, 314, -62), (266, 184, -52), (326, 128, -44)]:
+            body.append(_tick(x, y, angle, 28, stroke=GREY, stroke_width=3,
+                              stroke_linecap="round", opacity="0.72"))
+        body.append(_text(268, 456, "curve of events", font_size=28,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+    else:
+        body.append(_text(288, 342, "worldline", font_size=32,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Worldline", body, defs)
+
+
+def create_m_1_5_tangent_space(variant: str = "icon") -> str:
+    """Node: M 1.5. Title: Tangent space."""
+    node_id = "M 1.5"
+    body: list[str] = []
+    defs: list[str] = []
+
+    body.extend(_draw_manifold_patch(70, 222, 360, 160, stroke=BLUE,
+                                     stroke_width=4, grid_opacity="0.42"))
+    body.append(_circle(250, 300, 9, fill=RED, stroke=BLACK, stroke_width=2))
+    body.append(_text(270, 294, "p", font_size=29, font_family=FONT,
+                      font_style="italic", fill=RED))
+
+    body.extend(_draw_tangent_plane(260, 184, 274, 108, fill="#fbfbfb"))
+    basis_body, basis_defs = _draw_tangent_basis(214, 192)
+    body.extend(basis_body)
+    defs.extend(basis_defs)
+    body.append(_line(250, 300, 260, 236, stroke=GREY, stroke_width=3,
+                      stroke_dasharray="6 7", opacity="0.68"))
+
+    if variant == "detail":
+        body.append(_math_text(346, 148, "T", sub="p", font_size=35,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+        body.append(_text(376, 148, "M", font_size=34, font_family=FONT,
+                          font_style="italic", fill=BLACK))
+    else:
+        body.append(_math_text(340, 150, "T", sub="p", font_size=36,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+
+    return _svg(node_id, "Tangent space", body, defs)
+
+
+def create_m_1_6_cotangent_space(variant: str = "icon") -> str:
+    """Node: M 1.6. Title: Cotangent space."""
+    node_id = "M 1.6"
+    covector_marker = f"{_sid(node_id)}_covector_arrow"
+    defs = [_arrow_marker(covector_marker, colour=AMBER, size=6)]
+    body: list[str] = []
+
+    body.extend(_draw_manifold_patch(70, 226, 360, 156, stroke=BLUE,
+                                     stroke_width=4, grid_opacity="0.34"))
+    body.append(_circle(250, 302, 9, fill=RED, stroke=BLACK, stroke_width=2))
+    body.append(_text(270, 296, "p", font_size=29, font_family=FONT,
+                      font_style="italic", fill=RED))
+
+    body.extend(_draw_tangent_plane(260, 184, 274, 108, fill="#fbfbfb"))
+    # Level-set lines make a covector feel like a gradient/one-form acting on
+    # tangent directions, without teaching the full differential-form formalism.
+    for offset in (-46, -22, 2, 26, 50):
+        body.append(_line(146, 190 + offset, 344, 132 + offset,
+                          stroke=AMBER, stroke_width=3, opacity="0.55",
+                          stroke_linecap="round"))
+    body.append(_line(218, 210, 314, 172, stroke=AMBER, stroke_width=7,
+                      stroke_linecap="round", marker_end=f"url(#{covector_marker})"))
+    body.append(_text(324, 170, "ω", font_size=38, font_family=FONT,
+                      font_style="italic", fill=AMBER))
+
+    if variant == "detail":
+        body.append(_math_text(360, 144, "T", sub="p", sup="*", font_size=35,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+        body.append(_text(396, 144, "M", font_size=34, font_family=FONT,
+                          font_style="italic", fill=BLACK))
+        body.append(_text(256, 418, "covector acts on tangents", font_size=27,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+    else:
+        body.append(_math_text(344, 146, "T", sub="p", sup="*", font_size=36,
+                               font_family=FONT, font_style="italic",
+                               fill=BLACK, text_anchor="middle"))
+
+    return _svg(node_id, "Cotangent space", body, defs)
+
+
+def create_m_2_1_tensor_field(variant: str = "icon") -> str:
+    """Node: M 2.1. Title: Tensor field."""
+    node_id = "M 2.1"
+    body: list[str] = []
+    body.extend(_draw_manifold_patch(58, 132, 394, 246, stroke=BLUE,
+                                     stroke_width=4))
+
+    glyphs = [
+        (156, 226, "T"),
+        (244, 184, "T"),
+        (312, 282, "T"),
+        (386, 222, "T"),
+    ]
+    for x, y, label in glyphs:
+        body.extend(_draw_tensor_glyph(x, y, label=label))
+
+    if variant == "detail":
+        for x, y, _ in glyphs:
+            body.append(_circle(x, y + 42, 5, fill=RED, stroke="none",
+                                opacity="0.75"))
+        body.append(_text(254, 410, "tensor at each point", font_size=30,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+    else:
+        body.append(_math_text(256, 416, "T", font_size=42,
+                               font_family=FONT, font_style="italic",
+                               fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Tensor field", body)
+
+
+# ---------------------------------------------------------------------------
+# General Relativity seed concepts
+# ---------------------------------------------------------------------------
+
+
+def create_gr_1_1_gravity_as_geometry(variant: str = "icon") -> str:
+    """Node: GR 1.1. Title: Gravity as geometry."""
+    node_id = "GR 1.1"
+    arrow = f"{_sid(node_id)}_path_arrow"
+    red_arrow = f"{_sid(node_id)}_force_arrow"
+    defs = [
+        _arrow_marker(arrow, colour=AMBER, size=6),
+        _arrow_marker(red_arrow, colour=RED, size=6),
+    ]
+    body: list[str] = []
+
+    if variant == "detail":
+        body.extend(_draw_grid(42, 92, 156, 286, 39, colour="#d8d8d8"))
+        body.append(_rect(42, 92, 156, 286, rx=10, fill="none",
+                          stroke=LIGHT_GREY, stroke_width=3))
+        body.append(_line(88, 244, 154, 244, stroke=RED, stroke_width=6,
+                          stroke_linecap="round", marker_end=f"url(#{red_arrow})"))
+        body.append(_text(120, 82, "force", font_size=28, font_family=FONT,
+                          fill=GREY, text_anchor="middle"))
+        body.append(_line(212, 244, 262, 244, stroke=BLUE, stroke_width=6,
+                          stroke_linecap="round", marker_end=f"url(#{arrow})"))
+        body.append(_text(238, 220, "→", font_size=42, font_family=FONT,
+                          fill=BLUE, text_anchor="middle"))
+        body.extend(_draw_manifold_patch(278, 120, 182, 260, stroke=BLUE,
+                                         stroke_width=4))
+        body.append(_text(370, 82, "geometry", font_size=28,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+        path = "M310,330 C332,258 374,262 408,184"
+    else:
+        body.extend(_draw_manifold_patch(62, 120, 390, 260, stroke=BLUE,
+                                         stroke_width=5))
+        path = "M132,342 C172,236 292,292 384,154"
+
+    body.append(_path(path, fill="none", stroke=AMBER, stroke_width=9,
+                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
+    body.append(_circle(384 if variant == "icon" else 408,
+                        154 if variant == "icon" else 184,
+                        10, fill=AMBER, stroke=BLACK, stroke_width=2))
+    if variant == "icon":
+        body.append(_text(264, 420, "geometry", font_size=34,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Gravity as geometry", body, defs)
+
+
+def create_gr_1_2_equivalence_principle(variant: str = "icon") -> str:
+    """Node: GR 1.2. Title: Equivalence principle."""
+    node_id = "GR 1.2"
+    arrow = f"{_sid(node_id)}_eq_arrow"
+    defs = [_arrow_marker(arrow, colour=GREEN, size=6)]
+    body: list[str] = []
+
+    cabins = [(92, 150, "a"), (292, 150, "g")]
+
+    for x, y, label in cabins:
+        body.append(_rect(x, y, 128, 198, rx=12, fill="#f8f8f8",
+                          stroke=BLACK, stroke_width=4))
+        body.append(_line(x + 22, y + 154, x + 106, y + 154,
+                          stroke=LIGHT_GREY, stroke_width=4))
+        body.append(_circle(x + 64, y + 76, 16, fill=AMBER,
+                            stroke=BLACK, stroke_width=3))
+        body.append(_line(x + 64, y + 96, x + 64, y + 144,
+                          stroke=GREY, stroke_width=3,
+                          stroke_dasharray="5 6", opacity="0.55"))
+        if label == "a":
+            body.append(_line(x + 64, y + 218, x + 64, y + 250,
+                              stroke=GREEN, stroke_width=6,
+                              stroke_linecap="round",
+                              marker_end=f"url(#{arrow})"))
+            body.append(_text(x + 90, y + 248, "a", font_size=31,
+                              font_family=FONT, font_style="italic",
+                              fill=GREEN))
+        else:
+            body.append(_line(x + 64, y - 16, x + 64, y + 20,
+                              stroke=GREEN, stroke_width=6,
+                              stroke_linecap="round",
+                              marker_end=f"url(#{arrow})"))
+            body.append(_text(x + 90, y + 12, "g", font_size=31,
+                              font_family=FONT, font_style="italic",
+                              fill=GREEN))
+
+    body.append(_line(236, 246, 276, 246, stroke=BLUE, stroke_width=5,
+                      stroke_linecap="round"))
+    body.append(_line(236, 264, 276, 264, stroke=BLUE, stroke_width=5,
+                      stroke_linecap="round"))
+    if variant == "detail":
+        body.append(_text(256, 116, "local", font_size=28,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Equivalence principle", body, defs)
+
+
+def create_gr_1_3_local_inertial_frame(variant: str = "icon") -> str:
+    """Node: GR 1.3. Title: Local inertial frame."""
+    node_id = "GR 1.3"
+    marker_id, defs = _axis_arrow_defs(node_id, BLACK)
+    body: list[str] = []
+
+    body.extend(_draw_manifold_patch(62, 210, 386, 166, stroke=BLUE,
+                                     stroke_width=4, grid_opacity="0.42"))
+    body.append(_circle(250, 296, 9, fill=RED, stroke=BLACK, stroke_width=2))
+    body.extend(_draw_tangent_plane(260, 190, 278, 116, fill="#fbfbfb"))
+
+    body.append(_line(196, 210, 318, 210, stroke=BLACK, stroke_width=5,
+                      stroke_linecap="round", marker_end=f"url(#{marker_id})"))
+    body.append(_line(204, 228, 204, 144, stroke=BLACK, stroke_width=5,
+                      stroke_linecap="round", marker_end=f"url(#{marker_id})"))
+    body.append(_text(326, 220, "x", font_size=30, font_family=FONT,
+                      font_style="italic", fill=BLACK))
+    body.append(_text(190, 132, "ct", font_size=30, font_family=FONT,
+                      font_style="italic", fill=BLACK, text_anchor="middle"))
+
+    if variant == "detail":
+        body.append(_text(256, 92, "SR locally", font_size=33,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+        body.append(_line(250, 296, 260, 248, stroke=GREY, stroke_width=3,
+                          stroke_dasharray="6 7", opacity="0.70"))
+    else:
+        body.append(_text(350, 162, "local", font_size=31,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Local inertial frame", body, defs)
+
+
+def create_gr_1_4_freely_falling_observer(variant: str = "icon") -> str:
+    """Node: GR 1.4. Title: Freely falling observer."""
+    node_id = "GR 1.4"
+    arrow = f"{_sid(node_id)}_fall_arrow"
+    red_arrow = f"{_sid(node_id)}_support_arrow"
+    defs = [
+        _arrow_marker(arrow, colour=BLUE, size=6),
+        _arrow_marker(red_arrow, colour=RED, size=6),
+    ]
+    body: list[str] = []
+
+    body.extend(_draw_manifold_patch(66, 146, 378, 250, stroke=BLUE,
+                                     stroke_width=4))
+    path = "M132,346 C178,274 236,292 294,224 C330,184 372,172 414,132"
+    body.append(_path(path, fill="none", stroke=BLUE, stroke_width=8,
+                      stroke_linecap="round", marker_end=f"url(#{arrow})"))
+    body.append(_circle(276, 238, 15, fill=AMBER, stroke=BLACK, stroke_width=3))
+    body.append(_line(260, 254, 242, 286, stroke=AMBER, stroke_width=6,
+                      stroke_linecap="round"))
+    body.append(_line(292, 254, 310, 286, stroke=AMBER, stroke_width=6,
+                      stroke_linecap="round"))
+
+    if variant == "detail":
+        body.append(_rect(74, 296, 82, 16, rx=4, fill=GREY, stroke=BLACK,
+                          stroke_width=2, opacity="0.82"))
+        body.append(_circle(116, 270, 12, fill=RED, stroke=BLACK,
+                            stroke_width=2))
+        body.append(_line(116, 294, 116, 270, stroke=RED, stroke_width=5,
+                          stroke_linecap="round",
+                          marker_end=f"url(#{red_arrow})"))
+        body.append(_text(122, 372, "supported", font_size=24,
+                          font_family=FONT, fill=GREY, text_anchor="middle"))
+        body.append(_text(320, 342, "no thrust", font_size=27,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+    else:
+        body.append(_text(316, 334, "free fall", font_size=32,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+
+    return _svg(node_id, "Freely falling observer", body, defs)
+
+
+def create_gr_1_5_tidal_gravity(variant: str = "icon") -> str:
+    """Node: GR 1.5. Title: Tidal gravity."""
+    node_id = "GR 1.5"
+    arrow = f"{_sid(node_id)}_tidal_arrow"
+    red_arrow = f"{_sid(node_id)}_relative_arrow"
+    defs = [
+        _arrow_marker(arrow, colour=BLUE, size=6),
+        _arrow_marker(red_arrow, colour=RED, size=6),
+    ]
+    body: list[str] = []
+
+    body.extend(_draw_manifold_patch(62, 118, 388, 286, stroke=BLUE,
+                                     stroke_width=4, grid_opacity="0.40"))
+    paths = [
+        "M142,360 C168,292 204,234 244,158",
+        "M238,370 C246,296 256,232 266,148",
+        "M334,360 C316,294 298,232 286,158",
+    ]
+    for path in paths:
+        body.append(_path(path, fill="none", stroke=BLUE, stroke_width=7,
+                          stroke_linecap="round", marker_end=f"url(#{arrow})"))
+
+    for x, y in [(142, 360), (238, 370), (334, 360)]:
+        body.append(_circle(x, y, 9, fill=AMBER, stroke=BLACK, stroke_width=2))
+
+    body.append(_line(210, 318, 166, 334, stroke=RED, stroke_width=5,
+                      stroke_linecap="round", marker_end=f"url(#{red_arrow})"))
+    body.append(_line(266, 318, 312, 334, stroke=RED, stroke_width=5,
+                      stroke_linecap="round", marker_end=f"url(#{red_arrow})"))
+    if variant == "detail":
+        body.append(_line(246, 286, 246, 236, stroke=RED, stroke_width=5,
+                          stroke_linecap="round", marker_end=f"url(#{red_arrow})"))
+        body.append(_text(256, 92, "relative free fall", font_size=30,
+                          font_family=FONT, fill=BLACK, text_anchor="middle"))
+    else:
+        body.append(_text(256, 92, "tidal", font_size=34,
+                          font_family=FONT, fill=RED, text_anchor="middle"))
+
+    return _svg(node_id, "Tidal gravity", body, defs)
+
+
 __all__ = [
     'create_1_3_principle_of_relativity',
     'create_1_2_constancy_of_speed_of_light',
@@ -2076,4 +2536,16 @@ __all__ = [
     'create_10_3_radiation_reaction',
     'create_11_1_lorentz_invariance',
     'create_11_2_gauge_fixing',
+    'create_m_1_1_manifold',
+    'create_m_1_2_coordinate_chart',
+    'create_m_1_3_coordinate_transformation',
+    'create_m_1_4_worldline',
+    'create_m_1_5_tangent_space',
+    'create_m_1_6_cotangent_space',
+    'create_m_2_1_tensor_field',
+    'create_gr_1_1_gravity_as_geometry',
+    'create_gr_1_2_equivalence_principle',
+    'create_gr_1_3_local_inertial_frame',
+    'create_gr_1_4_freely_falling_observer',
+    'create_gr_1_5_tidal_gravity',
 ]

@@ -14,6 +14,9 @@ def test_concept_serializes_sections_and_study_questions():
         label="Inertial frames",
         layer="1",
         layer_title="Foundations",
+        domain="sr",
+        domain_title="Special Relativity and Classical Fields",
+        authoring_status="authored",
         sections=[
             ConceptSection(key="definition", title="Definition", text="Definition text"),
             ConceptSection(key="derivation", title="Derivation", text=""),
@@ -43,6 +46,9 @@ def test_concept_serializes_sections_and_study_questions():
     data = concept.to_viewer_data()
 
     assert data["display_id"] == "1.1"
+    assert data["domain"] == "sr"
+    assert data["domain_title"] == "Special Relativity and Classical Fields"
+    assert data["authoring_status"] == "authored"
     assert "definition_new" not in data
     assert "derivation_new" not in data
     assert "explanation_new" not in data

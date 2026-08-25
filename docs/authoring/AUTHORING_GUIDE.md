@@ -39,6 +39,9 @@ Before authoring a concept:
    `docs/authoring/equality_annotation_style.md` and decide where annotated
    equals signs would help the learner see which result, convention, condition,
    or frame choice is being used.
+9. For non-SR domains, check the relevant domain plan or exposition file, such
+   as `docs/authoring/general_relativity_concept_plan.md` or
+   `docs/authoring/gr_concept_expositions.md`, before adding runtime CSV rows.
 
 After authoring each concept, pause for a small local consistency check before
 moving on to the next one: block count and kinds, block titles, question count
@@ -263,6 +266,70 @@ When adding or revising concept edges:
 
 Keep the derivation tree in mind. One long-term goal is to trace important
 concepts back toward postulates, axioms, and foundational definitions.
+
+## Multi-Domain Authoring
+
+The KB is a unified atlas, but new areas should be authored with explicit
+domain metadata. The current domain keys are:
+
+- `sr`: Special Relativity and Classical Fields.
+- `gr`: General Relativity.
+- `math`: reusable mathematics.
+
+Keep concept IDs semantic and namespace-qualified. Use `gr.*` for concepts
+whose meaning is specifically GR. Use `math.*` for differential geometry,
+calculus, algebra, or other mathematical concepts intended to be reused beyond
+GR. Do not create a `math.*` concept only to avoid thinking about a physics
+scope boundary; use it when the concept should genuinely stand outside one
+physics domain.
+
+Display IDs are domain-local but should remain unambiguous in the combined
+viewer. Existing SR concepts currently keep bare numeric display IDs such as
+`4.6`. New GR concepts should use display IDs such as `GR 1.2`; reusable maths
+concepts should use `M 1.1`. The `layer` column remains a local pedagogical and
+layout layer within the concept's domain.
+
+When adding cross-domain links:
+
+- Link GR concepts back to existing SR concepts when SR is the genuine
+  prerequisite, for example local inertial frames to inertial frames.
+- Link GR concepts to `math.*` when the mathematical structure is needed for
+  the GR concept to be intelligible.
+- Prefer conservative edge types during the first pass. Use `REQUIRES` for
+  prerequisite understanding, `DERIVES_FROM` for a defensible derivation, and
+  `CONSTRUCTED_FROM` when the concept is built structurally from another.
+- Record unclear shared-concept questions as drafting issues rather than
+  forcing an early split or merge. Current examples include whether
+  `sr.metric_tensor` should eventually broaden into a shared metric concept and
+  whether GR needs a distinct stress-energy concept.
+
+Use domain-filtered builds during authoring:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data \
+  --out output/interactive_graph.html \
+  --domains gr \
+  --also-load-linked-concepts
+```
+
+Seed concepts may begin with minimal blocks so that graph structure can be
+checked, but a concept is not considered fully authored until it has the usual
+exposition draft, split content blocks, study questions, references, graphics,
+and drafting issues review.
+
+Use `nodes.csv` `authoring_status` only as a lightweight workflow marker.
+Current statuses are:
+
+- `seed`: placeholder runtime content exists, usually enough for graph and
+  viewer testing, but the concept has not yet received a full exposition pass.
+- `prerequisite_support`: a reusable maths concept is present to support nearby
+  physics content, but is not yet being treated as a direct learning target.
+
+Leave `authoring_status` blank for ordinary authored concepts unless there is a
+specific reason to surface their state during active development. The status is
+not part of the physics model and should not replace the exposition file's
+drafting issues or source-review notes.
 
 ## References
 

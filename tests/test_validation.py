@@ -35,6 +35,8 @@ def _nodes_df():
             "label": "Alpha",
             "layer": "1",
             "layer_title": "Foundations",
+            "domain": "test",
+            "domain_title": "Test Domain",
         },
         {
             "id": "2.1",
@@ -42,6 +44,8 @@ def _nodes_df():
             "label": "Beta",
             "layer": "2",
             "layer_title": "Applications",
+            "domain": "test",
+            "domain_title": "Test Domain",
         },
     ])
 

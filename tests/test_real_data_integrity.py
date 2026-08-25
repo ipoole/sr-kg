@@ -8,7 +8,7 @@ from srkg.kb import STUDY_QUESTION_TYPES, load_knowledge_base
 
 DATA_ROOT = Path(__file__).resolve().parents[1] / "data"
 SEMANTIC_ID_RE = re.compile(r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$")
-DISPLAY_ID_RE = re.compile(r"^\d+(\.\d+)+$")
+DISPLAY_ID_RE = re.compile(r"^(?:\d+(\.\d+)+|[A-Z]+ \d+(\.\d+)+)$")
 
 
 def _read_csv(name: str) -> pd.DataFrame:

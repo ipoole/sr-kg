@@ -21,6 +21,9 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
             "label": " Inertial frames ",
             "layer": " 1 ",
             "layer_title": " Foundations ",
+            "domain": " sr ",
+            "domain_title": " Special Relativity and Classical Fields ",
+            "authoring_status": " seed ",
         },
         {
             "id": "   ",
@@ -114,6 +117,12 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     assert concept_data["sr.inertial_frames"]["label"] == "Inertial frames"
     assert concept_data["sr.inertial_frames"]["layer"] == "1"
     assert concept_data["sr.inertial_frames"]["layer_title"] == "Foundations"
+    assert concept_data["sr.inertial_frames"]["domain"] == "sr"
+    assert (
+        concept_data["sr.inertial_frames"]["domain_title"]
+        == "Special Relativity and Classical Fields"
+    )
+    assert concept_data["sr.inertial_frames"]["authoring_status"] == "seed"
     assert concept_data["sr.inertial_frames"]["sections"] == [
         {"key": "definition", "title": "Definition", "text": "Definition text"},
         {"key": "derivation", "title": "Derivation", "text": "Derivation text"},

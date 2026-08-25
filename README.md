@@ -123,6 +123,29 @@ MathJax is loaded from a CDN in the generated HTML, so equation rendering requir
 
 There is also a PyCharm run configuration named `Generate Knowledge Graph` that runs the same command against the files in `data/`. Generation is manifest-backed; use `--data-root` rather than passing individual CSV files.
 
+During domain authoring, generate a smaller viewer with `--domains`. The
+generator uses `nodes.csv` column `domain` when present, otherwise it uses the
+semantic ID prefix before the first dot, such as `sr`, `gr`, or `math`:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data \
+  --out output/interactive_graph.html \
+  --domains gr
+```
+
+Add `--also-load-linked-concepts` to include one-hop concepts linked to the
+selected domain concepts, which is useful when checking cross-domain SR/GR
+references:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data \
+  --out output/interactive_graph.html \
+  --domains gr \
+  --also-load-linked-concepts
+```
+
 ## Validate Source Data
 
 After manually editing the source files in `data/`, run the generator in validation-only mode:

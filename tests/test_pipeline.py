@@ -122,6 +122,53 @@ def _write_minimal_root(root, *, alpha_body="Definition with </script> marker"):
     ]).to_csv(root / "concept_graphic_designs.csv", index=False)
 
 
+def _append_gr_concept(root):
+    nodes = pd.read_csv(root / "nodes.csv", dtype=str).fillna("")
+    nodes = pd.concat([
+        nodes,
+        pd.DataFrame([
+            {
+                "id": "gr.gamma",
+                "display_id": "3.1",
+                "label": "Gamma GR",
+                "layer": "1",
+                "layer_title": "GR Foundations",
+            },
+        ]),
+    ], ignore_index=True)
+    nodes.to_csv(root / "nodes.csv", index=False)
+
+    content_blocks = pd.read_csv(root / "content_blocks.csv", dtype=str).fillna("")
+    content_blocks = pd.concat([
+        content_blocks,
+        pd.DataFrame([
+            {
+                "block_id": "gr.gamma.definition",
+                "concept_id": "gr.gamma",
+                "sequence": 10,
+                "kind": "definition",
+                "title": "Definition",
+                "body": "Gamma GR definition",
+            },
+        ]),
+    ], ignore_index=True)
+    content_blocks.to_csv(root / "content_blocks.csv", index=False)
+
+    edges = pd.read_csv(root / "edges.csv", dtype=str).fillna("")
+    edges = pd.concat([
+        edges,
+        pd.DataFrame([
+            {
+                "source": "gr.gamma",
+                "target": "test.alpha",
+                "relation": "EXPLAINS",
+                "note": "Gamma links to alpha",
+            },
+        ]),
+    ], ignore_index=True)
+    edges.to_csv(root / "edges.csv", index=False)
+
+
 def test_generate_viewer_from_root_runs_full_pipeline_and_injects_controls(tmp_path):
     out_path = tmp_path / "out" / "viewer.html"
     _write_minimal_root(tmp_path)
@@ -147,6 +194,78 @@ def test_generate_viewer_from_root_runs_full_pipeline_and_injects_controls(tmp_p
     assert '"directed": false' in html_text
     assert '"colour":' in html_text
     assert '"arrows": ""' in html_text
+
+
+def test_generate_viewer_from_root_filters_domains_by_id_prefix(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+    _append_gr_concept(tmp_path)
+
+    result = generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="GR",
+        domains=["gr"],
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    assert result == (out_path, 1, 0, tmp_path / "edges_key.csv", 1)
+    assert '"gr.gamma"' in html_text
+    assert "Gamma GR definition" in html_text
+    assert '"test.alpha"' not in html_text
+    assert '"test.beta"' not in html_text
+    assert "Gamma links to alpha" not in html_text
+
+
+def test_generate_viewer_from_root_prefers_explicit_domain_column(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+
+    nodes = pd.read_csv(tmp_path / "nodes.csv", dtype=str).fillna("")
+    nodes["domain"] = ["core", "gr"]
+    nodes["domain_title"] = ["Core concepts", "General Relativity"]
+    nodes.to_csv(tmp_path / "nodes.csv", index=False)
+
+    result = generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="Explicit domain",
+        domains=["gr"],
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    assert result == (out_path, 1, 0, tmp_path / "edges_key.csv", 1)
+    assert '"test.beta"' in html_text
+    assert '"domain": "gr"' in html_text
+    assert '"domain_title": "General Relativity"' in html_text
+    assert '"test.alpha"' not in html_text
+
+
+def test_generate_viewer_from_root_can_include_domain_linked_concepts(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+    _append_gr_concept(tmp_path)
+
+    result = generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="GR",
+        domains=["gr"],
+        also_load_linked_concepts=True,
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    assert result == (out_path, 2, 1, tmp_path / "edges_key.csv", 1)
+    assert '"gr.gamma"' in html_text
+    assert '"test.alpha"' in html_text
+    assert '"test.beta"' not in html_text
+    assert "Gamma links to alpha" in html_text
 
 
 def test_generate_viewer_from_root_loads_graphic_design_captions(tmp_path):

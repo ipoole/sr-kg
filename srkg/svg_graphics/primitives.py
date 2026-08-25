@@ -23,7 +23,12 @@ FONT = "STIX Two Math, Cambria Math, Times New Roman, serif"
 
 def _sid(node_id: str) -> str:
     """Return a safe SVG id prefix for this node."""
-    return "n" + node_id.replace(".", "_").replace("-", "_")
+    return (
+        "n"
+        + node_id.replace(".", "_")
+        .replace("-", "_")
+        .replace(" ", "_")
+    )
 
 
 def _attrs(**kwargs: object) -> str:
