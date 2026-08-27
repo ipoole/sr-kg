@@ -1,0 +1,17 @@
+block_id,module_id,sequence,kind,title,body
+gr.m01_motivation_and_equivalence.overview,gr.m01_motivation_and_equivalence,10,overview,Module overview,Layer-seeded module for GR layer 1: Motivation and Equivalence.
+gr.m02_tensor_calculus_on_spacetime.overview,gr.m02_tensor_calculus_on_spacetime,10,overview,Module overview,Layer-seeded module for GR layer 2: Tensor Calculus On Spacetime.
+gr.m03_metric_geometry.overview,gr.m03_metric_geometry,10,overview,Module overview,Layer-seeded module for GR layer 3: Metric Geometry.
+math.m01_manifolds_and_coordinates.overview,math.m01_manifolds_and_coordinates,10,overview,Module overview,Layer-seeded module for Math layer 1: Manifolds and Coordinates.
+math.m02_tensor_calculus.overview,math.m02_tensor_calculus,10,overview,Module overview,Layer-seeded module for Math layer 2: Tensor Calculus.
+sr.m01_foundational_postulates.overview,sr.m01_foundational_postulates,10,overview,Module overview,Layer-seeded module for SR layer 1: Foundational Postulates.
+sr.m02_observers_and_events.overview,sr.m02_observers_and_events,10,overview,Module overview,Layer-seeded module for SR layer 2: Observers and Events.
+sr.m03_minkowski_geometry.overview,sr.m03_minkowski_geometry,10,overview,Module overview,Layer-seeded module for SR layer 3: Minkowski Geometry.
+sr.m04_relativistic_kinematics.overview,sr.m04_relativistic_kinematics,10,overview,Module overview,Layer-seeded module for SR layer 4: Relativistic Kinematics.
+sr.m05_variational_mechanics.overview,sr.m05_variational_mechanics,10,overview,Module overview,Layer-seeded module for SR layer 5: Variational Mechanics.
+sr.m06_field_foundations.overview,sr.m06_field_foundations,10,overview,Module overview,Layer-seeded module for SR layer 6: Field Foundations.
+sr.m07_electromagnetic_field.overview,sr.m07_electromagnetic_field,10,overview,Module overview,Layer-seeded module for SR layer 7: Electromagnetic Field.
+sr.m08_gauge_symmetry_and_interaction.overview,sr.m08_gauge_symmetry_and_interaction,10,overview,Module overview,Layer-seeded module for SR layer 8: Gauge Symmetry and Interaction.
+sr.m09_energy_and_momentum_in_fields.overview,sr.m09_energy_and_momentum_in_fields,10,overview,Module overview,Layer-seeded module for SR layer 9: Energy and Momentum in Fields.
+sr.m10_waves_and_radiation.overview,sr.m10_waves_and_radiation,10,overview,Module overview,Layer-seeded module for SR layer 10: Waves and Radiation.
+sr.m11_symmetry_and_invariance_principles.overview,sr.m11_symmetry_and_invariance_principles,10,overview,Module overview,Layer-seeded module for SR layer 11: Symmetry and Invariance Principles.

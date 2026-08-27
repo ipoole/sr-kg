@@ -40,6 +40,7 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert 'coloneqq: "\\\\mathrel{:=}"' in injected
     assert "function kgAfterReady()" in injected
     assert "var conceptData = {};" in injected
+    assert "var moduleData = {};" in injected
     assert "var edgeKey = {};" in injected
 
 
@@ -58,9 +59,16 @@ def test_inject_controls_serializes_json_without_literal_script_closers():
             },
         },
         "Title",
+        module_data={
+            "module.one": {
+                "title": "Module </script><em>unsafe</em>",
+            },
+        },
     )
 
     assert "Closing <\\/script><b>tag<\\/b>" in injected
     assert "Also <\\/script><i>unsafe<\\/i>" in injected
+    assert "Module <\\/script><em>unsafe<\\/em>" in injected
     assert "Closing </script><b>tag</b>" not in injected
     assert "Also </script><i>unsafe</i>" not in injected
+    assert "Module </script><em>unsafe</em>" not in injected

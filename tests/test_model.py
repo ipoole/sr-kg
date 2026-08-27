@@ -3,6 +3,9 @@ from srkg.model import (
     ConceptReference,
     ConceptSection,
     ContentBlock,
+    Module,
+    ModuleContentBlock,
+    ModuleSupport,
     StudyQuestion,
 )
 
@@ -116,3 +119,61 @@ def test_concept_serializes_content_blocks_alongside_viewer_sections():
             "body": "Definition text",
         },
     ]
+
+
+def test_module_serializes_content_members_and_supports():
+    module = Module(
+        module_id="gr.m01_motivation",
+        domain="gr",
+        title="Motivation",
+        sequence=10,
+        default_collapsed=True,
+        members=["gr.equivalence_principle", "gr.local_inertial_frame"],
+        supports=[
+            ModuleSupport(
+                module_id="gr.m01_motivation",
+                target_type="concept",
+                target_id="sr.inertial_frames",
+                role="prerequisite",
+                note="SR frame concept is reused locally.",
+            ),
+        ],
+        content_blocks=[
+            ModuleContentBlock(
+                block_id="gr.m01_motivation.overview",
+                module_id="gr.m01_motivation",
+                sequence=10,
+                kind="overview",
+                title="Route",
+                body="Start from the equivalence principle.",
+            ),
+        ],
+    )
+
+    assert module.to_viewer_data() == {
+        "module_id": "gr.m01_motivation",
+        "domain": "gr",
+        "title": "Motivation",
+        "sequence": 10,
+        "default_collapsed": True,
+        "members": ["gr.equivalence_principle", "gr.local_inertial_frame"],
+        "supports": [
+            {
+                "module_id": "gr.m01_motivation",
+                "target_type": "concept",
+                "target_id": "sr.inertial_frames",
+                "role": "prerequisite",
+                "note": "SR frame concept is reused locally.",
+            },
+        ],
+        "content_blocks": [
+            {
+                "block_id": "gr.m01_motivation.overview",
+                "module_id": "gr.m01_motivation",
+                "sequence": 10,
+                "kind": "overview",
+                "title": "Route",
+                "body": "Start from the equivalence principle.",
+            },
+        ],
+    }

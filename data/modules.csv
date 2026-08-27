@@ -1,0 +1,17 @@
+module_id,domain,title,sequence,default_collapsed
+gr.m01_motivation_and_equivalence,gr,Motivation and Equivalence,10,false
+gr.m02_tensor_calculus_on_spacetime,gr,Tensor Calculus On Spacetime,20,false
+gr.m03_metric_geometry,gr,Metric Geometry,30,false
+math.m01_manifolds_and_coordinates,math,Manifolds and Coordinates,10,false
+math.m02_tensor_calculus,math,Tensor Calculus,20,false
+sr.m01_foundational_postulates,sr,Foundational Postulates,10,false
+sr.m02_observers_and_events,sr,Observers and Events,20,false
+sr.m03_minkowski_geometry,sr,Minkowski Geometry,30,false
+sr.m04_relativistic_kinematics,sr,Relativistic Kinematics,40,false
+sr.m05_variational_mechanics,sr,Variational Mechanics,50,false
+sr.m06_field_foundations,sr,Field Foundations,60,false
+sr.m07_electromagnetic_field,sr,Electromagnetic Field,70,false
+sr.m08_gauge_symmetry_and_interaction,sr,Gauge Symmetry and Interaction,80,false
+sr.m09_energy_and_momentum_in_fields,sr,Energy and Momentum in Fields,90,false
+sr.m10_waves_and_radiation,sr,Waves and Radiation,100,false
+sr.m11_symmetry_and_invariance_principles,sr,Symmetry and Invariance Principles,110,false

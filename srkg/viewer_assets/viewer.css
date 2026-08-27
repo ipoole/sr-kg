@@ -157,7 +157,7 @@
         top: 10px;
         z-index: 20;
       }
-      .kg-focus-lens[data-selected-concept=""] {
+      .kg-focus-lens[data-selected-concept=""][data-selected-module=""] {
         display: none;
       }
       body.kg-focus-lens-hidden .kg-focus-lens {
@@ -243,6 +243,41 @@
       .kg-focus-lens-center-name {
         font-size: 0.846em;
         font-weight: 600;
+      }
+      .kg-focus-lens-module {
+        align-items: center;
+        background: #ffffff;
+        border: 2px solid #28516c;
+        border-radius: 6px;
+        color: #111827;
+        display: flex;
+        gap: 8px;
+        line-height: 1.2;
+        margin-top: 7px;
+        min-width: 0;
+        padding: 7px 8px;
+      }
+      .kg-focus-lens-module .kg-focus-lens-center-id {
+        background: #e7f0f6;
+        border-radius: 999px;
+        color: #28516c;
+        flex: 0 0 auto;
+        font-size: 0.75em;
+        font-weight: 800;
+        padding: 0.16em 0.45em;
+      }
+      .kg-focus-lens-module .kg-focus-lens-center-name {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .kg-focus-lens-module-summary {
+        color: #526070;
+        font-size: 0.846em;
+        font-weight: 700;
+        margin-top: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .kg-focus-lens-undirected {
         display: grid;
@@ -405,13 +440,38 @@
       .kg-notes-toggle input:disabled ~ .kg-notes-toggle-label {
         opacity: 0.62;
       }
-      #kg_concept_list {
+      #kg_concept_list,
+      #kg_module_list {
         max-height: 260px;
         overflow-y: auto;
         padding-top: 6px;
         font-size: 0.923em;
       }
-      .kg-concept-item {
+      .kg-module-actions {
+        display: grid;
+        gap: 6px;
+        grid-template-columns: 1fr 1fr;
+        margin: 4px 0 6px;
+      }
+      .kg-module-actions button {
+        background: #f8fafc;
+        border: 1px solid #cfd8e3;
+        border-radius: 5px;
+        color: #28516c;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.86em;
+        font-weight: 700;
+        min-width: 0;
+        padding: 4px 6px;
+      }
+      .kg-module-actions button:hover,
+      .kg-module-actions button:focus {
+        background: #eef3fd;
+        outline: none;
+      }
+      .kg-concept-item,
+      .kg-module-item {
         display: block;
         width: 100%;
         border: 0;
@@ -425,11 +485,14 @@
         text-align: left;
       }
       .kg-concept-item:hover,
-      .kg-concept-item:focus {
+      .kg-concept-item:focus,
+      .kg-module-item:hover,
+      .kg-module-item:focus {
         background: #eef3fd;
         outline: none;
       }
-      .kg-concept-item.active {
+      .kg-concept-item.active,
+      .kg-module-item.active {
         background: #dbe8ff;
         font-weight: 700;
       }
@@ -461,6 +524,30 @@
       .kg-concept-id {
         color: #555;
         font-variant-numeric: tabular-nums;
+      }
+      .kg-module-domain {
+        color: #555;
+        font-size: 0.86em;
+        font-weight: 800;
+      }
+      .kg-search-type-label {
+        background: #e7f0f6;
+        border-radius: 999px;
+        color: #28516c;
+        display: inline-block;
+        font-size: 0.76em;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-right: 0.25em;
+        padding: 0.12em 0.45em;
+        text-transform: uppercase;
+      }
+      .kg-module-count {
+        color: #666;
+        display: block;
+        font-size: 0.9em;
+        font-weight: 400;
+        margin-top: 2px;
       }
       .legend-dot {
         display: inline-block;
@@ -690,6 +777,79 @@
         min-width: 0;
     }
 
+    #info_panel .module-domain-label {
+        background: #e7f0f6;
+        color: #28516c;
+    }
+
+    #info_panel .module-graph-fold-control {
+        align-items: center;
+        border: 1px solid #cfd8e3;
+        border-radius: 6px;
+        display: inline-flex;
+        gap: 0;
+        line-height: 1.2;
+        overflow: hidden;
+    }
+
+    #info_panel .module-graph-fold-label {
+        background: #f3f6f9;
+        color: #526070;
+        font-size: 0.78em;
+        font-weight: 800;
+        padding: 0.28em 0.55em;
+        text-transform: uppercase;
+    }
+
+    #info_panel .module-graph-fold-button {
+        background: #fff;
+        border: 0;
+        border-left: 1px solid #cfd8e3;
+        color: #28516c;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.84em;
+        font-weight: 700;
+        padding: 0.26em 0.62em;
+    }
+
+    #info_panel .module-graph-fold-button:hover,
+    #info_panel .module-graph-fold-button:focus {
+        background: #edf5fa;
+        outline: none;
+    }
+
+    #info_panel .module-graph-fold-button[aria-pressed="true"] {
+        background: #28516c;
+        color: #fff;
+    }
+
+    #info_panel .concept-module-chip {
+        background: #e7f0f6;
+        border: 1px solid #b8d0df;
+        border-radius: 999px;
+        color: #28516c;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.82em;
+        font-weight: 700;
+        line-height: 1.2;
+        min-width: 0;
+        padding: 0.22em 0.65em;
+    }
+
+    #info_panel .concept-module-chip:hover,
+    #info_panel .concept-module-chip:focus {
+        background: #d8eaf4;
+        outline: none;
+    }
+
+    #info_panel .concept-module-chip-label {
+        font-size: 0.82em;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
     #info_panel .concept-toc {
         margin: 0.55em 0 0;
         padding: 0;
@@ -899,6 +1059,90 @@
 
     #info_panel .content-block-body {
         padding-top: 0.05em;
+    }
+
+    #info_panel .module-member-list,
+    #info_panel .module-support-list,
+    #info_panel .module-boundary-edge-list {
+        margin: 0.55em 0 0;
+        padding-left: 1.1em;
+    }
+
+    #info_panel .module-member-list li,
+    #info_panel .module-support-list li,
+    #info_panel .module-boundary-edge-list li {
+        margin: 0.35em 0;
+    }
+
+    #info_panel .module-member-concept,
+    #info_panel .module-support-target,
+    #info_panel .module-detail-link,
+    #info_panel .module-boundary-module-link {
+        color: #174ea6;
+        font: inherit;
+    }
+
+    #info_panel .module-support-note,
+    #info_panel .module-boundary-note {
+        color: #555;
+        margin-top: 0.2em;
+    }
+
+    #info_panel .module-boundary {
+        border-left: 3px solid #8a6f2a;
+        margin: 0 0 1.05em;
+        padding: 0 0 0 0.85em;
+    }
+
+    #info_panel .module-boundary > summary,
+    #info_panel .module-supports > summary,
+    #info_panel .module-members > summary {
+        color: #4f421a;
+        cursor: pointer;
+        font-weight: 700;
+        margin-bottom: 0.38em;
+    }
+
+    #info_panel .module-boundary-pair {
+        background: #fbfaf5;
+        border: 1px solid #e6dcc0;
+        border-radius: 6px;
+        margin: 0.45em 0;
+        padding: 0.45em 0.55em;
+    }
+
+    #info_panel .module-boundary-pair > summary {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35em 0.55em;
+    }
+
+    #info_panel .module-boundary-module {
+        font-weight: 700;
+    }
+
+    #info_panel .module-boundary-counts {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 0.28em;
+    }
+
+    #info_panel .module-boundary-relation-count {
+        background: color-mix(in srgb, var(--edge-color) 12%, white);
+        border: 1px solid color-mix(in srgb, var(--edge-color) 42%, white);
+        border-radius: 999px;
+        color: #333;
+        font-size: 0.76em;
+        font-weight: 800;
+        line-height: 1.2;
+        padding: 0.16em 0.48em;
+        white-space: nowrap;
+    }
+
+    #info_panel .module-boundary-edge .edge-detail-statement {
+        margin: 0;
     }
 
     #info_panel .content-block-fold {
@@ -2044,6 +2288,10 @@
         }
 
         #kg_focus_lens_toggle {
+            flex: 0 0 auto;
+        }
+
+        #kg_clear_selection {
             flex: 0 0 auto;
         }
 

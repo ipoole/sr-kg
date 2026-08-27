@@ -21,6 +21,9 @@ from srkg.model import (
     ConceptReference,
     ConceptSection,
     ContentBlock,
+    Module,
+    ModuleContentBlock,
+    ModuleSupport,
     StudyQuestion,
 )
 
@@ -133,6 +136,115 @@ def build_content_blocks_from_df(content_blocks_df: pd.DataFrame) -> list[Conten
             body=body,
         ))
     return sorted(blocks, key=lambda block: (block.concept_id, block.sequence, block.block_id))
+
+
+def build_module_content_blocks_from_df(
+    module_content_blocks_df: pd.DataFrame,
+) -> list[ModuleContentBlock]:
+    """Build module content blocks from a module_content_blocks.csv-style frame."""
+    blocks: list[ModuleContentBlock] = []
+    for _, row in module_content_blocks_df.iterrows():
+        block_id = str(row.get("block_id", "")).strip()
+        module_id = str(row.get("module_id", "")).strip()
+        kind = str(row.get("kind", "")).strip()
+        body = str(row.get("body", "")).strip()
+        if not block_id or not module_id or not kind or not body:
+            continue
+        blocks.append(ModuleContentBlock(
+            block_id=block_id,
+            module_id=module_id,
+            sequence=_parse_int(row.get("sequence", ""), default=0),
+            kind=kind,
+            title=str(row.get("title", "")).strip(),
+            body=body,
+        ))
+    return sorted(blocks, key=lambda block: (block.module_id, block.sequence, block.block_id))
+
+
+def build_module_supports_from_df(
+    module_supports_df: pd.DataFrame | None,
+) -> list[ModuleSupport]:
+    """Build module support references from a module_supports.csv-style frame."""
+    if module_supports_df is None:
+        return []
+
+    supports: list[ModuleSupport] = []
+    for _, row in module_supports_df.iterrows():
+        module_id = str(row.get("module_id", "")).strip()
+        target_type = str(row.get("target_type", "")).strip()
+        target_id = str(row.get("target_id", "")).strip()
+        role = str(row.get("role", "")).strip()
+        if not module_id or not target_type or not target_id or not role:
+            continue
+        supports.append(ModuleSupport(
+            module_id=module_id,
+            target_type=target_type,
+            target_id=target_id,
+            role=role,
+            note=str(row.get("note", "")).strip(),
+        ))
+    return sorted(
+        supports,
+        key=lambda support: (
+            support.module_id,
+            support.target_type,
+            support.target_id,
+            support.role,
+        ),
+    )
+
+
+def build_modules_from_dfs(
+    modules_df: pd.DataFrame | None,
+    module_members_df: pd.DataFrame | None,
+    module_supports_df: pd.DataFrame | None,
+    module_content_blocks_df: pd.DataFrame | None,
+) -> list[Module]:
+    """Build flat authored modules from optional module source data frames."""
+    if modules_df is None or module_members_df is None or module_content_blocks_df is None:
+        return []
+
+    members_by_module: dict[str, list[tuple[int, str]]] = {}
+    for _, row in module_members_df.iterrows():
+        module_id = str(row.get("module_id", "")).strip()
+        concept_id = str(row.get("concept_id", "")).strip()
+        if not module_id or not concept_id:
+            continue
+        members_by_module.setdefault(module_id, []).append((
+            _parse_int(row.get("sequence", ""), default=0),
+            concept_id,
+        ))
+
+    supports_by_module = _module_supports_by_module(
+        build_module_supports_from_df(module_supports_df)
+    )
+    blocks_by_module = _module_content_blocks_by_module(
+        build_module_content_blocks_from_df(module_content_blocks_df)
+    )
+
+    modules: list[Module] = []
+    for _, row in modules_df.iterrows():
+        module_id = str(row.get("module_id", "")).strip()
+        if not module_id:
+            continue
+        members = [
+            concept_id
+            for _, concept_id in sorted(
+                members_by_module.get(module_id, []),
+                key=lambda item: (item[0], item[1]),
+            )
+        ]
+        modules.append(Module(
+            module_id=module_id,
+            domain=str(row.get("domain", "")).strip(),
+            title=str(row.get("title", "")).strip(),
+            sequence=_parse_int(row.get("sequence", ""), default=0),
+            default_collapsed=parse_bool(row.get("default_collapsed", ""), default=False),
+            members=members,
+            supports=supports_by_module.get(module_id, []),
+            content_blocks=blocks_by_module.get(module_id, []),
+        ))
+    return sorted(modules, key=lambda module: (module.domain, module.sequence, module.module_id))
 
 
 def build_study_questions_from_df(study_questions_df: pd.DataFrame) -> list[StudyQuestion]:
@@ -284,6 +396,26 @@ def _references_by_concept(
     for concept_id, reference in concept_references:
         references_by_concept.setdefault(concept_id, []).append(reference)
     return references_by_concept
+
+
+def _module_supports_by_module(
+    supports: list[ModuleSupport],
+) -> dict[str, list[ModuleSupport]]:
+    supports_by_module: dict[str, list[ModuleSupport]] = {}
+    for support in supports:
+        supports_by_module.setdefault(support.module_id, []).append(support)
+    return supports_by_module
+
+
+def _module_content_blocks_by_module(
+    blocks: list[ModuleContentBlock],
+) -> dict[str, list[ModuleContentBlock]]:
+    blocks_by_module: dict[str, list[ModuleContentBlock]] = {}
+    for block in blocks:
+        blocks_by_module.setdefault(block.module_id, []).append(block)
+    for module_blocks in blocks_by_module.values():
+        module_blocks.sort(key=lambda block: (block.sequence, block.block_id))
+    return blocks_by_module
 
 
 def _parse_int(value, default: int) -> int:

@@ -10,6 +10,7 @@ The pipeline is the only ``srkg`` module intended to depend on all major stages.
 Lower-level modules should not import it.
 """
 
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -105,6 +106,24 @@ def filter_knowledge_base_by_domains(
     filtered_concepts = tuple(
         concept for concept in kb.concepts if concept.id in selected_ids
     )
+    filtered_modules = tuple(
+        replace(
+            module,
+            members=[
+                concept_id
+                for concept_id in module.members
+                if concept_id in selected_ids
+            ],
+            supports=[
+                support
+                for support in module.supports
+                if support.target_type != "concept" or support.target_id in selected_ids
+            ],
+        )
+        for module in kb.modules
+        if module.domain in requested_domains
+        and any(concept_id in selected_ids for concept_id in module.members)
+    )
 
     return KnowledgeBase(
         paths=kb.paths,
@@ -112,6 +131,7 @@ def filter_knowledge_base_by_domains(
         edges_df=filtered_edges,
         edge_key=kb.edge_key,
         concepts=filtered_concepts,
+        modules=filtered_modules,
     )
 
 
@@ -152,6 +172,7 @@ def generate_viewer_from_kb(
         kb.concept_data(),
         enrich_edge_key_with_colours(kb.edge_key, edge_colour_map),
         title,
+        module_data=kb.module_data(),
     )
     output_file.write_text(html_text, encoding="utf-8")
 

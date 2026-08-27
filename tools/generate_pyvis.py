@@ -22,6 +22,18 @@ Expected manifest-backed references.csv columns:
 Expected manifest-backed reference_links.csv columns:
     source_type,source_id,reference_id,locator,note
 
+Expected optional manifest-backed modules.csv columns:
+    module_id,domain,title,sequence,default_collapsed
+
+Expected optional manifest-backed module_members.csv columns:
+    module_id,concept_id,sequence
+
+Expected optional manifest-backed module_supports.csv columns:
+    module_id,target_type,target_id,role,note
+
+Expected optional manifest-backed module_content_blocks.csv columns:
+    block_id,module_id,sequence,kind,title,body
+
 Expected edges.csv columns:
     source,target,relation,note
 
@@ -50,6 +62,10 @@ if str(PROJECT_ROOT) not in sys.path:
 from srkg.kb import resolve_knowledge_base_paths
 from srkg.pipeline import generate_viewer_from_root
 from srkg.dag import format_dag_reports, load_dag_reports
+from srkg.module_diagnostics import (
+    format_module_diagnostics,
+    load_module_diagnostics,
+)
 from srkg.validation import (
     format_validation_issues,
     has_validation_errors,
@@ -94,6 +110,29 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Relations to include in DAG diagnostics. Defaults to all "
             "relations marked directed in edges_key.csv."
+        ),
+    )
+    parser.add_argument(
+        "--module-report",
+        action="store_true",
+        help=(
+            "Print module boundary, support, and quotient DAG diagnostics "
+            "before writing the viewer."
+        ),
+    )
+    parser.add_argument(
+        "--module-report-only",
+        action="store_true",
+        help="Print module diagnostics and skip HTML generation.",
+    )
+    parser.add_argument(
+        "--module-relations",
+        nargs="+",
+        default=None,
+        help=(
+            "Relations to include in module diagnostics. Defaults to all "
+            "relations in edges.csv for boundary counts, and directed "
+            "relations for quotient DAGs."
         ),
     )
     parser.add_argument(
@@ -145,6 +184,15 @@ def main(argv: list[str] | None = None) -> None:
         )
         print(format_dag_reports(reports))
         if args.dag_report_only:
+            return
+
+    if args.module_report or args.module_report_only:
+        diagnostics = load_module_diagnostics(
+            args.data_root,
+            relations=args.module_relations,
+        )
+        print(format_module_diagnostics(diagnostics))
+        if args.module_report_only:
             return
 
     if args.validate or args.validate_only:

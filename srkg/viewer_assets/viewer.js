@@ -1,5 +1,6 @@
       /* Runtime data injected by srkg.html_injection. */
       var conceptData = __CONCEPT_DATA__;
+      var moduleData = __MODULE_DATA__;
       var edgeKey = __EDGE_KEY__;
       var kgViewerConfig = __VIEWER_CONFIG__;
       var kgLayoutConfig = kgViewerConfig.layout || {};
@@ -124,8 +125,15 @@
         var originalEdges = {};
         var currentView = createGraphView(GraphViewMode.ALL);
         var activeNodeId = null;
+        var activeModuleId = null;
+        // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
+        var foldedModules = {};
+        var projectedModuleEdgePrefix = "module-edge::";
+        var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
         var hoveredEdgeBeforeHover = null;
+        var lastGraphNodeClick = null;
+        var suppressedNativeDoubleClick = null;
         var svgImageCache = {};
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
@@ -271,8 +279,15 @@
         }
 
         function showNodeTooltip(nodeId, pointer) {
-          if (!nodeTooltip || graphViewIs(currentView, GraphViewMode.HIDE) || !getConcept(nodeId)) { return; }
-          nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+          if (!nodeTooltip || graphViewIs(currentView, GraphViewMode.HIDE)) { return; }
+          var moduleId = moduleIdFromGraphNodeId(nodeId);
+          if (moduleId && getModule(moduleId)) {
+            nodeTooltip.innerHTML = moduleTooltipHtml(moduleId);
+          } else if (getConcept(nodeId)) {
+            nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+          } else {
+            return;
+          }
           nodeTooltip.style.display = "block";
           positionNodeTooltip(pointer);
           scheduleTooltipTypeset();
@@ -345,6 +360,7 @@
           var positions = network.getPositions();
           nodes.get().forEach(function(node) {
             if (node.hidden) { return; }
+            if (node.isModuleNode) { return; }
 
             var pos = positions[node.id];
             if (!pos) { return; }
@@ -1037,6 +1053,8 @@
         function refreshActiveConcept() {
           if (activeNodeId && getConcept(activeNodeId)) {
             showConcept(activeNodeId, {preserveSectionContext: true});
+          } else if (activeModuleId && getModule(activeModuleId)) {
+            showModule(activeModuleId, {preserveSectionContext: true});
           }
         }
 
@@ -1695,6 +1713,18 @@
         }
 
         /* Graph view state and compact subgraph layout. */
+        function updateModuleActionControls() {
+          var disabled = graphViewIs(currentView, GraphViewMode.HIDE);
+          ["kg_modules_collapse_all", "kg_modules_expand_all"].forEach(function(id) {
+            var button = document.getElementById(id);
+            if (!button) { return; }
+            button.disabled = disabled;
+            button.title = disabled
+              ? "Show the graph before changing module folding"
+              : "";
+          });
+        }
+
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
           if (select) {
@@ -1704,6 +1734,7 @@
             "kg-graph-hidden",
             graphViewIs(currentView, GraphViewMode.HIDE)
           );
+          updateModuleActionControls();
         }
 
         function setCurrentView(view) {
@@ -1713,6 +1744,10 @@
 
         function getConcept(nodeId) {
           return conceptData[String(nodeId)] || null;
+        }
+
+        function getModule(moduleId) {
+          return moduleData[String(moduleId)] || null;
         }
 
         function conceptDisplayId(nodeId) {
@@ -1739,9 +1774,24 @@
           }
         }
 
+        function moduleHash(moduleId) {
+          return "#module-" + encodeURIComponent(String(moduleId));
+        }
+
+        function moduleIdFromHash(hash) {
+          var prefix = "#module-";
+          if (!hash || hash.indexOf(prefix) !== 0) { return null; }
+          try {
+            return decodeURIComponent(hash.slice(prefix.length));
+          } catch (e) {
+            return null;
+          }
+        }
+
         function pushConceptHistory(nodeId, mode) {
           var hash = conceptHash(nodeId);
           var state = {
+            objectType: "concept",
             nodeId: String(nodeId),
             mode: mode || GraphViewMode.HIGHLIGHT
           };
@@ -1749,6 +1799,24 @@
           if (
             window.location.hash === hash &&
             currentState.nodeId === state.nodeId &&
+            currentState.mode === state.mode
+          ) {
+            return;
+          }
+          window.history.pushState(state, "", hash);
+        }
+
+        function pushModuleHistory(moduleId, mode) {
+          var hash = moduleHash(moduleId);
+          var state = {
+            objectType: "module",
+            moduleId: String(moduleId),
+            mode: mode || GraphViewMode.HIGHLIGHT
+          };
+          var currentState = window.history.state || {};
+          if (
+            window.location.hash === hash &&
+            currentState.moduleId === state.moduleId &&
             currentState.mode === state.mode
           ) {
             return;
@@ -1798,6 +1866,37 @@
             return String(aa[i]).localeCompare(String(bb[i]));
           }
           return 0;
+        }
+
+        function compareModules(a, b) {
+          var moduleA = getModule(a) || {};
+          var moduleB = getModule(b) || {};
+          var domainCompare = String(moduleA.domain || "").localeCompare(String(moduleB.domain || ""));
+          if (domainCompare !== 0) { return domainCompare; }
+
+          var sequenceA = Number(moduleA.sequence);
+          var sequenceB = Number(moduleB.sequence);
+          if (Number.isFinite(sequenceA) && Number.isFinite(sequenceB) && sequenceA !== sequenceB) {
+            return sequenceA - sequenceB;
+          }
+          return String(moduleA.title || a).localeCompare(String(moduleB.title || b));
+        }
+
+        function moduleIds() {
+          return Object.keys(moduleData || {}).sort(compareModules);
+        }
+
+        function moduleIdByConcept() {
+          if (moduleIdByConceptId !== null) {
+            return moduleIdByConceptId;
+          }
+          moduleIdByConceptId = {};
+          moduleIds().forEach(function(moduleId) {
+            moduleMemberIds(getModule(moduleId)).forEach(function(conceptId) {
+              moduleIdByConceptId[String(conceptId)] = moduleId;
+            });
+          });
+          return moduleIdByConceptId;
         }
 
         function nodeLayerValue(nodeId) {
@@ -2427,6 +2526,15 @@
           html += '<h2 class="concept-title">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
+          var owningModuleId = moduleIdForConcept(nodeId);
+          var owningModule = owningModuleId ? getModule(owningModuleId) : null;
+          if (owningModule) {
+            html += '<button type="button" class="concept-module-chip module-detail-link" data-module-id="' +
+              escapeHtml(owningModuleId) + '">' +
+              '<span class="concept-module-chip-label">Module</span> ' +
+              renderConceptText(owningModule.title || owningModuleId) +
+              "</button>";
+          }
           if (concept.authoring_status) {
             html += '<span class="concept-authoring-status concept-authoring-status-' +
               escapeHtml(contentBlockKindClass(concept.authoring_status)) + '">' +
@@ -2437,6 +2545,797 @@
           html += renderConceptToc(tocItems);
           html += "</div>";
           return html;
+        }
+
+        function moduleContentBlocks(module) {
+          return Array.isArray(module && module.content_blocks)
+            ? module.content_blocks
+            : [];
+        }
+
+        function filteredModuleContentBlocks(module) {
+          return moduleContentBlocks(module).filter(blockVisibleInReadingMode);
+        }
+
+        function moduleMemberIds(module) {
+          return Array.isArray(module && module.members)
+            ? module.members.filter(function(id) { return Boolean(getConcept(id)); })
+            : [];
+        }
+
+        function moduleIdForConcept(conceptId) {
+          return moduleIdByConcept()[String(conceptId)] || null;
+        }
+
+        /* Module fold state and geometry. */
+        function moduleGraphNodeId(moduleId) {
+          return "module::" + String(moduleId);
+        }
+
+        function moduleIdFromGraphNodeId(nodeId) {
+          var prefix = "module::";
+          var value = String(nodeId || "");
+          return value.indexOf(prefix) === 0 ? value.slice(prefix.length) : null;
+        }
+
+        function selectedModuleIsFolded(moduleId) {
+          return Boolean(foldedModules[String(moduleId)]);
+        }
+
+        function isProjectedModuleEdge(edge) {
+          return Boolean(edge && edge.isModuleEdge === true);
+        }
+
+        function foldedModuleIdList() {
+          return Object.keys(foldedModules).filter(function(moduleId) {
+            return Boolean(foldedModules[moduleId]) && Boolean(getModule(moduleId));
+          }).sort(compareModules);
+        }
+
+        function graphPositionForNode(nodeId) {
+          var id = String(nodeId);
+          var positions = network && network.getPositions
+            ? network.getPositions([id])
+            : {};
+          var pos = positions[id] || nodes.get(id) || originalNodes[id];
+          if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y))) {
+            return null;
+          }
+          return {x: Number(pos.x), y: Number(pos.y)};
+        }
+
+        function moduleMemberGeometry(moduleId) {
+          var memberIds = moduleMemberIds(getModule(moduleId));
+          var positions = {};
+          var count = 0;
+          var totalX = 0;
+          var totalY = 0;
+          memberIds.forEach(function(id) {
+            var pos = graphPositionForNode(id);
+            if (!pos) { return; }
+            positions[String(id)] = pos;
+            totalX += pos.x;
+            totalY += pos.y;
+            count += 1;
+          });
+
+          var centre = count > 0
+            ? {x: totalX / count, y: totalY / count}
+            : {x: 0, y: 0};
+          var offsets = {};
+          Object.keys(positions).forEach(function(id) {
+            offsets[id] = {
+              x: positions[id].x - centre.x,
+              y: positions[id].y - centre.y
+            };
+          });
+          return {
+            position: centre,
+            memberOffsets: offsets
+          };
+        }
+
+        function foldModule(moduleId) {
+          foldedModules[String(moduleId)] = moduleMemberGeometry(moduleId);
+        }
+
+        function removeFoldedModuleNode(moduleId) {
+          var nodeId = moduleGraphNodeId(moduleId);
+          if (nodes.get(nodeId)) {
+            nodes.remove(nodeId);
+          }
+        }
+
+        function clearProjectedModuleEdges() {
+          if (hoveredEdgeId && String(hoveredEdgeId).indexOf(projectedModuleEdgePrefix) === 0) {
+            hoveredEdgeId = null;
+            hoveredEdgeBeforeHover = null;
+          }
+          var moduleEdgeIds = edges.get().filter(isProjectedModuleEdge).map(function(edge) {
+            return edge.id;
+          });
+          if (moduleEdgeIds.length > 0) {
+            edges.remove(moduleEdgeIds);
+          }
+        }
+
+        function syncFoldedModulePosition(moduleId) {
+          moduleId = String(moduleId);
+          var state = foldedModules[moduleId];
+          if (!state) { return null; }
+          var graphNodePosition = graphPositionForNode(moduleGraphNodeId(moduleId));
+          if (graphNodePosition) {
+            state.position = graphNodePosition;
+          }
+          return state.position || null;
+        }
+
+        function restoreFoldedModuleMembers(moduleId) {
+          moduleId = String(moduleId);
+          var state = foldedModules[moduleId];
+          if (!state || !state.position || !state.memberOffsets) { return; }
+          syncFoldedModulePosition(moduleId);
+          var updates = [];
+          moduleMemberIds(getModule(moduleId)).forEach(function(id) {
+            var offset = state.memberOffsets[String(id)] || {x: 0, y: 0};
+            var position = {
+              x: state.position.x + offset.x,
+              y: state.position.y + offset.y
+            };
+            if (originalNodes[id]) {
+              originalNodes[id].x = position.x;
+              originalNodes[id].y = position.y;
+            }
+            if (nodes.get(id)) {
+              updates.push({id: id, x: position.x, y: position.y});
+            }
+          });
+          if (updates.length > 0) {
+            nodes.update(updates);
+          }
+        }
+
+        function unfoldModule(moduleId) {
+          moduleId = String(moduleId);
+          if (!selectedModuleIsFolded(moduleId)) { return; }
+          restoreFoldedModuleMembers(moduleId);
+          delete foldedModules[moduleId];
+          removeFoldedModuleNode(moduleId);
+        }
+
+        function unfoldOwningModuleForConcept(conceptId) {
+          var owningModuleId = moduleIdForConcept(conceptId);
+          if (owningModuleId) {
+            unfoldModule(owningModuleId);
+          }
+        }
+
+        function clearAllFoldedModuleNodes() {
+          foldedModuleIdList().forEach(function(moduleId) {
+            removeFoldedModuleNode(moduleId);
+          });
+          foldedModules = {};
+          clearProjectedModuleEdges();
+        }
+
+        function moduleGraphNodePosition(moduleId) {
+          var foldedPosition = syncFoldedModulePosition(moduleId);
+          if (foldedPosition) {
+            return foldedPosition;
+          }
+          var memberIds = moduleMemberIds(getModule(moduleId));
+          var positions = network && network.getPositions
+            ? network.getPositions(memberIds)
+            : {};
+          var count = 0;
+          var totalX = 0;
+          var totalY = 0;
+          memberIds.forEach(function(id) {
+            var pos = positions[id] || originalNodes[id] || nodes.get(id);
+            if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y))) {
+              return;
+            }
+            totalX += Number(pos.x);
+            totalY += Number(pos.y);
+            count += 1;
+          });
+          if (count > 0) {
+            return {x: totalX / count, y: totalY / count};
+          }
+          return {x: 0, y: 0};
+        }
+
+        function moduleGraphNode(moduleId) {
+          var module = getModule(moduleId) || {};
+          var memberCount = moduleMemberIds(module).length;
+          var position = moduleGraphNodePosition(moduleId);
+          return {
+            id: moduleGraphNodeId(moduleId),
+            isModuleNode: true,
+            moduleId: String(moduleId),
+            label: String(module.domain || "module").toUpperCase() + "\n" +
+              String(module.title || moduleId) + "\n" +
+              memberCount + " concept" + (memberCount === 1 ? "" : "s"),
+            shape: "box",
+            shapeProperties: {
+              borderRadius: 18
+            },
+            x: position.x,
+            y: position.y,
+            physics: false,
+            hidden: false,
+            margin: {top: 22, right: 27, bottom: 22, left: 27},
+            widthConstraint: {minimum: 294, maximum: 434},
+            heightConstraint: {minimum: 133},
+            borderWidth: 2,
+            color: {
+              background: "#e7f0f6",
+              border: "#28516c",
+              highlight: {
+                background: "#d8eaf4",
+                border: "#15384f"
+              },
+              hover: {
+                background: "#d8eaf4",
+                border: "#15384f"
+              }
+            },
+            font: {
+              color: "#111827",
+              size: 28,
+              face: "Arial",
+              multi: false,
+              bold: {
+                color: "#111827",
+                size: 28,
+                face: "Arial"
+              }
+            }
+          };
+        }
+
+        /* Projected boundary edges shown when module members are folded away. */
+        function projectedModuleEndpointForConcept(conceptId, hiddenMembers) {
+          conceptId = String(conceptId);
+          if (hiddenMembers[conceptId]) {
+            var owningModuleId = moduleIdForConcept(conceptId);
+            var graphNodeId = owningModuleId ? moduleGraphNodeId(owningModuleId) : null;
+            var graphNode = graphNodeId ? nodes.get(graphNodeId) : null;
+            return graphNode && !graphNode.hidden ? graphNodeId : null;
+          }
+          return visibleGraphNode(conceptId) ? conceptId : null;
+        }
+
+        function moduleEdgeLabelForRelations(relations, relationCounts) {
+          return relations.map(function(relation) {
+            return relation + " " + String(relationCounts[relation] || 0);
+          }).join("\n");
+        }
+
+        function moduleEdgeColourForRelations(relations) {
+          return relations.length === 1 ? relationColour(relations[0]) : "#4b5563";
+        }
+
+        function projectedModuleEdgeFromGroup(group) {
+          var relations = Object.keys(group.relationCounts).sort(compareRelations);
+          var colour = moduleEdgeColourForRelations(relations);
+          var directed = relations.some(function(relation) {
+            return relationIsDirected(relation);
+          });
+          return {
+            id: group.id,
+            isModuleEdge: true,
+            from: group.from,
+            to: group.to,
+            relation: relations.length === 1 ? relations[0] : "MODULE_BOUNDARY",
+            relationCounts: group.relationCounts,
+            edgeIds: group.edgeIds,
+            arrows: directed ? "to" : "",
+            title: "",
+            kgHoverable: true,
+            hidden: false,
+            label: moduleEdgeLabelForRelations(relations, group.relationCounts),
+            color: {
+              color: colour,
+              highlight: colour,
+              hover: colour,
+              opacity: relations.length === 1 ? 0.90 : 0.78
+            },
+            dashes: relations.length > 1,
+            width: Math.min(6, 2.6 + Math.max(0, group.edgeIds.length - 1) * 0.5),
+            font: {
+              color: "#334155",
+              size: 16,
+              face: "Arial",
+              strokeWidth: 3,
+              strokeColor: "#ffffff"
+            }
+          };
+        }
+
+        function projectedModuleEdges(hiddenMembers) {
+          var groups = {};
+          // These edges summarize visible graph boundaries only; allEdges remains the authored KB.
+          allEdges.forEach(function(edge) {
+            var current = edges.get(edge.id) || originalEdges[edge.id] || edge;
+            if (!current || current.hidden) { return; }
+            if (!hiddenMembers[String(edge.from)] && !hiddenMembers[String(edge.to)]) { return; }
+
+            var from = projectedModuleEndpointForConcept(edge.from, hiddenMembers);
+            var to = projectedModuleEndpointForConcept(edge.to, hiddenMembers);
+            if (!from || !to || from === to) { return; }
+
+            var id = projectedModuleEdgePrefix + from + "::" + to;
+            if (!groups[id]) {
+              groups[id] = {
+                id: id,
+                from: from,
+                to: to,
+                relationCounts: {},
+                edgeIds: []
+              };
+            }
+            var relation = edgeRelation(edge);
+            groups[id].relationCounts[relation] = (groups[id].relationCounts[relation] || 0) + 1;
+            groups[id].edgeIds.push(edge.id);
+          });
+          return Object.keys(groups).sort().map(function(id) {
+            groups[id].edgeIds.sort();
+            return projectedModuleEdgeFromGroup(groups[id]);
+          });
+        }
+
+        /* Module fold actions. */
+        function setSelectedModuleFoldState(moduleId, folded) {
+          if (!getModule(moduleId)) { return; }
+          moduleId = String(moduleId);
+          if (folded) {
+            foldModule(moduleId);
+          } else {
+            unfoldModule(moduleId);
+          }
+
+          applyModuleGraphView(moduleId, {
+            compact: graphViewIs(currentView, GraphViewMode.FOCUSED)
+          });
+          showModule(moduleId, {preserveSectionContext: true});
+          pushModuleHistory(moduleId, graphViewHistoryMode(currentView));
+          document.getElementById("kg_status").innerText =
+            (folded ? "Folded " : "Expanded ") +
+            (getModule(moduleId).title || moduleId) + " module in the graph.";
+        }
+
+        function moduleIdsWithMembers() {
+          return moduleIds().filter(function(moduleId) {
+            return moduleMemberIds(getModule(moduleId)).length > 0;
+          });
+        }
+
+        function refreshGraphAfterModuleFoldChange() {
+          if (graphViewIs(currentView, GraphViewMode.HIDE)) {
+            kgHideGraph(true);
+          } else if (activeModuleId && getModule(activeModuleId)) {
+            applyModuleGraphView(activeModuleId, {
+              compact: graphViewIs(currentView, GraphViewMode.FOCUSED),
+              preserveStatus: true
+            });
+          } else if (activeNodeId && getConcept(activeNodeId)) {
+            applySectionGraphView(activeNodeId, {
+              compact: graphViewIs(currentView, GraphViewMode.FOCUSED),
+              preserveStatus: true
+            });
+          } else {
+            applyAllGraphViewWithFolds({preserveStatus: true});
+          }
+        }
+
+        function foldAllModules() {
+          var ids = moduleIdsWithMembers();
+          ids.forEach(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) {
+              syncFoldedModulePosition(moduleId);
+            } else {
+              foldModule(moduleId);
+            }
+          });
+          refreshGraphAfterModuleFoldChange();
+          if (activeModuleId && getModule(activeModuleId)) {
+            showModule(activeModuleId, {preserveSectionContext: true});
+          }
+          document.getElementById("kg_status").innerText =
+            "Collapsed " + String(ids.length) + " module" + (ids.length === 1 ? "" : "s") +
+            " in the graph.";
+        }
+
+        function unfoldAllModules() {
+          var ids = foldedModuleIdList();
+          ids.forEach(function(moduleId) {
+            unfoldModule(moduleId);
+          });
+          refreshGraphAfterModuleFoldChange();
+          if (activeModuleId && getModule(activeModuleId)) {
+            showModule(activeModuleId, {preserveSectionContext: true});
+          }
+          document.getElementById("kg_status").innerText =
+            "Expanded " + String(ids.length) + " module" + (ids.length === 1 ? "" : "s") +
+            " in the graph.";
+        }
+
+        function toggleModuleFoldForGraphNode(nodeId) {
+          nodeId = String(nodeId || "");
+          var moduleId = moduleIdFromGraphNodeId(nodeId);
+          if (moduleId && selectedModuleIsFolded(moduleId)) {
+            setSelectedModuleFoldState(moduleId, false);
+            return true;
+          }
+          if (!getConcept(nodeId)) { return false; }
+          var owningModuleId = moduleIdForConcept(nodeId);
+          if (!owningModuleId || selectedModuleIsFolded(owningModuleId)) { return false; }
+          setSelectedModuleFoldState(owningModuleId, true);
+          return true;
+        }
+
+        /*
+         * Real double-clicks can fire a normal click first. That click may refit
+         * the graph and move the target before the browser dblclick arrives, so
+         * keep a short-lived recent-node fallback alongside vis-network events.
+         */
+        function handleGraphNodeDoubleClick(nodeId) {
+          if (toggleModuleFoldForGraphNode(nodeId)) {
+            suppressedNativeDoubleClick = {
+              nodeId: String(nodeId || ""),
+              until: Date.now() + 500
+            };
+            return true;
+          }
+          return false;
+        }
+
+        function graphNodeClickIsDoubleClick(nodeId) {
+          var now = Date.now();
+          nodeId = String(nodeId || "");
+          var isDouble = Boolean(
+            lastGraphNodeClick &&
+            lastGraphNodeClick.nodeId === nodeId &&
+            now - lastGraphNodeClick.time <= 420
+          );
+          lastGraphNodeClick = {
+            nodeId: nodeId,
+            time: now
+          };
+          return isDouble;
+        }
+
+        function nativeDoubleClickIsSuppressed(nodeId) {
+          return Boolean(
+            suppressedNativeDoubleClick &&
+            suppressedNativeDoubleClick.nodeId === String(nodeId || "") &&
+            Date.now() <= suppressedNativeDoubleClick.until
+          );
+        }
+
+        function recentGraphClickNodeId(maxAgeMs) {
+          if (!lastGraphNodeClick || Date.now() - lastGraphNodeClick.time > maxAgeMs) {
+            return null;
+          }
+          return lastGraphNodeClick.nodeId;
+        }
+
+        function renderModuleGraphFoldControl(moduleId) {
+          var folded = selectedModuleIsFolded(moduleId);
+          return '<div class="module-graph-fold-control" aria-label="Module graph display">' +
+            '<span class="module-graph-fold-label">Graph</span>' +
+            '<button type="button" class="module-graph-fold-button" data-module-id="' +
+            escapeHtml(moduleId) + '" data-module-fold-state="expanded" aria-pressed="' +
+            (folded ? "false" : "true") + '">Expanded</button>' +
+            '<button type="button" class="module-graph-fold-button" data-module-id="' +
+            escapeHtml(moduleId) + '" data-module-fold-state="folded" aria-pressed="' +
+            (folded ? "true" : "false") + '">Folded</button>' +
+            "</div>";
+        }
+
+        function moduleTitleButton(moduleId) {
+          var module = getModule(moduleId);
+          if (!module) { return escapeHtml(moduleId); }
+          return '<button type="button" class="module-detail-link module-boundary-module-link" data-module-id="' +
+            escapeHtml(moduleId) + '">' + renderConceptText(module.title || moduleId) + "</button>";
+        }
+
+        function moduleBoundaryGroups(moduleId, direction) {
+          var groups = {};
+          allEdges.forEach(function(edge) {
+            var sourceModuleId = moduleIdForConcept(edge.from);
+            var targetModuleId = moduleIdForConcept(edge.to);
+            if (!sourceModuleId || !targetModuleId || sourceModuleId === targetModuleId) {
+              return;
+            }
+
+            var otherModuleId = null;
+            if (direction === "incoming" && targetModuleId === moduleId) {
+              otherModuleId = sourceModuleId;
+            } else if (direction === "outgoing" && sourceModuleId === moduleId) {
+              otherModuleId = targetModuleId;
+            } else {
+              return;
+            }
+
+            if (!groups[otherModuleId]) {
+              groups[otherModuleId] = {
+                moduleId: otherModuleId,
+                relationCounts: {},
+                edges: []
+              };
+            }
+            var relation = edgeRelation(edge);
+            groups[otherModuleId].relationCounts[relation] =
+              (groups[otherModuleId].relationCounts[relation] || 0) + 1;
+            groups[otherModuleId].edges.push(edge);
+          });
+
+          return Object.keys(groups).map(function(otherModuleId) {
+            var group = groups[otherModuleId];
+            group.edges.sort(function(a, b) {
+              return compareRelations(edgeRelation(a), edgeRelation(b)) ||
+                compareConceptIds(String(a.from), String(b.from)) ||
+                compareConceptIds(String(a.to), String(b.to));
+            });
+            return group;
+          }).sort(function(a, b) {
+            return b.edges.length - a.edges.length ||
+              compareModules(a.moduleId, b.moduleId);
+          });
+        }
+
+        function moduleBoundaryCountHtml(relationCounts) {
+          return Object.keys(relationCounts).sort(compareRelations).map(function(relation) {
+            return '<span class="module-boundary-relation-count" style="--edge-color:' +
+              escapeHtml(relationColour(relation)) + '">' +
+              escapeHtml(relation) + " " + relationCounts[relation] +
+              "</span>";
+          }).join("");
+        }
+
+        function renderModuleBoundarySection(moduleId, direction, title) {
+          var groups = moduleBoundaryGroups(moduleId, direction);
+          if (groups.length === 0) { return ""; }
+
+          var anchorId = contentAnchorId(moduleId, title);
+          var html = '<details id="' + escapeHtml(anchorId) +
+            '" class="module-boundary module-boundary-' + escapeHtml(direction) +
+            '" data-section-role="' + escapeHtml(DetailSectionRole.CONTENT) +
+            '" data-graph-context="module-overview" data-lens-label="Module overview" open>';
+          html += "<summary>" + escapeHtml(title) + "</summary>";
+          html += '<div class="module-boundary-groups">';
+          groups.forEach(function(group) {
+            html += '<details class="module-boundary-pair" open>';
+            html += '<summary><span class="module-boundary-module">' +
+              moduleTitleButton(group.moduleId) +
+              '</span><span class="module-boundary-counts">' +
+              moduleBoundaryCountHtml(group.relationCounts) +
+              "</span></summary>";
+            html += '<ol class="module-boundary-edge-list">';
+            group.edges.forEach(function(edge) {
+              html += '<li class="module-boundary-edge">';
+              html += relationshipStatementHtml(edge);
+              if (edge.note) {
+                html += '<div class="module-boundary-note">' +
+                  renderConceptText(edge.note) + "</div>";
+              }
+              html += "</li>";
+            });
+            html += "</ol></details>";
+          });
+          html += "</div></details>";
+          return html;
+        }
+
+        function renderModuleContentBlock(moduleId, block) {
+          var title = block.title || contentBlockKindLabel(block.kind);
+          var policy = contentBlockPolicyFor(block.kind);
+          var sectionRole = policy.sectionRole || DetailSectionRole.CONTENT;
+          var anchorId = contentAnchorId(moduleId, title);
+          var bodyClass = "concept-body content-block-body";
+          if (policy.mode === "folded") {
+            bodyClass = "concept-body content-block-fold-body";
+            if (policy.note) {
+              bodyClass += " content-block-note-body";
+            }
+            return renderFoldDown({
+              anchorId: anchorId,
+              className: contentBlockClassName(block, policy) + " module-content-block",
+              sectionRole: sectionRole,
+              summaryHtml: renderContentBlockHeading(block, title),
+              bodyClass: bodyClass,
+              bodyHtml: renderConceptText(block.body)
+            });
+          }
+
+          var bodyHtml = "";
+          splitConceptBlocks(block.body).forEach(function(textBlock) {
+            bodyHtml += '<div class="concept-line">' +
+              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+              "</div>";
+          });
+          return renderFoldDown({
+            anchorId: anchorId,
+            className: contentBlockClassName(block, policy) + " module-content-block",
+            sectionRole: sectionRole,
+            open: true,
+            summaryHtml: renderContentBlockHeading(block, title),
+            bodyClass: bodyClass,
+            bodyHtml: bodyHtml
+          });
+        }
+
+        function moduleTocItems(moduleId, module) {
+          var items = [];
+          filteredModuleContentBlocks(module).forEach(function(block) {
+            var title = block.title || contentBlockKindLabel(block.kind);
+            var role = contentBlockPolicyFor(block.kind).sectionRole || DetailSectionRole.CONTENT;
+            items.push(Object.assign({
+              id: contentAnchorId(moduleId, title),
+              title: title,
+              kind: block.kind
+            }, tocGraphPolicyFields(role)));
+          });
+          if (moduleMemberIds(module).length > 0) {
+            items.push({
+              id: contentAnchorId(moduleId, "Concepts"),
+              title: "Concepts",
+              graphContext: "module-overview",
+              lensLabel: "Module overview",
+              sectionRole: DetailSectionRole.CONTENT
+            });
+          }
+          if (moduleBoundaryGroups(moduleId, "incoming").length > 0) {
+            items.push({
+              id: contentAnchorId(moduleId, "Incoming Boundary Links"),
+              title: "Incoming boundary links",
+              graphContext: "module-overview",
+              lensLabel: "Module overview",
+              sectionRole: DetailSectionRole.CONTENT
+            });
+          }
+          if (moduleBoundaryGroups(moduleId, "outgoing").length > 0) {
+            items.push({
+              id: contentAnchorId(moduleId, "Outgoing Boundary Links"),
+              title: "Outgoing boundary links",
+              graphContext: "module-overview",
+              lensLabel: "Module overview",
+              sectionRole: DetailSectionRole.CONTENT
+            });
+          }
+          if (Array.isArray(module.supports) && module.supports.length > 0) {
+            items.push({
+              id: contentAnchorId(moduleId, "Declared Supports"),
+              title: "Declared supports",
+              graphContext: "module-overview",
+              lensLabel: "Module overview",
+              sectionRole: DetailSectionRole.CONTENT
+            });
+          }
+          return items;
+        }
+
+        function renderModuleMasthead(moduleId, module, tocItems) {
+          var html = '<div class="concept-sticky-header module-sticky-header">';
+          html += '<div class="concept-title-row">';
+          html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
+          html += '<span class="concept-authoring-status module-domain-label">' +
+            escapeHtml(String(module.domain || "module").toUpperCase()) +
+            "</span>";
+          html += renderModuleGraphFoldControl(moduleId);
+          html += "</div>";
+          html += renderConceptToc(tocItems);
+          html += "</div>";
+          return html;
+        }
+
+        function renderModuleMembers(moduleId, module) {
+          var members = moduleMemberIds(module);
+          if (members.length === 0) { return ""; }
+          var html = '<details id="' + escapeHtml(contentAnchorId(moduleId, "Concepts")) +
+            '" class="module-members" data-section-role="' +
+            escapeHtml(DetailSectionRole.CONTENT) +
+            '" data-graph-context="module-overview" data-lens-label="Module overview" open>';
+          html += "<summary>Concepts</summary>";
+          html += '<ul class="module-member-list">';
+          members.forEach(function(conceptId) {
+            html += '<li><button type="button" class="edge-detail-concept module-member-concept" data-edge-concept-id="' +
+              escapeHtml(conceptId) + '">' +
+              escapeHtml(conceptDisplayId(conceptId)) + " " +
+              renderConceptText((getConcept(conceptId) || {}).label || conceptId) +
+              "</button></li>";
+          });
+          html += "</ul></details>";
+          return html;
+        }
+
+        function renderModuleSupportTarget(support) {
+          var targetType = String(support.target_type || "");
+          var targetId = String(support.target_id || "");
+          if (targetType === "concept" && getConcept(targetId)) {
+            return '<button type="button" class="edge-detail-concept module-support-target" data-edge-concept-id="' +
+              escapeHtml(targetId) + '">' +
+              escapeHtml(conceptDisplayId(targetId)) + " " +
+              renderConceptText((getConcept(targetId) || {}).label || targetId) +
+              "</button>";
+          }
+          if (targetType === "module" && getModule(targetId)) {
+            return '<button type="button" class="module-detail-link module-support-target" data-module-id="' +
+              escapeHtml(targetId) + '">' +
+              renderConceptText((getModule(targetId) || {}).title || targetId) +
+              "</button>";
+          }
+          return escapeHtml(targetId);
+        }
+
+        function renderModuleSupports(moduleId, module) {
+          var supports = Array.isArray(module.supports) ? module.supports : [];
+          if (supports.length === 0) { return ""; }
+          var html = '<details id="' + escapeHtml(contentAnchorId(moduleId, "Declared Supports")) +
+            '" class="module-supports" data-section-role="' +
+            escapeHtml(DetailSectionRole.CONTENT) +
+            '" data-graph-context="module-overview" data-lens-label="Module overview">';
+          html += "<summary>Declared supports</summary>";
+          html += '<ul class="module-support-list">';
+          supports.forEach(function(support) {
+            html += '<li><strong>' + escapeHtml(support.role || "support") + ":</strong> " +
+              renderModuleSupportTarget(support);
+            if (support.note) {
+              html += '<div class="module-support-note">' + renderConceptText(support.note) + "</div>";
+            }
+            html += "</li>";
+          });
+          html += "</ul></details>";
+          return html;
+        }
+
+        function showModule(moduleId, options) {
+          options = options || {};
+          hideConceptPreview(true);
+          var module = getModule(moduleId);
+          if (!module) { return; }
+          var lensLabel = selectedModuleIsFolded(moduleId) ? "Folded module" : "Module overview";
+          activeConceptSectionContext = "module-overview";
+          activeConceptSectionLensLabel = lensLabel;
+          var tocItems = moduleTocItems(moduleId, module);
+          currentConceptTocItems = tocItems.slice();
+
+          var html = renderModuleMasthead(moduleId, module, tocItems);
+          html += '<p class="concept-layer-context">Module - ' +
+            escapeHtml(String(module.domain || "").toUpperCase()) + "</p>";
+          filteredModuleContentBlocks(module).forEach(function(block) {
+            html += renderModuleContentBlock(moduleId, block);
+          });
+          html += renderModuleMembers(moduleId, module);
+          html += renderModuleBoundarySection(moduleId, "incoming", "Incoming boundary links");
+          html += renderModuleBoundarySection(moduleId, "outgoing", "Outgoing boundary links");
+          html += renderModuleSupports(moduleId, module);
+
+          var panel = document.getElementById("info_panel");
+          var previousModuleId = panel.getAttribute("data-module-id") || "";
+          var moduleChanged = previousModuleId !== String(moduleId);
+          panel.innerHTML = html;
+          panel.removeAttribute("data-concept-id");
+          panel.setAttribute("data-module-id", String(moduleId));
+          if (moduleChanged) {
+            panel.scrollTop = 0;
+          }
+          detailScrollSyncSuppressedUntil = Date.now() + 350;
+          panel.classList.toggle("kg-note-editing", false);
+          openUserNoteId = null;
+          var initialItem = initialTocItem(tocItems);
+          setActiveConceptSection(
+            initialItem ? initialItem.id : null,
+            "module-overview",
+            {
+              lensLabel: lensLabel,
+              skipGraphUpdate: true
+            }
+          );
+          updateFocusLensDisplay();
+          typesetInfoPanel(options);
         }
 
         function renderConceptGraphic(conceptId, concept) {
@@ -2657,6 +3556,32 @@
           return html;
         }
 
+        function moduleTooltipSourceText(module) {
+          var overviewBlock = moduleContentBlocks(module).find(function(block) {
+            return block.kind === "overview";
+          });
+          if (overviewBlock) { return overviewBlock.body; }
+          var blocks = moduleContentBlocks(module);
+          return blocks.length > 0 ? blocks[0].body : "";
+        }
+
+        function moduleTooltipHtml(moduleId) {
+          var module = getModule(moduleId) || {};
+          var memberCount = moduleMemberIds(module).length;
+          var html = '<div class="kg-tooltip-title">' +
+            renderTooltipText(module.title || moduleId) + "</div>";
+          html += '<div class="kg-tooltip-definition">' +
+            escapeHtml(String(module.domain || "module").toUpperCase()) + " module - " +
+            escapeHtml(String(memberCount)) + " concept" + (memberCount === 1 ? "" : "s") +
+            "</div>";
+          var overview = conceptPreviewExcerpt(moduleTooltipSourceText(module));
+          if (overview) {
+            html += '<div class="kg-tooltip-section-title">Overview</div>';
+            html += '<div class="kg-tooltip-definition">' + renderTooltipText(overview) + "</div>";
+          }
+          return html;
+        }
+
         function relationshipConceptNameText(nodeId) {
           var concept = getConcept(nodeId);
           if (concept && concept.label) { return searchDisplayText(concept.label); }
@@ -2670,7 +3595,46 @@
             (edgeRelationDirected(edge) ? relationDisplayLabel(relation).toLowerCase() : "is related to");
         }
 
+        function graphObjectDisplayText(nodeId) {
+          var moduleId = moduleIdFromGraphNodeId(nodeId);
+          if (moduleId && getModule(moduleId)) {
+            return searchDisplayText(getModule(moduleId).title || moduleId);
+          }
+          return relationshipConceptNameText(nodeId);
+        }
+
+        function moduleEdgeRelationCountLines(edge) {
+          var relationCounts = edge && edge.relationCounts ? edge.relationCounts : {};
+          return Object.keys(relationCounts).sort(compareRelations).map(function(relation) {
+            return relation + " " + String(relationCounts[relation] || 0);
+          });
+        }
+
+        function moduleEdgeTooltipHtml(edge) {
+          var linkCount = (edge.edgeIds || []).length;
+          var title = renderTooltipText(graphObjectDisplayText(edge.from)) +
+            " -> " + renderTooltipText(graphObjectDisplayText(edge.to));
+          var html = '<div class="kg-tooltip-title kg-edge-tooltip-title">' + title + "</div>";
+          html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
+            escapeHtml(String(linkCount)) + " concept link" +
+            (linkCount === 1 ? "" : "s") + "</div>";
+          moduleEdgeRelationCountLines(edge).forEach(function(line) {
+            html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
+              escapeHtml(line) + "</div>";
+          });
+          if (linkCount > 0 && linkCount <= 3) {
+            html += '<div class="kg-tooltip-section-title">Concept links</div>';
+            html += "<ul>" + concreteEdgesForModuleEdge(edge).map(function(concreteEdge) {
+              return "<li>" + relationshipStatementTooltipHtml(concreteEdge) + "</li>";
+            }).join("") + "</ul>";
+          }
+          return html;
+        }
+
         function edgeTooltipHtml(edge) {
+          if (isProjectedModuleEdge(edge)) {
+            return moduleEdgeTooltipHtml(edge);
+          }
           var relation = edgeRelation(edge);
           var phrase = relationshipPhrase(edge);
           var colour = relationColour(relation);
@@ -2870,6 +3834,33 @@
           });
         }
 
+        function searchFieldsForModule(moduleId) {
+          var module = getModule(moduleId) || {};
+          var fields = [
+            {name: "Module ID", value: String(moduleId)},
+            {name: "Module", value: module.title || ""},
+            {name: "Domain", value: module.domain || ""}
+          ];
+          moduleContentBlocks(module).forEach(function(block) {
+            fields.push({
+              name: block.title || contentBlockKindLabel(block.kind),
+              value: block.body || ""
+            });
+          });
+          moduleMemberIds(module).forEach(function(conceptId) {
+            fields.push({
+              name: "Member",
+              value: conceptTitleText(conceptId)
+            });
+          });
+          return fields.map(function(field) {
+            return {
+              name: field.name,
+              value: searchDisplayText(field.value)
+            };
+          });
+        }
+
         function fieldContainsQuery(field, query) {
           return field.value.toLowerCase().indexOf(query) !== -1;
         }
@@ -2880,11 +3871,24 @@
           });
         }
 
+        function matchingModuleSearchFields(moduleId, query) {
+          return searchFieldsForModule(moduleId).filter(function(field) {
+            return fieldContainsQuery(field, query);
+          });
+        }
+
         function matchingSearchIds(query) {
           var ids = Object.keys(conceptData).sort(compareConceptIds);
           if (!query) { return ids; }
           return ids.filter(function(id) {
             return matchingSearchFields(id, query).length > 0;
+          });
+        }
+
+        function matchingModuleSearchIds(query) {
+          if (!query) { return []; }
+          return moduleIds().filter(function(moduleId) {
+            return matchingModuleSearchFields(moduleId, query).length > 0;
           });
         }
 
@@ -3205,6 +4209,40 @@
           };
         }
 
+        function moduleGraphContext(moduleId) {
+          var module = getModule(moduleId);
+          var memberIds = moduleMemberIds(module);
+          var keep = {};
+          var members = {};
+          var edgeKeep = {};
+          memberIds.forEach(function(conceptId) {
+            keep[String(conceptId)] = true;
+            members[String(conceptId)] = true;
+          });
+
+          allEdges.forEach(function(edge) {
+            var from = String(edge.from);
+            var to = String(edge.to);
+            var fromMember = members[from] === true;
+            var toMember = members[to] === true;
+            if (!fromMember && !toMember) { return; }
+            if (getConcept(from)) { keep[from] = true; }
+            if (getConcept(to)) { keep[to] = true; }
+            edgeKeep[edge.id] = true;
+          });
+
+          return {
+            label: "member concepts + boundary links",
+            keep: keep,
+            members: members,
+            edgeKeep: edgeKeep,
+            memberCount: memberIds.length,
+            boundaryCount: Object.keys(keep).filter(function(id) {
+              return !members[id];
+            }).length
+          };
+        }
+
         function sectionContextEdgeHighlighted(edge, context) {
           if (!context || !edge) { return false; }
           if (context.edgeKeep[edge.id]) { return true; }
@@ -3432,9 +4470,22 @@
           if (!lensEl) { return; }
 
           var selectedId = activeNodeId && getConcept(activeNodeId) ? String(activeNodeId) : "";
+          var selectedModule = activeModuleId && getModule(activeModuleId)
+            ? getModule(activeModuleId)
+            : null;
+          var selectedModuleContext = selectedModule ? moduleGraphContext(activeModuleId) : null;
           var background = focusLensBackgroundState();
           var lensLabel = focusLensContextLabel();
           lensEl.setAttribute("data-selected-concept", selectedId);
+          lensEl.setAttribute("data-selected-module", selectedModule ? String(activeModuleId) : "");
+          lensEl.setAttribute(
+            "data-member-count",
+            selectedModuleContext ? String(selectedModuleContext.memberCount) : ""
+          );
+          lensEl.setAttribute(
+            "data-boundary-count",
+            selectedModuleContext ? String(selectedModuleContext.boundaryCount) : ""
+          );
           lensEl.setAttribute("data-lens-context", activeConceptSectionContext || "neighbourhood");
           lensEl.setAttribute("data-lens-label", lensLabel);
           lensEl.setAttribute("data-background", background);
@@ -3444,6 +4495,29 @@
             '<span class="kg-focus-lens-background">' + escapeHtml(focusLensBackgroundLabel()) + '</span>' +
             '</div>';
           html += '<div class="kg-focus-lens-purpose">' + escapeHtml(lensLabel) + '</div>';
+
+          if (selectedModule) {
+            lensEl.setAttribute(
+              "aria-label",
+              "Focus lens: " + (selectedModule.title || activeModuleId) + ", " +
+                focusLensContextLabel() + ", " + focusLensBackgroundLabel()
+            );
+            lensEl.innerHTML = html +
+              '<div class="kg-focus-lens-module">' +
+              '<span class="kg-focus-lens-center-id">' +
+              escapeHtml(String(selectedModule.domain || "module").toUpperCase()) +
+              '</span><span class="kg-focus-lens-center-name">' +
+              escapeHtml(selectedModule.title || activeModuleId) +
+              "</span></div>" +
+              '<div class="kg-focus-lens-module-summary">' +
+              escapeHtml(String(selectedModuleContext.memberCount)) + " member concept" +
+              (selectedModuleContext.memberCount === 1 ? "" : "s") +
+              " + " + escapeHtml(String(selectedModuleContext.boundaryCount)) +
+              " boundary concept" +
+              (selectedModuleContext.boundaryCount === 1 ? "" : "s") +
+              "</div>";
+            return;
+          }
 
           if (!selectedId) {
             lensEl.setAttribute("aria-label", "Focus lens: no concept selected");
@@ -3490,6 +4564,13 @@
         function applyCurrentView() {
           if (graphViewIs(currentView, GraphViewMode.HIDE)) {
             kgHideGraph(true);
+            return;
+          }
+          if (activeModuleId && getModule(activeModuleId)) {
+            applyModuleGraphView(activeModuleId, {
+              compact: graphViewIs(currentView, GraphViewMode.FOCUSED),
+              preserveStatus: true
+            });
             return;
           }
           if (graphViewIs(currentView, GraphViewMode.HIGHLIGHT) && graphViewHasNode(currentView)) {
@@ -3601,11 +4682,24 @@
           return conceptDisplayId(nodeId) + (label ? " " + label : "");
         }
 
+        function relationshipStatementText(edge) {
+          return relationshipConceptText(edge.from) + " " + relationshipPhrase(edge) + " " +
+            relationshipConceptText(edge.to) + ".";
+        }
+
+        function relationshipStatementTooltipHtml(edge) {
+          var relation = edgeRelation(edge);
+          var phrase = relationshipPhrase(edge);
+          return renderTooltipText(relationshipConceptText(edge.from)) +
+            ' <span class="kg-tooltip-relation" style="color:' +
+            escapeHtml(relationColour(relation)) + '">' + escapeHtml(phrase) + "</span> " +
+            renderTooltipText(relationshipConceptText(edge.to)) + ".";
+        }
+
         function relationshipStatementHtml(edge) {
           var relation = edgeRelation(edge);
           var phrase = relationshipPhrase(edge);
-          var sentence = relationshipConceptText(edge.from) + " " + phrase + " " +
-            relationshipConceptText(edge.to) + ".";
+          var sentence = relationshipStatementText(edge);
           return '<div class="edge-detail-statement" aria-label="' +
             escapeHtml(sentence) + '">' +
             relationshipConceptHtml(edge.from) +
@@ -3613,6 +4707,45 @@
             escapeHtml(relationColour(relation)) + '">' + escapeHtml(phrase) + "</span> " +
             relationshipConceptHtml(edge.to) +
             ".</div>";
+        }
+
+        function concreteEdgesForModuleEdge(edge) {
+          return (edge.edgeIds || []).map(function(edgeId) {
+            return originalEdges[edgeId] || allEdges.find(function(item) {
+              return item.id === edgeId;
+            });
+          }).filter(Boolean);
+        }
+
+        function renderModuleBoundaryEdgeDetails(edge) {
+          var relationGroups = {};
+          concreteEdgesForModuleEdge(edge).forEach(function(concreteEdge) {
+            var relation = edgeRelation(concreteEdge);
+            if (!relationGroups[relation]) { relationGroups[relation] = []; }
+            relationGroups[relation].push(concreteEdge);
+          });
+
+          var html = "";
+          Object.keys(relationGroups).sort(compareRelations).forEach(function(relation) {
+            html += '<section class="module-boundary-edge-detail-group">';
+            html += '<h3><span class="edge-colour-swatch" style="background:' +
+              escapeHtml(relationColour(relation)) + '"></span>' +
+              escapeHtml(relation + " " + relationGroups[relation].length) + "</h3>";
+            html += '<ul class="module-boundary-edge-detail-list">';
+            relationGroups[relation].sort(function(a, b) {
+              return compareConceptIds(String(a.from), String(b.from)) ||
+                compareConceptIds(String(a.to), String(b.to));
+            }).forEach(function(concreteEdge) {
+              html += "<li>" + relationshipStatementHtml(concreteEdge);
+              if (concreteEdge.note) {
+                html += '<div class="module-boundary-note">' +
+                  renderConceptText(concreteEdge.note) + "</div>";
+              }
+              html += "</li>";
+            });
+            html += "</ul></section>";
+          });
+          return html;
         }
 
         function renderDerivationTracePanel(nodeId) {
@@ -3867,9 +5000,41 @@
           return html;
         }
 
+        function showModuleEdgeDetails(edge) {
+          hideConceptPreview(true);
+          restoreHoveredEdge();
+          setInfoPanelVisible(true);
+
+          var linkCount = (edge.edgeIds || []).length;
+          var html = "";
+          html += "<h2>Module Boundary</h2>";
+          html += '<section class="edge-detail module-boundary-edge-detail">';
+          html += '<div class="edge-detail-statement" aria-label="' +
+            escapeHtml(graphObjectDisplayText(edge.from) + " to " + graphObjectDisplayText(edge.to)) +
+            '">' + renderConceptText(graphObjectDisplayText(edge.from)) +
+            " -> " + renderConceptText(graphObjectDisplayText(edge.to)) + "</div>";
+          html += '<dl class="edge-detail-meta">';
+          html += "<dt>Links</dt><dd>" + escapeHtml(String(linkCount)) +
+            " concept link" + (linkCount === 1 ? "" : "s") + "</dd>";
+          html += "<dt>Relations</dt><dd>" +
+            moduleEdgeRelationCountLines(edge).map(escapeHtml).join("<br>") + "</dd>";
+          html += "</dl>";
+          html += renderModuleBoundaryEdgeDetails(edge);
+          html += "</section>";
+
+          var panel = document.getElementById("info_panel");
+          panel.innerHTML = html;
+          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
+          typesetInfoPanel();
+        }
+
         function showEdgeDetails(edgeId) {
           var edge = edges.get(edgeId);
           if (!edge || !visibleGraphEdge(edge)) { return; }
+          if (isProjectedModuleEdge(edge)) {
+            showModuleEdgeDetails(edge);
+            return;
+          }
 
           hideConceptPreview(true);
           restoreHoveredEdge();
@@ -3921,6 +5086,7 @@
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
               "<p>No concept data was found for this node.</p>";
             missingPanel.setAttribute("data-concept-id", String(nodeId));
+            missingPanel.removeAttribute("data-module-id");
             missingPanel.scrollTop = 0;
             typesetInfoPanel(options);
             return;
@@ -4009,6 +5175,7 @@
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           panel.innerHTML = html;
           panel.setAttribute("data-concept-id", String(nodeId));
+          panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
             panel.scrollTop = 0;
           }
@@ -4094,6 +5261,20 @@
           var item = Array.prototype.find.call(
             document.querySelectorAll(".kg-concept-item"),
             function(el) { return el.getAttribute("data-concept-id") === String(nodeId); }
+          );
+          if (item) {
+            item.classList.add("active");
+            item.scrollIntoView({block: "nearest"});
+          }
+        }
+
+        function setActiveModuleItem(moduleId) {
+          document.querySelectorAll(".kg-module-item.active").forEach(function(el) {
+            el.classList.remove("active");
+          });
+          var item = Array.prototype.find.call(
+            document.querySelectorAll(".kg-module-item"),
+            function(el) { return el.getAttribute("data-module-id") === String(moduleId); }
           );
           if (item) {
             item.classList.add("active");
@@ -4412,6 +5593,7 @@
           }
           if (graphViewIs(currentView, GraphViewMode.FOCUSED)) {
             activeNodeId = nodeId;
+            activeModuleId = null;
             applySectionGraphView(nodeId, {compact: true, preserveStatus: true});
             showConcept(nodeId, {
               searchQuery: options.searchQuery,
@@ -4428,6 +5610,7 @@
             return;
           }
           activeNodeId = nodeId;
+          activeModuleId = null;
           kgHighlight(nodeId, true);
           showConcept(nodeId, {
             searchQuery: options.searchQuery,
@@ -4515,6 +5698,7 @@
         function buildConceptList(filterText) {
           var q = searchDisplayText(filterText).toLowerCase();
           var ids = matchingSearchIds(q);
+          var moduleMatches = matchingModuleSearchIds(q);
           var html = "";
           var count = 0;
 
@@ -4555,19 +5739,121 @@
             count += 1;
           });
 
+          moduleMatches.forEach(function(moduleId) {
+            var module = getModule(moduleId) || {};
+            var title = searchDisplayText(module.title || moduleId);
+            var titleHtml = '<span class="kg-search-hit-title">' +
+              '<span class="kg-search-type-label">Module</span> ' +
+              '<span class="kg-module-domain">' +
+              escapeHtml(String(module.domain || "module").toUpperCase()) +
+              "</span> " +
+              highlightedSearchText(title, q) +
+              "</span>";
+            var snippetHtml = "";
+            var snippets = matchingModuleSearchFields(moduleId, q).filter(function(field) {
+              return field.name !== "Module ID" &&
+                field.name !== "Module" &&
+                field.name !== "Domain";
+            }).slice(0, 2);
+            if (snippets.length > 0) {
+              snippetHtml += '<span class="kg-search-snippets">';
+              snippets.forEach(function(field) {
+                snippetHtml += '<span class="kg-search-snippet">' +
+                  '<span class="kg-search-field">' + escapeHtml(field.name) + ":</span> " +
+                  searchSnippet(field, q) +
+                  "</span>";
+              });
+              snippetHtml += "</span>";
+            }
+            html += '<button type="button" class="kg-module-item kg-module-search-item" data-module-id="' +
+              escapeHtml(moduleId) +
+              '">' +
+              titleHtml +
+              snippetHtml +
+              "</button>";
+            count += 1;
+          });
+
           if (count === 0) {
-            html += '<div style="color:#555; padding:4px 0;">No matching concepts.</div>';
+            html += '<div style="color:#555; padding:4px 0;">No matching concepts or modules.</div>';
           }
           document.getElementById("kg_concept_list").innerHTML = html;
+        }
+
+        function buildModuleList() {
+          var list = document.getElementById("kg_module_list");
+          if (!list) { return; }
+          var ids = moduleIds();
+          if (ids.length === 0) {
+            list.innerHTML = '<div style="color:#555; padding:4px 0;">No modules loaded.</div>';
+            return;
+          }
+
+          var html = "";
+          ids.forEach(function(moduleId) {
+            var module = getModule(moduleId) || {};
+            var count = moduleMemberIds(module).length;
+            html += '<button type="button" class="kg-module-item" data-module-id="' +
+              escapeHtml(moduleId) + '">' +
+              '<span class="kg-search-hit-title">' +
+              '<span class="kg-module-domain">' +
+              escapeHtml(String(module.domain || "module").toUpperCase()) +
+              "</span> " +
+              renderConceptText(module.title || moduleId) +
+              "</span>" +
+              '<span class="kg-module-count">' +
+              count + " concept" + (count === 1 ? "" : "s") +
+              "</span>" +
+              "</button>";
+          });
+          list.innerHTML = html;
+        }
+
+        function applyAllGraphViewWithFolds(options) {
+          options = options || {};
+          clearTransientConceptHighlight({skipEdgeRestore: true});
+          restoreHoveredEdge();
+          hideNodeTooltip();
+          activeNodeId = null;
+          activeModuleId = null;
+          updateSelectedConceptHeader(null);
+          setActiveConceptItem(null);
+          setActiveModuleItem(null);
+          setCurrentView(createGraphView(GraphViewMode.ALL));
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            o.hidden = false;
+            o.opacity = 1.0;
+            return o;
+          }));
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            return setEdgeHidden(o, false);
+          }));
+          var fitIds = applyFoldedModuleOverlay(Object.keys(originalNodes), {compact: false});
+          network.unselectAll();
+          fitNodesToAvailableRect(fitIds, {maxScale: 0.72, animation: false});
+          updateNodeLabelPositions();
+          updateFocusLensDisplay();
+          if (!options.preserveStatus) {
+            document.getElementById("kg_status").innerText =
+              "All graph: folded modules and visible concepts.";
+          }
         }
 
         window.kgReset = function(preserveStatus) {
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
+          clearAllFoldedModuleNodes();
+          clearProjectedModuleEdges();
           network.unselectAll();
           setCurrentView(createGraphView(GraphViewMode.ALL));
           activeNodeId = null;
+          activeModuleId = null;
+          activeConceptSectionContext = "neighbourhood";
+          activeConceptSectionTargetId = null;
+          activeConceptSectionLensLabel = "Neighbourhood";
           updateSelectedConceptHeader(null);
           nodes.update(allNodes.map(function(n) {
             var o = Object.assign({}, originalNodes[n.id]);
@@ -4584,10 +5870,29 @@
             document.getElementById("kg_status").innerText = "Click a node to highlight its immediate neighbours.";
           }
           setActiveConceptItem(null);
+          setActiveModuleItem(null);
           updateFocusLensDisplay();
         };
 
         window.kgShowAll = window.kgReset;
+
+        function renderInitialInfoPanel() {
+          currentConceptTocItems = [];
+          var panel = document.getElementById("info_panel");
+          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept...</p>";
+          panel.removeAttribute("data-concept-id");
+          panel.removeAttribute("data-module-id");
+          panel.classList.toggle("kg-note-editing", false);
+          panel.scrollTop = 0;
+        }
+
+        window.kgClearSelection = function() {
+          kgReset(true);
+          renderInitialInfoPanel();
+          window.history.pushState({}, "", window.location.href.split("#")[0]);
+          document.getElementById("kg_status").innerText =
+            "Selection cleared. Full graph visible.";
+        };
 
         function selectedOrActiveNodeId() {
           var selected = network.getSelectedNodes();
@@ -4599,12 +5904,24 @@
           if (value === GraphViewSelectValue.HIDE) {
             kgHideGraph();
           } else if (value === GraphViewSelectValue.ALL) {
+            if (activeModuleId && getModule(activeModuleId)) {
+              applyModuleGraphView(activeModuleId, {compact: false});
+              showModule(activeModuleId);
+              pushModuleHistory(activeModuleId, graphViewHistoryMode(currentView));
+              return;
+            }
             if (!nodeId) {
               kgReset();
               return;
             }
             applySectionGraphView(nodeId, {compact: false});
           } else if (value === GraphViewSelectValue.FOCUSED) {
+            if (activeModuleId && getModule(activeModuleId)) {
+              applyModuleGraphView(activeModuleId, {compact: true});
+              showModule(activeModuleId);
+              pushModuleHistory(activeModuleId, graphViewHistoryMode(currentView));
+              return;
+            }
             if (!nodeId) {
               document.getElementById("kg_status").innerText = "Select a node first.";
               updateGraphViewControls();
@@ -4619,8 +5936,11 @@
         function focusHiddenConcept(nodeId, statusPrefix, options) {
           options = options || {};
           if (!getConcept(nodeId)) { return; }
+          unfoldOwningModuleForConcept(nodeId);
           activeNodeId = nodeId;
+          activeModuleId = null;
           updateSelectedConceptHeader(nodeId);
+          setActiveModuleItem(null);
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           kgHideGraph(true);
           showConcept(nodeId, {
@@ -4634,6 +5954,47 @@
           if (statusPrefix) {
             document.getElementById("kg_status").innerText =
               statusPrefix + " " + conceptDisplayId(nodeId) + ". Graph hidden.";
+          }
+        }
+
+        function focusHiddenModule(moduleId, statusPrefix, options) {
+          options = options || {};
+          var module = getModule(moduleId);
+          if (!module) { return; }
+          activeNodeId = null;
+          activeModuleId = String(moduleId);
+          updateSelectedConceptHeader(null);
+          setActiveConceptItem(null);
+          setActiveModuleItem(moduleId);
+          setCurrentView(createGraphView(GraphViewMode.HIDE, null));
+          kgHideGraph(true);
+          showModule(moduleId);
+          if (!options.skipHistory) {
+            pushModuleHistory(moduleId, graphViewHistoryMode(currentView));
+          }
+          if (statusPrefix) {
+            document.getElementById("kg_status").innerText =
+              statusPrefix + " " + (module.title || moduleId) + ". Graph hidden.";
+          }
+        }
+
+        function focusModule(moduleId, statusPrefix, options) {
+          options = options || {};
+          var module = getModule(moduleId);
+          if (!module) { return; }
+          if (graphViewIs(currentView, GraphViewMode.HIDE)) {
+            focusHiddenModule(moduleId, statusPrefix, options);
+            return;
+          }
+          var compact = graphViewIs(currentView, GraphViewMode.FOCUSED);
+          applyModuleGraphView(moduleId, {compact: compact});
+          showModule(moduleId);
+          if (!options.skipHistory) {
+            pushModuleHistory(moduleId, graphViewHistoryMode(currentView));
+          }
+          if (statusPrefix) {
+            document.getElementById("kg_status").innerText =
+              statusPrefix + " " + (module.title || moduleId) + " module.";
           }
         }
 
@@ -4661,6 +6022,7 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
+          clearProjectedModuleEdges();
           var nodeId = activeNodeId || (currentView && currentView.nodeId) || null;
           if (!detailsAreVisible()) {
             setInfoPanelVisible(true);
@@ -4672,6 +6034,11 @@
             o.hidden = true;
             return o;
           }));
+          nodes.update(foldedModuleIdList().filter(function(moduleId) {
+            return nodes.get(moduleGraphNodeId(moduleId));
+          }).map(function(moduleId) {
+            return {id: moduleGraphNodeId(moduleId), hidden: true};
+          }));
           edges.update(allEdges.map(function(e) {
             var o = Object.assign({}, originalEdges[e.id]);
             return setEdgeHidden(o, true);
@@ -4680,7 +6047,7 @@
           updateFocusLensDisplay();
           if (!preserveStatus) {
             document.getElementById("kg_status").innerText =
-              "Graph hidden. Use the concept list or detail links to browse details.";
+              "Graph hidden. Use the concept list, module list, or detail links to browse details.";
           }
         };
 
@@ -4688,22 +6055,33 @@
           var q = searchDisplayText(document.getElementById("kg_search").value).toLowerCase();
           if (!q) { return; }
 
-          var matches = matchingSearchIds(q);
+          var conceptMatches = matchingSearchIds(q);
+          var moduleMatches = matchingModuleSearchIds(q);
+          var matchCount = conceptMatches.length + moduleMatches.length;
 
-          if (matches.length === 0) {
-            document.getElementById("kg_status").innerText = "No matching concept found.";
+          if (matchCount === 0) {
+            document.getElementById("kg_status").innerText = "No matching concept or module found.";
             return;
           }
 
           buildConceptList(q);
-          var id = matches[0];
-          var concept = getConcept(id) || {};
-          focusConcept(id, null, {
-            searchQuery: q,
-            scrollToSearchMatch: true
-          });
+          if (conceptMatches.length > 0) {
+            var id = conceptMatches[0];
+            var concept = getConcept(id) || {};
+            focusConcept(id, null, {
+              searchQuery: q,
+              scrollToSearchMatch: true
+            });
+            document.getElementById("kg_status").innerText =
+              "Found " + matchCount + " match(es). Showing first: " + (concept.label || id);
+            return;
+          }
+
+          var moduleId = moduleMatches[0];
+          var module = getModule(moduleId) || {};
+          focusModule(moduleId, null);
           document.getElementById("kg_status").innerText =
-            "Found " + matches.length + " match(es). Showing first: " + (concept.label || id);
+            "Found " + matchCount + " match(es). Showing first: " + (module.title || moduleId);
         };
 
         function applySectionGraphView(nodeId, options) {
@@ -4712,8 +6090,11 @@
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
+          unfoldOwningModuleForConcept(nodeId);
           activeNodeId = nodeId;
+          activeModuleId = null;
           updateSelectedConceptHeader(nodeId);
+          setActiveModuleItem(null);
           setCurrentView(createGraphView(compact ? GraphViewMode.FOCUSED : GraphViewMode.HIGHLIGHT, nodeId));
           var context = sectionGraphContext(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -4764,9 +6145,12 @@
               return setEdgeTooltipEnabled(o, false);
             }
           }));
+          var fitIds = applyFoldedModuleOverlay(visibleIds, {compact: compact});
           network.unselectAll();
           if (compact) {
-            fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+            fitNodesToAvailableRect(fitIds, {maxScale: 0.85, animation: false});
+          } else if (foldedModuleIdList().length > 0) {
+            fitNodesToAvailableRect(fitIds, {maxScale: 0.72, animation: false});
           } else {
             fitHighlightedSelection(nodeId, {animation: false});
           }
@@ -4777,6 +6161,168 @@
             document.getElementById("kg_status").innerText =
               (compact ? "Focussed graph: " : "All graph: ") +
               conceptDisplayId(nodeId) + " with " + context.label + ".";
+          }
+        }
+
+        function applyFoldedModuleOverlay(baseVisibleIds, options) {
+          options = options || {};
+          var compact = options.compact === true;
+          var foldedIds = foldedModuleIdList();
+          clearProjectedModuleEdges();
+          if (foldedIds.length === 0) {
+            return baseVisibleIds.slice();
+          }
+
+          var baseVisible = {};
+          var hiddenMembers = {};
+          var fitIds = [];
+          baseVisibleIds.forEach(function(id) {
+            baseVisible[String(id)] = true;
+          });
+
+          baseVisibleIds.forEach(function(id) {
+            var owningModuleId = moduleIdForConcept(id);
+            if (!owningModuleId || !selectedModuleIsFolded(owningModuleId)) {
+              fitIds.push(String(id));
+            }
+          });
+
+          foldedIds.forEach(function(moduleId) {
+            var memberIds = moduleMemberIds(getModule(moduleId));
+            var represented = !compact || activeModuleId === moduleId;
+            syncFoldedModulePosition(moduleId);
+            memberIds.forEach(function(id) {
+              hiddenMembers[String(id)] = true;
+              if (baseVisible[String(id)]) {
+                represented = true;
+              }
+            });
+
+            var graphNodeId = moduleGraphNodeId(moduleId);
+            if (represented) {
+              var moduleNode = moduleGraphNode(moduleId);
+              if (nodes.get(graphNodeId)) {
+                nodes.update(moduleNode);
+              } else {
+                nodes.add(moduleNode);
+              }
+              fitIds.push(graphNodeId);
+            } else if (nodes.get(graphNodeId)) {
+              nodes.update({id: graphNodeId, hidden: true});
+            }
+          });
+
+          nodes.update(Object.keys(hiddenMembers).filter(function(id) {
+            return Boolean(nodes.get(id));
+          }).map(function(id) {
+            return {id: id, hidden: true};
+          }));
+
+          var moduleEdges = projectedModuleEdges(hiddenMembers);
+          edges.update(allEdges.filter(function(e) {
+            return hiddenMembers[String(e.from)] || hiddenMembers[String(e.to)];
+          }).map(function(e) {
+            var current = edges.get(e.id) || originalEdges[e.id] || e;
+            return setEdgeHidden(Object.assign({}, current), true);
+          }));
+          if (moduleEdges.length > 0) {
+            edges.add(moduleEdges);
+          }
+
+          return fitIds.filter(function(id, index, ids) {
+            return ids.indexOf(id) === index;
+          });
+        }
+
+        function applyModuleGraphView(moduleId, options) {
+          options = options || {};
+          var compact = options.compact === true;
+          if (!getModule(moduleId)) { return; }
+          clearTransientConceptHighlight({skipEdgeRestore: true});
+          restoreHoveredEdge();
+          hideNodeTooltip();
+          activeNodeId = null;
+          activeModuleId = String(moduleId);
+          updateSelectedConceptHeader(null);
+          setActiveConceptItem(null);
+          setActiveModuleItem(moduleId);
+          setCurrentView(createGraphView(compact ? GraphViewMode.FOCUSED : GraphViewMode.HIGHLIGHT, null));
+          var context = moduleGraphContext(moduleId);
+          var visibleIds = Object.keys(originalNodes).filter(function(id) {
+            return context.keep[id];
+          });
+          var compactPositions = compact ? buildCompactLayerPositions(visibleIds) : {};
+
+          nodes.update(allNodes.map(function(n) {
+            var o = Object.assign({}, originalNodes[n.id]);
+            var id = String(n.id);
+            var inContext = context.keep[id] === true;
+            var inModule = context.members[id] === true;
+            o.hidden = compact && !inContext;
+            if (inModule) {
+              o.opacity = 1.0;
+              o.font = Object.assign({}, o.font || {}, {color: "#111111"});
+            } else if (inContext) {
+              o.opacity = 0.75;
+              o.font = Object.assign({}, o.font || {}, {color: "#555555"});
+              o.visualColor = {
+                background: "#f7f9fc",
+                border: "#9aa9bd"
+              };
+            } else {
+              o.opacity = 1.0;
+              o.font = Object.assign({}, o.font || {}, {color: "#999999"});
+              o.visualColor = {
+                background: "#f2f2f2",
+                border: "#d0d0d0"
+              };
+            }
+            if (compactPositions[n.id]) {
+              o.x = compactPositions[n.id].x;
+              o.y = compactPositions[n.id].y;
+            }
+            o = applyCollisionNodeStyle(o);
+            return o;
+          }));
+
+          edges.update(allEdges.map(function(e) {
+            var o = Object.assign({}, originalEdges[e.id]);
+            if (context.edgeKeep[e.id]) {
+              o.color = Object.assign({}, o.color || {}, {opacity: 0.85});
+              o.width = Math.max(Number(o.width) || 0, 2.5);
+              return setEdgeHidden(o, false);
+            } else if (compact) {
+              return setEdgeHidden(o, true);
+            } else {
+              o.color = {
+                color: "#cccccc",
+                highlight: "#cccccc",
+                hover: "#cccccc",
+                opacity: 0.10
+              };
+              o.width = 0.4;
+              o = setEdgeHidden(o, false);
+              return setEdgeTooltipEnabled(o, false);
+            }
+          }));
+          var fitIds = applyFoldedModuleOverlay(visibleIds, {compact: compact});
+          network.unselectAll();
+          if (selectedModuleIsFolded(moduleId) && nodes.get(moduleGraphNodeId(moduleId))) {
+            network.selectNodes([moduleGraphNodeId(moduleId)]);
+          }
+          fitNodesToAvailableRect(fitIds, {maxScale: compact ? 0.85 : 0.72, animation: false});
+          updateNodeLabelPositions();
+          updateFocusLensDisplay();
+
+          if (!options.preserveStatus) {
+            var module = getModule(moduleId) || {};
+            var folded = selectedModuleIsFolded(moduleId);
+            document.getElementById("kg_status").innerText =
+              (compact ? "Focussed graph: " : "All graph: ") +
+              (module.title || moduleId) + (folded ? " folded module, " : " module, ") +
+              context.memberCount + " member concept" + (context.memberCount === 1 ? "" : "s") +
+              (folded ? " hidden and " : " and ") + context.boundaryCount +
+              " boundary concept" + (context.boundaryCount === 1 ? "" : "s") + ".";
           }
         }
 
@@ -4807,8 +6353,11 @@
         function kgApplyNeighbourhood(nodeId, preserveStatus, radius) {
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
+          unfoldOwningModuleForConcept(nodeId);
           activeNodeId = nodeId;
+          activeModuleId = null;
           updateSelectedConceptHeader(nodeId);
+          setActiveModuleItem(null);
           radius = clampNeighbourhoodRadius(radius);
           setCurrentView(createGraphView(GraphViewMode.NEIGHBOURHOOD, nodeId, {radius: radius}));
           var keep = enabledNeighbourhoodNodes(nodeId, radius);
@@ -4832,7 +6381,7 @@
             return setEdgeHidden(o, !(keep[e.from] && keep[e.to]));
           }));
 
-          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+          fitNodesToAvailableRect(applyFoldedModuleOverlay(visibleIds, {compact: true}), {maxScale: 0.85, animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
             var neighbourCount = Math.max(0, visibleIds.length - 1);
@@ -4846,8 +6395,11 @@
         function kgApplyDescendants(nodeId, preserveStatus) {
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
+          unfoldOwningModuleForConcept(nodeId);
           activeNodeId = nodeId;
+          activeModuleId = null;
           updateSelectedConceptHeader(nodeId);
+          setActiveModuleItem(null);
           setCurrentView(createGraphView(GraphViewMode.DESCENDANTS, nodeId));
           var keep = enabledDirectedDescendants(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -4874,7 +6426,7 @@
             ));
           }));
 
-          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+          fitNodesToAvailableRect(applyFoldedModuleOverlay(visibleIds, {compact: true}), {maxScale: 0.85, animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
             var descendantCount = Math.max(0, visibleIds.length - 1);
@@ -4888,8 +6440,11 @@
         function kgApplyDerivationTrace(nodeId, preserveStatus) {
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
+          unfoldOwningModuleForConcept(nodeId);
           activeNodeId = nodeId;
+          activeModuleId = null;
           updateSelectedConceptHeader(nodeId);
+          setActiveModuleItem(null);
           setCurrentView(createGraphView(GraphViewMode.DERIVATION_TRACE, nodeId));
           var trace = derivationTrace(nodeId);
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
@@ -4917,7 +6472,7 @@
             return setEdgeHidden(o, !visible);
           }));
 
-          fitNodesToAvailableRect(visibleIds, {maxScale: 0.85, animation: false});
+          fitNodesToAvailableRect(applyFoldedModuleOverlay(visibleIds, {compact: true}), {maxScale: 0.85, animation: false});
           updateNodeLabelPositions();
           if (!preserveStatus) {
             var traceNodeCount = Math.max(0, visibleIds.length - 1);
@@ -4935,10 +6490,23 @@
                 return;
             }
 
-            if (params.nodes.length === 0)
+            if (params.nodes.length === 0) {
+                var recentNodeId = recentGraphClickNodeId(500);
+                if (recentNodeId && handleGraphNodeDoubleClick(recentNodeId)) {
+                  return;
+                }
                 return;
+            }
 
             const nodeId = params.nodes[0];
+            if (graphNodeClickIsDoubleClick(nodeId) && handleGraphNodeDoubleClick(nodeId)) {
+              return;
+            }
+            const clickedModuleId = moduleIdFromGraphNodeId(nodeId);
+            if (clickedModuleId && getModule(clickedModuleId)) {
+              focusModule(clickedModuleId, "Selected");
+              return;
+            }
 
             if (graphViewIs(currentView, GraphViewMode.NEIGHBOURHOOD)) {
               focusNeighbourhood(nodeId, null, {radius: graphViewRadius(currentView)});
@@ -4949,6 +6517,12 @@
             } else {
               focusConcept(nodeId, "Selected");
             }
+        });
+
+        network.on("doubleClick", function(params) {
+          if (!params.nodes || params.nodes.length === 0) { return; }
+          if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
+          toggleModuleFoldForGraphNode(params.nodes[0]);
         });
 
         network.on("hoverNode", function(params) {
@@ -4989,14 +6563,45 @@
           hideNodeTooltip();
         });
 
+        var graphCanvas = network.canvas && network.canvas.frame
+          ? network.canvas.frame.canvas
+          : null;
+        (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
+          if (graphViewIs(currentView, GraphViewMode.HIDE) || !network.getNodeAt) { return; }
+          var rect = (graphCanvas || graphContainer).getBoundingClientRect();
+          var nodeId = network.getNodeAt({
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+          }) || recentGraphClickNodeId(800);
+          if (toggleModuleFoldForGraphNode(nodeId)) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
+
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
+          var moduleId = event.state && event.state.moduleId;
           var mode = event.state && event.state.mode;
           if (!nodeId) {
             nodeId = conceptIdFromHash(window.location.hash);
           }
+          if (!moduleId) {
+            moduleId = moduleIdFromHash(window.location.hash);
+          }
 
-          if (nodeId && getConcept(nodeId)) {
+          if (moduleId && getModule(moduleId)) {
+            var moduleHistoryView = graphViewFromHistoryMode(mode, null);
+            if (graphViewIs(moduleHistoryView, GraphViewMode.HIDE)) {
+              focusHiddenModule(moduleId, null, {skipHistory: true});
+            } else {
+              applyModuleGraphView(moduleId, {
+                compact: graphViewIs(moduleHistoryView, GraphViewMode.FOCUSED),
+                preserveStatus: true
+              });
+              showModule(moduleId);
+            }
+          } else if (nodeId && getConcept(nodeId)) {
             var historyView = graphViewFromHistoryMode(mode, nodeId);
             if (graphViewIs(historyView, GraphViewMode.HIDE)) {
               focusHiddenConcept(nodeId, null, {skipHistory: true});
@@ -5033,6 +6638,11 @@
 
         document.getElementById("kg_graph_view_select").addEventListener("change", function(e) {
           kgSetGraphView(e.target.value);
+        });
+
+        document.getElementById("kg_clear_selection").addEventListener("click", function(e) {
+          e.preventDefault();
+          kgClearSelection();
         });
 
         document.getElementById("kg_details_view_select").addEventListener("change", function(e) {
@@ -5089,6 +6699,13 @@
         });
 
         document.getElementById("kg_concept_list").addEventListener("click", function(e) {
+          var moduleItem = e.target.closest(".kg-module-search-item");
+          if (moduleItem) {
+            e.preventDefault();
+            focusModule(moduleItem.getAttribute("data-module-id"), "Selected");
+            return;
+          }
+
           var item = e.target.closest(".kg-concept-item");
           if (!item) { return; }
 
@@ -5097,6 +6714,24 @@
             searchQuery: document.getElementById("kg_search").value,
             scrollToSearchMatch: true
           });
+        });
+
+        document.getElementById("kg_modules_collapse_all").addEventListener("click", function(e) {
+          e.preventDefault();
+          foldAllModules();
+        });
+
+        document.getElementById("kg_modules_expand_all").addEventListener("click", function(e) {
+          e.preventDefault();
+          unfoldAllModules();
+        });
+
+        document.getElementById("kg_module_list").addEventListener("click", function(e) {
+          var item = e.target.closest(".kg-module-item");
+          if (!item) { return; }
+
+          e.preventDefault();
+          focusModule(item.getAttribute("data-module-id"), "Selected");
         });
 
         conceptPreview.addEventListener("pointerenter", cancelConceptPreviewHide);
@@ -5240,6 +6875,25 @@
             return;
           }
 
+          var moduleFoldButton = e.target.closest(".module-graph-fold-button");
+          if (moduleFoldButton) {
+            e.preventDefault();
+            var foldModuleId = moduleFoldButton.getAttribute("data-module-id");
+            var foldState = moduleFoldButton.getAttribute("data-module-fold-state");
+            if (!getModule(foldModuleId)) { return; }
+            setSelectedModuleFoldState(foldModuleId, foldState === "folded");
+            return;
+          }
+
+          var moduleButton = e.target.closest(".module-detail-link");
+          if (moduleButton) {
+            e.preventDefault();
+            var moduleId = moduleButton.getAttribute("data-module-id");
+            if (!getModule(moduleId)) { return; }
+            focusModule(moduleId, "Selected");
+            return;
+          }
+
           var link = e.target.closest(".concept-link");
           if (!link) { return; }
 
@@ -5368,6 +7022,7 @@
         legend.innerHTML = html;
         buildNodeLabels();
         buildConceptList("");
+        buildModuleList();
         renderNotesOverview();
         updateGraphViewControls();
         updateDetailsViewControls();
@@ -5379,10 +7034,26 @@
         }));
         allEdges = edges.get();
 
+        var initialModuleId = moduleIdFromHash(window.location.hash);
         var initialNodeId = conceptIdFromHash(window.location.hash);
-        if (initialNodeId && getConcept(initialNodeId)) {
+        if (initialModuleId && getModule(initialModuleId)) {
           window.history.replaceState(
-            {nodeId: String(initialNodeId), mode: GraphViewMode.HIGHLIGHT},
+            {
+              objectType: "module",
+              moduleId: String(initialModuleId),
+              mode: GraphViewMode.HIGHLIGHT
+            },
+            "",
+            moduleHash(initialModuleId)
+          );
+          focusModule(initialModuleId, "Selected", {skipHistory: true});
+        } else if (initialNodeId && getConcept(initialNodeId)) {
+          window.history.replaceState(
+            {
+              objectType: "concept",
+              nodeId: String(initialNodeId),
+              mode: GraphViewMode.HIGHLIGHT
+            },
             "",
             conceptHash(initialNodeId)
           );
@@ -5392,7 +7063,11 @@
             defaultStartupConceptId : null;
           if (defaultNodeId) {
             window.history.replaceState(
-              {nodeId: String(defaultNodeId), mode: GraphViewMode.HIGHLIGHT},
+              {
+                objectType: "concept",
+                nodeId: String(defaultNodeId),
+                mode: GraphViewMode.HIGHLIGHT
+              },
               "",
               conceptHash(defaultNodeId)
             );

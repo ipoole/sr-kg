@@ -7,6 +7,7 @@
           <option value="all" selected>Full graph</option>
           <option value="focused">Focussed</option>
         </select>
+        <button id="kg_clear_selection" class="kg-shell-button" type="button" title="Clear selection">Clear</button>
         <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="false">Show lens</button>
       </div>
       __TITLE_HTML__
@@ -32,6 +33,14 @@
       <details id="kg_legend_section" class="kg-fold">
         <summary>Layers</summary>
         <div id="kg_legend"></div>
+      </details>
+      <details id="kg_modules_section" class="kg-fold">
+        <summary>Modules</summary>
+        <div class="kg-module-actions" aria-label="Module graph actions">
+          <button id="kg_modules_collapse_all" type="button">Collapse all</button>
+          <button id="kg_modules_expand_all" type="button">Expand all</button>
+        </div>
+        <div id="kg_module_list"></div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>

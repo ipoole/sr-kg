@@ -62,6 +62,10 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "  study_questions: study_questions.csv",
             "  references: references.csv",
             "  reference_links: reference_links.csv",
+            "  modules: modules.csv",
+            "  module_members: module_members.csv",
+            "  module_supports: module_supports.csv",
+            "  module_content_blocks: module_content_blocks.csv",
             "",
         ]),
         encoding="utf-8",
@@ -78,6 +82,8 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "label": "Alpha",
             "layer": "1",
             "layer_title": "Foundations",
+            "domain": "test",
+            "domain_title": "Test Physics",
         },
         {
             "id": "2.1",
@@ -85,6 +91,8 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "label": "Beta",
             "layer": "2",
             "layer_title": "Applications",
+            "domain": "test",
+            "domain_title": "Test Physics",
         },
         {
             "id": "2.2",
@@ -92,6 +100,8 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "label": "Gamma",
             "layer": "2",
             "layer_title": "Applications",
+            "domain": "test",
+            "domain_title": "Test Physics",
         },
         {
             "id": "3.1",
@@ -99,6 +109,8 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "label": "Delta",
             "layer": "3",
             "layer_title": "Synthesis",
+            "domain": "test",
+            "domain_title": "Test Physics",
         },
     ]).to_csv(nodes_path, index=False)
     pd.DataFrame([
@@ -293,6 +305,71 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         "locator",
         "note",
     ]).to_csv(tmp_path / "reference_links.csv", index=False)
+    pd.DataFrame([
+        {
+            "module_id": "test.m01_foundations",
+            "domain": "test",
+            "title": "Foundations",
+            "sequence": 10,
+            "default_collapsed": "false",
+        },
+        {
+            "module_id": "test.m02_applications",
+            "domain": "test",
+            "title": "Applications",
+            "sequence": 20,
+            "default_collapsed": "false",
+        },
+    ]).to_csv(tmp_path / "modules.csv", index=False)
+    pd.DataFrame([
+        {
+            "module_id": "test.m01_foundations",
+            "concept_id": "1.1",
+            "sequence": 10,
+        },
+        {
+            "module_id": "test.m02_applications",
+            "concept_id": "2.1",
+            "sequence": 10,
+        },
+        {
+            "module_id": "test.m02_applications",
+            "concept_id": "2.2",
+            "sequence": 20,
+        },
+        {
+            "module_id": "test.m02_applications",
+            "concept_id": "3.1",
+            "sequence": 30,
+        },
+    ]).to_csv(tmp_path / "module_members.csv", index=False)
+    pd.DataFrame([
+        {
+            "module_id": "test.m02_applications",
+            "target_type": "module",
+            "target_id": "test.m01_foundations",
+            "role": "prerequisite",
+            "note": "Applications reuse the foundations module.",
+        },
+    ]).to_csv(tmp_path / "module_supports.csv", index=False)
+    pd.DataFrame([
+        {
+            "block_id": "test.m01_foundations.overview",
+            "module_id": "test.m01_foundations",
+            "sequence": 10,
+            "kind": "overview",
+            "title": "Route",
+            "body": "Start with Alpha as the foundation.",
+        },
+        {
+            "block_id": "test.m02_applications.overview",
+            "module_id": "test.m02_applications",
+            "sequence": 10,
+            "kind": "overview",
+            "title": "Route",
+            "body": "Apply the foundation through Beta, Gamma, and Delta.",
+        },
+    ]).to_csv(tmp_path / "module_content_blocks.csv", index=False)
     return nodes_path, edges_path, edge_key_path
 
 

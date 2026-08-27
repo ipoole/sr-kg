@@ -124,6 +124,64 @@ def _write_minimal_kb(root):
     ]).to_csv(root / "reference_links.csv", index=False)
 
 
+def _write_module_files(root):
+    pd.DataFrame([
+        {
+            "module_id": "test.m01_foundations",
+            "domain": "test",
+            "title": "Foundations",
+            "sequence": 10,
+            "default_collapsed": "false",
+        },
+        {
+            "module_id": "test.m02_next",
+            "domain": "test",
+            "title": "Next",
+            "sequence": 20,
+            "default_collapsed": "true",
+        },
+    ]).to_csv(root / "modules.csv", index=False)
+    pd.DataFrame([
+        {
+            "module_id": "test.m01_foundations",
+            "concept_id": "test.alpha",
+            "sequence": 10,
+        },
+        {
+            "module_id": "test.m02_next",
+            "concept_id": "test.beta",
+            "sequence": 10,
+        },
+    ]).to_csv(root / "module_members.csv", index=False)
+    pd.DataFrame([
+        {
+            "module_id": "test.m02_next",
+            "target_type": "module",
+            "target_id": "test.m01_foundations",
+            "role": "prerequisite",
+            "note": "Use the foundations module first.",
+        },
+    ]).to_csv(root / "module_supports.csv", index=False)
+    pd.DataFrame([
+        {
+            "block_id": "test.m01_foundations.overview",
+            "module_id": "test.m01_foundations",
+            "sequence": 10,
+            "kind": "overview",
+            "title": "Route",
+            "body": "Start with Alpha.",
+        },
+        {
+            "block_id": "test.m02_next.overview",
+            "module_id": "test.m02_next",
+            "sequence": 10,
+            "kind": "overview",
+            "title": "Route",
+            "body": "Then study Beta.",
+        },
+    ]).to_csv(root / "module_content_blocks.csv", index=False)
+
+
 def test_load_knowledge_base_from_root_exposes_query_api(tmp_path):
     _write_minimal_kb(tmp_path)
 
@@ -515,4 +573,84 @@ def test_load_knowledge_base_rejects_unknown_reference_link_source(tmp_path):
     assert str(exc.value) == (
         "reference_links.csv references unknown source id(s): "
         "content_block:test.missing.definition"
+    )
+
+
+def test_load_knowledge_base_loads_optional_module_files(tmp_path):
+    _write_minimal_kb(tmp_path)
+    _write_module_files(tmp_path)
+
+    kb = load_knowledge_base(tmp_path)
+
+    assert [module.module_id for module in kb.modules] == [
+        "test.m01_foundations",
+        "test.m02_next",
+    ]
+    assert kb.module("test.m01_foundations").members == ["test.alpha"]
+    assert kb.module("test.m02_next").default_collapsed is True
+    assert kb.module_content_blocks_for("test.m01_foundations")[0].body == "Start with Alpha."
+    assert kb.module_data()["test.m02_next"]["supports"] == [
+        {
+            "module_id": "test.m02_next",
+            "target_type": "module",
+            "target_id": "test.m01_foundations",
+            "role": "prerequisite",
+            "note": "Use the foundations module first.",
+        },
+    ]
+
+
+def test_load_knowledge_base_rejects_duplicate_module_membership(tmp_path):
+    _write_minimal_kb(tmp_path)
+    _write_module_files(tmp_path)
+    members = pd.read_csv(tmp_path / "module_members.csv", dtype=str).fillna("")
+    members = pd.concat([
+        members,
+        pd.DataFrame([
+            {
+                "module_id": "test.m02_next",
+                "concept_id": "test.alpha",
+                "sequence": 20,
+            },
+        ]),
+    ], ignore_index=True)
+    members.to_csv(tmp_path / "module_members.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "module_members.csv assigns concept(s) to multiple modules: test.alpha"
+    )
+
+
+def test_load_knowledge_base_rejects_cross_domain_module_membership(tmp_path):
+    _write_minimal_kb(tmp_path)
+    _write_module_files(tmp_path)
+    nodes = pd.read_csv(tmp_path / "nodes.csv", dtype=str).fillna("")
+    nodes["domain"] = ["test", "other"]
+    nodes["domain_title"] = ["Test", "Other"]
+    nodes.to_csv(tmp_path / "nodes.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "module_members.csv assigns concept(s) to modules in a different domain: "
+        "test.beta -> test.m02_next"
+    )
+
+
+def test_load_knowledge_base_rejects_unknown_module_support_target(tmp_path):
+    _write_minimal_kb(tmp_path)
+    _write_module_files(tmp_path)
+    supports = pd.read_csv(tmp_path / "module_supports.csv", dtype=str).fillna("")
+    supports.loc[0, "target_id"] = "test.missing"
+    supports.to_csv(tmp_path / "module_supports.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "module_supports.csv references unknown target id(s): module:test.missing"
     )

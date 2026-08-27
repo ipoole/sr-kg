@@ -67,6 +67,7 @@ def inject_controls(
     concept_data: dict[str, dict[str, object]],
     edge_key: dict[str, dict[str, str | bool]],
     view_title: str,
+    module_data: dict[str, dict[str, object]] | None = None,
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("</head>", "<body>", "</body>"):
@@ -85,6 +86,7 @@ def inject_controls(
             "viewer.js",
             {
                 "__CONCEPT_DATA__": _json_for_script(concept_data),
+                "__MODULE_DATA__": _json_for_script(module_data or {}),
                 "__EDGE_KEY__": _json_for_script(edge_key),
                 "__VIEWER_CONFIG__": _json_for_script(_viewer_runtime_config()),
             },

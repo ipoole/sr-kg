@@ -20,6 +20,10 @@ data/
   references.csv
   reference_links.csv
   concept_graphic_designs.csv
+  modules.csv
+  module_members.csv
+  module_supports.csv
+  module_content_blocks.csv
 ```
 
 The default project root is `data/`.
@@ -47,6 +51,10 @@ The manifest names the source files within the data root.
 | `files.references` | Yes | Bibliographic/source reference registry. |
 | `files.reference_links` | Yes | Links from KB items to source references. |
 | `files.graphic_designs` | No | Concept graphic caption metadata. |
+| `files.modules` | No | Authored flat module registry for module pages and later graph folding. |
+| `files.module_members` | No | Explicit primary concept membership for modules. Required when `modules.csv` is present. |
+| `files.module_supports` | No | Optional cross-module or cross-domain support links declared by modules. |
+| `files.module_content_blocks` | No | Ordered module-level content blocks. Required when `modules.csv` is present. |
 
 Paths are resolved relative to the data root unless absolute paths are used.
 Optional files are ignored when absent. For manifest-backed KB roots,
@@ -76,6 +84,14 @@ and `calculation`. Multiple-choice options currently live in the `prompt` text.
 Add source material through `references.csv` and `reference_links.csv`. Prefer
 linking a reference to the most specific useful item, such as a derivation block
 or study question, rather than only linking the whole concept.
+
+Use modules as authored topic groupings, not as another name for layers.
+The initial module data is seeded from `(domain, layer, layer_title)` groups,
+but `module_members.csv` is the source of truth. A concept has exactly one
+primary module, and that module must currently be in the same domain as the
+concept. Cross-domain reuse, such as a GR module depending on maths concepts,
+belongs in `module_supports.csv` rather than by giving concepts multiple module
+owners.
 
 ## nodes.csv
 
@@ -151,6 +167,67 @@ For example, the Lorentz transformations definition block is identified as
 
 The existing `\optional_details{Title}{Body}` text macro remains available
 inside block bodies. It is a local text-disclosure device, not a `kind` value.
+
+## modules.csv
+
+`modules.csv` registers authored flat modules. Modules are intended to become
+the semantic unit of graph folding and already support module detail pages in
+the Python model.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `module_id` | Yes | Stable semantic module identifier, such as `gr.m01_motivation_and_equivalence`. |
+| `domain` | Yes | Owning domain key. Must match a domain used in `nodes.csv`. |
+| `title` | Yes | Human-readable module title. |
+| `sequence` | Yes | Numeric ordering key within the domain. |
+| `default_collapsed` | No | Boolean-like hint for future viewer folding state. The column must exist, but values may be blank. |
+
+Modules are flat in the current schema. Do not add hierarchical parent fields
+until the viewer can make hierarchy visible and selectable.
+
+## module_members.csv
+
+`module_members.csv` assigns concepts to primary owning modules.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `module_id` | Yes | Module that owns the concept. Must exist in `modules.csv`. |
+| `concept_id` | Yes | Concept owned by the module. Must exist in `nodes.csv`. |
+| `sequence` | Yes | Numeric ordering key within the module. |
+
+When module files are present, every concept in `nodes.csv` must appear exactly
+once in `module_members.csv`, and the concept's domain must match the module's
+domain.
+
+## module_supports.csv
+
+`module_supports.csv` declares important support material for a module without
+changing ownership. It is optional and may be header-only.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `module_id` | Yes | Module declaring the support. Must exist in `modules.csv`. |
+| `target_type` | Yes | Supported target type. Allowed values are `concept` and `module`. |
+| `target_id` | Yes | Target concept or module ID. Must exist in the corresponding source file. |
+| `role` | Yes | Short role label, such as `prerequisite`, `motivation`, or `application`. |
+| `note` | No | Author-facing or viewer-facing explanatory note. The column must exist, but values may be blank. |
+
+## module_content_blocks.csv
+
+`module_content_blocks.csv` contains ordered teaching material attached to
+modules. It deliberately mirrors `content_blocks.csv` but uses `module_id`
+instead of `concept_id`.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `block_id` | Yes | Stable identifier for this module content block. |
+| `module_id` | Yes | Module this block belongs to. Must exist in `modules.csv`. |
+| `sequence` | Yes | Numeric ordering key within the module. |
+| `kind` | Yes | Semantic block kind. Uses the same allowed values as `content_blocks.csv`. |
+| `title` | Yes | Short editorial title for this block. |
+| `body` | Yes | Main text body, including MathJax and supported custom macros. |
+
+Every module must currently have at least one module content block.
 
 ## study_questions.csv
 
@@ -301,10 +378,24 @@ The `KnowledgeBase` loader currently enforces:
 | Unknown reference link `source_type` values | Load error. |
 | Reference link `reference_id` not found in `references.csv` | Load error. |
 | Reference link `source_id` not found in the named source file | Load error. |
+| Partial module file set | Load error. |
+| Missing required module CSV columns | Load error. |
+| Duplicate module IDs | Load error. |
+| Empty module IDs, domains, titles, sequence values, member IDs, or module content fields | Load error. |
+| Non-numeric module or module-member `sequence` values | Load error. |
+| Module domain not found in `nodes.csv` domains | Load error. |
+| Module member references unknown module or concept IDs | Load error. |
+| Concept assigned to zero or multiple modules | Load error. |
+| Concept assigned to a module in another domain | Load error. |
+| Module support references unknown module or target IDs | Load error. |
+| Module content block references unknown module ID | Load error. |
+| Module content block uses an unknown `kind` value | Load error. |
+| Module with no module content blocks | Load error. |
 | Missing optional files | Ignored. |
 
 The loaded Python model exposes concepts, content blocks, grouped viewer
-sections, neighbours, relation metadata, source references, and viewer JSON
-data. The JavaScript viewer currently consumes the grouped `sections` shape
-while also receiving raw `content_blocks`, structured `study_questions`, and
-structured `references` for future KB-model work.
+sections, modules, module content blocks, neighbours, relation metadata, source
+references, and viewer JSON data. The JavaScript viewer currently consumes the
+grouped concept `sections` shape while also receiving raw `content_blocks`,
+structured `study_questions`, structured `references`, and module data for
+future KB-model work.

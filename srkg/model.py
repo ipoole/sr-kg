@@ -44,6 +44,28 @@ class ContentBlock:
 
 
 @dataclass(frozen=True)
+class ModuleContentBlock:
+    """A smaller authored teaching unit attached to a module."""
+
+    block_id: str
+    module_id: str
+    sequence: int
+    kind: str
+    title: str
+    body: str
+
+    def to_viewer_data(self) -> dict[str, object]:
+        return {
+            "block_id": self.block_id,
+            "module_id": self.module_id,
+            "sequence": self.sequence,
+            "kind": self.kind,
+            "title": self.title,
+            "body": self.body,
+        }
+
+
+@dataclass(frozen=True)
 class StudyQuestion:
     """A question/answer pair attached to a concept."""
 
@@ -63,6 +85,56 @@ class StudyQuestion:
             "prompt": self.prompt,
             "question": self.prompt,
             "answer": self.answer,
+        }
+
+
+@dataclass(frozen=True)
+class ModuleSupport:
+    """A cross-module or cross-domain support declared for a module."""
+
+    module_id: str
+    target_type: str
+    target_id: str
+    role: str
+    note: str = ""
+
+    def to_viewer_data(self) -> dict[str, object]:
+        return {
+            "module_id": self.module_id,
+            "target_type": self.target_type,
+            "target_id": self.target_id,
+            "role": self.role,
+            "note": self.note,
+        }
+
+
+@dataclass(frozen=True)
+class Module:
+    """A flat authored grouping of concepts for module pages and later folding."""
+
+    module_id: str
+    domain: str
+    title: str
+    sequence: int
+    default_collapsed: bool = False
+    members: list[str] = field(default_factory=list)
+    supports: list[ModuleSupport] = field(default_factory=list)
+    content_blocks: list[ModuleContentBlock] = field(default_factory=list)
+
+    def to_viewer_data(self) -> dict[str, object]:
+        return {
+            "module_id": self.module_id,
+            "domain": self.domain,
+            "title": self.title,
+            "sequence": self.sequence,
+            "default_collapsed": self.default_collapsed,
+            "members": list(self.members),
+            "supports": [
+                support.to_viewer_data() for support in self.supports
+            ],
+            "content_blocks": [
+                block.to_viewer_data() for block in self.content_blocks
+            ],
         }
 
 

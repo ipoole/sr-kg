@@ -79,6 +79,752 @@ def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
 
 
 @pytest.mark.browser
+def test_clear_selection_returns_to_starting_full_graph(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_collapse_all").click()
+    browser_graph.click_concept("2.1")
+
+    page.locator("#kg_clear_selection").click()
+
+    assert page.evaluate("() => window.location.hash") == ""
+    assert page.locator("#kg_graph_view_select").input_value() == "all"
+    assert page.locator(".kg-concept-item.active").count() == 0
+    assert page.locator(".kg-module-item.active").count() == 0
+    assert "Select a concept" in page.locator("#info_panel").inner_text()
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge).length""") == 0
+    assert page.evaluate("""() => edges.get().filter(edge => !edge.hidden).length""") == 6
+
+
+@pytest.mark.browser
+def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+
+    assert page.locator("#info_panel h2").inner_text() == "Foundations"
+    panel_text = page.locator("#info_panel").inner_text()
+    assert "Start with Alpha as the foundation." in panel_text
+    assert "Concepts" in panel_text
+    assert "1.1 Alpha" in panel_text
+    assert page.evaluate("() => window.location.hash") == "#module-test.m01_foundations"
+    assert page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').evaluate(
+        "el => el.classList.contains('active')"
+    )
+    assert page.locator("#kg_focus_lens_toggle").get_attribute("aria-pressed") == "false"
+
+    page.locator("#kg_focus_lens_toggle").click()
+    assert page.locator("#kg_focus_lens").is_visible()
+    assert page.locator("#kg_focus_lens").get_attribute(
+        "data-selected-module"
+    ) == "test.m01_foundations"
+    assert page.locator("#kg_focus_lens").get_attribute("data-member-count") == "1"
+    assert page.locator("#kg_focus_lens").get_attribute("data-boundary-count") == "2"
+    assert "1 member concept + 2 boundary concepts" in page.locator("#kg_focus_lens").inner_text()
+
+    page.locator("#kg_graph_view_select").select_option("focused")
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": True,
+    }
+
+
+@pytest.mark.browser
+def test_module_all_mode_highlights_members_and_keeps_background_visible(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+
+    assert page.locator("#kg_graph_view_select").input_value() == "all"
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get().map(node => [node.id, node.opacity]))"""
+    ) == {
+        "1.1": 0.75,
+        "2.1": 1,
+        "2.2": 1,
+        "3.1": 1,
+    }
+    assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Module overview"
+    assert page.locator("#kg_focus_lens").get_attribute("data-background") == "visible"
+    assert "Applications" in page.locator("#kg_focus_lens").inner_text()
+
+
+@pytest.mark.browser
+def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": True,
+    }
+    assert page.evaluate(
+        """() => edges.get()
+          .filter(edge => !edge.hidden)
+          .map(edge => `${edge.from}->${edge.to}::${edge.relation}`)
+          .sort()
+        """
+    ) == [
+        "1.1->2.1::RELATED",
+        "2.1->1.1::DEPENDS_ON",
+        "2.2->1.1::DERIVES_FROM",
+    ]
+    assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Module overview"
+    assert page.locator("#kg_focus_lens").get_attribute("data-background") == "hidden"
+
+
+@pytest.mark.browser
+def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Folded"
+    assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Folded module"
+    assert page.locator("#kg_focus_lens").get_attribute("data-selected-module") == "test.m02_applications"
+    assert page.evaluate(
+        """moduleNodeId => {
+          const moduleNode = nodes.get(moduleNodeId);
+          return moduleNode &&
+            moduleNode.isModuleNode === true &&
+            moduleNode.hidden === false &&
+            moduleNode.shape === "box" &&
+            moduleNode.shapeProperties.borderRadius >= 18 &&
+            moduleNode.widthConstraint.minimum >= 294 &&
+            moduleNode.widthConstraint.minimum < 420 &&
+            moduleNode.heightConstraint.minimum >= 133 &&
+            moduleNode.heightConstraint.minimum < 190 &&
+            moduleNode.borderWidth <= 2 &&
+            moduleNode.font.size >= 28 &&
+            moduleNode.font.size < 34 &&
+            moduleNode.font.bold.size === moduleNode.font.size &&
+            moduleNode.label.includes("Applications") &&
+            moduleNode.label.includes("3 concepts");
+        }""",
+        module_node_id,
+    )
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": True,
+        "2.2": True,
+        "3.1": True,
+    }
+
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+
+    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
+    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge).length === 0""")
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+    assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Module overview"
+
+
+@pytest.mark.browser
+def test_folded_module_graph_node_selects_module(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m01_foundations"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    page.evaluate(
+        """moduleNodeId => {
+          network.emit("click", {
+            nodes: [moduleNodeId],
+            edges: [],
+            pointer: {DOM: {x: 0, y: 0}, canvas: {x: 0, y: 0}}
+          });
+        }""",
+        module_node_id,
+    )
+
+    assert page.locator("#info_panel h2").inner_text() == "Foundations"
+    assert page.evaluate("() => window.location.hash") == "#module-test.m01_foundations"
+    assert page.locator("#kg_focus_lens").get_attribute("data-selected-module") == "test.m01_foundations"
+    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId).hidden === false""", module_node_id)
+
+
+@pytest.mark.browser
+def test_selecting_member_concept_unfolds_selected_module(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.1"]').click()
+
+    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
+    assert page.evaluate("() => window.location.hash") == "#concept-2.1"
+    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
+    assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
+    assert page.locator("#kg_focus_lens").get_attribute("data-selected-module") == ""
+    assert page.locator("#kg_focus_lens").get_attribute("data-selected-concept") == "2.1"
+
+
+@pytest.mark.browser
+def test_selecting_another_module_preserves_existing_folded_module(browser_graph):
+    page = browser_graph.page
+    foundations_node_id = "module::test.m01_foundations"
+    applications_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+
+    assert page.evaluate("""nodeId => nodes.get(nodeId).hidden === false""", foundations_node_id)
+    assert page.evaluate("""() => nodes.get("1.1").hidden === true""")
+    assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
+    assert page.locator("#info_panel h2").inner_text() == "Applications"
+    assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Module overview"
+
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    assert page.evaluate(
+        """ids => ids.every(id => nodes.get(id) && nodes.get(id).hidden === false)""",
+        [foundations_node_id, applications_node_id],
+    )
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": True,
+        "2.1": True,
+        "2.2": True,
+        "3.1": True,
+    }
+
+
+@pytest.mark.browser
+def test_folded_module_projects_boundary_edges_to_module_node(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    module_edges = page.evaluate(
+        """() => edges.get()
+          .filter(edge => edge.isModuleEdge && !edge.hidden)
+          .map(edge => ({
+            from: edge.from,
+            to: edge.to,
+            relations: Object.fromEntries(Object.entries(edge.relationCounts).sort()),
+            underlying: edge.edgeIds.length,
+            arrows: edge.arrows
+          }))
+          .sort((a, b) => `${a.from}->${a.to}`.localeCompare(`${b.from}->${b.to}`))
+        """
+    )
+
+    assert module_edges == [
+        {
+            "from": "2.1",
+            "to": "module::test.m01_foundations",
+            "relations": {"DEPENDS_ON": 1},
+            "underlying": 1,
+            "arrows": "to",
+        },
+        {
+            "from": "2.2",
+            "to": "module::test.m01_foundations",
+            "relations": {"DERIVES_FROM": 1},
+            "underlying": 1,
+            "arrows": "to",
+        },
+        {
+            "from": "module::test.m01_foundations",
+            "to": "2.1",
+            "relations": {"RELATED": 1},
+            "underlying": 1,
+            "arrows": "",
+        },
+    ]
+    assert page.evaluate(
+        """() => edges.get()
+          .filter(edge => !edge.isModuleEdge && !edge.hidden)
+          .every(edge => edge.from !== "1.1" && edge.to !== "1.1")
+        """
+    )
+
+
+@pytest.mark.browser
+def test_two_folded_modules_aggregate_boundary_edges_by_relation(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    module_edges = page.evaluate(
+        """() => edges.get()
+          .filter(edge => edge.isModuleEdge && !edge.hidden)
+          .map(edge => ({
+            id: edge.id,
+            from: edge.from,
+            to: edge.to,
+            label: edge.label,
+            relations: Object.fromEntries(Object.entries(edge.relationCounts).sort()),
+            underlying: edge.edgeIds.length,
+            arrows: edge.arrows
+          }))
+          .sort((a, b) => `${a.from}->${a.to}`.localeCompare(`${b.from}->${b.to}`))
+        """
+    )
+
+    assert module_edges == [
+        {
+            "id": "module-edge::module::test.m01_foundations::module::test.m02_applications",
+            "from": "module::test.m01_foundations",
+            "to": "module::test.m02_applications",
+            "label": "RELATED 1",
+            "relations": {"RELATED": 1},
+            "underlying": 1,
+            "arrows": "",
+        },
+        {
+            "id": "module-edge::module::test.m02_applications::module::test.m01_foundations",
+            "from": "module::test.m02_applications",
+            "to": "module::test.m01_foundations",
+            "label": "DERIVES_FROM 1\nDEPENDS_ON 1",
+            "relations": {"DEPENDS_ON": 1, "DERIVES_FROM": 1},
+            "underlying": 2,
+            "arrows": "to",
+        },
+    ]
+
+    page.evaluate(
+        """edgeId => {
+          network.emit("click", {
+            nodes: [],
+            edges: [edgeId],
+            pointer: {DOM: {x: 0, y: 0}, canvas: {x: 0, y: 0}}
+          });
+        }""",
+        "module-edge::module::test.m02_applications::module::test.m01_foundations",
+    )
+
+    panel_text = page.locator("#info_panel").inner_text()
+    assert page.locator("#info_panel h2").inner_text() == "Module Boundary"
+    assert "Applications -> Foundations" in panel_text
+    assert "DEPENDS_ON 1" in panel_text
+    assert "DERIVES_FROM 1" in panel_text
+    assert page.locator(
+        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.1 Beta depends on 1.1 Alpha."]'
+    ).count() == 1
+    assert page.locator(
+        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.2 Gamma is derived from 1.1 Alpha."]'
+    ).count() == 1
+
+
+@pytest.mark.browser
+def test_module_boundary_hover_lists_short_underlying_relationships(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    page.evaluate(
+        """edgeId => {
+          network.emit("hoverEdge", {
+            edge: edgeId,
+            pointer: {DOM: {x: 120, y: 90}, canvas: {x: 0, y: 0}}
+          });
+        }""",
+        "module-edge::module::test.m02_applications::module::test.m01_foundations",
+    )
+
+    page.wait_for_selector("#kg_node_tooltip", state="visible")
+    tooltip_text = page.locator("#kg_node_tooltip").inner_text()
+    assert "Applications -> Foundations" in tooltip_text
+    assert "2 concept links" in tooltip_text
+    assert "2.1 Beta depends on 1.1 Alpha." in tooltip_text
+    assert "2.2 Gamma is derived from 1.1 Alpha." in tooltip_text
+    assert page.locator("#kg_node_tooltip .kg-tooltip-relation").count() == 2
+    assert page.locator("#kg_node_tooltip .kg-tooltip-relation").first.evaluate(
+        "el => getComputedStyle(el).color !== 'rgb(34, 34, 34)'"
+    )
+
+
+@pytest.mark.browser
+def test_module_controls_can_collapse_and_expand_all_modules(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_collapse_all").click()
+
+    assert page.evaluate(
+        """() => Object.fromEntries(
+          ["module::test.m01_foundations", "module::test.m02_applications"]
+            .map(id => [id, Boolean(nodes.get(id)) && nodes.get(id).hidden === false])
+        )"""
+    ) == {
+        "module::test.m01_foundations": True,
+        "module::test.m02_applications": True,
+    }
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": True,
+        "2.1": True,
+        "2.2": True,
+        "3.1": True,
+    }
+    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge && !edge.hidden).length""") == 2
+    assert "Collapsed 2 modules" in page.locator("#kg_status").inner_text()
+
+    page.locator("#kg_modules_expand_all").click()
+
+    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge).length""") == 0
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "1.1": False,
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+    assert page.evaluate(
+        """() => ["module::test.m01_foundations", "module::test.m02_applications"]
+          .every(id => nodes.get(id) === null)
+        """
+    )
+    assert "Expanded 2 modules" in page.locator("#kg_status").inner_text()
+
+
+@pytest.mark.browser
+def test_expand_all_restores_members_around_moved_module_node(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_collapse_all").click()
+    page.evaluate("""moduleNodeId => network.moveNode(moduleNodeId, 900, 600)""", module_node_id)
+    page.locator("#kg_modules_expand_all").click()
+
+    positions = page.evaluate(
+        """() => network.getPositions(["2.1", "2.2", "3.1"])"""
+    )
+    centre_x = sum(positions[node_id]["x"] for node_id in ["2.1", "2.2", "3.1"]) / 3
+    centre_y = sum(positions[node_id]["y"] for node_id in ["2.1", "2.2", "3.1"]) / 3
+    assert abs(centre_x - 900) < 2
+    assert abs(centre_y - 600) < 2
+
+
+@pytest.mark.browser
+def test_module_controls_are_disabled_when_graph_is_hidden(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_graph_view_select").select_option("hide")
+
+    assert page.locator("#kg_modules_collapse_all").is_disabled()
+    assert page.locator("#kg_modules_expand_all").is_disabled()
+
+    page.locator("#kg_graph_view_select").select_option("all")
+
+    assert not page.locator("#kg_modules_collapse_all").is_disabled()
+    assert not page.locator("#kg_modules_expand_all").is_disabled()
+
+
+@pytest.mark.browser
+def test_double_clicking_folded_module_node_expands_it(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    page.evaluate(
+        """moduleNodeId => {
+          network.emit("doubleClick", {
+            nodes: [moduleNodeId],
+            edges: [],
+            pointer: {DOM: {x: 0, y: 0}, canvas: {x: 0, y: 0}}
+          });
+        }""",
+        module_node_id,
+    )
+
+    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
+    assert page.evaluate(
+        """() => Object.fromEntries(nodes.get(["2.1", "2.2", "3.1"])
+          .map(node => [node.id, Boolean(node.hidden)]))"""
+    ) == {
+        "2.1": False,
+        "2.2": False,
+        "3.1": False,
+    }
+    assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Expanded"
+    assert "Expanded Applications module" in page.locator("#kg_status").inner_text()
+
+
+@pytest.mark.browser
+def test_double_clicking_concept_node_collapses_owning_module(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    point = page.evaluate(
+        """() => {
+          const position = network.getPositions(["2.1"])["2.1"];
+          const dom = network.canvasToDOM(position);
+          const rect = network.canvas.frame.canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
+        }"""
+    )
+    page.mouse.dblclick(point["x"], point["y"])
+
+    assert page.locator("#info_panel h2").inner_text() == "Applications"
+    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId).hidden === false""", module_node_id)
+    assert page.evaluate("""() => nodes.get("2.1").hidden === true""")
+    assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Folded"
+
+
+@pytest.mark.browser
+def test_module_node_hover_shows_module_overview(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.evaluate(
+        """moduleNodeId => {
+          network.emit("hoverNode", {
+            node: moduleNodeId,
+            pointer: {DOM: {x: 120, y: 90}, canvas: {x: 0, y: 0}}
+          });
+        }""",
+        module_node_id,
+    )
+
+    page.wait_for_selector("#kg_node_tooltip", state="visible")
+    tooltip_text = page.locator("#kg_node_tooltip").inner_text()
+    assert "Applications" in tooltip_text
+    assert "TEST module" in tooltip_text
+    assert "3 concepts" in tooltip_text
+    assert "Apply the foundation through Beta, Gamma, and Delta." in tooltip_text
+
+
+@pytest.mark.browser
+def test_selecting_concept_unfolds_only_owning_module(browser_graph):
+    page = browser_graph.page
+    foundations_node_id = "module::test.m01_foundations"
+    applications_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.1"]').click()
+
+    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
+    assert page.evaluate("""nodeId => nodes.get(nodeId) === null""", applications_node_id)
+    assert page.evaluate("""nodeId => nodes.get(nodeId).hidden === false""", foundations_node_id)
+    assert page.evaluate("""() => nodes.get("1.1").hidden === true""")
+    assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
+
+
+@pytest.mark.browser
+def test_folded_module_hides_in_unrelated_focussed_context(browser_graph):
+    page = browser_graph.page
+    foundations_node_id = "module::test.m01_foundations"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+
+    assert page.locator("#info_panel h2").inner_text() == "3.1 Delta"
+    assert page.evaluate("""nodeId => nodes.get(nodeId).hidden === true""", foundations_node_id)
+    assert page.evaluate("""() => nodes.get("1.1").hidden === true""")
+    assert page.evaluate("""() => nodes.get("3.1").hidden === false""")
+
+    page.locator("#kg_graph_view_select").select_option("all")
+
+    assert page.evaluate("""nodeId => nodes.get(nodeId).hidden === false""", foundations_node_id)
+
+
+@pytest.mark.browser
+def test_folding_module_places_module_node_at_member_centre_of_gravity(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.evaluate(
+        """() => {
+          network.moveNode("2.1", 120, 150);
+          network.moveNode("2.2", 420, 450);
+          network.moveNode("3.1", 720, 750);
+        }"""
+    )
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+
+    position = page.evaluate(
+        """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
+        module_node_id,
+    )
+    assert abs(position["x"] - 420) < 2
+    assert abs(position["y"] - 450) < 2
+
+
+@pytest.mark.browser
+def test_expanding_moved_module_preserves_member_offsets(browser_graph):
+    page = browser_graph.page
+    module_node_id = "module::test.m02_applications"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.evaluate(
+        """() => {
+          network.moveNode("2.1", 120, 150);
+          network.moveNode("2.2", 420, 450);
+          network.moveNode("3.1", 720, 750);
+        }"""
+    )
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    page.evaluate("""moduleNodeId => network.moveNode(moduleNodeId, 900, 600)""", module_node_id)
+    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+
+    positions = page.evaluate(
+        """() => network.getPositions(["2.1", "2.2", "3.1"])"""
+    )
+    centre_x = sum(positions[node_id]["x"] for node_id in ["2.1", "2.2", "3.1"]) / 3
+    centre_y = sum(positions[node_id]["y"] for node_id in ["2.1", "2.2", "3.1"]) / 3
+    assert abs(centre_x - 900) < 2
+    assert abs(centre_y - 600) < 2
+    assert abs((positions["2.2"]["x"] - positions["2.1"]["x"]) - 300) < 2
+    assert abs((positions["2.2"]["y"] - positions["2.1"]["y"]) - 300) < 2
+
+
+@pytest.mark.browser
+def test_module_details_show_boundary_link_sections(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+
+    panel_text = page.locator("#info_panel").inner_text()
+    assert "Incoming boundary links" in panel_text
+    assert "Outgoing boundary links" in panel_text
+    assert "Applications" in panel_text
+    assert "DEPENDS_ON 1" in panel_text
+    assert "DERIVES_FROM 1" in panel_text
+    assert "RELATED 1" in panel_text
+
+    incoming = page.locator("#info_panel .module-boundary-incoming")
+    incoming_text = incoming.inner_text()
+    assert "2.1 Beta" in incoming_text
+    assert "depends on" in incoming_text
+    assert "2.2 Gamma" in incoming_text
+    assert "is derived from" in incoming_text
+    assert "1.1 Alpha" in incoming_text
+
+    outgoing = page.locator("#info_panel .module-boundary-outgoing")
+    outgoing_text = outgoing.inner_text()
+    assert "1.1 Alpha" in outgoing_text
+    assert "is related to" in outgoing_text
+    assert "2.1 Beta" in outgoing_text
+
+
+@pytest.mark.browser
+def test_concept_masthead_module_chip_opens_module(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.1")
+    page.locator("#info_panel .concept-module-chip").click()
+
+    assert page.locator("#info_panel h2").inner_text() == "Applications"
+    assert page.evaluate("() => window.location.hash") == "#module-test.m02_applications"
+    assert page.locator('.kg-module-item[data-module-id="test.m02_applications"]').evaluate(
+        "el => el.classList.contains('active')"
+    )
+
+
+@pytest.mark.browser
+def test_search_can_select_module_results(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_search()
+    page.locator("#kg_search").fill("Applications")
+    page.locator('#kg_concept_list .kg-module-search-item[data-module-id="test.m02_applications"]').click()
+
+    assert page.locator("#info_panel h2").inner_text() == "Applications"
+    assert page.evaluate("() => window.location.hash") == "#module-test.m02_applications"
+
+
+@pytest.mark.browser
+def test_browser_back_moves_from_module_to_concept(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.1")
+    page.locator("#info_panel .concept-module-chip").click()
+    page.go_back(wait_until="domcontentloaded")
+
+    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
+    assert page.evaluate("() => window.location.hash") == "#concept-2.1"
+
+
+@pytest.mark.browser
 def test_legacy_concept_uses_coarse_details_sections(shared_browser_graph):
     page = shared_browser_graph.page
 
@@ -548,6 +1294,7 @@ def test_phone_header_uses_single_row_compact_controls(browser_graph):
           const ids = [
             "kg_controls_toggle",
             "kg_graph_view_select",
+            "kg_clear_selection",
             "kg_focus_lens_toggle",
             "kg_details_view_select"
           ];

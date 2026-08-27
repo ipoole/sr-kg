@@ -47,6 +47,10 @@ data/
   edges.csv                Concept relationships with relation types and notes
   edges_key.csv            Edge relation meanings and direction metadata
   content_blocks.csv       Ordered concept content blocks with semantic kinds
+  modules.csv              Authored flat module registry
+  module_members.csv       Primary concept membership for modules
+  module_supports.csv      Cross-module/domain support declarations
+  module_content_blocks.csv Ordered module-level content blocks
 docs/
   authoring/
     AUTHORING_GUIDE.md     House style for drafting concept content
@@ -69,6 +73,7 @@ srkg/
   html_injection.py        Browser-side CSS/JS/MathJax injection
   pipeline.py              End-to-end generation workflow
   kb.py                    Manifest-backed knowledge-base loader and query API
+  module_diagnostics.py    Module boundary and quotient-graph diagnostics
 tools/
   generate_pyvis.py        Command-line entry point
   show_graphics.py         SVG graphics review sheet generator
@@ -198,6 +203,33 @@ By default, the report checks every relation marked `directed=true` in `edges_ke
 
 Use `--dag-report` to print the same diagnostics before normal HTML generation. Use `--dag-relations RELATION ...` to inspect an explicit relation set instead of the directed defaults.
 
+## Review Modules
+
+Authored modules can be checked against the concrete concept graph. The module
+report contracts concept edges through `module_members.csv`, counts internal
+and boundary edges by relation, lists module-to-module boundary pairs, compares
+those boundaries with declared `module_supports.csv` entries, and runs DAG
+diagnostics on the quotient module graph.
+
+Print module diagnostics without regenerating the viewer:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data \
+  --module-report-only
+```
+
+Use `--module-report` to print the same diagnostics before normal HTML
+generation. Use `--module-relations RELATION ...` to inspect an explicit
+relation set, for example:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data \
+  --module-report-only \
+  --module-relations DERIVES_FROM CONSTRUCTED_FROM REQUIRES
+```
+
 ## Review Concept Graphics
 
 Generate a standalone HTML sheet showing icon and detail SVGs side by side:
@@ -259,6 +291,12 @@ maps semantic block `kind` values to presentation policy:
   render as compact folded callouts where appropriate
 - block icons, colour accents, and labels are viewer policy; the data authors
   semantic kind rather than CSS instructions
+
+The KB also has explicit module source files. Modules are flat authored topic
+groups with one primary same-domain module per concept. They are currently
+schema/model groundwork for module detail pages and later collapsible graph
+subgraphs; the initial committed module set is seeded from existing domain
+layers, but `module_members.csv` is the durable source of truth.
 
 The details pane also includes relationship sections where available:
 
@@ -327,6 +365,11 @@ srkg.validation
   -> srkg.edges
   -> srkg.kb
   -> srkg.layout
+
+srkg.module_diagnostics
+  -> srkg.dag
+  -> srkg.kb
+  -> srkg.model
 
 srkg.render_pyvis
   -> srkg.config
