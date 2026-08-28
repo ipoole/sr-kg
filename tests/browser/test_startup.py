@@ -2278,12 +2278,16 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert "Study content" in splash_text
     assert "Graph semantics" in splash_text
     assert "Math and graphics" in splash_text
+    assert "Modules" in splash_text
+    assert "Work in progress" in splash_text
+    assert "Collapse modules into topic nodes" in splash_text
+    assert "summarised boundary links" in splash_text
     assert "focus lens summarises how the active detail section defines graph focus" in splash_text
     assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
     assert "Drag the divider" in splash_text
     assert "Coming soon: General Relativity!" in splash_text
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 4
-    assert page.locator("#kg_splash_dialog .kg-new-badge").count() == 0
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 5
+    assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 1
 
     page.locator("#kg_splash_dismiss").click()
     assert page.evaluate("""() => localStorage.getItem("srkg.splash.dismissed.v1")""") == "true"
