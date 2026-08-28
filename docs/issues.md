@@ -20,6 +20,9 @@ Things to be fixed, batched together
 15. DONE - Double click a module to expand is good; need a similar way to quickly collaps - eg double click on one of the concepts.
 16. DONE - Text in module should be bold and slightly larger.
 17. DONE - Mouseover a module node should show the module overview, analagous to mouseover a concept.
+18. DONE - Mouseover of a module -> module edge shows the list of concept -> concept edges if
+there are three or less; in this case it is not necessary to also show the link counts, just wastes space.
+
 
 ## More significant
 1. Allow graph and detail to be unlinked (control shown literally linking the two views)

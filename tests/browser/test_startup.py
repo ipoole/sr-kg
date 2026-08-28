@@ -489,7 +489,9 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
     page.wait_for_selector("#kg_node_tooltip", state="visible")
     tooltip_text = page.locator("#kg_node_tooltip").inner_text()
     assert "Applications -> Foundations" in tooltip_text
-    assert "2 concept links" in tooltip_text
+    assert "2 concept links" not in tooltip_text
+    assert "DEPENDS_ON 1" not in tooltip_text
+    assert "DERIVES_FROM 1" not in tooltip_text
     assert "2.1 Beta depends on 1.1 Alpha." in tooltip_text
     assert "2.2 Gamma is derived from 1.1 Alpha." in tooltip_text
     assert page.locator("#kg_node_tooltip .kg-tooltip-relation").count() == 2

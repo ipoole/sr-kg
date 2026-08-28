@@ -3615,18 +3615,19 @@
           var title = renderTooltipText(graphObjectDisplayText(edge.from)) +
             " -> " + renderTooltipText(graphObjectDisplayText(edge.to));
           var html = '<div class="kg-tooltip-title kg-edge-tooltip-title">' + title + "</div>";
-          html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
-            escapeHtml(String(linkCount)) + " concept link" +
-            (linkCount === 1 ? "" : "s") + "</div>";
-          moduleEdgeRelationCountLines(edge).forEach(function(line) {
-            html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
-              escapeHtml(line) + "</div>";
-          });
           if (linkCount > 0 && linkCount <= 3) {
             html += '<div class="kg-tooltip-section-title">Concept links</div>';
             html += "<ul>" + concreteEdgesForModuleEdge(edge).map(function(concreteEdge) {
               return "<li>" + relationshipStatementTooltipHtml(concreteEdge) + "</li>";
             }).join("") + "</ul>";
+          } else {
+            html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
+              escapeHtml(String(linkCount)) + " concept link" +
+              (linkCount === 1 ? "" : "s") + "</div>";
+            moduleEdgeRelationCountLines(edge).forEach(function(line) {
+              html += '<div class="kg-tooltip-definition kg-edge-tooltip-note">' +
+                escapeHtml(line) + "</div>";
+            });
           }
           return html;
         }
