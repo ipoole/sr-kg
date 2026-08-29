@@ -86,6 +86,12 @@
       #kg_graph_view_select {
         min-width: 132px;
       }
+      .kg-temporary-layout-warning {
+        color: #6b7280;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        white-space: nowrap;
+      }
       #kg_details_view_select {
         min-width: 132px;
       }
@@ -2074,6 +2080,26 @@
         justify-content: flex-end;
     }
 
+    .kg-layout-status {
+        color: #475569;
+        line-height: 1.35;
+        margin: 0.35rem 0;
+    }
+
+    .kg-layout-warning {
+        background: #fff7d6;
+        border: 1px solid #d6a700;
+        border-radius: 5px;
+        color: #5c4700;
+        margin: 0.4rem 0;
+        padding: 0.45rem;
+    }
+
+    .kg-layout-warning button,
+    .kg-layout-actions button {
+        margin: 0.2rem 0.15rem 0.2rem 0;
+    }
+
     @media (max-width: 680px) {
         .kg-splash-feature-grid {
             grid-template-columns: 1fr;
@@ -2289,6 +2315,10 @@
 
         #kg_focus_lens_toggle {
             flex: 0 0 auto;
+        }
+
+        .kg-temporary-layout-warning {
+            font-size: 10px;
         }
 
         #kg_clear_selection {

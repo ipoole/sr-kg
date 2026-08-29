@@ -24,6 +24,7 @@ data/
   module_members.csv
   module_supports.csv
   module_content_blocks.csv
+  layout.json
 ```
 
 The default project root is `data/`.
@@ -55,6 +56,7 @@ The manifest names the source files within the data root.
 | `files.module_members` | No | Explicit primary concept membership for modules. Required when `modules.csv` is present. |
 | `files.module_supports` | No | Optional cross-module or cross-domain support links declared by modules. |
 | `files.module_content_blocks` | No | Ordered module-level content blocks. Required when `modules.csv` is present. |
+| `files.layout` | No | Versioned published concept positions and module anchors. Missing objects use deterministic generated positions. |
 
 Paths are resolved relative to the data root unless absolute paths are used.
 Optional files are ignored when absent. For manifest-backed KB roots,
@@ -328,6 +330,40 @@ This file is expected to evolve into a fuller graphics registry where graphics
 are independent resources that can link to concepts, questions, derivations,
 or volume-specific presentations.
 
+## layout.json
+
+`layout.json` contains the repository-published global graph layout. It stores
+stable graph-space coordinates, not screen pixels, camera position, zoom,
+visibility, selection, or focused-view adjustments.
+
+```json
+{
+  "schema_version": 1,
+  "revision": "1",
+  "concepts": {
+    "sr.inertial_frames": {"x": 0, "y": 1200}
+  },
+  "modules": {
+    "sr.m01_foundations": {"anchor": {"x": 350, "y": 1000}}
+  }
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `schema_version` | Yes | Integer layout schema version. The current version is `1`. |
+| `revision` | Yes | Non-empty published-layout revision string used to distinguish repository defaults. |
+| `concepts` | Yes | Mapping from stable concept IDs to finite numeric `x` and `y` graph coordinates. May be empty or partial. |
+| `modules` | Yes | Mapping from stable module IDs to an `anchor` with finite numeric `x` and `y` graph coordinates. May be empty or partial. |
+
+Unknown concept or module IDs, duplicate JSON keys, malformed coordinates, and
+unsupported schema versions are load errors. Concepts omitted from the file
+fall back to the deterministic generated layer layout. An omitted module anchor
+is derived from the resolved centroid of its member concepts. The generator
+passes the resulting complete published layout to the viewer; applying it as
+the authoritative mutable browser layout is handled by the layout-persistence
+viewer work.
+
 ## Text Markup
 
 Text fields may contain:
@@ -392,6 +428,7 @@ The `KnowledgeBase` loader currently enforces:
 | Module content block uses an unknown `kind` value | Load error. |
 | Module with no module content blocks | Load error. |
 | Missing optional files | Ignored. |
+| Invalid `layout.json` schema, IDs, duplicate keys, revision, or coordinates | Load error. |
 
 The loaded Python model exposes concepts, content blocks, grouped viewer
 sections, modules, module content blocks, neighbours, relation metadata, source

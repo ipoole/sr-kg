@@ -12,3 +12,4 @@ files:
   module_members: module_members.csv
   module_supports: module_supports.csv
   module_content_blocks: module_content_blocks.csv
+  layout: layout.json

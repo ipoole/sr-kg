@@ -6,6 +6,17 @@ from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
+class LayoutPosition:
+    """A stable graph-space coordinate in a published layout."""
+
+    x: float
+    y: float
+
+    def to_viewer_data(self) -> dict[str, float]:
+        return {"x": float(self.x), "y": float(self.y)}
+
+
+@dataclass(frozen=True)
 class ConceptSection:
     """A typed content section within a concept page."""
 

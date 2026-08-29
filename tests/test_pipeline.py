@@ -1,3 +1,6 @@
+import json
+import re
+
 import pandas as pd
 import pytest
 
@@ -194,6 +197,38 @@ def test_generate_viewer_from_root_runs_full_pipeline_and_injects_controls(tmp_p
     assert '"directed": false' in html_text
     assert '"colour":' in html_text
     assert '"arrows": ""' in html_text
+    match = re.search(r"var publishedLayout = (\{.*\});", html_text)
+    assert match is not None
+    published_layout = json.loads(match.group(1))
+    assert published_layout["revision"] == "unpublished"
+    assert set(published_layout["concepts"]) == {"test.alpha", "test.beta"}
+
+
+def test_generate_viewer_resolves_partial_published_layout(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+    (tmp_path / "layout.json").write_text(json.dumps({
+        "schema_version": 1,
+        "revision": "test-4",
+        "concepts": {"test.alpha": {"x": 123, "y": 456}},
+        "modules": {},
+    }), encoding="utf-8")
+
+    generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="Layout",
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    match = re.search(r"var publishedLayout = (\{.*\});", html_text)
+    assert match is not None
+    published_layout = json.loads(match.group(1))
+    assert published_layout["revision"] == "test-4"
+    assert published_layout["concepts"]["test.alpha"] == {"x": 123.0, "y": 456.0}
+    assert set(published_layout["concepts"]) == {"test.alpha", "test.beta"}
 
 
 def test_generate_viewer_from_root_filters_domains_by_id_prefix(tmp_path):

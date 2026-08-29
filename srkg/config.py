@@ -50,6 +50,7 @@ INFO_PANEL_TEXT_ZOOM_MAX_PX = 28
 USER_NOTES_STORAGE_KEY = "srkg.userNotes.v1"
 NOTE_EDITING_STORAGE_KEY = "srkg.noteEditing.v1"
 SPLASH_DISMISSED_STORAGE_KEY = "srkg.splash.dismissed.v1"
+GLOBAL_LAYOUT_STORAGE_KEY = "srkg.layout.global.v1"
 UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
 EDGE_COLOURS = [
     "#1f77b4",

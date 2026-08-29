@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import pytest
 
@@ -17,6 +19,7 @@ def _write_manifest(root):
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "  graphic_designs: concept_graphic_designs.csv",
+            "  layout: layout.json",
             "",
         ]),
         encoding="utf-8",
@@ -202,6 +205,60 @@ def test_load_knowledge_base_from_root_exposes_query_api(tmp_path):
     assert kb.concept_data()["test.alpha"]["references"][0]["citation"] == "Alpha reference."
     assert kb.concept_data()["test.alpha"]["references"][0]["locator"] == "section 1"
     assert kb.concept_data()["test.alpha"]["svg_detail_caption"] == "Detail caption"
+    assert kb.published_layout.to_viewer_data() == {
+        "schema_version": 1,
+        "revision": "unpublished",
+        "concepts": {},
+        "modules": {},
+    }
+
+
+def test_load_knowledge_base_loads_partial_published_layout(tmp_path):
+    _write_minimal_kb(tmp_path)
+    (tmp_path / "layout.json").write_text(json.dumps({
+        "schema_version": 1,
+        "revision": "test-2",
+        "concepts": {"test.alpha": {"x": 12.5, "y": -8}},
+        "modules": {},
+    }), encoding="utf-8")
+
+    kb = load_knowledge_base(tmp_path)
+
+    assert kb.paths.layout == tmp_path / "layout.json"
+    assert kb.published_layout.revision == "test-2"
+    assert kb.published_layout.concepts["test.alpha"].x == 12.5
+
+
+@pytest.mark.parametrize(
+    ("layout", "message"),
+    [
+        ({"schema_version": 2, "revision": "r1", "concepts": {}, "modules": {}},
+         "unsupported schema_version"),
+        ({"schema_version": 1, "revision": "", "concepts": {}, "modules": {}},
+         "non-empty string revision"),
+        ({"schema_version": 1, "revision": "r1", "concepts": {"missing": {"x": 0, "y": 0}}, "modules": {}},
+         "unknown concept id.*missing"),
+        ({"schema_version": 1, "revision": "r1", "concepts": {"test.alpha": {"x": "left", "y": 0}}, "modules": {}},
+         "finite numeric x and y"),
+    ],
+)
+def test_load_knowledge_base_rejects_invalid_published_layout(tmp_path, layout, message):
+    _write_minimal_kb(tmp_path)
+    (tmp_path / "layout.json").write_text(json.dumps(layout), encoding="utf-8")
+
+    with pytest.raises(KnowledgeBaseLoadError, match=message):
+        load_knowledge_base(tmp_path)
+
+
+def test_load_knowledge_base_rejects_duplicate_layout_keys(tmp_path):
+    _write_minimal_kb(tmp_path)
+    (tmp_path / "layout.json").write_text(
+        '{"schema_version":1,"revision":"r1","concepts":{},"concepts":{},"modules":{}}',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(KnowledgeBaseLoadError, match="duplicate key: concepts"):
+        load_knowledge_base(tmp_path)
 
 
 def test_load_knowledge_base_requires_manifest(tmp_path):

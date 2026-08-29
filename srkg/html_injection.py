@@ -12,6 +12,7 @@ from html import escape as html_escape
 
 from srkg.config import (
     EDGE_HOVER_WIDTH,
+    GLOBAL_LAYOUT_STORAGE_KEY,
     INFO_PANEL_FONT_SIZE_PX,
     INFO_PANEL_MOBILE_FONT_SIZE_PX,
     INFO_PANEL_TABLET_FONT_SIZE_PX,
@@ -68,6 +69,7 @@ def inject_controls(
     edge_key: dict[str, dict[str, str | bool]],
     view_title: str,
     module_data: dict[str, dict[str, object]] | None = None,
+    published_layout: dict[str, object] | None = None,
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("</head>", "<body>", "</body>"):
@@ -87,6 +89,12 @@ def inject_controls(
             {
                 "__CONCEPT_DATA__": _json_for_script(concept_data),
                 "__MODULE_DATA__": _json_for_script(module_data or {}),
+                "__PUBLISHED_LAYOUT__": _json_for_script(published_layout or {
+                    "schema_version": 1,
+                    "revision": "unpublished",
+                    "concepts": {},
+                    "modules": {},
+                }),
                 "__EDGE_KEY__": _json_for_script(edge_key),
                 "__VIEWER_CONFIG__": _json_for_script(_viewer_runtime_config()),
             },
@@ -169,5 +177,6 @@ def _viewer_runtime_config() -> dict[str, object]:
             "userNotes": USER_NOTES_STORAGE_KEY,
             "noteEditing": NOTE_EDITING_STORAGE_KEY,
             "splashDismissed": SPLASH_DISMISSED_STORAGE_KEY,
+            "globalLayout": GLOBAL_LAYOUT_STORAGE_KEY,
         },
     }

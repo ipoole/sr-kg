@@ -9,6 +9,7 @@
         </select>
         <button id="kg_clear_selection" class="kg-shell-button" type="button" title="Clear selection">Clear</button>
         <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="false">Show lens</button>
+        <span id="kg_temporary_layout_warning" class="kg-temporary-layout-warning" role="status" hidden>Temporary layout</span>
       </div>
       __TITLE_HTML__
       <div class="kg-shell-control kg-shell-details-control">
@@ -41,6 +42,20 @@
           <button id="kg_modules_expand_all" type="button">Expand all</button>
         </div>
         <div id="kg_module_list"></div>
+      </details>
+      <details id="kg_layouts_section" class="kg-fold">
+        <summary>Layouts</summary>
+        <div id="kg_layout_status" class="kg-layout-status" aria-live="polite"></div>
+        <div id="kg_layout_revision_warning" class="kg-layout-warning" hidden>
+          <div>A newer published layout is available.</div>
+          <button id="kg_layout_keep" type="button">Keep personal layout</button>
+          <button id="kg_layout_warning_reset" type="button">Reset to published</button>
+        </div>
+        <div class="kg-layout-actions">
+          <button id="kg_layout_export" type="button">Export global layout</button>
+          <button id="kg_layout_reset" type="button">Reset to published layout</button>
+          <button id="kg_layout_recenter_module" type="button">Recenter selected module</button>
+        </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>
@@ -82,6 +97,7 @@
             <li>Use browser back and forward to retrace selected concepts.</li>
             <li>Show, hide, or focus the graph; show, hide, or filter details.</li>
             <li>Drag the divider to rebalance graph and details space.</li>
+            <li>Move nodes in the full graph; personal layouts survive reload and can be exported or reset.</li>
           </ul>
         </section>
         <section>

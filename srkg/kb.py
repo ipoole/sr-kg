@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +14,11 @@ from srkg.data import (
     load_edge_key,
     normalise_edges,
     validate_edge_endpoints,
+)
+from srkg.layout_persistence import (
+    PublishedLayout,
+    PublishedLayoutError,
+    load_published_layout,
 )
 from srkg.model import Concept, ConceptSection, ContentBlock, Module, ModuleContentBlock
 
@@ -30,6 +35,7 @@ DEFAULT_KB_FILES = {
     "module_members": "module_members.csv",
     "module_supports": "module_supports.csv",
     "module_content_blocks": "module_content_blocks.csv",
+    "layout": "layout.json",
 }
 
 CONTENT_BLOCK_COLUMNS = (
@@ -148,6 +154,7 @@ class KnowledgeBasePaths:
     module_members: Path | None = None
     module_supports: Path | None = None
     module_content_blocks: Path | None = None
+    layout: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -160,6 +167,7 @@ class KnowledgeBase:
     edge_key: dict[str, dict[str, str | bool]]
     concepts: tuple[Concept, ...]
     modules: tuple[Module, ...] = ()
+    published_layout: PublishedLayout = field(default_factory=PublishedLayout)
 
     @property
     def concept_index(self) -> dict[str, Concept]:
@@ -244,6 +252,7 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
         module_members=_resolve_existing_optional_manifest_path(root, files.get("module_members")),
         module_supports=_resolve_existing_optional_manifest_path(root, files.get("module_supports")),
         module_content_blocks=_resolve_existing_optional_manifest_path(root, files.get("module_content_blocks")),
+        layout=_resolve_optional_manifest_path(root, files.get("layout")),
     )
 
 
@@ -312,6 +321,14 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         module_supports_df,
         module_content_blocks_df,
     ))
+    try:
+        published_layout = load_published_layout(
+            paths.layout,
+            concept_ids=nodes_df["id"].astype(str),
+            module_ids=(module.module_id for module in modules),
+        )
+    except PublishedLayoutError as exc:
+        raise KnowledgeBaseLoadError(str(exc)) from exc
     return KnowledgeBase(
         paths=paths,
         nodes_df=nodes_df,
@@ -319,6 +336,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         edge_key=edge_key,
         concepts=concepts,
         modules=modules,
+        published_layout=published_layout,
     )
 
 

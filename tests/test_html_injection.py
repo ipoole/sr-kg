@@ -41,7 +41,9 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert "function kgAfterReady()" in injected
     assert "var conceptData = {};" in injected
     assert "var moduleData = {};" in injected
+    assert 'var publishedLayout = {"schema_version": 1, "revision": "unpublished", "concepts": {}, "modules": {}};' in injected
     assert "var edgeKey = {};" in injected
+    assert '"globalLayout": "srkg.layout.global.v1"' in injected
 
 
 def test_inject_controls_serializes_json_without_literal_script_closers():
@@ -64,11 +66,18 @@ def test_inject_controls_serializes_json_without_literal_script_closers():
                 "title": "Module </script><em>unsafe</em>",
             },
         },
+        published_layout={
+            "schema_version": 1,
+            "revision": "test-1",
+            "concepts": {"1.1": {"x": 10, "y": 20}},
+            "modules": {},
+        },
     )
 
     assert "Closing <\\/script><b>tag<\\/b>" in injected
     assert "Also <\\/script><i>unsafe<\\/i>" in injected
     assert "Module <\\/script><em>unsafe<\\/em>" in injected
+    assert 'var publishedLayout = {"schema_version": 1, "revision": "test-1"' in injected
     assert "Closing </script><b>tag</b>" not in injected
     assert "Also </script><i>unsafe</i>" not in injected
     assert "Module </script><em>unsafe</em>" not in injected

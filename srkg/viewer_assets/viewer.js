@@ -1,15 +1,12 @@
       /* Runtime data injected by srkg.html_injection. */
       var conceptData = __CONCEPT_DATA__;
       var moduleData = __MODULE_DATA__;
+      var publishedLayout = __PUBLISHED_LAYOUT__;
       var edgeKey = __EDGE_KEY__;
       var kgViewerConfig = __VIEWER_CONFIG__;
-      var kgLayoutConfig = kgViewerConfig.layout || {};
       var kgNodeLabelConfig = kgViewerConfig.nodeLabels || {};
       var kgInfoPanelConfig = kgViewerConfig.infoPanel || {};
       var kgStorageKeys = kgViewerConfig.storageKeys || {};
-      var layoutXSpacing = kgLayoutConfig.xSpacing;
-      var layoutYSpacing = kgLayoutConfig.ySpacing;
-      var layoutRowStagger = kgLayoutConfig.rowStagger;
       var edgeHoverWidth = kgViewerConfig.edgeHoverWidth;
 
       var GraphViewMode = Object.freeze({
@@ -57,6 +54,14 @@
 
       function graphViewRadius(view) {
         return clampNeighbourhoodRadius(view && view.radius);
+      }
+
+      function graphViewAllowsLayoutEditing(view) {
+        return graphViewIs(view, GraphViewMode.ALL) || graphViewIs(view, GraphViewMode.HIGHLIGHT);
+      }
+
+      function graphViewAllowsTemporaryLayoutEditing(view) {
+        return graphViewIs(view, GraphViewMode.FOCUSED);
       }
 
       function graphViewHistoryMode(view) {
@@ -123,11 +128,17 @@
 
         var originalNodes = {};
         var originalEdges = {};
+        var globalLayoutStorageKey = kgStorageKeys.globalLayout;
+        var personalLayoutState = loadPersonalLayoutState();
+        var globalLayout = buildInitialGlobalLayout();
+        var personalLayoutSaveTimer = null;
         var currentView = createGraphView(GraphViewMode.ALL);
         var activeNodeId = null;
         var activeModuleId = null;
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
+        var preferredFoldedModules = {};
+        var temporarilyExpandedModules = {};
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -168,6 +179,321 @@
         var focusLensVisible = false;
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
+
+        function validLayoutPosition(position) {
+          return Boolean(
+            position &&
+            Number.isFinite(Number(position.x)) &&
+            Number.isFinite(Number(position.y))
+          );
+        }
+
+        function copyLayoutPosition(position) {
+          return {x: Number(position.x), y: Number(position.y)};
+        }
+
+        function buildInitialGlobalLayout(includePersonal) {
+          includePersonal = includePersonal !== false;
+          var publishedConcepts = publishedLayout && publishedLayout.concepts
+            ? publishedLayout.concepts
+            : {};
+          var publishedModules = publishedLayout && publishedLayout.modules
+            ? publishedLayout.modules
+            : {};
+          var layout = {
+            schema_version: Number(publishedLayout && publishedLayout.schema_version) || 1,
+            revision: String(publishedLayout && publishedLayout.revision || "unpublished"),
+            concepts: {},
+            modules: {}
+          };
+          allNodes.forEach(function(node) {
+            var position = publishedConcepts[String(node.id)];
+            if (!validLayoutPosition(position)) {
+              position = node;
+            }
+            if (validLayoutPosition(position)) {
+              layout.concepts[String(node.id)] = copyLayoutPosition(position);
+            }
+          });
+          Object.keys(publishedModules).forEach(function(moduleId) {
+            var entry = publishedModules[moduleId] || {};
+            if (validLayoutPosition(entry.anchor)) {
+              layout.modules[String(moduleId)] = {
+                anchor: copyLayoutPosition(entry.anchor)
+              };
+            }
+          });
+          if (includePersonal && personalLayoutState) {
+            Object.keys(personalLayoutState.concepts || {}).forEach(function(conceptId) {
+              var position = personalLayoutState.concepts[conceptId];
+              if (layout.concepts[conceptId] && validLayoutPosition(position)) {
+                layout.concepts[conceptId] = copyLayoutPosition(position);
+              }
+            });
+            Object.keys(personalLayoutState.modules || {}).forEach(function(moduleId) {
+              var entry = personalLayoutState.modules[moduleId] || {};
+              if (layout.modules[moduleId] && validLayoutPosition(entry.anchor)) {
+                layout.modules[moduleId] = {anchor: copyLayoutPosition(entry.anchor)};
+              }
+            });
+          }
+          return layout;
+        }
+
+        function globalConceptPosition(conceptId) {
+          return globalLayout.concepts[String(conceptId)] || null;
+        }
+
+        function setGlobalConceptPosition(conceptId, position) {
+          if (!validLayoutPosition(position)) { return; }
+          globalLayout.concepts[String(conceptId)] = copyLayoutPosition(position);
+          schedulePersonalLayoutSave();
+        }
+
+        function setGlobalModuleAnchor(moduleId, position) {
+          if (!validLayoutPosition(position)) { return; }
+          globalLayout.modules[String(moduleId)] = {
+            anchor: copyLayoutPosition(position)
+          };
+          schedulePersonalLayoutSave();
+        }
+
+        function globalModuleAnchor(moduleId) {
+          var entry = globalLayout.modules[String(moduleId)] || {};
+          return validLayoutPosition(entry.anchor) ? entry.anchor : null;
+        }
+
+        function nodeWithGlobalPosition(node) {
+          var result = Object.assign({}, node || {});
+          var position = globalConceptPosition(result.id);
+          if (position) {
+            result.x = position.x;
+            result.y = position.y;
+          }
+          return result;
+        }
+
+        function baseNodeForRender(nodeId) {
+          return nodeWithGlobalPosition(originalNodes[String(nodeId)] || nodes.get(nodeId) || {});
+        }
+
+        function globalLayoutSnapshot() {
+          return JSON.parse(JSON.stringify(globalLayout));
+        }
+
+        function positionsEqual(a, b) {
+          return validLayoutPosition(a) && validLayoutPosition(b) &&
+            Math.abs(Number(a.x) - Number(b.x)) < 0.000001 &&
+            Math.abs(Number(a.y) - Number(b.y)) < 0.000001;
+        }
+
+        function loadPersonalLayoutState() {
+          var raw = safeLocalStorageGet(globalLayoutStorageKey);
+          if (!raw) { return null; }
+          try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || parsed.schema_version !== 1) { return null; }
+            if (!parsed.concepts || typeof parsed.concepts !== "object") { return null; }
+            if (!parsed.modules || typeof parsed.modules !== "object") { return null; }
+            return parsed;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function personalLayoutOverrides() {
+          var concepts = {};
+          var modules = {};
+          Object.keys(globalLayout.concepts).forEach(function(conceptId) {
+            var current = globalLayout.concepts[conceptId];
+            var published = publishedLayout.concepts && publishedLayout.concepts[conceptId];
+            if (!positionsEqual(current, published)) {
+              concepts[conceptId] = copyLayoutPosition(current);
+            }
+          });
+          Object.keys(globalLayout.modules).forEach(function(moduleId) {
+            var current = globalLayout.modules[moduleId].anchor;
+            var publishedEntry = publishedLayout.modules && publishedLayout.modules[moduleId] || {};
+            if (!positionsEqual(current, publishedEntry.anchor)) {
+              modules[moduleId] = {anchor: copyLayoutPosition(current)};
+            }
+          });
+          return {concepts: concepts, modules: modules};
+        }
+
+        function writePersonalLayoutNow() {
+          if (!globalLayoutStorageKey) { return; }
+          var overrides = personalLayoutOverrides();
+          if (Object.keys(overrides.concepts).length === 0 && Object.keys(overrides.modules).length === 0) {
+            personalLayoutState = null;
+            safeLocalStorageRemove(globalLayoutStorageKey);
+            updateLayoutControls();
+            return;
+          }
+          personalLayoutState = {
+            schema_version: 1,
+            published_revision: personalLayoutState && personalLayoutState.published_revision
+              ? String(personalLayoutState.published_revision)
+              : String(publishedLayout.revision),
+            concepts: overrides.concepts,
+            modules: overrides.modules
+          };
+          safeLocalStorageSet(globalLayoutStorageKey, JSON.stringify(personalLayoutState));
+          updateLayoutControls();
+        }
+
+        function schedulePersonalLayoutSave() {
+          if (!globalLayout || !globalLayoutStorageKey) { return; }
+          if (personalLayoutSaveTimer !== null) {
+            clearTimeout(personalLayoutSaveTimer);
+          }
+          personalLayoutSaveTimer = setTimeout(function() {
+            personalLayoutSaveTimer = null;
+            writePersonalLayoutNow();
+          }, 120);
+        }
+
+        function personalLayoutStatus() {
+          var overrides = personalLayoutOverrides();
+          var hasOverrides = Object.keys(overrides.concepts).length > 0 ||
+            Object.keys(overrides.modules).length > 0;
+          var savedRevision = personalLayoutState && personalLayoutState.published_revision
+            ? String(personalLayoutState.published_revision)
+            : String(publishedLayout.revision);
+          return {
+            hasOverrides: hasOverrides,
+            publishedRevision: String(publishedLayout.revision),
+            savedRevision: savedRevision,
+            revisionMismatch: hasOverrides && savedRevision !== String(publishedLayout.revision)
+          };
+        }
+
+        function keepPersonalLayout() {
+          if (!personalLayoutStatus().hasOverrides) { return; }
+          personalLayoutState.published_revision = String(publishedLayout.revision);
+          writePersonalLayoutNow();
+          updateLayoutControls();
+        }
+
+        function applyGlobalLayoutPositions() {
+          nodes.update(Object.keys(globalLayout.concepts).filter(function(id) {
+            return Boolean(nodes.get(id));
+          }).map(function(id) {
+            var position = globalLayout.concepts[id];
+            return {id: id, x: position.x, y: position.y};
+          }));
+          foldedModuleIdList().forEach(function(moduleId) {
+            var anchor = globalModuleAnchor(moduleId);
+            var nodeId = moduleGraphNodeId(moduleId);
+            if (anchor && nodes.get(nodeId)) {
+              foldedModules[moduleId] = moduleMemberGeometry(moduleId);
+              nodes.update({id: nodeId, x: anchor.x, y: anchor.y});
+            }
+          });
+          updateNodeLabelPositions();
+        }
+
+        function resetToPublishedLayout() {
+          if (personalLayoutSaveTimer !== null) {
+            clearTimeout(personalLayoutSaveTimer);
+            personalLayoutSaveTimer = null;
+          }
+          personalLayoutState = null;
+          safeLocalStorageRemove(globalLayoutStorageKey);
+          globalLayout = buildInitialGlobalLayout(false);
+          applyGlobalLayoutPositions();
+          updateLayoutControls();
+        }
+
+        function normalizedExportCoordinate(value) {
+          return Number(Number(value).toFixed(6));
+        }
+
+        function exportedGlobalLayout() {
+          var concepts = {};
+          var modules = {};
+          Object.keys(globalLayout.concepts).sort().forEach(function(conceptId) {
+            var position = globalLayout.concepts[conceptId];
+            concepts[conceptId] = {
+              x: normalizedExportCoordinate(position.x),
+              y: normalizedExportCoordinate(position.y)
+            };
+          });
+          Object.keys(globalLayout.modules).sort().forEach(function(moduleId) {
+            var anchor = globalLayout.modules[moduleId].anchor;
+            modules[moduleId] = {anchor: {
+              x: normalizedExportCoordinate(anchor.x),
+              y: normalizedExportCoordinate(anchor.y)
+            }};
+          });
+          return {
+            schema_version: Number(publishedLayout.schema_version) || 1,
+            revision: String(publishedLayout.revision),
+            concepts: concepts,
+            modules: modules
+          };
+        }
+
+        function exportGlobalLayout() {
+          var text = JSON.stringify(exportedGlobalLayout(), null, 2) + "\n";
+          var blob = new Blob([text], {type: "application/json;charset=utf-8"});
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "layout.json";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        function updateLayoutControls() {
+          var statusElement = document.getElementById("kg_layout_status");
+          if (!statusElement) { return; }
+          var status = personalLayoutStatus();
+          statusElement.textContent = "Published revision " + status.publishedRevision +
+            (status.hasOverrides ? " · Personal overrides active" : " · Published layout active");
+          document.getElementById("kg_layout_revision_warning").hidden = !status.revisionMismatch;
+          document.getElementById("kg_layout_reset").disabled = !status.hasOverrides;
+          document.getElementById("kg_layout_recenter_module").disabled = !(
+            activeModuleId && getModule(activeModuleId) && globalLayoutEditingEnabled()
+          );
+        }
+
+        function globalLayoutEditingEnabled() {
+          return graphViewAllowsLayoutEditing(currentView);
+        }
+
+        function temporaryLayoutEditingEnabled() {
+          return graphViewAllowsTemporaryLayoutEditing(currentView);
+        }
+
+        function updateGlobalLayoutFromDrag(params) {
+          if (!globalLayoutEditingEnabled()) { return; }
+          var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
+          draggedIds.forEach(function(nodeId) {
+            var position = graphPositionForNode(nodeId);
+            if (!position) { return; }
+            var moduleId = moduleIdFromGraphNodeId(nodeId);
+            if (moduleId && selectedModuleIsFolded(moduleId)) {
+              setGlobalModuleAnchor(moduleId, position);
+              foldedModules[moduleId].position = copyLayoutPosition(position);
+              return;
+            }
+            if (getConcept(nodeId)) {
+              setGlobalConceptPosition(nodeId, position);
+            }
+          });
+        }
+
+        window.kgGlobalLayoutSnapshot = globalLayoutSnapshot;
+        window.kgLayoutEditingEnabled = globalLayoutEditingEnabled;
+        window.kgTemporaryLayoutEditingEnabled = temporaryLayoutEditingEnabled;
+        window.kgPersonalLayoutStatus = personalLayoutStatus;
+        window.kgKeepPersonalLayout = keepPersonalLayout;
+        window.kgResetToPublishedLayout = resetToPublishedLayout;
+        window.kgExportGlobalLayout = exportGlobalLayout;
+        window.kgExportedGlobalLayout = exportedGlobalLayout;
 
         /*
          * Custom node rendering
@@ -462,7 +788,9 @@
           return "rgb(" + r + "," + g + "," + b + ")";
         }
 
-        nodes.update(allNodes.map(applyCollisionNodeStyle));
+        nodes.update(allNodes.map(function(node) {
+          return applyCollisionNodeStyle(nodeWithGlobalPosition(node));
+        }));
         allNodes = nodes.get();
         edges.update(allEdges.map(function(e) {
           return {id: e.id, title: ""};
@@ -625,6 +953,16 @@
             window.localStorage.setItem(key, value);
             return true;
           } catch (err) {
+            return false;
+          }
+        }
+
+        function safeLocalStorageRemove(key) {
+          if (!key) { return false; }
+          try {
+            window.localStorage.removeItem(key);
+            return true;
+          } catch (e) {
             return false;
           }
         }
@@ -1712,7 +2050,7 @@
           updateFocusLensDisplay();
         }
 
-        /* Graph view state and compact subgraph layout. */
+        /* Graph view state and visibility-only focused views. */
         function updateModuleActionControls() {
           var disabled = graphViewIs(currentView, GraphViewMode.HIDE);
           ["kg_modules_collapse_all", "kg_modules_expand_all"].forEach(function(id) {
@@ -1727,17 +2065,45 @@
 
         function updateGraphViewControls() {
           var select = document.getElementById("kg_graph_view_select");
+          var temporaryWarning = document.getElementById("kg_temporary_layout_warning");
           if (select) {
             select.value = graphViewSelectValue(currentView);
+            select.title = graphViewIs(currentView, GraphViewMode.FOCUSED)
+              ? "Concept layout changes are temporary in Focussed mode"
+              : "Choose graph visibility";
+          }
+          if (temporaryWarning) {
+            temporaryWarning.hidden = !temporaryLayoutEditingEnabled();
+            temporaryWarning.title = "Concept positions reset when you leave Focussed mode";
           }
           document.body.classList.toggle(
             "kg-graph-hidden",
             graphViewIs(currentView, GraphViewMode.HIDE)
           );
           updateModuleActionControls();
+          if (network && network.setOptions) {
+            network.setOptions({interaction: {
+              dragNodes: graphViewAllowsLayoutEditing(currentView) || temporaryLayoutEditingEnabled()
+            }});
+          }
+          updateLayoutControls();
+        }
+
+        function restoreTemporaryFoldedModulePositions() {
+          if (!network || !network.moveNode) { return; }
+          foldedModuleIdList().forEach(function(moduleId) {
+            var anchor = globalModuleAnchor(moduleId);
+            var nodeId = moduleGraphNodeId(moduleId);
+            if (!anchor || !nodes.get(nodeId)) { return; }
+            foldedModules[moduleId].position = copyLayoutPosition(anchor);
+            network.moveNode(nodeId, anchor.x, anchor.y);
+          });
         }
 
         function setCurrentView(view) {
+          if (temporaryLayoutEditingEnabled()) {
+            restoreTemporaryFoldedModulePositions();
+          }
           currentView = view || createGraphView(GraphViewMode.ALL);
           updateGraphViewControls();
         }
@@ -1897,66 +2263,6 @@
             });
           });
           return moduleIdByConceptId;
-        }
-
-        function nodeLayerValue(nodeId) {
-          var node = originalNodes[nodeId] || nodes.get(nodeId) || {};
-          var concept = getConcept(nodeId) || {};
-          var candidates = [
-            node.layerGroup,
-            concept.layer,
-            String(conceptDisplayId(nodeId)).split(".", 1)[0]
-          ];
-          for (var i = 0; i < candidates.length; i++) {
-            var value = parseInt(String(candidates[i] || "").trim(), 10);
-            if (Number.isFinite(value) && value > 0) {
-              return value;
-            }
-          }
-          return 0;
-        }
-
-        function buildCompactLayerPositions(nodeIds) {
-          var ids = nodeIds.slice().sort(compareConceptIds);
-          var layers = {};
-          ids.forEach(function(id) {
-            var layer = nodeLayerValue(id);
-            if (layer > 0) { layers[layer] = true; }
-          });
-
-          var orderedLayers = Object.keys(layers).map(Number).sort(function(a, b) {
-            return b - a;
-          });
-          var layerToLevel = {};
-          orderedLayers.forEach(function(layer, index) {
-            layerToLevel[layer] = index;
-          });
-
-          var fallbackLevel = orderedLayers.length;
-          var nodesByLevel = {};
-          ids.forEach(function(id) {
-            var layer = nodeLayerValue(id);
-            var level = layer > 0 && layerToLevel[layer] !== undefined
-              ? layerToLevel[layer]
-              : fallbackLevel;
-            if (!nodesByLevel[level]) { nodesByLevel[level] = []; }
-            nodesByLevel[level].push(id);
-          });
-
-          var positions = {};
-          Object.keys(nodesByLevel).forEach(function(levelKey) {
-            var level = Number(levelKey);
-            var rowNodes = nodesByLevel[levelKey].sort(compareConceptIds);
-            var rowWidth = (rowNodes.length - 1) * layoutXSpacing;
-            var rowSlopeHeight = (rowNodes.length - 1) * layoutRowStagger;
-            rowNodes.forEach(function(id, index) {
-              positions[id] = {
-                x: (index * layoutXSpacing) - (rowWidth / 2),
-                y: (level * layoutYSpacing) + (rowSlopeHeight / 2) - (index * layoutRowStagger)
-              };
-            });
-          });
-          return positions;
         }
 
         /* Search and tooltip indexing. */
@@ -2611,7 +2917,7 @@
           var totalX = 0;
           var totalY = 0;
           memberIds.forEach(function(id) {
-            var pos = graphPositionForNode(id);
+            var pos = globalConceptPosition(id) || graphPositionForNode(id);
             if (!pos) { return; }
             positions[String(id)] = pos;
             totalX += pos.x;
@@ -2619,9 +2925,9 @@
             count += 1;
           });
 
-          var centre = count > 0
+          var centre = globalModuleAnchor(moduleId) || (count > 0
             ? {x: totalX / count, y: totalY / count}
-            : {x: 0, y: 0};
+            : {x: 0, y: 0});
           var offsets = {};
           Object.keys(positions).forEach(function(id) {
             offsets[id] = {
@@ -2636,7 +2942,11 @@
         }
 
         function foldModule(moduleId) {
-          foldedModules[String(moduleId)] = moduleMemberGeometry(moduleId);
+          var geometry = moduleMemberGeometry(moduleId);
+          foldedModules[String(moduleId)] = geometry;
+          if (!globalModuleAnchor(moduleId)) {
+            setGlobalModuleAnchor(moduleId, geometry.position);
+          }
         }
 
         function removeFoldedModuleNode(moduleId) {
@@ -2682,10 +2992,7 @@
               x: state.position.x + offset.x,
               y: state.position.y + offset.y
             };
-            if (originalNodes[id]) {
-              originalNodes[id].x = position.x;
-              originalNodes[id].y = position.y;
-            }
+            setGlobalConceptPosition(id, position);
             if (nodes.get(id)) {
               updates.push({id: id, x: position.x, y: position.y});
             }
@@ -2695,18 +3002,42 @@
           }
         }
 
-        function unfoldModule(moduleId) {
+        function unfoldModule(moduleId, options) {
+          options = options || {};
           moduleId = String(moduleId);
           if (!selectedModuleIsFolded(moduleId)) { return; }
-          restoreFoldedModuleMembers(moduleId);
+          if (options.restoreMembers !== false) {
+            restoreFoldedModuleMembers(moduleId);
+          }
           delete foldedModules[moduleId];
           removeFoldedModuleNode(moduleId);
         }
 
+        function modulePreferredIsFolded(moduleId) {
+          return Boolean(preferredFoldedModules[String(moduleId)]);
+        }
+
+        function restoreTemporaryModuleExpansions(requiredModuleId) {
+          requiredModuleId = requiredModuleId ? String(requiredModuleId) : null;
+          Object.keys(temporarilyExpandedModules).forEach(function(moduleId) {
+            if (moduleId === requiredModuleId) { return; }
+            delete temporarilyExpandedModules[moduleId];
+            if (modulePreferredIsFolded(moduleId) && !selectedModuleIsFolded(moduleId)) {
+              foldModule(moduleId);
+            }
+          });
+        }
+
         function unfoldOwningModuleForConcept(conceptId) {
           var owningModuleId = moduleIdForConcept(conceptId);
-          if (owningModuleId) {
-            unfoldModule(owningModuleId);
+          restoreTemporaryModuleExpansions(owningModuleId);
+          if (
+            owningModuleId &&
+            modulePreferredIsFolded(owningModuleId) &&
+            selectedModuleIsFolded(owningModuleId)
+          ) {
+            unfoldModule(owningModuleId, {restoreMembers: false});
+            temporarilyExpandedModules[String(owningModuleId)] = true;
           }
         }
 
@@ -2715,8 +3046,30 @@
             removeFoldedModuleNode(moduleId);
           });
           foldedModules = {};
+          preferredFoldedModules = {};
+          temporarilyExpandedModules = {};
           clearProjectedModuleEdges();
         }
+
+        function recenterModuleAnchor(moduleId) {
+          var positions = moduleMemberIds(getModule(moduleId)).map(globalConceptPosition).filter(Boolean);
+          if (positions.length === 0) { return null; }
+          var anchor = {
+            x: positions.reduce(function(total, position) { return total + position.x; }, 0) / positions.length,
+            y: positions.reduce(function(total, position) { return total + position.y; }, 0) / positions.length
+          };
+          setGlobalModuleAnchor(moduleId, anchor);
+          if (selectedModuleIsFolded(moduleId)) {
+            foldedModules[String(moduleId)] = moduleMemberGeometry(moduleId);
+            var graphNodeId = moduleGraphNodeId(moduleId);
+            if (nodes.get(graphNodeId)) {
+              nodes.update({id: graphNodeId, x: anchor.x, y: anchor.y});
+            }
+          }
+          return copyLayoutPosition(anchor);
+        }
+
+        window.kgRecenterModuleAnchor = recenterModuleAnchor;
 
         function moduleGraphNodePosition(moduleId) {
           var foldedPosition = syncFoldedModulePosition(moduleId);
@@ -2889,6 +3242,8 @@
         function setSelectedModuleFoldState(moduleId, folded) {
           if (!getModule(moduleId)) { return; }
           moduleId = String(moduleId);
+          preferredFoldedModules[moduleId] = Boolean(folded);
+          delete temporarilyExpandedModules[moduleId];
           if (folded) {
             foldModule(moduleId);
           } else {
@@ -2932,6 +3287,8 @@
         function foldAllModules() {
           var ids = moduleIdsWithMembers();
           ids.forEach(function(moduleId) {
+            preferredFoldedModules[String(moduleId)] = true;
+            delete temporarilyExpandedModules[String(moduleId)];
             if (selectedModuleIsFolded(moduleId)) {
               syncFoldedModulePosition(moduleId);
             } else {
@@ -2948,8 +3305,10 @@
         }
 
         function unfoldAllModules() {
-          var ids = foldedModuleIdList();
+          var ids = moduleIdsWithMembers();
           ids.forEach(function(moduleId) {
+            preferredFoldedModules[String(moduleId)] = false;
+            delete temporarilyExpandedModules[String(moduleId)];
             unfoldModule(moduleId);
           });
           refreshGraphAfterModuleFoldChange();
@@ -5267,6 +5626,7 @@
             item.classList.add("active");
             item.scrollIntoView({block: "nearest"});
           }
+          updateLayoutControls();
         }
 
         function setActiveModuleItem(moduleId) {
@@ -5281,6 +5641,7 @@
             item.classList.add("active");
             item.scrollIntoView({block: "nearest"});
           }
+          updateLayoutControls();
         }
 
         function visualViewportRect() {
@@ -5822,7 +6183,7 @@
           setActiveModuleItem(null);
           setCurrentView(createGraphView(GraphViewMode.ALL));
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = false;
             o.opacity = 1.0;
             return o;
@@ -5857,7 +6218,7 @@
           activeConceptSectionLensLabel = "Neighbourhood";
           updateSelectedConceptHeader(null);
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = false;
             o.opacity = 1.0;
             return o;
@@ -6031,7 +6392,7 @@
           setCurrentView(createGraphView(GraphViewMode.HIDE, nodeId));
           network.unselectAll();
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = true;
             return o;
           }));
@@ -6101,10 +6462,8 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return context.keep[id];
           });
-          var compactPositions = compact ? buildCompactLayerPositions(visibleIds) : {};
-
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             var inContext = context.keep[String(n.id)] === true;
             o.hidden = compact && !inContext;
             if (inContext) {
@@ -6117,10 +6476,6 @@
                 background: "#f2f2f2",
                 border: "#d0d0d0"
               };
-            }
-            if (compactPositions[n.id]) {
-              o.x = compactPositions[n.id].x;
-              o.y = compactPositions[n.id].y;
             }
             o = applyCollisionNodeStyle(o);
             return o;
@@ -6239,6 +6594,7 @@
           options = options || {};
           var compact = options.compact === true;
           if (!getModule(moduleId)) { return; }
+          restoreTemporaryModuleExpansions(null);
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
           hideNodeTooltip();
@@ -6252,10 +6608,8 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return context.keep[id];
           });
-          var compactPositions = compact ? buildCompactLayerPositions(visibleIds) : {};
-
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             var id = String(n.id);
             var inContext = context.keep[id] === true;
             var inModule = context.members[id] === true;
@@ -6277,10 +6631,6 @@
                 background: "#f2f2f2",
                 border: "#d0d0d0"
               };
-            }
-            if (compactPositions[n.id]) {
-              o.x = compactPositions[n.id].x;
-              o.y = compactPositions[n.id].y;
             }
             o = applyCollisionNodeStyle(o);
             return o;
@@ -6365,15 +6715,9 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return keep[id];
           });
-          var compactPositions = buildCompactLayerPositions(visibleIds);
-
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = !keep[n.id];
-            if (compactPositions[n.id]) {
-              o.x = compactPositions[n.id].x;
-              o.y = compactPositions[n.id].y;
-            }
             return o;
           }));
 
@@ -6406,15 +6750,9 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return keep[id];
           });
-          var compactPositions = buildCompactLayerPositions(visibleIds);
-
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = !keep[n.id];
-            if (compactPositions[n.id]) {
-              o.x = compactPositions[n.id].x;
-              o.y = compactPositions[n.id].y;
-            }
             return o;
           }));
 
@@ -6451,15 +6789,9 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return trace.nodes[id];
           });
-          var compactPositions = buildCompactLayerPositions(visibleIds);
-
           nodes.update(allNodes.map(function(n) {
-            var o = Object.assign({}, originalNodes[n.id]);
+            var o = baseNodeForRender(n.id);
             o.hidden = !trace.nodes[n.id];
-            if (compactPositions[n.id]) {
-              o.x = compactPositions[n.id].x;
-              o.y = compactPositions[n.id].y;
-            }
             return o;
           }));
 
@@ -6550,7 +6882,10 @@
           drawVisibleNodes(ctx);
           updateNodeLabelPositions();
         });
-        network.on("dragEnd", updateNodeLabelPositions);
+        network.on("dragEnd", function(params) {
+          updateGlobalLayoutFromDrag(params);
+          updateNodeLabelPositions();
+        });
         network.on("zoom", updateNodeLabelPositions);
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", handleViewportResize);
@@ -6725,6 +7060,33 @@
         document.getElementById("kg_modules_expand_all").addEventListener("click", function(e) {
           e.preventDefault();
           unfoldAllModules();
+        });
+
+        document.getElementById("kg_layout_export").addEventListener("click", function(e) {
+          e.preventDefault();
+          exportGlobalLayout();
+        });
+
+        document.getElementById("kg_layout_reset").addEventListener("click", function(e) {
+          e.preventDefault();
+          resetToPublishedLayout();
+        });
+
+        document.getElementById("kg_layout_keep").addEventListener("click", function(e) {
+          e.preventDefault();
+          keepPersonalLayout();
+        });
+
+        document.getElementById("kg_layout_warning_reset").addEventListener("click", function(e) {
+          e.preventDefault();
+          resetToPublishedLayout();
+        });
+
+        document.getElementById("kg_layout_recenter_module").addEventListener("click", function(e) {
+          e.preventDefault();
+          if (!activeModuleId || !globalLayoutEditingEnabled()) { return; }
+          recenterModuleAnchor(activeModuleId);
+          updateLayoutControls();
         });
 
         document.getElementById("kg_module_list").addEventListener("click", function(e) {

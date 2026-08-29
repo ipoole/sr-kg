@@ -23,6 +23,7 @@ from srkg.layout import (
     build_hierarchy_levels,
     build_hierarchy_positions,
 )
+from srkg.layout_persistence import resolve_published_layout
 from srkg.render_pyvis import write_pyvis_html
 
 
@@ -132,6 +133,7 @@ def filter_knowledge_base_by_domains(
         edge_key=kb.edge_key,
         concepts=filtered_concepts,
         modules=filtered_modules,
+        published_layout=kb.published_layout,
     )
 
 
@@ -151,6 +153,11 @@ def generate_viewer_from_kb(
         hierarchy_levels,
         kb.edges_df,
         sort_key_by_id=build_concept_sort_keys(kb.nodes_df),
+    )
+    published_layout = resolve_published_layout(
+        kb.published_layout,
+        generated_concept_positions=hierarchy_positions,
+        modules=kb.modules,
     )
 
     output_file = Path(out_path)
@@ -173,6 +180,7 @@ def generate_viewer_from_kb(
         enrich_edge_key_with_colours(kb.edge_key, edge_colour_map),
         title,
         module_data=kb.module_data(),
+        published_layout=published_layout.to_viewer_data(),
     )
     output_file.write_text(html_text, encoding="utf-8")
 
