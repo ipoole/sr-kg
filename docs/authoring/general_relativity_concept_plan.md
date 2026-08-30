@@ -46,7 +46,7 @@ Purpose: bridge from SR to GR and explain what problem GR is solving.
 | `GR 1.4` | `gr.freely_falling_observer` | Freely falling observer | Physical observer following inertial motion in curved spacetime. |
 | `GR 1.5` | `gr.tidal_gravity` | Tidal gravity | What cannot be transformed away; first operational hint of curvature. |
 
-## Math Layer 1: Manifolds And Coordinates
+## Maths Layer 1: Manifolds And Coordinates
 
 Purpose: replace global inertial coordinates with local coordinate charts on a
 smooth spacetime.
@@ -60,7 +60,7 @@ smooth spacetime.
 | `M 1.5` | `math.tangent_space` | Tangent space | Vector space attached to an event; local home of vectors and velocities. |
 | `M 1.6` | `math.cotangent_space` | Cotangent space | Dual vectors/covectors; needed for gradients and one-forms. |
 
-## Math Layer 2 / GR Layer 2: Tensor Calculus On Spacetime
+## Maths Layer 2 / GR Layer 2: Tensor Calculus On Spacetime
 
 Purpose: provide the core language for coordinate-independent equations.
 

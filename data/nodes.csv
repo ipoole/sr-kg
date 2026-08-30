@@ -69,3 +69,44 @@ gr.null_curve,GR 3.3,Null curve,3,Metric Geometry,gr,General Relativity,seed
 gr.causal_structure,GR 3.4,Causal structure,3,Metric Geometry,gr,General Relativity,seed
 gr.local_flatness,GR 3.5,Local flatness,3,Metric Geometry,gr,General Relativity,seed
 gr.metric_signature,GR 3.6,Metric signature convention,3,Metric Geometry,gr,General Relativity,seed
+gr.connection,GR 4.1,Connection,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.christoffel_symbols,GR 4.2,Christoffel symbols,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.covariant_derivative,GR 4.3,Covariant derivative,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.metric_compatibility,GR 4.4,Metric compatibility,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.torsion_free_connection,GR 4.5,Torsion-free connection,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.parallel_transport,GR 4.6,Parallel transport,4,Connections And Covariant Derivatives,gr,General Relativity,seed
+gr.geodesic,GR 5.1,Geodesic,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.geodesic_equation,GR 5.2,Geodesic equation,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.geodesic_action,GR 5.3,Geodesic action,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.four_velocity,GR 5.4,Four-velocity in curved spacetime,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.four_acceleration,GR 5.5,Four-acceleration,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.geodesic_deviation,GR 5.6,Geodesic deviation,5,Geodesics And Free Fall,gr,General Relativity,seed
+gr.riemann_tensor,GR 6.1,Riemann curvature tensor,6,Curvature,gr,General Relativity,seed
+gr.ricci_tensor,GR 6.2,Ricci tensor,6,Curvature,gr,General Relativity,seed
+gr.ricci_scalar,GR 6.3,Ricci scalar,6,Curvature,gr,General Relativity,seed
+gr.einstein_tensor,GR 6.4,Einstein tensor,6,Curvature,gr,General Relativity,seed
+gr.bianchi_identity,GR 6.5,Bianchi identity,6,Curvature,gr,General Relativity,seed
+gr.curvature_invariants,GR 6.6,Curvature invariants,6,Curvature,gr,General Relativity,seed
+gr.stress_energy_tensor,GR 7.1,Stress-energy tensor in GR,7,Matter Stress-Energy And Conservation,gr,General Relativity,seed
+gr.perfect_fluid,GR 7.2,Perfect fluid,7,Matter Stress-Energy And Conservation,gr,General Relativity,seed
+gr.energy_conditions,GR 7.3,Energy conditions,7,Matter Stress-Energy And Conservation,gr,General Relativity,seed
+gr.covariant_conservation,GR 7.4,Covariant conservation,7,Matter Stress-Energy And Conservation,gr,General Relativity,seed
+gr.equation_of_state,GR 7.5,Equation of state,7,Matter Stress-Energy And Conservation,gr,General Relativity,seed
+gr.einstein_field_equations,GR 8.1,Einstein field equations,8,Einstein Field Equations,gr,General Relativity,seed
+gr.cosmological_constant,GR 8.2,Cosmological constant,8,Einstein Field Equations,gr,General Relativity,seed
+gr.einstein_hilbert_action,GR 8.3,Einstein-Hilbert action,8,Einstein Field Equations,gr,General Relativity,seed
+gr.stress_energy_variation,GR 8.4,Stress-energy from action variation,8,Einstein Field Equations,gr,General Relativity,seed
+gr.trace_reversed_equations,GR 8.5,Trace-reversed equations,8,Einstein Field Equations,gr,General Relativity,seed
+gr.vacuum_field_equations,GR 8.6,Vacuum field equations,8,Einstein Field Equations,gr,General Relativity,seed
+gr.weak_field_metric,GR 9.1,Weak-field metric,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.newtonian_limit,GR 9.2,Newtonian limit,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.gravitational_redshift,GR 9.3,Gravitational redshift,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.light_deflection,GR 9.4,Light deflection,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.perihelion_precession,GR 9.5,Perihelion precession,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.post_newtonian_approximation,GR 9.6,Post-Newtonian approximation,9,Weak Field And Newtonian Limit,gr,General Relativity,seed
+gr.schwarzschild_metric,GR 10.1,Schwarzschild metric,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed
+gr.schwarzschild_radius,GR 10.2,Schwarzschild radius,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed
+gr.event_horizon,GR 10.3,Event horizon,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed
+gr.coordinate_singularity,GR 10.4,Coordinate singularity,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed
+gr.black_hole_singularity,GR 10.5,Black hole singularity,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed
+gr.effective_potential_orbits,GR 10.6,Effective potential for orbits,10,Schwarzschild Geometry And Black Holes,gr,General Relativity,seed

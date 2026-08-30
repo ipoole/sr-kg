@@ -51,6 +51,20 @@ def test_real_data_study_question_types_are_canonical():
     assert set(study_questions["question_type"]).issubset(STUDY_QUESTION_TYPES)
 
 
+def test_real_module_titles_include_domain_and_layer_number():
+    modules = _read_csv("modules.csv")
+
+    expected_prefixes = modules.apply(
+        lambda row: f"{'MATHS' if row['domain'] == 'math' else row['domain'].upper()}-"
+        f"{int(row['sequence']) // 10} ",
+        axis=1,
+    )
+    assert all(
+        title.startswith(prefix)
+        for title, prefix in zip(modules["title"], expected_prefixes)
+    )
+
+
 def test_real_data_reference_links_resolve_to_known_rows():
     nodes = _read_csv("nodes.csv")
     content_blocks = _read_csv("content_blocks.csv")

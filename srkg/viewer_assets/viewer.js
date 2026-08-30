@@ -2248,6 +2248,11 @@
           return String(moduleA.title || a).localeCompare(String(moduleB.title || b));
         }
 
+        function moduleDomainLabel(domain) {
+          var value = String(domain || "module").toLowerCase();
+          return value === "math" ? "MATHS" : value.toUpperCase();
+        }
+
         function moduleIds() {
           return Object.keys(moduleData || {}).sort(compareModules);
         }
@@ -3106,7 +3111,7 @@
             id: moduleGraphNodeId(moduleId),
             isModuleNode: true,
             moduleId: String(moduleId),
-            label: String(module.domain || "module").toUpperCase() + "\n" +
+            label: moduleDomainLabel(module.domain) + "\n" +
               String(module.title || moduleId) + "\n" +
               memberCount + " concept" + (memberCount === 1 ? "" : "s"),
             shape: "box",
@@ -3581,7 +3586,7 @@
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
           html += '<span class="concept-authoring-status module-domain-label">' +
-            escapeHtml(String(module.domain || "module").toUpperCase()) +
+            escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
           html += renderModuleGraphFoldControl(moduleId);
           html += "</div>";
@@ -3663,7 +3668,7 @@
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
           html += '<p class="concept-layer-context">Module - ' +
-            escapeHtml(String(module.domain || "").toUpperCase()) + "</p>";
+            escapeHtml(moduleDomainLabel(module.domain)) + "</p>";
           filteredModuleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
@@ -3930,7 +3935,7 @@
           var html = '<div class="kg-tooltip-title">' +
             renderTooltipText(module.title || moduleId) + "</div>";
           html += '<div class="kg-tooltip-definition">' +
-            escapeHtml(String(module.domain || "module").toUpperCase()) + " module - " +
+            escapeHtml(moduleDomainLabel(module.domain)) + " module - " +
             escapeHtml(String(memberCount)) + " concept" + (memberCount === 1 ? "" : "s") +
             "</div>";
           var overview = conceptPreviewExcerpt(moduleTooltipSourceText(module));
@@ -4865,7 +4870,7 @@
             lensEl.innerHTML = html +
               '<div class="kg-focus-lens-module">' +
               '<span class="kg-focus-lens-center-id">' +
-              escapeHtml(String(selectedModule.domain || "module").toUpperCase()) +
+              escapeHtml(moduleDomainLabel(selectedModule.domain)) +
               '</span><span class="kg-focus-lens-center-name">' +
               escapeHtml(selectedModule.title || activeModuleId) +
               "</span></div>" +
@@ -6107,7 +6112,7 @@
             var titleHtml = '<span class="kg-search-hit-title">' +
               '<span class="kg-search-type-label">Module</span> ' +
               '<span class="kg-module-domain">' +
-              escapeHtml(String(module.domain || "module").toUpperCase()) +
+              escapeHtml(moduleDomainLabel(module.domain)) +
               "</span> " +
               highlightedSearchText(title, q) +
               "</span>";
@@ -6159,7 +6164,7 @@
               escapeHtml(moduleId) + '">' +
               '<span class="kg-search-hit-title">' +
               '<span class="kg-module-domain">' +
-              escapeHtml(String(module.domain || "module").toUpperCase()) +
+              escapeHtml(moduleDomainLabel(module.domain)) +
               "</span> " +
               renderConceptText(module.title || moduleId) +
               "</span>" +

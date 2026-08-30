@@ -32,7 +32,7 @@ interactive HTML graph using PyVis and vis.js. The generated viewer supports:
 - relationship details and edge hover notes with MathJax-aware custom tooltips
 - stable, repeatable colour choices across runs
 
-### Math And Graphics
+### Maths And Graphics
 
 - MathJax rendering for inline and display equations
 - MathJax-rendered graph labels for node IDs and concept names

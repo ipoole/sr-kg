@@ -1,17 +1,24 @@
 module_id,domain,title,sequence,default_collapsed
-gr.m01_motivation_and_equivalence,gr,Motivation and Equivalence,10,false
-gr.m02_tensor_calculus_on_spacetime,gr,Tensor Calculus On Spacetime,20,false
-gr.m03_metric_geometry,gr,Metric Geometry,30,false
-math.m01_manifolds_and_coordinates,math,Manifolds and Coordinates,10,false
-math.m02_tensor_calculus,math,Tensor Calculus,20,false
-sr.m01_foundational_postulates,sr,Foundational Postulates,10,false
-sr.m02_observers_and_events,sr,Observers and Events,20,false
-sr.m03_minkowski_geometry,sr,Minkowski Geometry,30,false
-sr.m04_relativistic_kinematics,sr,Relativistic Kinematics,40,false
-sr.m05_variational_mechanics,sr,Variational Mechanics,50,false
-sr.m06_field_foundations,sr,Field Foundations,60,false
-sr.m07_electromagnetic_field,sr,Electromagnetic Field,70,false
-sr.m08_gauge_symmetry_and_interaction,sr,Gauge Symmetry and Interaction,80,false
-sr.m09_energy_and_momentum_in_fields,sr,Energy and Momentum in Fields,90,false
-sr.m10_waves_and_radiation,sr,Waves and Radiation,100,false
-sr.m11_symmetry_and_invariance_principles,sr,Symmetry and Invariance Principles,110,false
+gr.m01_motivation_and_equivalence,gr,GR-1 Motivation and Equivalence,10,false
+gr.m02_tensor_calculus_on_spacetime,gr,GR-2 Tensor Calculus On Spacetime,20,false
+gr.m03_metric_geometry,gr,GR-3 Metric Geometry,30,false
+gr.m04_connections_and_covariant_derivatives,gr,GR-4 Connections And Covariant Derivatives,40,false
+gr.m05_geodesics_and_free_fall,gr,GR-5 Geodesics And Free Fall,50,false
+gr.m06_curvature,gr,GR-6 Curvature,60,false
+gr.m07_matter_stress_energy_and_conservation,gr,GR-7 Matter Stress-Energy And Conservation,70,false
+gr.m08_einstein_field_equations,gr,GR-8 Einstein Field Equations,80,false
+gr.m09_weak_field_and_newtonian_limit,gr,GR-9 Weak Field And Newtonian Limit,90,false
+gr.m10_schwarzschild_geometry_and_black_holes,gr,GR-10 Schwarzschild Geometry And Black Holes,100,false
+math.m01_manifolds_and_coordinates,math,MATHS-1 Manifolds and Coordinates,10,false
+math.m02_tensor_calculus,math,MATHS-2 Tensor Calculus,20,false
+sr.m01_foundational_postulates,sr,SR-1 Foundational Postulates,10,false
+sr.m02_observers_and_events,sr,SR-2 Observers and Events,20,false
+sr.m03_minkowski_geometry,sr,SR-3 Minkowski Geometry,30,false
+sr.m04_relativistic_kinematics,sr,SR-4 Relativistic Kinematics,40,false
+sr.m05_variational_mechanics,sr,SR-5 Variational Mechanics,50,false
+sr.m06_field_foundations,sr,SR-6 Field Foundations,60,false
+sr.m07_electromagnetic_field,sr,SR-7 Electromagnetic Field,70,false
+sr.m08_gauge_symmetry_and_interaction,sr,SR-8 Gauge Symmetry and Interaction,80,false
+sr.m09_energy_and_momentum_in_fields,sr,SR-9 Energy and Momentum in Fields,90,false
+sr.m10_waves_and_radiation,sr,SR-10 Waves and Radiation,100,false
+sr.m11_symmetry_and_invariance_principles,sr,SR-11 Symmetry and Invariance Principles,110,false

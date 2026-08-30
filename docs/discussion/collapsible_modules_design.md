@@ -325,7 +325,7 @@ The first visual treatment should use:
 
 - a moderately larger rounded rectangle rather than a circular concept node
 - the module title as the primary label
-- a compact domain badge such as `SR`, `GR`, or `MATH`
+- a compact domain badge such as `SR`, `GR`, or `MATHS`
 - a member count such as `12 concepts`
 - a distinct border/background treatment from concept nodes
 
