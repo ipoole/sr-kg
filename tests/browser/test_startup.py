@@ -1647,6 +1647,25 @@ def test_masthead_title_typesets_concept_label_equations(repo_browser_graph):
 
 
 @pytest.mark.browser
+def test_gr_covariant_derivative_equations_are_typeset(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.goto(
+        repo_browser_graph.output_path.as_uri()
+        + "#concept-gr.covariant_derivative",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_function(
+        "() => window.location.hash === '#concept-gr.covariant_derivative'"
+    )
+    page.wait_for_selector("#info_panel mjx-container")
+
+    details_text = page.locator("#info_panel").inner_text()
+    assert "\\(" not in details_text
+    assert "\\nabla" not in details_text
+
+
+@pytest.mark.browser
 def test_workspace_splitter_resizes_graph_and_details_panes(browser_graph):
     page = browser_graph.page
 

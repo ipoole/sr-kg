@@ -51,6 +51,29 @@ def test_real_data_study_question_types_are_canonical():
     assert set(study_questions["question_type"]).issubset(STUDY_QUESTION_TYPES)
 
 
+def test_gr_and_maths_text_does_not_double_escape_latex_backslashes():
+    nodes = _read_csv("nodes.csv")
+    concept_ids = set(nodes.loc[nodes["domain"].isin({"gr", "math"}), "id"])
+    content_blocks = _read_csv("content_blocks.csv")
+    study_questions = _read_csv("study_questions.csv")
+    modules = _read_csv("modules.csv")
+    module_content_blocks = _read_csv("module_content_blocks.csv")
+
+    content_text = content_blocks.loc[
+        content_blocks["concept_id"].isin(concept_ids), ["title", "body"]
+    ]
+    question_text = study_questions.loc[
+        study_questions["concept_id"].isin(concept_ids), ["prompt", "answer"]
+    ]
+    module_ids = set(modules.loc[modules["domain"].isin({"gr", "math"}), "module_id"])
+    module_text = module_content_blocks.loc[
+        module_content_blocks["module_id"].isin(module_ids), ["title", "body"]
+    ]
+    assert not content_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
+    assert not question_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
+    assert not module_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
+
+
 def test_real_module_titles_include_domain_and_layer_number():
     modules = _read_csv("modules.csv")
 
