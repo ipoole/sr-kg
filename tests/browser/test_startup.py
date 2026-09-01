@@ -235,8 +235,7 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
             moduleNode.font.size >= 28 &&
             moduleNode.font.size < 34 &&
             moduleNode.font.bold.size === moduleNode.font.size &&
-            moduleNode.label.includes("Applications") &&
-            moduleNode.label.includes("3 concepts");
+            moduleNode.label === "Applications\\n3 concepts";
         }""",
         module_node_id,
     )
@@ -1616,6 +1615,24 @@ def test_default_startup_has_no_selected_concept(repo_browser_graph):
 
 
 @pytest.mark.browser
+def test_repo_starts_with_every_module_folded(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.wait_for_function(
+        """() => Object.keys(moduleData).every(moduleId =>
+          nodes.get("module::" + moduleId) &&
+          (moduleData[moduleId].members || []).every(conceptId => nodes.get(conceptId).hidden)
+        )"""
+    )
+
+    assert page.evaluate(
+        """() => Object.keys(moduleData).filter(moduleId =>
+          Boolean(nodes.get("module::" + moduleId))
+        ).length"""
+    ) == 13
+
+
+@pytest.mark.browser
 def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
     page = repo_browser_graph.page
 
@@ -2127,6 +2144,14 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
 @pytest.mark.browser
 def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_browser_graph):
     page = repo_browser_graph.page
+
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="sr.electromagnetic_structure_gauge_and_stress_energy"]'
+    ).click()
+    page.locator(
+        '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
+    ).click()
 
     page.evaluate(
         """() => {

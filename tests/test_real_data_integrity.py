@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import re
 
 import pandas as pd
@@ -74,8 +75,9 @@ def test_gr_and_maths_text_does_not_double_escape_latex_backslashes():
     assert not module_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
 
 
-def test_real_module_titles_include_domain_and_layer_number():
+def test_gr_and_maths_module_titles_include_domain_and_layer_number():
     modules = _read_csv("modules.csv")
+    modules = modules[modules["domain"].isin({"gr", "math"})]
 
     expected_prefixes = modules.apply(
         lambda row: f"{'MATHS' if row['domain'] == 'math' else row['domain'].upper()}-"
@@ -86,6 +88,233 @@ def test_real_module_titles_include_domain_and_layer_number():
         title.startswith(prefix)
         for title, prefix in zip(modules["title"], expected_prefixes)
     )
+
+
+def test_runtime_sr_modules_match_the_reviewed_partition_candidate():
+    root = DATA_ROOT.parent
+    modules = _read_csv("modules.csv")
+    runtime_members = _read_csv("module_members.csv")
+    candidate_members = pd.read_csv(
+        root / "docs" / "discussion" / "sr_module_partition_candidate.csv",
+        dtype=str,
+    ).fillna("")
+
+    sr_modules = modules.loc[modules["domain"] == "sr", ["module_id", "title"]]
+    assert list(sr_modules.itertuples(index=False, name=None)) == [
+        ("sr.spacetime_foundations", "SR-1 Spacetime and Lorentz Symmetry"),
+        ("sr.relativistic_mechanics", "SR-2 Relativistic Particle Mechanics"),
+        ("sr.variational_and_field_theory", "SR-3 Action and Field Theory"),
+        (
+            "sr.electromagnetic_structure_gauge_and_stress_energy",
+            "SR-4 Covariant Electromagnetism",
+        ),
+        (
+            "sr.field_dynamics_conservation_and_radiation",
+            "SR-5 Field Dynamics and Radiation",
+        ),
+    ]
+    sr_concept_ids = set(candidate_members["concept_id"])
+    actual = runtime_members[runtime_members["concept_id"].isin(sr_concept_ids)].reset_index(drop=True)
+    expected = candidate_members.reset_index(drop=True)
+    pd.testing.assert_frame_equal(actual, expected)
+
+    supports = _read_csv("module_supports.csv")
+    sr_supports = supports[supports["module_id"].str.startswith("sr.")]
+    actual_supports = set(zip(sr_supports["module_id"], sr_supports["target_id"]))
+    assert actual_supports == {
+        ("sr.relativistic_mechanics", "sr.spacetime_foundations"),
+        ("sr.variational_and_field_theory", "sr.spacetime_foundations"),
+        ("sr.variational_and_field_theory", "sr.relativistic_mechanics"),
+        (
+            "sr.electromagnetic_structure_gauge_and_stress_energy",
+            "sr.spacetime_foundations",
+        ),
+        (
+            "sr.electromagnetic_structure_gauge_and_stress_energy",
+            "sr.relativistic_mechanics",
+        ),
+        (
+            "sr.electromagnetic_structure_gauge_and_stress_energy",
+            "sr.variational_and_field_theory",
+        ),
+        (
+            "sr.field_dynamics_conservation_and_radiation",
+            "sr.variational_and_field_theory",
+        ),
+        (
+            "sr.field_dynamics_conservation_and_radiation",
+            "sr.electromagnetic_structure_gauge_and_stress_energy",
+        ),
+    }
+
+
+def test_runtime_gr_modules_match_the_reviewed_partition_candidate():
+    root = DATA_ROOT.parent
+    modules = _read_csv("modules.csv")
+    runtime_members = _read_csv("module_members.csv")
+    candidate_members = pd.read_csv(
+        root / "docs" / "discussion" / "gr_module_partition_candidate.csv",
+        dtype=str,
+    ).fillna("")
+
+    gr_modules = modules.loc[modules["domain"] == "gr", ["module_id", "title"]]
+    assert list(gr_modules.itertuples(index=False, name=None)) == [
+        (
+            "gr.foundations_and_spacetime_geometry",
+            "GR-1 Foundations of Curved Spacetime",
+        ),
+        (
+            "gr.connections_transport_and_motion",
+            "GR-2 Connections and Geodesics",
+        ),
+        (
+            "gr.curvature_and_gravitational_action",
+            "GR-3 Curvature and Gravitational Action",
+        ),
+        (
+            "gr.matter_and_einstein_equations",
+            "GR-4 Matter and Einstein Equations",
+        ),
+        (
+            "gr.weak_field_and_classical_tests",
+            "GR-5 Weak-Field Gravity",
+        ),
+        (
+            "gr.schwarzschild_geometry_and_black_holes",
+            "GR-6 Schwarzschild Black Holes",
+        ),
+    ]
+    gr_concept_ids = set(candidate_members["concept_id"])
+    actual = runtime_members.loc[
+        runtime_members["concept_id"].isin(gr_concept_ids),
+        ["module_id", "concept_id"],
+    ].reset_index(drop=True)
+    expected = candidate_members.reset_index(drop=True)
+    pd.testing.assert_frame_equal(actual, expected)
+
+    supports = _read_csv("module_supports.csv")
+    gr_supports = supports[supports["module_id"].str.startswith("gr.")]
+    actual_supports = set(zip(gr_supports["module_id"], gr_supports["target_id"]))
+    assert actual_supports == {
+        (
+            "gr.connections_transport_and_motion",
+            "gr.foundations_and_spacetime_geometry",
+        ),
+        (
+            "gr.curvature_and_gravitational_action",
+            "gr.foundations_and_spacetime_geometry",
+        ),
+        (
+            "gr.curvature_and_gravitational_action",
+            "gr.connections_transport_and_motion",
+        ),
+        (
+            "gr.matter_and_einstein_equations",
+            "gr.foundations_and_spacetime_geometry",
+        ),
+        (
+            "gr.matter_and_einstein_equations",
+            "gr.connections_transport_and_motion",
+        ),
+        (
+            "gr.matter_and_einstein_equations",
+            "gr.curvature_and_gravitational_action",
+        ),
+        (
+            "gr.weak_field_and_classical_tests",
+            "gr.foundations_and_spacetime_geometry",
+        ),
+        (
+            "gr.weak_field_and_classical_tests",
+            "gr.connections_transport_and_motion",
+        ),
+        (
+            "gr.weak_field_and_classical_tests",
+            "gr.matter_and_einstein_equations",
+        ),
+        (
+            "gr.schwarzschild_geometry_and_black_holes",
+            "gr.foundations_and_spacetime_geometry",
+        ),
+        (
+            "gr.schwarzschild_geometry_and_black_holes",
+            "gr.connections_transport_and_motion",
+        ),
+        (
+            "gr.schwarzschild_geometry_and_black_holes",
+            "gr.curvature_and_gravitational_action",
+        ),
+    }
+
+
+def test_authored_layout_covers_all_concepts_and_modules():
+    edges = _read_csv("edges.csv")
+    assert not (
+        (edges["source"] == "sr.wave_equation")
+        & (edges["target"] == "sr.metric_tensor")
+        & (edges["relation"] == "REQUIRES")
+    ).any()
+
+    layout = json.loads((DATA_ROOT / "layout.json").read_text(encoding="utf-8"))
+    nodes = _read_csv("nodes.csv")
+    modules = _read_csv("modules.csv")
+    assert layout["revision"] == "3"
+    assert set(layout["concepts"]) == set(nodes["id"])
+    assert set(layout["modules"]) == set(modules["module_id"])
+    assert modules["default_collapsed"].str.lower().eq("true").all()
+    assert layout["modules"] == {
+        "gr.connections_transport_and_motion": {"anchor": {"x": 1677, "y": 1002}},
+        "gr.curvature_and_gravitational_action": {"anchor": {"x": 1079, "y": 563}},
+        "gr.foundations_and_spacetime_geometry": {"anchor": {"x": 839, "y": 1262}},
+        "gr.matter_and_einstein_equations": {"anchor": {"x": 1488, "y": 213}},
+        "gr.schwarzschild_geometry_and_black_holes": {"anchor": {"x": 893, "y": 67}},
+        "gr.weak_field_and_classical_tests": {"anchor": {"x": 1969, "y": -168}},
+        "math.m01_manifolds_and_coordinates": {"anchor": {"x": 544, "y": 2432}},
+        "math.m02_tensor_calculus": {"anchor": {"x": 1538, "y": 2019}},
+        "sr.electromagnetic_structure_gauge_and_stress_energy": {
+            "anchor": {"x": 24, "y": 658}
+        },
+        "sr.field_dynamics_conservation_and_radiation": {
+            "anchor": {"x": 21, "y": 97}
+        },
+        "sr.relativistic_mechanics": {"anchor": {"x": -478, "y": 1676}},
+        "sr.spacetime_foundations": {"anchor": {"x": 243, "y": 1933}},
+        "sr.variational_and_field_theory": {"anchor": {"x": -599, "y": 1170}},
+    }
+    assert layout["concepts"]["sr.metric_tensor"] == {"x": -472, "y": 2956}
+    assert layout["concepts"]["gr.einstein_field_equations"] == {"x": 1750, "y": 840}
+    assert layout["concepts"]["math.manifold"] == {"x": 2800, "y": 3400}
+
+
+def test_sr_transitive_edge_policy_omits_redundant_direct_edges():
+    edges = _read_csv("edges.csv")
+    actual_edges = set(zip(edges["source"], edges["target"], edges["relation"]))
+    redundant_edges = {
+        ("sr.vector_field", "sr.lorentz_transformations", "REQUIRES"),
+        ("sr.mass_energy_equivalence", "sr.metric_tensor", "DERIVES_FROM"),
+        ("sr.electromagnetic_waves", "sr.electric_field", "REQUIRES"),
+        ("sr.electromagnetic_waves", "sr.magnetic_field", "REQUIRES"),
+        ("sr.maxwells_equations", "sr.field_tensor", "REQUIRES"),
+        ("sr.electromagnetic_waves", "sr.maxwells_equations", "DERIVES_FROM"),
+        ("sr.hamiltonian_formalism", "sr.lagrangian", "DERIVES_FROM"),
+        ("sr.lorentz_invariance", "sr.metric_tensor", "DERIVES_FROM"),
+        ("sr.lorentz_transformations", "sr.metric_tensor", "DERIVES_FROM"),
+    }
+
+    assert actual_edges.isdisjoint(redundant_edges)
+
+
+def test_gr_actions_treat_the_general_action_principle_as_related_context():
+    edges = _read_csv("edges.csv")
+    action_links = edges[
+        edges["source"].isin({"gr.geodesic_action", "gr.einstein_hilbert_action"})
+        & (edges["target"] == "sr.action_principle")
+    ]
+
+    assert set(zip(action_links["source"], action_links["relation"])) == {
+        ("gr.geodesic_action", "RELATED"),
+        ("gr.einstein_hilbert_action", "RELATED"),
+    }
 
 
 def test_real_data_reference_links_resolve_to_known_rows():

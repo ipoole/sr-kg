@@ -303,6 +303,25 @@ def test_generate_viewer_from_root_can_include_domain_linked_concepts(tmp_path):
     assert "Gamma links to alpha" in html_text
 
 
+def test_generate_viewer_from_root_filters_relations_and_edge_key(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+
+    result = generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="Selected relations",
+        relations=["EXPLAINS"],
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    assert result == (out_path, 2, 1, tmp_path / "edges_key.csv", 1)
+    assert '"relation": "EXPLAINS"' in html_text
+    assert '"relation": "RELATED"' not in html_text
+
+
 def test_generate_viewer_from_root_loads_graphic_design_captions(tmp_path):
     out_path = tmp_path / "viewer.html"
     _write_minimal_root(tmp_path)

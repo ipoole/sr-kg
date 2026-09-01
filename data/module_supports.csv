@@ -1,1 +1,21 @@
 module_id,target_type,target_id,role,note
+gr.connections_transport_and_motion,module,gr.foundations_and_spacetime_geometry,prerequisite,"Connections, geodesic actions, and tidal motion use the metric, proper time, and foundational free-fall concepts."
+gr.curvature_and_gravitational_action,module,gr.foundations_and_spacetime_geometry,prerequisite,Curvature contractions and the gravitational action use the metric and its invariant volume structure.
+gr.curvature_and_gravitational_action,module,gr.connections_transport_and_motion,prerequisite,Riemann curvature is defined through connections and covariant differentiation.
+gr.matter_and_einstein_equations,module,gr.foundations_and_spacetime_geometry,prerequisite,The cosmological term is constructed from the spacetime metric.
+gr.matter_and_einstein_equations,module,gr.connections_transport_and_motion,prerequisite,Matter motion and covariant conservation use four-velocity and covariant differentiation.
+gr.matter_and_einstein_equations,module,gr.curvature_and_gravitational_action,prerequisite,Einstein and Ricci curvature supply the geometric side and special forms of the field equations.
+gr.weak_field_and_classical_tests,module,gr.foundations_and_spacetime_geometry,prerequisite,"Weak metrics, clock rates, and light propagation use metric and causal geometry."
+gr.weak_field_and_classical_tests,module,gr.connections_transport_and_motion,prerequisite,Classical trajectories and light bending follow from the geodesic equation.
+gr.weak_field_and_classical_tests,module,gr.matter_and_einstein_equations,prerequisite,Newtonian and post-Newtonian approximations derive from Einstein's field equations.
+gr.schwarzschild_geometry_and_black_holes,module,gr.foundations_and_spacetime_geometry,prerequisite,The Schwarzschild line element and horizon use metric conventions and causal structure.
+gr.schwarzschild_geometry_and_black_holes,module,gr.connections_transport_and_motion,prerequisite,Effective orbital dynamics derives from the geodesic equation.
+gr.schwarzschild_geometry_and_black_holes,module,gr.curvature_and_gravitational_action,prerequisite,Curvature invariants distinguish coordinate pathologies from physical singularities.
+sr.relativistic_mechanics,module,sr.spacetime_foundations,prerequisite,Relativistic particle quantities use invariant spacetime geometry and Lorentz transformations.
+sr.variational_and_field_theory,module,sr.spacetime_foundations,prerequisite,Relativistic actions and fields are formulated on Minkowski spacetime.
+sr.variational_and_field_theory,module,sr.relativistic_mechanics,prerequisite,Particle and vector examples supply the first relativistic variables used by the variational formalism.
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.spacetime_foundations,prerequisite,"Covariant electromagnetic structures use events, the metric, and Lorentz transformations."
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.relativistic_mechanics,prerequisite,The Lorentz force couples the field to four-velocity and four-momentum.
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.variational_and_field_theory,prerequisite,Minimal coupling and the Lorentz force use the action formulation.
+sr.field_dynamics_conservation_and_radiation,module,sr.variational_and_field_theory,prerequisite,Noether and Euler-Lagrange machinery underpin conservation laws and Maxwell dynamics.
+sr.field_dynamics_conservation_and_radiation,module,sr.electromagnetic_structure_gauge_and_stress_energy,prerequisite,Maxwell equations waves and radiation use the electromagnetic field structures and interaction law.

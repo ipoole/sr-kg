@@ -160,6 +160,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--relations",
+        nargs="+",
+        default=None,
+        help=(
+            "Only include the listed edge relations in the generated viewer. "
+            "Source CSV data is not changed."
+        ),
+    )
+    parser.add_argument(
         "--also-load-linked-concepts",
         action="store_true",
         help="When --domains is used, also render one-hop concepts linked to the selected domain concepts.",
@@ -212,6 +221,7 @@ def main(argv: list[str] | None = None) -> None:
             title=" ".join(args.title),
             domains=args.domains,
             also_load_linked_concepts=args.also_load_linked_concepts,
+            relations=args.relations,
         )
     )
 

@@ -36,6 +36,7 @@ def generate_viewer_from_root(
     title: str,
     domains: list[str] | tuple[str, ...] | None = None,
     also_load_linked_concepts: bool = False,
+    relations: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a knowledge-base data root."""
     kb = load_knowledge_base(data_root)
@@ -44,12 +45,45 @@ def generate_viewer_from_root(
         domains=domains,
         also_load_linked_concepts=also_load_linked_concepts,
     )
+    kb = filter_knowledge_base_by_relations(kb, relations=relations)
     return generate_viewer_from_kb(
         kb=kb,
         out_path=out_path,
         height=height,
         width=width,
         title=title,
+    )
+
+
+def filter_knowledge_base_by_relations(
+    kb: KnowledgeBase,
+    *,
+    relations: list[str] | tuple[str, ...] | None,
+) -> KnowledgeBase:
+    """Return a KB view containing only explicitly selected edge relations."""
+    selected = {
+        str(relation).strip()
+        for relation in relations or []
+        if str(relation).strip()
+    }
+    if not selected:
+        return kb
+
+    known = set(kb.edges_df["relation"].astype(str)) | set(kb.edge_key)
+    unknown = sorted(selected - known)
+    if unknown:
+        raise ValueError("Unknown edge relation(s): " + ", ".join(unknown))
+
+    return replace(
+        kb,
+        edges_df=kb.edges_df[
+            kb.edges_df["relation"].astype(str).isin(selected)
+        ].copy(),
+        edge_key={
+            relation: metadata
+            for relation, metadata in kb.edge_key.items()
+            if relation in selected
+        },
     )
 
 

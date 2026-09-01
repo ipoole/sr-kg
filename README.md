@@ -75,7 +75,9 @@ srkg/
   pipeline.py              End-to-end generation workflow
   kb.py                    Manifest-backed knowledge-base loader and query API
   module_diagnostics.py    Module boundary and quotient-graph diagnostics
+  module_partitioning.py   Candidate module search and comparison
 tools/
+  analyse_module_partitions.py  Module-partition authoring aid
   generate_pyvis.py        Command-line entry point
   show_graphics.py         SVG graphics review sheet generator
 ```
@@ -230,6 +232,43 @@ conda run -n sr-kg python tools/generate_pyvis.py \
   --module-report-only \
   --module-relations DERIVES_FROM CONSTRUCTED_FROM REQUIRES
 ```
+
+### Explore Candidate Module Partitions
+
+Candidate generation is a separate authoring operation; it never rewrites the
+authored module CSV files. Search one domain over the three principal
+dependency relations with:
+
+```bash
+conda run -n sr-kg python tools/analyse_module_partitions.py \
+  --data-root data \
+  --domain sr \
+  --module-counts 4 5 6 \
+  --min-size 5 \
+  --max-size 15
+```
+
+The report compares boundary edges, relation counts, modularity, module sizes,
+quotient-DAG status, concrete cycle causes, boundary pairs, and concept
+membership. Searches are deterministic for a given `--random-seed`; use
+`--restarts` to trade runtime for broader exploration. Relation weights can be
+changed with repeated `--relation-weight RELATION=WEIGHT` options.
+
+Evaluate an editorial proposal exactly, without searching or changing runtime
+data:
+
+```bash
+conda run -n sr-kg python tools/analyse_module_partitions.py \
+  --data-root data \
+  --domain sr \
+  --evaluate-members docs/discussion/sr_module_partition_candidate.csv \
+  --evaluate-only \
+  --show-boundary-edges
+```
+
+Without `--evaluate-only`, that proposal is also used as a starting point for
+local refinement. `--out report.md` writes the same Markdown report printed to
+the terminal.
 
 ## Review Concept Graphics
 

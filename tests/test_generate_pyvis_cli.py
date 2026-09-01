@@ -13,3 +13,14 @@ def test_generate_pyvis_parser_accepts_module_report_options():
 
     assert args.module_report_only is True
     assert args.module_relations == ["DERIVES_FROM", "REQUIRES"]
+
+
+def test_generate_pyvis_parser_accepts_viewer_relation_filter():
+    args = build_parser().parse_args([
+        "--relations",
+        "REQUIRES",
+        "DERIVES_FROM",
+        "CONSTRUCTED_FROM",
+    ])
+
+    assert args.relations == ["REQUIRES", "DERIVES_FROM", "CONSTRUCTED_FROM"]

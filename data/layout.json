@@ -1,6 +1,530 @@
 {
   "schema_version": 1,
-  "revision": "1",
-  "concepts": {},
-  "modules": {}
+  "revision": "3",
+  "concepts": {
+    "gr.bianchi_identity": {
+      "x": 2800,
+      "y": 1400
+    },
+    "gr.black_hole_singularity": {
+      "x": 2450,
+      "y": -200
+    },
+    "gr.causal_structure": {
+      "x": 2800,
+      "y": 2600
+    },
+    "gr.christoffel_symbols": {
+      "x": 2450,
+      "y": 2200
+    },
+    "gr.connection": {
+      "x": 2100,
+      "y": 2237.5
+    },
+    "gr.coordinate_singularity": {
+      "x": 2100,
+      "y": -162.5
+    },
+    "gr.cosmological_constant": {
+      "x": 2100,
+      "y": 637.5
+    },
+    "gr.covariant_conservation": {
+      "x": 3500,
+      "y": 1000
+    },
+    "gr.covariant_derivative": {
+      "x": 2800,
+      "y": 2200
+    },
+    "gr.curvature_invariants": {
+      "x": 3150,
+      "y": 1400
+    },
+    "gr.effective_potential_orbits": {
+      "x": 2800,
+      "y": -200
+    },
+    "gr.einstein_field_equations": {
+      "x": 1750,
+      "y": 840
+    },
+    "gr.einstein_hilbert_action": {
+      "x": 2450,
+      "y": 600
+    },
+    "gr.einstein_tensor": {
+      "x": 2450,
+      "y": 1400
+    },
+    "gr.energy_conditions": {
+      "x": 3150,
+      "y": 1000
+    },
+    "gr.equation_of_state": {
+      "x": 3850,
+      "y": 1000
+    },
+    "gr.equivalence_principle": {
+      "x": 1400,
+      "y": 3797.5
+    },
+    "gr.event_horizon": {
+      "x": 1750,
+      "y": 40
+    },
+    "gr.four_acceleration": {
+      "x": 3500,
+      "y": 1800
+    },
+    "gr.four_velocity": {
+      "x": 3150,
+      "y": 1800
+    },
+    "gr.freely_falling_observer": {
+      "x": 2100,
+      "y": 3437.5
+    },
+    "gr.geodesic": {
+      "x": 2100,
+      "y": 1837.5
+    },
+    "gr.geodesic_action": {
+      "x": 2800,
+      "y": 1800
+    },
+    "gr.geodesic_deviation": {
+      "x": 3850,
+      "y": 1800
+    },
+    "gr.geodesic_equation": {
+      "x": 2450,
+      "y": 1800
+    },
+    "gr.gravitational_redshift": {
+      "x": 2100,
+      "y": 237.5
+    },
+    "gr.gravity_as_geometry": {
+      "x": 1050,
+      "y": 3910
+    },
+    "gr.inverse_metric": {
+      "x": 1050,
+      "y": 3510
+    },
+    "gr.light_deflection": {
+      "x": 2450,
+      "y": 200
+    },
+    "gr.line_element": {
+      "x": 1750,
+      "y": 2840
+    },
+    "gr.local_flatness": {
+      "x": 3150,
+      "y": 2600
+    },
+    "gr.local_inertial_frame": {
+      "x": 1750,
+      "y": 3640
+    },
+    "gr.metric_compatibility": {
+      "x": 3150,
+      "y": 2200
+    },
+    "gr.metric_signature": {
+      "x": 3500,
+      "y": 2600
+    },
+    "gr.metric_tensor": {
+      "x": 700,
+      "y": 3577.5
+    },
+    "gr.newtonian_limit": {
+      "x": 1750,
+      "y": 440
+    },
+    "gr.null_curve": {
+      "x": 2450,
+      "y": 2600
+    },
+    "gr.parallel_transport": {
+      "x": 3850,
+      "y": 2200
+    },
+    "gr.perfect_fluid": {
+      "x": 2800,
+      "y": 1000
+    },
+    "gr.perihelion_precession": {
+      "x": 2800,
+      "y": 200
+    },
+    "gr.post_newtonian_approximation": {
+      "x": 3150,
+      "y": 200
+    },
+    "gr.proper_time": {
+      "x": 2100,
+      "y": 2637.5
+    },
+    "gr.ricci_scalar": {
+      "x": 2100,
+      "y": 1437.5
+    },
+    "gr.ricci_tensor": {
+      "x": 1750,
+      "y": 1640
+    },
+    "gr.riemann_tensor": {
+      "x": 1400,
+      "y": 1797.5
+    },
+    "gr.schwarzschild_metric": {
+      "x": 1050,
+      "y": 310
+    },
+    "gr.schwarzschild_radius": {
+      "x": 1400,
+      "y": 197.5
+    },
+    "gr.stress_energy_tensor": {
+      "x": 2450,
+      "y": 1000
+    },
+    "gr.stress_energy_variation": {
+      "x": 2800,
+      "y": 600
+    },
+    "gr.tidal_gravity": {
+      "x": 2450,
+      "y": 3400
+    },
+    "gr.torsion_free_connection": {
+      "x": 3500,
+      "y": 2200
+    },
+    "gr.trace_reversed_equations": {
+      "x": 3150,
+      "y": 600
+    },
+    "gr.vacuum_field_equations": {
+      "x": 3500,
+      "y": 600
+    },
+    "gr.volume_element": {
+      "x": 1400,
+      "y": 3397.5
+    },
+    "gr.weak_field_metric": {
+      "x": 1400,
+      "y": 597.5
+    },
+    "math.coordinate_chart": {
+      "x": 3150,
+      "y": 3400
+    },
+    "math.coordinate_transformation": {
+      "x": 3500,
+      "y": 3400
+    },
+    "math.cotangent_space": {
+      "x": 4550,
+      "y": 3400
+    },
+    "math.index_notation": {
+      "x": 2100,
+      "y": 3037.5
+    },
+    "math.manifold": {
+      "x": 2800,
+      "y": 3400
+    },
+    "math.tangent_space": {
+      "x": 4200,
+      "y": 3400
+    },
+    "math.tensor_field": {
+      "x": 1750,
+      "y": 3240
+    },
+    "math.tensor_transformation_law": {
+      "x": 2450,
+      "y": 3000
+    },
+    "math.worldline": {
+      "x": 3850,
+      "y": 3400
+    },
+    "sr.action_principle": {
+      "x": 350,
+      "y": 2400
+    },
+    "sr.canonical_momentum": {
+      "x": 1050,
+      "y": 2310
+    },
+    "sr.charge_conservation": {
+      "x": 1050,
+      "y": 1110
+    },
+    "sr.constancy_of_speed_of_light": {
+      "x": 350,
+      "y": 4000
+    },
+    "sr.electric_field": {
+      "x": 921,
+      "y": 1474
+    },
+    "sr.electromagnetic_field": {
+      "x": 1767,
+      "y": 1567
+    },
+    "sr.electromagnetic_waves": {
+      "x": 350,
+      "y": 400
+    },
+    "sr.em_energy_density": {
+      "x": 1271,
+      "y": 419
+    },
+    "sr.em_stress_energy": {
+      "x": 713,
+      "y": 1106
+    },
+    "sr.energy_momentum_tensor": {
+      "x": 0,
+      "y": 800
+    },
+    "sr.euler_lagrange_equations": {
+      "x": 700,
+      "y": 2377.5
+    },
+    "sr.field_equations": {
+      "x": 1050,
+      "y": 1910
+    },
+    "sr.field_lagrangian": {
+      "x": 700,
+      "y": 1977.5
+    },
+    "sr.field_tensor": {
+      "x": 674,
+      "y": 1785
+    },
+    "sr.four_current": {
+      "x": 1750,
+      "y": 1240
+    },
+    "sr.four_vectors": {
+      "x": 350,
+      "y": 2800
+    },
+    "sr.gauge_fixing": {
+      "x": 668,
+      "y": 151
+    },
+    "sr.gauge_invariance": {
+      "x": 991,
+      "y": 997
+    },
+    "sr.hamiltonian_formalism": {
+      "x": 1400,
+      "y": 2197.5
+    },
+    "sr.inertial_frames": {
+      "x": 0,
+      "y": 4000
+    },
+    "sr.lagrangian": {
+      "x": 0,
+      "y": 2400
+    },
+    "sr.light_cone": {
+      "x": 1050,
+      "y": 2804
+    },
+    "sr.lorentz_force_law": {
+      "x": -159,
+      "y": 799
+    },
+    "sr.lorentz_invariance": {
+      "x": 0,
+      "y": 0
+    },
+    "sr.lorentz_transformations": {
+      "x": 710,
+      "y": 3447
+    },
+    "sr.lorenz_gauge": {
+      "x": 1606,
+      "y": 830
+    },
+    "sr.magnetic_field": {
+      "x": 1539,
+      "y": 1801
+    },
+    "sr.mass_energy_equivalence": {
+      "x": 1750,
+      "y": 2440
+    },
+    "sr.maxwells_equations": {
+      "x": 2100,
+      "y": 1037.5
+    },
+    "sr.metric_tensor": {
+      "x": -472,
+      "y": 2956
+    },
+    "sr.minimal_coupling": {
+      "x": 200,
+      "y": 539
+    },
+    "sr.minkowski_diagram": {
+      "x": -457,
+      "y": 3469
+    },
+    "sr.momentum_four_vector": {
+      "x": 1400,
+      "y": 2597.5
+    },
+    "sr.noether_theorem": {
+      "x": 1750,
+      "y": 2040
+    },
+    "sr.position_four_vector": {
+      "x": 700,
+      "y": 2777.5
+    },
+    "sr.poynting_vector": {
+      "x": 1482,
+      "y": 1132
+    },
+    "sr.principle_of_locality": {
+      "x": 350,
+      "y": 3600
+    },
+    "sr.principle_of_relativity": {
+      "x": 700,
+      "y": 3977.5
+    },
+    "sr.proper_time": {
+      "x": 0,
+      "y": 2800
+    },
+    "sr.radiation_reaction": {
+      "x": 700,
+      "y": 377.5
+    },
+    "sr.scalar_field": {
+      "x": 0,
+      "y": 2000
+    },
+    "sr.spacetime_event": {
+      "x": 0,
+      "y": 3600
+    },
+    "sr.spacetime_interval": {
+      "x": 257,
+      "y": 2759
+    },
+    "sr.vector_field": {
+      "x": 350,
+      "y": 2000
+    },
+    "sr.vector_potential": {
+      "x": 0,
+      "y": 1600
+    },
+    "sr.velocity_four_vector": {
+      "x": 1050,
+      "y": 2710
+    },
+    "sr.wave_equation": {
+      "x": 0,
+      "y": 400
+    }
+  },
+  "modules": {
+    "gr.connections_transport_and_motion": {
+      "anchor": {
+        "x": 1677,
+        "y": 1002
+      }
+    },
+    "gr.curvature_and_gravitational_action": {
+      "anchor": {
+        "x": 1079,
+        "y": 563
+      }
+    },
+    "gr.foundations_and_spacetime_geometry": {
+      "anchor": {
+        "x": 839,
+        "y": 1262
+      }
+    },
+    "gr.matter_and_einstein_equations": {
+      "anchor": {
+        "x": 1488,
+        "y": 213
+      }
+    },
+    "gr.schwarzschild_geometry_and_black_holes": {
+      "anchor": {
+        "x": 893,
+        "y": 67
+      }
+    },
+    "gr.weak_field_and_classical_tests": {
+      "anchor": {
+        "x": 1969,
+        "y": -168
+      }
+    },
+    "math.m01_manifolds_and_coordinates": {
+      "anchor": {
+        "x": 544,
+        "y": 2432
+      }
+    },
+    "math.m02_tensor_calculus": {
+      "anchor": {
+        "x": 1538,
+        "y": 2019
+      }
+    },
+    "sr.electromagnetic_structure_gauge_and_stress_energy": {
+      "anchor": {
+        "x": 24,
+        "y": 658
+      }
+    },
+    "sr.field_dynamics_conservation_and_radiation": {
+      "anchor": {
+        "x": 21,
+        "y": 97
+      }
+    },
+    "sr.relativistic_mechanics": {
+      "anchor": {
+        "x": -478,
+        "y": 1676
+      }
+    },
+    "sr.spacetime_foundations": {
+      "anchor": {
+        "x": 243,
+        "y": 1933
+      }
+    },
+    "sr.variational_and_field_theory": {
+      "anchor": {
+        "x": -599,
+        "y": 1170
+      }
+    }
+  }
 }

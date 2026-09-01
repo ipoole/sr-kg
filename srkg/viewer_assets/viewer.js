@@ -3111,8 +3111,7 @@
             id: moduleGraphNodeId(moduleId),
             isModuleNode: true,
             moduleId: String(moduleId),
-            label: moduleDomainLabel(module.domain) + "\n" +
-              String(module.title || moduleId) + "\n" +
+            label: String(module.title || moduleId) + "\n" +
               memberCount + " concept" + (memberCount === 1 ? "" : "s"),
             shape: "box",
             shapeProperties: {
@@ -3268,6 +3267,17 @@
         function moduleIdsWithMembers() {
           return moduleIds().filter(function(moduleId) {
             return moduleMemberIds(getModule(moduleId)).length > 0;
+          });
+        }
+
+        function applyDefaultModuleFoldState() {
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var module = getModule(moduleId);
+            var folded = Boolean(module && module.default_collapsed);
+            preferredFoldedModules[String(moduleId)] = folded;
+            if (folded) {
+              foldModule(moduleId);
+            }
           });
         }
 
@@ -7372,6 +7382,7 @@
         }, true);
 
         /* Initial render. */
+        applyDefaultModuleFoldState();
         // Build legend from node groups.
         var groups = {};
         allNodes.forEach(function(n) {
@@ -7401,6 +7412,7 @@
           return setEdgeHidden(o, false);
         }));
         allEdges = edges.get();
+        applyAllGraphViewWithFolds({preserveStatus: true});
 
         var initialModuleId = moduleIdFromHash(window.location.hash);
         var initialNodeId = conceptIdFromHash(window.location.hash);
