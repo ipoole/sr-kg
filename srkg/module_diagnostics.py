@@ -13,6 +13,9 @@ from srkg.kb import KnowledgeBase, load_knowledge_base
 from srkg.model import Concept, Module
 
 
+DEFAULT_MODULE_RELATIONS = ("REQUIRES", "DERIVES_FROM", "CONSTRUCTED_FROM")
+
+
 @dataclass(frozen=True)
 class ModuleBoundaryEdge:
     """One concrete concept edge crossing an authored module boundary."""
@@ -56,6 +59,8 @@ class ModuleDiagnostics:
     boundary_pairs: tuple[ModuleBoundaryPair, ...]
     undeclared_boundary_pairs: tuple[ModuleBoundaryPair, ...]
     declared_supports_without_boundary: tuple[tuple[str, str], ...]
+    module_order_violations: tuple[ModuleBoundaryEdge, ...]
+    member_order_violations: tuple[ModuleBoundaryEdge, ...]
     quotient_dag_reports: tuple[DagReport, ...]
 
 
@@ -77,10 +82,19 @@ def build_module_diagnostics(
     membership = _concept_module_index(kb.modules)
     concept_index = kb.concept_index
     module_index = kb.module_index
-    relation_filter = _relation_filter(relations)
+    selected_relations = tuple(relations or DEFAULT_MODULE_RELATIONS)
+    relation_filter = set(selected_relations)
+    module_sequence = {module.module_id: module.sequence for module in kb.modules}
+    member_sequence = {
+        concept_id: index
+        for module in kb.modules
+        for index, concept_id in enumerate(module.members, start=1)
+    }
 
     internal_relation_counts: Counter[str] = Counter()
     boundary_edges: list[ModuleBoundaryEdge] = []
+    module_order_violations: list[ModuleBoundaryEdge] = []
+    member_order_violations: list[ModuleBoundaryEdge] = []
     quotient_rows = []
 
     for row in kb.edges_df.itertuples(index=False):
@@ -93,15 +107,11 @@ def build_module_diagnostics(
         target_module_id = membership.get(target_concept_id)
         if not source_module_id or not target_module_id:
             continue
-        if source_module_id == target_module_id:
-            internal_relation_counts[relation] += 1
-            continue
-
         source_module = module_index[source_module_id]
         target_module = module_index[target_module_id]
         source_concept = concept_index.get(source_concept_id)
         target_concept = concept_index.get(target_concept_id)
-        boundary_edges.append(ModuleBoundaryEdge(
+        diagnostic_edge = ModuleBoundaryEdge(
             source_module_id=source_module_id,
             source_module_title=source_module.title,
             target_module_id=target_module_id,
@@ -112,7 +122,19 @@ def build_module_diagnostics(
             target_concept_label=_concept_label(target_concept, target_concept_id),
             relation=relation,
             note=str(getattr(row, "note", "")).strip(),
-        ))
+        )
+        if source_module_id == target_module_id:
+            internal_relation_counts[relation] += 1
+            if member_sequence[source_concept_id] < member_sequence[target_concept_id]:
+                member_order_violations.append(diagnostic_edge)
+            continue
+
+        boundary_edges.append(diagnostic_edge)
+        if (
+            source_module.domain == target_module.domain
+            and module_sequence[source_module_id] < module_sequence[target_module_id]
+        ):
+            module_order_violations.append(diagnostic_edge)
         quotient_rows.append({
             "source": source_module_id,
             "target": target_module_id,
@@ -131,7 +153,6 @@ def build_module_diagnostics(
     )
 
     quotient_dag_reports: tuple[DagReport, ...] = ()
-    selected_relations = tuple(relations or _directed_relations_from_key(kb))
     if selected_relations and quotient_rows:
         quotient_dag_reports = tuple(build_dag_reports(
             _module_nodes_df(kb.modules),
@@ -153,6 +174,8 @@ def build_module_diagnostics(
             pair for pair in boundary_pairs if not pair.declared_support
         ),
         declared_supports_without_boundary=declared_supports_without_boundary,
+        module_order_violations=tuple(module_order_violations),
+        member_order_violations=tuple(member_order_violations),
         quotient_dag_reports=quotient_dag_reports,
     )
 
@@ -233,6 +256,19 @@ def format_module_diagnostics(
             )
         )
 
+    lines.extend([
+        "",
+        f"Module-order contradictions: {len(diagnostics.module_order_violations)}",
+    ])
+    for edge in diagnostics.module_order_violations[:max_items]:
+        lines.append("  " + _format_boundary_edge(edge))
+    lines.append(
+        f"Within-module member-order contradictions: "
+        f"{len(diagnostics.member_order_violations)}"
+    )
+    for edge in diagnostics.member_order_violations[:max_items]:
+        lines.append("  " + _format_boundary_edge(edge))
+
     return "\n".join(lines)
 
 
@@ -246,12 +282,6 @@ def _concept_module_index(modules: Sequence[Module]) -> dict[str, str]:
 
 def _concept_label(concept: Concept | None, fallback: str) -> str:
     return concept.label if concept and concept.label else fallback
-
-
-def _relation_filter(relations: Sequence[str] | None) -> set[str] | None:
-    if relations is None:
-        return None
-    return {str(relation) for relation in relations if str(relation)}
 
 
 def _declared_module_support_pairs(
@@ -321,24 +351,9 @@ def _module_nodes_df(modules: Sequence[Module]) -> pd.DataFrame:
             "id": module.module_id,
             "display_id": module.module_id,
             "label": module.title,
-            "layer": module.sequence,
         }
         for module in modules
     ])
-
-
-def _directed_relations_from_key(kb: KnowledgeBase) -> tuple[str, ...]:
-    edge_relations = list(dict.fromkeys(kb.edges_df["relation"].astype(str)))
-    relations = []
-    for relation, metadata in kb.edge_key.items():
-        if relation in edge_relations and bool(metadata.get("directed", True)):
-            relations.append(relation)
-    for relation in edge_relations:
-        if relation in relations:
-            continue
-        if bool(kb.edge_key.get(relation, {}).get("directed", True)):
-            relations.append(relation)
-    return tuple(relations)
 
 
 def _format_counts(counts: dict[str, int]) -> str:

@@ -383,12 +383,7 @@
             return {id: id, x: position.x, y: position.y};
           }));
           foldedModuleIdList().forEach(function(moduleId) {
-            var anchor = globalModuleAnchor(moduleId);
-            var nodeId = moduleGraphNodeId(moduleId);
-            if (anchor && nodes.get(nodeId)) {
-              foldedModules[moduleId] = moduleMemberGeometry(moduleId);
-              nodes.update({id: nodeId, x: anchor.x, y: anchor.y});
-            }
+            refreshFoldedModuleGeometry(moduleId, false);
           });
           updateNodeLabelPositions();
         }
@@ -455,9 +450,6 @@
             (status.hasOverrides ? " · Personal overrides active" : " · Published layout active");
           document.getElementById("kg_layout_revision_warning").hidden = !status.revisionMismatch;
           document.getElementById("kg_layout_reset").disabled = !status.hasOverrides;
-          document.getElementById("kg_layout_recenter_module").disabled = !(
-            activeModuleId && getModule(activeModuleId) && globalLayoutEditingEnabled()
-          );
         }
 
         function globalLayoutEditingEnabled() {
@@ -471,18 +463,26 @@
         function updateGlobalLayoutFromDrag(params) {
           if (!globalLayoutEditingEnabled()) { return; }
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
+          var affectedModules = {};
           draggedIds.forEach(function(nodeId) {
             var position = graphPositionForNode(nodeId);
             if (!position) { return; }
             var moduleId = moduleIdFromGraphNodeId(nodeId);
             if (moduleId && selectedModuleIsFolded(moduleId)) {
-              setGlobalModuleAnchor(moduleId, position);
-              foldedModules[moduleId].position = copyLayoutPosition(position);
+              var anchor = syncFoldedModulePosition(moduleId);
+              setGlobalModuleAnchor(moduleId, anchor);
+              restoreFoldedModuleMembers(moduleId);
+              affectedModules[moduleId] = true;
               return;
             }
             if (getConcept(nodeId)) {
               setGlobalConceptPosition(nodeId, position);
+              var owner = moduleIdForConcept(nodeId);
+              if (owner) { affectedModules[owner] = true; }
             }
+          });
+          Object.keys(affectedModules).forEach(function(moduleId) {
+            refreshFoldedModuleGeometry(moduleId, false);
           });
         }
 
@@ -564,6 +564,7 @@
               console.warn("MathJax label typesetting failed:", err);
             }).then(function() {
               updateNodeLabelPositions();
+              refreshModuleFootprints();
             });
           } else {
             setTimeout(typesetNodeLabels, 250);
@@ -1872,7 +1873,6 @@
 
         function setInfoPanelVisible(visible) {
           var panel = document.getElementById("info_panel");
-          var button = document.getElementById("kg_info_toggle");
           if (!visible && graphViewIs(currentView, GraphViewMode.HIDE)) {
             visible = true;
             document.getElementById("kg_status").innerText =
@@ -1880,9 +1880,6 @@
           }
           panel.classList.toggle("kg-hidden", !visible);
           document.body.classList.toggle("kg-details-hidden", !visible);
-          if (button) {
-            button.innerText = visible ? "Hide details" : "Show details";
-          }
           updateDetailsViewControls();
           updateFocusLensDisplay();
           return visible;
@@ -2096,7 +2093,8 @@
             var nodeId = moduleGraphNodeId(moduleId);
             if (!anchor || !nodes.get(nodeId)) { return; }
             foldedModules[moduleId].position = copyLayoutPosition(anchor);
-            network.moveNode(nodeId, anchor.x, anchor.y);
+            var offset = foldedModules[moduleId].footprint.offset;
+            network.moveNode(nodeId, anchor.x + offset.x, anchor.y + offset.y);
           });
         }
 
@@ -2878,6 +2876,17 @@
           return moduleIdByConcept()[String(conceptId)] || null;
         }
 
+        function moduleVisualColor(moduleId) {
+          var members = moduleMemberIds(getModule(moduleId));
+          for (var i = 0; i < members.length; i++) {
+            var node = originalNodes[String(members[i])] || nodes.get(String(members[i]));
+            if (node && node.visualColor) {
+              return Object.assign({}, node.visualColor);
+            }
+          }
+          return {background: "#e4e7eb", border: "#59636e"};
+        }
+
         /* Module fold state and geometry. */
         function moduleGraphNodeId(moduleId) {
           return "module::" + String(moduleId);
@@ -2905,6 +2914,11 @@
 
         function graphPositionForNode(nodeId) {
           var id = String(nodeId);
+          // getPositions rounds coordinates; retain subpixel offsets during folding.
+          var liveNode = network && network.body && network.body.nodes[id];
+          if (liveNode && validLayoutPosition(liveNode)) {
+            return copyLayoutPosition(liveNode);
+          }
           var positions = network && network.getPositions
             ? network.getPositions([id])
             : {};
@@ -2942,8 +2956,79 @@
           });
           return {
             position: centre,
-            memberOffsets: offsets
+            memberOffsets: offsets,
+            footprint: moduleFootprint(moduleId)
           };
+        }
+
+        function conceptFootprintExtents(conceptId) {
+          var node = originalNodes[String(conceptId)] || nodes.get(conceptId) || {};
+          var radius = Number(node.visualSize) || Number(node.size) || 100;
+          var labelHeight = nodeLabelFontSize * 3.2;
+          var labelWidth = nodeLabelWidth;
+          var label = nodeLabelEls[String(conceptId)];
+          if (label) {
+            // Measure a natural-size copy even when the original is hidden or zoomed.
+            var probe = label.cloneNode(true);
+            probe.removeAttribute("data-node-id");
+            probe.classList.remove("kg-node-label-transient");
+            probe.style.cssText = "position:absolute;visibility:hidden;display:block;" +
+              "left:-100000px;top:0;width:" + nodeLabelWidth + "px;font-size:" +
+              nodeLabelFontSize + "px;";
+            nodeLabelLayer.appendChild(probe);
+            labelHeight = Math.max(labelHeight, probe.getBoundingClientRect().height);
+            labelWidth = Math.max(labelWidth, probe.scrollWidth);
+            probe.remove();
+          }
+          return {
+            left: Math.max(radius, labelWidth / 2),
+            right: Math.max(radius, labelWidth / 2),
+            top: radius,
+            bottom: radius + 4 + labelHeight
+          };
+        }
+
+        function moduleFootprint(moduleId) {
+          return kgModuleGeometry.footprint(moduleMemberIds(getModule(moduleId)).map(function(id) {
+            return {position: globalConceptPosition(id), extents: conceptFootprintExtents(id)};
+          }), globalModuleAnchor(moduleId));
+        }
+
+        window.kgModuleFootprint = moduleFootprint;
+
+        function refreshFoldedModuleGeometry(moduleId, preserveTemporary) {
+          var oldState = foldedModules[String(moduleId)];
+          if (!oldState) { return; }
+          var nodeId = moduleGraphNodeId(moduleId);
+          var oldNode = nodes.get(nodeId);
+          var temporaryDelta = {x: 0, y: 0};
+          if (preserveTemporary && temporaryLayoutEditingEnabled() && oldNode) {
+            var oldPosition = graphPositionForNode(nodeId);
+            var anchor = globalModuleAnchor(moduleId) || oldState.position;
+            temporaryDelta = {
+              x: oldPosition.x - anchor.x - oldState.footprint.offset.x,
+              y: oldPosition.y - anchor.y - oldState.footprint.offset.y
+            };
+          }
+          var geometry = moduleMemberGeometry(moduleId);
+          geometry.position = {
+            x: geometry.position.x + temporaryDelta.x,
+            y: geometry.position.y + temporaryDelta.y
+          };
+          foldedModules[String(moduleId)] = geometry;
+          if (oldNode) {
+            var node = moduleGraphNode(moduleId);
+            node.hidden = oldNode.hidden;
+            nodes.update(node);
+            network.moveNode(nodeId, node.x, node.y);
+          }
+        }
+
+        function refreshModuleFootprints() {
+          // Geometry changes never move anchors, members or neighbouring modules.
+          foldedModuleIdList().forEach(function(moduleId) {
+            refreshFoldedModuleGeometry(moduleId, true);
+          });
         }
 
         function foldModule(moduleId) {
@@ -2980,16 +3065,20 @@
           if (!state) { return null; }
           var graphNodePosition = graphPositionForNode(moduleGraphNodeId(moduleId));
           if (graphNodePosition) {
-            state.position = graphNodePosition;
+            var offset = state.footprint.offset;
+            state.position = {x: graphNodePosition.x - offset.x, y: graphNodePosition.y - offset.y};
           }
           return state.position || null;
         }
 
         function restoreFoldedModuleMembers(moduleId) {
+          // Focussed-mode dragging must not leak through an expansion into global state.
+          if (!globalLayoutEditingEnabled()) { return; }
           moduleId = String(moduleId);
           var state = foldedModules[moduleId];
           if (!state || !state.position || !state.memberOffsets) { return; }
           syncFoldedModulePosition(moduleId);
+          setGlobalModuleAnchor(moduleId, state.position);
           var updates = [];
           moduleMemberIds(getModule(moduleId)).forEach(function(id) {
             var offset = state.memberOffsets[String(id)] || {x: 0, y: 0};
@@ -3056,95 +3145,114 @@
           clearProjectedModuleEdges();
         }
 
-        function recenterModuleAnchor(moduleId) {
-          var positions = moduleMemberIds(getModule(moduleId)).map(globalConceptPosition).filter(Boolean);
-          if (positions.length === 0) { return null; }
-          var anchor = {
-            x: positions.reduce(function(total, position) { return total + position.x; }, 0) / positions.length,
-            y: positions.reduce(function(total, position) { return total + position.y; }, 0) / positions.length
+        function moduleGraphNodePosition(moduleId) {
+          var state = foldedModules[String(moduleId)];
+          if (!state) { return moduleFootprint(moduleId); }
+          return {
+            x: state.position.x + state.footprint.offset.x,
+            y: state.position.y + state.footprint.offset.y
           };
-          setGlobalModuleAnchor(moduleId, anchor);
-          if (selectedModuleIsFolded(moduleId)) {
-            foldedModules[String(moduleId)] = moduleMemberGeometry(moduleId);
-            var graphNodeId = moduleGraphNodeId(moduleId);
-            if (nodes.get(graphNodeId)) {
-              nodes.update({id: graphNodeId, x: anchor.x, y: anchor.y});
-            }
-          }
-          return copyLayoutPosition(anchor);
         }
 
-        window.kgRecenterModuleAnchor = recenterModuleAnchor;
-
-        function moduleGraphNodePosition(moduleId) {
-          var foldedPosition = syncFoldedModulePosition(moduleId);
-          if (foldedPosition) {
-            return foldedPosition;
+        function fittedModuleLabel(title, memberCount, width, height) {
+          var context = document.createElement("canvas").getContext("2d");
+          var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
+          var countFontSize = 48; // Fixed graph-space size, independent of title and box.
+          function linesAt(size) {
+            context.font = "bold " + size + "px Arial";
+            var lines = [], line = "";
+            String(title).split(/\s+/).forEach(function(word) {
+              var candidate = line ? line + " " + word : word;
+              if (context.measureText(candidate).width <= width * 0.88) {
+                line = candidate;
+              } else {
+                if (line) { lines.push(line); }
+                line = word;
+              }
+            });
+            if (line) { lines.push(line); }
+            return lines;
           }
-          var memberIds = moduleMemberIds(getModule(moduleId));
-          var positions = network && network.getPositions
-            ? network.getPositions(memberIds)
-            : {};
-          var count = 0;
-          var totalX = 0;
-          var totalY = 0;
-          memberIds.forEach(function(id) {
-            var pos = positions[id] || originalNodes[id] || nodes.get(id);
-            if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y))) {
-              return;
-            }
-            totalX += Number(pos.x);
-            totalY += Number(pos.y);
-            count += 1;
-          });
-          if (count > 0) {
-            return {x: totalX / count, y: totalY / count};
+          // Cap titles in graph-space units: extra box area need not enlarge text.
+          var low = 1, high = Math.min(160, Math.min(width, height) * 0.3);
+          for (var i = 0; i < 16; i += 1) {
+            var size = (low + high) / 2;
+            var lines = linesAt(size);
+            var titleFits = lines.every(function(line) {
+              return context.measureText(line).width <= width * 0.88;
+            });
+            context.font = countFontSize + "px Arial";
+            if ((lines.length * size + countFontSize) * 1.25 <= height * 0.84 && titleFits &&
+                context.measureText(countLabel).width <= width * 0.88) {
+              low = size;
+            } else { high = size; }
           }
-          return {x: 0, y: 0};
+          var titleLines = linesAt(low);
+          return {
+            text: titleLines.map(function(line) {
+              return "<b>" + escapeHtml(line) + "</b>";
+            }).join("\n") + "\n" + countLabel,
+            size: low,
+            countSize: countFontSize,
+            // vis centres the first baseline using the base (count) font size,
+            // even for larger bold title lines. Correct each style's baseline
+            // so the combined title/count block is centred inside its box.
+            titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2,
+            countOffset: titleLines.length * (countFontSize - low) / 2
+          };
         }
 
         function moduleGraphNode(moduleId) {
           var module = getModule(moduleId) || {};
           var memberCount = moduleMemberIds(module).length;
           var position = moduleGraphNodePosition(moduleId);
+          var footprint = foldedModules[String(moduleId)].footprint;
+          var fittedLabel = fittedModuleLabel(module.title || moduleId, memberCount, footprint.width, footprint.height);
+          var visualColor = moduleVisualColor(moduleId);
           return {
             id: moduleGraphNodeId(moduleId),
             isModuleNode: true,
             moduleId: String(moduleId),
-            label: String(module.title || moduleId) + "\n" +
-              memberCount + " concept" + (memberCount === 1 ? "" : "s"),
+            label: fittedLabel.text,
+            moduleFootprintWidth: footprint.width,
+            moduleFootprintHeight: footprint.height,
+            chosen: {label: false},
+            // A small secondary count must not trigger vis's whole-label fade-out.
+            scaling: {label: {drawThreshold: 0}},
             shape: "box",
             shapeProperties: {
-              borderRadius: 18
+              borderRadius: Math.min(footprint.width, footprint.height) * 0.18
             },
             x: position.x,
             y: position.y,
             physics: false,
             hidden: false,
-            margin: {top: 22, right: 27, bottom: 22, left: 27},
-            widthConstraint: {minimum: 294, maximum: 434},
-            heightConstraint: {minimum: 133},
+            margin: {top: 0, right: 0, bottom: 0, left: 0},
+            widthConstraint: {minimum: footprint.width, maximum: footprint.width},
+            heightConstraint: {minimum: footprint.height, valign: "middle"},
             borderWidth: 2,
             color: {
-              background: "#e7f0f6",
-              border: "#28516c",
+              background: visualColor.background,
+              border: visualColor.border,
               highlight: {
-                background: "#d8eaf4",
-                border: "#15384f"
+                background: visualColor.background,
+                border: visualColor.border
               },
               hover: {
-                background: "#d8eaf4",
-                border: "#15384f"
+                background: visualColor.background,
+                border: visualColor.border
               }
             },
             font: {
               color: "#111827",
-              size: 28,
+              size: fittedLabel.countSize,
+              vadjust: fittedLabel.countOffset,
               face: "Arial",
-              multi: false,
+              multi: "html",
               bold: {
                 color: "#111827",
-                size: 28,
+                size: fittedLabel.size,
+                vadjust: fittedLabel.titleOffset,
                 face: "Arial"
               }
             }
@@ -3200,6 +3308,7 @@
             },
             dashes: relations.length > 1,
             width: Math.min(6, 2.6 + Math.max(0, group.edgeIds.length - 1) * 0.5),
+            kgBaseWidth: Math.min(6, 2.6 + Math.max(0, group.edgeIds.length - 1) * 0.5),
             font: {
               color: "#334155",
               size: 16,
@@ -3677,7 +3786,7 @@
           currentConceptTocItems = tocItems.slice();
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
-          html += '<p class="concept-layer-context">Module - ' +
+          html += '<p class="concept-module-context">Module - ' +
             escapeHtml(moduleDomainLabel(module.domain)) + "</p>";
           filteredModuleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
@@ -4058,16 +4167,16 @@
 
         function conceptPreviewHtml(nodeId) {
           var concept = getConcept(nodeId) || {};
-          var layerParts = [];
-          if (concept.layer) { layerParts.push("Layer " + escapeHtml(concept.layer)); }
-          if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
+          var owningModuleId = moduleIdForConcept(nodeId);
+          var owningModule = owningModuleId ? getModule(owningModuleId) : null;
 
           var html = '<div class="concept-preview-header">';
           html += '<div class="concept-preview-title">' + renderTooltipText(conceptTitleText(nodeId)) + "</div>";
           html += '<button type="button" class="concept-preview-close" aria-label="Close preview">Close</button>';
           html += "</div>";
-          if (layerParts.length > 0) {
-            html += '<div class="concept-preview-layer">' + layerParts.join(" - ") + "</div>";
+          if (owningModule) {
+            html += '<div class="concept-preview-module">Module - ' +
+              renderConceptText(owningModule.title || owningModuleId) + "</div>";
           }
           var excerpt = conceptPreviewExcerpt(conceptPreviewSourceText(concept));
           if (excerpt) {
@@ -4327,6 +4436,12 @@
         }
 
         function setEdgeHidden(edge, hidden) {
+          // Full graph includes the highlighted-selection variant. Filter before
+          // folding so projected counts contain only visible structural edges.
+          var fullGraph = graphViewIs(currentView, GraphViewMode.ALL) ||
+            graphViewIs(currentView, GraphViewMode.HIGHLIGHT);
+          hidden = hidden || (fullGraph &&
+            ["REQUIRES", "DERIVES_FROM", "CONSTRUCTED_FROM"].indexOf(edgeRelation(edge)) === -1);
           edge.hidden = hidden;
           if (hidden) {
             edge.title = "";
@@ -5467,10 +5582,6 @@
             return;
           }
 
-          var layerParts = [];
-          if (concept.layer) { layerParts.push("Layer " + escapeHtml(concept.layer)); }
-          if (concept.layer_title) { layerParts.push(escapeHtml(concept.layer_title)); }
-
           var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
           studyQuestions = filteredStudyQuestions(studyQuestions);
           var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
@@ -5484,9 +5595,6 @@
 
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
-          if (layerParts.length > 0) {
-            html += '<p class="concept-layer-context">' + layerParts.join(" - ") + "</p>";
-          }
           html += renderConceptGraphic(nodeId, concept);
           html += "<hr>";
           if (graphViewIs(currentView, GraphViewMode.DERIVATION_TRACE)) {
@@ -5617,12 +5725,6 @@
         };
 
         /* Public UI commands. */
-        window.kgToggleInfoPanel = function() {
-          var panel = document.getElementById("info_panel");
-          setInfoPanelVisible(panel.classList.contains("kg-hidden"));
-          refitCurrentViewForPanels(true);
-        };
-
         window.kgToggleControls = function() {
           var panel = document.getElementById("kg_controls");
           setControlsVisible(panel.classList.contains("kg-hidden"));
@@ -5747,11 +5849,27 @@
             right: baseAbs.right - margin,
             bottom: baseAbs.bottom - margin
           };
+          var minWidth = Math.min(220, baseAbs.width * 0.65);
+          var minHeight = Math.min(180, baseAbs.height * 0.65);
+          visiblePanelRects().forEach(function(panel) {
+            var overlap = intersectRects(baseAbs, panel.rect);
+            if (!overlap) { return; }
+            var edge = panelOcclusionEdge(panel, baseAbs, overlap);
+            var candidate = Object.assign({}, availableAbs);
+            if (edge === "left") { candidate.left = Math.max(candidate.left, overlap.right + margin); }
+            if (edge === "right") { candidate.right = Math.min(candidate.right, overlap.left - margin); }
+            if (edge === "top") { candidate.top = Math.max(candidate.top, overlap.bottom + margin); }
+            if (edge === "bottom") { candidate.bottom = Math.min(candidate.bottom, overlap.top - margin); }
+            if (
+              candidate.right - candidate.left >= minWidth &&
+              candidate.bottom - candidate.top >= minHeight
+            ) {
+              availableAbs = candidate;
+            }
+          });
           var availableWidth = availableAbs.right - availableAbs.left;
           var availableHeight = availableAbs.bottom - availableAbs.top;
 
-          var minWidth = Math.min(220, baseAbs.width * 0.65);
-          var minHeight = Math.min(180, baseAbs.height * 0.65);
           if (availableWidth < minWidth || availableHeight < minHeight) {
             availableAbs = {
               left: baseAbs.left + margin,
@@ -5787,6 +5905,14 @@
             var pos = positions[id];
             var node = nodes.get(id);
             if (!pos || !node || node.hidden) { return; }
+
+            if (node.isModuleNode) {
+              minX = Math.min(minX, pos.x - node.moduleFootprintWidth / 2);
+              maxX = Math.max(maxX, pos.x + node.moduleFootprintWidth / 2);
+              minY = Math.min(minY, pos.y - node.moduleFootprintHeight / 2);
+              maxY = Math.max(maxY, pos.y + node.moduleFootprintHeight / 2);
+              return;
+            }
 
             var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
             var radius = id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius;
@@ -5831,9 +5957,9 @@
 
           var available = availableGraphRect();
           var maxScale = options.maxScale === undefined ? 0.7 : Number(options.maxScale);
-          var minScale = options.minScale === undefined ? 0.08 : Number(options.minScale);
+          var minScale = options.minScale === undefined ? 0.001 : Number(options.minScale);
           if (!Number.isFinite(maxScale) || maxScale <= 0) { maxScale = 0.7; }
-          if (!Number.isFinite(minScale) || minScale <= 0) { minScale = 0.08; }
+          if (!Number.isFinite(minScale) || minScale <= 0) { minScale = 0.001; }
 
           var scale = Math.min(
             available.width / bounds.width,
@@ -6170,9 +6296,13 @@
           ids.forEach(function(moduleId) {
             var module = getModule(moduleId) || {};
             var count = moduleMemberIds(module).length;
+            var visualColor = moduleVisualColor(moduleId);
             html += '<button type="button" class="kg-module-item" data-module-id="' +
-              escapeHtml(moduleId) + '">' +
+              escapeHtml(moduleId) + '" style="--module-background:' +
+              escapeHtml(visualColor.background) + ';--module-border:' +
+              escapeHtml(visualColor.border) + '">' +
               '<span class="kg-search-hit-title">' +
+              '<span class="kg-module-swatch" aria-hidden="true"></span>' +
               '<span class="kg-module-domain">' +
               escapeHtml(moduleDomainLabel(module.domain)) +
               "</span> " +
@@ -6256,7 +6386,7 @@
         function renderInitialInfoPanel() {
           currentConceptTocItems = [];
           var panel = document.getElementById("info_panel");
-          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept...</p>";
+          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>";
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
           panel.classList.toggle("kg-note-editing", false);
@@ -6577,6 +6707,8 @@
               } else {
                 nodes.add(moduleNode);
               }
+              // DataSet updates truncate x/y in vis-network; dragging does not.
+              network.moveNode(graphNodeId, moduleNode.x, moduleNode.y);
               fitIds.push(graphNodeId);
             } else if (nodes.get(graphNodeId)) {
               nodes.update({id: graphNodeId, hidden: true});
@@ -6893,6 +7025,24 @@
           hideNodeTooltip();
         });
 
+        function updateRenderedEdgeWidths() {
+          var scale = network.getScale();
+          if (!isFinite(scale) || scale <= 0) { return; }
+          edges.get().forEach(function(edge) {
+            var rendered = network.body.edges[edge.id];
+            if (!rendered || edge.hidden) { return; }
+            var width = Number(edge.width) || 1;
+            var base = edge.isModuleEdge ? Number(edge.kgBaseWidth)
+              : Number((originalEdges[edge.id] || {}).width);
+            base = base > 0 ? base : width;
+            // Keep a readable screen-space minimum while retaining hover emphasis.
+            // Change only the native drawing options, never the authored DataSet.
+            var minimumPixels = edge.isModuleEdge ? 1.8 : 1.5;
+            rendered.options.width = width * Math.max(1, minimumPixels / (base * scale));
+          });
+        }
+
+        network.on("beforeDrawing", updateRenderedEdgeWidths);
         network.on("afterDrawing", function(ctx) {
           drawVisibleNodes(ctx);
           updateNodeLabelPositions();
@@ -7095,13 +7245,6 @@
         document.getElementById("kg_layout_warning_reset").addEventListener("click", function(e) {
           e.preventDefault();
           resetToPublishedLayout();
-        });
-
-        document.getElementById("kg_layout_recenter_module").addEventListener("click", function(e) {
-          e.preventDefault();
-          if (!activeModuleId || !globalLayoutEditingEnabled()) { return; }
-          recenterModuleAnchor(activeModuleId);
-          updateLayoutControls();
         });
 
         document.getElementById("kg_module_list").addEventListener("click", function(e) {
@@ -7383,23 +7526,11 @@
 
         /* Initial render. */
         applyDefaultModuleFoldState();
-        // Build legend from node groups.
-        var groups = {};
-        allNodes.forEach(function(n) {
-          if (n.layerGroup !== undefined) { groups[n.layerGroup] = true; }
-        });
-        var legend = document.getElementById("kg_legend");
-        var html = "";
-        Object.keys(groups).sort(function(a,b){return Number(b)-Number(a);}).forEach(function(g) {
-          var sample = allNodes.find(function(n) { return String(n.layerGroup) === String(g); });
-          var color = sample && sample.visualColor && sample.visualColor.background ? sample.visualColor.background : "#999";
-          var sampleConcept = sample ? getConcept(sample.id) : null;
-          var layerTitle = sampleConcept && sampleConcept.layer_title ? sampleConcept.layer_title : "";
-          html += '<span class="legend-dot" style="background:' + color + '"></span>' +
-                  'Layer ' + g + (layerTitle ? ': ' + layerTitle : '') + '<br>';
-        });
-        legend.innerHTML = html;
         buildNodeLabels();
+        refreshModuleFootprints();
+        if (document.fonts && document.fonts.addEventListener) {
+          document.fonts.addEventListener("loadingdone", refreshModuleFootprints);
+        }
         buildConceptList("");
         buildModuleList();
         renderNotesOverview();
@@ -7411,7 +7542,8 @@
           var o = Object.assign({}, e);
           return setEdgeHidden(o, false);
         }));
-        allEdges = edges.get();
+        // Keep allEdges unfiltered so Focused mode and relationship details
+        // continue to use the complete knowledge graph.
         applyAllGraphViewWithFolds({preserveStatus: true});
 
         var initialModuleId = moduleIdFromHash(window.location.hash);

@@ -1,9 +1,9 @@
 module_id,concept_id,sequence
-gr.foundations_and_spacetime_geometry,gr.gravity_as_geometry,10
-gr.foundations_and_spacetime_geometry,gr.equivalence_principle,20
-gr.foundations_and_spacetime_geometry,gr.local_inertial_frame,30
-gr.foundations_and_spacetime_geometry,gr.freely_falling_observer,40
-gr.foundations_and_spacetime_geometry,gr.tidal_gravity,50
+gr.foundations_and_spacetime_geometry,gr.equivalence_principle,10
+gr.foundations_and_spacetime_geometry,gr.local_inertial_frame,20
+gr.foundations_and_spacetime_geometry,gr.freely_falling_observer,30
+gr.foundations_and_spacetime_geometry,gr.tidal_gravity,40
+gr.foundations_and_spacetime_geometry,gr.gravity_as_geometry,50
 gr.foundations_and_spacetime_geometry,gr.metric_tensor,60
 gr.foundations_and_spacetime_geometry,gr.inverse_metric,70
 gr.foundations_and_spacetime_geometry,gr.volume_element,80

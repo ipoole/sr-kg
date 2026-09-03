@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import math
 import re
 
 import pandas as pd
@@ -9,7 +10,7 @@ from srkg.kb import STUDY_QUESTION_TYPES, load_knowledge_base
 
 DATA_ROOT = Path(__file__).resolve().parents[1] / "data"
 SEMANTIC_ID_RE = re.compile(r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$")
-DISPLAY_ID_RE = re.compile(r"^(?:\d+(\.\d+)+|[A-Z]+ \d+(\.\d+)+)$")
+DISPLAY_ID_RE = re.compile(r"^(?:SR|GR|MATHS)-[1-9]\d*\.[1-9]\d*$")
 
 
 def _read_csv(name: str) -> pd.DataFrame:
@@ -26,9 +27,32 @@ def test_real_data_loads_through_canonical_kb_root():
 def test_real_data_concepts_use_semantic_ids_and_display_ids():
     nodes = _read_csv("nodes.csv")
 
+    assert "layer" not in nodes.columns
+    assert "layer_title" not in nodes.columns
     assert nodes["id"].map(lambda value: bool(SEMANTIC_ID_RE.fullmatch(value))).all()
     assert nodes["display_id"].map(lambda value: bool(DISPLAY_ID_RE.fullmatch(value))).all()
     assert not (nodes["id"] == nodes["display_id"]).any()
+
+
+def test_real_data_display_ids_and_sequences_follow_owning_modules():
+    nodes = _read_csv("nodes.csv").set_index("id")
+    modules = _read_csv("modules.csv").set_index("module_id")
+    members = _read_csv("module_members.csv")
+
+    for module_id, rows in members.groupby("module_id", sort=False):
+        code = modules.loc[module_id, "title"].split(" ", 1)[0]
+        ordered = rows.assign(sequence_number=rows["sequence"].astype(int)).sort_values(
+            "sequence_number"
+        )
+        assert list(ordered["sequence_number"]) == list(
+            range(10, (len(ordered) + 1) * 10, 10)
+        )
+        assert [nodes.loc[concept_id, "display_id"] for concept_id in ordered["concept_id"]] == [
+            f"{code}.{index}" for index in range(1, len(ordered) + 1)
+        ]
+
+    designs = _read_csv("concept_graphic_designs.csv")
+    assert "layer" not in designs.columns
 
 
 def test_real_data_edges_and_content_reference_known_semantic_concepts():
@@ -44,6 +68,18 @@ def test_real_data_edges_and_content_reference_known_semantic_concepts():
     assert set(study_questions["concept_id"]).issubset(concept_ids)
     assert not set(edges["source"]).intersection(set(nodes["display_id"]))
     assert not set(edges["target"]).intersection(set(nodes["display_id"]))
+
+
+def test_four_vector_examples_retain_taxonomy_and_teaching_dependency():
+    edges = _read_csv("edges.csv")
+    triples = set(zip(edges["source"], edges["target"], edges["relation"]))
+
+    assert ("sr.position_four_vector", "sr.four_vectors", "REQUIRES") in triples
+    for concept in ("position", "velocity", "momentum"):
+        assert (f"sr.{concept}_four_vector", "sr.four_vectors", "INSTANCE_OF") in triples
+    # Later examples inherit the prerequisite through the derivation chain.
+    assert ("sr.velocity_four_vector", "sr.position_four_vector", "DERIVES_FROM") in triples
+    assert ("sr.momentum_four_vector", "sr.velocity_four_vector", "DERIVES_FROM") in triples
 
 
 def test_real_data_study_question_types_are_canonical():
@@ -75,7 +111,7 @@ def test_gr_and_maths_text_does_not_double_escape_latex_backslashes():
     assert not module_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
 
 
-def test_gr_and_maths_module_titles_include_domain_and_layer_number():
+def test_gr_and_maths_module_titles_include_domain_and_module_number():
     modules = _read_csv("modules.csv")
     modules = modules[modules["domain"].isin({"gr", "math"})]
 
@@ -114,8 +150,13 @@ def test_runtime_sr_modules_match_the_reviewed_partition_candidate():
         ),
     ]
     sr_concept_ids = set(candidate_members["concept_id"])
-    actual = runtime_members[runtime_members["concept_id"].isin(sr_concept_ids)].reset_index(drop=True)
-    expected = candidate_members.reset_index(drop=True)
+    actual = runtime_members.loc[
+        runtime_members["concept_id"].isin(sr_concept_ids),
+        ["module_id", "concept_id"],
+    ].sort_values(["module_id", "concept_id"]).reset_index(drop=True)
+    expected = candidate_members[["module_id", "concept_id"]].sort_values(
+        ["module_id", "concept_id"]
+    ).reset_index(drop=True)
     pd.testing.assert_frame_equal(actual, expected)
 
     supports = _read_csv("module_supports.csv")
@@ -188,8 +229,10 @@ def test_runtime_gr_modules_match_the_reviewed_partition_candidate():
     actual = runtime_members.loc[
         runtime_members["concept_id"].isin(gr_concept_ids),
         ["module_id", "concept_id"],
-    ].reset_index(drop=True)
-    expected = candidate_members.reset_index(drop=True)
+    ].sort_values(["module_id", "concept_id"]).reset_index(drop=True)
+    expected = candidate_members.sort_values(
+        ["module_id", "concept_id"]
+    ).reset_index(drop=True)
     pd.testing.assert_frame_equal(actual, expected)
 
     supports = _read_csv("module_supports.csv")
@@ -258,32 +301,18 @@ def test_authored_layout_covers_all_concepts_and_modules():
     layout = json.loads((DATA_ROOT / "layout.json").read_text(encoding="utf-8"))
     nodes = _read_csv("nodes.csv")
     modules = _read_csv("modules.csv")
-    assert layout["revision"] == "3"
+    assert layout["revision"] == "7"
     assert set(layout["concepts"]) == set(nodes["id"])
     assert set(layout["modules"]) == set(modules["module_id"])
     assert modules["default_collapsed"].str.lower().eq("true").all()
-    assert layout["modules"] == {
-        "gr.connections_transport_and_motion": {"anchor": {"x": 1677, "y": 1002}},
-        "gr.curvature_and_gravitational_action": {"anchor": {"x": 1079, "y": 563}},
-        "gr.foundations_and_spacetime_geometry": {"anchor": {"x": 839, "y": 1262}},
-        "gr.matter_and_einstein_equations": {"anchor": {"x": 1488, "y": 213}},
-        "gr.schwarzschild_geometry_and_black_holes": {"anchor": {"x": 893, "y": 67}},
-        "gr.weak_field_and_classical_tests": {"anchor": {"x": 1969, "y": -168}},
-        "math.m01_manifolds_and_coordinates": {"anchor": {"x": 544, "y": 2432}},
-        "math.m02_tensor_calculus": {"anchor": {"x": 1538, "y": 2019}},
-        "sr.electromagnetic_structure_gauge_and_stress_energy": {
-            "anchor": {"x": 24, "y": 658}
-        },
-        "sr.field_dynamics_conservation_and_radiation": {
-            "anchor": {"x": 21, "y": 97}
-        },
-        "sr.relativistic_mechanics": {"anchor": {"x": -478, "y": 1676}},
-        "sr.spacetime_foundations": {"anchor": {"x": 243, "y": 1933}},
-        "sr.variational_and_field_theory": {"anchor": {"x": -599, "y": 1170}},
-    }
-    assert layout["concepts"]["sr.metric_tensor"] == {"x": -472, "y": 2956}
-    assert layout["concepts"]["gr.einstein_field_equations"] == {"x": 1750, "y": 840}
-    assert layout["concepts"]["math.manifold"] == {"x": 2800, "y": 3400}
+    for module in layout["modules"].values():
+        assert set(module["anchor"]) == {"x", "y"}
+        assert all(isinstance(value, (int, float)) for value in module["anchor"].values())
+    # Published positions are editable; validate geometry rather than freezing
+    # individual coordinates that an author may legitimately rearrange.
+    for position in layout["concepts"].values():
+        assert set(position) == {"x", "y"}
+        assert all(math.isfinite(value) for value in position.values())
 
 
 def test_sr_transitive_edge_policy_omits_redundant_direct_edges():

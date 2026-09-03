@@ -93,15 +93,13 @@ def build_concepts(
         if not cid:
             continue
         display_id = str(row.get("display_id", "")).strip() or cid
-        svg_icon = createSvgGraphic(display_id, variant="icon")
-        svg_detail = createSvgGraphic(display_id, variant="detail")
+        svg_icon = createSvgGraphic(cid, variant="icon")
+        svg_detail = createSvgGraphic(cid, variant="detail")
         captions = graphic_captions.get(cid, {})
         concepts.append(Concept(
             id=cid,
             label=str(row.get("label", "")).strip(),
             display_id=display_id,
-            layer=str(row.get("layer", "")).strip(),
-            layer_title=str(row.get("layer_title", "")).strip(),
             domain=str(row.get("domain", "")).strip(),
             domain_title=str(row.get("domain_title", "")).strip(),
             authoring_status=str(row.get("authoring_status", "")).strip(),

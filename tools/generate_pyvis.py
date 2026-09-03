@@ -8,7 +8,7 @@ This script is the command-line entry point only. It parses arguments, delegates
 the generation workflow to srkg.pipeline, and prints a short summary.
 
 Expected manifest-backed nodes.csv columns:
-    id,display_id,label,layer,layer_title,domain,domain_title
+    id,display_id,label,domain,domain_title
 
 Expected manifest-backed content_blocks.csv columns:
     block_id,concept_id,sequence,kind,title,body
@@ -130,9 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="+",
         default=None,
         help=(
-            "Relations to include in module diagnostics. Defaults to all "
-            "relations in edges.csv for boundary counts, and directed "
-            "relations for quotient DAGs."
+            "Relations to include in module diagnostics. Defaults to "
+            "REQUIRES, DERIVES_FROM, and CONSTRUCTED_FROM."
         ),
     )
     parser.add_argument(

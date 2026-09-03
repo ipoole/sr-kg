@@ -80,6 +80,12 @@ can usually remain unchanged for a first migration.
 | `sr.velocity_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Velocity four-vector is a specific four-vector. |
 | `sr.momentum_four_vector` | `sr.four_vectors` | `RELATED` | `INSTANCE_OF` | Momentum four-vector is a specific four-vector. |
 
+Subsequent module review restored Position four-vector → Four-vectors
+`REQUIRES` alongside `INSTANCE_OF`: the authored example presupposes the general
+four-vector definition. Velocity and Momentum retain their `INSTANCE_OF` links
+and inherit this prerequisite through the existing derivation chain. Taxonomic
+specificity should not erase independently justified teaching dependencies.
+
 ### Applied In Layer 5-8 First Pass
 
 | Source | Target | Previous | Current | Reason |

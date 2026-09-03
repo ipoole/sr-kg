@@ -23,9 +23,6 @@ from srkg.config import (
     INFO_PANEL_WIDTH_MAX_PX,
     INFO_PANEL_WIDTH_MIN_PX,
     INFO_PANEL_WIDTH_VIEWPORT_PERCENT,
-    LAYOUT_ROW_STAGGER,
-    LAYOUT_X_SPACING,
-    LAYOUT_Y_SPACING,
     NODE_LABEL_FONT_SIZE,
     NODE_LABEL_FONT_WEIGHT,
     NODE_LABEL_HIDE_BELOW_PX,
@@ -83,7 +80,7 @@ def inject_controls(
             "__VIEW_TITLE__": html_escape(view_title),
         },
     )
-    js = _script_tag(
+    js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(
         _render_template(
             "viewer.js",
             {
@@ -158,11 +155,6 @@ def _viewer_runtime_config() -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
-        "layout": {
-            "xSpacing": LAYOUT_X_SPACING,
-            "ySpacing": LAYOUT_Y_SPACING,
-            "rowStagger": LAYOUT_ROW_STAGGER,
-        },
         "nodeLabels": {
             "width": NODE_LABEL_WIDTH,
             "fontSize": NODE_LABEL_FONT_SIZE,

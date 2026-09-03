@@ -19,8 +19,6 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
             "id": " sr.inertial_frames ",
             "display_id": " 1.1 ",
             "label": " Inertial frames ",
-            "layer": " 1 ",
-            "layer_title": " Foundations ",
             "domain": " sr ",
             "domain_title": " Special Relativity and Classical Fields ",
             "authoring_status": " seed ",
@@ -115,8 +113,8 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     assert set(concept_data) == {"sr.inertial_frames"}
     assert concept_data["sr.inertial_frames"]["display_id"] == "1.1"
     assert concept_data["sr.inertial_frames"]["label"] == "Inertial frames"
-    assert concept_data["sr.inertial_frames"]["layer"] == "1"
-    assert concept_data["sr.inertial_frames"]["layer_title"] == "Foundations"
+    assert "layer" not in concept_data["sr.inertial_frames"]
+    assert "layer_title" not in concept_data["sr.inertial_frames"]
     assert concept_data["sr.inertial_frames"]["domain"] == "sr"
     assert (
         concept_data["sr.inertial_frames"]["domain_title"]

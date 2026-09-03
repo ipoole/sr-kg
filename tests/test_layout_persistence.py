@@ -16,6 +16,7 @@ def test_resolve_published_layout_fills_concepts_and_module_anchors():
             "test.alpha": (100, 200),
             "test.beta": (30, 50),
         },
+        generated_module_positions={"test.module": (70, 80)},
         modules=(Module(
             module_id="test.module",
             domain="test",
@@ -33,7 +34,7 @@ def test_resolve_published_layout_fills_concepts_and_module_anchors():
             "test.beta": {"x": 30.0, "y": 50.0},
         },
         "modules": {
-            "test.module": {"anchor": {"x": 20.0, "y": 35.0}},
+            "test.module": {"anchor": {"x": 70.0, "y": 80.0}},
         },
     }
 
@@ -49,6 +50,7 @@ def test_resolve_published_layout_preserves_authored_module_anchor():
     resolved = resolve_published_layout(
         published,
         generated_concept_positions={"test.alpha": (10, 20)},
+        generated_module_positions={"test.module": (70, 80)},
         modules=(Module(
             module_id="test.module",
             domain="test",

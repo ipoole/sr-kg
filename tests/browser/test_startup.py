@@ -21,7 +21,7 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert page.locator("#kg_concept_list .kg-concept-item").count() == 4
     assert page.locator("#kg_edge_filters_section").count() == 0
     assert page.locator("#kg_edge_filters").count() == 0
-    assert not page.locator("#kg_legend_section").evaluate("el => el.open")
+    assert page.locator("#kg_legend_section").count() == 0
     assert not page.locator("#kg_notes_section").evaluate("el => el.open")
     assert not page.locator("#kg_search_section").evaluate("el => el.open")
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
@@ -72,7 +72,8 @@ def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
     shared_browser_graph.click_concept("2.1")
 
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
-    assert "Layer 2 - Applications" in page.locator("#info_panel").inner_text()
+    assert "Applications" in page.locator("#info_panel .concept-module-chip").inner_text()
+    assert "Layer" not in page.locator("#info_panel").inner_text()
     assert "Beta definition" in page.locator("#info_panel").inner_text()
     assert "Beta explains alpha." in page.locator("#info_panel").inner_text()
     assert page.locator('.kg-concept-item[data-concept-id="2.1"]').evaluate(
@@ -106,7 +107,7 @@ def test_clear_selection_returns_to_starting_full_graph(browser_graph):
         "3.1": False,
     }
     assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge).length""") == 0
-    assert page.evaluate("""() => edges.get().filter(edge => !edge.hidden).length""") == 6
+    assert page.evaluate("""() => edges.get().filter(edge => !edge.hidden).length""") == 5
 
 
 @pytest.mark.browser
@@ -200,7 +201,7 @@ def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph)
         """
     ) == [
         "1.1->2.1::RELATED",
-        "2.1->1.1::DEPENDS_ON",
+        "2.1->1.1::REQUIRES",
         "2.2->1.1::DERIVES_FROM",
     ]
     assert page.locator("#kg_focus_lens").get_attribute("data-lens-label") == "Module overview"
@@ -226,16 +227,12 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
             moduleNode.isModuleNode === true &&
             moduleNode.hidden === false &&
             moduleNode.shape === "box" &&
-            moduleNode.shapeProperties.borderRadius >= 18 &&
-            moduleNode.widthConstraint.minimum >= 294 &&
-            moduleNode.widthConstraint.minimum < 420 &&
-            moduleNode.heightConstraint.minimum >= 133 &&
-            moduleNode.heightConstraint.minimum < 190 &&
+            moduleNode.widthConstraint.minimum === moduleNode.moduleFootprintWidth &&
+            moduleNode.heightConstraint.minimum === moduleNode.moduleFootprintHeight &&
             moduleNode.borderWidth <= 2 &&
-            moduleNode.font.size >= 28 &&
-            moduleNode.font.size < 34 &&
-            moduleNode.font.bold.size === moduleNode.font.size &&
-            moduleNode.label === "Applications\\n3 concepts";
+            moduleNode.font.bold.size >= 28 &&
+            moduleNode.font.size === 48 &&
+            moduleNode.label === "<b>Applications</b>\\n3 concepts";
         }""",
         module_node_id,
     )
@@ -370,11 +367,12 @@ def test_selecting_another_module_preserves_existing_folded_module(browser_graph
 
 
 @pytest.mark.browser
-def test_folded_module_projects_boundary_edges_to_module_node(browser_graph):
+def test_focused_folded_module_projects_all_boundary_relations(browser_graph):
     page = browser_graph.page
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator("#kg_graph_view_select").select_option("focused")
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
 
     module_edges = page.evaluate(
@@ -395,7 +393,7 @@ def test_folded_module_projects_boundary_edges_to_module_node(browser_graph):
         {
             "from": "2.1",
             "to": "module::test.m01_foundations",
-            "relations": {"DEPENDS_ON": 1},
+            "relations": {"REQUIRES": 1},
             "underlying": 1,
             "arrows": "to",
         },
@@ -423,11 +421,12 @@ def test_folded_module_projects_boundary_edges_to_module_node(browser_graph):
 
 
 @pytest.mark.browser
-def test_two_folded_modules_aggregate_boundary_edges_by_relation(browser_graph):
+def test_focused_folded_modules_aggregate_boundary_edges_by_relation(browser_graph):
     page = browser_graph.page
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator("#kg_graph_view_select").select_option("focused")
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
@@ -462,8 +461,8 @@ def test_two_folded_modules_aggregate_boundary_edges_by_relation(browser_graph):
             "id": "module-edge::module::test.m02_applications::module::test.m01_foundations",
             "from": "module::test.m02_applications",
             "to": "module::test.m01_foundations",
-            "label": "DERIVES_FROM 1\nDEPENDS_ON 1",
-            "relations": {"DEPENDS_ON": 1, "DERIVES_FROM": 1},
+            "label": "DERIVES_FROM 1\nREQUIRES 1",
+            "relations": {"REQUIRES": 1, "DERIVES_FROM": 1},
             "underlying": 2,
             "arrows": "to",
         },
@@ -483,10 +482,10 @@ def test_two_folded_modules_aggregate_boundary_edges_by_relation(browser_graph):
     panel_text = page.locator("#info_panel").inner_text()
     assert page.locator("#info_panel h2").inner_text() == "Module Boundary"
     assert "Applications -> Foundations" in panel_text
-    assert "DEPENDS_ON 1" in panel_text
+    assert "REQUIRES 1" in panel_text
     assert "DERIVES_FROM 1" in panel_text
     assert page.locator(
-        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.1 Beta depends on 1.1 Alpha."]'
+        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.1 Beta requires 1.1 Alpha."]'
     ).count() == 1
     assert page.locator(
         '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.2 Gamma is derived from 1.1 Alpha."]'
@@ -517,9 +516,9 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
     tooltip_text = page.locator("#kg_node_tooltip").inner_text()
     assert "Applications -> Foundations" in tooltip_text
     assert "2 concept links" not in tooltip_text
-    assert "DEPENDS_ON 1" not in tooltip_text
+    assert "REQUIRES 1" not in tooltip_text
     assert "DERIVES_FROM 1" not in tooltip_text
-    assert "2.1 Beta depends on 1.1 Alpha." in tooltip_text
+    assert "2.1 Beta requires 1.1 Alpha." in tooltip_text
     assert "2.2 Gamma is derived from 1.1 Alpha." in tooltip_text
     assert page.locator("#kg_node_tooltip .kg-tooltip-relation").count() == 2
     assert page.locator("#kg_node_tooltip .kg-tooltip-relation").first.evaluate(
@@ -552,7 +551,7 @@ def test_module_controls_can_collapse_and_expand_all_modules(browser_graph):
         "2.2": True,
         "3.1": True,
     }
-    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge && !edge.hidden).length""") == 2
+    assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge && !edge.hidden).length""") == 1
     assert "Collapsed 2 modules" in page.locator("#kg_status").inner_text()
 
     page.locator("#kg_modules_expand_all").click()
@@ -582,6 +581,7 @@ def test_expand_all_restores_members_around_moved_module_node(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator("#kg_modules_collapse_all").click()
+    offset = page.evaluate("() => kgModuleFootprint('test.m02_applications').offset")
     page.evaluate("""moduleNodeId => network.moveNode(moduleNodeId, 900, 600)""", module_node_id)
     page.locator("#kg_modules_expand_all").click()
 
@@ -590,8 +590,8 @@ def test_expand_all_restores_members_around_moved_module_node(browser_graph):
     )
     centre_x = sum(positions[node_id]["x"] for node_id in ["2.1", "2.2", "3.1"]) / 3
     centre_y = sum(positions[node_id]["y"] for node_id in ["2.1", "2.2", "3.1"]) / 3
-    assert abs(centre_x - 900) < 2
-    assert abs(centre_y - 600) < 2
+    assert abs(centre_x - (900 - offset["x"])) < 2
+    assert abs(centre_y - (600 - offset["y"])) < 2
 
 
 @pytest.mark.browser
@@ -733,7 +733,7 @@ def test_folded_module_hides_in_unrelated_focussed_context(browser_graph):
 
 
 @pytest.mark.browser
-def test_folding_module_uses_persistent_anchor_not_edited_member_centroid(browser_graph):
+def test_folding_module_preserves_anchor_with_offset_box_centre(browser_graph):
     page = browser_graph.page
     module_node_id = "module::test.m02_applications"
 
@@ -756,8 +756,10 @@ def test_folding_module_uses_persistent_anchor_not_edited_member_centroid(browse
         """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
         module_node_id,
     )
-    assert abs(position["x"] - anchor["x"]) < 2
-    assert abs(position["y"] - anchor["y"]) < 2
+    footprint = page.evaluate("() => kgModuleFootprint('test.m02_applications')")
+    assert abs(position["x"] - footprint["x"]) < 2
+    assert abs(position["y"] - footprint["y"]) < 2
+    assert page.evaluate("() => kgGlobalLayoutSnapshot().modules['test.m02_applications'].anchor") == anchor
 
 
 @pytest.mark.browser
@@ -849,22 +851,20 @@ def test_stale_personal_layout_can_be_kept_or_reset(browser_graph):
 
 
 @pytest.mark.browser
-def test_layout_controls_report_export_reset_and_recenter_state(browser_graph):
+def test_layout_controls_report_export_and_reset_state(browser_graph):
     page = browser_graph.page
     browser_graph.open_control_section("kg_layouts_section")
 
     assert "Published revision unpublished" in page.locator("#kg_layout_status").inner_text()
     assert "Published layout active" in page.locator("#kg_layout_status").inner_text()
     assert page.locator("#kg_layout_reset").is_disabled()
-    assert page.locator("#kg_layout_recenter_module").is_disabled()
+    assert page.locator("#kg_layout_recenter_module").count() == 0
+    anchors = page.evaluate("() => kgGlobalLayoutSnapshot().modules")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    assert not page.locator("#kg_layout_recenter_module").is_disabled()
     page.locator("#kg_graph_view_select").select_option("focused")
-    assert page.locator("#kg_layout_recenter_module").is_disabled()
     page.locator("#kg_graph_view_select").select_option("all")
-    assert not page.locator("#kg_layout_recenter_module").is_disabled()
 
     page.evaluate(
         """() => {
@@ -876,19 +876,14 @@ def test_layout_controls_report_export_reset_and_recenter_state(browser_graph):
         """() => document.getElementById("kg_layout_status").textContent.includes("Personal overrides active")"""
     )
     assert not page.locator("#kg_layout_reset").is_disabled()
-    page.locator("#kg_layout_recenter_module").click()
-    snapshot = page.evaluate("""() => window.kgGlobalLayoutSnapshot()""")
-    member_positions = [snapshot["concepts"][concept_id] for concept_id in ["2.1", "2.2", "3.1"]]
-    anchor = snapshot["modules"]["test.m02_applications"]["anchor"]
-    assert abs(anchor["x"] - sum(position["x"] for position in member_positions) / 3) < 0.001
-    assert abs(anchor["y"] - sum(position["y"] for position in member_positions) / 3) < 0.001
+    assert page.evaluate("() => kgGlobalLayoutSnapshot().modules") == anchors
 
     with page.expect_download() as download_info:
         page.locator("#kg_layout_export").click()
     exported = json.loads(Path(download_info.value.path()).read_text(encoding="utf-8"))
     assert exported["schema_version"] == 1
     assert exported["revision"] == "unpublished"
-    assert exported["concepts"]["2.1"] == {"x": 543, "y": 877}
+    assert exported["concepts"]["2.1"] == {"x": 543.123457, "y": 876.765432}
     assert set(exported) == {"schema_version", "revision", "concepts", "modules"}
     assert list(exported["concepts"]) == sorted(exported["concepts"])
     assert list(exported["modules"]) == sorted(exported["modules"])
@@ -950,7 +945,7 @@ def test_focussed_mode_allows_temporary_folded_module_adjustments(browser_graph)
     module_id = "test.m02_applications"
     module_node_id = f"module::{module_id}"
     before = page.evaluate("""() => window.kgGlobalLayoutSnapshot()""")
-    anchor = before["modules"][module_id]["anchor"]
+    footprint = page.evaluate("id => kgModuleFootprint(id)", module_id)
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
@@ -977,8 +972,8 @@ def test_focussed_mode_allows_temporary_folded_module_adjustments(browser_graph)
         """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
         module_node_id,
     )
-    assert abs(restored["x"] - anchor["x"]) < 2
-    assert abs(restored["y"] - anchor["y"]) < 2
+    assert abs(restored["x"] - footprint["x"]) < 2
+    assert abs(restored["y"] - footprint["y"]) < 2
 
 
 @pytest.mark.browser
@@ -1005,35 +1000,12 @@ def test_expanding_moved_module_preserves_member_offsets(browser_graph):
     positions = page.evaluate(
         """() => network.getPositions(["2.1", "2.2", "3.1"])"""
     )
-    delta_x = 900 - anchor["x"]
-    delta_y = 600 - anchor["y"]
+    offset = page.evaluate("() => kgModuleFootprint('test.m02_applications').offset")
+    delta_x = 900 - offset["x"] - anchor["x"]
+    delta_y = 600 - offset["y"] - anchor["y"]
     for concept_id in before:
         assert abs(positions[concept_id]["x"] - before[concept_id]["x"] - delta_x) < 2
         assert abs(positions[concept_id]["y"] - before[concept_id]["y"] - delta_y) < 2
-
-
-@pytest.mark.browser
-def test_recenter_module_anchor_does_not_move_members(browser_graph):
-    page = browser_graph.page
-    page.evaluate(
-        """() => {
-          network.moveNode("2.1", 100, 200);
-          network.moveNode("2.2", 400, 500);
-          network.moveNode("3.1", 700, 800);
-          network.emit("dragEnd", {nodes: ["2.1", "2.2", "3.1"]});
-        }"""
-    )
-    before = page.evaluate("""() => network.getPositions(["2.1", "2.2", "3.1"])""")
-
-    page.evaluate("""() => window.kgRecenterModuleAnchor("test.m02_applications")""")
-
-    after = page.evaluate("""() => network.getPositions(["2.1", "2.2", "3.1"])""")
-    anchor = page.evaluate(
-        """() => window.kgGlobalLayoutSnapshot().modules["test.m02_applications"].anchor"""
-    )
-    assert after == before
-    assert abs(anchor["x"] - 400) < 2
-    assert abs(anchor["y"] - 500) < 2
 
 
 @pytest.mark.browser
@@ -1047,14 +1019,14 @@ def test_module_details_show_boundary_link_sections(browser_graph):
     assert "Incoming boundary links" in panel_text
     assert "Outgoing boundary links" in panel_text
     assert "Applications" in panel_text
-    assert "DEPENDS_ON 1" in panel_text
+    assert "REQUIRES 1" in panel_text
     assert "DERIVES_FROM 1" in panel_text
     assert "RELATED 1" in panel_text
 
     incoming = page.locator("#info_panel .module-boundary-incoming")
     incoming_text = incoming.inner_text()
     assert "2.1 Beta" in incoming_text
-    assert "depends on" in incoming_text
+    assert "requires" in incoming_text
     assert "2.2 Gamma" in incoming_text
     assert "is derived from" in incoming_text
     assert "1.1 Alpha" in incoming_text
@@ -1642,8 +1614,8 @@ def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
     )
     page.wait_for_function("""() => window.location.hash === '#concept-sr.electric_field'""")
 
-    assert page.locator("#info_panel h2").inner_text() == "7.3 Electric field"
-    assert page.locator("#kg_view_title").inner_text() == "7.3 Electric field"
+    assert page.locator("#info_panel h2").inner_text() == "SR-4.3 Electric field"
+    assert page.locator("#kg_view_title").inner_text() == "SR-4.3 Electric field"
 
 
 @pytest.mark.browser
@@ -1658,7 +1630,7 @@ def test_masthead_title_typesets_concept_label_equations(repo_browser_graph):
     page.wait_for_selector("#kg_view_title mjx-container")
 
     masthead_text = page.locator("#kg_view_title").inner_text()
-    assert masthead_text.startswith("7.2 Field tensor")
+    assert masthead_text.startswith("SR-4.2 Field tensor")
     assert "\\(" not in masthead_text
     assert "\\)" not in masthead_text
 
@@ -1952,7 +1924,7 @@ def test_optional_details_render_inline_and_can_contain_concept_links(browser_gr
     optional.locator(".concept-link").click()
     assert page.locator("#kg_concept_preview").is_visible()
     assert "1.1 Alpha" in page.locator("#kg_concept_preview").inner_text()
-    assert "Layer 1 - Foundations" in page.locator("#kg_concept_preview").inner_text()
+    assert "Module - Foundations" in page.locator("#kg_concept_preview").inner_text()
     assert "Alpha definition" in page.locator("#kg_concept_preview").inner_text()
     assert page.locator("#kg_concept_preview .concept-preview-go").inner_text() == "Go to concept"
 
@@ -1975,7 +1947,7 @@ def test_concept_link_hover_shows_preview_without_navigating(browser_graph):
     preview = page.locator("#kg_concept_preview")
     assert preview.is_visible()
     assert "1.1 Alpha" in preview.inner_text()
-    assert "Layer 1 - Foundations" in preview.inner_text()
+    assert "Module - Foundations" in preview.inner_text()
     assert "Alpha definition" in preview.inner_text()
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
     assert page.evaluate("() => window.location.hash") == "#concept-2.1"
@@ -1999,7 +1971,7 @@ def test_concept_link_preview_highlights_visible_graph_target(browser_graph):
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           return edge && edge.color && edge.color.color === "#174ea6" && edge.width >= 4;
         }"""
@@ -2030,7 +2002,7 @@ def test_edge_click_shows_relationship_detail_panel(shared_browser_graph):
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           network.emit("click", {
             nodes: [],
@@ -2047,8 +2019,8 @@ def test_edge_click_shows_relationship_detail_panel(shared_browser_graph):
     assert page.locator("#info_panel .edge-detail-route").count() == 0
     assert page.locator("#info_panel .edge-detail-statement").get_attribute(
         "aria-label"
-    ) == "2.1 Beta depends on 1.1 Alpha."
-    assert "DEPENDS_ON" in panel_text
+    ) == "2.1 Beta requires 1.1 Alpha."
+    assert "REQUIRES" in panel_text
     assert "Category" not in panel_text
     assert "knowledge" not in panel_text
     assert "Specific" in panel_text
@@ -2066,7 +2038,7 @@ def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(brows
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           network.emit("hoverEdge", {
             edge: edge.id,
@@ -2078,13 +2050,13 @@ def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(brows
     page.wait_for_selector("#kg_node_tooltip", state="visible")
     page.wait_for_selector("#kg_node_tooltip mjx-container")
     tooltip = page.locator("#kg_node_tooltip")
-    assert tooltip.locator(".kg-tooltip-title").inner_text() == "Beta depends on Alpha"
+    assert tooltip.locator(".kg-tooltip-title").inner_text() == "Beta requires Alpha"
     assert tooltip.locator(".kg-tooltip-relation").evaluate(
         "el => getComputedStyle(el).color !== 'rgb(34, 34, 34)'"
     )
     tooltip_text = tooltip.inner_text()
     assert "Noether's theorem" in tooltip_text
-    assert "DEPENDS_ON" not in tooltip_text
+    assert "REQUIRES" not in tooltip_text
     assert "\\(" not in tooltip_text
 
 
@@ -2098,7 +2070,7 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           return {
             width: edge.width,
@@ -2112,7 +2084,7 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           network.emit("hoverEdge", {
             edge: edge.id,
@@ -2127,7 +2099,7 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
           const edge = edges.get().find(item =>
             String(item.from) === "2.1" &&
             String(item.to) === "1.1" &&
-            item.relation === "DEPENDS_ON"
+            item.relation === "REQUIRES"
           );
           return {
             width: edge.width,
@@ -2172,7 +2144,7 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_b
     panel_text = page.locator("#info_panel").inner_text()
     assert page.locator("#info_panel .edge-detail-statement").get_attribute(
         "aria-label"
-    ) == "7.2 Field tensor \\(F_{\\mu\\nu}\\) is constructed from 7.1 Vector potential \\(A_\\mu\\)."
+    ) == "SR-4.2 Field tensor \\(F_{\\mu\\nu}\\) is constructed from SR-4.1 Vector potential \\(A_\\mu\\)."
     assert "is constructed from" in panel_text
     assert "CONSTRUCTED_FROM" in panel_text
 
@@ -2363,11 +2335,11 @@ def test_focus_lens_display_tracks_active_detail_section(browser_graph):
     assert "Delta" in page.locator("#kg_focus_lens .kg-focus-lens-center").inner_text()
     assert page.locator(
         '#kg_focus_lens .kg-focus-lens-incoming '
-        '.kg-focus-lens-relation[data-relation="DEPENDS_ON"][data-direction="incoming"]'
+        '.kg-focus-lens-relation[data-relation="REQUIRES"][data-direction="incoming"]'
     ).get_attribute("data-state") == "immediate"
     assert page.locator(
         '#kg_focus_lens .kg-focus-lens-outgoing '
-        '.kg-focus-lens-relation[data-relation="DEPENDS_ON"][data-direction="outgoing"]'
+        '.kg-focus-lens-relation[data-relation="REQUIRES"][data-direction="outgoing"]'
     ).get_attribute("data-state") == "immediate"
 
     page.locator(
@@ -2609,9 +2581,24 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
     assert "Drag the divider" in splash_text
     assert "personal layouts survive reload" in splash_text
-    assert "Coming soon: General Relativity!" in splash_text
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 5
+    modules = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Modules', exact=True))
+    assert modules.locator('.kg-status-badge').count() == 0
+    gr = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='General Relativity Work in progress', exact=True))
+    assert gr.locator('.kg-status-badge').inner_text() == 'Work in progress'
+    assert 'seed level' in gr.inner_text()
+    assert 'full authoring and review' in gr.inner_text()
+    assert "Coming soon" not in splash_text
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 6
     assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 1
+
+    credit = page.locator("#kg_splash_dialog .kg-splash-credit")
+    assert credit.inner_text() == "Created by Ian Poole with AI assistance via OpenAI Codex."
+    assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"
+    grid_box = page.locator(".kg-splash-feature-grid").bounding_box()
+    credit_box = credit.bounding_box()
+    assert abs(credit_box["width"] - grid_box["width"]) < 1
+    assert credit_box["y"] >= grid_box["y"] + grid_box["height"]
+    assert page.locator("#kg_info_toggle").count() == 0
 
     page.locator("#kg_splash_dismiss").click()
     assert page.evaluate("""() => localStorage.getItem("srkg.splash.dismissed.v1")""") == "true"

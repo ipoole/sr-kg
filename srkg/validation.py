@@ -18,8 +18,12 @@ from srkg.config import EDGE_COLUMNS
 from srkg.dag import build_dag_reports
 from srkg.data import normalise_edges
 from srkg.edges import relation_is_directed
-from srkg.kb import KnowledgeBaseLoadError, load_knowledge_base
-from srkg.layout import parse_layer_value
+from srkg.kb import KnowledgeBase, KnowledgeBaseLoadError, load_knowledge_base
+from srkg.module_diagnostics import (
+    DEFAULT_MODULE_RELATIONS,
+    ModuleBoundaryEdge,
+    build_module_diagnostics,
+)
 
 
 Severity = Literal["error", "warning"]
@@ -28,8 +32,6 @@ NODE_REQUIRED_COLUMNS = (
     "id",
     "display_id",
     "label",
-    "layer",
-    "layer_title",
     "domain",
     "domain_title",
 )
@@ -74,6 +76,8 @@ def load_validation_issues_from_root(data_root: str | Path) -> list[ValidationIs
     )
     issues.extend(_validate_content_block_text(kb.concepts, kb.nodes_df, kb.edges_df))
     issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df))
+    if kb.modules:
+        issues.extend(_validate_module_structure(kb))
     return issues
 
 
@@ -166,15 +170,11 @@ def _validate_nodes(nodes_df: pd.DataFrame) -> list[ValidationIssue]:
     for row_index, row in nodes_df.iterrows():
         node_id = str(row["id"]).strip()
         location = _node_location(row_index, node_id)
-        for column in ("id", "label", "layer", "layer_title", "domain", "domain_title"):
+        for column in ("id", "display_id", "label", "domain", "domain_title"):
             if not str(row.get(column, "")).strip():
                 issues.append(
                     _issue("error", "node-required-value", f"Concept has empty {column}", location)
                 )
-
-        layer = str(row.get("layer", "")).strip()
-        if layer and parse_layer_value(node_id, layer) <= 0:
-            issues.append(_issue("error", "node-layer", f"Layer is not an integer: {layer}", location))
 
     duplicate_ids = sorted(id_ for id_ in ids[ids.duplicated()].unique() if id_)
     for node_id in duplicate_ids:
@@ -184,22 +184,6 @@ def _validate_nodes(nodes_df: pd.DataFrame) -> list[ValidationIssue]:
     duplicate_labels = sorted(label for label in labels[labels.duplicated()].unique() if label)
     for label in duplicate_labels:
         issues.append(_issue("warning", "node-duplicate-label", f"Duplicate concept label '{label}'"))
-
-    layer_titles: dict[str, set[str]] = {}
-    for _, row in nodes_df.iterrows():
-        layer = str(row.get("layer", "")).strip()
-        title = str(row.get("layer_title", "")).strip()
-        if layer and title:
-            layer_titles.setdefault(layer, set()).add(title)
-    for layer, titles in sorted(layer_titles.items(), key=lambda item: item[0]):
-        if len(titles) > 1:
-            issues.append(
-                _issue(
-                    "warning",
-                    "layer-title",
-                    f"Layer {layer} has multiple titles: {', '.join(sorted(titles))}",
-                )
-            )
 
     return issues
 
@@ -464,30 +448,6 @@ def _validate_dag(
                     f"Directed relation group {report.name} is not a DAG.{example}",
                 )
             )
-        for edge in report.layer_forward_edges:
-            issues.append(
-                _issue(
-                    "warning",
-                    "directed-layer-forward",
-                    (
-                        f"{edge.source} {edge.source_label} [L{edge.source_layer}] "
-                        f"{edge.relation} {edge.target} {edge.target_label} [L{edge.target_layer}]"
-                    ),
-                    report.name,
-                )
-            )
-        for edge in report.same_layer_order_violations:
-            issues.append(
-                _issue(
-                    "warning",
-                    "directed-same-layer-order",
-                    (
-                        f"{edge.source} {edge.source_label} should come after "
-                        f"{edge.target} {edge.target_label} for target-first ordering"
-                    ),
-                    report.name,
-                )
-            )
         for redundancy in report.transitive_redundancies:
             issues.append(
                 _issue(
@@ -501,6 +461,57 @@ def _validate_dag(
                 )
             )
     return issues
+
+
+def _validate_module_structure(kb: KnowledgeBase) -> list[ValidationIssue]:
+    """Validate structural module DAGs and authored prerequisite ordering."""
+    diagnostics = build_module_diagnostics(
+        kb,
+        relations=DEFAULT_MODULE_RELATIONS,
+    )
+    issues: list[ValidationIssue] = []
+    for report in diagnostics.quotient_dag_reports:
+        if report.is_dag:
+            continue
+        example = ""
+        if report.cycles:
+            example = " Example cycle: " + " -> ".join(
+                edge.source for edge in report.cycles[0]
+            )
+        issues.append(_issue(
+            "error",
+            "module-directed-cycle",
+            f"Module relation group {report.name} is not a DAG.{example}",
+        ))
+    for edge in diagnostics.module_order_violations:
+        issues.append(_module_order_issue(
+            "module-order-contradiction",
+            "Module sequence places a dependency before its prerequisite",
+            edge,
+        ))
+    for edge in diagnostics.member_order_violations:
+        issues.append(_module_order_issue(
+            "module-member-order-contradiction",
+            "Member sequence places a dependency before its prerequisite",
+            edge,
+        ))
+    return issues
+
+
+def _module_order_issue(
+    code: str,
+    message: str,
+    edge: ModuleBoundaryEdge,
+) -> ValidationIssue:
+    return _issue(
+        "warning",
+        code,
+        (
+            f"{message}: {edge.source_concept_id} {edge.relation} "
+            f"{edge.target_concept_id}"
+        ),
+        f"{edge.source_module_id}->{edge.target_module_id}",
+    )
 
 
 def _validate_content_block_text(

@@ -16,10 +16,10 @@ def _kb_with_modules():
     return KnowledgeBase(
         paths=KnowledgeBasePaths(root=None, nodes="nodes.csv", edges="edges.csv"),
         nodes_df=pd.DataFrame([
-            {"id": "a.1", "label": "A one", "display_id": "1.1", "layer": "1"},
-            {"id": "a.2", "label": "A two", "display_id": "1.2", "layer": "1"},
-            {"id": "b.1", "label": "B one", "display_id": "2.1", "layer": "2"},
-            {"id": "c.1", "label": "C one", "display_id": "3.1", "layer": "3"},
+            {"id": "a.1", "label": "A one", "display_id": "TEST-1.1"},
+            {"id": "a.2", "label": "A two", "display_id": "TEST-1.2"},
+            {"id": "b.1", "label": "B one", "display_id": "TEST-2.1"},
+            {"id": "c.1", "label": "C one", "display_id": "TEST-3.1"},
         ]),
         edges_df=pd.DataFrame([
             {
@@ -97,6 +97,11 @@ def test_build_module_diagnostics_counts_boundary_edges_and_support_coverage():
     assert diagnostics.boundary_edge_count == 3
     assert diagnostics.boundary_relation_counts == {"REQUIRES": 3}
     assert diagnostics.internal_relation_counts == {"REQUIRES": 1}
+    assert diagnostics.member_order_violations == ()
+    assert [
+        (edge.source_concept_id, edge.target_concept_id)
+        for edge in diagnostics.module_order_violations
+    ] == [("a.1", "c.1")]
 
     pairs = {
         (pair.source_module_id, pair.target_module_id): pair
@@ -126,6 +131,61 @@ def test_build_module_diagnostics_reports_quotient_dag_cycles():
     assert len(report.cycles) == 1
 
 
+def test_build_module_diagnostics_reports_within_module_order_contradictions():
+    kb = _kb_with_modules()
+    extra = pd.DataFrame([{
+        "source": "a.1",
+        "target": "a.2",
+        "relation": "REQUIRES",
+        "note": "Contradicts member order.",
+    }])
+    kb = KnowledgeBase(
+        paths=kb.paths,
+        nodes_df=kb.nodes_df,
+        edges_df=pd.concat([kb.edges_df, extra], ignore_index=True),
+        edge_key=kb.edge_key,
+        concepts=kb.concepts,
+        modules=kb.modules,
+    )
+
+    diagnostics = build_module_diagnostics(kb, relations=["REQUIRES"])
+
+    assert [
+        (edge.source_concept_id, edge.target_concept_id)
+        for edge in diagnostics.member_order_violations
+    ] == [("a.1", "a.2")]
+
+
+def test_module_sequence_comparisons_do_not_cross_domains():
+    kb = _kb_with_modules()
+    cross_domain_modules = (
+        kb.modules[0],
+        Module(
+            module_id="other.b",
+            domain="other",
+            title="Other B",
+            sequence=20,
+            members=["b.1"],
+        ),
+        kb.modules[2],
+    )
+    kb = KnowledgeBase(
+        paths=kb.paths,
+        nodes_df=kb.nodes_df,
+        edges_df=kb.edges_df,
+        edge_key=kb.edge_key,
+        concepts=kb.concepts,
+        modules=cross_domain_modules,
+    )
+
+    diagnostics = build_module_diagnostics(kb, relations=["REQUIRES"])
+
+    assert [
+        (edge.source_concept_id, edge.target_concept_id)
+        for edge in diagnostics.module_order_violations
+    ] == [("a.1", "c.1")]
+
+
 def test_format_module_diagnostics_includes_summary_pairs_and_dag_status():
     text = format_module_diagnostics(
         build_module_diagnostics(_kb_with_modules(), relations=["REQUIRES"]),
@@ -144,3 +204,5 @@ def test_format_module_diagnostics_includes_summary_pairs_and_dag_status():
     assert "Undeclared module boundary pairs: 2" in text
     assert "Module quotient DAGs" in text
     assert "REQUIRES: nodes=3, edges=3, dag=no, cycles=1" in text
+    assert "Module-order contradictions: 1" in text
+    assert "Within-module member-order contradictions: 0" in text

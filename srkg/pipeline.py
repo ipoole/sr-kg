@@ -2,8 +2,8 @@
 
 This module coordinates the complete generation workflow for callers that do
 not want to manage individual stages. It resolves input paths, reads CSV files,
-validates and normalizes data, builds relation colour metadata, computes layout
-levels and positions, writes the base PyVis HTML, injects viewer assets, and
+validates and normalizes data, builds relation colour metadata, computes module
+layout positions, writes the base PyVis HTML, injects viewer assets, and
 returns summary information for the CLI.
 
 The pipeline is the only ``srkg`` module intended to depend on all major stages.
@@ -18,12 +18,13 @@ import pandas as pd
 from srkg.kb import KnowledgeBase, load_knowledge_base
 from srkg.edges import build_edge_colour_map, enrich_edge_key_with_colours
 from srkg.html_injection import inject_controls
-from srkg.layout import (
-    build_concept_sort_keys,
-    build_hierarchy_levels,
-    build_hierarchy_positions,
-)
+from srkg.layout import build_flat_positions
 from srkg.layout_persistence import resolve_published_layout
+from srkg.module_layout import (
+    build_generated_module_anchors,
+    build_module_local_layout,
+)
+from srkg.module_colours import build_module_visuals_by_concept
 from srkg.render_pyvis import write_pyvis_html
 
 
@@ -182,15 +183,38 @@ def generate_viewer_from_kb(
     """Generate the standalone HTML viewer from a loaded knowledge base."""
     edge_colour_map = build_edge_colour_map(kb.edge_key)
 
-    hierarchy_levels = build_hierarchy_levels(kb.nodes_df)
-    hierarchy_positions = build_hierarchy_positions(
-        hierarchy_levels,
-        kb.edges_df,
-        sort_key_by_id=build_concept_sort_keys(kb.nodes_df),
-    )
+    if kb.modules:
+        generated_modules = build_generated_module_anchors(
+            kb.nodes_df,
+            kb.edges_df,
+            kb.modules,
+        )
+        effective_anchors = dict(generated_modules.anchors)
+        effective_anchors.update({
+            module_id: (position.x, position.y)
+            for module_id, position in kb.published_layout.modules.items()
+        })
+        generated_concepts = build_module_local_layout(
+            kb.nodes_df,
+            kb.edges_df,
+            kb.modules,
+            module_anchors=effective_anchors,
+        )
+        hierarchy_levels = generated_concepts.ranks
+        hierarchy_positions = generated_concepts.positions
+        generated_module_positions = generated_modules.anchors
+    else:
+        # Generic compatibility for module-free library fixtures. Supported
+        # authored roots use modules as their pedagogical grouping.
+        hierarchy_levels = {
+            str(concept_id): 0 for concept_id in kb.nodes_df["id"]
+        }
+        hierarchy_positions = build_flat_positions(kb.nodes_df)
+        generated_module_positions = {}
     published_layout = resolve_published_layout(
         kb.published_layout,
         generated_concept_positions=hierarchy_positions,
+        generated_module_positions=generated_module_positions,
         modules=kb.modules,
     )
 
@@ -202,6 +226,7 @@ def generate_viewer_from_kb(
         edge_colour_map=edge_colour_map,
         hierarchy_levels=hierarchy_levels,
         hierarchy_positions=hierarchy_positions,
+        module_visuals_by_concept=build_module_visuals_by_concept(kb.modules),
         out_path=output_file,
         height=height,
         width=width,

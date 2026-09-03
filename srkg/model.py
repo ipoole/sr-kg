@@ -188,8 +188,6 @@ class Concept:
     id: str
     label: str
     display_id: str = ""
-    layer: str = ""
-    layer_title: str = ""
     domain: str = ""
     domain_title: str = ""
     authoring_status: str = ""
@@ -208,8 +206,6 @@ class Concept:
         return {
             "display_id": self.display_id or self.id,
             "label": self.label,
-            "layer": self.layer,
-            "layer_title": self.layer_title,
             "domain": self.domain,
             "domain_title": self.domain_title,
             "authoring_status": self.authoring_status,

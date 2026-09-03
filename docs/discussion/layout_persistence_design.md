@@ -11,14 +11,17 @@
 
 Concepts and modules have stable positions in one global layout. Manual moves made in All mode update this layout and persist across navigation.
 
-A module has a persistent anchor, initially derived from its members' centroid. Member positions are relative to that anchor. Consequently:
+A module has a persistent anchor from the published layout or deterministic
+module-DAG fallback. Concept coordinates are stored absolutely; offsets from
+the anchor are derived when folding or moving the module. Consequently:
 
 - collapsing and reopening a module restores its contents unchanged;
 - moving a collapsed module translates its hidden contents as a group;
-- moving an expanded module by a module-level control does likewise;
 - moving an individual concept changes its position within the module.
 
-The module anchor is not automatically recalculated after manual editing; recentering should be an explicit command.
+The module anchor is not automatically recalculated after manual editing.
+The visible box always follows the bounds of its concepts and labels, regardless
+of the anchor. No recenter command is needed.
 
 ## Focussed mode
 
@@ -55,8 +58,12 @@ The repository default is stored in `data/layout.json`. Schema version 1 uses a
 non-empty string `revision`, concept positions keyed by stable semantic concept
 ID, and module anchors keyed by stable module ID. Coordinates are graph-space
 values rather than screen pixels. The file may be partial: missing concepts use
-the deterministic generated layout, and missing module anchors use the resolved
-centroid of their members.
+the deterministic module-local layout, and missing module anchors use the
+generated structural module DAG.
+
+## Implementation history
+
+The stages below record the rollout; the core model above is the current policy.
 
 Stage 1 loads and validates this file and supplies the resolved complete layout
 to the generated viewer without yet changing runtime positioning behaviour.
@@ -64,18 +71,20 @@ to the generated viewer without yet changing runtime positioning behaviour.
 Stage 2 introduces an authoritative browser-side global layout initialized from
 that resolved payload. Normal graph re-rendering restores concept coordinates
 from this state rather than from node styling snapshots, and completed drags in
-All mode update it. The current compact Focussed-mode coordinates remain a
-temporary rendering projection and do not alter the global layout.
+All mode update it. At this stage, compact Focussed-mode coordinates remained a
+temporary rendering projection; Stage 3 removed it.
 
 Stage 3 removes that compact projection. Focussed and section-driven graph
 views now change only visibility, edge filtering, and camera framing while
-retaining global coordinates. Node dragging is disabled outside All mode.
+retaining global coordinates. Dragging was initially disabled outside All mode;
+the final policy allows temporary Focussed-mode adjustments.
 
 Stage 4 makes module anchors persistent and separates preferred folding from
 effective representation. Navigation can temporarily expand a preferred-folded
 module to reveal a member concept, then restore the preference when that module
 is no longer required. Folded-module moves translate members rigidly, individual
-concept moves leave the anchor unchanged, and recentering is explicit.
+concept moves leave the anchor unchanged. The later footprint implementation
+makes the visible box follow its contents without recentering.
 
 Stage 5 stores browser-local concept and module-anchor overrides in a versioned
 record. Only coordinates that differ from the published layout are saved;
@@ -85,13 +94,13 @@ and exposed for an explicit keep-or-reset decision.
 
 Stage 6 adds the `Layouts` control-panel section. It reports published and
 personal state, handles stale-revision Keep/Reset choices, exports a stable
-repository-compatible complete layout, resets personal overrides, and exposes
-explicit recentering when a module is selected in All mode.
+repository-compatible complete layout, and resets personal overrides. The
+original recenter control was removed once boxes followed their contents.
 
 Stage 7 is the integration and documentation pass. It verifies the complete
 unit and browser suites, reconciles viewer documentation with the authoritative
 global-layout model, and records the final Focussed-mode policy: concept and
 folded-module moves are temporary and visibly labelled, while published layout,
-personal global overrides, and module anchors remain unchanged. Module folding remains marked
-work in progress pending a separate review of the authored module set and
-concept membership.
+personal global overrides, and module anchors remain unchanged. The subsequent
+module membership, footprint and layout review is complete. Modules are no
+longer marked WIP; GR content remains seed-level work in progress.

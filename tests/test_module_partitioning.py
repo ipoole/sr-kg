@@ -151,8 +151,8 @@ def test_proposed_sr_partition_is_complete_cohesive_and_acyclic():
     candidate = analyse_partition(graph, assignment, origin="editorial proposal")
 
     assert candidate.module_count == 5
-    assert candidate.module_sizes == (11, 6, 9, 8, 13)
-    assert candidate.internal_edge_count == 59
+    assert candidate.module_sizes == (11, 6, 9, 13, 8)
+    assert candidate.internal_edge_count == 60
     assert candidate.boundary_edge_count == 28
     assert candidate.is_dag is True
 

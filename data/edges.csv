@@ -17,6 +17,7 @@ sr.light_cone,sr.spacetime_interval,DERIVES_FROM,"The cone is the zero-interval 
 sr.minkowski_diagram,sr.spacetime_event,REQUIRES,"The diagram is a visual coordinate chart whose plotted points are events."
 sr.proper_time,sr.spacetime_interval,DERIVES_FROM,"Along a timelike world-line, accumulated interval length gives the time measured by a comoving clock."
 sr.position_four_vector,sr.four_vectors,INSTANCE_OF,"It is the event-position member of the broader family of four-vectors."
+sr.position_four_vector,sr.four_vectors,REQUIRES,"Understanding position as the first concrete four-vector example requires the general transformation rule that defines a four-vector."
 sr.position_four_vector,sr.lorentz_transformations,REQUIRES,"Its components are meaningful as a four-vector because they transform between inertial frames in the Lorentz way."
 sr.velocity_four_vector,sr.proper_time,DERIVES_FROM,"Proper time supplies the invariant parameter used in the derivative along the world-line."
 sr.velocity_four_vector,sr.position_four_vector,DERIVES_FROM,"Differentiating position four-vector components with respect to proper time gives four-velocity."

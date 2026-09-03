@@ -1,7 +1,7 @@
 # Knowledge Base Authoring Guide
 
 Use this guide to produce consistent, efficient concept content. Read it before
-starting a new authoring pass and revisit the relevant sections between layers.
+starting a new authoring pass and revisit the relevant sections between modules.
 
 ## Editorial Aim
 
@@ -126,7 +126,12 @@ Use `RELATED` sparingly and record recurring vocabulary gaps in
 `EDGE_TYPE_REVIEW_WORKLIST.md`. Prefer dependencies on earlier concepts and
 keep important derivation paths traceable toward foundations.
 
-## Domains, Layers, And Status
+Taxonomy and teaching prerequisites can coexist: retain `INSTANCE_OF` alongside
+`REQUIRES` when the authored explanation needs the general concept first. Do not
+infer prerequisites automatically from taxonomy or repeat dependencies already
+carried by a derivation chain.
+
+## Domains, Modules, And Status
 
 Current domain keys are:
 
@@ -136,8 +141,10 @@ Current domain keys are:
 
 Use semantic namespace-qualified concept IDs. Put a concept in `math.*` only
 when it genuinely belongs outside one physics domain. Display IDs remain
-domain-local: existing SR uses forms such as `4.6`, GR uses `GR 1.2`, and
-Maths uses `M 1.1`.
+module-local: use `SR-X.Y`, `GR-X.Y`, or `MATHS-X.Y`, where X is the module
+number and Y follows a loose fundamental-to-derived order within it. Every
+concept has one primary same-domain module in `module_members.csv`; modules
+replace the former layer grouping. Keep semantic IDs stable when renumbering.
 
 Link domains through genuine prerequisites. Prefer conservative edge types and
 record uncertain split/merge decisions rather than forcing them during a seed
@@ -153,10 +160,11 @@ Workflow statuses are:
 
 Status is workflow metadata, not part of the subject model.
 
-For a multi-layer pass, complete one layer at a time. Audit planned concepts,
+For a multi-module pass, complete one module at a time. Audit planned concepts,
 statuses, block and question counts, module membership, links, and edges; then
 run a domain-filtered build. Re-read the guide when a long pass risks stylistic
-drift and prefer one commit per coherent layer.
+drift and prefer one commit per coherent module. Older domain plans may retain
+their original layer headings; map those batches to current module membership.
 
 Example filtered build:
 
@@ -204,7 +212,7 @@ Keep these four pieces synchronized:
 4. expected ID and accessible title in
    `tests/test_concept_svg_graphics.py`.
 
-Runtime SVG dispatch uses display IDs such as `GR 6.1`; captions attach to
+Runtime SVG dispatch uses display IDs such as `GR-6.1`; captions attach to
 semantic IDs such as `gr.riemann_tensor`.
 
 Provide deterministic 512-by-512 `icon` and `detail` SVGs with non-empty
@@ -231,7 +239,7 @@ manually, and do not commit generated HTML unless explicitly requested.
 
 ## Completion Checklist
 
-Before finishing a concept or layer, confirm:
+Before finishing a concept or module, confirm:
 
 - scope, prose, notation, assumptions, and conventions are clear;
 - blocks are well-sized, semantically typed, and correctly ordered;

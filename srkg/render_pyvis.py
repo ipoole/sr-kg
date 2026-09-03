@@ -22,13 +22,13 @@ from pyvis.network import Network
 from srkg.config import (
     EDGE_ARROW_ENDPOINT_OFFSET,
     EDGE_WIDTH,
-    LAYER_COLOURS,
     NODE_CIRCLE_BASE_SIZE,
     NODE_CIRCLE_IMPORTANCE_SCALE,
     NODE_COLLISION_HEIGHT,
     NODE_COLLISION_WIDTH,
 )
 from srkg.edges import make_edge_tooltip, relation_is_directed, stable_edge_colour
+from srkg.module_colours import UNKNOWN_MODULE_VISUAL
 
 
 def write_pyvis_html(
@@ -39,6 +39,7 @@ def write_pyvis_html(
     edge_colour_map: dict[str, str],
     hierarchy_levels: dict[str, int],
     hierarchy_positions: dict[str, tuple[float, float]],
+    module_visuals_by_concept: dict[str, dict[str, str]] | None = None,
     out_path: Path,
     height: str,
     width: str,
@@ -157,14 +158,12 @@ def write_pyvis_html(
         display_id = str(row.get("display_id", "")).strip() or str(cid)
         label = str(row.get("label", "")).strip()
         node_labels[str(cid)] = label or str(cid)
-        layer = str(row.get("layer", "")).strip()
-
-        try:
-            layer_int = int(float(layer))
-        except Exception:
-            layer_int = 0
-
-        colour = LAYER_COLOURS[(layer_int - 1) % len(LAYER_COLOURS)] if layer_int > 0 else "#999999"
+        module_visual = dict(
+            (module_visuals_by_concept or {}).get(str(cid), UNKNOWN_MODULE_VISUAL)
+        )
+        module_id = str(module_visual.get("module_id", ""))
+        background = str(module_visual.get("background", UNKNOWN_MODULE_VISUAL["background"]))
+        border = str(module_visual.get("border", UNKNOWN_MODULE_VISUAL["border"]))
 
         title = f"{display_id} {html.escape(label)}"
 
@@ -177,30 +176,30 @@ def write_pyvis_html(
             label=" ",
             title=title,
             shape="dot",
-            layerGroup=layer_int,
+            moduleGroup=module_id,
             level=hierarchy_levels.get(cid, 0),
             x=x_pos,
             y=y_pos,
             size=size,
             visualSize=size,
             visualColor={
-                "background": colour,
-                "border": "#333333",
+                "background": background,
+                "border": border,
             },
             font={
                 "size": 1,
                 "color": "rgba(0,0,0,0)",
             },
             color={
-                "background": colour,
-                "border": "#333333",
+                "background": background,
+                "border": border,
                 "highlight": {
-                    "background": colour,
-                    "border": "#000000",
+                    "background": background,
+                    "border": border,
                 },
                 "hover": {
-                    "background": colour,
-                    "border": "#000000",
+                    "background": background,
+                    "border": border,
                 },
             },
         )

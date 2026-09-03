@@ -83,9 +83,9 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
             for edge in panes_visible["hiddenEdges"]
             if not edge["hidden"]
         ]) == [
-            ("3.1", "2.1", "DEPENDS_ON"),
-            ("3.1", "2.2", "DEPENDS_ON"),
+            ("3.1", "2.1", "REQUIRES"),
             ("3.1", "2.2", "DERIVES_FROM"),
+            ("3.1", "2.2", "REQUIRES"),
         ]
 
 

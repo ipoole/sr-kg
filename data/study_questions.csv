@@ -266,7 +266,7 @@ sr.field_lagrangian.q6,sr.field_lagrangian,60,short_answer,Why is the Lagrangian
 sr.field_equations.q1,sr.field_equations,10,multiple_choice,"After choosing a field Lagrangian density, what normally plays the role analogous to equations of motion?
 
 A. Field equations
-B. The graph layer number
+B. The module display number
 C. A gauge name only
 D. A historical note","A. Varying the field action gives the field equations, the local equations of motion for the field."
 sr.field_equations.q2,sr.field_equations,20,short_answer,How does the field Euler-Lagrange idea differ from the particle Euler-Lagrange idea?,"Particle mechanics varies paths \(q(t)\). Field theory varies functions \(\phi_a(x)\) over spacetime, and the equations involve spacetime derivatives of the fields."

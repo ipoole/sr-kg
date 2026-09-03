@@ -15,8 +15,6 @@ def test_concept_serializes_sections_and_study_questions():
         id="sr.inertial_frames",
         display_id="1.1",
         label="Inertial frames",
-        layer="1",
-        layer_title="Foundations",
         domain="sr",
         domain_title="Special Relativity and Classical Fields",
         authoring_status="authored",

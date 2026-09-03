@@ -26,7 +26,7 @@ The important distinction is:
 - module membership is authored source data
 - collapse/expand state is viewer state
 
-## Domain, Module, Layer, Concept, Block
+## Domain, Module, Concept, Block
 
 The atlas now has several organising axes that should not be collapsed into one
 field:
@@ -38,9 +38,10 @@ domain
       content block
 ```
 
-`layer` remains a pedagogical/layout ordering field within a domain. It is not
-the same thing as a module. Layers say roughly "when this appears in the
-course"; modules say "which foldable topic area owns this concept".
+Modules now subsume the former layers as pedagogical and layout groupings.
+Module sequence and within-module dependency order provide teaching order;
+there is no separate runtime layer field. Historical alternatives later in
+this document record the earlier layer-based design discussion.
 
 The current branch already uses domain metadata in `nodes.csv`, for example
 `sr`, `gr`, and `math`. Modules should therefore have an owning domain, and a
@@ -321,29 +322,28 @@ A folded module node must be visually distinct from a concept node. It should
 be larger than a concept node and read as a container or topic area, not as
 another concept.
 
-The first visual treatment should use:
+The folded rectangle matches the padded bounding box of its member concepts
+and labels in the persistent global layout. Corners have a radius of 18% of
+the shorter side. The title fits the available space, capped at 160 graph-space
+font units; the member count below it uses a fixed size of 48 graph-space units.
+The title already includes the module code,
+so no separate domain badge is needed.
 
-- a moderately larger rounded rectangle rather than a circular concept node
-- the module title as the primary label
-- a compact domain badge such as `SR`, `GR`, or `MATHS`
-- a member count such as `12 concepts`
-- a distinct border/background treatment from concept nodes
+Changing a module's footprint never automatically moves it or its neighbours.
+Users can zoom out and use the boxes to judge the separation needed, then move
+modules manually. Generated fallback anchors use generous spacing; published
+layout revision 4 also spreads the previous module centres threefold, with
+rigid translations that preserve each module's internal concept arrangement.
 
-Example shape:
+Edges retain a minimum screen-space width when zoomed out (1.8 pixels for
+module boundary edges, 1.5 for ordinary concept edges). Hover emphasis remains
+proportional; zoom changes rendering only, not stored edge styles or layout.
 
-```text
-+----------------------+
-| SR                   |
-| Four-vectors         |
-| 8 concepts           |
-+----------------------+
-```
-
-The module node should be big enough to be targetable in crowded graph regions
-but not so large that it dominates the graph. The prototype currently uses a
-smaller rounded rectangle, about 70% of the previous linear size, with reduced
-label text. Its size and shape should make clear that it represents a folded
-set of concepts.
+Full graph mode (including a highlighted selection) displays only `REQUIRES`,
+`DERIVES_FROM`, and `CONSTRUCTED_FROM`. Filtering happens before module-edge
+aggregation, so counts and internal edges follow the same rule. Focussed mode
+retains its existing context-dependent relation visibility. The underlying
+knowledge graph and relationship details are not filtered.
 
 ## Boundary Edge Display
 

@@ -107,6 +107,7 @@ def resolve_published_layout(
     published: PublishedLayout,
     *,
     generated_concept_positions: Mapping[str, tuple[float, float]],
+    generated_module_positions: Mapping[str, tuple[float, float]] | None = None,
     modules: Iterable[Module],
 ) -> PublishedLayout:
     """Fill missing concepts and module anchors from deterministic graph geometry."""
@@ -116,12 +117,19 @@ def resolve_published_layout(
         )
         for concept_id, position in generated_concept_positions.items()
     }
+    generated_modules = dict(generated_module_positions or {})
     module_positions: dict[str, LayoutPosition] = {}
     for module in modules:
         module_id = str(module.module_id)
         authored_anchor = published.modules.get(module_id)
         if authored_anchor is not None:
             module_positions[module_id] = authored_anchor
+            continue
+        generated_anchor = generated_modules.get(module_id)
+        if generated_anchor is not None:
+            module_positions[module_id] = LayoutPosition(
+                float(generated_anchor[0]), float(generated_anchor[1])
+            )
             continue
         member_positions = [
             concepts[concept_id]

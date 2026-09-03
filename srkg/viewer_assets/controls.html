@@ -28,13 +28,8 @@
       <b>Knowledge graph explorer</b><br>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
-      <button id="kg_info_toggle" type="button" onclick="kgToggleInfoPanel()">Hide details</button>
       <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
       <div id="kg_focus_lens" class="kg-focus-lens" aria-live="polite"></div>
-      <details id="kg_legend_section" class="kg-fold">
-        <summary>Layers</summary>
-        <div id="kg_legend"></div>
-      </details>
       <details id="kg_modules_section" class="kg-fold">
         <summary>Modules</summary>
         <div class="kg-module-actions" aria-label="Module graph actions">
@@ -54,7 +49,6 @@
         <div class="kg-layout-actions">
           <button id="kg_layout_export" type="button">Export global layout</button>
           <button id="kg_layout_reset" type="button">Reset to published layout</button>
-          <button id="kg_layout_recenter_module" type="button">Recenter selected module</button>
         </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
@@ -84,7 +78,7 @@
 
     <div id="info_panel">
       <h2>__VIEW_TITLE__</h2>
-      <p>Select a concept...</p>
+      <p>Select a concept or module, or double-click a module to expand it.</p>
     </div>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
       <h2 id="kg_splash_title">Knowledge graph browser</h2>
@@ -126,15 +120,19 @@
           </ul>
         </section>
         <section>
-          <h3>Modules <span class="kg-status-badge">Work in progress</span></h3>
+          <h3>Modules</h3>
           <ul>
             <li>Browse authored topic groups and open module-level study pages.</li>
             <li>Collapse modules into topic nodes, then expand them to reveal their concepts.</li>
             <li>Inspect summarised boundary links between folded modules and the surrounding graph.</li>
           </ul>
         </section>
+        <section>
+          <h3>General Relativity <span class="kg-status-badge">Work in progress</span></h3>
+          <p>GR concepts are available at seed level, with graphics and initial study content. They still need full authoring and review.</p>
+        </section>
       </div>
-      <h3>Coming soon: General Relativity!</h3>
+      <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex.</p>
       <div class="kg-splash-actions">
         <button id="kg_splash_dismiss" type="button">Dismiss</button>
       </div>

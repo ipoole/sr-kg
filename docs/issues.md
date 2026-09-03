@@ -22,6 +22,8 @@ Things to be fixed, batched together
 17. DONE - Mouseover a module node should show the module overview, analagous to mouseover a concept.
 18. DONE - Mouseover of a module -> module edge shows the list of concept -> concept edges if
 there are three or less; in this case it is not necessary to also show the link counts, just wastes space.
+19. DONE - Use a fixed graph-space font size for the module "N concepts" count, independent
+of module dimensions and title font size, for a tidier module-level view.
 
 
 ## More significant

@@ -3,11 +3,13 @@ from contextlib import contextmanager
 from pathlib import Path
 import re
 import shutil
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 from srkg.pipeline import generate_viewer_from_root
+from srkg.data import createSvgGraphic as create_repo_svg_graphic
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -38,6 +40,13 @@ class BrowserGraph:
     output_path: Path
     page_errors: list[str]
     console_errors: list[str]
+
+    def drawn_module_bounds(self, node_id: str) -> dict:
+        # vis adds the corner radius to getBoundingBox(), outside the painted box.
+        return self.page.evaluate("""id => {
+          const s = network.body.nodes[id].shape;
+          return {left:s.left, right:s.left+s.width, top:s.top, bottom:s.top+s.height};
+        }""", node_id)
 
     def open_control_section(self, section_id: str) -> None:
         self.page.locator(f"#{section_id}").evaluate("el => { el.open = true; }")
@@ -80,8 +89,6 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "id": "1.1",
             "display_id": "1.1",
             "label": "Alpha",
-            "layer": "1",
-            "layer_title": "Foundations",
             "domain": "test",
             "domain_title": "Test Physics",
         },
@@ -89,8 +96,6 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "id": "2.1",
             "display_id": "2.1",
             "label": "Beta",
-            "layer": "2",
-            "layer_title": "Applications",
             "domain": "test",
             "domain_title": "Test Physics",
         },
@@ -98,8 +103,6 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "id": "2.2",
             "display_id": "2.2",
             "label": "Gamma",
-            "layer": "2",
-            "layer_title": "Applications",
             "domain": "test",
             "domain_title": "Test Physics",
         },
@@ -107,8 +110,6 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "id": "3.1",
             "display_id": "3.1",
             "label": "Delta",
-            "layer": "3",
-            "layer_title": "Synthesis",
             "domain": "test",
             "domain_title": "Test Physics",
         },
@@ -197,7 +198,7 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         {
             "source": "3.1",
             "target": "2.1",
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "note": "Delta depends on beta",
         },
         {
@@ -215,7 +216,7 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         {
             "source": "2.1",
             "target": "1.1",
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "note": "Beta depends on alpha through Noether's theorem \\(E=mc^2\\)",
         },
         {
@@ -227,13 +228,13 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         {
             "source": "3.1",
             "target": "2.2",
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "note": "Delta depends on gamma",
         },
     ]).to_csv(edges_path, index=False)
     pd.DataFrame([
         {
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "directed": "true",
             "category": "dependency",
             "meaning": "source depends on target",
@@ -415,6 +416,18 @@ def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path
     return output_path
 
 
+def _create_fixture_svg_graphic(concept_id: str, variant: str = "icon") -> str | None:
+    """Give the synthetic numeric-ID fixture a graphic without registry aliases."""
+    if concept_id == "2.2":
+        size = 160 if variant == "detail" else 80
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}">'
+            f'<circle cx="{size / 2}" cy="{size / 2}" r="{size / 3}" '
+            'fill="none" stroke="currentColor"/></svg>'
+        )
+    return create_repo_svg_graphic(concept_id, variant=variant)
+
+
 @contextmanager
 def _open_browser_graph(playwright_api, browser, output_path: Path):
     page_errors: list[str] = []
@@ -482,7 +495,8 @@ def playwright_browser():
 def browser_fixture_output(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("browser-fixture")
     _write_browser_fixture(tmp_path)
-    return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
+    with patch("srkg.data.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
+        return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
 
 
 @pytest.fixture(scope="session")

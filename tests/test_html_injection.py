@@ -39,11 +39,25 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert 'id="info_panel"' in injected
     assert 'coloneqq: "\\\\mathrel{:=}"' in injected
     assert "function kgAfterReady()" in injected
+    assert "var kgModuleGeometry =" in injected
+    assert injected.index("var kgModuleGeometry =") < injected.index("var conceptData =")
     assert "var conceptData = {};" in injected
     assert "var moduleData = {};" in injected
     assert 'var publishedLayout = {"schema_version": 1, "revision": "unpublished", "concepts": {}, "modules": {}};' in injected
     assert "var edgeKey = {};" in injected
     assert '"globalLayout": "srkg.layout.global.v1"' in injected
+
+
+def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
+    injected = inject_controls(_base_pyvis_html(), {}, {}, "Title")
+
+    assert "kg_info_toggle" not in injected
+    assert "kgToggleInfoPanel" not in injected
+    assert 'id="kg_details_view_select"' in injected
+    assert injected.count("Select a concept or module, or double-click a module to expand it.") == 2
+    assert 'class="kg-splash-credit"' in injected
+    assert 'href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a>' in injected
+    assert "with AI assistance via OpenAI Codex." in injected
 
 
 def test_inject_controls_serializes_json_without_literal_script_closers():

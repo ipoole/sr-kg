@@ -43,15 +43,11 @@ def _write_minimal_kb(root):
             "id": "test.alpha",
             "display_id": "1.1",
             "label": "Alpha",
-            "layer": "1",
-            "layer_title": "Foundations",
         },
         {
             "id": "test.beta",
             "display_id": "2.1",
             "label": "Beta",
-            "layer": "2",
-            "layer_title": "Next",
         },
     ]).to_csv(root / "nodes.csv", index=False)
     pd.DataFrame([
@@ -325,15 +321,11 @@ def test_load_knowledge_base_rejects_duplicate_concept_ids(tmp_path):
             "id": "test.alpha",
             "display_id": "1.1",
             "label": "Alpha",
-            "layer": "1",
-            "layer_title": "Foundations",
         },
         {
             "id": "test.alpha",
             "display_id": "1.2",
             "label": "Alpha again",
-            "layer": "1",
-            "layer_title": "Foundations",
         },
     ]).to_csv(tmp_path / "nodes.csv", index=False)
 

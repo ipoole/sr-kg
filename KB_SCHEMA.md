@@ -31,7 +31,8 @@ The default project root is `data/`.
 
 For drafting style and concept-by-concept authoring workflow, see
 `docs/authoring/AUTHORING_GUIDE.md`. Readable exposition drafts live in
-`docs/authoring/concept_expositions.md` before or alongside their split into CSV blocks.
+`docs/authoring/sr_concept_expositions.md` and
+`docs/authoring/gr_concept_expositions.md` before or alongside their split into CSV blocks.
 Recurring notation conventions are collected in `docs/authoring/NOTATION_GLOSSARY.md`.
 Broad or missing source locators are tracked in
 `docs/authoring/SOURCE_REVIEW_WORKLIST.md`.
@@ -52,7 +53,7 @@ The manifest names the source files within the data root.
 | `files.references` | Yes | Bibliographic/source reference registry. |
 | `files.reference_links` | Yes | Links from KB items to source references. |
 | `files.graphic_designs` | No | Concept graphic caption metadata. |
-| `files.modules` | No | Authored flat module registry for module pages and later graph folding. |
+| `files.modules` | No | Authored flat module registry for module pages and graph folding. |
 | `files.module_members` | No | Explicit primary concept membership for modules. Required when `modules.csv` is present. |
 | `files.module_supports` | No | Optional cross-module or cross-domain support links declared by modules. |
 | `files.module_content_blocks` | No | Ordered module-level content blocks. Required when `modules.csv` is present. |
@@ -87,9 +88,8 @@ Add source material through `references.csv` and `reference_links.csv`. Prefer
 linking a reference to the most specific useful item, such as a derivation block
 or study question, rather than only linking the whole concept.
 
-Use modules as authored topic groupings, not as another name for layers.
-The initial module data is seeded from `(domain, layer, layer_title)` groups,
-but `module_members.csv` is the source of truth. A concept has exactly one
+Modules are the authored pedagogical and layout groupings.
+`module_members.csv` is the source of truth. A concept has exactly one
 primary module, and that module must currently be in the same domain as the
 concept. Cross-domain reuse, such as a GR module depending on maths concepts,
 belongs in `module_supports.csv` rather than by giving concepts multiple module
@@ -103,18 +103,15 @@ source for concept prose in manifest-backed KB roots.
 | Column | Required | Meaning |
 | --- | --- | --- |
 | `id` | Yes | Stable semantic concept identifier, such as `sr.lorentz_transformations`. This is the durable key used by edges, content blocks, links, hashes, and notes. |
-| `display_id` | Yes | Human-facing ordered identifier, such as `3.3`. Used for visible numbering, sorting, layout, and navigation. |
+| `display_id` | Yes | Module-local human-facing identifier, such as `SR-1.8`, `GR-3.2`, or `MATHS-2.1`. Used for visible numbering, sorting, and navigation. |
 | `label` | Yes | Display label shown in the graph and details panel. |
-| `layer` | Yes | Pedagogical/layout layer. Used for navigation and initial graph layout. |
-| `layer_title` | Yes | Human-readable title for the layer. |
 | `domain` | Yes | Short domain key used for authoring subsets and broad atlas grouping, such as `sr`, `gr`, or `math`. |
 | `domain_title` | Yes | Human-readable domain title, such as `Special Relativity and Classical Fields` or `General Relativity`. |
 | `authoring_status` | No | Temporary authoring workflow marker. Current values in use are `seed` for placeholder runtime content and `prerequisite_support` for maths concepts included only to support nearby physics content. Blank means no status has been recorded. |
 
-Display numbering is local to the domain in the authored atlas. Existing SR
-concepts currently keep bare display IDs such as `4.6`; new parallel domains
-should use a compact prefix such as `GR 1.1` or `M 1.1` so display IDs remain
-unambiguous in the combined viewer.
+The prefix and first number identify the owning module. The final number follows
+a loose fundamental-to-derived topological order within that module. Stable
+semantic IDs, rather than display IDs, remain the targets of all references.
 
 ## content_blocks.csv
 
@@ -358,8 +355,8 @@ visibility, selection, or focused-view adjustments.
 
 Unknown concept or module IDs, duplicate JSON keys, malformed coordinates, and
 unsupported schema versions are load errors. Concepts omitted from the file
-fall back to the deterministic generated layer layout. An omitted module anchor
-is derived from the resolved centroid of its member concepts. The generator
+fall back to deterministic module-local layout. An omitted module anchor is
+generated from the structural module DAG. The generator
 passes the resulting complete published layout to the viewer; applying it as
 the authoritative mutable browser layout is handled by the layout-persistence
 viewer work.

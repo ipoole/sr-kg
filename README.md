@@ -1,6 +1,8 @@
 # SR Knowledge Graph
 
-A small pedagogical knowledge graph viewer for special relativity and classical fields concepts.
+A pedagogical knowledge graph viewer for special relativity, classical fields,
+general relativity and supporting mathematics. GR content is at seed level and
+still needs full authoring and review.
 
 The project reads concept data from CSV files and generates a standalone
 interactive HTML graph using PyVis and vis.js. The generated viewer supports:
@@ -23,8 +25,8 @@ interactive HTML graph using PyVis and vis.js. The generated viewer supports:
 
 ### Graph Semantics
 
-- layer-based manual node placement
-- layer colouring and a layer legend
+- authored modules with folding, module colours and module-local concept numbering
+- persistent manual layouts with module-local fallback placement
 - relation-aware edge colouring and an edge key
 - directed and undirected edge rendering
 - section-aware graph focus with a focus-lens status display
@@ -55,7 +57,8 @@ data/
 docs/
   authoring/
     AUTHORING_GUIDE.md     House style for drafting concept content
-    concept_expositions.md Readable draft expositions before CSV block splits
+    sr_concept_expositions.md SR draft expositions before CSV block splits
+    gr_concept_expositions.md GR draft expositions before CSV block splits
     NOTATION_GLOSSARY.md   Shared notation conventions
   discussion/              Design discussion notes and experiments
 lib/
@@ -69,7 +72,10 @@ srkg/
   data.py                  CSV validation and concept-data helpers
   concept_svg_graphics.py  Deterministic SVG concept graphic generation
   edges.py                 Edge relation semantics, colours, and display helpers
-  layout.py                Layer-based initial layout logic
+  layout.py                Natural ID sorting and module-free fixture layout
+  module_layout.py         Dependency-based module and concept placement
+  layout_persistence.py    Published layout validation and fallback resolution
+  module_colours.py        Stable module visual identities
   render_pyvis.py          Base PyVis network rendering
   html_injection.py        Browser-side CSS/JS/MathJax injection
   pipeline.py              End-to-end generation workflow
@@ -188,7 +194,9 @@ The validator checks structural and textual consistency, including:
 - study-question/study-answer mismatches
 - directed relation cycles using the relation direction metadata in `edges_key.csv`
 
-It also emits warning-level diagnostics for likely data-quality issues, such as `\cref` references without a corresponding graph edge, graph edges without a reciprocal `\cref`, layer-order issues in directed edges, and transitively redundant directed edges. These warnings are useful review prompts; they are not automatically wrong.
+It also reports review warnings such as cross-reference/edge mismatches,
+module or member ordering contradictions, and transitively redundant directed
+edges. Warnings are review prompts, not necessarily errors.
 
 ## Review Directed DAGs
 
@@ -202,7 +210,11 @@ conda run -n sr-kg python tools/generate_pyvis.py \
   --dag-report-only
 ```
 
-By default, the report checks every relation marked `directed=true` in `edges_key.csv` and their combined subgraph. It lists directed cycles if any are present, edges that point from an earlier pedagogical layer to a later target layer, same-layer directed edges, same-layer order violations where a lower-display-numbered source points to a higher-display-numbered target, transitively redundant direct edges, suggested target-first display-ID renumberings within affected layers, any forward references that would remain after those renumberings, foundation nodes, capstone nodes, and the longest source-to-target chain.
+By default, the report checks every relation marked `directed=true` in
+`edges_key.csv` and their combined subgraph. It lists directed cycles,
+transitively redundant edges, foundation and capstone nodes, and longest
+source-to-target chains. Module and member order are checked separately by
+the module report.
 
 Use `--dag-report` to print the same diagnostics before normal HTML generation. Use `--dag-relations RELATION ...` to inspect an explicit relation set instead of the directed defaults.
 
@@ -212,7 +224,8 @@ Authored modules can be checked against the concrete concept graph. The module
 report contracts concept edges through `module_members.csv`, counts internal
 and boundary edges by relation, lists module-to-module boundary pairs, compares
 those boundaries with declared `module_supports.csv` entries, and runs DAG
-diagnostics on the quotient module graph.
+diagnostics on the quotient module graph. It also checks dependencies against
+same-domain module sequence and within-module member order.
 
 Print module diagnostics without regenerating the viewer:
 
@@ -275,8 +288,8 @@ the terminal.
 Generate a standalone HTML sheet showing icon and detail SVGs side by side:
 
 ```bash
-conda run -n sr-kg python tools/show_graphics.py 7.7
-conda run -n sr-kg python tools/show_graphics.py '7.*'
+conda run -n sr-kg python tools/show_graphics.py SR-1.8
+conda run -n sr-kg python tools/show_graphics.py 'SR-1.*'
 conda run -n sr-kg python tools/show_graphics.py '*.*'
 ```
 
@@ -294,8 +307,8 @@ and the header controls are aligned over the pane they affect:
 - `Details`: `Full`, reading-focused modes, or `Hide`
 - `Show lens` / `Hide lens` for the graph focus-lens status display
 
-There is always one selected concept after navigation has started. Additional
-highlighted concepts come from the selected detail section: ordinary content
+Selection can be a concept, module or relationship, or cleared altogether.
+For a selected concept, additional highlighted concepts come from the detail section: ordinary content
 uses the immediate neighbourhood, `Derived from` follows the configured
 derivation relation outward, and `Where this is used` follows it inward. In
 `All` graph mode, background concepts remain visible but dimmed. In `Focussed`
@@ -311,7 +324,7 @@ details section:
 - a scrollable concept list
 - an edge key showing relation colour, direction, category, meaning, and example
 - browser-local notes export/import and note editing controls
-- published and personal global-layout status, export, reset, and selected-module recentering
+- published and personal global-layout status, export and reset
 
 The published graph layout is versioned in `data/layout.json`. In Full graph mode,
 manual concept and folded-module moves become browser-local overrides and
@@ -321,8 +334,9 @@ modules can be moved to improve the current focussed view, but the muted
 `Temporary layout` notice indicates that these changes are discarded on
 navigation and never alter the saved global layout. The
 `Layouts` control-panel section can export a repository-compatible complete
-layout, reset personal overrides to the published revision, resolve a stale
-published-revision warning, or explicitly recenter the selected module anchor.
+layout, reset personal overrides to the published revision, or resolve a stale
+published-revision warning. Folded boxes always follow their member bounds;
+no recenter command is necessary.
 
 On phone-sized viewports, the control panel starts hidden and the details panel uses a full-width bottom sheet in portrait orientation. In phone landscape, the details panel returns to a compact right-side sheet so the graph remains usable in the wider canvas.
 
@@ -347,9 +361,9 @@ maps semantic block `kind` values to presentation policy:
 The KB also has explicit module source files. Modules are flat authored topic
 groups with one primary same-domain module per concept, and
 `module_members.csv` is the durable source of truth. The viewer can browse
-module pages and fold or expand their graph representation. This feature
-remains work in progress while the authored module set and concept memberships
-are reviewed.
+module pages and fold or expand their graph representation. The module set,
+membership, numbering and persistent-layout workflow have been reviewed.
+Modules are complete for this phase; GR content remains seed-level WIP.
 
 The details pane also includes relationship sections where available:
 
@@ -364,17 +378,24 @@ The details pane also includes relationship sections where available:
 
 The details panel also supports browser-local user notes. Notes are stored in the browser's `localStorage` under the generated viewer's origin, so they are private to that browser profile and are not written back to the source CSV files. Existing notes are shown as amber fold-down sections. The `Notes` control-panel section has a `Note editing` toggle; when it is off, existing notes are read-only and add-note hooks are hidden. When it is on, small `+ note` controls appear at line boundaries in open content blocks, and notes can be added, edited, or deleted. Use `Export notes` and `Import notes` to move notes through a CSV review workflow.
 
-Some concepts also have deterministic SVG graphics generated by `srkg.concept_svg_graphics`. When a graphic exists, the detail panel embeds the SVG directly so it remains crisp at panel size. The graph node also shows a small rasterized version clipped inside the circular node, with a pale layer-colour background and a full layer-colour outline. Nodes without a graphic keep the existing solid layer-colour circle.
+Concept SVGs are generated by `srkg.concept_svg_graphics`. The details panel
+embeds SVG directly; graph nodes show a rasterized icon inside a circle, with
+the owning module's background and border colours. Nodes without a graphic
+use a plain module-coloured circle.
 
 Graph labels are rendered in an HTML overlay rather than as raw vis.js labels. This allows equation fragments such as `\(A_\mu\)` to render correctly in node labels while preserving normal graph interaction.
 
 Node layout comes from the versioned published layout in `data/layout.json`.
-For concepts not yet present there, the generator deterministically falls back
-to the pedagogical layer encoded in each node. It reads the `layer` column,
-falling back to the leading `display_id` prefix such as `3` in `3.2`; layer 1
-is placed at the bottom of the graph and higher numbered layers appear above
-it. Within each layer, nodes are placed left-to-right by `display_id` on a
-left-aligned upward curve.
+Missing concepts use deterministic module-local placement: structural
+prerequisites below more derived concepts, with authored member order breaking
+ties and wide ranks wrapping. Missing module anchors use the structural module
+DAG. Published coordinates and browser-local overrides take precedence; the
+viewer never automatically repacks modules or their concepts.
+
+Folded boxes match their contents' bounding rectangles, including labels and
+the configured padding. Corner radius is 18% of the shorter side. Titles fit
+within the box up to 160 graph-space font units; counts use a fixed size of 48.
+Move modules manually to leave room for boundary edges between them.
 
 The generated viewer uses these coordinates directly. Graph focus and
 highlighting reuse the same global layout, so entering Focussed mode changes
@@ -389,10 +410,14 @@ The visible graph nodes are custom-drawn circles on the canvas. The underlying v
 
 Edge rendering is relation-aware:
 
+- Full graph mode shows only `REQUIRES`, `DERIVES_FROM`, and `CONSTRUCTED_FROM`,
+  including internal and folded-module edges; Focussed mode keeps its existing
+  context-dependent relations
 - relation colours are stable and repeatable across runs
 - directed relations use contrasting colours and arrowheads
 - undirected relations are rendered without arrowheads and in light grey
-- edge lines are drawn heavier than the PyVis default
+- edge lines retain a minimum on-screen thickness when zoomed out, including
+  module boundary edges; their stored styles are unchanged
 - edge hover uses the same custom MathJax-aware tooltip path as concept hover
 - edge hover headings use readable relationship grammar, while relationship
   detail panels also show the raw relation name
@@ -407,68 +432,11 @@ The lower-level modules are intentionally separated so the data, edge semantics,
 
 `srkg.config` is dependency-free and can be imported by any module. `srkg.pipeline` is the only module that depends on all major stages.
 
-## Module dependency graph
-
-```text
-tools/generate_pyvis.py
-  -> srkg.pipeline
-
-tools/show_graphics.py
-  -> srkg.concept_svg_graphics
-
-srkg.pipeline
-  -> srkg.kb
-  -> srkg.data
-  -> srkg.edges
-  -> srkg.layout
-  -> srkg.render_pyvis
-  -> srkg.html_injection
-
-srkg.validation
-  -> srkg.config
-  -> srkg.data
-  -> srkg.dag
-  -> srkg.edges
-  -> srkg.kb
-  -> srkg.layout
-
-srkg.module_diagnostics
-  -> srkg.dag
-  -> srkg.kb
-  -> srkg.model
-
-srkg.render_pyvis
-  -> srkg.config
-  -> srkg.edges
-
-srkg.html_injection
-  -> srkg.config
-
-srkg.data
-  -> srkg.config
-  -> srkg.concept_svg_graphics
-  -> srkg.model
-
-srkg.kb
-  -> srkg.config
-  -> srkg.data
-  -> srkg.model
-
-srkg.edges
-  -> srkg.config
-
-srkg.layout
-  -> srkg.config
-
-srkg.concept_svg_graphics
-  -> no project modules
-
-srkg.model
-  -> no project modules
-
-srkg.config
-  -> no project modules
-```
+Module placement, colour and persistence are separated into `srkg.module_layout`,
+`srkg.module_colours` and `srkg.layout_persistence`. Graph diagnostics live in
+`srkg.dag` and `srkg.module_diagnostics`; SVG generation is dispatched through
+`srkg.svg_graphics.registry`. Browser rendering and interaction code lives in
+`srkg/viewer_assets`.
 
 ## Layout Tuning
 
@@ -478,14 +446,6 @@ The main layout, node display, and edge display constants live in `srkg/config.p
 EDGE_WIDTH = 5.0
 EDGE_HOVER_WIDTH = 9.0
 EDGE_ARROW_ENDPOINT_OFFSET = 36
-LAYOUT_X_SPACING = 350
-LAYOUT_Y_SPACING = 400
-LAYOUT_ROW_STAGGER = 35
-LAYOUT_ROW_CURVE_FLAT_COUNT = 2
-LAYOUT_ROW_CURVE_TARGET_NODE = 6
-LAYOUT_ROW_CURVE_TARGET_RISE_FRACTION = 0.9
-LAYOUT_ROW_CURVE_MAX_RISE_FRACTION = 1.5
-LAYOUT_ROW_CURVE_EXPONENT = 2.0
 NODE_COLLISION_WIDTH = 230
 NODE_COLLISION_HEIGHT = 150
 NODE_CIRCLE_BASE_SIZE = 90
@@ -497,10 +457,21 @@ NODE_LABEL_HIDE_BELOW_PX = 6
 ```
 
 Circle radius is computed from `NODE_CIRCLE_BASE_SIZE` plus `NODE_CIRCLE_IMPORTANCE_SCALE * sqrt(incoming_edge_count + 1)`.
-Nodes are placed left-to-right by `display_id` within each layer, with every global row sharing the same left x anchor. The `LAYOUT_ROW_CURVE_*` constants control the upward curve used by the global Python layout. `LAYOUT_ROW_STAGGER` is still used by the browser-side compact focussed layout.
+Generated module layout defaults live in `srkg/module_layout.py`: concept
+spacing is 350 horizontally and 300 vertically, with at most four columns;
+module-anchor spacing is 3300 horizontally and 2700 vertically. These are
+fallbacks, not overrides of saved coordinates. `LAYOUT_X_SPACING` and
+`LAYOUT_Y_SPACING` in `config.py` serve module-free fixtures only.
+
+Module padding is the default argument in
+`srkg/viewer_assets/module_geometry.js` (currently 1 graph unit). Module title
+and count sizing live in `fittedModuleLabel` in `srkg/viewer_assets/viewer.js`.
+Regenerate the HTML after changing these values.
+
 Active visible edges temporarily use `EDGE_HOVER_WIDTH` while hovered, making the edge path easier to trace in dense parts of the graph. Dimmed background edges remain inert on hover.
 
-The generated graph disables vis-network physics and uses the deterministic coordinates from `srkg.layout`.
+The generated graph disables vis-network physics and uses the resolved global
+layout. Focussed-mode adjustments are temporary; there is no compact projection.
 
 ## Data Format
 
@@ -509,17 +480,20 @@ The current KB file schema is documented in [KB_SCHEMA.md](KB_SCHEMA.md).
 `data/nodes.csv` expects concept metadata:
 
 ```text
-id,display_id,label,layer,layer_title
+id,display_id,label,domain,domain_title,authoring_status
 ```
 
 `id` is the stable semantic concept key, for example `sr.lorentz_transformations`.
-`display_id` is the human-facing ordered number, for example `3.3`, used for
-visible numbering, sorting, and layout.
+`display_id` is the module-local number, such as `SR-1.8`, `GR-3.2`, or
+`MATHS-2.1`. The first number identifies the module; the second follows a loose
+fundamental-to-derived order. Module membership lives in `module_members.csv`,
+not in a separate layer field.
 
 `data/content_blocks.csv` is the canonical source for concept prose in the manifest-backed KB.
 For drafting style and concept-by-concept workflow, see `docs/authoring/AUTHORING_GUIDE.md`.
-Readable draft expositions are kept in `docs/authoring/concept_expositions.md` before or
-alongside their split into CSV blocks.
+Readable draft expositions are kept in `docs/authoring/sr_concept_expositions.md`
+and `docs/authoring/gr_concept_expositions.md` before or alongside their split
+into CSV blocks.
 
 `data/content_blocks.csv` expects:
 
@@ -584,7 +558,7 @@ with an arrow and how DAG diagnostics should interpret the edge. The generated
 viewer includes an `Edge key` button that shows relation colour, direction,
 category, meaning, and example.
 
-The documented schema in [KB_SCHEMA.md](KB_SCHEMA.md) is the supported generator input. The richer fields drive labels, panel content, layer grouping, search, rendered concept references, source references, graph focus behaviour, and optional generated concept graphics.
+The documented schema in [KB_SCHEMA.md](KB_SCHEMA.md) is the supported generator input. Its fields drive labels, panel content, module grouping, search, rendered concept references, source references, graph focus behaviour, and generated concept graphics.
 
 Concept references in content block bodies use:
 

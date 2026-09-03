@@ -7,29 +7,29 @@ from srkg.svg_graphics.registry import IMPLEMENTED_NODE_IDS, create_svg_graphic
 
 
 GRAPHIC_NODE_IDS = [
-    "1.1", "1.2", "1.3",
-    "2.2", "2.3",
-    "3.1", "3.2", "3.3", "3.4", "3.5",
-    "4.1", "4.2", "4.3", "4.4", "4.5", "4.6",
-    "5.1", "5.2", "5.3", "5.4", "5.5", "5.6",
-    "6.1", "6.2", "6.3", "6.4",
-    "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7",
-    "8.1", "8.3", "8.4", "8.5", "8.6",
-    "9.1", "9.2", "9.3", "9.4",
-    "10.1", "10.2", "10.3",
-    "11.1", "11.2",
-    "M 1.1", "M 1.2", "M 1.3", "M 1.4", "M 1.5", "M 1.6", "M 2.1",
-    "M 2.2", "M 2.3",
-    "GR 1.1", "GR 1.2", "GR 1.3", "GR 1.4", "GR 1.5",
-    "GR 2.1", "GR 2.2", "GR 2.3",
-    "GR 3.1", "GR 3.2", "GR 3.3", "GR 3.4", "GR 3.5", "GR 3.6",
-    "GR 4.1", "GR 4.2", "GR 4.3", "GR 4.4", "GR 4.5", "GR 4.6",
-    "GR 5.1", "GR 5.2", "GR 5.3", "GR 5.4", "GR 5.5", "GR 5.6",
-    "GR 6.1", "GR 6.2", "GR 6.3", "GR 6.4", "GR 6.5", "GR 6.6",
-    "GR 7.1", "GR 7.2", "GR 7.3", "GR 7.4", "GR 7.5",
-    "GR 8.1", "GR 8.2", "GR 8.3", "GR 8.4", "GR 8.5", "GR 8.6",
-    "GR 9.1", "GR 9.2", "GR 9.3", "GR 9.4", "GR 9.5", "GR 9.6",
-    "GR 10.1", "GR 10.2", "GR 10.3", "GR 10.4", "GR 10.5", "GR 10.6",
+    "sr.inertial_frames", "sr.constancy_of_speed_of_light", "sr.principle_of_relativity",
+    "sr.spacetime_event", "sr.principle_of_locality",
+    "sr.metric_tensor", "sr.spacetime_interval", "sr.lorentz_transformations", "sr.light_cone", "sr.minkowski_diagram",
+    "sr.proper_time", "sr.four_vectors", "sr.position_four_vector", "sr.velocity_four_vector", "sr.momentum_four_vector", "sr.mass_energy_equivalence",
+    "sr.lagrangian", "sr.action_principle", "sr.euler_lagrange_equations", "sr.canonical_momentum", "sr.hamiltonian_formalism", "sr.noether_theorem",
+    "sr.scalar_field", "sr.vector_field", "sr.field_lagrangian", "sr.field_equations",
+    "sr.vector_potential", "sr.field_tensor", "sr.electric_field", "sr.magnetic_field", "sr.electromagnetic_field", "sr.four_current", "sr.maxwells_equations",
+    "sr.gauge_invariance", "sr.minimal_coupling", "sr.lorentz_force_law", "sr.charge_conservation", "sr.lorenz_gauge",
+    "sr.energy_momentum_tensor", "sr.poynting_vector", "sr.em_stress_energy", "sr.em_energy_density",
+    "sr.wave_equation", "sr.electromagnetic_waves", "sr.radiation_reaction",
+    "sr.lorentz_invariance", "sr.gauge_fixing",
+    "math.manifold", "math.coordinate_chart", "math.coordinate_transformation", "math.worldline", "math.tangent_space", "math.cotangent_space", "math.tensor_field",
+    "math.index_notation", "math.tensor_transformation_law",
+    "gr.gravity_as_geometry", "gr.equivalence_principle", "gr.local_inertial_frame", "gr.freely_falling_observer", "gr.tidal_gravity",
+    "gr.metric_tensor", "gr.inverse_metric", "gr.volume_element",
+    "gr.line_element", "gr.proper_time", "gr.null_curve", "gr.causal_structure", "gr.local_flatness", "gr.metric_signature",
+    "gr.connection", "gr.christoffel_symbols", "gr.covariant_derivative", "gr.metric_compatibility", "gr.torsion_free_connection", "gr.parallel_transport",
+    "gr.geodesic", "gr.geodesic_equation", "gr.geodesic_action", "gr.four_velocity", "gr.four_acceleration", "gr.geodesic_deviation",
+    "gr.riemann_tensor", "gr.ricci_tensor", "gr.ricci_scalar", "gr.einstein_tensor", "gr.bianchi_identity", "gr.curvature_invariants",
+    "gr.stress_energy_tensor", "gr.perfect_fluid", "gr.energy_conditions", "gr.covariant_conservation", "gr.equation_of_state",
+    "gr.einstein_field_equations", "gr.cosmological_constant", "gr.einstein_hilbert_action", "gr.stress_energy_variation", "gr.trace_reversed_equations", "gr.vacuum_field_equations",
+    "gr.weak_field_metric", "gr.newtonian_limit", "gr.gravitational_redshift", "gr.light_deflection", "gr.perihelion_precession", "gr.post_newtonian_approximation",
+    "gr.schwarzschild_metric", "gr.schwarzschild_radius", "gr.event_horizon", "gr.coordinate_singularity", "gr.black_hole_singularity", "gr.effective_potential_orbits",
 ]
 SVG_NS = "{http://www.w3.org/2000/svg}"
 
@@ -63,85 +63,85 @@ def test_create_svg_graphic_returns_none_for_unknown_node_id():
 
 
 def test_create_svg_graphic_trims_node_id_whitespace():
-    assert createSvgGraphic(" 1.1 ") == createSvgGraphic("1.1")
+    assert createSvgGraphic(" sr.inertial_frames ") == createSvgGraphic("sr.inertial_frames")
 
 
 def test_public_svg_api_delegates_to_registry():
-    assert createSvgGraphic("1.1") == create_svg_graphic("1.1")
+    assert createSvgGraphic("sr.inertial_frames") == create_svg_graphic("sr.inertial_frames")
     assert list(IMPLEMENTED_NODE_IDS) == GRAPHIC_NODE_IDS
 
 
 @pytest.mark.parametrize(
     ("node_id", "expected_title"),
     [
-        ("1.1", "Inertial frames"),
-        ("7.7", "Maxwell's equations"),
-        ("8.6", "Lorenz gauge"),
-        ("11.2", "Gauge fixing"),
-        ("M 1.1", "Manifold"),
-        ("M 1.2", "Coordinate chart"),
-        ("M 1.3", "Coordinate transformation"),
-        ("M 1.4", "Worldline"),
-        ("M 1.5", "Tangent space"),
-        ("M 1.6", "Cotangent space"),
-        ("M 2.1", "Tensor field"),
-        ("M 2.2", "Abstract and component indices"),
-        ("M 2.3", "Tensor transformation law"),
-        ("GR 1.1", "Gravity as geometry"),
-        ("GR 1.2", "Equivalence principle"),
-        ("GR 1.3", "Local inertial frame"),
-        ("GR 1.4", "Freely falling observer"),
-        ("GR 1.5", "Tidal gravity"),
-        ("GR 2.1", "Spacetime metric"),
-        ("GR 2.2", "Inverse metric"),
-        ("GR 2.3", "Volume element"),
-        ("GR 3.1", "Line element"),
-        ("GR 3.2", "Proper time in curved spacetime"),
-        ("GR 3.3", "Null curve"),
-        ("GR 3.4", "Causal structure"),
-        ("GR 3.5", "Local flatness"),
-        ("GR 3.6", "Metric signature convention"),
-        ("GR 4.1", "Connection"),
-        ("GR 4.2", "Christoffel symbols"),
-        ("GR 4.3", "Covariant derivative"),
-        ("GR 4.4", "Metric compatibility"),
-        ("GR 4.5", "Torsion-free connection"),
-        ("GR 4.6", "Parallel transport"),
-        ("GR 5.1", "Geodesic"),
-        ("GR 5.2", "Geodesic equation"),
-        ("GR 5.3", "Geodesic action"),
-        ("GR 5.4", "Four-velocity in curved spacetime"),
-        ("GR 5.5", "Four-acceleration"),
-        ("GR 5.6", "Geodesic deviation"),
-        ("GR 6.1", "Riemann curvature tensor"),
-        ("GR 6.2", "Ricci tensor"),
-        ("GR 6.3", "Ricci scalar"),
-        ("GR 6.4", "Einstein tensor"),
-        ("GR 6.5", "Bianchi identity"),
-        ("GR 6.6", "Curvature invariants"),
-        ("GR 7.1", "Stress-energy tensor in GR"),
-        ("GR 7.2", "Perfect fluid"),
-        ("GR 7.3", "Energy conditions"),
-        ("GR 7.4", "Covariant conservation"),
-        ("GR 7.5", "Equation of state"),
-        ("GR 8.1", "Einstein field equations"),
-        ("GR 8.2", "Cosmological constant"),
-        ("GR 8.3", "Einstein-Hilbert action"),
-        ("GR 8.4", "Stress-energy from action variation"),
-        ("GR 8.5", "Trace-reversed equations"),
-        ("GR 8.6", "Vacuum field equations"),
-        ("GR 9.1", "Weak-field metric"),
-        ("GR 9.2", "Newtonian limit"),
-        ("GR 9.3", "Gravitational redshift"),
-        ("GR 9.4", "Light deflection"),
-        ("GR 9.5", "Perihelion precession"),
-        ("GR 9.6", "Post-Newtonian approximation"),
-        ("GR 10.1", "Schwarzschild metric"),
-        ("GR 10.2", "Schwarzschild radius"),
-        ("GR 10.3", "Event horizon"),
-        ("GR 10.4", "Coordinate singularity"),
-        ("GR 10.5", "Black hole singularity"),
-        ("GR 10.6", "Effective potential for orbits"),
+        ("sr.inertial_frames", "Inertial frames"),
+        ("sr.maxwells_equations", "Maxwell's equations"),
+        ("sr.lorenz_gauge", "Lorenz gauge"),
+        ("sr.gauge_fixing", "Gauge fixing"),
+        ("math.manifold", "Manifold"),
+        ("math.coordinate_chart", "Coordinate chart"),
+        ("math.coordinate_transformation", "Coordinate transformation"),
+        ("math.worldline", "Worldline"),
+        ("math.tangent_space", "Tangent space"),
+        ("math.cotangent_space", "Cotangent space"),
+        ("math.tensor_field", "Tensor field"),
+        ("math.index_notation", "Abstract and component indices"),
+        ("math.tensor_transformation_law", "Tensor transformation law"),
+        ("gr.gravity_as_geometry", "Gravity as geometry"),
+        ("gr.equivalence_principle", "Equivalence principle"),
+        ("gr.local_inertial_frame", "Local inertial frame"),
+        ("gr.freely_falling_observer", "Freely falling observer"),
+        ("gr.tidal_gravity", "Tidal gravity"),
+        ("gr.metric_tensor", "Spacetime metric"),
+        ("gr.inverse_metric", "Inverse metric"),
+        ("gr.volume_element", "Volume element"),
+        ("gr.line_element", "Line element"),
+        ("gr.proper_time", "Proper time in curved spacetime"),
+        ("gr.null_curve", "Null curve"),
+        ("gr.causal_structure", "Causal structure"),
+        ("gr.local_flatness", "Local flatness"),
+        ("gr.metric_signature", "Metric signature convention"),
+        ("gr.connection", "Connection"),
+        ("gr.christoffel_symbols", "Christoffel symbols"),
+        ("gr.covariant_derivative", "Covariant derivative"),
+        ("gr.metric_compatibility", "Metric compatibility"),
+        ("gr.torsion_free_connection", "Torsion-free connection"),
+        ("gr.parallel_transport", "Parallel transport"),
+        ("gr.geodesic", "Geodesic"),
+        ("gr.geodesic_equation", "Geodesic equation"),
+        ("gr.geodesic_action", "Geodesic action"),
+        ("gr.four_velocity", "Four-velocity in curved spacetime"),
+        ("gr.four_acceleration", "Four-acceleration"),
+        ("gr.geodesic_deviation", "Geodesic deviation"),
+        ("gr.riemann_tensor", "Riemann curvature tensor"),
+        ("gr.ricci_tensor", "Ricci tensor"),
+        ("gr.ricci_scalar", "Ricci scalar"),
+        ("gr.einstein_tensor", "Einstein tensor"),
+        ("gr.bianchi_identity", "Bianchi identity"),
+        ("gr.curvature_invariants", "Curvature invariants"),
+        ("gr.stress_energy_tensor", "Stress-energy tensor in GR"),
+        ("gr.perfect_fluid", "Perfect fluid"),
+        ("gr.energy_conditions", "Energy conditions"),
+        ("gr.covariant_conservation", "Covariant conservation"),
+        ("gr.equation_of_state", "Equation of state"),
+        ("gr.einstein_field_equations", "Einstein field equations"),
+        ("gr.cosmological_constant", "Cosmological constant"),
+        ("gr.einstein_hilbert_action", "Einstein-Hilbert action"),
+        ("gr.stress_energy_variation", "Stress-energy from action variation"),
+        ("gr.trace_reversed_equations", "Trace-reversed equations"),
+        ("gr.vacuum_field_equations", "Vacuum field equations"),
+        ("gr.weak_field_metric", "Weak-field metric"),
+        ("gr.newtonian_limit", "Newtonian limit"),
+        ("gr.gravitational_redshift", "Gravitational redshift"),
+        ("gr.light_deflection", "Light deflection"),
+        ("gr.perihelion_precession", "Perihelion precession"),
+        ("gr.post_newtonian_approximation", "Post-Newtonian approximation"),
+        ("gr.schwarzschild_metric", "Schwarzschild metric"),
+        ("gr.schwarzschild_radius", "Schwarzschild radius"),
+        ("gr.event_horizon", "Event horizon"),
+        ("gr.coordinate_singularity", "Coordinate singularity"),
+        ("gr.black_hole_singularity", "Black hole singularity"),
+        ("gr.effective_potential_orbits", "Effective potential for orbits"),
     ],
 )
 def test_create_svg_graphic_uses_expected_accessible_titles(node_id, expected_title):
@@ -153,7 +153,7 @@ def test_create_svg_graphic_uses_expected_accessible_titles(node_id, expected_ti
 @pytest.mark.parametrize("node_id", [
     node_id
     for node_id in GRAPHIC_NODE_IDS
-    if node_id != "2.3"
+    if node_id != "sr.principle_of_locality"
 ])
 def test_detail_variant_adds_or_changes_graphic_content_for_most_nodes(node_id):
     assert createSvgGraphic(node_id, variant="detail") != createSvgGraphic(
@@ -163,8 +163,8 @@ def test_detail_variant_adds_or_changes_graphic_content_for_most_nodes(node_id):
 
 
 def test_principle_of_locality_currently_uses_same_icon_and_detail_graphic():
-    assert createSvgGraphic("2.3", variant="detail") == createSvgGraphic(
-        "2.3",
+    assert createSvgGraphic("sr.principle_of_locality", variant="detail") == createSvgGraphic(
+        "sr.principle_of_locality",
         variant="icon",
     )
 
@@ -177,7 +177,7 @@ def test_save_svg_graphics_writes_current_icon_set(tmp_path):
         f"image_{node_id.replace(' ', '_').replace('.', '_')}.svg"
         for node_id in GRAPHIC_NODE_IDS
     }
-    assert (tmp_path / "image_1_1.svg").read_text(encoding="utf-8") == createSvgGraphic(
-        "1.1",
+    assert (tmp_path / "image_sr_inertial_frames.svg").read_text(encoding="utf-8") == createSvgGraphic(
+        "sr.inertial_frames",
         variant="icon",
     )

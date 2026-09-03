@@ -9,12 +9,6 @@ Keep this module limited to simple constants so every other ``srkg`` module can
 import it without creating dependency cycles.
 """
 
-LAYER_COLOURS = [
-    "#e6194b", "#f58231", "#ffe119", "#3cb44b", "#46f0f0",
-    "#4363d8", "#911eb4", "#f032e6", "#fabed4", "#9a6324",
-    "#808080", "#469990", "#dcbeff", "#aaffc3"
-]
-
 EDGE_COLUMNS = ("source", "target", "relation", "note")
 EDGE_KEY_COLUMNS = ("relation", "directed", "category", "meaning", "example")
 EDGE_TOOLTIP_LINE_WIDTH = 50
@@ -23,12 +17,6 @@ EDGE_HOVER_WIDTH = 9.0
 EDGE_ARROW_ENDPOINT_OFFSET = 36
 LAYOUT_X_SPACING = 350
 LAYOUT_Y_SPACING = 400
-LAYOUT_ROW_STAGGER = 35
-LAYOUT_ROW_CURVE_FLAT_COUNT = 2
-LAYOUT_ROW_CURVE_TARGET_NODE = 6
-LAYOUT_ROW_CURVE_TARGET_RISE_FRACTION = 0.9
-LAYOUT_ROW_CURVE_MAX_RISE_FRACTION = 1.5
-LAYOUT_ROW_CURVE_EXPONENT = 2.0
 NODE_COLLISION_WIDTH = 230
 NODE_COLLISION_HEIGHT = 150
 NODE_CIRCLE_BASE_SIZE = 90

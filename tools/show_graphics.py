@@ -27,6 +27,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from srkg.concept_svg_graphics import createSvgGraphic
+from srkg.layout import concept_sort_key
 
 
 @dataclass(frozen=True)
@@ -34,20 +35,8 @@ class Concept:
     id: str
     display_id: str
     label: str
-    layer: str
     icon_caption: str
     detail_caption: str
-
-
-def concept_sort_key(concept_id: str) -> tuple[int, ...]:
-    """Sort dotted display IDs numerically where possible."""
-    parts = []
-    for part in concept_id.split("."):
-        try:
-            parts.append(int(part))
-        except ValueError:
-            parts.append(0)
-    return tuple(parts)
 
 
 def load_concepts(designs_path: Path) -> list[Concept]:
@@ -58,7 +47,6 @@ def load_concepts(designs_path: Path) -> list[Concept]:
                 id=(row.get("id") or "").strip(),
                 display_id=(row.get("display_id") or row.get("id") or "").strip(),
                 label=(row.get("label") or "").strip(),
-                layer=(row.get("layer") or "").strip(),
                 icon_caption=(row.get("icon_caption") or "").strip(),
                 detail_caption=(row.get("detail_caption") or "").strip(),
             )
@@ -101,7 +89,7 @@ def render_html(concepts: list[Concept], patterns: list[str]) -> str:
                 <div class="concept-id">{escape(concept.display_id)}</div>
                 <div>
                   <h2>{escape(concept.label)}</h2>
-                  <p>Layer {escape(concept.layer)}</p>
+                  <p>{escape(concept.id)}</p>
                 </div>
               </header>
               <div class="graphics-row">
