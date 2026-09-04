@@ -2594,7 +2594,7 @@ def create_gr_9_4_light_deflection(variant: str = "icon") -> str:
                             stroke_width=3, stroke_dasharray="8 10"))
     body.append(_line(54, 154, 454, 154, stroke=LIGHT_GREY, stroke_width=4,
                       stroke_dasharray="10 9"))
-    body.append(_path("M54,154 C180,154 248,160 292,184 C340,210 386,224 454,224",
+    body.append(_path("M54,154 C180,154 248,160 292,184 C340,210 386,230 454,258",
                       fill="none", stroke=AMBER, stroke_width=10,
                       stroke_linecap="round", marker_end=f"url(#{arrow})"))
     body.append(_text(94, 132, "light", font_size=32, font_family=FONT,
@@ -2616,24 +2616,29 @@ def create_gr_9_5_perihelion_precession(variant: str = "icon") -> str:
     defs = [_arrow_marker(arrow, colour=RED, size=6)]
     body: list[str] = []
     body.append(_circle(CX, CY, 35, fill=AMBER, stroke=BLACK, stroke_width=4))
-    body.append(_path("M76,256 C104,118 404,118 436,256 C404,394 104,394 76,256 Z",
-                      fill="none", stroke=BLUE, stroke_width=7))
-    body.append(_path("M102,154 C230,72 430,244 382,360 C254,442 54,270 102,154 Z",
-                      fill="none", stroke=GREEN, stroke_width=6,
-                      opacity="0.72"))
-    body.append(_circle(76, 256, 14, fill=BLUE, stroke=BLACK, stroke_width=2))
-    body.append(_circle(102, 154, 14, fill=GREEN, stroke=BLACK, stroke_width=2))
-    body.append(_path("M92,242 A184,184 0 0 1 124,170", fill="none",
-                      stroke=RED, stroke_width=7, marker_end=f"url(#{arrow})"))
+    # Two osculating ellipses share the mass as their focus.
+    for angle, colour in [(0, BLUE), (-30, GREEN)]:
+        points = []
+        for step in range(121):
+            phi = radians(step * 3)
+            radius = 120 / (1 + 0.5 * cos(phi))
+            direction = phi + radians(angle)
+            points.append((CX + radius * cos(direction),
+                           CY + radius * sin(direction)))
+        path = "M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in points) + " Z"
+        body.append(_path(path, fill="none", stroke=colour, stroke_width=6))
+        px, py = points[0]
+        body.append(_circle(px, py, 12, fill=colour, stroke=BLACK, stroke_width=2))
+        if variant == "detail":
+            body.append(_line(CX, CY, px, py, stroke=LIGHT_GREY,
+                              stroke_width=3, stroke_dasharray="7 8"))
+    body.append(_path("M360,256 A104,104 0 0 0 346,204", fill="none",
+                      stroke=RED, stroke_width=6, marker_end=f"url(#{arrow})"))
     if variant == "detail":
-        body.append(_line(256, 256, 76, 256, stroke=LIGHT_GREY, stroke_width=3,
-                          stroke_dasharray="7 8"))
-        body.append(_line(256, 256, 102, 154, stroke=LIGHT_GREY, stroke_width=3,
-                          stroke_dasharray="7 8"))
-        body.append(_text(142, 244, "Δϖ", font_size=34, font_family=FONT,
+        body.append(_text(370, 228, "Δϖ", font_size=32, font_family=FONT,
                           font_style="italic", fill=RED))
-        body.append(_text(274, 274, "M", font_size=30, font_family=FONT,
-                          font_style="italic", fill=BLACK))
+        body.append(_text(CX, CY + 10, "M", font_size=30, font_family=FONT,
+                          font_style="italic", fill=BLACK, text_anchor="middle"))
     return _svg(node_id, "Perihelion precession", body, defs)
 
 
@@ -2787,22 +2792,23 @@ def create_gr_10_5_black_hole_singularity(variant: str = "icon") -> str:
     inward = f"{_sid(node_id)}_inward"
     defs = [_arrow_marker(inward, colour=RED, size=6)]
     body: list[str] = []
-    body.append(_path("M82,112 L430,112 L330,414 L182,414 Z", fill="#e8ecf4",
-                      stroke=BLACK, stroke_width=5, stroke_linejoin="round"))
+    body.append(_rect(82, 112, 348, 296, fill="#e8ecf4", stroke=BLACK, stroke_width=4))
     body.append(_line(82, 112, 430, 112, stroke=BLUE, stroke_width=10))
     for x in [126, 196, 266, 336, 406]:
-        body.append(_path(f"M{x},128 C{x},220 {256 + (x-256)*0.28},302 256,386",
+        body.append(_path(f"M{x},132 C{x-18},220 {x+12},306 {x},382",
                           fill="none", stroke=RED, stroke_width=6,
-                          stroke_linecap="round", marker_end=f"url(#{inward})"))
-    body.append(_path("M256,362 L270,390 L302,394 L278,416 L284,448 L256,432 L228,448 L234,416 L210,394 L242,390 Z",
-                      fill=RED, stroke=BLACK, stroke_width=3))
-    body.append(_text(286, 444, "r = 0", font_size=32, font_family=FONT,
-                      font_style="italic", fill=RED))
+                          marker_end=f"url(#{inward})"))
+    body.append(_path("M82,402 L110,390 L138,414 L166,390 L194,414 L222,390 L250,414 L278,390 L306,414 L334,390 L362,414 L390,390 L430,402",
+                      fill="none", stroke=RED, stroke_width=7))
+    body.append(_text(256, 452, "r = 0", font_size=32, font_family=FONT,
+                      fill=RED, text_anchor="middle"))
     if variant == "detail":
         body.append(_text(256, 78, "horizon", font_size=28, font_family=FONT,
                           fill=BLUE, text_anchor="middle"))
-        body.append(_text(380, 330, "K → ∞", font_size=34, font_family=FONT,
-                          font_style="italic", fill=RED, text_anchor="middle"))
+        body.append(_text(256, 262, "K → ∞", font_size=34, font_family=FONT,
+                          fill=RED, text_anchor="middle"))
+        body.append(_text(256, 486, "spacelike future boundary", font_size=25,
+                          font_family=FONT, fill=GREY, text_anchor="middle"))
     return _svg(node_id, "Black hole singularity", body, defs)
 
 
@@ -2814,22 +2820,38 @@ def create_gr_10_6_effective_potential_orbits(variant: str = "icon") -> str:
     ox, oy = 78, 414
     body.extend(_draw_axes(ox, oy, 360, 322, axis_marker,
                            x_label="r", y_label="V", stroke_width=5.5))
-    body.append(_path("M92,122 C128,146 160,332 224,306 C282,282 326,158 424,224",
-                      fill="none", stroke=BLUE, stroke_width=9,
-                      stroke_linecap="round"))
-    body.append(_line(90, 250, 426, 250, stroke=AMBER, stroke_width=4,
-                      stroke_dasharray="10 9"))
-    body.append(_circle(176, 250, 14, fill=AMBER, stroke=BLACK, stroke_width=2))
-    body.append(_circle(392, 250, 14, fill=AMBER, stroke=BLACK, stroke_width=2))
-    body.append(_circle(226, 306, 17, fill=GREEN, stroke=BLACK, stroke_width=3))
+    # Timelike Schwarzschild potential for L/m = 4; axes are r/m and V_eff.
+    def position(radius):
+        potential = (1 - 2 / radius) * (1 + 16 / radius ** 2)
+        return 90 + (radius - 3) * 14, 388 - (potential - 0.9) * 2400
+    points = [position(3 + i * 0.05) for i in range(501)]
+    curve = "M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in points)
+    body.append(_path(curve, fill="none", stroke=BLUE, stroke_width=7))
+    level = 0.94
+    energy_y = 388 - (level - 0.9) * 2400
+    body.append(_line(90, energy_y, 440, energy_y, stroke=AMBER,
+                      stroke_width=4, stroke_dasharray="10 9"))
+    # Locate all intersections with the energy line, including the inner region.
+    previous_r, previous_v = 3.0, (1 - 2 / 3) * (1 + 16 / 9) - level
+    for i in range(1, 501):
+        radius = 3 + i * 0.05
+        value = (1 - 2 / radius) * (1 + 16 / radius ** 2) - level
+        if value * previous_v < 0:
+            root = previous_r + (radius - previous_r) * (-previous_v) / (value - previous_v)
+            x, y = position(root)
+            body.append(_circle(x, y, 9, fill=AMBER, stroke=BLACK, stroke_width=2))
+        previous_r, previous_v = radius, value
+    stable_x, stable_y = position(12)
+    body.append(_circle(stable_x, stable_y, 13, fill=GREEN, stroke=BLACK, stroke_width=2))
     if variant == "detail":
-        body.append(_circle(324, 177, 17, fill=RED, stroke=BLACK, stroke_width=3))
-        body.append(_text(226, 344, "stable", font_size=25, font_family=FONT,
-                          fill=GREEN, text_anchor="middle"))
-        body.append(_text(350, 156, "unstable", font_size=25, font_family=FONT,
-                          fill=RED, text_anchor="middle"))
-        body.append(_text(294, 238, "E", font_size=29, font_family=FONT,
-                          font_style="italic", fill=AMBER))
+        unstable_x, unstable_y = position(4)
+        body.append(_circle(unstable_x, unstable_y, 13, fill=RED, stroke=BLACK, stroke_width=2))
+        body.append(_text(stable_x, stable_y + 38, "stable", font_size=25,
+                          font_family=FONT, fill=GREEN, text_anchor="middle"))
+        body.append(_text(unstable_x + 24, unstable_y - 24, "unstable", font_size=25,
+                          font_family=FONT, fill=RED))
+        body.append(_text(340, energy_y - 14, "ℰ²", font_size=29,
+                          font_family=FONT, fill=AMBER))
     return _svg(node_id, "Effective potential for orbits", body, defs)
 
 
@@ -2846,7 +2868,7 @@ def create_gr_7_1_stress_energy_tensor(variant: str = "icon") -> str:
     body: list[str] = []
     body.append(_rect(122, 126, 268, 258, rx=22, fill="#f4f7fc",
                       stroke=BLACK, stroke_width=5))
-    body.extend(_paren_matrix(194, 180, [["ρ", "S"], ["S", "σ"]],
+    body.extend(_paren_matrix(194, 180, [["ε", "S"], ["S", "σ"]],
                               col_gap=112, row_gap=92, font_size=40))
     for y in [180, 256, 332]:
         body.append(_line(390, y, 454, y, stroke=AMBER, stroke_width=7,
@@ -2863,7 +2885,7 @@ def create_gr_7_1_stress_energy_tensor(variant: str = "icon") -> str:
 
 
 def create_gr_7_2_perfect_fluid(variant: str = "icon") -> str:
-    """Perfect fluid: density carried by U with isotropic pressure."""
+    """Perfect fluid: density carried by u with isotropic pressure."""
     node_id = "GR 7.2"
     pressure = f"{_sid(node_id)}_pressure"
     flow = f"{_sid(node_id)}_flow"
@@ -2883,13 +2905,13 @@ def create_gr_7_2_perfect_fluid(variant: str = "icon") -> str:
                           marker_end=f"url(#{pressure})"))
     body.append(_line(150, 390, 348, 110, stroke=GREEN, stroke_width=9,
                       stroke_linecap="round", marker_end=f"url(#{flow})"))
-    body.append(_math_text(344, 112, "U", sup="μ", font_size=40,
+    body.append(_math_text(344, 112, "u", sup="μ", font_size=40,
                            font_family=FONT, font_style="italic", fill=GREEN))
     if variant == "detail":
         body.append(_text(256, 468, "same pressure in every direction",
                           font_size=26, font_family=FONT, fill=BLUE,
                           text_anchor="middle"))
-        body.append(_text(210, 246, "ρ", font_size=36, font_family=FONT,
+        body.append(_text(210, 246, "ε", font_size=36, font_family=FONT,
                           font_style="italic", fill=AMBER))
     return _svg(node_id, "Perfect fluid", body, defs)
 
@@ -2953,17 +2975,17 @@ def create_gr_7_5_equation_of_state(variant: str = "icon") -> str:
     body: list[str] = []
     ox, oy = 98, 400
     body.extend(_draw_axes(ox, oy, 326, 294, axis_marker,
-                           x_label="ρ", y_label="p", stroke_width=6))
+                           x_label="ε", y_label="p", stroke_width=6))
     body.append(_path("M112,378 C176,342 238,290 294,226 C334,180 370,150 410,126",
                       fill="none", stroke=BLUE, stroke_width=10,
                       stroke_linecap="round"))
     body.append(_circle(282, 240, 16, fill=AMBER, stroke=BLACK, stroke_width=2))
-    body.append(_text(326, 206, "p(ρ)", font_size=40, font_family=FONT,
+    body.append(_text(326, 206, "p(ε)", font_size=40, font_family=FONT,
                       font_style="italic", fill=BLUE))
     if variant == "detail":
         body.append(_line(112, 378, 410, 126, stroke=LIGHT_GREY, stroke_width=3,
                           stroke_dasharray="9 8"))
-        body.append(_text(220, 316, "p = wρ", font_size=32, font_family=FONT,
+        body.append(_text(220, 316, "p = wε", font_size=32, font_family=FONT,
                           font_style="italic", fill=GREY))
         body.append(_text(256, 464, "closes the matter model", font_size=27,
                           font_family=FONT, fill=GREEN, text_anchor="middle"))
@@ -2991,14 +3013,14 @@ def create_gr_8_1_einstein_field_equations(variant: str = "icon") -> str:
                       fill=BLACK, text_anchor="middle"))
     body.append(_rect(290, 138, 172, 232, rx=20, fill="#fff8e8",
                       stroke=AMBER, stroke_width=5))
-    body.extend(_paren_matrix(342, 194, [["ρ", "S"], ["S", "σ"]],
+    body.extend(_paren_matrix(342, 194, [["ε", "S"], ["S", "σ"]],
                               col_gap=66, row_gap=80, font_size=33))
     if variant == "detail":
         body.append(_text(138, 416, "geometry", font_size=28,
                           font_family=FONT, fill=BLUE, text_anchor="middle"))
         body.append(_text(376, 416, "stress–energy", font_size=28,
                           font_family=FONT, fill=AMBER, text_anchor="middle"))
-        body.append(_text(256, 92, "G + Λg = κT", font_size=38,
+        body.append(_text(256, 92, "G − Λg = κT", font_size=38,
                           font_family=FONT, font_style="italic", fill=BLACK,
                           text_anchor="middle"))
     return _svg(node_id, "Einstein field equations", body)
@@ -3024,7 +3046,7 @@ def create_gr_8_2_cosmological_constant(variant: str = "icon") -> str:
     if variant == "detail":
         body.append(_text(256, 472, "curved even with T = 0", font_size=28,
                           font_family=FONT, fill=GREY, text_anchor="middle"))
-        body.append(_text(256, 64, "uniform vacuum term", font_size=27,
+        body.append(_text(256, 64, "positive Λ • vacuum term", font_size=27,
                           font_family=FONT, fill=RED, text_anchor="middle"))
     return _svg(node_id, "Cosmological constant", body, defs)
 
@@ -3038,7 +3060,7 @@ def create_gr_8_3_einstein_hilbert_action(variant: str = "icon") -> str:
     body.extend(_label_tile(62, 174, 164, 150, "S_EH", fill="#edf3ff",
                             stroke=BLUE, text_colour=BLUE, font_size=46))
     if variant == "detail":
-        body.append(_text(144, 348, "∫(R−2Λ)√−g", font_size=28,
+        body.append(_text(144, 348, "−∫(R+2Λ)√−g", font_size=28,
                           font_family=FONT, font_style="italic", fill=GREY,
                           text_anchor="middle"))
     body.append(_line(232, 250, 320, 250, stroke=GREEN, stroke_width=8,
@@ -3103,7 +3125,7 @@ def create_gr_8_5_trace_reversed_equations(variant: str = "icon") -> str:
         body.append(_text(391, 346, "κ(Tμν − ½gμνT)", font_size=27,
                           font_family=FONT, font_style="italic", fill=GREY,
                           text_anchor="middle"))
-        body.append(_text(256, 112, "same equation • Ricci form",
+        body.append(_text(256, 112, "Λ = 0 • same equation",
                           font_size=28, font_family=FONT, fill=BLACK,
                           text_anchor="middle"))
         body.append(_text(258, 288, "contract + substitute", font_size=24,
@@ -3131,7 +3153,7 @@ def create_gr_8_6_vacuum_field_equations(variant: str = "icon") -> str:
                           stroke_linecap="round"))
         body.append(_line(358, 152, 334, 350, stroke=RED, stroke_width=5,
                           stroke_linecap="round"))
-        body.append(_text(256, 458, "vacuum need not be flat", font_size=28,
+        body.append(_text(256, 458, "Λ = 0 • vacuum need not be flat", font_size=28,
                           font_family=FONT, fill=RED, text_anchor="middle"))
     return _svg(node_id, "Vacuum field equations", body)
 

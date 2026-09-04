@@ -1,7 +1,7 @@
 # General Relativity Concept Plan
 
-This is an authoring scope plan. The seeded concepts still need full exposition
-and review; gravitational waves, advanced tools and cosmology are future scope.
+This is an authoring scope plan. The existing 55 GR concepts have completed full
+authoring and review; gravitational waves, advanced tools and cosmology are future scope.
 Topic groups below describe subject progression, not runtime modules. Use
 `data/module_members.csv` for current authoring batches and `data/nodes.csv` for
 display IDs and status. Semantic IDs keep this plan independent of renumbering.

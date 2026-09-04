@@ -12,7 +12,7 @@ or pedagogically important, still state it in the concept itself.
 | Notation | Meaning / Convention | Notes |
 | --- | --- | --- |
 | \(c\overset{\text{units}}{=}1\) | Natural units. | Default working convention once context is established. Restore \(c\) for dimensional checks and famous formulas such as \(E_0\coloneqq mc^2\). |
-| \(+---\) | Metric signature used in current SR content. | The flat metric is \(\eta_{\mu\nu}\coloneqq\mathrm{diag}(1,-1,-1,-1)\). |
+| \(+---\) | Metric signature used throughout SR and GR. | The flat metric is \(\eta_{\mu\nu}\coloneqq\mathrm{diag}(1,-1,-1,-1)\). |
 | \(ct\) | Time coordinate expressed with dimensions of length. | Useful in early SR and diagrams. In natural units \(ct=t\). |
 | \(x^\mu\coloneqq(ct,x,y,z)\) or \(x^\mu\coloneqq(t,x,y,z)\) | Coordinate ordering used for spacetime components. | State which is being used when factors of \(c\) matter. |
 | Greek indices \(\mu,\nu,\rho,\sigma\) | Spacetime indices. | Typically range over \(0,1,2,3\). |
@@ -115,3 +115,35 @@ annotation house style.
 - Use \(V^\mu,W^\mu\), or another neutral letter, for generic four-vector
   examples. Reserve \(A^\mu,A_\mu\) for the electromagnetic four-potential or
   for a vector field when the context is explicitly not electromagnetic.
+
+
+## General Relativity
+
+Use these together; a source's signature alone does not determine its curvature
+or action conventions. Tong GR uses the opposite metric signature. Definitions
+below are the atlas convention, not formulas to copy across signatures unchanged.
+
+| Symbol / expression | Convention |
+| --- | --- |
+| \(g_{\mu\nu}\), \(g^{\mu\nu}\) | Metric and matrix inverse, with signature \(+---\). |
+| \(x^0\coloneqq ct\) | Length-valued time coordinate when \(c\) is explicit; use \(x^0=t\) after announcing natural units. |
+| \(u^\mu\coloneqq dx^\mu/d\tau\) | Proper-time tangent; \(g(u,u)=c^2\), or one in natural units. |
+| \(a^\mu\coloneqq u^\nu\nabla_\nu u^\mu\) | Four-acceleration; orthogonal to \(u\). Accelerometer magnitude \(\sqrt{-g(a,a)}\). |
+| \(dV_4\coloneqq\sqrt{-g}\,d^4x\) | Positive volume density in a regular Lorentzian chart; \(g\coloneqq\det(g_{\mu\nu})\). |
+| \(\Gamma^\rho{}_{\mu\nu}\) | Levi-Civita coefficients unless another connection is explicitly introduced. |
+| \(\mathcal T(X,Y)\coloneqq\nabla_XY-\nabla_YX-[X,Y]\) | Torsion; use a calligraphic symbol to distinguish it from stress-energy. It vanishes for the Levi-Civita connection. |
+| \(\hat\mu\) on an index | Component in a local orthonormal frame, rather than a coordinate basis. |
+| \(R^\rho{}_{\sigma\mu\nu}\coloneqq\partial_\mu\Gamma^\rho{}_{\nu\sigma}-\partial_\nu\Gamma^\rho{}_{\mu\sigma}+\Gamma^\rho{}_{\mu\lambda}\Gamma^\lambda{}_{\nu\sigma}-\Gamma^\rho{}_{\nu\lambda}\Gamma^\lambda{}_{\mu\sigma}\) | Thus \([\nabla_\mu,\nabla_\nu]V^\rho=R^\rho{}_{\sigma\mu\nu}V^\sigma\) for the torsion-free connection. |
+| \(R_{\mu\nu}\coloneqq R^\rho{}_{\mu\rho\nu}\), \(R\coloneqq g^{\mu\nu}R_{\mu\nu}\) | Ricci contraction and scalar. |
+| \(G_{\mu\nu}\coloneqq R_{\mu\nu}-\tfrac12 Rg_{\mu\nu}\) | Einstein tensor. With this curvature convention, \(G_{\mu\nu}-\Lambda g_{\mu\nu}=\kappa T_{\mu\nu}\), \(\kappa\coloneqq8\pi G/c^4\). Positive \(\Lambda\) is repulsive in the Newtonian limit. |
+| \(\delta S_m=\tfrac12\int dV_4\,T_{\mu\nu}\delta g^{\mu\nu}\) | Matter variation convention in natural units. Compatible gravitational action: \(S_g\coloneqq-(2\kappa)^{-1}\int dV_4(R+2\Lambda)\), with boundary treatment specified. |
+| \(T^{\mu\nu}=(\epsilon+p)u^\mu u^\nu/c^2-pg^{\mu\nu}\) | Perfect fluid: \(\epsilon\) is rest-frame energy density, \(p\) pressure; \(\rho\) denotes mass density when used in the Newtonian limit. |
+| \(\Phi\) | Newtonian potential, negative for an isolated positive mass with zero at infinity. |
+| \(m\coloneqq GM/c^2\), \(r_s\coloneqq2m\) | Geometrised mass length and Schwarzschild radius. \(M\) remains physical mass. |
+| \(\varepsilon_{\mathrm{PN}}\coloneqq v^2/c^2\) | Post-Newtonian ordering parameter, distinct from fluid energy density \(\epsilon\). |
+| \(q\coloneqq1/r\), \(p_{\mathrm{orb}}\coloneqq a(1-e^2)\) | Inverse radius and leading Keplerian semilatus rectum in orbit calculations. The latter avoids confusion with fluid pressure \(p\). |
+| \(g_{\mathrm{acc}}\) | Local gravitational acceleration magnitude in a weak-field height example; not the metric determinant \(g\). |
+| \(f(r)\coloneqq1-2m/r\), \(r_*\coloneqq r+2m\ln|r/(2m)-1|\) | Schwarzschild radial factor and tortoise coordinate; \(r\) is areal radius. |
+| \(v\coloneqq t+r_*\) | Ingoing null coordinate in natural units. Distinct from a velocity, whose meaning must be stated locally. |
+| \(\mathcal E\coloneqq f\dot t\), \(L\coloneqq r^2\dot\phi\) | Schwarzschild orbit constants in natural units, with equatorial motion. Timelike dots use proper time; null dots use an affine parameter. The radial normalisation is \(\dot r^2+V_{\mathrm{eff}}=\mathcal E^2\). |
+| \(\ell\coloneqq r^2d\phi/d\tau\) | Specific angular momentum with explicit \(c\); \(L=\ell/c\) when converting to length-valued geometric units. |

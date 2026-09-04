@@ -88,3 +88,59 @@ content_block,sr.lorentz_invariance.relativity_principle,ttm.sr_cf,1.3 General L
 content_block,sr.lorentz_invariance.historical_context,penrose.rtr,§18.2 The symmetry groups of Minkowski space,
 content_block,sr.gauge_fixing.definition,ttm.sr_cf,11.4.5 Electromagnetic Fields via Gauge Invariance,
 content_block,sr.gauge_fixing.historical_context,penrose.rtr,§19.4 The Maxwell field as gauge curvature,
+content_block,gr.equivalence_principle.definition,tong.gr,§1.2.4 The Equivalence Principle,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.local_inertial_frame.definition,tong.gr,§3.3.2 Normal Coordinates; §1.2.4 The Equivalence Principle,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.freely_falling_observer.definition,tong.gr,§1.2.6 Geodesics in Spacetime; §1.2.4 The Equivalence Principle,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.tidal_gravity.definition,tong.gr,§1.2.4 The Equivalence Principle; §3.3.4 Geodesic Deviation,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.gravity_as_geometry.definition,tong.gr,§0 Introduction; §1.2.4 The Equivalence Principle,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.metric_tensor.definition,tong.gr,§3.1 The Metric; §3.1.2 Lorentzian Manifolds,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.inverse_metric.definition,tong.gr,§3.1.3 The Joys of a Metric,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.volume_element.definition,tong.gr,§3.1.3 The Joys of a Metric,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.line_element.definition,tong.gr,§3.1 The Metric; §1.2 Relativistic Particles,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.proper_time.definition,tong.gr,§1.2.2 Why You Get Old; §1.2.5 Gravitational Time Dilation,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.null_curve.definition,tong.gr,§3.1.2 Lorentzian Manifolds; §1.2.6 Geodesics in Spacetime,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.causal_structure.definition,tong.gr,§3.1.2 Lorentzian Manifolds; §4.4.2 Penrose Diagrams,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.local_flatness.definition,tong.gr,§3.3.2 Normal Coordinates,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.metric_signature.definition,tong.gr,Conventions; §3.1.2 Lorentzian Manifolds,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.connection.definition,tong.gr,§3.2 Connections and Curvature; §3.2.1 The Covariant Derivative,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.christoffel_symbols.definition,tong.gr,§3.2.3 The Levi-Civita Connection,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.covariant_derivative.definition,tong.gr,§3.2.1 The Covariant Derivative,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.metric_compatibility.definition,tong.gr,§3.2.3 The Levi-Civita Connection,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.torsion_free_connection.definition,tong.gr,§3.2.2 Torsion and Curvature; §3.2.3 The Levi-Civita Connection,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.parallel_transport.definition,tong.gr,§3.3 Parallel Transport; §3.3.3 Path Dependence: Curvature and Torsion,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.geodesic.definition,tong.gr,§3.3.1 Geodesics Revisited; §1.2.6 Geodesics in Spacetime,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.geodesic_equation.definition,tong.gr,§1.1.1 The Geodesic Equation; §1.2.6 Geodesics in Spacetime,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.geodesic_action.definition,tong.gr,§1.2 Relativistic Particles; §1.2.6 Geodesics in Spacetime,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.four_velocity.definition,tong.gr,§1.2 Relativistic Particles; §3.1.2 Lorentzian Manifolds,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.four_acceleration.definition,tong.gr,§1.2.4 The Equivalence Principle; §3.3.1 Geodesics Revisited,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.geodesic_deviation.definition,tong.gr,§3.3.4 Geodesic Deviation,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.riemann_tensor.definition,tong.gr,§3.2.2 Torsion and Curvature; §3.4 The Riemann Curvature Tensor,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.ricci_tensor.definition,tong.gr,§3.4.1 The Ricci and Einstein Tensors,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.ricci_scalar.definition,tong.gr,§3.4.1 The Ricci and Einstein Tensors; §4.1 The Einstein-Hilbert Action,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.einstein_tensor.definition,tong.gr,§3.4.1 The Ricci and Einstein Tensors,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.bianchi_identity.definition,tong.gr,§3.4 The Riemann Curvature Tensor; §3.4.1 The Ricci and Einstein Tensors,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.curvature_invariants.definition,tong.gr,§3.4.3 An Example: the Schwarzschild Metric; §6.1.2 The Event Horizon,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.einstein_hilbert_action.definition,tong.gr,§4.1 The Einstein-Hilbert Action; §4.1.2 The Cosmological Constant,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.stress_energy_tensor.definition,tong.gr,§4.5.2 The Einstein Equations with Matter; §4.5.3 The Energy-Momentum Tensor,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.perfect_fluid.definition,tong.gr,§4.5.4 Perfect Fluids,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.energy_conditions.definition,tong.gr,§4.5.7 Energy Conditions,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.covariant_conservation.definition,tong.gr,§4.5.3 The Energy-Momentum Tensor; §4.5.5 The Slippery Business of Energy Conservation,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.equation_of_state.definition,tong.gr,§4.5.4 Perfect Fluids,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.einstein_field_equations.definition,tong.gr,§4.5.2 The Einstein Equations with Matter,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.cosmological_constant.definition,tong.gr,§4.1.2 The Cosmological Constant; §4.5.2 The Einstein Equations with Matter,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.stress_energy_variation.definition,tong.gr,§4.5.2 The Einstein Equations with Matter; §4.5.3 The Energy-Momentum Tensor,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.trace_reversed_equations.definition,tong.gr,§4.5.2 The Einstein Equations with Matter,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.vacuum_field_equations.definition,tong.gr,§4.1 The Einstein-Hilbert Action; §4.5.2 The Einstein Equations with Matter,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.weak_field_metric.definition,tong.gr,§5.1 Linearised Theory; §5.1.1 Gauge Symmetry; §5.1.2 The Newtonian Limit,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.newtonian_limit.definition,tong.gr,§1.2.6 The Geodesic Equation in Spacetime; §5.1.2 The Newtonian Limit,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.gravitational_redshift.definition,tong.gr,§1.2.5 Gravitational Time Dilation,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.light_deflection.definition,tong.gr,§1.3.5 Light Bending; §5.1.2 The Newtonian Limit,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.perihelion_precession.definition,tong.gr,§1.3.3 Planetary Orbits in General Relativity,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.post_newtonian_approximation.definition,tong.gr,§5.1 Linearised Theory; §5.1.2 The Newtonian Limit,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+concept,gr.post_newtonian_approximation,blanchet.pn,§1.1 Analytic approximations and wave generation formalism; §1.4 Post-Newtonian equations of motion,"The atlas uses epsilon_PN = (v/c)^2, whereas the source counts with v/c."
+content_block,gr.schwarzschild_metric.definition,tong.gr,§1.3 The Schwarzschild Metric (A First Look); §6.1.1 Birkhoff's Theorem,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.schwarzschild_radius.definition,tong.gr,§1.3 The Schwarzschild Metric (A First Look); §6.1.2 The Event Horizon,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.event_horizon.definition,tong.gr,§6.1.2 The Event Horizon; §6.1.3 Eddington-Finkelstein Coordinates,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.coordinate_singularity.definition,tong.gr,§6.1.3 Eddington-Finkelstein Coordinates,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.black_hole_singularity.definition,tong.gr,§6.1.2 The Event Horizon; §6.1.3 Eddington-Finkelstein Coordinates; §6.1.4 Kruskal Spacetime,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.
+content_block,gr.effective_potential_orbits.definition,tong.gr,§1.3.1 The Geodesic Equations; §1.3.3 Planetary Orbits in General Relativity; §1.3.5 Light Bending,Uses the atlas +--- convention; curvature and action signs follow the notation glossary.

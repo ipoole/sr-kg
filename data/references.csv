@@ -1,3 +1,5 @@
 reference_id,reference_type,citation,authors,title,year,url,note
 ttm.sr_cf,book,TTM II,Leonard Susskind; Art Friedman,Special Relativity and Classical Field Theory: The Theoretical Minimum,2017,,"Full citation: Leonard Susskind and Art Friedman, Special Relativity and Classical Field Theory: The Theoretical Minimum, Basic Books, 2017."
 penrose.rtr,book,TRR,Roger Penrose,The Road to Reality: A Complete Guide to the Laws of the Universe,2004,,"Full citation: Roger Penrose, The Road to Reality: A Complete Guide to the Laws of the Universe, Jonathan Cape, 2004."
+tong.gr,lecture,Tong GR,David Tong,General Relativity,2019,https://www.davidtong.org/pdfs/teaching/general-relativity/gr.pdf,Checked lecture sections; uses -+++ signature. Atlas equations are independently expressed in +---.
+blanchet.pn,paper,Blanchet PN,Luc Blanchet,Gravitational Radiation from Post-Newtonian Sources and Inspiralling Compact Binaries,2014,https://doi.org/10.12942/lrr-2014-2,"Living Reviews in Relativity 17, 2; introductory PN ordering and compact-body limitations checked."

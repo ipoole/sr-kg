@@ -162,11 +162,12 @@ Workflow statuses are:
 - `seed`: enough runtime content for structure and viewer testing, but not a
   full authoring pass;
 - `prerequisite_support`: reusable supporting mathematics not yet treated as
-  a direct learning target; and
+  a direct learning target;
+- `full`: the concept has completed the authoring and review checklist; and
 - blank: no status recorded; this optional field does not imply completion.
 
-Status is workflow metadata, not part of the subject model. Explicit `full`
-status for completed content is planned; see [open issues](../issues.md).
+Status is workflow metadata, not part of the subject model. Mark `full` only
+after reviewing content, sources, questions and graphics and validating the build.
 
 For a multi-module pass, complete one module at a time. Audit planned concepts,
 statuses, block and question counts, module membership, links, and edges; then

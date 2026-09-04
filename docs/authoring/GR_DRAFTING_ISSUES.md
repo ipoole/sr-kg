@@ -1,21 +1,19 @@
 # GR Drafting Issues
 
-Cross-cutting issues for the next GR authoring pass. Concept-specific concerns
-belong in [GR expositions](gr_concept_expositions.md), and source research in the
-[source worklist](SOURCE_REVIEW_WORKLIST.md).
+The existing 55 GR concepts have completed full authoring. Runtime CSV carries
+the text and status; the [notation glossary](NOTATION_GLOSSARY.md#general-relativity)
+records the conventions that future changes must preserve.
 
-The SR and GR metric and stress-energy concepts will remain separate, linked
-by `RELATED` edges (already present). Full authoring should clarify their
-domain-specific scope.
-
-- Recheck edge directions around gravity as geometry, equivalence and tidal
-  gravity as their full explanations are authored.
-- Review shared graphic motifs for manifolds, tangent spaces, local inertial
-  frames and curvature. Seed graphics already exist; refine their teaching role
-  during full authoring.
-- Complete the seed content and review study questions and references. Use the
-  existing `authoring_status` field to track completion.
-- Gravitational waves remain planned but unseeded. Cosmology remains deferred;
-  see the [concept plan](general_relativity_concept_plan.md) for scope.
+- Gravitational waves remain planned but unseeded. Cosmology and advanced tools
+  remain deferred; see the [concept plan](general_relativity_concept_plan.md).
+- Supporting mathematics remains `prerequisite_support`; its unfinished exposition
+  and source work is retained in [the drafts](gr_concept_expositions.md).
+- Cross-reference/edge warnings remain editorial prompts. Contextual comparisons
+  and forward links do not automatically warrant new dependency edges. The full
+  pass corrected misleading action-variation dependencies and the coordinate-
+  singularity taxonomy; revisit other edges when their teaching role changes.
 - Consider a separate domains table only if repeated `domain_title` metadata
   becomes a practical maintenance problem.
+
+The SR and GR metric and stress-energy concepts remain separate, linked by
+`RELATED`. This is settled policy, not a pending merge decision.

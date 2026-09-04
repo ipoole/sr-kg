@@ -109,7 +109,7 @@ source for concept prose in manifest-backed KB roots.
 | `label` | Yes | Display label shown in the graph and details panel. |
 | `domain` | Yes | Short domain key used for authoring subsets and broad atlas grouping, such as `sr`, `gr`, or `math`. |
 | `domain_title` | Yes | Human-readable domain title, such as `Special Relativity and Classical Fields` or `General Relativity`. |
-| `authoring_status` | No | Temporary authoring workflow marker. Current values in use are `seed` for placeholder runtime content and `prerequisite_support` for maths concepts included only to support nearby physics content. Blank means no status has been recorded. |
+| `authoring_status` | No | Temporary authoring workflow marker. Current values in use are `seed` for placeholder runtime content and `prerequisite_support` for maths concepts included only to support nearby physics content. `full` marks a completed authoring/review pass. Blank means no status has been recorded. |
 
 The prefix and first number identify the owning module. The final number follows
 a loose fundamental-to-derived topological order within that module. Stable

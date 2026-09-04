@@ -1,8 +1,9 @@
 # SR Knowledge Graph
 
 A pedagogical knowledge graph for special relativity, classical fields, general
-relativity and supporting mathematics. GR content is at seed level and still
-needs full authoring and review.
+relativity and supporting mathematics. The 55 GR concepts across six modules
+have completed full authoring and review; supporting mathematics has its own
+prerequisite status.
 
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,

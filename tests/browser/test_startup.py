@@ -2574,22 +2574,24 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert "Graph semantics" in splash_text
     assert "Maths and graphics" in splash_text
     assert "Modules" in splash_text
-    assert "Work in progress" in splash_text
+    assert "General Relativity New" in splash_text
     assert "Collapse modules into topic nodes" in splash_text
     assert "summarised boundary links" in splash_text
     assert "focus lens summarises how the active detail section defines graph focus" in splash_text
     assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
     assert "Drag the divider" in splash_text
     assert "personal layouts survive reload" in splash_text
-    modules = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Modules', exact=True))
-    assert modules.locator('.kg-status-badge').count() == 0
-    gr = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='General Relativity Work in progress', exact=True))
-    assert gr.locator('.kg-status-badge').inner_text() == 'Work in progress'
-    assert 'seed level' in gr.inner_text()
-    assert 'full authoring and review' in gr.inner_text()
+    modules = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Modules New', exact=True))
+    assert modules.locator('.kg-status-badge').inner_text() == 'New'
+    navigation = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Navigation and layout', exact=True))
+    assert navigation.locator('.kg-status-badge').inner_text() == 'New'
+    gr = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='General Relativity New', exact=True))
+    assert gr.locator('.kg-status-badge').inner_text() == 'New'
+    assert 'completed full authoring and review' in gr.inner_text()
+    assert 'Gravitational waves are still to do' in gr.inner_text()
     assert "Coming soon" not in splash_text
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 6
-    assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 1
+    assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 3
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.inner_text() == "Created by Ian Poole with AI assistance via OpenAI Codex."
