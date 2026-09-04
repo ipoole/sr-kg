@@ -7,7 +7,9 @@ The CSV content blocks remain the source consumed by the application. This file
 is an authoring and review aid: it preserves the coherent book-section form if
 block boundaries, block kinds, or viewer presentation rules change later.
 
-Use one section per concept, labelled with display ID, semantic ID, and title.
+Use one section per concept, labelled with semantic ID and title.
+These are working drafts, not a second publication to synchronise with CSV.
+Look up current display IDs and module membership in the runtime data.
 Keep concepts in domain-local atlas order where practical. Use
 `docs/authoring/general_relativity_concept_plan.md` for the broader GR atlas
 plan and `docs/authoring/GR_DRAFTING_ISSUES.md` for cross-cutting unresolved
@@ -18,7 +20,7 @@ questions.
 Use this structure when starting a new GR or maths concept:
 
 ```markdown
-## Display ID `concept.id`: Concept title
+## `concept.id`: Concept title
 
 ### Status
 
@@ -55,7 +57,7 @@ Precise or broad source hooks.
 Concept-specific open points.
 ```
 
-## M 1.1 `math.manifold`: Manifold
+## `math.manifold`: Manifold
 
 ### Status
 
@@ -97,7 +99,7 @@ local coordinate patch mapped to a plane.
 
 - Decide how far topology should enter before it distracts from GR.
 
-## M 1.2 `math.coordinate_chart`: Coordinate chart
+## `math.coordinate_chart`: Coordinate chart
 
 ### Status
 
@@ -136,10 +138,10 @@ coordinate axes.
 
 ### Drafting Issues
 
-- Coordinate transformations are planned as a distinct later concept. Avoid
+- Keep coordinate transformations in `math.coordinate_transformation`; avoid
   overloading this entry.
 
-## M 1.3 `math.coordinate_transformation`: Coordinate transformation
+## `math.coordinate_transformation`: Coordinate transformation
 
 ### Status
 
@@ -200,7 +202,7 @@ coordinate-change arrow.
 
 - Keep tensor transformation laws for later `math.tensor_transformation_law`.
 
-## M 1.4 `math.worldline`: Worldline
+## `math.worldline`: Worldline
 
 ### Status
 
@@ -263,7 +265,7 @@ Needs a spacetime/manifold curve with event points along it.
 - Decide how much to distinguish timelike, null, and spacelike curves here
   versus later GR causal-structure concepts.
 
-## M 1.5 `math.tangent_space`: Tangent space
+## `math.tangent_space`: Tangent space
 
 ### Status
 
@@ -301,10 +303,10 @@ Needs a tangent-plane visual attached at a point, with local basis arrows.
 
 ### Drafting Issues
 
-- Later `math.cotangent_space` and `math.tensor_field` concepts may require a
-  shared visual motif.
+- Review shared visual motifs with `math.cotangent_space` and
+  `math.tensor_field`.
 
-## M 1.6 `math.cotangent_space`: Cotangent space
+## `math.cotangent_space`: Cotangent space
 
 ### Status
 
@@ -370,7 +372,7 @@ acting on tangent arrows.
 - The seed text emphasizes the dual-space definition first, then gradients as
   the concrete example. Revisit if this proves too abstract in the GR pass.
 
-## M 2.1 `math.tensor_field`: Tensor field
+## `math.tensor_field`: Tensor field
 
 ### Status
 
@@ -430,7 +432,7 @@ points on a manifold.
 - Decide whether scalar and vector fields should be treated as examples here
   or only linked back to existing SR field concepts.
 
-## M 2.2 `math.index_notation`: Abstract and component indices
+## `math.index_notation`: Abstract and component indices
 
 ### Status
 
@@ -493,7 +495,7 @@ Deferred for this seed pass.
 - Later authoring should decide whether to use Latin abstract indices in GR
   prose or mostly Greek component indices with explanatory cautions.
 
-## M 2.3 `math.tensor_transformation_law`: Tensor transformation law
+## `math.tensor_transformation_law`: Tensor transformation law
 
 ### Status
 
@@ -558,7 +560,7 @@ Deferred for this seed pass.
 - The seed text uses component notation rather than abstract indices. Revisit
   when GR metric and connection notation settles.
 
-## GR 1.1 `gr.gravity_as_geometry`: Gravity as geometry
+## `gr.gravity_as_geometry`: Gravity as geometry
 
 ### Status
 
@@ -604,7 +606,7 @@ particle following a natural path.
 - Decide whether this should be a short orientation concept or a richer
   synthesis concept revisited later.
 
-## GR 1.2 `gr.equivalence_principle`: Equivalence principle
+## `gr.equivalence_principle`: Equivalence principle
 
 ### Status
 
@@ -650,7 +652,7 @@ and a local freely falling laboratory.
 - Decide whether inertial and gravitational mass should be in this concept or a
   separate historical/experimental note.
 
-## GR 1.3 `gr.local_inertial_frame`: Local inertial frame
+## `gr.local_inertial_frame`: Local inertial frame
 
 ### Status
 
@@ -692,9 +694,9 @@ near one event but not over a large region.
 ### Drafting Issues
 
 - Clarify relationship to `math.tangent_space` without forcing too much
-  differential geometry into the first GR layer.
+  differential geometry into the introductory treatment.
 
-## GR 1.4 `gr.freely_falling_observer`: Freely falling observer
+## `gr.freely_falling_observer`: Freely falling observer
 
 ### Status
 
@@ -736,7 +738,7 @@ with supported rest.
 
 - The later `gr.geodesic` concept should own the mathematical derivation.
 
-## GR 1.5 `gr.tidal_gravity`: Tidal gravity
+## `gr.tidal_gravity`: Tidal gravity
 
 ### Status
 
@@ -778,9 +780,9 @@ falling cloud stretched radially and squeezed transversely.
 ### Drafting Issues
 
 - This concept will later link tightly to geodesic deviation and curvature.
-  Keep the first-layer treatment operational rather than tensorial.
+  Keep the introductory treatment operational rather than tensorial.
 
-## GR 2.1 `gr.metric_tensor`: Spacetime metric
+## `gr.metric_tensor`: Spacetime metric
 
 ### Status
 
@@ -848,7 +850,7 @@ surface.
   element is only previewed here because it is the most compact operational
   use of the metric.
 
-## GR 2.2 `gr.inverse_metric`: Inverse metric
+## `gr.inverse_metric`: Inverse metric
 
 ### Status
 
@@ -908,7 +910,7 @@ tangent vector to a covector and the inverse metric reversing that map.
 - Later authoring should decide how much abstract-index language to introduce
   when discussing raising and lowering.
 
-## GR 2.3 `gr.volume_element`: Volume element
+## `gr.volume_element`: Volume element
 
 ### Status
 
@@ -969,7 +971,7 @@ cell with its metric-weighted spacetime volume.
 - This concept will become more useful once action principles are added. For
   now it mainly prepares notation for later GR equations.
 
-## GR 3.1 `gr.line_element`: Line element
+## `gr.line_element`: Line element
 
 ### Status
 
@@ -1028,7 +1030,7 @@ on a curved coordinate grid, with the metric converting it to \(ds^2\).
 - Decide later whether a separate "spacetime interval in GR" alias or view is
   needed, or whether `gr.line_element` is enough.
 
-## GR 3.2 `gr.proper_time`: Proper time in curved spacetime
+## `gr.proper_time`: Proper time in curved spacetime
 
 ### Status
 
@@ -1085,7 +1087,7 @@ worldlines between meetings with different accumulated clock readings.
 - Later authoring should coordinate this concept carefully with
   `gr.geodesic_action` and `gr.four_velocity`.
 
-## GR 3.3 `gr.null_curve`: Null curve
+## `gr.null_curve`: Null curve
 
 ### Status
 
@@ -1139,7 +1141,7 @@ null tangent lying on its surface.
 - Keep this distinct from `gr.geodesic`; null describes metric type, while
   geodesic describes free propagation/straightest motion.
 
-## GR 3.4 `gr.causal_structure`: Causal structure
+## `gr.causal_structure`: Causal structure
 
 ### Status
 
@@ -1192,7 +1194,7 @@ orientation/width from event to event while preserving local causal meaning.
 - This concept should later link strongly to event horizons and Penrose
   diagrams when those concepts are added.
 
-## GR 3.5 `gr.local_flatness`: Local flatness
+## `gr.local_flatness`: Local flatness
 
 ### Status
 
@@ -1251,7 +1253,7 @@ larger regions.
   metric derivatives, since this depends on the smooth coordinate construction
   being introduced at the right level.
 
-## GR 3.6 `gr.metric_signature`: Metric signature convention
+## `gr.metric_signature`: Metric signature convention
 
 ### Status
 
@@ -1306,7 +1308,7 @@ than a full conceptual graphic.
   rather than a normal graph node. For now a visible node helps explain signs
   in the GR seed content.
 
-## GR 4.1 `gr.connection`: Connection
+## `gr.connection`: Connection
 
 ### Status
 
@@ -1330,7 +1332,7 @@ metric-compatible, torsion-free Levi-Civita connection.
 
 - Add a tangent-space comparison graphic and precise TTM/TRR connection locators.
 
-## GR 4.2 `gr.christoffel_symbols`: Christoffel symbols
+## `gr.christoffel_symbols`: Christoffel symbols
 
 ### Status
 
@@ -1352,7 +1354,7 @@ vanish at one event without eliminating curvature.
 
 - A full pass should derive the metric formula and compare transformation laws.
 
-## GR 4.3 `gr.covariant_derivative`: Covariant derivative
+## `gr.covariant_derivative`: Covariant derivative
 
 ### Status
 
@@ -1374,7 +1376,7 @@ their ordinary partial derivative.
 
 - The full exposition needs multi-index examples and a derivation of signs.
 
-## GR 4.4 `gr.metric_compatibility`: Metric compatibility
+## `gr.metric_compatibility`: Metric compatibility
 
 ### Status
 
@@ -1397,7 +1399,7 @@ selects the Levi-Civita connection.
 
 - Later explain uniqueness without taking over the connection derivation.
 
-## GR 4.5 `gr.torsion_free_connection`: Torsion-free connection
+## `gr.torsion_free_connection`: Torsion-free connection
 
 ### Status
 
@@ -1419,7 +1421,7 @@ flatness.
 
 - The full pass should motivate torsion geometrically without introducing tetrads.
 
-## GR 4.6 `gr.parallel_transport`: Parallel transport
+## `gr.parallel_transport`: Parallel transport
 
 ### Status
 
@@ -1441,7 +1443,7 @@ curvature without yet defining the Riemann tensor.
 
 - Add a sphere/loop transport graphic and later link holonomy to curvature.
 
-## GR 5.1 `gr.geodesic`: Geodesic
+## `gr.geodesic`: Geodesic
 
 ### Status
 
@@ -1459,7 +1461,7 @@ null geodesics model freely propagating light.
 - `gr.geodesic.overview`, `overview`; `gr.geodesic.definition`, `definition`.
 - Add causal-type examples, conjugate-point caveats, graphics, and sources later.
 
-## GR 5.2 `gr.geodesic_equation`: Geodesic equation
+## `gr.geodesic_equation`: Geodesic equation
 
 ### Status
 
@@ -1477,7 +1479,7 @@ the invariant test.
 - `gr.geodesic_equation.overview`, `overview`; `gr.geodesic_equation.definition`, `definition`.
 - Derive the coordinate form and explain affine parameters in the full pass.
 
-## GR 5.3 `gr.geodesic_action`: Geodesic action
+## `gr.geodesic_action`: Geodesic action
 
 ### Status
 
@@ -1495,7 +1497,7 @@ derivation.
 - `gr.geodesic_action.overview`, `overview`; `gr.geodesic_action.definition`, `definition`.
 - Later compare square-root and quadratic actions and treat null paths carefully.
 
-## GR 5.4 `gr.four_velocity`: Four-velocity in curved spacetime
+## `gr.four_velocity`: Four-velocity in curved spacetime
 
 ### Status
 
@@ -1512,7 +1514,7 @@ different tangent space at each event.
 - `gr.four_velocity.overview`, `overview`; `gr.four_velocity.definition`, `definition`.
 - Add explicit normalization derivation and a tangent-bundle graphic later.
 
-## GR 5.5 `gr.four_acceleration`: Four-acceleration
+## `gr.four_acceleration`: Four-acceleration
 
 ### Status
 
@@ -1530,7 +1532,7 @@ coordinate acceleration.
 - `gr.four_acceleration.overview`, `overview`; `gr.four_acceleration.definition`, `definition`.
 - Later derive orthogonality to four-velocity and add accelerometer interpretation.
 
-## GR 5.6 `gr.geodesic_deviation`: Geodesic deviation
+## `gr.geodesic_deviation`: Geodesic deviation
 
 ### Status
 
@@ -1547,7 +1549,7 @@ to curvature. The seed flags the convention-dependent overall sign.
 - `gr.geodesic_deviation.overview`, `overview`; `gr.geodesic_deviation.definition`, `definition`.
 - Derive the equation only after the Riemann convention is fixed in Layer 6.
 
-## GR 6.1 `gr.riemann_tensor`: Riemann curvature tensor
+## `gr.riemann_tensor`: Riemann curvature tensor
 
 ### Status
 
@@ -1565,7 +1567,7 @@ must be fixed before detailed derivations.
 - `gr.riemann_tensor.overview`, `overview`; `gr.riemann_tensor.definition`, `definition`.
 - Add component construction, symmetries, loop graphic, and source locators later.
 
-## GR 6.2 `gr.ricci_tensor`: Ricci tensor
+## `gr.ricci_tensor`: Ricci tensor
 
 ### Status
 
@@ -1582,7 +1584,7 @@ dimensions, so Ricci-flat is not synonymous with flat.
 - `gr.ricci_tensor.overview`, `overview`; `gr.ricci_tensor.definition`, `definition`.
 - Later connect focusing carefully without pre-empting the Raychaudhuri equation.
 
-## GR 6.3 `gr.ricci_scalar`: Ricci scalar
+## `gr.ricci_scalar`: Ricci scalar
 
 ### Status
 
@@ -1599,7 +1601,7 @@ not eliminate trace-free curvature.
 - `gr.ricci_scalar.overview`, `overview`; `gr.ricci_scalar.definition`, `definition`.
 - Add low-dimensional examples and source locators in the full pass.
 
-## GR 6.4 `gr.einstein_tensor`: Einstein tensor
+## `gr.einstein_tensor`: Einstein tensor
 
 ### Status
 
@@ -1616,7 +1618,7 @@ left-hand side of the field equations.
 - `gr.einstein_tensor.overview`, `overview`; `gr.einstein_tensor.definition`, `definition`.
 - Later derive its trace and divergence with explicit dimension assumptions.
 
-## GR 6.5 `gr.bianchi_identity`: Bianchi identity
+## `gr.bianchi_identity`: Bianchi identity
 
 ### Status
 
@@ -1633,7 +1635,7 @@ extra dynamical equation imposed on solutions.
 - `gr.bianchi_identity.overview`, `overview`; `gr.bianchi_identity.definition`, `definition`.
 - Add the contraction steps only after index symmetries are fully taught.
 
-## GR 6.6 `gr.curvature_invariants`: Curvature invariants
+## `gr.curvature_invariants`: Curvature invariants
 
 ### Status
 
@@ -1650,7 +1652,7 @@ values of a limited invariant set do not establish complete regularity.
 - `gr.curvature_invariants.overview`, `overview`; `gr.curvature_invariants.definition`, `definition`.
 - Revisit with Schwarzschild examples after Layer 10 exists.
 
-## GR 7.1 `gr.stress_energy_tensor`: Stress-energy tensor in GR
+## `gr.stress_energy_tensor`: Stress-energy tensor in GR
 
 ### Status
 
@@ -1660,15 +1662,15 @@ values of a limited invariant set do not establish complete regularity.
 
 Stress-energy packages local energy density, momentum density, flux, and stress
 as one geometric tensor field. GR uses it as the matter source for curvature.
-Its conceptual overlap with `sr.energy_momentum_tensor` remains an explicit
-atlas-design question rather than being resolved during seeding.
+Keep it separate from `sr.energy_momentum_tensor`, connected by a `RELATED`
+edge. Focus this exposition on its role as the GR source for curvature.
 
 ### Block Plan And Drafting Issues
 
 - `gr.stress_energy_tensor.overview`, `overview`; `gr.stress_energy_tensor.definition`, `definition`.
-- Decide merge versus distinct scope during full authoring; add observer projections.
+- Add observer projections during full authoring.
 
-## GR 7.2 `gr.perfect_fluid`: Perfect fluid
+## `gr.perfect_fluid`: Perfect fluid
 
 ### Status
 
@@ -1685,7 +1687,7 @@ the atlas's mostly-minus signature and natural units explicitly.
 - `gr.perfect_fluid.overview`, `overview`; `gr.perfect_fluid.definition`, `definition`.
 - Add rest-frame component decomposition and imperfect-fluid contrast later.
 
-## GR 7.3 `gr.energy_conditions`: Energy conditions
+## `gr.energy_conditions`: Energy conditions
 
 ### Status
 
@@ -1703,7 +1705,7 @@ quantum settings.
 - `gr.energy_conditions.overview`, `overview`; `gr.energy_conditions.definition`, `definition`.
 - Add dominant/strong conditions and theorem-specific uses in a full pass.
 
-## GR 7.4 `gr.covariant_conservation`: Covariant conservation
+## `gr.covariant_conservation`: Covariant conservation
 
 ### Status
 
@@ -1721,7 +1723,7 @@ gravitational energy.
 - `gr.covariant_conservation.overview`, `overview`; `gr.covariant_conservation.definition`, `definition`.
 - Later derive fluid equations and distinguish local from global conservation.
 
-## GR 7.5 `gr.equation_of_state`: Equation of state
+## `gr.equation_of_state`: Equation of state
 
 ### Status
 
@@ -1738,7 +1740,7 @@ not itself a gravitational field equation.
 - `gr.equation_of_state.overview`, `overview`; `gr.equation_of_state.definition`, `definition`.
 - Add dust, radiation, and stellar-matter examples during application authoring.
 
-## GR 8.1 `gr.einstein_field_equations`: Einstein field equations
+## `gr.einstein_field_equations`: Einstein field equations
 
 ### Status
 
@@ -1756,7 +1758,7 @@ the central equation visible.
 - `gr.einstein_field_equations.overview`, `overview`; `gr.einstein_field_equations.definition`, `definition`.
 - Full authoring needs Newtonian-limit normalization and convention comparison.
 
-## GR 8.2 `gr.cosmological_constant`: Cosmological constant
+## `gr.cosmological_constant`: Cosmological constant
 
 ### Status
 
@@ -1774,7 +1776,7 @@ origin.
 - `gr.cosmological_constant.overview`, `overview`; `gr.cosmological_constant.definition`, `definition`.
 - Add de Sitter examples and unit/sign translations during full authoring.
 
-## GR 8.3 `gr.einstein_hilbert_action`: Einstein-Hilbert action
+## `gr.einstein_hilbert_action`: Einstein-Hilbert action
 
 ### Status
 
@@ -1791,7 +1793,7 @@ the gravitational field equations, subject to appropriate boundary treatment.
 - `gr.einstein_hilbert_action.overview`, `overview`; `gr.einstein_hilbert_action.definition`, `definition`.
 - A full derivation needs the metric-variation identities and boundary term.
 
-## GR 8.4 `gr.stress_energy_variation`: Stress-energy from action variation
+## `gr.stress_energy_variation`: Stress-energy from action variation
 
 ### Status
 
@@ -1808,7 +1810,7 @@ source-dependent rather than silently universal.
 - `gr.stress_energy_variation.overview`, `overview`; `gr.stress_energy_variation.definition`, `definition`.
 - Later work examples for scalar and electromagnetic matter actions.
 
-## GR 8.5 `gr.trace_reversed_equations`: Trace-reversed equations
+## `gr.trace_reversed_equations`: Trace-reversed equations
 
 ### Status
 
@@ -1825,7 +1827,7 @@ the stress-energy trace explicit.
 - `gr.trace_reversed_equations.overview`, `overview`; `gr.trace_reversed_equations.definition`, `definition`.
 - Show each contraction step and dimension dependence in the full exposition.
 
-## GR 8.6 `gr.vacuum_field_equations`: Vacuum field equations
+## `gr.vacuum_field_equations`: Vacuum field equations
 
 ### Status
 
@@ -1842,7 +1844,7 @@ fields, black-hole exteriors, and gravitational waves can remain.
 - `gr.vacuum_field_equations.overview`, `overview`; `gr.vacuum_field_equations.definition`, `definition`.
 - Revisit with Schwarzschild and wave examples after Layers 10 and 11.
 
-## GR 9.1 `gr.weak_field_metric`: Weak-field metric
+## `gr.weak_field_metric`: Weak-field metric
 
 ### Status
 
@@ -1860,7 +1862,7 @@ coordinate-invariant.
 - `gr.weak_field_metric.overview`, `overview`; `gr.weak_field_metric.definition`, `definition`.
 - Add gauge transformations and linearized curvature during Layer 11 authoring.
 
-## GR 9.2 `gr.newtonian_limit`: Newtonian limit
+## `gr.newtonian_limit`: Newtonian limit
 
 ### Status
 
@@ -1877,7 +1879,7 @@ time-time metric component contains \(\Phi\), the geodesic equation yields
 - `gr.newtonian_limit.overview`, `overview`; `gr.newtonian_limit.definition`, `definition`.
 - Full authoring should derive the coupling normalization with explicit units.
 
-## GR 9.3 `gr.gravitational_redshift`: Gravitational redshift
+## `gr.gravitational_redshift`: Gravitational redshift
 
 ### Status
 
@@ -1894,7 +1896,7 @@ receiver, time normalization, and static-spacetime assumptions must be stated.
 - `gr.gravitational_redshift.overview`, `overview`; `gr.gravitational_redshift.definition`, `definition`.
 - Add the weak-potential expansion and operational clock experiment later.
 
-## GR 9.4 `gr.light_deflection`: Light deflection
+## `gr.light_deflection`: Light deflection
 
 ### Status
 
@@ -1911,7 +1913,7 @@ and spatial metric curvature.
 - `gr.light_deflection.overview`, `overview`; `gr.light_deflection.definition`, `definition`.
 - Add a controlled impact-parameter derivation and lensing distinction later.
 
-## GR 9.5 `gr.perihelion_precession`: Perihelion precession
+## `gr.perihelion_precession`: Perihelion precession
 
 ### Status
 
@@ -1928,7 +1930,7 @@ weak-field amount each revolution.
 - `gr.perihelion_precession.overview`, `overview`; `gr.perihelion_precession.definition`, `definition`.
 - Derive from the Schwarzschild effective potential after Layer 10 matures.
 
-## GR 9.6 `gr.post_newtonian_approximation`: Post-Newtonian approximation
+## `gr.post_newtonian_approximation`: Post-Newtonian approximation
 
 ### Status
 
@@ -1945,7 +1947,7 @@ gauge bookkeeping; intermediate coordinate formulas need not look unique.
 - `gr.post_newtonian_approximation.overview`, `overview`; `gr.post_newtonian_approximation.definition`, `definition`.
 - Add named PN orders and binary-system examples only in a full pass.
 
-## GR 10.1 `gr.schwarzschild_metric`: Schwarzschild metric
+## `gr.schwarzschild_metric`: Schwarzschild metric
 
 ### Status
 
@@ -1962,7 +1964,7 @@ seed states the mostly-minus line element and its exterior coordinate limits.
 - `gr.schwarzschild_metric.overview`, `overview`; `gr.schwarzschild_metric.definition`, `definition`.
 - Full authoring needs Birkhoff's theorem, interior matching, and source locators.
 
-## GR 10.2 `gr.schwarzschild_radius`: Schwarzschild radius
+## `gr.schwarzschild_radius`: Schwarzschild radius
 
 ### Status
 
@@ -1979,7 +1981,7 @@ than their Schwarzschild radius.
 - `gr.schwarzschild_radius.overview`, `overview`; `gr.schwarzschild_radius.definition`, `definition`.
 - Add numerical scales for the Sun and Earth in a full pass.
 
-## GR 10.3 `gr.event_horizon`: Event horizon
+## `gr.event_horizon`: Event horizon
 
 ### Status
 
@@ -1996,7 +1998,7 @@ curvature singularity. For the extended Schwarzschild black hole it lies at
 - `gr.event_horizon.overview`, `overview`; `gr.event_horizon.definition`, `definition`.
 - Add global definition with future null infinity and a Penrose diagram later.
 
-## GR 10.4 `gr.coordinate_singularity`: Coordinate singularity
+## `gr.coordinate_singularity`: Coordinate singularity
 
 ### Status
 
@@ -2013,7 +2015,7 @@ and finite curvature invariants show that the spacetime does not.
 - `gr.coordinate_singularity.overview`, `overview`; `gr.coordinate_singularity.definition`, `definition`.
 - Demonstrate Eddington-Finkelstein coordinates in the full exposition.
 
-## GR 10.5 `gr.black_hole_singularity`: Black hole singularity
+## `gr.black_hole_singularity`: Black hole singularity
 
 ### Status
 
@@ -2030,7 +2032,7 @@ classical GR, unlike the regular horizon.
 - `gr.black_hole_singularity.overview`, `overview`; `gr.black_hole_singularity.definition`, `definition`.
 - Refine the distinction between scalar divergence and the modern incompleteness definition.
 
-## GR 10.6 `gr.effective_potential_orbits`: Effective potential for orbits
+## `gr.effective_potential_orbits`: Effective potential for orbits
 
 ### Status
 

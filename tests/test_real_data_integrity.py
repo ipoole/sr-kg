@@ -131,7 +131,7 @@ def test_runtime_sr_modules_match_the_reviewed_partition_candidate():
     modules = _read_csv("modules.csv")
     runtime_members = _read_csv("module_members.csv")
     candidate_members = pd.read_csv(
-        root / "docs" / "discussion" / "sr_module_partition_candidate.csv",
+        root / "tests" / "fixtures" / "module_partitions" / "sr.csv",
         dtype=str,
     ).fillna("")
 
@@ -194,7 +194,7 @@ def test_runtime_gr_modules_match_the_reviewed_partition_candidate():
     modules = _read_csv("modules.csv")
     runtime_members = _read_csv("module_members.csv")
     candidate_members = pd.read_csv(
-        root / "docs" / "discussion" / "gr_module_partition_candidate.csv",
+        root / "tests" / "fixtures" / "module_partitions" / "gr.csv",
         dtype=str,
     ).fillna("")
 

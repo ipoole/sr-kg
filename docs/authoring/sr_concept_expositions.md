@@ -7,7 +7,9 @@ The CSV content blocks remain the source consumed by the application. This file
 is an authoring and review aid: it preserves the coherent book-section form if
 block boundaries, block kinds, or viewer presentation rules change later.
 
-Use one section per concept, labelled with display ID, semantic ID, and title.
+Use one section per concept, labelled with semantic ID and title.
+These are working drafts, not a second publication to synchronise with CSV.
+Look up current display IDs and module membership in the runtime data.
 Keep concepts in atlas order where practical.
 
 Generic source-locator and notation issues are now collected in
@@ -15,7 +17,7 @@ Generic source-locator and notation issues are now collected in
 concept-specific issues below, but avoid repeating generic notes once they are
 covered by those worklists.
 
-## 1.1 `sr.inertial_frames`: Inertial frames
+## `sr.inertial_frames`: Inertial frames
 
 ### Scope
 
@@ -116,10 +118,8 @@ concept. No SVG code change is needed in this pass.
 - Consider whether the idealization/acceleration paragraph should become a
   `warning` or `intuition` block once we have reviewed the block-kind policy on
   a few more concepts.
-- The reference link uses a broad `TTM II, Ch. 1` locator for now. Tighten this
-  to a specific section/page when the source text is checked directly.
 
-## 1.2 `sr.constancy_of_speed_of_light`: Constancy of the speed of light
+## `sr.constancy_of_speed_of_light`: Constancy of the speed of light
 
 ### Scope
 
@@ -202,12 +202,7 @@ Retain the existing graphic. The central flash with concentric wavefronts and
 repeated \(c\) labels is the right icon-scale visual for invariant light speed.
 No SVG code change is needed in this pass.
 
-### Drafting Issues
-
-- The reference link uses a broad `TTM II, Ch. 1` locator for now. Tighten this
-  to a specific section/page when the source text is checked directly.
-
-## 1.3 `sr.principle_of_relativity`: Principle of relativity
+## `sr.principle_of_relativity`: Principle of relativity
 
 ### Scope
 
@@ -282,12 +277,10 @@ neither frame is drawn as privileged. No SVG code change is needed in this pass.
 
 ### Drafting Issues
 
-- The reference link uses a broad `TTM II, Ch. 1` locator for now. Tighten this
-  to a specific section/page when the source text is checked directly.
 - The relationship between this concept and `sr.lorentz_invariance` may deserve
   a sharper edge type than `RELATED` later.
 
-## 2.2 `sr.spacetime_event`: Spacetime event
+## `sr.spacetime_event`: Spacetime event
 
 ### Scope
 
@@ -357,14 +350,7 @@ Retain the existing graphic. A single highlighted event \(P\) on \(x,ct\) axes
 with coordinate projections is the right visual for the concept. No SVG code
 change is needed in this pass.
 
-### Drafting Issues
-
-- The reference link uses a broad `TTM II, Ch. 1` locator for now. Tighten this
-  to a specific section/page when the source text is checked directly.
-- There is no current 2.1 concept in the atlas. We should decide later whether
-  the numbering gap should be filled or the layer renumbered.
-
-## 2.3 `sr.principle_of_locality`: Principle of locality
+## `sr.principle_of_locality`: Principle of locality
 
 ### Scope
 
@@ -451,7 +437,7 @@ concept. No SVG code change is needed in this pass.
   description" or "enforces finite propagation"; for now the current
   `REQUIRES` and `RELATED` links are adequate.
 
-## 3.1 `sr.metric_tensor`: Metric tensor
+## `sr.metric_tensor`: Metric tensor
 
 ### Scope
 
@@ -572,8 +558,6 @@ Revised the existing graphic. The new version keeps the matrix idea but makes
 the metric visibly act as a measuring rule: a displacement on \(x,ct\) axes is
 fed through \(\eta\) to produce an \(s^2\) interval expression.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -588,7 +572,7 @@ fed through \(\eta\) to produce an \(s^2\) interval expression.
   separate concept linked from this one, rather than letting this SR concept
   carry curved-spacetime detail.
 
-## 3.2 `sr.spacetime_interval`: Spacetime interval
+## `sr.spacetime_interval`: Spacetime interval
 
 ### Scope
 
@@ -701,8 +685,6 @@ Retain the existing graphic. The diagram already shows representative
 timelike, spacelike, and lightlike separations from one event, which is the
 right visual emphasis for this concept.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -717,7 +699,7 @@ right visual emphasis for this concept.
   then interval, works, but future authoring should keep the two concepts from
   duplicating each other excessively.
 
-## 3.3 `sr.lorentz_transformations`: Lorentz transformations
+## `sr.lorentz_transformations`: Lorentz transformations
 
 ### Scope
 
@@ -878,8 +860,6 @@ Retain the existing graphic. Tilted primed axes and unprimed axes describing
 the same event \(P\) communicate the coordinate-change interpretation directly.
 No SVG code change is needed in this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TRR locator for the matrix/metric preservation viewpoint is recorded in `data/reference_links.csv`.
@@ -895,7 +875,7 @@ No SVG code change is needed in this pass.
   simultaneity may deserve explicit concepts later if the atlas expands the
   introductory SR material.
 
-## 3.4 `sr.light_cone`: Light cone
+## `sr.light_cone`: Light cone
 
 ### Scope
 
@@ -991,8 +971,6 @@ causal-structure background. Section-level locators are now recorded in `data/re
 Retain the existing graphic. This is the concept where the 45-degree cone
 boundary should dominate, and the current graphic keeps that geometry clean.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1006,7 +984,7 @@ boundary should dominate, and the current graphic keeps that geometry clean.
 - Later GR content will need to revisit light cones when curvature and local
   tangent frames are introduced.
 
-## 3.5 `sr.minkowski_diagram`: Minkowski diagram
+## `sr.minkowski_diagram`: Minkowski diagram
 
 ### Scope
 
@@ -1095,8 +1073,6 @@ Retain the existing graphic. The rest worldline, slower-than-light worldline,
 and single light ray give this concept a distinct visual identity from the
 full light-cone graphic.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1112,7 +1088,7 @@ full light-cone graphic.
   `sr.lorentz_transformations`.
 
 
-## 4.1 `sr.proper_time`: Proper time
+## `sr.proper_time`: Proper time
 
 ### Scope
 
@@ -1215,8 +1191,6 @@ spacetime.
 The existing clock ticks on a timelike worldline match the concept and should be
 retained unless visual inspection shows a concrete defect.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1232,7 +1206,7 @@ retained unless visual inspection shows a concrete defect.
   example block, but it should not become a separate concept yet.
 
 
-## 4.2 `sr.four_vectors`: Four-vectors
+## `sr.four_vectors`: Four-vectors
 
 ### Scope
 
@@ -1328,8 +1302,6 @@ quantity.
 The existing graphic captures the correct idea: one spacetime arrow and a linked
 component column. Retain unless visual inspection exposes a layout problem.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1346,7 +1318,7 @@ component column. Retain unless visual inspection exposes a layout problem.
   edge type such as `MEASURES` or `CONTRACTS` may be more precise.
 
 
-## 4.3 `sr.position_four_vector`: Position four-vector
+## `sr.position_four_vector`: Position four-vector
 
 ### Scope
 
@@ -1435,8 +1407,6 @@ events; they are the starting point for relativistic kinematics.
 The existing origin-to-event arrow with projections matches the concept.
 Retain unless visual inspection shows a layout problem.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1452,7 +1422,7 @@ Retain unless visual inspection shows a layout problem.
 - None.
 
 
-## 4.4 `sr.velocity_four_vector`: Velocity four-vector
+## `sr.velocity_four_vector`: Velocity four-vector
 
 ### Scope
 
@@ -1554,8 +1524,6 @@ the dynamics of energy, momentum, and force.
 The existing tangent-to-worldline graphic fits the concept well. Retain unless
 visual inspection shows label crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1570,7 +1538,7 @@ visual inspection shows label crowding.
   dynamics beyond the Lorentz force law.
 
 
-## 4.5 `sr.momentum_four_vector`: Momentum four-vector
+## `sr.momentum_four_vector`: Momentum four-vector
 
 ### Scope
 
@@ -1672,8 +1640,6 @@ For them \(p_\mu p^\mu\overset{\text{massless}}{=}0\) and \(E\overset{\text{mass
 The existing graphic correctly pairs a \(p^\mu\) arrow with \(E/c\) and
 \(\mathbf p\) components. Retain unless visual inspection shows crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1688,7 +1654,7 @@ The existing graphic correctly pairs a \(p^\mu\) arrow with \(E/c\) and
   physics content is added.
 
 
-## 4.6 `sr.mass_energy_equivalence`: Mass-energy equivalence
+## `sr.mass_energy_equivalence`: Mass-energy equivalence
 
 ### Scope
 
@@ -1804,8 +1770,6 @@ the spatial momentum vanishes.
 The existing graphic rightly keeps \(E=mc^2\) central while showing the
 four-momentum norm below. Retain unless visual inspection shows crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1822,7 +1786,7 @@ four-momentum norm below. Retain unless visual inspection shows crowding.
   toward nuclear or particle physics.
 
 
-## 5.1 `sr.lagrangian`: Lagrangian
+## `sr.lagrangian`: Lagrangian
 
 ### Scope
 
@@ -1916,8 +1880,6 @@ symmetries of the action become conservation laws through Noether's theorem.
 The existing local \(L\) tiles accumulating into \(S\) match the intended
 meaning. Retain unless visual inspection shows layout problems.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -1934,7 +1896,7 @@ meaning. Retain unless visual inspection shows layout problems.
   linked concept if gauge-field Lagrangians become more detailed.
 
 
-## 5.2 `sr.action_principle`: Action principle
+## `sr.action_principle`: Action principle
 
 ### Scope
 
@@ -2019,8 +1981,6 @@ Euler-Lagrange equations.
 The existing fixed-endpoint path variation graphic matches the intended
 meaning. Retain unless visual inspection shows a concrete defect.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2035,7 +1995,7 @@ meaning. Retain unless visual inspection shows a concrete defect.
 - None.
 
 
-## 5.3 `sr.euler_lagrange_equations`: Euler-Lagrange equations
+## `sr.euler_lagrange_equations`: Euler-Lagrange equations
 
 ### Scope
 
@@ -2142,8 +2102,6 @@ generalized coordinates and, later, to fields.
 The existing variation-to-E-L graphic matches the concept. Retain unless visual
 inspection shows crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2159,7 +2117,7 @@ inspection shows crowding.
   strongly expanded field-equations concept.
 
 
-## 5.4 `sr.canonical_momentum`: Canonical momentum
+## `sr.canonical_momentum`: Canonical momentum
 
 ### Scope
 
@@ -2261,8 +2219,6 @@ The current graphic showing \(L(q,\dot q)\) feeding \(p=\partial L/\partial
 \dot q\) is conceptually appropriate. Check whether the detail graphic has
 enough room for the derivative notation.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2280,7 +2236,7 @@ enough room for the derivative notation.
   minimal coupling, but the detailed gauge interpretation belongs later.
 
 
-## 5.5 `sr.hamiltonian_formalism`: Hamiltonian formalism
+## `sr.hamiltonian_formalism`: Hamiltonian formalism
 
 ### Scope
 
@@ -2400,8 +2356,6 @@ mechanics.
 The existing phase-space flow graphic is well matched to the concept. Retain
 unless visual inspection shows label or arrow crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2418,7 +2372,7 @@ unless visual inspection shows label or arrow crowding.
   `DERIVES_FROM` edges from Lagrangian and canonical momentum.
 
 
-## 5.6 `sr.noether_theorem`: Noether's theorem
+## `sr.noether_theorem`: Noether's theorem
 
 ### Scope
 
@@ -2540,8 +2494,6 @@ The existing graphic uses an implication symbol from an unchanged action to a
 conserved \(Q\), which matches the current concept scope. Retain unless visual
 inspection shows label crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2557,7 +2509,7 @@ inspection shows label crowding.
   ordinary derivation or relatedness.
 
 
-## 6.1 `sr.scalar_field`: Scalar field
+## `sr.scalar_field`: Scalar field
 
 ### Scope
 
@@ -2636,8 +2588,6 @@ setting.
 The existing graphic, showing differently sized scalar values over a spacetime
 grid, matches the concept. Retain unless review shows crowding.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2654,7 +2604,7 @@ grid, matches the concept. Retain unless review shows crowding.
   concept if field-theory calculations become more detailed.
 
 
-## 6.2 `sr.vector_field`: Vector field
+## `sr.vector_field`: Vector field
 
 ### Scope
 
@@ -2727,8 +2677,6 @@ tensor description of electromagnetism.
 The existing graphic showing arrows attached to a spacetime grid expresses the
 right local-field idea. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2742,10 +2690,10 @@ right local-field idea. Retain for this pass.
 #### Atlas Issues
 
 - The phrase "vector field" means four-vector field in this relativistic
-  layer; later nonrelativistic vector fields may need careful disambiguation.
+  context; later nonrelativistic vector fields may need careful disambiguation.
 
 
-## 6.3 `sr.field_lagrangian`: Field Lagrangian
+## `sr.field_lagrangian`: Field Lagrangian
 
 ### Scope
 
@@ -2819,8 +2767,6 @@ the energy-momentum tensor, a later concept.
 The existing graphic communicates integration of local density over spacetime.
 Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2837,7 +2783,7 @@ Retain for this pass.
   stress-energy concepts.
 
 
-## 6.4 `sr.field_equations`: Field equations
+## `sr.field_equations`: Field equations
 
 ### Scope
 
@@ -2923,8 +2869,6 @@ express field propagation locally through spacetime.
 The existing graphic gives a compact local-equation motif. Retain for this
 pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -2941,7 +2885,7 @@ pass.
   be useful if the atlas expands beyond SR/CF.
 
 
-## 7.1 `sr.vector_potential`: Vector potential \(A_\mu\)
+## `sr.vector_potential`: Vector potential \(A_\mu\)
 
 ### Scope
 
@@ -3019,8 +2963,6 @@ redundancy.
 The existing graphic shows a potential feeding a derivative/field-strength
 construction. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3038,7 +2980,7 @@ construction. Retain for this pass.
   field tensor to vector potential.
 
 
-## 7.2 `sr.field_tensor`: Field tensor \(F_{\mu\nu}\)
+## `sr.field_tensor`: Field tensor \(F_{\mu\nu}\)
 
 ### Scope
 
@@ -3118,8 +3060,6 @@ equations.
 
 The existing tensor-matrix graphic is appropriate. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3136,7 +3076,7 @@ The existing tensor-matrix graphic is appropriate. Retain for this pass.
   vector potential.
 
 
-## 7.3 `sr.electric_field`: Electric field
+## `sr.electric_field`: Electric field
 
 ### Scope
 
@@ -3207,8 +3147,6 @@ useful, but it is not the whole invariant electromagnetic object.
 The existing graphic showing electric field arrows is acceptable. Retain for
 this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3225,7 +3163,7 @@ this pass.
   the force-at-rest interpretation.
 
 
-## 7.4 `sr.magnetic_field`: Magnetic field
+## `sr.magnetic_field`: Magnetic field
 
 ### Scope
 
@@ -3300,8 +3238,6 @@ substance.
 The existing graphic showing a circulating magnetic pattern is appropriate.
 Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3317,7 +3253,7 @@ Retain for this pass.
   separate concept for monopole extensions.
 
 
-## 7.5 `sr.electromagnetic_field`: Electromagnetic field
+## `sr.electromagnetic_field`: Electromagnetic field
 
 ### Scope
 
@@ -3385,8 +3321,6 @@ explicit.
 The existing graphic presenting \(E\), \(B\), and \(F\) as one structure is
 appropriate. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3402,7 +3336,7 @@ appropriate. Retain for this pass.
   decomposition, and prerequisite relations more carefully.
 
 
-## 7.6 `sr.four_current`: Four-current
+## `sr.four_current`: Four-current
 
 ### Scope
 
@@ -3477,8 +3411,6 @@ boundary.
 
 The existing source-flow graphic is appropriate. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3494,7 +3426,7 @@ The existing source-flow graphic is appropriate. Retain for this pass.
   equations; this concept only introduces the continuity form.
 
 
-## 7.7 `sr.maxwells_equations`: Maxwell's equations
+## `sr.maxwells_equations`: Maxwell's equations
 
 ### Scope
 
@@ -3590,8 +3522,6 @@ the absence of the electromagnetic field.
 The existing Maxwell graphic is adequate for this pass. Later we may want a
 more explicit covariant-pair-to-four-equations graphic.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3607,7 +3537,7 @@ more explicit covariant-pair-to-four-equations graphic.
   "source equation", and "identity from construction".
 
 
-## 8.1 `sr.gauge_invariance`: Gauge invariance
+## `sr.gauge_invariance`: Gauge invariance
 
 ### Scope
 
@@ -3684,8 +3614,6 @@ that respects the gauge redundancy.
 The existing gauge-equivalent-potential graphic is appropriate. Retain for this
 pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3701,7 +3629,7 @@ pass.
   concept such as "gauge freedom" or "potential equivalence class".
 
 
-## 8.3 `sr.minimal_coupling`: Minimal coupling
+## `sr.minimal_coupling`: Minimal coupling
 
 ### Scope
 
@@ -3776,8 +3704,6 @@ calculation, derivatives of \(A_\mu\) combine into the field tensor
 The existing graphic showing potential insertion into particle dynamics is
 appropriate. Retain for this pass.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3790,11 +3716,11 @@ appropriate. Retain for this pass.
 
 #### Atlas Issues
 
-- The missing 8.2 slot may affect layer narrative: gauge invariance jumps
-  directly to minimal coupling without a separate gauge-freedom bridge.
+- Review whether the transition from gauge invariance to minimal coupling needs
+  a clearer gauge-freedom bridge.
 
 
-## 8.4 `sr.lorentz_force_law`: Lorentz force law
+## `sr.lorentz_force_law`: Lorentz force law
 
 ### Scope
 
@@ -3891,8 +3817,6 @@ The existing graphic is adequate for this pass. A future revision could show a
 charged trajectory curving in a magnetic field beside the covariant tensor
 equation.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -3909,7 +3833,7 @@ equation.
   boundary note.
 
 
-## 8.5 `sr.charge_conservation`: Charge conservation
+## `sr.charge_conservation`: Charge conservation
 
 ### Scope
 
@@ -4031,8 +3955,6 @@ elsewhere without a current connecting the events.
 The existing graphic showing current flux out of a region remains appropriate.
 A future refinement could make the local-to-integral relationship more explicit.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4047,7 +3969,7 @@ A future refinement could make the local-to-integral relationship more explicit.
 - Four-current remains the main prerequisite; no new concept split needed here.
 
 
-## 8.6 `sr.lorenz_gauge`: Lorenz gauge
+## `sr.lorenz_gauge`: Lorenz gauge
 
 ### Scope
 
@@ -4132,8 +4054,6 @@ Lorentz-covariant.
 The existing graphic is adequate. A future version could show a family of
 gauge-equivalent potentials with the Lorenz-gauge slice highlighted.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4146,10 +4066,10 @@ gauge-equivalent potentials with the Lorenz-gauge slice highlighted.
 #### Atlas Issues
 
 - The connection to the wave equation is deliberately preparatory; the full
-  wave-equation concept remains in layer 10.
+  wave-equation treatment belongs to `sr.wave_equation`.
 
 
-## 9.1 `sr.energy_momentum_tensor`: Energy--momentum tensor
+## `sr.energy_momentum_tensor`: Energy--momentum tensor
 
 ### Scope
 
@@ -4247,8 +4167,6 @@ The existing graphic is acceptable. A future refinement could show a small
 spacetime box with energy density, energy flux, momentum density, and stress
 labels on different tensor components.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4264,7 +4182,7 @@ labels on different tensor components.
   tensors is compressed here. It may deserve a later advanced concept.
 
 
-## 9.2 `sr.poynting_vector`: Momentum density (Poynting vector)
+## `sr.poynting_vector`: Momentum density (Poynting vector)
 
 ### Scope
 
@@ -4344,8 +4262,6 @@ matter.
 The existing graphic is appropriate. A future refinement could explicitly show
 energy flux through a small surface element.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4361,7 +4277,7 @@ energy flux through a small surface element.
   energy flux. The current title is acceptable but slightly asymmetrical.
 
 
-## 9.3 `sr.em_stress_energy`: Stress-energy of EM field
+## `sr.em_stress_energy`: Stress-energy of EM field
 
 ### Scope
 
@@ -4440,8 +4356,6 @@ carries and transfers.
 The current component-grid graphic is adequate. A future version could use
 colour-coded tensor blocks for density, flux, momentum density, and stress.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4457,7 +4371,7 @@ colour-coded tensor blocks for density, flux, momentum density, and stress.
   stress-energy tensor, and canonical tensor more carefully.
 
 
-## 9.4 `sr.em_energy_density`: Energy density of EM field
+## `sr.em_energy_density`: Energy density of EM field
 
 ### Scope
 
@@ -4536,8 +4450,6 @@ the full tensor, not \(u\) alone.
 The current graphic is adequate. A future version could pair local field energy
 density with nearby Poynting-vector flow arrows.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4550,10 +4462,10 @@ density with nearby Poynting-vector flow arrows.
 #### Atlas Issues
 
 - This concept naturally points to electromagnetic waves, but detailed wave
-  structure is left to layer 10.
+  structure belongs to `sr.electromagnetic_waves`.
 
 
-## 10.1 `sr.wave_equation`: Wave equation
+## `sr.wave_equation`: Wave equation
 
 ### Scope
 
@@ -4646,8 +4558,6 @@ the equation describes how charges and currents generate or drive fields.
 The current graphic is adequate. A future version could show light-cone
 propagation beside a sinusoidal plane-wave slice.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4664,7 +4574,7 @@ propagation beside a sinusoidal plane-wave slice.
   energy transport are left to 10.2.
 
 
-## 10.2 `sr.electromagnetic_waves`: Electromagnetic waves
+## `sr.electromagnetic_waves`: Electromagnetic waves
 
 ### Scope
 
@@ -4747,8 +4657,6 @@ The current improved graphic should be retained. It shows mutually
 perpendicular electric and magnetic oscillations with propagation/energy-flow
 direction.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4763,7 +4671,7 @@ direction.
 - Polarization may deserve its own concept when the atlas expands.
 
 
-## 10.3 `sr.radiation_reaction`: Radiation reaction
+## `sr.radiation_reaction`: Radiation reaction
 
 ### Scope
 
@@ -4836,8 +4744,6 @@ trusting the point-particle idealization outside its domain.
 The existing graphic is adequate. A future refinement could show a charged
 particle trajectory, outgoing wavefronts, and a small recoil/damping cue.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4853,7 +4759,7 @@ particle trajectory, outgoing wavefronts, and a small recoil/damping cue.
   advanced descendant concepts if the atlas later expands into radiation theory.
 
 
-## 11.1 `sr.lorentz_invariance`: Lorentz invariance
+## `sr.lorentz_invariance`: Lorentz invariance
 
 ### Scope
 
@@ -4930,8 +4836,6 @@ frame needs a physical reason or it is suspect.
 The existing graphic is adequate. A future version could show the same tensor
 equation in two frames beside the preserved light cone or metric.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -4948,7 +4852,7 @@ equation in two frames beside the preserved light cone or metric.
   transformation mechanics.
 
 
-## 11.2 `sr.gauge_fixing`: Gauge fixing
+## `sr.gauge_fixing`: Gauge fixing
 
 ### Scope
 
@@ -5039,8 +4943,6 @@ labels.
 The existing graphic is adequate. A future refinement could show an
 equivalence class of potentials with one gauge slice selecting a representative.
 
-### Drafting Issues
-
 #### Source Issues
 
 - Section-level TTM and TRR locators are recorded in `data/reference_links.csv`.
@@ -5058,7 +4960,7 @@ equivalence class of potentials with one gauge slice selecting a representative.
 ## Template
 
 ```markdown
-## <display_id> `<concept_id>`: <Concept title>
+## `<concept_id>`: <Concept title>
 
 ### Scope
 

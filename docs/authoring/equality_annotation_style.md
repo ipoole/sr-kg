@@ -1,5 +1,8 @@
 # Equality Annotation Style
 
+This is adopted authoring policy. Apply it during new authoring and exposition
+review; annotation density should remain proportionate to teaching value.
+
 ## Objective
 
 Use mathematical notation and surrounding prose so that the exposition
@@ -447,7 +450,7 @@ If no, leave `=` alone.
 
 ## Relationship to the knowledge graph
 
-For the first revision, **do not create equation-level nodes or equality-level graph edges**.
+**Do not create equation-level nodes or equality-level graph edges.**
 
 The current design deliberately keeps the durable KB at concept level plus ordered content blocks and explicitly postpones a fine-grained block graph.
 
@@ -504,7 +507,7 @@ Particular attention should be paid to `derivation` and `derivation_step` blocks
 
 ---
 
-## Proposed house-style summary
+## House-style summary
 
 The core notation should be:
 
@@ -532,21 +535,9 @@ Where \(X\) corresponds to an existing concept, link to that concept in the
 surrounding prose rather than trying to make the equality annotation itself
 clickable.
 
-## Recommended first experiment
+## Ongoing application
 
-Before revising the whole corpus, apply this policy thoroughly to **one equation-rich concept**, ideally a concept containing an actual multi-stage derivation rather than an introductory concept such as inertial frames.
-
-That pilot should answer practical questions:
-
-- how dense the annotations should be before they become distracting;
-- how much explanatory prose is needed around annotated equalities;
-- whether the label vocabulary is stable across concepts;
-- whether a future viewer affordance would genuinely add value beyond the prose.
-
-The convention is recorded in `docs/authoring/NOTATION_GLOSSARY.md` and the
-mathematics section of `AUTHORING_GUIDE.md`; use it systematically during
-exposition review.
-
-The underlying editorial idea can be stated very simply:
-
-> **An equation should show not only what is equal, but—when it matters—why it is equal.**
+Apply this policy during authoring and review. Refine annotation density and
+short labels through use; do not annotate routine algebra unless it is the
+teaching point. The [notation glossary](NOTATION_GLOSSARY.md) and
+[authoring guide](AUTHORING_GUIDE.md) summarise the convention.

@@ -143,7 +143,7 @@ def test_proposed_sr_partition_is_complete_cohesive_and_acyclic():
     nodes = pd.read_csv(root / "data" / "nodes.csv").fillna("")
     edges = pd.read_csv(root / "data" / "edges.csv").fillna("")
     members = pd.read_csv(
-        root / "docs" / "discussion" / "sr_module_partition_candidate.csv"
+        root / "tests" / "fixtures" / "module_partitions" / "sr.csv"
     ).fillna("")
     graph = build_domain_graph(nodes, edges, "sr", RELATIONS)
     assignment = dict(zip(members["concept_id"], members["module_id"]))
@@ -162,7 +162,7 @@ def test_proposed_gr_partition_is_complete_cohesive_and_acyclic():
     nodes = pd.read_csv(root / "data" / "nodes.csv").fillna("")
     edges = pd.read_csv(root / "data" / "edges.csv").fillna("")
     members = pd.read_csv(
-        root / "docs" / "discussion" / "gr_module_partition_candidate.csv"
+        root / "tests" / "fixtures" / "module_partitions" / "gr.csv"
     ).fillna("")
     graph = build_domain_graph(nodes, edges, "gr", RELATIONS)
     assignment = dict(zip(members["concept_id"], members["module_id"]))

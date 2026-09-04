@@ -2,15 +2,12 @@
 
 Captured on 2026-07-26.
 
-## Context
+## Status: deferred exploration
 
-The current implementation adds a useful first vertical slice for pedagogical
-levels: the viewer can show concept prose and study questions within a selected
-level range, and `sr.mass_energy_equivalence` is the pilot concept.
-
-That implementation proves that the plumbing works, but it should not yet be
-treated as the final pedagogical model. A single global pedagogical level is
-likely too crude for the long-term physics atlas.
+This note explores possible future pedagogy. The current system uses flat,
+ordered semantic blocks and viewer-defined presentation, as described in
+[Architecture](../design/architecture.md). The earlier pedagogical-level pilot
+and block-graph worksheets are no longer the implementation direction.
 
 ## Concern
 
@@ -163,23 +160,15 @@ Semantic colour coding could distinguish kinds of help:
 This overlaps with ideas such as progressive disclosure, marginalia, adaptive
 hypertext, semantic annotation, and literate derivation.
 
-## Near-Term Recommendation
+## Possible experiment
 
-Do not invest heavily in extending the current one-dimensional PL model yet.
-Keep it as a useful prototype.
-
-The next design experiment should probably use one concept, such as
-`sr.mass_energy_equivalence`, and decompose it into finer-grained items:
-
-1. A small set of core concept/content items.
-2. A few derivation steps.
-3. One or two algebra-support items.
-4. One misconception item.
-5. One graphic or equation item if useful.
-6. Rich typed edges among those items.
-
-Then test which views can be derived from that structure before migrating the
-whole KB.
+If dependency-driven presentation becomes a priority, start with one concept
+and test which views genuinely help learning before extending the KB schema.
+The earlier mass-energy and electromagnetic-field experiments produced acyclic
+ordering graphs, but dependency order differed from natural exposition order.
+Algebra support also proved ambiguous: some steps belong on the main derivation
+path, while others are optional explanation. A future experiment should resolve
+that distinction and retain editorial control over narrative order.
 
 ## Open Questions
 
@@ -193,33 +182,8 @@ whole KB.
    some combination?
 6. How should inline annotations be authored without making CSV editing painful?
 
-## Current Working Answers
+## Future plans
 
-The next experiment should not start by designing edge types in the abstract.
-It should start by writing a deep, detailed account of one concept, then
-breaking that account into fine sections: a paragraph, sentence, derivation
-line, or algebraic support step. The useful edge types should then emerge from
-the actual content.
-
-For now, fine-grained content blocks should remain attached to concepts rather
-than becoming graph-level concepts themselves. The experiment can still link
-blocks to one another internally.
-
-Use dependency order as the primary ordering target. The draft order can be
-preserved as provenance, but should not be treated as the ordering mechanism
-being tested. If that means a familiar concept narrative starts somewhere less
-famous, such as mass-energy equivalence not beginning with \(E=mc^2\), that is
-acceptable for this experiment.
-
-Seeding conceptual depth remains unresolved. Graph-view behaviours can also be
-shelved until the content-block graph experiment has produced something real to
-analyse. The authoring model for inline annotations remains an open issue.
-
-The first concrete experiment is:
-
-- [Mass-Energy Equivalence: Deep Exposition Draft](mee_deep_exposition.md)
-- [MEE Fine-Grained Graph Experiment](mee_fine_grained_graph.md)
-- [Electromagnetic Field: Deep Exposition Draft](em_field_deep_exposition.md)
-- [Electromagnetic Field Fine-Grained Graph Experiment](em_field_fine_grained_graph.md)
-- [Fine-Grained Block Graph Analysis](fine_grained_graph_analysis.md)
-- [Simplified Content Block Strategy](simplified_content_block_strategy.md)
+Keep this deferred until a concrete learning need justifies the extra authoring
+burden. Any renewed experiment should use actual exposition, retain concept-owned
+blocks, and evaluate the result before proposing a production schema change.

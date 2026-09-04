@@ -22,7 +22,7 @@ the missing step.
 
 1. Read the concept's node, edges, blocks, questions, references, and graphic
    notes, plus nearby prerequisite and descendant concepts.
-2. Check `KB_SCHEMA.md`, `NOTATION_GLOSSARY.md`, and the relevant domain
+2. Check the [schema](../design/kb_schema.md), `NOTATION_GLOSSARY.md`, and the relevant domain
    plan or exposition file.
 3. Define the scope boundary. Use `\cref{label}{id}` rather than re-teaching
    material owned by another concept.
@@ -85,8 +85,11 @@ After editing equations:
 ## Expositions And Blocks
 
 Draft coherent prose before or alongside the CSV split. Use the relevant
-exposition file, with one section per concept labelled by display ID, semantic
-ID, and title. Expositions support review; runtime CSV remains authoritative.
+exposition file, with one section per concept labelled by semantic ID and title.
+Expositions are working drafts and review notes; runtime CSV remains authoritative.
+They need not mirror later CSV edits. Before retiring a completed draft, preserve
+any unique scope decisions and unresolved issues. Prefer semantic IDs in draft
+headings so renumbering does not create maintenance work.
 
 Record non-blocking concerns under `Drafting Issues`. Route recurring source,
 notation, and edge concerns to their worklists. Fix an issue immediately only
@@ -122,8 +125,8 @@ Choose the sharpest defensible edge:
 - `REQUIRES`: prerequisite understanding; and
 - `RELATED`: a real connection with no sharper current type.
 
-Use `RELATED` sparingly and record recurring vocabulary gaps in
-`EDGE_TYPE_REVIEW_WORKLIST.md`. Prefer dependencies on earlier concepts and
+Use `RELATED` sparingly. Record concrete unresolved edge questions with the
+relevant concept draft. Prefer dependencies on earlier concepts and
 keep important derivation paths traceable toward foundations.
 
 Taxonomy and teaching prerequisites can coexist: retain `INSTANCE_OF` alongside
@@ -146,6 +149,10 @@ number and Y follows a loose fundamental-to-derived order within it. Every
 concept has one primary same-domain module in `module_members.csv`; modules
 replace the former layer grouping. Keep semantic IDs stable when renumbering.
 
+Keep SR and GR metric and stress-energy concepts separate, with `RELATED`
+links between the corresponding concepts. Give each its own domain-specific
+scope rather than duplicating the exposition.
+
 Link domains through genuine prerequisites. Prefer conservative edge types and
 record uncertain split/merge decisions rather than forcing them during a seed
 pass.
@@ -156,15 +163,17 @@ Workflow statuses are:
   full authoring pass;
 - `prerequisite_support`: reusable supporting mathematics not yet treated as
   a direct learning target; and
-- blank: ordinary authored content.
+- blank: no status recorded; this optional field does not imply completion.
 
-Status is workflow metadata, not part of the subject model.
+Status is workflow metadata, not part of the subject model. Explicit `full`
+status for completed content is planned; see [open issues](../issues.md).
 
 For a multi-module pass, complete one module at a time. Audit planned concepts,
 statuses, block and question counts, module membership, links, and edges; then
 run a domain-filtered build. Re-read the guide when a long pass risks stylistic
-drift and prefer one commit per coherent module. Older domain plans may retain
-their original layer headings; map those batches to current module membership.
+drift and prefer one commit per coherent module. Use current module membership
+for authoring batches; domain plans describe
+subject scope and may group topics differently.
 
 Example filtered build:
 
@@ -181,7 +190,10 @@ conda run -n sr-kg python tools/generate_pyvis.py \
 Use registered sources to support authoring and review without cluttering the
 prose. Link at the most specific useful level: concept, content block, or study
 question. A broad locator is acceptable during drafting if it is marked for
-tightening. Never invent a page or section reference from memory.
+tightening. Never invent a page or section reference from memory. Prefer stable
+section
+names; add page numbers when they improve precision. Keep rendered locators
+compact and record uncertainty in the link note.
 
 ## Study Questions
 
@@ -213,7 +225,9 @@ Keep these four pieces synchronized:
    `tests/test_concept_svg_graphics.py`.
 
 Runtime SVG dispatch uses display IDs such as `GR-6.1`; captions attach to
-semantic IDs such as `gr.riemann_tensor`.
+semantic IDs such as `gr.riemann_tensor`. Consequently renumbering currently
+requires registry changes; migration to semantic-ID dispatch is tracked in
+[open issues](../issues.md).
 
 Provide deterministic 512-by-512 `icon` and `detail` SVGs with non-empty
 accessible titles. The icon needs a clear small-scale silhouette. The detail
@@ -252,3 +266,40 @@ Before finishing a concept or module, confirm:
 - the graphics review sheet has been visually checked;
 - remaining issues are recorded in the appropriate worklist; and
 - real-data tests, the full suite, and the relevant viewer build pass.
+
+## Review Commands
+
+Run commands from the repository root in the `sr-kg` environment. Validation
+errors block a build; warnings need editorial judgement. `--validate` validates
+before generation, and `--validation-strict` also fails on warnings.
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py --data-root data --validate-only
+conda run -n sr-kg python tools/generate_pyvis.py --data-root data --dag-report-only
+conda run -n sr-kg python tools/generate_pyvis.py --data-root data --module-report-only
+```
+
+DAG reports inspect directed relations, cycles, redundancy and dependency chains.
+Module reports inspect boundaries, declared supports, quotient cycles and
+module/member ordering. Use `--dag-relations` or `--module-relations` to select
+relations. See [Modules](../design/modules.md) for the interpretation of these checks.
+
+Partition search is an advisory operation and never rewrites authored membership:
+
+```bash
+conda run -n sr-kg python tools/analyse_module_partitions.py \
+  --data-root data --domain sr --module-counts 4 5 6 --min-size 5 --max-size 15
+```
+
+Evaluate an authored membership file using `--evaluate-members PATH`,
+`--evaluate-only`, and `--show-boundary-edges`. See the tool's `--help` for
+search weights, reproducibility and report output options.
+
+Generate a graphics review sheet with:
+
+```bash
+conda run -n sr-kg python tools/show_graphics.py 'SR-1.*'
+```
+
+Quote wildcard patterns. The default sheet is `/tmp/srkg-graphics-review.html`;
+`--out` selects another location. It includes both graphic variants and captions.
