@@ -156,11 +156,12 @@
         border-radius: 8px;
         background: #f8fafc;
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        max-width: min(250px, calc(100% - 20px));
+        max-width: calc(100% - 20px);
         padding: 7px;
         position: absolute;
         right: 10px;
         top: 10px;
+        width: min(350px, calc(100% - 20px));
         z-index: 20;
       }
       .kg-focus-lens[data-selected-concept=""][data-selected-module=""] {
@@ -197,6 +198,46 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .kg-focus-lens-mode {
+        align-items: center;
+        display: grid;
+        gap: 4px;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 6px;
+      }
+      .kg-focus-lens-mode button,
+      .kg-focus-lens-rule-depth {
+        border: 1px solid #b8c2d4;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font: inherit;
+        min-width: 0;
+        padding: 3px 5px;
+      }
+      .kg-focus-lens-mode button {
+        background: #f8fafc;
+        cursor: pointer;
+      }
+      .kg-focus-lens-mode button[aria-pressed="true"] {
+        background: #dce8f7;
+        border-color: #5b7caa;
+        font-weight: 700;
+      }
+      .kg-focus-lens-rule-depth {
+        font-size: 0.78em;
+        padding: 1px 2px;
+        width: 52px;
+      }
+      .kg-focus-lens-rule-depth:disabled {
+        color: #7b8490;
+        opacity: 0.7;
+      }
+      .kg-focus-lens-rule-toggle {
+        accent-color: #28516c;
+        height: 13px;
+        margin: 0 2px 0 0;
+        width: 13px;
       }
       .kg-focus-lens-map {
         display: grid;
@@ -317,11 +358,37 @@
           "abbrev"
           "state";
       }
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-incoming .kg-focus-lens-relation {
+        grid-template-areas:
+          "toggle"
+          "abbrev"
+          "node"
+          "edge"
+          "depth";
+      }
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-outgoing .kg-focus-lens-relation {
+        grid-template-areas:
+          "edge"
+          "node"
+          "abbrev"
+          "toggle"
+          "depth";
+      }
       .kg-focus-lens-undirected .kg-focus-lens-relation {
         gap: 5px;
         grid-template-areas: "edge node abbrev state";
         grid-template-columns: 28px 18px minmax(22px, auto) minmax(0, 1fr);
         min-height: 19px;
+      }
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-undirected .kg-focus-lens-relation {
+        grid-template-areas: "edge node abbrev toggle depth";
+        grid-template-columns: 28px 18px minmax(22px, auto) 15px 52px;
+      }
+      .kg-focus-lens-rule-toggle {
+        grid-area: toggle;
+      }
+      .kg-focus-lens-rule-depth {
+        grid-area: depth;
       }
       .kg-focus-lens-edge {
         background: var(--edge-color);
@@ -388,6 +455,14 @@
         white-space: nowrap;
       }
       .kg-focus-lens-relation[data-state="none"] {
+        opacity: 0.34;
+      }
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-relation[data-state="none"] {
+        opacity: 1;
+      }
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-relation[data-state="none"] .kg-focus-lens-abbrev,
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-relation[data-state="none"] .kg-focus-lens-node,
+      .kg-focus-lens[data-lens-mode="manual"] .kg-focus-lens-relation[data-state="none"] .kg-focus-lens-edge {
         opacity: 0.34;
       }
       .kg-focus-lens-relation[data-state="none"] .kg-focus-lens-edge::after,
@@ -740,6 +815,17 @@
         white-space: pre-wrap;
         font-family: inherit;
         line-height: 1.45;
+    }
+
+    #info_panel .kg-lens-source {
+        box-shadow: inset 4px 0 0 #5b7caa;
+    }
+
+    #info_panel details.kg-lens-source,
+    #info_panel section.kg-lens-source,
+    #info_panel figure.kg-lens-source,
+    #info_panel div.kg-lens-source {
+        transition: box-shadow 120ms ease-out;
     }
 
     #info_panel .optional-detail {
@@ -1840,13 +1926,8 @@
         background: #f4f4f4;
     }
 
-    #info_panel .edge-colour-swatch {
-        border: 1px solid #777;
-        display: inline-block;
-        height: 10px;
-        margin-right: 6px;
-        vertical-align: -1px;
-        width: 18px;
+    #info_panel .edge-key-relation {
+        text-shadow: 0 0 0 currentColor;
     }
 
     #info_panel .edge-detail {

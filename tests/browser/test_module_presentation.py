@@ -45,7 +45,7 @@ def test_module_corners_and_secondary_count_scale_with_box(browser_graph):
     node = page.evaluate("() => nodes.get('module::test.m02_applications')")
     shorter_side = min(node['moduleFootprintWidth'], node['moduleFootprintHeight'])
     assert node['shapeProperties']['borderRadius'] == pytest.approx(shorter_side * 0.18)
-    assert node['font']['size'] == 48
+    assert node['font']['size'] == 80
     assert '<b>Applications</b>' in node['label']
     assert node['label'].endswith('\n3 concepts')
     assert node['scaling']['label']['drawThreshold'] == 0
@@ -78,7 +78,7 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
     browser_graph.open_control_section('kg_modules_section')
     page.locator('#kg_modules_collapse_all').click()
     before = page.evaluate("() => nodes.get().filter(n => n.isModuleNode).map(n => n.font.size)")
-    assert before == [48, 48]
+    assert before == [80, 80]
     page.locator('#kg_modules_expand_all').click()
     page.evaluate("""() => {
       network.moveNode('2.1', 15000, 18000);

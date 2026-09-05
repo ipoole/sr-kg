@@ -19,8 +19,14 @@ is an artifact, not an alternative authoring source.
 
 The concept graph provides navigation; flat ordered blocks provide the teaching
 narrative. Block kinds express meaning. Folding, reading modes, visual treatment
-and visibility are viewer policy. This keeps authoring manageable without a
-second block-dependency graph or pervasive depth labels.
+and visibility are viewer policy. The focus lens follows the active detail block
+in Auto mode. Manual mode allows arbitrary relation-and-direction traversals at
+one-hop or tree depth and preserves them as concept selection changes. Modules
+containing reached concepts expand temporarily so folding does not hide the
+chosen context. In Full mode, the lens is a foreground overlay: its selected
+edges override the structural-edge filter applied to the background. Focussed
+mode hides that background. This keeps authoring manageable without a second
+block-dependency graph or pervasive depth labels.
 
 Graph and details are peer views of the same KB. Selection and the active detail
 section determine highlighted context: ordinary neighbourhoods or derivation
@@ -36,7 +42,8 @@ Rendering constants and drawing mechanics remain in code.
 ## User state
 
 User notes and personal global-layout overrides live in browser-local storage,
-separate from authored content. Notes support CSV import/export; layout has a
+separate from authored content. Notes can target concept or module sections and
+support backwards-compatible CSV import/export; layout has a
 versioned publication workflow described in [Layout](layout.md). Neither writes
 back to the KB automatically. Browser origin and profile determine which local
 state is available.

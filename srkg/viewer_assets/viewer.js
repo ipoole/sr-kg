@@ -170,6 +170,8 @@
         var activeConceptSectionContext = "neighbourhood";
         var activeConceptSectionTargetId = null;
         var activeConceptSectionLensLabel = "Neighbourhood";
+        var focusLensMode = "auto";
+        var manualFocusLensRules = {};
         var currentConceptTocItems = [];
         var detailScrollSyncTimer = null;
         var detailScrollSyncSuppressedUntil = 0;
@@ -1044,13 +1046,20 @@
         }
 
         function normalizeUserNote(note) {
-          if (!note || !note.conceptId || !note.section) { return null; }
+          if (!note || !note.section) { return null; }
+          var targetType = String(note.targetType || (note.moduleId ? "module" : "concept"));
+          var targetId = String(note.targetId || note.moduleId || note.conceptId || "");
+          if ((targetType !== "concept" && targetType !== "module") || !targetId) {
+            return null;
+          }
           var anchor = note.anchor || {};
           var blockIndex = Number(anchor.blockIndex);
           if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
           return {
             id: String(note.id || makeNoteId()),
-            conceptId: String(note.conceptId),
+            targetType: targetType,
+            targetId: targetId,
+            conceptId: targetType === "concept" ? targetId : "",
             section: String(note.section),
             anchor: {
               blockIndex: Math.floor(blockIndex),
@@ -1067,9 +1076,10 @@
           return "note-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
         }
 
-        function notesForAnchor(conceptId, sectionName, anchorIndex) {
+        function notesForAnchor(targetType, targetId, sectionName, anchorIndex) {
           return userNotesState.notes.filter(function(note) {
-            return note.conceptId === String(conceptId) &&
+            return note.targetType === String(targetType) &&
+              note.targetId === String(targetId) &&
               note.section === String(sectionName) &&
               Number(note.anchor && note.anchor.blockIndex) === Number(anchorIndex);
           }).sort(function(a, b) {
@@ -1083,15 +1093,24 @@
           }) || null;
         }
 
-        function noteConceptLabel(note) {
-          var concept = getConcept(note.conceptId) || {};
-          return note.conceptId + (concept.label ? " " + searchDisplayText(concept.label) : "");
+        function noteTargetLabel(note) {
+          if (note.targetType === "module") {
+            var module = getModule(note.targetId) || {};
+            return "Module " + (module.title || note.targetId);
+          }
+          var concept = getConcept(note.targetId) || {};
+          return conceptDisplayId(note.targetId) +
+            (concept.label ? " " + searchDisplayText(concept.label) : "");
         }
 
         function sortedUserNotes() {
           return userNotesState.notes.slice().sort(function(a, b) {
-            var conceptOrder = compareConceptIds(a.conceptId, b.conceptId);
-            if (conceptOrder !== 0) { return conceptOrder; }
+            var typeOrder = String(a.targetType).localeCompare(String(b.targetType));
+            if (typeOrder !== 0) { return typeOrder; }
+            var targetOrder = a.targetType === "concept"
+              ? compareConceptIds(a.targetId, b.targetId)
+              : compareModules(a.targetId, b.targetId);
+            if (targetOrder !== 0) { return targetOrder; }
             return String(a.createdAt).localeCompare(String(b.createdAt));
           });
         }
@@ -1110,8 +1129,9 @@
 
           listEl.innerHTML = sortedUserNotes().map(function(note) {
             return '<button type="button" class="kg-note-list-item" data-note-id="' +
-              escapeHtml(note.id) + '" data-concept-id="' + escapeHtml(note.conceptId) + '">' +
-              '<span class="kg-note-list-concept">' + escapeHtml(noteConceptLabel(note)) + "</span>" +
+              escapeHtml(note.id) + '" data-target-type="' + escapeHtml(note.targetType) +
+              '" data-target-id="' + escapeHtml(note.targetId) + '">' +
+              '<span class="kg-note-list-concept">' + escapeHtml(noteTargetLabel(note)) + "</span>" +
               '<span class="kg-note-list-title">' + escapeHtml(note.title || "Untitled note") + "</span>" +
               "</button>";
           }).join("");
@@ -1147,15 +1167,17 @@
           });
         }
 
-        function renderNotesAtAnchor(conceptId, sectionName, anchorIndex, afterText) {
+        function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText) {
           var html = "";
-          notesForAnchor(conceptId, sectionName, anchorIndex).forEach(function(note) {
+          notesForAnchor(targetType, targetId, sectionName, anchorIndex).forEach(function(note) {
             html += renderUserNote(note);
           });
           html += '<div class="kg-add-note-row">';
           html += '<button type="button" class="kg-add-note" data-section="' +
             escapeHtml(sectionName) + '" data-anchor-index="' + String(anchorIndex) +
-            '" data-anchor-after="' + escapeHtml(afterText || "") + '">+ note</button>';
+            '" data-anchor-after="' + escapeHtml(afterText || "") +
+            '" data-target-type="' + escapeHtml(targetType) +
+            '" data-target-id="' + escapeHtml(targetId) + '">+ note</button>';
           html += "</div>";
           return html;
         }
@@ -1286,10 +1308,10 @@
           var html = '<h3 id="' + escapeHtml(contentAnchorId(conceptId, title)) + '">' +
             escapeHtml(title) + "</h3>";
           html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
-          html += renderNotesAtAnchor(conceptId, title, 0, "");
+          html += renderNotesAtAnchor("concept", conceptId, title, 0, "");
           blocks.forEach(function(block, index) {
             html += '<div class="concept-line">' + (block.text ? renderConceptText(block.text) : "&nbsp;") + "</div>";
-            html += renderNotesAtAnchor(conceptId, title, index + 1, block.text.slice(0, 160));
+            html += renderNotesAtAnchor("concept", conceptId, title, index + 1, block.text.slice(0, 160));
           });
           html += "</div>";
           return html;
@@ -1317,11 +1339,13 @@
           return renderBodyLines(normalizeStudyText(text), className);
         }
 
-        function createUserNote(conceptId, sectionName, anchorIndex, afterText) {
+        function createUserNote(targetType, targetId, sectionName, anchorIndex, afterText) {
           var now = new Date().toISOString();
           var note = {
             id: makeNoteId(),
-            conceptId: String(conceptId),
+            targetType: String(targetType),
+            targetId: String(targetId),
+            conceptId: targetType === "concept" ? String(targetId) : "",
             section: String(sectionName),
             anchor: {
               blockIndex: Number(anchorIndex) || 0,
@@ -1408,6 +1432,9 @@
         function notesToCsv() {
           var rows = [[
             "note_id",
+            "target_type",
+            "target_id",
+            "target_label",
             "concept_id",
             "concept_label",
             "section",
@@ -1419,10 +1446,13 @@
             "updated_at"
           ]];
           userNotesState.notes.forEach(function(note) {
-            var concept = getConcept(note.conceptId) || {};
+            var concept = note.targetType === "concept" ? (getConcept(note.targetId) || {}) : {};
             rows.push([
               note.id,
-              note.conceptId,
+              note.targetType,
+              note.targetId,
+              noteTargetLabel(note),
+              note.targetType === "concept" ? note.targetId : "",
               concept.label || "",
               note.section,
               String((note.anchor && note.anchor.blockIndex) || 0),
@@ -1508,15 +1538,19 @@
           var imported = 0;
           rows.slice(1).forEach(function(row) {
             var conceptId = value(row, "concept_id").trim();
+            var targetType = value(row, "target_type").trim() || "concept";
+            var targetId = value(row, "target_id").trim() || conceptId;
             var section = value(row, "section").trim();
-            if (!conceptId || !section) { return; }
+            if (!targetId || !section || (targetType !== "concept" && targetType !== "module")) { return; }
             var noteId = value(row, "note_id").trim() || makeNoteId();
             var blockIndex = Number(value(row, "anchor_index"));
             if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
             var note = findUserNote(noteId);
             var payload = {
               id: noteId,
-              conceptId: conceptId,
+              targetType: targetType,
+              targetId: targetId,
+              conceptId: targetType === "concept" ? targetId : "",
               section: section,
               anchor: {
                 blockIndex: Math.floor(blockIndex),
@@ -1863,6 +1897,9 @@
           activeConceptSectionLensLabel = "Neighbourhood";
           if (activeNodeId && getConcept(activeNodeId)) {
             showConcept(activeNodeId, {preserveSectionContext: true});
+            applyCurrentView();
+          } else if (activeModuleId && getModule(activeModuleId)) {
+            showModule(activeModuleId, {preserveSectionContext: true});
             applyCurrentView();
           }
           updateDetailsViewControls();
@@ -2482,6 +2519,11 @@
             blockKinds: null,
             questionTypes: null
           },
+          folded: {
+            label: "Folded",
+            blockKinds: null,
+            questionTypes: null
+          },
           core: {
             label: "Core",
             blockKinds: {
@@ -2559,6 +2601,27 @@
 
         function filteredContentBlocks(concept) {
           return conceptContentBlocks(concept).filter(blockVisibleInReadingMode);
+        }
+
+        function openTopLevelDetailIds(panel) {
+          if (!panel || panel.getAttribute("data-reading-mode") !== "folded") {
+            return [];
+          }
+          return Array.prototype.map.call(
+            panel.querySelectorAll(":scope > details[open][id]"),
+            function(section) { return section.id; }
+          );
+        }
+
+        function applyReadingModeSectionState(panel, openIds) {
+          if (!panel) { return; }
+          panel.setAttribute("data-reading-mode", readingMode);
+          if (readingMode !== "folded") { return; }
+          var retained = {};
+          (openIds || []).forEach(function(id) { retained[id] = true; });
+          panel.querySelectorAll(":scope > details").forEach(function(section) {
+            section.open = Boolean(section.id && retained[section.id]);
+          });
         }
 
         function contentBlockPolicyFor(kind) {
@@ -2728,12 +2791,13 @@
           }
           var blocks = splitConceptBlocks(block.body);
           var bodyHtml = "";
-          bodyHtml += renderNotesAtAnchor(conceptId, title, 0, "");
+          bodyHtml += renderNotesAtAnchor("concept", conceptId, title, 0, "");
           blocks.forEach(function(textBlock, index) {
             bodyHtml += '<div class="concept-line">' +
               (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
               "</div>";
             bodyHtml += renderNotesAtAnchor(
+              "concept",
               conceptId,
               title,
               index + 1,
@@ -3157,7 +3221,7 @@
         function fittedModuleLabel(title, memberCount, width, height) {
           var context = document.createElement("canvas").getContext("2d");
           var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
-          var countFontSize = 48; // Fixed graph-space size, independent of title and box.
+          var countFontSize = 80; // Fixed graph-space size, independent of title and box.
           function linesAt(size) {
             context.font = "bold " + size + "px Arial";
             var lines = [], line = "";
@@ -3458,6 +3522,32 @@
           return true;
         }
 
+        function expandedModuleAtCanvasPoint(point) {
+          if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+            return null;
+          }
+          var matches = moduleIdsWithMembers().filter(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) { return false; }
+            var hasVisibleMember = moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
+              var node = nodes.get(conceptId);
+              return node && !node.hidden;
+            });
+            if (!hasVisibleMember) { return false; }
+            var bounds = moduleFootprint(moduleId);
+            return point.x >= bounds.left && point.x <= bounds.right &&
+              point.y >= bounds.top && point.y <= bounds.bottom;
+          });
+          return matches.length === 1 ? matches[0] : null;
+        }
+
+        function collapseExpandedModuleAtDomPoint(point) {
+          if (!network.DOMtoCanvas) { return false; }
+          var moduleId = expandedModuleAtCanvasPoint(network.DOMtoCanvas(point));
+          if (!moduleId) { return false; }
+          setSelectedModuleFoldState(moduleId, true);
+          return true;
+        }
+
         /*
          * Real double-clicks can fire a normal click first. That click may refit
          * the graph and move the target before the browser dblclick arrives, so
@@ -3618,6 +3708,19 @@
           var sectionRole = policy.sectionRole || DetailSectionRole.CONTENT;
           var anchorId = contentAnchorId(moduleId, title);
           var bodyClass = "concept-body content-block-body";
+          var bodyHtml = renderNotesAtAnchor("module", moduleId, title, 0, "");
+          splitConceptBlocks(block.body).forEach(function(textBlock, index) {
+            bodyHtml += '<div class="concept-line">' +
+              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+              "</div>";
+            bodyHtml += renderNotesAtAnchor(
+              "module",
+              moduleId,
+              title,
+              index + 1,
+              String(textBlock.text || "").slice(0, 160)
+            );
+          });
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
             if (policy.note) {
@@ -3629,16 +3732,10 @@
               sectionRole: sectionRole,
               summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
-              bodyHtml: renderConceptText(block.body)
+              bodyHtml: bodyHtml
             });
           }
 
-          var bodyHtml = "";
-          splitConceptBlocks(block.body).forEach(function(textBlock) {
-            bodyHtml += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-          });
           return renderFoldDown({
             anchorId: anchorId,
             className: contentBlockClassName(block, policy) + " module-content-block",
@@ -3779,6 +3876,8 @@
           hideConceptPreview(true);
           var module = getModule(moduleId);
           if (!module) { return; }
+          var panel = document.getElementById("info_panel");
+          var retainedOpenSections = openTopLevelDetailIds(panel);
           var lensLabel = selectedModuleIsFolded(moduleId) ? "Folded module" : "Module overview";
           activeConceptSectionContext = "module-overview";
           activeConceptSectionLensLabel = lensLabel;
@@ -3786,8 +3885,6 @@
           currentConceptTocItems = tocItems.slice();
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
-          html += '<p class="concept-module-context">Module - ' +
-            escapeHtml(moduleDomainLabel(module.domain)) + "</p>";
           filteredModuleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
@@ -3796,17 +3893,20 @@
           html += renderModuleBoundarySection(moduleId, "outgoing", "Outgoing boundary links");
           html += renderModuleSupports(moduleId, module);
 
-          var panel = document.getElementById("info_panel");
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
           panel.innerHTML = html;
+          applyReadingModeSectionState(
+            panel,
+            moduleChanged ? [] : retainedOpenSections
+          );
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
-          panel.classList.toggle("kg-note-editing", false);
+          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           openUserNoteId = null;
           var initialItem = initialTocItem(tocItems);
           setActiveConceptSection(
@@ -3832,6 +3932,7 @@
               renderCaptionText(graphicCaption) +
               "</figcaption>";
           }
+          bodyHtml += renderNotesAtAnchor("concept", conceptId, "Graphic", 0, graphicCaption);
           return renderFoldDown({
             anchorId: contentAnchorId(conceptId, "Graphic"),
             className: "concept-figure",
@@ -3885,6 +3986,9 @@
             link.classList.remove("active");
             link.removeAttribute("aria-current");
           });
+          panel.querySelectorAll(".kg-lens-source").forEach(function(section) {
+            section.classList.remove("kg-lens-source");
+          });
           if (!targetId) { return; }
           var link = panel.querySelector(
             '.concept-toc-link[data-toc-target="' + cssAttributeValueEscape(targetId) + '"]'
@@ -3892,10 +3996,76 @@
           if (!link) { return; }
           link.classList.add("active");
           link.setAttribute("aria-current", "true");
+          var target = document.getElementById(targetId);
+          if (target && focusLensMode === "auto") {
+            target.classList.add("kg-lens-source");
+            if (/^H[1-6]$/.test(target.tagName) && target.nextElementSibling) {
+              target.nextElementSibling.classList.add("kg-lens-source");
+            }
+          }
         }
 
         function lensLabelForContext(context) {
           return lensLabelForSectionRole(sectionRoleForGraphContext(context));
+        }
+
+        function effectiveFocusLensContext() {
+          return focusLensMode === "manual" && activeNodeId && getConcept(activeNodeId)
+            ? "manual"
+            : activeConceptSectionContext;
+        }
+
+        function effectiveFocusLensLabel() {
+          return focusLensMode === "manual" && activeNodeId && getConcept(activeNodeId)
+            ? "Custom context"
+            : (activeConceptSectionLensLabel || lensLabelForContext(activeConceptSectionContext));
+        }
+
+        function manualFocusLensRuleKey(relation, direction) {
+          return String(relation) + "::" + String(direction);
+        }
+
+        function setManualFocusLensRule(relation, direction, fields) {
+          var key = manualFocusLensRuleKey(relation, direction);
+          var current = manualFocusLensRules[key] || {enabled: false, depth: "immediate"};
+          manualFocusLensRules[key] = {
+            enabled: fields.enabled === undefined ? current.enabled : Boolean(fields.enabled),
+            depth: fields.depth === "tree" ? "tree" :
+              fields.depth === "immediate" ? "immediate" : current.depth
+          };
+          if (focusLensMode === "manual") {
+            applyCurrentView({preserveCamera: true});
+            updateFocusLensDisplay();
+          }
+        }
+
+        function seedManualFocusLensRules() {
+          var seeded = {};
+          orderedRelations().forEach(function(relation) {
+            var directions = relationIsDirected(relation)
+              ? ["incoming", "outgoing"]
+              : ["undirected"];
+            directions.forEach(function(direction) {
+              var state = automaticFocusLensRelationState(relation, direction).state;
+              seeded[manualFocusLensRuleKey(relation, direction)] = {
+                enabled: state !== "none",
+                depth: state === "tree" ? "tree" : "immediate"
+              };
+            });
+          });
+          manualFocusLensRules = seeded;
+        }
+
+        function setFocusLensMode(mode) {
+          mode = mode === "manual" ? "manual" : "auto";
+          if (mode === focusLensMode) { return; }
+          if (mode === "manual") {
+            seedManualFocusLensRules();
+          }
+          focusLensMode = mode;
+          updateConceptTocActive(activeConceptSectionTargetId);
+          applyCurrentView({preserveCamera: true});
+          updateFocusLensDisplay();
         }
 
         function setActiveConceptSection(targetId, context, options) {
@@ -3912,8 +4082,12 @@
           if (targetChanged) {
             updateConceptTocActive(nextTargetId);
           }
-          if (!options.skipGraphUpdate && (contextChanged || options.forceGraphUpdate)) {
-            applyCurrentView();
+          if (
+            focusLensMode === "auto" &&
+            !options.skipGraphUpdate &&
+            (contextChanged || options.forceGraphUpdate)
+          ) {
+            applyCurrentView({preserveCamera: true});
           }
           if (targetChanged || contextChanged || labelChanged || options.forceGraphUpdate) {
             updateFocusLensDisplay();
@@ -4013,7 +4187,9 @@
 
         function noteTitlesForConcept(nodeId) {
           return userNotesState.notes
-            .filter(function(note) { return note.conceptId === String(nodeId); })
+            .filter(function(note) {
+              return note.targetType === "concept" && note.targetId === String(nodeId);
+            })
             .map(function(note) { return note.title || "Untitled note"; })
             .filter(Boolean);
         }
@@ -4435,12 +4611,13 @@
           return item.directed === true;
         }
 
-        function setEdgeHidden(edge, hidden) {
+        function setEdgeHidden(edge, hidden, options) {
+          options = options || {};
           // Full graph includes the highlighted-selection variant. Filter before
           // folding so projected counts contain only visible structural edges.
           var fullGraph = graphViewIs(currentView, GraphViewMode.ALL) ||
             graphViewIs(currentView, GraphViewMode.HIGHLIGHT);
-          hidden = hidden || (fullGraph &&
+          hidden = hidden || (!options.lensForeground && fullGraph &&
             ["REQUIRES", "DERIVES_FROM", "CONSTRUCTED_FROM"].indexOf(edgeRelation(edge)) === -1);
           edge.hidden = hidden;
           if (hidden) {
@@ -4659,10 +4836,62 @@
           return context;
         }
 
+        function manualSectionGraphContext(nodeId) {
+          var context = emptySectionGraphContext(nodeId, "custom traversal");
+          Object.keys(manualFocusLensRules).forEach(function(key) {
+            var rule = manualFocusLensRules[key];
+            if (!rule || !rule.enabled) { return; }
+            var state = rule.depth;
+            var parts = key.split("::");
+            var relation = parts[0];
+            var direction = parts[1];
+            var queue = [String(nodeId)];
+            var visited = {};
+            visited[String(nodeId)] = true;
+            while (queue.length > 0) {
+              var current = queue.shift();
+              allEdges.forEach(function(edge) {
+                if (edgeRelation(edge) !== relation) { return; }
+                var from = String(edge.from);
+                var to = String(edge.to);
+                var next = null;
+                if (direction === "outgoing" && from === current) { next = to; }
+                if (direction === "incoming" && to === current) { next = from; }
+                if (direction === "undirected") {
+                  if (from === current) { next = to; }
+                  else if (to === current) { next = from; }
+                }
+                if (!next || !getConcept(next)) { return; }
+                context.keep[next] = true;
+                context.edgeKeep[edge.id] = true;
+                if (state === "tree" && !visited[next]) {
+                  visited[next] = true;
+                  queue.push(next);
+                }
+              });
+              if (state === "immediate") { break; }
+            }
+          });
+          return context;
+        }
+
+        function temporarilyExpandModulesForManualContext(conceptIds) {
+          (conceptIds || []).forEach(function(conceptId) {
+            var moduleId = moduleIdForConcept(conceptId);
+            if (!moduleId || !selectedModuleIsFolded(moduleId)) { return; }
+            unfoldModule(moduleId, {restoreMembers: false});
+            temporarilyExpandedModules[String(moduleId)] = true;
+          });
+        }
+
         function sectionGraphContext(nodeId) {
           nodeId = String(nodeId);
+          if (focusLensMode === "manual") {
+            return manualSectionGraphContext(nodeId);
+          }
+          var lensContext = effectiveFocusLensContext();
 
-          if (activeConceptSectionContext === "derived-from") {
+          if (lensContext === "derived-from") {
             var sourceContext = emptySectionGraphContext(nodeId, "derived-from ancestry");
             derivedFromEdgesFor(nodeId, derivedFromFullTreeEnabled).forEach(function(item) {
               sourceContext.keep[String(item.nodeId)] = true;
@@ -4671,7 +4900,7 @@
             return sourceContext;
           }
 
-          if (activeConceptSectionContext === "where-used") {
+          if (lensContext === "where-used") {
             var usedContext = emptySectionGraphContext(nodeId, "derived-from descendants");
             derivedFromThisEntriesFor(nodeId, backlinksFullTreeEnabled).forEach(function(item) {
               usedContext.keep[String(item.nodeId)] = true;
@@ -4680,7 +4909,7 @@
             return usedContext;
           }
 
-          var role = sectionRoleForGraphContext(activeConceptSectionContext);
+          var role = sectionRoleForGraphContext(lensContext);
           var relationContext = relationSectionGraphContext(nodeId, role);
           if (relationContext) {
             return relationContext;
@@ -4852,18 +5081,18 @@
         }
 
         function focusLensContextLabel() {
-          return activeConceptSectionLensLabel ||
-            lensLabelForContext(activeConceptSectionContext || "neighbourhood");
+          return effectiveFocusLensLabel();
         }
 
         function relationIsDirected(relation) {
           return edgeKey[relation] && edgeKey[relation].directed === true;
         }
 
-        function focusLensRelationState(relation, direction) {
+        function automaticFocusLensRelationState(relation, direction) {
           relation = String(relation || "");
           direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
-          if (activeConceptSectionContext === "derived-from") {
+          var lensContext = activeConceptSectionContext;
+          if (lensContext === "derived-from") {
             var derivedFromRelation = relationForSectionRole(DetailSectionRole.DERIVED_FROM);
             var derivedFromDirection = focusDirectionForSectionRole(DetailSectionRole.DERIVED_FROM);
             return {
@@ -4873,7 +5102,7 @@
               direction: direction
             };
           }
-          if (activeConceptSectionContext === "where-used") {
+          if (lensContext === "where-used") {
             var whereUsedRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
             var whereUsedDirection = focusDirectionForSectionRole(DetailSectionRole.WHERE_USED);
             return {
@@ -4883,7 +5112,7 @@
               direction: direction
             };
           }
-          var role = sectionRoleForGraphContext(activeConceptSectionContext);
+          var role = sectionRoleForGraphContext(lensContext);
           var policy = detailSectionGraphPolicyFor(role);
           if (policy.relation && policy.focusDirection) {
             return {
@@ -4897,6 +5126,22 @@
             state: "immediate",
             direction: direction
           };
+        }
+
+        function focusLensRelationState(relation, direction) {
+          direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
+          if (focusLensMode === "manual") {
+            var rule = manualFocusLensRules[manualFocusLensRuleKey(relation, direction)] || {
+              enabled: false,
+              depth: "immediate"
+            };
+            return {
+              state: rule.enabled ? rule.depth : "none",
+              configuredDepth: rule.depth,
+              direction: direction
+            };
+          }
+          return automaticFocusLensRelationState(relation, direction);
         }
 
         function focusLensStateLabel(state) {
@@ -4916,20 +5161,39 @@
 
         function focusLensRelationHtml(relation, direction) {
           var relationLens = focusLensRelationState(relation, direction);
-          return '<div class="kg-focus-lens-relation kg-focus-lens-dir-' +
+          var interactive = focusLensMode === "manual";
+          var html = '<div class="kg-focus-lens-relation kg-focus-lens-dir-' +
             escapeHtml(relationLens.direction) + '" data-relation="' +
             escapeHtml(relation) + '" data-state="' +
             escapeHtml(relationLens.state) + '" data-direction="' +
             escapeHtml(relationLens.direction) + '" style="--edge-color:' +
             escapeHtml(relationColour(relation)) + '" title="' +
-            escapeHtml(focusLensRelationTitle(relation, relationLens)) + '">' +
+            escapeHtml(focusLensRelationTitle(relation, relationLens)) + '">';
+          if (interactive) {
+            html += '<input class="kg-focus-lens-rule-toggle" type="checkbox"' +
+              (relationLens.state === "none" ? "" : " checked") +
+              ' aria-label="Include ' + escapeHtml(relationDisplayLabel(relation)) + " " +
+              escapeHtml(relationLens.direction) + '" data-relation="' + escapeHtml(relation) +
+              '" data-direction="' + escapeHtml(relationLens.direction) + '">';
+          }
+          html +=
             '<span class="kg-focus-lens-abbrev">' +
             escapeHtml(relationAbbreviation(relation)) + '</span>' +
             '<span class="kg-focus-lens-node"></span>' +
-            '<span class="kg-focus-lens-edge"></span>' +
-            '<span class="kg-focus-lens-state">' +
-            escapeHtml(focusLensStateLabel(relationLens.state)) + '</span>' +
-            '</div>';
+            '<span class="kg-focus-lens-edge"></span>';
+          if (interactive) {
+            html += '<select class="kg-focus-lens-rule-depth" aria-label="Traversal depth"' +
+              ' data-relation="' + escapeHtml(relation) + '" data-direction="' +
+              escapeHtml(relationLens.direction) + '">' +
+              '<option value="immediate"' +
+              (relationLens.configuredDepth === "immediate" ? " selected" : "") + '>1-hop</option>' +
+              '<option value="tree"' +
+              (relationLens.configuredDepth === "tree" ? " selected" : "") + '>tree</option></select>';
+          } else {
+            html += '<span class="kg-focus-lens-state">' +
+              escapeHtml(focusLensStateLabel(relationLens.state)) + '</span>';
+          }
+          return html + '</div>';
         }
 
         function focusLensConceptLabel(nodeId) {
@@ -4976,7 +5240,8 @@
             "data-boundary-count",
             selectedModuleContext ? String(selectedModuleContext.boundaryCount) : ""
           );
-          lensEl.setAttribute("data-lens-context", activeConceptSectionContext || "neighbourhood");
+          lensEl.setAttribute("data-lens-mode", focusLensMode);
+          lensEl.setAttribute("data-lens-context", effectiveFocusLensContext() || "neighbourhood");
           lensEl.setAttribute("data-lens-label", lensLabel);
           lensEl.setAttribute("data-background", background);
 
@@ -4984,6 +5249,11 @@
             '<span class="kg-focus-lens-title">Focus lens</span>' +
             '<span class="kg-focus-lens-background">' + escapeHtml(focusLensBackgroundLabel()) + '</span>' +
             '</div>';
+          html += '<div class="kg-focus-lens-mode" aria-label="Focus lens mode">' +
+            '<button type="button" data-lens-mode="auto" aria-pressed="' +
+            (focusLensMode === "auto" ? "true" : "false") + '">Auto</button>' +
+            '<button type="button" data-lens-mode="manual" aria-pressed="' +
+            (focusLensMode === "manual" ? "true" : "false") + '">Manual</button></div>';
           html += '<div class="kg-focus-lens-purpose">' + escapeHtml(lensLabel) + '</div>';
 
           if (selectedModule) {
@@ -5051,7 +5321,8 @@
           lensEl.innerHTML = html;
         }
 
-        function applyCurrentView() {
+        function applyCurrentView(options) {
+          options = options || {};
           if (graphViewIs(currentView, GraphViewMode.HIDE)) {
             kgHideGraph(true);
             return;
@@ -5064,7 +5335,11 @@
             return;
           }
           if (graphViewIs(currentView, GraphViewMode.HIGHLIGHT) && graphViewHasNode(currentView)) {
-            kgHighlight(currentView.nodeId, true);
+            applySectionGraphView(currentView.nodeId, {
+              compact: false,
+              preserveStatus: true,
+              preserveCamera: options.preserveCamera === true
+            });
             return;
           }
           if (graphViewIs(currentView, GraphViewMode.FOCUSED) && graphViewHasNode(currentView)) {
@@ -5593,6 +5868,8 @@
           );
           currentConceptTocItems = tocItems.slice();
 
+          var panel = document.getElementById("info_panel");
+          var retainedOpenSections = openTopLevelDetailIds(panel);
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
           html += renderConceptGraphic(nodeId, concept);
@@ -5653,10 +5930,13 @@
             html += "</ul>";
             html += "</details>";
           }
-          var panel = document.getElementById("info_panel");
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           panel.innerHTML = html;
+          applyReadingModeSectionState(
+            panel,
+            conceptChanged ? [] : retainedOpenSections
+          );
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -5698,7 +5978,6 @@
           html += '<table class="edge-key-table">';
           html += "<thead><tr>" +
             "<th>Relation</th>" +
-            "<th>Colour</th>" +
             "<th>Direction</th>" +
             "<th>Category</th>" +
             "<th>Meaning</th>" +
@@ -5709,9 +5988,8 @@
             var item = edgeKey[relation] || {};
             var colour = item.colour || "#999999";
             html += "<tr>" +
-              "<td><strong>" + escapeHtml(relation) + "</strong></td>" +
-              '<td><span class="edge-colour-swatch" style="background:' + escapeHtml(colour) + '"></span>' +
-              escapeHtml(colour) + "</td>" +
+              '<td><strong class="edge-key-relation" style="color:' + escapeHtml(colour) + '">' +
+              escapeHtml(relation) + "</strong></td>" +
               "<td>" + (item.directed ? "directed" : "undirected") + "</td>" +
               "<td>" + escapeHtml(item.category || "") + "</td>" +
               "<td>" + escapeHtml(item.meaning || "") + "</td>" +
@@ -6607,6 +6885,9 @@
           var visibleIds = Object.keys(originalNodes).filter(function(id) {
             return context.keep[id];
           });
+          if (focusLensMode === "manual") {
+            temporarilyExpandModulesForManualContext(visibleIds);
+          }
           nodes.update(allNodes.map(function(n) {
             var o = baseNodeForRender(n.id);
             var inContext = context.keep[String(n.id)] === true;
@@ -6631,7 +6912,7 @@
             if (sectionContextEdgeHighlighted(e, context)) {
               o.color = Object.assign({}, o.color || {}, {opacity: 0.95});
               o.width = Math.max(Number(o.width) || 0, 3.0);
-              return setEdgeHidden(o, false);
+              return setEdgeHidden(o, false, {lensForeground: true});
             } else if (compact) {
               return setEdgeHidden(o, true);
             } else {
@@ -6650,6 +6931,8 @@
           network.unselectAll();
           if (compact) {
             fitNodesToAvailableRect(fitIds, {maxScale: 0.85, animation: false});
+          } else if (options.preserveCamera) {
+            updateNodeLabelPositions();
           } else if (foldedModuleIdList().length > 0) {
             fitNodesToAvailableRect(fitIds, {maxScale: 0.72, animation: false});
           } else {
@@ -7002,7 +7285,7 @@
         network.on("doubleClick", function(params) {
           if (!params.nodes || params.nodes.length === 0) { return; }
           if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
-          toggleModuleFoldForGraphNode(params.nodes[0]);
+          handleGraphNodeDoubleClick(params.nodes[0]);
         });
 
         network.on("hoverNode", function(params) {
@@ -7074,7 +7357,20 @@
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
           }) || recentGraphClickNodeId(800);
+          if (nativeDoubleClickIsSuppressed(nodeId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
           if (toggleModuleFoldForGraphNode(nodeId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          if (collapseExpandedModuleAtDomPoint({
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+          })) {
             e.preventDefault();
             e.stopPropagation();
           }
@@ -7153,6 +7449,20 @@
         document.getElementById("kg_focus_lens_toggle").addEventListener("click", function() {
           setFocusLensVisible(!focusLensVisible);
         });
+        document.getElementById("kg_focus_lens").addEventListener("click", function(e) {
+          var modeButton = e.target.closest("button[data-lens-mode]");
+          if (!modeButton) { return; }
+          setFocusLensMode(modeButton.getAttribute("data-lens-mode"));
+        });
+        document.getElementById("kg_focus_lens").addEventListener("change", function(e) {
+          var relation = e.target.getAttribute("data-relation");
+          var direction = e.target.getAttribute("data-direction");
+          if (e.target.classList.contains("kg-focus-lens-rule-toggle")) {
+            setManualFocusLensRule(relation, direction, {enabled: e.target.checked});
+          } else if (e.target.classList.contains("kg-focus-lens-rule-depth")) {
+            setManualFocusLensRule(relation, direction, {depth: e.target.value});
+          }
+        });
         updateFocusLensVisibilityControls();
 
         document.getElementById("kg_splash_dismiss").addEventListener("click", dismissSplash);
@@ -7172,10 +7482,15 @@
 
           e.preventDefault();
           var note = findUserNote(item.getAttribute("data-note-id"));
-          var conceptId = item.getAttribute("data-concept-id");
-          if (!note || !getConcept(conceptId)) { return; }
+          var targetType = item.getAttribute("data-target-type");
+          var targetId = item.getAttribute("data-target-id");
+          if (!note) { return; }
           openUserNoteId = note.id;
-          focusConcept(conceptId, "Selected");
+          if (targetType === "module" && getModule(targetId)) {
+            focusModule(targetId, "Selected");
+          } else if (targetType === "concept" && getConcept(targetId)) {
+            focusConcept(targetId, "Selected");
+          }
         });
 
         document.getElementById("kg_notes_import_button").addEventListener("click", function() {
@@ -7359,9 +7674,10 @@
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled || !activeNodeId) { return; }
+            if (!noteEditingEnabled) { return; }
             createUserNote(
-              activeNodeId,
+              addNoteButton.getAttribute("data-target-type") || "concept",
+              addNoteButton.getAttribute("data-target-id") || activeNodeId,
               addNoteButton.getAttribute("data-section") || "",
               Number(addNoteButton.getAttribute("data-anchor-index")) || 0,
               addNoteButton.getAttribute("data-anchor-after") || ""

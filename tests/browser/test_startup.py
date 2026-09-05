@@ -231,7 +231,7 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
             moduleNode.heightConstraint.minimum === moduleNode.moduleFootprintHeight &&
             moduleNode.borderWidth <= 2 &&
             moduleNode.font.bold.size >= 28 &&
-            moduleNode.font.size === 48 &&
+            moduleNode.font.size === 80 &&
             moduleNode.label === "<b>Applications</b>\\n3 concepts";
         }""",
         module_node_id,
@@ -619,16 +619,16 @@ def test_double_clicking_folded_module_node_expands_it(browser_graph):
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
 
-    page.evaluate(
+    point = page.evaluate(
         """moduleNodeId => {
-          network.emit("doubleClick", {
-            nodes: [moduleNodeId],
-            edges: [],
-            pointer: {DOM: {x: 0, y: 0}, canvas: {x: 0, y: 0}}
-          });
+          const position = network.getPositions([moduleNodeId])[moduleNodeId];
+          const dom = network.canvasToDOM(position);
+          const rect = network.canvas.frame.canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
         }""",
         module_node_id,
     )
+    page.mouse.dblclick(point["x"], point["y"])
 
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
     assert page.evaluate(
@@ -662,6 +662,44 @@ def test_double_clicking_concept_node_collapses_owning_module(browser_graph):
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId).hidden === false""", module_node_id)
     assert page.evaluate("""() => nodes.get("2.1").hidden === true""")
     assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Folded"
+
+
+@pytest.mark.browser
+def test_double_clicking_empty_space_inside_expanded_module_collapses_it(browser_graph):
+    page = browser_graph.page
+    module_id = "test.m02_applications"
+    module_node_id = "module::" + module_id
+
+    point = page.evaluate(
+        """moduleId => {
+          const bounds = kgModuleFootprint(moduleId);
+          const canvas = network.canvas.frame.canvas;
+          const rect = canvas.getBoundingClientRect();
+          const steps = 12;
+          for (let row = 1; row < steps; row += 1) {
+            for (let column = 1; column < steps; column += 1) {
+              const canvasPoint = {
+                x: bounds.left + bounds.width * column / steps,
+                y: bounds.top + bounds.height * row / steps
+              };
+              const dom = network.canvasToDOM(canvasPoint);
+              if (!network.getNodeAt(dom)) {
+                return {x: rect.left + dom.x, y: rect.top + dom.y};
+              }
+            }
+          }
+          return null;
+        }""",
+        module_id,
+    )
+    assert point is not None
+
+    page.mouse.dblclick(point["x"], point["y"])
+
+    assert page.evaluate("id => nodes.get(id).hidden === false", module_node_id)
+    assert page.evaluate("() => nodes.get('2.1').hidden === true")
+    assert page.locator("#info_panel h2").inner_text() == "Applications"
+    assert "Folded Applications module" in page.locator("#kg_status").inner_text()
 
 
 @pytest.mark.browser
@@ -1039,6 +1077,30 @@ def test_module_details_show_boundary_link_sections(browser_graph):
 
 
 @pytest.mark.browser
+def test_module_details_omit_redundant_domain_line(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+
+    assert page.locator("#info_panel .module-domain-label").inner_text() == "TEST"
+    assert page.locator("#info_panel .concept-module-context").count() == 0
+
+
+@pytest.mark.browser
+def test_edge_key_colours_relation_name_without_colour_column(browser_graph):
+    page = browser_graph.page
+
+    page.evaluate("() => kgShowEdgeKey()")
+
+    headings = page.locator("#info_panel .edge-key-table th").all_inner_texts()
+    assert headings == ["Relation", "Direction", "Category", "Meaning", "Example"]
+    relation = page.locator("#info_panel .edge-key-relation").first
+    assert relation.inner_text()
+    assert relation.evaluate("el => getComputedStyle(el).color") != "rgb(0, 0, 0)"
+
+
+@pytest.mark.browser
 def test_concept_masthead_module_chip_opens_module(browser_graph):
     page = browser_graph.page
 
@@ -1390,12 +1452,17 @@ def test_concept_toc_marks_active_detail_section(browser_graph):
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
     )
     assert graphic_link.evaluate("el => el.classList.contains('active')")
+    graphic = page.locator("#info_panel #kg-toc-2-2-graphic")
+    assert graphic.evaluate("el => el.classList.contains('kg-lens-source')")
 
     warning_link.click()
 
     assert warning_link.evaluate("el => el.classList.contains('active')")
     assert warning_link.evaluate("el => el.getAttribute('aria-current')") == "true"
     assert not graphic_link.evaluate("el => el.classList.contains('active')")
+    warning = page.locator("#info_panel #kg-toc-2-2-gamma-warning")
+    assert warning.evaluate("el => el.classList.contains('kg-lens-source')")
+    assert not graphic.evaluate("el => el.classList.contains('kg-lens-source')")
 
 
 @pytest.mark.browser
@@ -1818,6 +1885,42 @@ def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
     assert "Gamma short-answer question?" in questions_text
     assert "Gamma calculation question?" not in questions_text
     assert "Gamma multiple-choice question?" not in questions_text
+
+
+@pytest.mark.browser
+def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    page.locator("#kg_details_view_select").select_option("folded")
+
+    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "folded"
+    panel = page.locator("#info_panel")
+    assert panel.locator(":scope > details").count() > 4
+    assert panel.locator(":scope > details[open]").count() == 0
+    assert page.locator("#info_panel").inner_text().find("Gamma warning") >= 0
+
+    definition = page.locator("#info_panel #kg-toc-2-2-definition")
+    definition.locator(":scope > summary").click()
+    assert definition.evaluate("el => el.open")
+
+    page.locator("#kg_notes_edit_toggle").evaluate(
+        "el => { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); }"
+    )
+    assert page.locator("#info_panel #kg-toc-2-2-definition").evaluate("el => el.open")
+
+
+@pytest.mark.browser
+def test_folded_reading_mode_closes_module_sections(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator("#kg_details_view_select").select_option("folded")
+
+    panel = page.locator("#info_panel")
+    assert panel.locator(":scope > details").count() > 1
+    assert panel.locator(":scope > details[open]").count() == 0
 
 
 @pytest.mark.browser
@@ -2371,6 +2474,184 @@ def test_focus_lens_display_tracks_active_detail_section(browser_graph):
 
 
 @pytest.mark.browser
+def test_manual_focus_lens_keeps_perspective_across_detail_and_concept_changes(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("2.2")
+    page.locator("#kg_graph_view_select").select_option("focused")
+    page.locator("#kg_focus_lens_toggle").click()
+    lens = page.locator("#kg_focus_lens")
+    lens.locator('button[data-lens-mode="manual"]').click()
+
+    while lens.locator(".kg-focus-lens-rule-toggle:checked").count():
+        lens.locator(".kg-focus-lens-rule-toggle:checked").first.click()
+    derived = lens.locator(
+        '.kg-focus-lens-rule-toggle[data-relation="DERIVES_FROM"][data-direction="outgoing"]'
+    )
+    required_by = lens.locator(
+        '.kg-focus-lens-rule-toggle[data-relation="REQUIRES"][data-direction="incoming"]'
+    )
+    derived_depth = lens.locator(
+        '.kg-focus-lens-rule-depth[data-relation="DERIVES_FROM"][data-direction="outgoing"]'
+    )
+    assert derived_depth.is_enabled()
+    derived_depth.select_option("tree")
+    assert not derived.is_checked()
+    derived.click()
+    required_by.click()
+
+    assert lens.get_attribute("data-lens-mode") == "manual"
+    assert lens.get_attribute("data-lens-context") == "manual"
+    assert lens.locator(".kg-focus-lens-rule-toggle:checked").count() == 2
+    assert lens.locator(
+        '.kg-focus-lens-relation[data-relation="DERIVES_FROM"][data-direction="outgoing"]'
+    ).get_attribute("data-state") == "tree"
+    assert page.locator("#info_panel .kg-lens-source").count() == 0
+
+    page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-where-this-is-used"]'
+    ).click()
+    assert lens.get_attribute("data-lens-context") == "manual"
+
+    browser_graph.click_concept("3.1")
+    assert lens.get_attribute("data-selected-concept") == "3.1"
+    assert lens.get_attribute("data-lens-mode") == "manual"
+    assert lens.get_attribute("data-lens-context") == "manual"
+    assert lens.locator(".kg-focus-lens-rule-toggle:checked").count() == 2
+
+    lens.locator('button[data-lens-mode="auto"]').click()
+    assert lens.get_attribute("data-lens-mode") == "auto"
+    assert lens.get_attribute("data-lens-context") == "neighbourhood"
+    assert page.locator("#info_panel .kg-lens-source").count() > 0
+
+
+@pytest.mark.browser
+def test_manual_focus_lens_fits_all_real_relation_direction_controls(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    repo_browser_graph.click_concept("sr.field_tensor")
+    page.locator("#kg_focus_lens_toggle").click()
+    lens = page.locator("#kg_focus_lens")
+    lens.locator('button[data-lens-mode="manual"]').click()
+
+    assert lens.locator(".kg-focus-lens-rule-toggle").count() == 11
+    assert lens.locator(".kg-focus-lens-rule-depth").count() == 11
+    assert lens.evaluate("el => el.scrollWidth <= el.clientWidth + 1")
+
+
+@pytest.mark.browser
+def test_manual_related_traversal_shows_related_concept_and_edge(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.click_concept("1.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+    page.locator("#kg_focus_lens_toggle").click()
+    lens = page.locator("#kg_focus_lens")
+    lens.locator('button[data-lens-mode="manual"]').click()
+    while lens.locator(".kg-focus-lens-rule-toggle:checked").count():
+        lens.locator(".kg-focus-lens-rule-toggle:checked").first.click()
+    lens.locator(
+        '.kg-focus-lens-rule-toggle[data-relation="RELATED"][data-direction="undirected"]'
+    ).click()
+
+    assert page.evaluate(
+        """() => ({
+          alpha: nodes.get('1.1').hidden,
+          beta: nodes.get('2.1').hidden,
+          related: edges.get().find(edge => edge.relation === 'RELATED').hidden
+        })"""
+    ) == {"alpha": False, "beta": False, "related": False}
+
+
+@pytest.mark.browser
+def test_manual_related_traversal_works_with_real_semantic_ids(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    repo_browser_graph.click_concept("sr.metric_tensor")
+    page.locator("#kg_graph_view_select").select_option("focused")
+    page.locator("#kg_focus_lens_toggle").click()
+    lens = page.locator("#kg_focus_lens")
+    lens.locator('button[data-lens-mode="manual"]').click()
+    while lens.locator(".kg-focus-lens-rule-toggle:checked").count():
+        lens.locator(".kg-focus-lens-rule-toggle:checked").first.click()
+    lens.locator(
+        '.kg-focus-lens-rule-toggle[data-relation="RELATED"][data-direction="undirected"]'
+    ).click()
+
+    result = page.evaluate(
+        """() => {
+          const edge = edges.get().find(edge =>
+            edge.relation === 'RELATED' &&
+            ((edge.from === 'sr.metric_tensor' && edge.to === 'sr.four_vectors') ||
+             (edge.to === 'sr.metric_tensor' && edge.from === 'sr.four_vectors'))
+          );
+          return {
+            metric: nodes.get('sr.metric_tensor').hidden,
+            vectors: nodes.get('sr.four_vectors').hidden,
+            edge: edge && edge.hidden
+          };
+        }"""
+    )
+    assert result == {"metric": False, "vectors": False, "edge": False}
+
+
+@pytest.mark.browser
+def test_manual_related_traversal_overrides_full_graph_background_filter(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    repo_browser_graph.click_concept("sr.hamiltonian_formalism")
+    page.locator("#kg_focus_lens_toggle").click()
+    lens = page.locator("#kg_focus_lens")
+    lens.locator('button[data-lens-mode="manual"]').click()
+    while lens.locator(".kg-focus-lens-rule-toggle:checked").count():
+        lens.locator(".kg-focus-lens-rule-toggle:checked").first.click()
+
+    page.evaluate(
+        """() => network.moveTo({
+          position: {x: 135, y: -80},
+          scale: 0.42,
+          animation: false
+        })"""
+    )
+    before = page.evaluate(
+        """() => ({position: network.getViewPosition(), scale: network.getScale()})"""
+    )
+    lens.locator(
+        '.kg-focus-lens-rule-toggle[data-relation="RELATED"][data-direction="undirected"]'
+    ).click()
+
+    result = page.evaluate(
+        """() => {
+          const selected = edges.get().find(edge =>
+            edge.relation === 'RELATED' &&
+            ((edge.from === 'sr.hamiltonian_formalism' &&
+              edge.to === 'sr.euler_lagrange_equations') ||
+             (edge.to === 'sr.hamiltonian_formalism' &&
+              edge.from === 'sr.euler_lagrange_equations'))
+          );
+          const backgroundRelated = edges.get().find(edge =>
+            edge.relation === 'RELATED' && edge.id !== selected.id
+          );
+          return {
+            hamiltonian: nodes.get('sr.hamiltonian_formalism').hidden,
+            eulerLagrange: nodes.get('sr.euler_lagrange_equations').hidden,
+            selectedEdge: selected && selected.hidden,
+            backgroundEdge: backgroundRelated && backgroundRelated.hidden,
+            position: network.getViewPosition(),
+            scale: network.getScale()
+          };
+        }"""
+    )
+    assert result["hamiltonian"] is False
+    assert result["eulerLagrange"] is False
+    assert result["selectedEdge"] is False
+    assert result["backgroundEdge"] is True
+    assert abs(result["scale"] - before["scale"]) < 0.0001
+    assert abs(result["position"]["x"] - before["position"]["x"]) < 0.1
+    assert abs(result["position"]["y"] - before["position"]["y"]) < 0.1
+
+
+@pytest.mark.browser
 def test_toc_sections_drive_focussed_derivation_context(browser_graph):
     page = browser_graph.page
 
@@ -2577,7 +2858,8 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert "General Relativity New" in splash_text
     assert "Collapse modules into topic nodes" in splash_text
     assert "summarised boundary links" in splash_text
-    assert "focus lens summarises how the active detail section defines graph focus" in splash_text
+    assert "focus lens in Auto mode" in splash_text
+    assert "relation-and-direction traversals in Manual mode" in splash_text
     assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
     assert "Drag the divider" in splash_text
     assert "personal layouts survive reload" in splash_text
@@ -2585,13 +2867,15 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert modules.locator('.kg-status-badge').inner_text() == 'New'
     navigation = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Navigation and layout', exact=True))
     assert navigation.locator('.kg-status-badge').inner_text() == 'New'
+    graph_semantics = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Graph semantics', exact=True))
+    assert graph_semantics.locator('.kg-status-badge').inner_text() == 'New'
     gr = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='General Relativity New', exact=True))
     assert gr.locator('.kg-status-badge').inner_text() == 'New'
-    assert 'completed full authoring and review' in gr.inner_text()
+    assert 'current GR concepts have been fully authored' in gr.inner_text()
     assert 'Gravitational waves are still to do' in gr.inner_text()
     assert "Coming soon" not in splash_text
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 6
-    assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 3
+    assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 4
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.inner_text() == "Created by Ian Poole with AI assistance via OpenAI Codex."

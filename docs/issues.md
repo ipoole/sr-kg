@@ -1,22 +1,30 @@
 # Open Issues
 
-## Content and implementation
+## 1. Content and implementation
 
-- Review unmarked content, especially SR concepts, and explicitly set
-  `authoring_status=full` where complete. Blank remains optional and means
-  not recorded. Align status documentation and presentation when implementing.
-- Migrate SVG dispatch from display IDs to semantic concept IDs so renumbering
-  does not require registry edits. Preserve graphic coverage and review tooling.
-- Include `CONSTRUCTED_FROM` alongside `DERIVES_FROM` throughout derivation-path
-  traversal, including ancestry and downstream trees. Preserve relation labels
-  and check navigation, focus and cycle handling. Current trees use only
-  `DERIVES_FROM`; this is accepted work, not an open policy question.
+1. Include `CONSTRUCTED_FROM` alongside `DERIVES_FROM` throughout derivation-path
+traversal, including ancestry and downstream trees. Preserve relation labels and
+check navigation, focus and cycle handling. Current trees use only
+`DERIVES_FROM`; this is accepted work, not an open policy question.
+2. Add the GR gravitational-waves module and fully author its concepts with
+graphics and icons. See the
+[General Relativity plan](authoring/general_relativity_concept_plan.md).
 
-## Viewer requests (deferred design)
+## 2. Viewer requests
 
-- Add a reading mode that starts all detail sections folded closed.
-- Allow graph and details to be unlinked, with a visible linking control.
-- When unlinked, let the focus lens control graph context directly.
-- Consider persistent per-focus layouts and their export, separately from the
-  existing global-layout workflow. Focussed adjustments are currently temporary;
-  global layout export and publication already work. See [Layout](design/layout.md).
+1. Consider persistent per-focus layouts and their export, separately from the
+existing global-layout workflow. Focussed adjustments are currently temporary;
+global layout export and publication already work. See [Layout](design/layout.md).
+2. Add graphics to modules as icons in the graph and possibly in module details.
+This will require space within the module box, perhaps with the icon above smaller
+text.
+3. Make Search easier to discover, perhaps by placing it in the masthead rather
+than under Tools.
+4. Consider recording whether an edge relation belongs in the Full-graph
+background in the edge key. The viewer currently hardwires the structural set;
+lens-selected foreground edges must continue to override that background filter.
+
+## 3. Documents
+
+1. Rename all documents under `/docs` and their references to use lowercase
+filenames consistently.

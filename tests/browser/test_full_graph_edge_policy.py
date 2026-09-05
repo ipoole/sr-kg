@@ -22,12 +22,17 @@ def test_full_graph_filters_edges_and_focused_restores_them(browser_graph, folde
         page.locator('#kg_modules_collapse_all').click()
     if selection == 'concept':
         browser_graph.click_concept('2.1')
-    assert visible_relations(page) <= KEY_RELATIONS
+        assert 'RELATED' in visible_relations(page)
+    else:
+        assert visible_relations(page) <= KEY_RELATIONS
     for _ in range(2):
         page.locator('#kg_graph_view_select').select_option('focused')
         assert 'RELATED' in visible_relations(page)
         page.locator('#kg_graph_view_select').select_option('all')
-        assert visible_relations(page) <= KEY_RELATIONS
+        if selection == 'concept':
+            assert 'RELATED' in visible_relations(page)
+        else:
+            assert visible_relations(page) <= KEY_RELATIONS
     assert page.evaluate('() => kgGlobalLayoutSnapshot()') == before
     page.locator('#kg_clear_selection').click()
     assert visible_relations(page) <= KEY_RELATIONS

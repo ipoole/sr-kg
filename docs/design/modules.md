@@ -34,8 +34,9 @@ reduction must not silently remove that meaning.
 A folded module represents its members as one selectable graph object. Its
 page remains accessible; expanding reveals concepts in place. Internal edges
 are hidden while folded, and boundary edges retain the underlying concept links.
-Double-clicking a folded module expands it; double-clicking a concept folds its
-owning module. Global expand/collapse controls provide the same operations in bulk.
+Double-clicking a folded module expands it. Double-clicking a concept or empty
+space within one unambiguous expanded-module footprint folds that module. Global
+expand/collapse controls provide the same operations in bulk.
 
 The viewer separates preferred folding from effective representation. Navigation
 to a concept temporarily expands its module if necessary; when that requirement

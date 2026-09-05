@@ -43,6 +43,8 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
         """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes"""
     )
     assert len(stored) == 1
+    assert stored[0]["targetType"] == "concept"
+    assert stored[0]["targetId"] == "2.1"
     assert stored[0]["conceptId"] == "2.1"
     assert stored[0]["title"] == "Check this derivation"
     assert stored[0]["body"] == "This should become an optional detail later."
@@ -159,6 +161,8 @@ def test_user_notes_export_and_import_csv(browser_graph):
     rows = list(csv.DictReader(csv_text.splitlines()))
     assert rows[0]["concept_id"] == "2.1"
     assert rows[0]["concept_label"] == "Beta"
+    assert rows[0]["target_type"] == "concept"
+    assert rows[0]["target_id"] == "2.1"
     assert rows[0]["title"] == "Exported title"
     assert rows[0]["body"] == "Exported body"
 
@@ -184,6 +188,87 @@ def test_user_notes_export_and_import_csv(browser_graph):
     )
     page.locator("#info_panel details.user-note summary").click()
     assert page.locator("#info_panel .user-note-body-input").input_value() == "Imported body"
+
+
+@pytest.mark.browser
+def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
+    page = browser_graph.page
+
+    page.locator("#kg_notes_section summary").click()
+    page.locator("#kg_notes_edit_toggle").check()
+
+    browser_graph.click_concept("2.2")
+    graphic = page.locator("#info_panel .concept-figure")
+    assert graphic.locator(".kg-add-note").count() == 1
+    graphic.locator(".kg-add-note").click()
+    graphic.locator(".user-note-title-input").fill("Review graphic")
+    graphic.locator(".user-note-body-input").fill("Check the arrows.")
+    graphic.locator(".user-note-close").click()
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    overview = page.locator("#info_panel .module-content-block").first
+    assert overview.locator(".kg-add-note").count() > 0
+    if not overview.evaluate("el => el.open"):
+        overview.locator(":scope > summary").click()
+    overview.locator(".kg-add-note").first.click()
+    overview.locator(".user-note-title-input").fill("Review module overview")
+    overview.locator(".user-note-body-input").fill("Tighten this introduction.")
+    overview.locator(".user-note-close").click()
+
+    stored = page.evaluate(
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes"
+    )
+    assert [(note["targetType"], note["targetId"]) for note in stored] == [
+        ("concept", "2.2"),
+        ("module", "test.m01_foundations"),
+    ]
+    module_item = page.locator("#kg_notes_list .kg-note-list-item").filter(
+        has_text="Review module overview"
+    )
+    assert "Module Foundations" in module_item.inner_text()
+
+    browser_graph.click_concept("1.1")
+    module_item.click()
+    assert page.locator("#info_panel h2").inner_text() == "Foundations"
+    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+        "Review module overview"
+    )
+
+
+@pytest.mark.browser
+def test_legacy_concept_note_csv_still_imports(browser_graph):
+    page = browser_graph.page
+    import_path = browser_graph.output_path.parent / "legacy-notes.csv"
+    fieldnames = [
+        "note_id", "concept_id", "concept_label", "section", "anchor_index",
+        "anchor_after", "title", "body", "created_at", "updated_at",
+    ]
+    with import_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow({
+            "note_id": "legacy-note",
+            "concept_id": "2.1",
+            "concept_label": "Beta",
+            "section": "Definition",
+            "anchor_index": "0",
+            "anchor_after": "",
+            "title": "Legacy note",
+            "body": "Still readable.",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        })
+
+    page.locator("#kg_notes_import_input").set_input_files(str(import_path))
+    browser_graph.click_concept("2.1")
+
+    assert page.locator("#info_panel details.user-note summary").inner_text() == "Legacy note"
+    stored = page.evaluate(
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+    )
+    assert stored["targetType"] == "concept"
+    assert stored["targetId"] == "2.1"
 
 
 @pytest.mark.browser
