@@ -1,7 +1,7 @@
 # GR Drafting Issues
 
 The existing 55 GR concepts have completed full authoring. Runtime CSV carries
-the text and status; the [notation glossary](NOTATION_GLOSSARY.md#general-relativity)
+the text and status; the [notation glossary](notation_glossary.md#general-relativity)
 records the conventions that future changes must preserve.
 
 - Gravitational waves remain planned but unseeded. Cosmology and advanced tools

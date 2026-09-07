@@ -2433,7 +2433,7 @@
             graphContext: "components",
             relation: "COMPONENT_OF",
             focusDirection: "outgoing",
-            lensLabel: "Components"
+            lensLabel: "Part of"
           },
           instances: {
             graphContext: "instances",
@@ -2495,7 +2495,7 @@
             phrase: "is a component of",
             abbreviation: "CO",
             sortOrder: 40,
-            backlinkTitle: "Has component"
+            backlinkTitle: "Parts of this"
           },
           INSTANCE_OF: {
             label: "Instance of",
@@ -2927,7 +2927,10 @@
         }
 
         function filteredModuleContentBlocks(module) {
-          return moduleContentBlocks(module).filter(blockVisibleInReadingMode);
+          // Module orientation remains useful even when a concept filter is active.
+          return moduleContentBlocks(module).filter(function(block) {
+            return block.kind === "overview" || blockVisibleInReadingMode(block);
+          });
         }
 
         function moduleMemberIds(module) {
@@ -4477,6 +4480,66 @@
           }
         }
 
+        // Search-only plain text: parse groups before truncating snippets so
+        // nested TeX and custom macros cannot leak partial markup into results.
+        function searchPlainText(value) {
+          var text = String(value || "");
+          var symbols = {
+            alpha: "α", beta: "β", gamma: "γ", delta: "δ", Delta: "Δ",
+            epsilon: "ε", eta: "η", theta: "θ", lambda: "λ", Lambda: "Λ",
+            mu: "μ", nu: "ν", pi: "π", rho: "ρ", sigma: "σ", Sigma: "Σ",
+            tau: "τ", phi: "φ", Phi: "Φ", omega: "ω", Omega: "Ω",
+            nabla: "∇", partial: "∂", infty: "∞", times: "×", cdot: "·",
+            equiv: "≡", coloneqq: ":=", leq: "≤", geq: "≥", neq: "≠",
+            to: "→", rightarrow: "→", leftarrow: "←", pm: "±"
+          };
+          var output = "";
+          var cursor = 0;
+          while (cursor < text.length) {
+            var ch = text.charAt(cursor);
+            if (ch === "{") {
+              var group = parseBracedArgument(text, cursor);
+              if (group) {
+                output += searchPlainText(group.value);
+                cursor = group.end;
+                continue;
+              }
+            }
+            if (ch !== "\\") {
+              output += ch === "}" ? "" : ch;
+              cursor += 1;
+              continue;
+            }
+            var command = /^\\([a-zA-Z_]+|.)/.exec(text.slice(cursor));
+            if (!command) { cursor += 1; continue; }
+            var name = command[1];
+            cursor += command[0].length;
+            var arity = /^(frac|dfrac|tfrac|overset|underset|cref|optional_details)$/.test(name) ? 2 :
+              /^(sqrt|text|textrm|mathrm|mathbf|mathit|mathcal|mathbb|operatorname|hat|bar|vec)$/.test(name) ? 1 : 0;
+            var args = [];
+            for (var i = 0; i < arity; i++) {
+              var start = skipOptionalDetailWhitespace(text, cursor);
+              var argument = parseBracedArgument(text, start);
+              if (!argument) { break; }
+              args.push(searchPlainText(argument.value));
+              cursor = argument.end;
+            }
+            if (args.length === arity && arity > 0) {
+              if (/^(frac|dfrac|tfrac)$/.test(name)) { output += "(" + args[0] + ")/(" + args[1] + ")"; }
+              else if (name === "sqrt") { output += "sqrt(" + args[0] + ")"; }
+              else if (name === "cref") { output += args[0]; }
+              else if (name === "optional_details") { output += args[0] + ": " + args[1]; }
+              else if (name === "overset" || name === "underset") { output += args[1] + " (" + args[0] + ")"; }
+              else { output += args[0]; }
+            } else if (symbols[name]) { output += symbols[name]; }
+            else if (/^(left|right|big|Big|bigg|Bigg)$/.test(name)) { /* sizing only */ }
+            else if (/^[a-zA-Z_]+$/.test(name)) { output += " " + name + " " + args.join(" "); }
+            else if (/^[{}%&#_$]$/.test(name)) { output += name; }
+            else { output += " "; }
+          }
+          return output.replace(/\s+/g, " ").trim();
+        }
+
         function searchFieldsForConcept(nodeId) {
           var concept = getConcept(nodeId) || {};
           var fields = [
@@ -4489,7 +4552,7 @@
           return fields.map(function(field) {
             return {
               name: field.name,
-              value: searchDisplayText(field.value)
+              value: searchPlainText(field.value)
             };
           });
         }
@@ -4516,7 +4579,7 @@
           return fields.map(function(field) {
             return {
               name: field.name,
-              value: searchDisplayText(field.value)
+              value: searchPlainText(field.value)
             };
           });
         }
@@ -4537,18 +4600,37 @@
           });
         }
 
-        function matchingSearchIds(query) {
-          var ids = Object.keys(conceptData).sort(compareConceptIds);
-          if (!query) { return ids; }
-          return ids.filter(function(id) {
-            return matchingSearchFields(id, query).length > 0;
+        function rankedSearchResults(query) {
+          var results = [];
+          function addResult(type, id, fields, primaryFields) {
+            var matches = fields.filter(function(field) {
+              return !query || fieldContainsQuery(field, query);
+            });
+            if (!matches.length) { return; }
+            var rank = query ? 2 : 0;
+            matches.forEach(function(field) {
+              if (primaryFields.indexOf(field.name) !== -1) {
+                rank = Math.min(rank, field.value.toLowerCase() === query ? 0 : 1);
+              }
+            });
+            results.push({type: type, id: id, rank: rank});
+          }
+          Object.keys(conceptData).forEach(function(id) {
+            addResult("concept", id, searchFieldsForConcept(id),
+              ["Display ID", "Concept ID", "Title"]);
           });
-        }
-
-        function matchingModuleSearchIds(query) {
-          if (!query) { return []; }
-          return moduleIds().filter(function(moduleId) {
-            return matchingModuleSearchFields(moduleId, query).length > 0;
+          if (query) {
+            moduleIds().forEach(function(id) {
+              addResult("module", id, searchFieldsForModule(id), ["Module ID", "Module"]);
+            });
+          }
+          return results.sort(function(a, b) {
+            if (a.rank !== b.rank) { return a.rank - b.rank; }
+            if (a.type === b.type) {
+              return a.type === "concept" ? compareConceptIds(a.id, b.id) : compareModules(a.id, b.id);
+            }
+            // Keep concept/module ties stable without overriding relevance.
+            return a.type === "concept" ? -1 : 1;
           });
         }
 
@@ -5150,13 +5232,22 @@
           return "off";
         }
 
+        function focusLensDirectionLabel(relation, direction) {
+          if (relation === "COMPONENT_OF") {
+            return direction === "incoming" ? "Parts of this" : "Part of";
+          }
+          return relationDisplayLabel(relation) + " " + direction;
+        }
+
         function focusLensRelationTitle(relation, lens) {
           var state = lens.state === "tree" ? "tree" :
             lens.state === "immediate" ? "immediate" : "not in focus";
           var direction = lens.direction === "incoming" ? ", incoming" :
             lens.direction === "outgoing" ? ", outgoing" :
             lens.direction === "undirected" ? ", undirected" : "";
-          return relation + ": " + state + direction;
+          return (relation === "COMPONENT_OF"
+            ? focusLensDirectionLabel(relation, lens.direction)
+            : relation) + ": " + state + direction;
         }
 
         function focusLensRelationHtml(relation, direction) {
@@ -5172,8 +5263,8 @@
           if (interactive) {
             html += '<input class="kg-focus-lens-rule-toggle" type="checkbox"' +
               (relationLens.state === "none" ? "" : " checked") +
-              ' aria-label="Include ' + escapeHtml(relationDisplayLabel(relation)) + " " +
-              escapeHtml(relationLens.direction) + '" data-relation="' + escapeHtml(relation) +
+              ' aria-label="Include ' + escapeHtml(focusLensDirectionLabel(relation, relationLens.direction)) +
+              '" data-relation="' + escapeHtml(relation) +
               '" data-direction="' + escapeHtml(relationLens.direction) + '">';
           }
           html +=
@@ -6478,26 +6569,62 @@
 
         function buildConceptList(filterText) {
           var q = searchDisplayText(filterText).toLowerCase();
-          var ids = matchingSearchIds(q);
-          var moduleMatches = matchingModuleSearchIds(q);
+          var results = rankedSearchResults(q);
           var html = "";
           var count = 0;
 
-          ids.forEach(function(id) {
-            var concept = getConcept(id);
-            var label = searchDisplayText(concept.label || "");
-            var displayId = conceptDisplayId(id);
-            var titleHtml = '<span class="kg-search-hit-title">' +
-              '<span class="kg-concept-id">' + highlightedSearchText(displayId, q) + "</span> " +
-              highlightedSearchText(label, q) +
-              "</span>";
-            var snippetHtml = "";
+          results.forEach(function(result) {
+            if (result.type === "concept") {
+              var id = result.id;
+              var concept = getConcept(id);
+              var label = searchDisplayText(concept.label || "");
+              var displayId = conceptDisplayId(id);
+              var titleHtml = '<span class="kg-search-hit-title">' +
+                '<span class="kg-concept-id">' + highlightedSearchText(displayId, q) + "</span> " +
+                highlightedSearchText(label, q) +
+                "</span>";
+              var snippetHtml = "";
 
-            if (q) {
-              var snippets = matchingSearchFields(id, q).filter(function(field) {
-                return field.name !== "Display ID" &&
-                  field.name !== "Concept ID" &&
-                  field.name !== "Title";
+              if (q) {
+                var snippets = matchingSearchFields(id, q).filter(function(field) {
+                  return field.name !== "Display ID" &&
+                    field.name !== "Concept ID" &&
+                    field.name !== "Title";
+                }).slice(0, 2);
+                if (snippets.length > 0) {
+                  snippetHtml += '<span class="kg-search-snippets">';
+                  snippets.forEach(function(field) {
+                    snippetHtml += '<span class="kg-search-snippet">' +
+                      '<span class="kg-search-field">' + escapeHtml(field.name) + ":</span> " +
+                      searchSnippet(field, q) +
+                      "</span>";
+                  });
+                  snippetHtml += "</span>";
+                }
+              }
+
+              html += '<button type="button" class="kg-concept-item" data-concept-id="' +
+              escapeHtml(id) +
+              '">' +
+              titleHtml +
+              snippetHtml +
+              "</button>";
+            } else {
+              var moduleId = result.id;
+              var module = getModule(moduleId) || {};
+              var title = searchDisplayText(module.title || moduleId);
+              var titleHtml = '<span class="kg-search-hit-title">' +
+                '<span class="kg-search-type-label">Module</span> ' +
+                '<span class="kg-module-domain">' +
+                escapeHtml(moduleDomainLabel(module.domain)) +
+                "</span> " +
+                highlightedSearchText(title, q) +
+                "</span>";
+              var snippetHtml = "";
+              var snippets = matchingModuleSearchFields(moduleId, q).filter(function(field) {
+                return field.name !== "Module ID" &&
+                  field.name !== "Module" &&
+                  field.name !== "Domain";
               }).slice(0, 2);
               if (snippets.length > 0) {
                 snippetHtml += '<span class="kg-search-snippets">';
@@ -6509,49 +6636,13 @@
                 });
                 snippetHtml += "</span>";
               }
-            }
-
-            html += '<button type="button" class="kg-concept-item" data-concept-id="' +
-              escapeHtml(id) +
-              '">' +
-              titleHtml +
-              snippetHtml +
-              "</button>";
-            count += 1;
-          });
-
-          moduleMatches.forEach(function(moduleId) {
-            var module = getModule(moduleId) || {};
-            var title = searchDisplayText(module.title || moduleId);
-            var titleHtml = '<span class="kg-search-hit-title">' +
-              '<span class="kg-search-type-label">Module</span> ' +
-              '<span class="kg-module-domain">' +
-              escapeHtml(moduleDomainLabel(module.domain)) +
-              "</span> " +
-              highlightedSearchText(title, q) +
-              "</span>";
-            var snippetHtml = "";
-            var snippets = matchingModuleSearchFields(moduleId, q).filter(function(field) {
-              return field.name !== "Module ID" &&
-                field.name !== "Module" &&
-                field.name !== "Domain";
-            }).slice(0, 2);
-            if (snippets.length > 0) {
-              snippetHtml += '<span class="kg-search-snippets">';
-              snippets.forEach(function(field) {
-                snippetHtml += '<span class="kg-search-snippet">' +
-                  '<span class="kg-search-field">' + escapeHtml(field.name) + ":</span> " +
-                  searchSnippet(field, q) +
-                  "</span>";
-              });
-              snippetHtml += "</span>";
-            }
-            html += '<button type="button" class="kg-module-item kg-module-search-item" data-module-id="' +
+              html += '<button type="button" class="kg-module-item kg-module-search-item" data-module-id="' +
               escapeHtml(moduleId) +
               '">' +
               titleHtml +
               snippetHtml +
               "</button>";
+            }
             count += 1;
           });
 
@@ -6559,6 +6650,7 @@
             html += '<div style="color:#555; padding:4px 0;">No matching concepts or modules.</div>';
           }
           document.getElementById("kg_concept_list").innerHTML = html;
+          document.getElementById("kg_search_status").textContent = q ? count + " results" : "Browse all concepts";
         }
 
         function buildModuleList() {
@@ -6840,9 +6932,8 @@
           var q = searchDisplayText(document.getElementById("kg_search").value).toLowerCase();
           if (!q) { return; }
 
-          var conceptMatches = matchingSearchIds(q);
-          var moduleMatches = matchingModuleSearchIds(q);
-          var matchCount = conceptMatches.length + moduleMatches.length;
+          var results = rankedSearchResults(q);
+          var matchCount = results.length;
 
           if (matchCount === 0) {
             document.getElementById("kg_status").innerText = "No matching concept or module found.";
@@ -6850,8 +6941,8 @@
           }
 
           buildConceptList(q);
-          if (conceptMatches.length > 0) {
-            var id = conceptMatches[0];
+          if (results[0].type === "concept") {
+            var id = results[0].id;
             var concept = getConcept(id) || {};
             focusConcept(id, null, {
               searchQuery: q,
@@ -6862,7 +6953,7 @@
             return;
           }
 
-          var moduleId = moduleMatches[0];
+          var moduleId = results[0].id;
           var module = getModule(moduleId) || {};
           focusModule(moduleId, null);
           document.getElementById("kg_status").innerText =
@@ -7425,8 +7516,31 @@
 
         document.addEventListener("keydown", allowBrowserHistoryShortcut, true);
 
+        function setSearchOpen(open) {
+          document.getElementById("kg_search_section").open = open;
+          document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(open));
+          document.getElementById(open ? "kg_search" : "kg_search_toggle").focus();
+        }
+
+        document.getElementById("kg_search_toggle").addEventListener("click", function() {
+          setSearchOpen(!document.getElementById("kg_search_section").open);
+        });
+        document.getElementById("kg_search_close").addEventListener("click", function() {
+          setSearchOpen(false);
+        });
+        document.getElementById("kg_search_section").addEventListener("toggle", function(e) {
+          document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(e.target.open));
+        });
+        document.getElementById("kg_search_section").addEventListener("keydown", function(e) {
+          if (e.key === "Escape") { e.preventDefault(); setSearchOpen(false); }
+        });
+
         document.getElementById("kg_search").addEventListener("keydown", function(e) {
           if (e.key === "Enter") { kgSearch(); }
+          if (e.key === "ArrowDown") {
+            var first = document.querySelector("#kg_concept_list button");
+            if (first) { e.preventDefault(); first.focus(); }
+          }
         });
 
         document.getElementById("kg_search").addEventListener("input", function(e) {

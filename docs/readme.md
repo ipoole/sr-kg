@@ -4,7 +4,7 @@
   [schema](design/kb_schema.md), [architecture](design/architecture.md),
   [viewer behaviour](design/viewer.md), [modules](design/modules.md), and
   [layout](design/layout.md).
-- **Authoring** holds the [authoring guide](authoring/AUTHORING_GUIDE.md),
+- **Authoring** holds the [authoring guide](authoring/authoring_guide.md),
   notation conventions, working drafts, and outstanding editorial work.
 - **Discussion** holds speculative ideas, not instructions for current behaviour.
   The [user experience review](discussion/user_experience_review.md) records

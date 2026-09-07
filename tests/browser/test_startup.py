@@ -1592,7 +1592,7 @@ def test_phone_starts_with_focus_lens_hidden(browser_graph):
 
 
 @pytest.mark.browser
-def test_phone_header_uses_single_row_compact_controls(browser_graph):
+def test_phone_header_fits_search_and_controls_in_two_rows(browser_graph):
     page = browser_graph.page
 
     page.set_viewport_size({"width": 390, "height": 800})
@@ -1601,7 +1601,7 @@ def test_phone_header_uses_single_row_compact_controls(browser_graph):
 
     header = page.locator("#kg_app_header").bounding_box()
     workspace = page.locator("#kg_workspace").bounding_box()
-    assert header["height"] <= 58
+    assert header["height"] <= 88
     assert abs(workspace["y"] - header["height"]) <= 1
     assert not page.locator(".kg-shell-graph-control label").is_visible()
     assert not page.locator(".kg-shell-details-control label").is_visible()
@@ -1612,6 +1612,7 @@ def test_phone_header_uses_single_row_compact_controls(browser_graph):
         """() => {
           const ids = [
             "kg_controls_toggle",
+            "kg_search_toggle",
             "kg_graph_view_select",
             "kg_clear_selection",
             "kg_focus_lens_toggle",

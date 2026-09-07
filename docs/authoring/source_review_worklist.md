@@ -2,7 +2,7 @@
 
 Track unresolved source research here. Verified locators belong in
 `data/reference_links.csv`; sourcing rules live in the
-[authoring guide](AUTHORING_GUIDE.md#references).
+[authoring guide](authoring_guide.md#references).
 
 - Radiation reaction has only broad TTM II/TRR background links. Find a specific
   source if expanding its treatment.

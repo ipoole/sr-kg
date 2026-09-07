@@ -1,5 +1,6 @@
     <header id="kg_app_header" aria-label="Knowledge graph workspace controls">
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
+      <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
       <div class="kg-shell-control kg-shell-graph-control">
         <label for="kg_graph_view_select">Graph</label>
         <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
@@ -67,15 +68,19 @@
         <div id="kg_notes_count"></div>
         <div id="kg_notes_list"></div>
       </details>
-      <details id="kg_search_section" class="kg-fold">
-        <summary>Search</summary>
+
+    </div>
+
+      <details id="kg_search_section" class="kg-search-panel">
+        <summary>Search concepts and modules</summary>
         <div id="kg_search_block">
-          <input id="kg_search" placeholder="Search ID, title, or concept text">
+          <input id="kg_search" aria-label="Search concepts and modules" placeholder="Search ID, title, or concept text">
           <button onclick="kgSearch()">Find</button>
         </div>
+        <div id="kg_search_status" role="status"></div>
         <div id="kg_concept_list"></div>
+        <button id="kg_search_close" type="button" class="kg-shell-button">Close search</button>
       </details>
-    </div>
 
     <div id="info_panel">
       <h2>__VIEW_TITLE__</h2>

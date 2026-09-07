@@ -1,3 +1,4 @@
+      :root { --kg-header-height: 52px; }
       html,
       body {
         height: 100%;
@@ -13,7 +14,7 @@
         display: grid;
         gap: 0;
         grid-template-columns: minmax(240px, var(--kg-graph-pane-width, 50%)) var(--kg-splitter-width, 7px) minmax(260px, 1fr);
-        height: 52px;
+        height: var(--kg-header-height);
         left: 0;
         padding: 8px 0;
         position: fixed;
@@ -657,7 +658,7 @@
         left: 0;
         position: fixed;
         right: 0;
-        top: 52px;
+        top: var(--kg-header-height);
         bottom: 0;
       }
       .kg-workspace-pane {
@@ -2354,7 +2355,7 @@
         #kg_app_header {
             display: flex;
             gap: 4px;
-            height: 52px;
+            height: var(--kg-header-height);
             padding: 7px 6px;
         }
 
@@ -2427,7 +2428,7 @@
         #kg_workspace {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: minmax(200px, 42vh) minmax(0, 1fr);
-            top: 52px;
+            top: var(--kg-header-height);
         }
 
         body.kg-graph-hidden #kg_workspace,
@@ -2445,7 +2446,7 @@
         }
 
         #kg_controls {
-            top: calc(52px + 8px);
+            top: calc(var(--kg-header-height) + 8px);
         }
 
         #info_panel {
@@ -2502,3 +2503,53 @@
         }
     }
     
+
+      #kg_search_toggle {
+        position: absolute;
+        right: 12px;
+      }
+      #kg_search_section {
+        position: fixed;
+        z-index: 10001;
+        top: calc(var(--kg-header-height) + 8px);
+        left: 12px;
+        width: min(420px, calc(100vw - 24px));
+        max-height: calc(100dvh - var(--kg-header-height) - 24px);
+        overflow: auto;
+        box-sizing: border-box;
+        padding: 12px;
+        background: white;
+        border: 1px solid #b8c2d4;
+        border-radius: 8px;
+        box-shadow: 0 3px 12px rgba(0,0,0,.18);
+        font: 14px Arial, sans-serif;
+      }
+      #kg_search_section:not([open]) { display: none; }
+      #kg_search_section summary { font-weight: bold; cursor: pointer; }
+      #kg_search_block { display: flex; gap: 6px; margin: 8px 0; }
+      #kg_search { flex: 1; min-width: 0; padding: 6px; font: inherit; }
+      #kg_search_section #kg_concept_list {
+        max-height: min(52dvh, 440px);
+        font-size: 1em;
+      }
+      #kg_search_status { color: #526070; font-size: .9em; }
+      #kg_search_close { margin-top: 8px; }
+      #kg_search_section button:focus-visible,
+      #kg_search_toggle:focus-visible { outline: 2px solid #174ea6; outline-offset: 2px; }
+      @media (max-width: 850px) {
+        #kg_search_toggle { position: static; flex: 0 0 auto; }
+      }
+      @media (max-width: 550px) {
+        :root { --kg-header-height: 84px; }
+        #kg_app_header {
+          display: grid;
+          grid-template-columns: auto auto 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 4px 8px;
+        }
+        #kg_controls_toggle { grid-column: 1; grid-row: 1; }
+        #kg_search_toggle { grid-column: 2; grid-row: 1; }
+        .kg-shell-details-control { grid-column: 3; grid-row: 1; }
+        .kg-shell-graph-control { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+        #kg_controls { top: calc(var(--kg-header-height) + 8px); }
+      }

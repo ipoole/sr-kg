@@ -30,7 +30,7 @@ data/
 The default project root is `data/`.
 
 For drafting, notation and source-review workflows, see the
-[authoring guide](../authoring/AUTHORING_GUIDE.md).
+[authoring guide](../authoring/authoring_guide.md).
 
 ## manifest.yaml
 
@@ -376,7 +376,7 @@ absent, but supplied files must satisfy their contracts above.
 
 Text validation additionally checks markup and graph consistency. Review
 warnings, such as redundant edges or ordering contradictions, require editorial
-judgement rather than automatic deletion. See the [authoring guide](../authoring/AUTHORING_GUIDE.md).
+judgement rather than automatic deletion. See the [authoring guide](../authoring/authoring_guide.md).
 
 ## Future plans
 

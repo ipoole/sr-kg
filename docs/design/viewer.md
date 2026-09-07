@@ -16,10 +16,19 @@ teaching blocks, graphics where available, relationship sections, questions and
 references. The `FULL` badge is an authoring status, not a reading-mode or
 mastery indicator.
 
-**Tools → Search** matches concept IDs, titles and prose, and module metadata,
-overviews and member titles. Concept results use display order, not relevance
-ranking. Find opens the first matching concept, or a module if no concept
-matches. Search is not a question, reference or personal-note search.
+The header **Search** button opens a separate panel, also available on narrow
+screens. Search matches concept IDs, titles and prose, and module metadata,
+overviews and member titles. Exact ID/title matches rank first, partial ID/title
+matches next, and other text matches last. Concept and module results share this
+ranking; ties use display order within each type, with concepts before modules
+when their ranks tie. Find or Enter opens the first result. Empty search lists
+all concepts in display order.
+
+Snippets use plain-text mathematical notation and retain source-section labels
+and match highlighting. Search is not a question, reference or personal-note
+search. Arrow Down from the input focuses the first result; Tab moves through
+controls and results. Escape or Close search closes the panel and returns focus
+to the Search button.
 
 Concept links navigate between pages; previews allow a brief look at linked
 material. Browser Back and Forward retrace concept and module selections.
@@ -44,9 +53,10 @@ Graphics and relationship sections may remain alongside the filtered prose.
 Practice opens the questions section. Answers are individually revealed; there
 is no answer entry, automatic marking, attempt history or mastery tracking.
 Questions are numbered after filtering, so authored references such as “q3”
-can become misleading. Modules use the same prose filters but have no module
-question collection; the current module overviews disappear in Maths, Context
-and Practice modes while their navigation sections remain.
+can become misleading. Modules retain overview blocks in every prose filter,
+alongside any other matching blocks and their navigation sections. They have no
+module question collection. Folded still closes their sections initially. Opening
+a module does not change the reading mode used when returning to a concept.
 
 The contents list jumps within the current page. On wide screens it starts open;
 on narrow screens it starts closed. Dragging the divider changes pane sizes.
@@ -61,7 +71,9 @@ controls; hiding the lens panel does not disable its effect.
 Auto follows the active detail section, including changes while scrolling.
 Manual selects relation directions and one-hop or tree traversals, retaining
 those choices across concept selection. Its controls use stored edge direction:
-for example, outgoing `REQUIRES` links lead to prerequisites.
+for example, outgoing `REQUIRES` links lead to prerequisites. The outgoing
+`COMPONENT_OF` context is labelled “Part of”; incoming component controls and
+backlinks use “Parts of this”. These labels do not reverse the stored edges.
 
 Current derivation and usage trees traverse `DERIVES_FROM` only. The text under
 “Where this is used” also groups other incoming relations, so that section's

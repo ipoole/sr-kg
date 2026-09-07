@@ -37,7 +37,7 @@ Generated HTML is a build artifact; do not commit it unless explicitly requested
 
 ## Study with the viewer
 
-Select a module for an overview and concept list, or use **Tools → Search** to
+Select a module for an overview and concept list, or use the header **Search** button to
 find a concept. Follow links to explore related material and use browser Back
 to return. **Details** filters the reading material; **Practice** shows questions
 with answers you can reveal for self-checking. **Graph → Focussed** isolates the
@@ -63,12 +63,12 @@ conda run -n sr-kg pytest -q tests/browser
 
 ## Documentation
 
-- [Documentation index](docs/README.md): where guidance, drafts and discussion live.
+- [Documentation index](docs/readme.md): where guidance, drafts and discussion live.
 - [Architecture](docs/design/architecture.md): generation, presentation and user state.
 - [Viewer behaviour](docs/design/viewer.md): current learner-facing controls and limitations.
 - [KB schema](docs/design/kb_schema.md): source-file contracts.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
-- [Authoring guide](docs/authoring/AUTHORING_GUIDE.md): content workflow, domain builds, diagnostics and graphics review.
+- [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.
 - [Open viewer requests](docs/issues.md).
 
 Source content lives in `data/`, implementation in `srkg/`, command-line tools

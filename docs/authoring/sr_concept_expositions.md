@@ -13,7 +13,7 @@ Look up current display IDs and module membership in the runtime data.
 Keep concepts in atlas order where practical.
 
 Generic source-locator and notation issues are now collected in
-`docs/authoring/SOURCE_REVIEW_WORKLIST.md` and `docs/authoring/NOTATION_GLOSSARY.md`. Keep
+`docs/authoring/source_review_worklist.md` and `docs/authoring/notation_glossary.md`. Keep
 concept-specific issues below, but avoid repeating generic notes once they are
 covered by those worklists.
 
@@ -1309,7 +1309,7 @@ component column. Retain unless visual inspection exposes a layout problem.
 #### Schema/View Issues
 
 - Upper/lower indices, repeated-index summation, and the \(+---\) convention
-  are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  are now covered in `docs/authoring/notation_glossary.md`; keep this concept aligned as
   the glossary evolves.
 
 #### Atlas Issues
@@ -1414,7 +1414,7 @@ Retain unless visual inspection shows a layout problem.
 #### Schema/View Issues
 
 - \(x^\mu\), \(\Delta x^\mu\), and the convention of using \(ct\) are now
-  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  covered in `docs/authoring/notation_glossary.md`; keep this concept aligned as the
   glossary evolves.
 
 #### Atlas Issues
@@ -1887,7 +1887,7 @@ meaning. Retain unless visual inspection shows layout problems.
 #### Schema/View Issues
 
 - \(L\), action \(S\), and field Lagrangian density \(\mathcal L\) are now
-  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the
+  covered in `docs/authoring/notation_glossary.md`; keep this concept aligned as the
   glossary evolves.
 
 #### Atlas Issues
@@ -2226,7 +2226,7 @@ enough room for the derivative notation.
 #### Schema/View Issues
 
 - Canonical momentum and four-momentum are now covered in
-  `docs/authoring/NOTATION_GLOSSARY.md`; mechanical momentum and relativistic
+  `docs/authoring/notation_glossary.md`; mechanical momentum and relativistic
   three-momentum may still deserve explicit entries when the atlas develops
   mechanics notation further.
 
@@ -2595,7 +2595,7 @@ grid, matches the concept. Retain unless review shows crowding.
 #### Schema/View Issues
 
 - The event \(x\), coordinate tuple \(x^\mu\), and scalar field value
-  \(\phi(x)\) are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept
+  \(\phi(x)\) are now covered in `docs/authoring/notation_glossary.md`; keep this concept
   aligned as the glossary evolves.
 
 #### Atlas Issues
@@ -2684,7 +2684,7 @@ right local-field idea. Retain for this pass.
 #### Schema/View Issues
 
 - Contravariant \(A^\mu\), covariant \(A_\mu\), and the electromagnetic
-  potential convention are now covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep
+  potential convention are now covered in `docs/authoring/notation_glossary.md`; keep
   this concept aligned as the glossary evolves.
 
 #### Atlas Issues
@@ -2774,7 +2774,7 @@ Retain for this pass.
 #### Schema/View Issues
 
 - \(L\), \(\mathcal L\), action \(S\), and \(d^4x\) are now covered in
-  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as the glossary
+  `docs/authoring/notation_glossary.md`; keep this concept aligned as the glossary
   evolves.
 
 #### Atlas Issues
@@ -2876,7 +2876,7 @@ pass.
 #### Schema/View Issues
 
 - The d'Alembertian \(\Box\) is now covered in
-  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  `docs/authoring/notation_glossary.md`; keep this concept aligned as sign conventions
   evolve.
 
 #### Atlas Issues
@@ -2970,7 +2970,7 @@ construction. Retain for this pass.
 #### Schema/View Issues
 
 - Gauge-related notation \(\Lambda\), \(A_\mu\), and \(F_{\mu\nu}\) is now
-  covered in `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as
+  covered in `docs/authoring/notation_glossary.md`; keep this concept aligned as
   convention handling evolves.
 
 #### Atlas Issues
@@ -3067,7 +3067,7 @@ The existing tensor-matrix graphic is appropriate. Retain for this pass.
 #### Schema/View Issues
 
 - Sign conventions for \(F_{\mu\nu}\), \(F^{\mu\nu}\), and the \(E/B\) split
-  are now flagged in `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local
+  are now flagged in `docs/authoring/notation_glossary.md`; continue stating local
   conventions near detailed calculations.
 
 #### Atlas Issues
@@ -3154,7 +3154,7 @@ this pass.
 #### Schema/View Issues
 
 - Potential-form definitions of \(\mathbf E\) and \(\mathbf B\) are now flagged
-  in `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near
+  in `docs/authoring/notation_glossary.md`; continue stating local conventions near
   detailed calculations.
 
 #### Atlas Issues
@@ -3711,7 +3711,7 @@ appropriate. Retain for this pass.
 #### Schema/View Issues
 
 - Sign conventions for \(p_\mu-eA_\mu\), \(q\), and \(e\) are now flagged in
-  `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  `docs/authoring/notation_glossary.md`; continue stating local conventions near detailed
   calculations.
 
 #### Atlas Issues
@@ -3824,7 +3824,7 @@ equation.
 #### Schema/View Issues
 
 - Sign conventions for the field tensor and the charge \(q\) are now flagged in
-  `docs/authoring/NOTATION_GLOSSARY.md`; continue stating local conventions near detailed
+  `docs/authoring/notation_glossary.md`; continue stating local conventions near detailed
   calculations.
 
 #### Atlas Issues
@@ -4565,7 +4565,7 @@ propagation beside a sinusoidal plane-wave slice.
 #### Schema/View Issues
 
 - D'Alembertian sign conventions are now covered in
-  `docs/authoring/NOTATION_GLOSSARY.md`; keep this concept aligned as sign conventions
+  `docs/authoring/notation_glossary.md`; keep this concept aligned as sign conventions
   evolve.
 
 #### Atlas Issues

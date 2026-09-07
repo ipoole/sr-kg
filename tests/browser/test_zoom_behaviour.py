@@ -137,7 +137,7 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
     )
     initial_font_size = _font_size(page, "#kg_controls")
     initial_status_font_size = _font_size(page, "#kg_status")
-    initial_list_font_size = _font_size(page, "#kg_concept_list")
+    initial_list_font_size = _font_size(page, "#kg_module_list")
 
     wheel_was_cancelled = page.locator("#kg_controls").evaluate(
         """panel => panel.dispatchEvent(new WheelEvent("wheel", {
@@ -157,7 +157,7 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
     )
     zoomed_font_size = _font_size(page, "#kg_controls")
     zoomed_status_font_size = _font_size(page, "#kg_status")
-    zoomed_list_font_size = _font_size(page, "#kg_concept_list")
+    zoomed_list_font_size = _font_size(page, "#kg_module_list")
     assert wheel_was_cancelled
     assert abs(zoomed_view["scale"] - initial_view["scale"]) < 0.001
     assert abs(zoomed_view["position"]["x"] - initial_view["position"]["x"]) < 0.001

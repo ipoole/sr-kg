@@ -539,5 +539,5 @@ clickable.
 
 Apply this policy during authoring and review. Refine annotation density and
 short labels through use; do not annotate routine algebra unless it is the
-teaching point. The [notation glossary](NOTATION_GLOSSARY.md) and
-[authoring guide](AUTHORING_GUIDE.md) summarise the convention.
+teaching point. The [notation glossary](notation_glossary.md) and
+[authoring guide](authoring_guide.md) summarise the convention.

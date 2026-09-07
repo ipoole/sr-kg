@@ -12,7 +12,7 @@ These are working drafts, not a second publication to synchronise with CSV.
 Look up current display IDs and module membership in the runtime data.
 Keep concepts in domain-local atlas order where practical. Use
 `docs/authoring/general_relativity_concept_plan.md` for the broader GR atlas
-plan and `docs/authoring/GR_DRAFTING_ISSUES.md` for cross-cutting unresolved
+plan and `docs/authoring/gr_drafting_issues.md` for cross-cutting unresolved
 questions.
 
 ## Template
@@ -567,10 +567,10 @@ content, question, source and graphic review. Their runtime CSV is authoritative
 completed drafts have been retired rather than maintained as duplicate text.
 Current membership and status are recorded in `module_members.csv` and `nodes.csv`.
 
-The [notation glossary](NOTATION_GLOSSARY.md#general-relativity) records the
+The [notation glossary](notation_glossary.md#general-relativity) records the
 shared signature, curvature, action, matter and orbital conventions. The SR and
 GR metric and stress-energy concepts remain separate and linked by `RELATED`.
 
 The mathematics drafts above retain their prerequisite-support scope. Further
 GR scope is recorded in the [concept plan](general_relativity_concept_plan.md),
-with remaining work in [GR drafting issues](GR_DRAFTING_ISSUES.md).
+with remaining work in [GR drafting issues](gr_drafting_issues.md).

@@ -52,11 +52,13 @@ class BrowserGraph:
         self.page.locator(f"#{section_id}").evaluate("el => { el.open = true; }")
 
     def open_search(self) -> None:
-        self.open_control_section("kg_search_section")
+        if not self.page.locator("#kg_search_section").evaluate("el => el.open"):
+            self.page.locator("#kg_search_toggle").click()
 
     def click_concept(self, concept_id: str) -> None:
         self.open_search()
         self.page.locator(f'.kg-concept-item[data-concept-id="{concept_id}"]').click()
+        self.page.locator("#kg_search_close").click()
 
 
 def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:

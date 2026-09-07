@@ -7,7 +7,7 @@ Topic groups below describe subject progression, not runtime modules. Use
 display IDs and status. Semantic IDs keep this plan independent of renumbering.
 
 Reusable mathematics belongs in `math.*`; GR-specific concepts belong in `gr.*`.
-Full authoring follows the [authoring guide](AUTHORING_GUIDE.md).
+Full authoring follows the [authoring guide](authoring_guide.md).
 
 ## Design Assumptions
 

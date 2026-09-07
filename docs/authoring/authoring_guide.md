@@ -22,14 +22,14 @@ the missing step.
 
 1. Read the concept's node, edges, blocks, questions, references, and graphic
    notes, plus nearby prerequisite and descendant concepts.
-2. Check the [schema](../design/kb_schema.md), `NOTATION_GLOSSARY.md`, and the relevant domain
+2. Check the [schema](../design/kb_schema.md), `notation_glossary.md`, and the relevant domain
    plan or exposition file.
 3. Define the scope boundary. Use `\cref{label}{id}` rather than re-teaching
    material owned by another concept.
 4. Check `equality_annotation_style.md` for derivations with meaningful
    equality steps.
 5. Identify useful registered sources. Record uncertain locators in
-   `SOURCE_REVIEW_WORKLIST.md` rather than inventing precision.
+   `source_review_worklist.md` rather than inventing precision.
 
 After each concept, check its block structure, questions, references,
 cross-references, edges, notation, and graphic before continuing.
@@ -58,7 +58,7 @@ derivation steps only when they carry conceptual weight.
 
 Use neutral \(V^\mu\) and \(W^\mu\) for generic four-vectors. Reserve
 \(A^\mu\) for the electromagnetic four-potential unless another use is made
-explicit. Add recurring notation decisions to `NOTATION_GLOSSARY.md`.
+explicit. Add recurring notation decisions to `notation_glossary.md`.
 
 ### CSV And MathJax Escaping
 
