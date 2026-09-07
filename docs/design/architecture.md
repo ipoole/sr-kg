@@ -5,7 +5,9 @@
 The project generates a static interactive HTML viewer from a manifest-backed
 knowledge base. Python loads and validates authored data, resolves relationships
 and layout, renders a base PyVis network, and injects the browser application.
-The generated file needs no application server; MathJax loads from a CDN.
+The generated page needs no application server, but is not self-contained:
+vis-network and MathJax load from CDNs, and the PyVis template also references
+`lib/bindings/utils.js` relative to the HTML file.
 
 `srkg.pipeline` coordinates the stages. `srkg.kb` exposes the loaded knowledge
 model; data, graph diagnostics, layout and SVG graphics can be tested separately
@@ -19,7 +21,8 @@ is an artifact, not an alternative authoring source.
 
 The concept graph provides navigation; flat ordered blocks provide the teaching
 narrative. Block kinds express meaning. Folding, reading modes, visual treatment
-and visibility are viewer policy. The focus lens follows the active detail block
+and visibility are viewer policy; see [Viewer behaviour](viewer.md).
+The focus lens follows the active detail block
 in Auto mode. Manual mode allows arbitrary relation-and-direction traversals at
 one-hop or tree depth and preserves them as concept selection changes. Modules
 containing reached concepts expand temporarily so folding does not hide the
@@ -46,7 +49,9 @@ separate from authored content. Notes can target concept or module sections and
 support backwards-compatible CSV import/export; layout has a
 versioned publication workflow described in [Layout](layout.md). Neither writes
 back to the KB automatically. Browser origin and profile determine which local
-state is available.
+state is available. Notes are anchored by target ID, section title and a local
+text-block index, rather than the authored `block_id`; changing section titles
+or splitting prose can therefore affect their placement.
 
 ## Future plans
 

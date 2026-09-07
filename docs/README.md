@@ -2,10 +2,13 @@
 
 - **Design** describes current contracts and consequential decisions:
   [schema](design/kb_schema.md), [architecture](design/architecture.md),
-  [modules](design/modules.md), and [layout](design/layout.md).
+  [viewer behaviour](design/viewer.md), [modules](design/modules.md), and
+  [layout](design/layout.md).
 - **Authoring** holds the [authoring guide](authoring/AUTHORING_GUIDE.md),
   notation conventions, working drafts, and outstanding editorial work.
 - **Discussion** holds speculative ideas, not instructions for current behaviour.
+  The [user experience review](discussion/user_experience_review.md) records
+  observed usability issues and proposed improvements.
 - [Issues](issues.md) tracks open content and implementation work.
 
 Update the relevant design document when behaviour or a contract changes.

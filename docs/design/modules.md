@@ -55,9 +55,11 @@ use a neutral summary. Hover and relationship details expose the concrete links
 so folding does not erase their meaning. No separate authored module-edge graph
 is required.
 
-Full graph mode shows the three structural relations, filtering before boundary
-aggregation. Focussed mode uses section-dependent context relations. This display
-policy does not remove relationships from the KB or its detail pages.
+Full graph mode uses the three structural relations for its background, filtering
+before boundary aggregation. A concept's lens-selected foreground edges override
+that filter, including non-structural relations. Focussed concept views use the
+Auto section context or Manual lens rules; module selection uses module context.
+This display policy does not remove relationships from the KB or its detail pages.
 
 ## Future plans
 

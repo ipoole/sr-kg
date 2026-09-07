@@ -38,8 +38,9 @@ the view is rebuilt or left and never change saved coordinates or module anchors
 
 Browser-local overrides save global edits relative to the published layout and
 survive reload. They exclude camera, selection, visibility and focussed changes.
-A published-revision mismatch requires an explicit keep-or-reset decision so an
-old personal layout does not silently mask new defaults.
+A published-revision mismatch displays a keep-or-reset warning under
+**Tools → Layouts**. Existing personal positions are applied immediately;
+the warning does not block their use pending a decision.
 
 The layout controls export a complete repository-compatible layout keyed by
 stable semantic IDs, or reset personal overrides to the published defaults.

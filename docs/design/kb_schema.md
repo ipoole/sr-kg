@@ -29,13 +29,8 @@ data/
 
 The default project root is `data/`.
 
-For drafting style and concept-by-concept authoring workflow, see
-`docs/authoring/AUTHORING_GUIDE.md`. Readable exposition drafts live in
-`docs/authoring/sr_concept_expositions.md` and
-`docs/authoring/gr_concept_expositions.md` before or alongside their split into CSV blocks.
-Recurring notation conventions are collected in `docs/authoring/NOTATION_GLOSSARY.md`.
-Broad or missing source locators are tracked in
-`docs/authoring/SOURCE_REVIEW_WORKLIST.md`.
+For drafting, notation and source-review workflows, see the
+[authoring guide](../authoring/AUTHORING_GUIDE.md).
 
 ## manifest.yaml
 
@@ -154,7 +149,7 @@ Allowed `kind` values:
 | `historical_note` | Historical context about discovery, attribution, or influence. |
 | `summary` | A concise recap of the main result or takeaway. |
 
-Initial migrated block IDs use:
+Example stable block IDs:
 
 ```text
 <concept_id>.definition
@@ -232,7 +227,8 @@ Every module must currently have at least one module content block.
 
 `study_questions.csv` contains ordered question/answer material attached to
 concepts. Questions are rendered in the concept details panel after the prose
-sections.
+sections. Reading-mode filtering and answer disclosure are described in
+[Viewer behaviour](viewer.md#reading-and-practice).
 
 | Column | Required | Meaning |
 | --- | --- | --- |
