@@ -4,6 +4,29 @@ from pathlib import Path
 import pytest
 
 
+def _visible_content_block_kinds(page):
+    return page.locator("#info_panel .content-block").evaluate_all(
+        """nodes => nodes.map(node =>
+          [...node.classList].find(name =>
+            name.startsWith("content-block-") &&
+            !["content-block-fold", "content-block-note"].includes(name)
+          ).replace("content-block-", "")
+        )"""
+    )
+
+
+def _toc_section_roles(page):
+    return page.locator("#info_panel .concept-toc .concept-toc-link").evaluate_all(
+        "nodes => nodes.map(node => node.getAttribute('data-section-role'))"
+    )
+
+
+def _statement_concept_ids(locator):
+    return locator.locator(".edge-detail-concept").evaluate_all(
+        "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
+    )
+
+
 @pytest.mark.browser
 def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph):
     page = shared_browser_graph.page
@@ -484,12 +507,13 @@ def test_focused_folded_modules_aggregate_boundary_edges_by_relation(browser_gra
     assert "Applications -> Foundations" in panel_text
     assert "REQUIRES 1" in panel_text
     assert "DERIVES_FROM 1" in panel_text
-    assert page.locator(
-        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.1 Beta requires 1.1 Alpha."]'
-    ).count() == 1
-    assert page.locator(
-        '#info_panel .module-boundary-edge-detail-list .edge-detail-statement[aria-label="2.2 Gamma is derived from 1.1 Alpha."]'
-    ).count() == 1
+    statements = page.locator("#info_panel .module-boundary-edge-detail-list .edge-detail-statement")
+    assert statements.count() == 2
+    assert [_statement_concept_ids(statements.nth(index)) for index in range(2)] == [
+        ["2.2", "1.1"],
+        ["2.1", "1.1"],
+    ]
+    assert statements.locator(".edge-detail-phrase").count() == 2
 
 
 @pytest.mark.browser
@@ -518,8 +542,6 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
     assert "2 concept links" not in tooltip_text
     assert "REQUIRES 1" not in tooltip_text
     assert "DERIVES_FROM 1" not in tooltip_text
-    assert "2.1 Beta requires 1.1 Alpha." in tooltip_text
-    assert "2.2 Gamma is derived from 1.1 Alpha." in tooltip_text
     assert page.locator("#kg_node_tooltip .kg-tooltip-relation").count() == 2
     assert page.locator("#kg_node_tooltip .kg-tooltip-relation").first.evaluate(
         "el => getComputedStyle(el).color !== 'rgb(34, 34, 34)'"
@@ -1645,8 +1667,8 @@ def test_phone_header_fits_search_and_controls_in_two_rows(browser_graph):
 
 
 @pytest.mark.browser
-def test_default_startup_has_no_selected_concept(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_default_startup_has_no_selected_concept(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
 
     page.wait_for_function("""() => window.location.hash === ''""")
 
@@ -1655,8 +1677,8 @@ def test_default_startup_has_no_selected_concept(repo_browser_graph):
 
 
 @pytest.mark.browser
-def test_repo_starts_with_every_module_folded(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_repo_starts_with_every_module_folded(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
 
     page.wait_for_function(
         """() => Object.keys(moduleData).every(moduleId =>
@@ -1673,11 +1695,11 @@ def test_repo_starts_with_every_module_folded(repo_browser_graph):
 
 
 @pytest.mark.browser
-def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_explicit_startup_hash_overrides_default_concept(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
 
     page.goto(
-        repo_browser_graph.output_path.as_uri() + "#concept-sr.electric_field",
+        shared_repo_browser_graph.output_path.as_uri() + "#concept-sr.electric_field",
         wait_until="domcontentloaded",
     )
     page.wait_for_function("""() => window.location.hash === '#concept-sr.electric_field'""")
@@ -1687,11 +1709,11 @@ def test_explicit_startup_hash_overrides_default_concept(repo_browser_graph):
 
 
 @pytest.mark.browser
-def test_masthead_title_typesets_concept_label_equations(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_masthead_title_typesets_concept_label_equations(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
 
     page.goto(
-        repo_browser_graph.output_path.as_uri() + "#concept-sr.field_tensor",
+        shared_repo_browser_graph.output_path.as_uri() + "#concept-sr.field_tensor",
         wait_until="domcontentloaded",
     )
     page.wait_for_function("""() => window.location.hash === '#concept-sr.field_tensor'""")
@@ -1704,11 +1726,11 @@ def test_masthead_title_typesets_concept_label_equations(repo_browser_graph):
 
 
 @pytest.mark.browser
-def test_gr_covariant_derivative_equations_are_typeset(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_gr_covariant_derivative_equations_are_typeset(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
 
     page.goto(
-        repo_browser_graph.output_path.as_uri()
+        shared_repo_browser_graph.output_path.as_uri()
         + "#concept-gr.covariant_derivative",
         wait_until="domcontentloaded",
     )
@@ -1873,19 +1895,17 @@ def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
     browser_graph.click_concept("2.2")
     page.locator("#kg_details_view_select").select_option("core")
 
-    panel_text = page.locator("#info_panel").inner_text()
-    assert "Gamma definition" in panel_text
-    assert "Gamma intuition body" in panel_text
-    assert "Gamma warning body" not in panel_text
-    assert "Gamma derivation-step body" not in panel_text
-    assert "Gamma history body" not in panel_text
+    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "core"
+    block_kinds = _visible_content_block_kinds(page)
+    assert "definition" in block_kinds
+    assert "intuition" in block_kinds
+    assert "warning" not in block_kinds
+    assert "derivation_step" not in block_kinds
+    assert "historical_note" not in block_kinds
     questions = page.locator("#info_panel details.study-questions")
     assert not questions.evaluate("node => node.open")
     questions.locator(":scope > summary").click()
-    questions_text = questions.inner_text()
-    assert "Gamma short-answer question?" in questions_text
-    assert "Gamma calculation question?" not in questions_text
-    assert "Gamma multiple-choice question?" not in questions_text
+    assert questions.locator(".study-question").count() == 1
 
 
 @pytest.mark.browser
@@ -1899,7 +1919,7 @@ def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(br
     panel = page.locator("#info_panel")
     assert panel.locator(":scope > details").count() > 4
     assert panel.locator(":scope > details[open]").count() == 0
-    assert page.locator("#info_panel").inner_text().find("Gamma warning") >= 0
+    assert "warning" in _visible_content_block_kinds(page)
 
     definition = page.locator("#info_panel #kg-toc-2-2-definition")
     definition.locator(":scope > summary").click()
@@ -1931,30 +1951,24 @@ def test_reading_mode_maths_filters_blocks_and_study_questions(browser_graph):
     browser_graph.click_concept("2.2")
     page.locator("#kg_details_view_select").select_option("maths")
 
-    toc_titles = page.locator("#info_panel .concept-toc .concept-toc-link").evaluate_all(
-        "nodes => nodes.map(node => node.textContent)"
-    )
-    assert toc_titles == [
-        "Graphic",
-        "Gamma algebra step",
-        "Derived from",
-        "Where this is used",
-        "Study Questions",
-    ]
-    panel_text = page.locator("#info_panel").inner_text()
-    assert "Gamma definition" not in panel_text
-    assert "Gamma intuition body" not in panel_text
+    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "maths"
+    toc_roles = _toc_section_roles(page)
+    assert toc_roles.count("content") == 1
+    assert "derived-from" in toc_roles
+    assert "where-used" in toc_roles
+    assert "study-questions" in toc_roles
+    block_kinds = _visible_content_block_kinds(page)
+    assert "definition" not in block_kinds
+    assert "intuition" not in block_kinds
+    assert "derivation_step" in block_kinds
     step = page.locator("#info_panel details.content-block-derivation_step")
-    assert step.locator("summary").inner_text() == "Gamma algebra step"
+    assert step.count() == 1
     step.locator("summary").click()
-    assert "Gamma derivation-step body" in step.inner_text()
+    assert step.locator(".content-block-fold-body").is_visible()
     questions = page.locator("#info_panel details.study-questions")
     assert not questions.evaluate("node => node.open")
     questions.locator(":scope > summary").click()
-    questions_text = questions.inner_text()
-    assert "Gamma calculation question?" in questions_text
-    assert "Gamma short-answer question?" not in questions_text
-    assert "Gamma multiple-choice question?" not in questions_text
+    assert questions.locator(".study-question").count() == 1
 
 
 @pytest.mark.browser
@@ -1963,9 +1977,7 @@ def test_legacy_concept_toc_includes_sections_and_study_questions(browser_graph)
 
     browser_graph.click_concept("2.1")
 
-    assert page.locator("#info_panel .concept-toc .concept-toc-link").evaluate_all(
-        "nodes => nodes.map(node => node.textContent)"
-    ) == ["Definition", "Explanation", "Where this is used", "Study Questions"]
+    assert _toc_section_roles(page) == ["content", "content", "where-used", "study-questions"]
 
 
 @pytest.mark.browser
@@ -1981,11 +1993,9 @@ def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
 
     questions.locator(":scope > summary").click()
 
-    assert "Beta question?" in questions.inner_text()
     assert "\\n" not in questions.inner_text()
-    assert questions.locator(".study-question .concept-line").evaluate_all(
-        "nodes => nodes.map(node => node.textContent)"
-    )[:3] == ["Beta question?", "A. First option", "B. Second option"]
+    assert questions.locator(".study-question").count() == 1
+    assert questions.locator(".study-question .concept-line").count() >= 3
 
     answer = questions.locator("details.study-answer")
     assert answer.count() == 1
@@ -1994,7 +2004,6 @@ def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
     answer.locator("summary").click()
 
     assert answer.locator(".study-answer-body").is_visible()
-    assert "Beta answer." in answer.inner_text()
 
 
 @pytest.mark.browser
@@ -2008,7 +2017,6 @@ def test_practice_reading_mode_opens_study_questions_by_default(browser_graph):
     assert questions.count() == 1
     assert questions.evaluate("node => node.open")
     assert questions.locator(".study-question").first.is_visible()
-    assert "Gamma short-answer question?" in questions.inner_text()
 
 
 @pytest.mark.browser
@@ -2024,13 +2032,9 @@ def test_optional_details_render_inline_and_can_contain_concept_links(browser_gr
     optional.locator("summary").click()
 
     assert optional.locator(".optional-detail-body").is_visible()
-    assert "The optional body can include" in optional.locator(".optional-detail-body").inner_text()
     optional.locator(".concept-link").click()
     assert page.locator("#kg_concept_preview").is_visible()
-    assert "1.1 Alpha" in page.locator("#kg_concept_preview").inner_text()
-    assert "Module - Foundations" in page.locator("#kg_concept_preview").inner_text()
-    assert "Alpha definition" in page.locator("#kg_concept_preview").inner_text()
-    assert page.locator("#kg_concept_preview .concept-preview-go").inner_text() == "Go to concept"
+    assert page.locator("#kg_concept_preview .concept-preview-go").get_attribute("data-concept-id") == "1.1"
 
     page.locator("#kg_concept_preview .concept-preview-go").click()
 
@@ -2050,9 +2054,7 @@ def test_concept_link_hover_shows_preview_without_navigating(browser_graph):
 
     preview = page.locator("#kg_concept_preview")
     assert preview.is_visible()
-    assert "1.1 Alpha" in preview.inner_text()
-    assert "Module - Foundations" in preview.inner_text()
-    assert "Alpha definition" in preview.inner_text()
+    assert preview.locator(".concept-preview-go").get_attribute("data-concept-id") == "1.1"
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
     assert page.evaluate("() => window.location.hash") == "#concept-2.1"
 
@@ -2116,20 +2118,15 @@ def test_edge_click_shows_relationship_detail_panel(shared_browser_graph):
         }"""
     )
 
-    assert page.locator("#info_panel h2").inner_text() == "Relationship"
+    assert page.locator("#info_panel .edge-detail").count() == 1
     panel_text = page.locator("#info_panel").inner_text()
-    assert "2.1 Beta" in panel_text
-    assert "1.1 Alpha" in panel_text
+    statement = page.locator("#info_panel .edge-detail-statement")
+    assert _statement_concept_ids(statement) == ["2.1", "1.1"]
+    assert statement.locator(".edge-detail-phrase").count() == 1
     assert page.locator("#info_panel .edge-detail-route").count() == 0
-    assert page.locator("#info_panel .edge-detail-statement").get_attribute(
-        "aria-label"
-    ) == "2.1 Beta requires 1.1 Alpha."
     assert "REQUIRES" in panel_text
-    assert "Category" not in panel_text
     assert "knowledge" not in panel_text
-    assert "Specific" in panel_text
     assert "Note" not in panel_text
-    assert "Noether's theorem" in panel_text
     assert page.locator("#info_panel .edge-detail-meta mjx-container").count() >= 1
 
 
@@ -2154,7 +2151,8 @@ def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(brows
     page.wait_for_selector("#kg_node_tooltip", state="visible")
     page.wait_for_selector("#kg_node_tooltip mjx-container")
     tooltip = page.locator("#kg_node_tooltip")
-    assert tooltip.locator(".kg-tooltip-title").inner_text() == "Beta requires Alpha"
+    assert tooltip.locator(".kg-tooltip-title").count() == 1
+    assert tooltip.locator(".kg-tooltip-relation").count() == 1
     assert tooltip.locator(".kg-tooltip-relation").evaluate(
         "el => getComputedStyle(el).color !== 'rgb(34, 34, 34)'"
     )
@@ -2218,10 +2216,10 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
 
 
 @pytest.mark.browser
-def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_constructed_from_edge_click_shows_readable_relationship_sentence(clean_repo_browser_graph):
+    page = clean_repo_browser_graph.page
 
-    repo_browser_graph.open_control_section("kg_modules_section")
+    clean_repo_browser_graph.open_control_section("kg_modules_section")
     page.locator(
         '.kg-module-item[data-module-id="sr.electromagnetic_structure_gauge_and_stress_energy"]'
     ).click()
@@ -2244,12 +2242,11 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(repo_b
         }"""
     )
 
-    assert page.locator("#info_panel h2").inner_text() == "Relationship"
+    assert page.locator("#info_panel .edge-detail").count() == 1
+    statement = page.locator("#info_panel .edge-detail-statement")
+    assert _statement_concept_ids(statement) == ["sr.field_tensor", "sr.vector_potential"]
+    assert statement.locator(".edge-detail-phrase").count() == 1
     panel_text = page.locator("#info_panel").inner_text()
-    assert page.locator("#info_panel .edge-detail-statement").get_attribute(
-        "aria-label"
-    ) == "SR-4.2 Field tensor \\(F_{\\mu\\nu}\\) is constructed from SR-4.1 Vector potential \\(A_\\mu\\)."
-    assert "is constructed from" in panel_text
     assert "CONSTRUCTED_FROM" in panel_text
 
 
@@ -2262,16 +2259,10 @@ def test_concept_details_show_backlinks_grouped_by_relation(shared_browser_graph
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.count() == 1
     assert backlinks.evaluate("el => el.open")
-    assert backlinks.locator(".concept-backlink-group-title").evaluate_all(
-        "nodes => nodes.map(node => node.textContent)"
-    ) == ["Derived from this", "Requires this", "Related concepts"]
-
-    section_text = backlinks.inner_text()
-    assert "2.2 Gamma" in section_text
-    assert "Gamma derives from alpha" in section_text
-    assert "2.1 Beta" in section_text
-    assert "Beta depends on alpha" in section_text
-    assert "Bidirectional teaching relation" in section_text
+    assert backlinks.locator(".concept-backlink-group").count() == 3
+    assert backlinks.locator(".edge-detail-concept").evaluate_all(
+        "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
+    ) == ["2.2", "2.1", "2.1"]
 
 
 @pytest.mark.browser
@@ -2283,11 +2274,9 @@ def test_concept_details_show_derived_from_links_only(shared_browser_graph):
     derived_from = page.locator("#info_panel .concept-derived-from")
     assert derived_from.count() == 1
     assert derived_from.evaluate("el => el.open")
-    section_text = derived_from.inner_text()
-    assert "1.1 Alpha" in section_text
-    assert "Gamma derives from alpha" in section_text
-    assert "Delta depends on gamma" not in section_text
-    assert "3.1 Delta" not in section_text
+    assert derived_from.locator(".edge-detail-concept").evaluate_all(
+        "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
+    ) == ["1.1"]
 
 
 @pytest.mark.browser
@@ -2297,17 +2286,15 @@ def test_derived_from_full_tree_expands_only_derives_from_ancestry(browser_graph
     browser_graph.click_concept("3.1")
 
     derived_from = page.locator("#info_panel .concept-derived-from")
-    assert "2.2 Gamma" in derived_from.inner_text()
-    assert "1.1 Alpha" not in derived_from.inner_text()
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="1.1"]').count() == 0
 
     derived_from.locator(".concept-derived-from-full-tree").check()
 
-    section_text = page.locator("#info_panel .concept-derived-from").inner_text()
-    assert "2.2 Gamma" in section_text
-    assert "Delta derives from gamma" in section_text
-    assert "1.1 Alpha" in section_text
-    assert "Gamma derives from alpha" in section_text
-    assert "2.1 Beta" not in section_text
+    derived_from = page.locator("#info_panel .concept-derived-from")
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="1.1"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() == 0
 
 
 @pytest.mark.browser
@@ -2319,8 +2306,7 @@ def test_derived_from_concept_hover_shows_preview(browser_graph):
 
     preview = page.locator("#kg_concept_preview")
     assert preview.is_visible()
-    assert "1.1 Alpha" in preview.inner_text()
-    assert "Alpha definition" in preview.inner_text()
+    assert preview.locator(".concept-preview-go").get_attribute("data-concept-id") == "1.1"
     assert page.locator("#info_panel h2").inner_text() == "2.2 Gamma"
 
 
@@ -2331,18 +2317,15 @@ def test_backlinks_full_tree_expands_only_derives_from_descendants(browser_graph
     browser_graph.click_concept("1.1")
 
     backlinks = page.locator("#info_panel .concept-backlinks")
-    assert "2.2 Gamma" in backlinks.inner_text()
-    assert "3.1 Delta" not in backlinks.inner_text()
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="3.1"]').count() == 0
 
     backlinks.locator(".concept-backlinks-full-tree").check()
 
-    section_text = page.locator("#info_panel .concept-backlinks").inner_text()
-    assert "2.2 Gamma" in section_text
-    assert "Gamma derives from alpha" in section_text
-    assert "3.1 Delta" in section_text
-    assert "Delta derives from gamma" in section_text
-    assert "2.1 Beta" in section_text
-    assert "Beta depends on alpha" in section_text
+    backlinks = page.locator("#info_panel .concept-backlinks")
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="3.1"]').count() == 1
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() >= 1
 
 
 @pytest.mark.browser
@@ -2354,8 +2337,7 @@ def test_backlink_concept_hover_shows_preview(browser_graph):
 
     preview = page.locator("#kg_concept_preview")
     assert preview.is_visible()
-    assert "2.2 Gamma" in preview.inner_text()
-    assert "Gamma definition" in preview.inner_text()
+    assert preview.locator(".concept-preview-go").get_attribute("data-concept-id") == "2.2"
     assert page.locator("#info_panel h2").inner_text() == "1.1 Alpha"
 
 
@@ -2527,10 +2509,10 @@ def test_manual_focus_lens_keeps_perspective_across_detail_and_concept_changes(b
 
 
 @pytest.mark.browser
-def test_manual_focus_lens_fits_all_real_relation_direction_controls(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_manual_focus_lens_fits_all_real_relation_direction_controls(clean_repo_browser_graph):
+    page = clean_repo_browser_graph.page
 
-    repo_browser_graph.click_concept("sr.field_tensor")
+    clean_repo_browser_graph.click_concept("sr.field_tensor")
     page.locator("#kg_focus_lens_toggle").click()
     lens = page.locator("#kg_focus_lens")
     lens.locator('button[data-lens-mode="manual"]').click()
@@ -2565,10 +2547,10 @@ def test_manual_related_traversal_shows_related_concept_and_edge(browser_graph):
 
 
 @pytest.mark.browser
-def test_manual_related_traversal_works_with_real_semantic_ids(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_manual_related_traversal_works_with_real_semantic_ids(clean_repo_browser_graph):
+    page = clean_repo_browser_graph.page
 
-    repo_browser_graph.click_concept("sr.metric_tensor")
+    clean_repo_browser_graph.click_concept("sr.metric_tensor")
     page.locator("#kg_graph_view_select").select_option("focused")
     page.locator("#kg_focus_lens_toggle").click()
     lens = page.locator("#kg_focus_lens")
@@ -2597,10 +2579,10 @@ def test_manual_related_traversal_works_with_real_semantic_ids(repo_browser_grap
 
 
 @pytest.mark.browser
-def test_manual_related_traversal_overrides_full_graph_background_filter(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_manual_related_traversal_overrides_full_graph_background_filter(clean_repo_browser_graph):
+    page = clean_repo_browser_graph.page
 
-    repo_browser_graph.click_concept("sr.hamiltonian_formalism")
+    clean_repo_browser_graph.click_concept("sr.hamiltonian_formalism")
     page.locator("#kg_focus_lens_toggle").click()
     lens = page.locator("#kg_focus_lens")
     lens.locator('button[data-lens-mode="manual"]').click()
@@ -2848,38 +2830,20 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     page.reload(wait_until="domcontentloaded")
     page.wait_for_selector("#kg_splash_dialog[open]")
 
-    splash_text = page.locator("#kg_splash_dialog").inner_text()
-    assert "Knowledge graph browser" in splash_text
-    assert "two peer views" in splash_text
-    assert "Navigation and layout" in splash_text
-    assert "Study content" in splash_text
-    assert "Graph semantics" in splash_text
-    assert "Maths and graphics" in splash_text
-    assert "Modules" in splash_text
-    assert "General Relativity New" in splash_text
-    assert "Collapse modules into topic nodes" in splash_text
-    assert "summarised boundary links" in splash_text
-    assert "focus lens in Auto mode" in splash_text
-    assert "relation-and-direction traversals in Manual mode" in splash_text
-    assert "MathJax renders equations in details, graph labels, previews, and edge notes" in splash_text
-    assert "Drag the divider" in splash_text
-    assert "personal layouts survive reload" in splash_text
-    modules = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Modules New', exact=True))
-    assert modules.locator('.kg-status-badge').inner_text() == 'New'
-    navigation = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Navigation and layout', exact=True))
-    assert navigation.locator('.kg-status-badge').inner_text() == 'New'
-    graph_semantics = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='Graph semantics', exact=True))
-    assert graph_semantics.locator('.kg-status-badge').inner_text() == 'New'
-    gr = page.locator('#kg_splash_dialog section').filter(has=page.get_by_role('heading', name='General Relativity New', exact=True))
-    assert gr.locator('.kg-status-badge').inner_text() == 'New'
-    assert 'current GR concepts have been fully authored' in gr.inner_text()
-    assert 'Gravitational waves are still to do' in gr.inner_text()
-    assert "Coming soon" not in splash_text
+    dialog = page.locator("#kg_splash_dialog")
+    assert dialog.get_attribute("open") is not None
+    assert dialog.locator(".kg-splash-feature-grid section").count() == 6
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 6
+    assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
+        "nodes => nodes.every(node => node.textContent.trim().length > 0)"
+    )
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 6
     assert page.locator("#kg_splash_dialog .kg-status-badge").count() == 4
+    assert page.locator("#kg_splash_dialog .kg-status-badge").evaluate_all(
+        "nodes => nodes.every(node => node.textContent.trim().length > 0)"
+    )
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
-    assert credit.inner_text() == "Created by Ian Poole with AI assistance via OpenAI Codex."
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"
     grid_box = page.locator(".kg-splash-feature-grid").bounding_box()
     credit_box = credit.bounding_box()

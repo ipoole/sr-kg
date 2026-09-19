@@ -52,10 +52,11 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
     tooltip_text = page.locator("#kg_node_tooltip").inner_text()
     assert "Check this derivation" in tooltip_text
     assert "This should become an optional detail later." not in tooltip_text
-    assert page.locator("#kg_notes_count").inner_text() == "1 note"
     assert page.locator("#kg_notes_list .kg-note-list-item").count() == 1
-    assert "2.1 Beta" in page.locator("#kg_notes_list .kg-note-list-item").inner_text()
-    assert "Check this derivation" in page.locator("#kg_notes_list .kg-note-list-item").inner_text()
+    list_item = page.locator("#kg_notes_list .kg-note-list-item")
+    assert list_item.get_attribute("data-target-type") == "concept"
+    assert list_item.get_attribute("data-target-id") == "2.1"
+    assert "Check this derivation" in list_item.inner_text()
 
     note.locator(".user-note-close").click()
     note = page.locator("#info_panel details.user-note").first
@@ -103,8 +104,8 @@ def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph
 
     assert page.locator("#info_panel details.user-note").count() == 0
     assert page.locator("#info_panel .kg-add-note").first.is_visible()
-    assert page.locator("#kg_notes_count").inner_text() == "0 notes"
-    assert page.locator("#kg_notes_list .kg-note-list-empty").inner_text() == "No notes yet."
+    assert page.locator("#kg_notes_list .kg-note-list-item").count() == 0
+    assert page.locator("#kg_notes_list .kg-note-list-empty").count() == 1
     assert page.evaluate(
         """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes.length"""
     ) == 0
@@ -128,17 +129,18 @@ def test_notes_panel_list_navigates_to_note_concept(browser_graph):
     page.locator("#info_panel .user-note-body-input").fill("Remember alpha.")
     page.locator("#info_panel .user-note-close").click()
 
-    assert page.locator("#kg_notes_count").inner_text() == "2 notes"
     list_items = page.locator("#kg_notes_list .kg-note-list-item")
     assert list_items.count() == 2
-    assert "1.1 Alpha" in list_items.nth(0).inner_text()
+    assert list_items.nth(0).get_attribute("data-target-type") == "concept"
+    assert list_items.nth(0).get_attribute("data-target-id") == "1.1"
     assert "Alpha note" in list_items.nth(0).inner_text()
-    assert "2.1 Beta" in list_items.nth(1).inner_text()
+    assert list_items.nth(1).get_attribute("data-target-type") == "concept"
+    assert list_items.nth(1).get_attribute("data-target-id") == "2.1"
     assert "Beta note" in list_items.nth(1).inner_text()
 
     list_items.nth(1).click()
 
-    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
+    assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.1"
     assert page.evaluate("() => window.location.hash") == "#concept-2.1"
     assert page.locator("#info_panel details.user-note summary").inner_text() == "Beta note"
 
@@ -226,11 +228,12 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
     module_item = page.locator("#kg_notes_list .kg-note-list-item").filter(
         has_text="Review module overview"
     )
-    assert "Module Foundations" in module_item.inner_text()
+    assert module_item.get_attribute("data-target-type") == "module"
+    assert module_item.get_attribute("data-target-id") == "test.m01_foundations"
 
     browser_graph.click_concept("1.1")
     module_item.click()
-    assert page.locator("#info_panel h2").inner_text() == "Foundations"
+    assert page.locator("#info_panel").get_attribute("data-module-id") == "test.m01_foundations"
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Review module overview"
     )

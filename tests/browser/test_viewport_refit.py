@@ -26,22 +26,25 @@ def _view_distance(left, right):
     )
 
 
-def _wait_for_refit(page):
-    page.wait_for_timeout(700)
-
-
 def _enter_browsing_mode(browser_graph, mode):
     page = browser_graph.page
     browser_graph.click_concept("3.1")
-    _wait_for_refit(page)
 
     if mode == "all":
         return
     if mode == "focused":
         page.locator("#kg_graph_view_select").select_option("focused")
+        page.wait_for_function(
+            """() => {
+              const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
+              return hidden["1.1"] === true &&
+                hidden["2.1"] === false &&
+                hidden["2.2"] === false &&
+                hidden["3.1"] === false;
+            }"""
+        )
     else:
         raise AssertionError(f"unknown mode: {mode}")
-    _wait_for_refit(page)
 
 
 @pytest.mark.browser
@@ -57,7 +60,14 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
     graph_pane_visible = page.locator("#kg_graph_pane").bounding_box()
     shell = page.locator("#kg_workspace").bounding_box()
     page.locator("#kg_details_view_select").select_option("hide")
-    _wait_for_refit(page)
+    page.wait_for_function(
+        """() => {
+          const bodyReady = document.body.classList.contains("kg-details-hidden");
+          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
+          const shell = document.getElementById("kg_workspace").getBoundingClientRect();
+          return bodyReady && graph.width > shell.width * 0.95;
+        }"""
+    )
     graph_pane_expanded = page.locator("#kg_graph_pane").bounding_box()
 
     assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")

@@ -140,8 +140,8 @@ def test_export_reload_and_repeated_folding_preserve_geometry(browser_graph, tmp
 
 
 @pytest.mark.browser
-def test_full_dataset_module_boxes_fit_their_labels_and_contents(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_full_dataset_module_boxes_fit_their_labels_and_contents(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
     # MathJax can finish label typesetting just after the splash is dismissed.
     # Wait for its footprint refresh, rather than checking a transitional box.
     page.wait_for_function("""() => {
@@ -166,4 +166,4 @@ def test_full_dataset_module_boxes_fit_their_labels_and_contents(repo_browser_gr
     for result in results:
         for side in ('left', 'right', 'top', 'bottom'):
             assert result['bounds'][side] == pytest.approx(result['footprint'][side], abs=1), result['id']
-    assert repo_browser_graph.page_errors == []
+    assert shared_repo_browser_graph.page_errors == []

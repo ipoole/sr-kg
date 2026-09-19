@@ -448,21 +448,7 @@ def _open_browser_graph(playwright_api, browser, output_path: Path):
             ),
         )
         page.goto(output_path.as_uri(), wait_until="domcontentloaded")
-        page.wait_for_selector("#kg_controls", state="attached")
-        page.wait_for_selector("#info_panel", state="attached")
-        page.wait_for_function(
-            """() =>
-              typeof network !== "undefined" &&
-              typeof nodes !== "undefined" &&
-              typeof edges !== "undefined" &&
-              document.querySelector("#kg_node_labels")
-            """
-        )
-        try:
-            page.locator("#kg_splash_dialog[open]").wait_for(timeout=1000)
-            page.locator("#kg_splash_dismiss").click()
-        except playwright_api.TimeoutError:
-            pass
+        _wait_for_browser_graph_ready(playwright_api, page)
 
         yield BrowserGraph(
             page=page,
@@ -472,6 +458,25 @@ def _open_browser_graph(playwright_api, browser, output_path: Path):
         )
     finally:
         context.close()
+
+
+def _wait_for_browser_graph_ready(playwright_api, page) -> None:
+    page.wait_for_selector("#kg_controls", state="attached")
+    page.wait_for_selector("#info_panel", state="attached")
+    page.wait_for_function(
+        """() =>
+          typeof network !== "undefined" &&
+          typeof nodes !== "undefined" &&
+          typeof edges !== "undefined" &&
+          document.querySelector("#kg_node_labels")
+        """
+    )
+    try:
+        if page.locator("#kg_splash_dialog[open]").count() == 0:
+            return
+        page.locator("#kg_splash_dismiss").click()
+    except playwright_api.TimeoutError:
+        pass
 
 
 @pytest.fixture(scope="session")
@@ -530,3 +535,23 @@ def repo_browser_graph(repo_browser_output, playwright_browser):
     playwright_api, browser = playwright_browser
     with _open_browser_graph(playwright_api, browser, repo_browser_output) as graph:
         yield graph
+
+
+@pytest.fixture(scope="module")
+def shared_repo_browser_graph(repo_browser_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(playwright_api, browser, repo_browser_output) as graph:
+        yield graph
+
+
+@pytest.fixture
+def clean_repo_browser_graph(shared_repo_browser_graph, playwright_browser):
+    playwright_api, _browser = playwright_browser
+    shared_repo_browser_graph.page_errors.clear()
+    shared_repo_browser_graph.console_errors.clear()
+    shared_repo_browser_graph.page.goto(
+        shared_repo_browser_graph.output_path.as_uri(),
+        wait_until="domcontentloaded",
+    )
+    _wait_for_browser_graph_ready(playwright_api, shared_repo_browser_graph.page)
+    yield shared_repo_browser_graph

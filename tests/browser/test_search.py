@@ -3,13 +3,13 @@ import pytest
 pytestmark = pytest.mark.browser
 
 
-def test_exact_title_search_opens_real_concept_first(repo_browser_graph):
-    page = repo_browser_graph.page
-    repo_browser_graph.open_search()
+def test_exact_title_search_opens_real_concept_first(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.open_search()
     page.locator('#kg_search').fill('Lorentz transformations')
     page.locator('#kg_search').press('Enter')
     assert page.locator('#kg_concept_list button').first.get_attribute('data-concept-id') == 'sr.lorentz_transformations'
-    assert 'Lorentz transformations' in page.locator('#info_panel h2').inner_text()
+    assert page.locator('#info_panel').get_attribute('data-concept-id') == 'sr.lorentz_transformations'
     assert page.url.endswith('#concept-sr.lorentz_transformations')
 
 
@@ -20,7 +20,7 @@ def test_exact_module_beats_partial_concept_title(browser_graph):
     page.locator('#kg_search').fill('Applications')
     page.locator('#kg_search').press('Enter')
     assert page.locator('#kg_concept_list button').first.get_attribute('data-module-id') == 'test.m02_applications'
-    assert page.locator('#info_panel h2').inner_text() == 'Applications'
+    assert page.locator('#info_panel').get_attribute('data-module-id') == 'test.m02_applications'
 
 
 def test_search_ties_empty_and_no_results(browser_graph):
@@ -35,7 +35,8 @@ def test_search_ties_empty_and_no_results(browser_graph):
     assert page.url.endswith('#concept-2.2')
     page.locator('#kg_search').fill('unmatchedxyz')
     page.locator('#kg_search').press('Enter')
-    assert 'No matching' in page.locator('#kg_concept_list').inner_text()
+    assert page.locator('#kg_concept_list .kg-concept-item').count() == 0
+    assert page.locator('#kg_concept_list .kg-module-search-item').count() == 0
     assert page.url.endswith('#concept-2.2')
     page.locator('#kg_search').fill('')
     assert page.locator('#kg_concept_list .kg-concept-item').count() == 4

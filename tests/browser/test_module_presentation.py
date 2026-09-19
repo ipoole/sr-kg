@@ -2,8 +2,8 @@ import pytest
 
 
 @pytest.mark.browser
-def test_real_module_label_ink_stays_inside_boxes(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_real_module_label_ink_stays_inside_boxes(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
     result = page.evaluate("""() => {
       const ctx = network.canvas.frame.canvas.getContext('2d');
       const original = ctx.fillText, failures = [];
@@ -91,11 +91,13 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
 @pytest.mark.browser
 def test_initial_prompt_includes_modules_and_unnecessary_recenter_control_is_absent(browser_graph):
     page = browser_graph.page
-    assert 'Select a concept or module, or double-click a module to expand it.' in page.locator('#info_panel').inner_text()
+    assert page.locator('#info_panel').get_attribute('data-concept-id') is None
+    assert page.locator('#info_panel').get_attribute('data-module-id') is None
     assert page.locator('#kg_layout_recenter_module').count() == 0
     browser_graph.click_concept('2.1')
     page.locator('#kg_clear_selection').click()
-    assert 'Select a concept or module, or double-click a module to expand it.' in page.locator('#info_panel').inner_text()
+    assert page.locator('#info_panel').get_attribute('data-concept-id') is None
+    assert page.locator('#info_panel').get_attribute('data-module-id') is None
 
 
 @pytest.mark.browser

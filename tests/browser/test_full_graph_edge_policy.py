@@ -39,10 +39,10 @@ def test_full_graph_filters_edges_and_focused_restores_them(browser_graph, folde
 
 
 @pytest.mark.browser
-def test_real_full_graph_filters_internal_and_projected_edges(repo_browser_graph):
-    page = repo_browser_graph.page
+def test_real_full_graph_filters_internal_and_projected_edges(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
     assert visible_relations(page) == KEY_RELATIONS
-    repo_browser_graph.open_control_section('kg_modules_section')
+    shared_repo_browser_graph.open_control_section('kg_modules_section')
     page.locator('#kg_modules_expand_all').click()
     assert visible_relations(page) == KEY_RELATIONS
     assert page.evaluate('() => edges.get().some(e => !e.isModuleEdge && e.relation === "RELATED")')

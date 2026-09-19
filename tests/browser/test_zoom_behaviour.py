@@ -74,7 +74,7 @@ def test_node_labels_hide_when_zoomed_out_below_readable_size(browser_graph):
 def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
-    page.wait_for_timeout(700)
+    page.wait_for_selector('#info_panel[data-concept-id="2.1"]')
     page.evaluate(
         """() => {
           network.moveTo({
@@ -171,7 +171,7 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
 def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
-    page.wait_for_timeout(250)
+    page.wait_for_selector('#info_panel[data-concept-id="2.1"]')
 
     if not page.evaluate("""() => Boolean(window.TouchEvent && window.Touch)"""):
         pytest.skip("Browser does not support synthetic TouchEvent construction")
