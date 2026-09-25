@@ -152,6 +152,7 @@ applications.
 | `gr.light_deflection` | Light deflection | Null geodesics in weak gravity. |
 | `gr.perihelion_precession` | Perihelion precession | Classic weak-field orbital correction. |
 | `gr.post_newtonian_approximation` | Post-Newtonian approximation | Optional bridge to precision tests. |
+| `gr.gravitational_waves` | Gravitational waves | Weak-field vacuum radiation and tidal strain. |
 
 ## Schwarzschild Geometry And Black Holes
 

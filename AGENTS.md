@@ -36,3 +36,16 @@ conda run -n sr-kg pytest -q tests/browser
 
 In managed Codex sessions, running browser tests may require command escalation
 because Chromium must launch outside the normal command sandbox.
+
+## Build Artifacts
+
+`output/interactive_graph.html` is a generated build product. After any material
+data, content, layout, or viewer change, rebuild it with:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py --data-root data --out output/interactive_graph.html
+```
+
+Because the file is large, leave it out of commits unless the user explicitly
+asks to include it. It is acceptable for this file to remain git-dirty for the
+user to commit selectively.

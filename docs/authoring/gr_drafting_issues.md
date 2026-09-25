@@ -4,7 +4,7 @@ The existing 55 GR concepts have completed full authoring. Runtime CSV carries
 the text and status; the [notation glossary](notation_glossary.md#general-relativity)
 records the conventions that future changes must preserve.
 
-- Gravitational waves remain planned but unseeded. Cosmology and advanced tools
+- Gravitational waves are now seeded in GR-5. Cosmology and advanced tools
   remain deferred; see the [concept plan](general_relativity_concept_plan.md).
 - Supporting mathematics remains `prerequisite_support`; its unfinished exposition
   and source work is retained in [the drafts](gr_concept_expositions.md).

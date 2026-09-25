@@ -151,8 +151,8 @@ def test_proposed_sr_partition_is_complete_cohesive_and_acyclic():
     candidate = analyse_partition(graph, assignment, origin="editorial proposal")
 
     assert candidate.module_count == 5
-    assert candidate.module_sizes == (11, 6, 9, 13, 8)
-    assert candidate.internal_edge_count == 60
+    assert candidate.module_sizes == (13, 6, 9, 13, 8)
+    assert candidate.internal_edge_count == 62
     assert candidate.boundary_edge_count == 28
     assert candidate.is_dag is True
 
@@ -170,13 +170,13 @@ def test_proposed_gr_partition_is_complete_cohesive_and_acyclic():
     candidate = analyse_partition(graph, assignment, origin="editorial proposal")
 
     assert candidate.module_count == 6
-    assert sorted(candidate.module_sizes) == [6, 6, 7, 10, 12, 14]
+    assert sorted(candidate.module_sizes) == [6, 7, 7, 10, 12, 14]
     # The Schwarzschild chart is a prerequisite of its coordinate-failure example.
-    assert candidate.internal_edge_count == 53
-    assert candidate.boundary_edge_count == 28
+    assert candidate.internal_edge_count == 54
+    assert candidate.boundary_edge_count == 30
     assert candidate.boundary_relation_counts == {
         "CONSTRUCTED_FROM": 8,
-        "DERIVES_FROM": 10,
-        "REQUIRES": 10,
+        "DERIVES_FROM": 11,
+        "REQUIRES": 11,
     }
     assert candidate.is_dag is True

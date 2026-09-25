@@ -414,6 +414,137 @@ def create_3_3_lorentz_transformations(variant: str = "icon") -> str:
     return _svg(node_id, "Lorentz transformations", body, defs)
 
 
+def create_sr_time_dilation(variant: str = "icon") -> str:
+    """Time dilation: moving clock ticks fewer times between frame-time marks."""
+    node_id = "sr.time_dilation"
+    axis_marker, defs = _axis_arrow_defs(node_id, BLACK)
+    clock_marker = f"{_sid(node_id)}_clock_arrow"
+    defs.append(_arrow_marker(clock_marker, colour=GREEN, size=6))
+
+    body: list[str] = []
+    ox, oy = 92, 404
+    y_start, y_end = 350, 132
+    x_lab = 156
+    x_move_start, x_move_end = 236, 348
+
+    if variant == "detail":
+        body.extend(_draw_grid(ox, 112, 328, 292, 54))
+        for y in [y_start, y_end]:
+            body.append(_line(ox + 18, y, 416, y, stroke=LIGHT_GREY, stroke_width=3.5,
+                              stroke_dasharray="8 9", stroke_linecap="round"))
+
+    body.extend(_draw_axes(ox, oy, 330, 304, axis_marker, x_label="x", y_label="ct",
+                           stroke_width=5.5))
+
+    body.append(_line(x_lab, y_start, x_lab, y_end, stroke=BLACK, stroke_width=7,
+                      stroke_linecap="round", marker_end=f"url(#{clock_marker})"))
+    body.append(_line(x_move_start, y_start, x_move_end, y_end, stroke=GREEN,
+                      stroke_width=8, stroke_linecap="round",
+                      marker_end=f"url(#{clock_marker})"))
+
+    # More coordinate-time ticks on the lab axis than proper-time ticks on the
+    # moving clock line: this is the icon-scale lesson.
+    for y in [318, 286, 254, 222, 190, 158]:
+        body.append(_tick(x_lab, y, 0, 34, stroke=BLUE, stroke_width=4.5,
+                          stroke_linecap="round"))
+    for x, y in [(260, 304), (292, 242), (324, 180)]:
+        body.append(_tick(x, y, 27, 34, stroke=AMBER, stroke_width=5,
+                          stroke_linecap="round"))
+
+    body.append(_circle(x_move_start, y_start, 13, fill=RED, stroke=BLACK, stroke_width=2.5))
+    body.append(_circle(x_move_end, y_end, 13, fill=RED, stroke=BLACK, stroke_width=2.5))
+    body.append(_text(x_lab - 44, 244, "t", font_size=42, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+    body.append(_text(306, 248, "τ", font_size=46, font_family=FONT,
+                      font_style="italic", fill=AMBER, text_anchor="middle"))
+
+    if variant == "detail":
+        body.append(_text(330, 94, "Δt = γΔτ", font_size=36, font_family=FONT,
+                          font_style="italic", fill=GREEN, text_anchor="middle"))
+        body.append(_text(166, 126, "frame time", font_size=24, font_family=FONT,
+                          fill=GREY, text_anchor="middle"))
+        body.append(_text(374, 160, "moving clock", font_size=24, font_family=FONT,
+                          fill=GREEN, text_anchor="middle"))
+    else:
+        body.append(_text(382, 112, "γ", font_size=48, font_family=FONT,
+                          font_style="italic", fill=GREEN, text_anchor="middle"))
+
+    return _svg(node_id, "Time dilation", body, defs)
+
+
+def create_sr_length_contraction(variant: str = "icon") -> str:
+    """Length contraction: moving ruler measured shorter along motion."""
+    node_id = "sr.length_contraction"
+    axis_marker, defs = _axis_arrow_defs(node_id, BLACK)
+    v_marker = f"{_sid(node_id)}_v_arrow"
+    defs.append(_arrow_marker(v_marker, colour=BLUE, size=6))
+
+    body: list[str] = []
+
+    if variant != "detail":
+        body.append(_rect(90, 166, 292, 34, rx=9, fill="#fff8e8",
+                          stroke=AMBER, stroke_width=4))
+        body.append(_rect(126, 286, 210, 34, rx=9, fill="#edf3ff",
+                          stroke=BLUE, stroke_width=4))
+        for x in [112, 156, 200, 244, 288, 332, 370]:
+            body.append(_line(x, 166, x, 200, stroke=AMBER, stroke_width=3,
+                              opacity="0.68"))
+        for x in [146, 190, 234, 278, 322]:
+            body.append(_line(x, 286, x, 320, stroke=BLUE, stroke_width=3,
+                              opacity="0.75"))
+        body.append(_line(348, 303, 420, 303, stroke=BLUE, stroke_width=7,
+                          stroke_linecap="round", marker_end=f"url(#{v_marker})"))
+        body.append(_text(236, 148, "L₀", font_size=42, font_family=FONT,
+                          font_style="italic", fill=AMBER, text_anchor="middle"))
+        body.append(_text(230, 374, "L = L₀/γ", font_size=42, font_family=FONT,
+                          font_style="italic", fill=BLUE, text_anchor="middle"))
+        body.append(_text(410, 282, "v", font_size=38, font_family=FONT,
+                          font_style="italic", fill=BLUE, text_anchor="middle"))
+        return _svg(node_id, "Length contraction", body, defs)
+
+    ox, oy = 88, 404
+    body.extend(_draw_grid(ox, 112, 330, 292, 54))
+    body.extend(_draw_axes(ox, oy, 330, 304, axis_marker, x_label="x", y_label="ct",
+                           stroke_width=5.2))
+
+    # Parallel endpoint worldlines of the moving ruler.
+    left_bottom, left_top = (176, 356), (254, 122)
+    right_bottom, right_top = (336, 356), (414, 122)
+    for p1, p2 in [(left_bottom, left_top), (right_bottom, right_top)]:
+        body.append(_line(p1[0], p1[1], p2[0], p2[1], stroke=GREEN, stroke_width=7,
+                          stroke_linecap="round"))
+
+    # Simultaneous endpoint events in the measuring frame.
+    y_measure = 238
+    x_left, x_right = 215, 375
+    body.append(_line(x_left, y_measure, x_right, y_measure, stroke=BLUE,
+                      stroke_width=8, stroke_linecap="round"))
+    body.append(_circle(x_left, y_measure, 12, fill=RED, stroke=BLACK, stroke_width=2.3))
+    body.append(_circle(x_right, y_measure, 12, fill=RED, stroke=BLACK, stroke_width=2.3))
+    body.append(_line(x_left, y_measure + 28, x_left, y_measure + 58,
+                      stroke=BLUE, stroke_width=4, stroke_linecap="round"))
+    body.append(_line(x_right, y_measure + 28, x_right, y_measure + 58,
+                      stroke=BLUE, stroke_width=4, stroke_linecap="round"))
+    body.append(_line(x_left, y_measure + 44, x_right, y_measure + 44,
+                      stroke=BLUE, stroke_width=4, stroke_linecap="round"))
+
+    # Rest-length cue: longer ruler in its own frame, kept secondary.
+    body.append(_rect(126, 82, 250, 28, rx=7, fill="#fff8e8",
+                      stroke=AMBER, stroke_width=3.5, opacity="0.92"))
+    body.append(_text(251, 70, "L₀", font_size=34, font_family=FONT,
+                      font_style="italic", fill=AMBER, text_anchor="middle"))
+    body.append(_text(294, 322, "L", font_size=38, font_family=FONT,
+                      font_style="italic", fill=BLUE, text_anchor="middle"))
+    body.append(_line(352, 356, 418, 356, stroke=GREEN, stroke_width=6,
+                      stroke_linecap="round", marker_end=f"url(#{v_marker})"))
+    body.append(_text(414, 334, "v", font_size=34, font_family=FONT,
+                      font_style="italic", fill=GREEN, text_anchor="middle"))
+    body.append(_text(274, 456, "same frame time", font_size=25, font_family=FONT,
+                      fill=GREY, text_anchor="middle"))
+
+    return _svg(node_id, "Length contraction", body, defs)
+
+
 def create_3_2_spacetime_interval(variant: str = "icon") -> str:
     """
     Node: 3.2
@@ -2671,6 +2802,58 @@ def create_gr_9_6_post_newtonian_approximation(variant: str = "icon") -> str:
     return _svg(node_id, "Post-Newtonian approximation", body, defs)
 
 
+def create_gr_9_7_gravitational_waves(variant: str = "icon") -> str:
+    """Gravitational waves: travelling tidal strain in weak geometry."""
+    node_id = "GR 9.7"
+    wave_arrow = f"{_sid(node_id)}_wave"
+    defs = [_arrow_marker(wave_arrow, colour=BLUE, size=6)]
+    body: list[str] = []
+
+    # A travelling perturbation: keep it geometric and field-like, not a
+    # material water/sound wave.
+    body.append(_path("M54,152 C94,108 134,196 174,152 C214,108 254,196 294,152 C334,108 374,196 414,152",
+                      fill="none", stroke=BLUE, stroke_width=8,
+                      stroke_linecap="round", marker_end=f"url(#{wave_arrow})"))
+    body.append(_text(70, 118, "h", font_size=38, font_family=FONT,
+                      font_style="italic", fill=BLUE))
+
+    # Dashed neutral ring and current plus-polarization deformation.
+    cx, cy = 256, 314
+    body.append(_circle(cx, cy, 92, fill="none", stroke=LIGHT_GREY,
+                        stroke_width=4, stroke_dasharray="8 9"))
+    for x, y in [(cx - 92, cy), (cx + 92, cy), (cx, cy - 92), (cx, cy + 92)]:
+        body.append(_circle(x, y, 8, fill=LIGHT_GREY, stroke="none"))
+
+    current = [(cx - 132, cy), (cx + 132, cy), (cx, cy - 58), (cx, cy + 58)]
+    for x, y in current:
+        body.append(_circle(x, y, 17, fill=RED, stroke=BLACK, stroke_width=2.5))
+    body.append(_line(cx - 112, cy, cx + 112, cy, stroke=AMBER, stroke_width=5,
+                      stroke_linecap="round", opacity="0.72"))
+    body.append(_line(cx, cy - 44, cx, cy + 44, stroke=AMBER, stroke_width=5,
+                      stroke_linecap="round", opacity="0.72"))
+
+    if variant == "detail":
+        body.append(_text(cx, 248, "+ polarization strain", font_size=27,
+                          font_family=FONT, fill=GREY, text_anchor="middle"))
+        body.append(_text(cx, 452, "freely falling test masses", font_size=27,
+                          font_family=FONT, fill=GREY, text_anchor="middle"))
+        body.append(_text(420, 118, "wave zone", font_size=25,
+                          font_family=FONT, fill=BLUE, text_anchor="middle"))
+        body.append(_line(cx - 70, cy - 70, cx + 70, cy + 70, stroke=GREEN,
+                          stroke_width=3, stroke_dasharray="6 8",
+                          stroke_linecap="round", opacity="0.55"))
+        body.append(_line(cx - 70, cy + 70, cx + 70, cy - 70, stroke=GREEN,
+                          stroke_width=3, stroke_dasharray="6 8",
+                          stroke_linecap="round", opacity="0.55"))
+        body.append(_text(352, 402, "×", font_size=34, font_family=FONT,
+                          fill=GREEN, text_anchor="middle"))
+    else:
+        body.append(_text(cx, 454, "strain", font_size=34,
+                          font_family=FONT, fill=AMBER, text_anchor="middle"))
+
+    return _svg(node_id, "Gravitational waves", body, defs)
+
+
 # ---------------------------------------------------------------------------
 # GR Layer 10: Schwarzschild Geometry and Black Holes
 # ---------------------------------------------------------------------------
@@ -3423,6 +3606,8 @@ __all__ = [
     'create_2_2_spacetime_event',
     'create_2_3_principle_of_locality',
     'create_3_3_lorentz_transformations',
+    'create_sr_time_dilation',
+    'create_sr_length_contraction',
     'create_3_2_spacetime_interval',
     'create_3_1_metric_tensor',
     'create_3_4_light_cone',

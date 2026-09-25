@@ -48,6 +48,7 @@ gr.weak_field_and_classical_tests,gr.gravitational_redshift,30
 gr.weak_field_and_classical_tests,gr.light_deflection,40
 gr.weak_field_and_classical_tests,gr.perihelion_precession,50
 gr.weak_field_and_classical_tests,gr.post_newtonian_approximation,60
+gr.weak_field_and_classical_tests,gr.gravitational_waves,70
 gr.schwarzschild_geometry_and_black_holes,gr.schwarzschild_metric,10
 gr.schwarzschild_geometry_and_black_holes,gr.schwarzschild_radius,20
 gr.schwarzschild_geometry_and_black_holes,gr.event_horizon,30
@@ -71,9 +72,11 @@ sr.spacetime_foundations,sr.principle_of_locality,50
 sr.spacetime_foundations,sr.metric_tensor,60
 sr.spacetime_foundations,sr.spacetime_interval,70
 sr.spacetime_foundations,sr.lorentz_transformations,80
-sr.spacetime_foundations,sr.light_cone,90
-sr.spacetime_foundations,sr.minkowski_diagram,100
-sr.spacetime_foundations,sr.lorentz_invariance,110
+sr.spacetime_foundations,sr.time_dilation,90
+sr.spacetime_foundations,sr.length_contraction,100
+sr.spacetime_foundations,sr.light_cone,110
+sr.spacetime_foundations,sr.minkowski_diagram,120
+sr.spacetime_foundations,sr.lorentz_invariance,130
 sr.relativistic_mechanics,sr.proper_time,10
 sr.relativistic_mechanics,sr.four_vectors,20
 sr.relativistic_mechanics,sr.position_four_vector,30

@@ -823,10 +823,11 @@ describing the same event, not the event being dragged to a different place in
 reality.
 
 Because time and space mix, observers can disagree about simultaneity,
-coordinate time intervals, lengths, and velocity components. Those effects are
-not separate rules added after the fact; they are consequences of using Lorentz
-transformations as the coordinate translation rule while preserving the
-spacetime interval.
+coordinate time intervals, lengths, and velocity components. Effects such as
+\cref{Time dilation}{sr.time_dilation} and
+\cref{Length contraction}{sr.length_contraction} are not separate rules added
+after the fact; they are consequences of using Lorentz transformations as the
+coordinate translation rule while preserving the spacetime interval.
 
 ### Block Plan
 
@@ -871,9 +872,9 @@ No SVG code change is needed in this pass.
 
 #### Atlas Issues
 
-- Consequences such as time dilation, length contraction, and relativity of
-  simultaneity may deserve explicit concepts later if the atlas expands the
-  introductory SR material.
+- Time dilation and length contraction are now explicit SR-1 concepts. Relativity
+  of simultaneity remains covered here and in `sr.minkowski_diagram` rather than
+  split into its own concept.
 
 ## `sr.light_cone`: Light cone
 
@@ -1083,9 +1084,9 @@ full light-cone graphic.
 
 #### Atlas Issues
 
-- If introductory SR is expanded, relativity of simultaneity, time dilation,
-  and length contraction may become separate concepts linked from this one and
-  `sr.lorentz_transformations`.
+- Time dilation and length contraction are now separate SR-1 concepts linked from
+  this one and `sr.lorentz_transformations`; relativity of simultaneity remains
+  an explanatory feature of the diagram concept.
 
 
 ## `sr.proper_time`: Proper time
@@ -1142,9 +1143,9 @@ different timelike paths, and reunite at another event, each clock has measured
 the proper time along its own worldline. Different paths through spacetime can
 have different timelike lengths.
 
-A common mistake is to treat time dilation as a mere delay in seeing a distant
-clock. Signal delay certainly affects observation, but it is not what proper
-time means. When clocks reunite at the same event and compare readings, no
+A common mistake is to treat proper-time differences as mere delays in seeing a
+distant clock. Signal delay certainly affects observation, but it is not what
+proper time means. When clocks reunite at the same event and compare readings, no
 light-travel correction remains to be made. Any difference in readings is a
 worldline property.
 
@@ -1204,6 +1205,116 @@ retained unless visual inspection shows a concrete defect.
 
 - The twin-clock comparison might eventually deserve its own application or
   example block, but it should not become a separate concept yet.
+
+
+## `sr.time_dilation`: Time dilation
+
+### Scope
+
+This concept makes the moving-clock consequence of Lorentz transformations
+explicit. It should derive \(\Delta t=\gamma\Delta\tau\) from a standard boost
+and connect it to proper time. It should not become a full twin-paradox
+treatment or a discussion of observational Doppler effects.
+
+### Exposition
+
+Time dilation compares the coordinate time assigned by an inertial frame with
+the proper time accumulated by a clock moving through that frame. For a clock
+moving at constant speed \(v\),
+\[
+\Delta t=\gamma\Delta\tau,\qquad
+\gamma\coloneqq\frac{1}{\sqrt{1-v^2/c^2}}.
+\]
+Since \(\gamma\ge1\), the moving clock accumulates less proper time than the
+coordinate-time interval in that frame.
+
+The relation follows directly from a Lorentz boost. Let the clock be at rest in
+\(S'\), so two successive ticks satisfy \(\Delta x'=0\). The inverse boost gives
+\[
+\Delta t=\gamma\left(\Delta t'+\frac{v\Delta x'}{c^2}\right),
+\]
+so \(\Delta t=\gamma\Delta t'\). Because the clock is at rest in \(S'\),
+\(\Delta t'=\Delta\tau\).
+
+The effect is reciprocal between inertial frames: each inertial observer can
+describe the other's moving clock as ticking slow relative to their own
+coordinate time. This is not a contradiction, because the comparisons use
+different simultaneity conventions. It is also not a signal-travel delay; it is
+a comparison of clock readings or proper-time intervals after propagation
+effects have been accounted for.
+
+### Block Plan
+
+- `overview`: Moving clocks accumulate less proper time.
+- `definition`: \(\Delta t=\gamma\Delta\tau\).
+- `derivation`: Derivation from a boost with \(\Delta x'=0\).
+- `explanation`: Reciprocal frame comparison.
+- `misconception`: Not a signal-travel delay.
+
+### Study Questions
+
+Drafted in `data/study_questions.csv` as three questions: one formula check, one
+constant-speed calculation, and one signal-delay misconception correction.
+
+### Graphics
+
+Draft design metadata is recorded in `data/concept_graphic_designs.csv`; no
+deterministic SVG implementation is added in this pass.
+
+
+## `sr.length_contraction`: Length contraction
+
+### Scope
+
+This concept makes the moving-length consequence of Lorentz transformations
+explicit. It should derive \(L=L_0/\gamma\), emphasize that length measurements
+use simultaneous endpoint events in the measuring frame, and avoid describing
+the effect as material compression.
+
+### Exposition
+
+Length contraction compares an object's rest length \(L_0\) with the length
+assigned by an inertial frame in which the object moves at speed \(v\):
+\[
+L=\frac{L_0}{\gamma},\qquad
+\gamma\coloneqq\frac{1}{\sqrt{1-v^2/c^2}}.
+\]
+The contraction applies along the direction of relative motion; transverse
+dimensions are unchanged by the standard boost.
+
+A length measurement chooses two endpoint events. In the measuring frame those
+endpoint positions must be recorded at the same coordinate time. A
+\cref{Minkowski diagram}{sr.minkowski_diagram} makes the corresponding
+simultaneity slices visible. Let the object be at rest in \(S'\), with endpoint
+separation \(\Delta x'=L_0\). In frame \(S\), measure the endpoints
+simultaneously, so \(\Delta t=0\). The boost gives
+\[
+\Delta x'=\gamma(\Delta x-v\Delta t),
+\]
+so \(L_0=\gamma\Delta x\) and \(L=\Delta x=L_0/\gamma\).
+
+Length contraction is therefore not a rod being crushed by motion through space.
+In the rod's own rest frame its rest length remains \(L_0\). The shorter moving
+length comes from comparing different simultaneous endpoint events in another
+inertial frame.
+
+### Block Plan
+
+- `overview`: Moving lengths measured shorter.
+- `definition`: \(L=L_0/\gamma\).
+- `explanation`: Lengths require simultaneous endpoint events.
+- `derivation`: Derivation from a boost with \(\Delta t=0\).
+- `misconception`: Not material squashing.
+
+### Study Questions
+
+Drafted in `data/study_questions.csv` as three questions: one formula check, one
+constant-speed calculation, and one simultaneity explanation.
+
+### Graphics
+
+Draft design metadata is recorded in `data/concept_graphic_designs.csv`; no
+deterministic SVG implementation is added in this pass.
 
 
 ## `sr.four_vectors`: Four-vectors

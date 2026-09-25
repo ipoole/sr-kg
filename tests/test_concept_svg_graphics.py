@@ -9,7 +9,7 @@ from srkg.svg_graphics.registry import IMPLEMENTED_NODE_IDS, create_svg_graphic
 GRAPHIC_NODE_IDS = [
     "sr.inertial_frames", "sr.constancy_of_speed_of_light", "sr.principle_of_relativity",
     "sr.spacetime_event", "sr.principle_of_locality",
-    "sr.metric_tensor", "sr.spacetime_interval", "sr.lorentz_transformations", "sr.light_cone", "sr.minkowski_diagram",
+    "sr.metric_tensor", "sr.spacetime_interval", "sr.lorentz_transformations", "sr.time_dilation", "sr.length_contraction", "sr.light_cone", "sr.minkowski_diagram",
     "sr.proper_time", "sr.four_vectors", "sr.position_four_vector", "sr.velocity_four_vector", "sr.momentum_four_vector", "sr.mass_energy_equivalence",
     "sr.lagrangian", "sr.action_principle", "sr.euler_lagrange_equations", "sr.canonical_momentum", "sr.hamiltonian_formalism", "sr.noether_theorem",
     "sr.scalar_field", "sr.vector_field", "sr.field_lagrangian", "sr.field_equations",
@@ -28,7 +28,7 @@ GRAPHIC_NODE_IDS = [
     "gr.riemann_tensor", "gr.ricci_tensor", "gr.ricci_scalar", "gr.einstein_tensor", "gr.bianchi_identity", "gr.curvature_invariants",
     "gr.stress_energy_tensor", "gr.perfect_fluid", "gr.energy_conditions", "gr.covariant_conservation", "gr.equation_of_state",
     "gr.einstein_field_equations", "gr.cosmological_constant", "gr.einstein_hilbert_action", "gr.stress_energy_variation", "gr.trace_reversed_equations", "gr.vacuum_field_equations",
-    "gr.weak_field_metric", "gr.newtonian_limit", "gr.gravitational_redshift", "gr.light_deflection", "gr.perihelion_precession", "gr.post_newtonian_approximation",
+    "gr.weak_field_metric", "gr.newtonian_limit", "gr.gravitational_redshift", "gr.light_deflection", "gr.perihelion_precession", "gr.post_newtonian_approximation", "gr.gravitational_waves",
     "gr.schwarzschild_metric", "gr.schwarzschild_radius", "gr.event_horizon", "gr.coordinate_singularity", "gr.black_hole_singularity", "gr.effective_potential_orbits",
 ]
 SVG_NS = "{http://www.w3.org/2000/svg}"
@@ -136,6 +136,7 @@ def test_public_svg_api_delegates_to_registry():
         ("gr.light_deflection", "Light deflection"),
         ("gr.perihelion_precession", "Perihelion precession"),
         ("gr.post_newtonian_approximation", "Post-Newtonian approximation"),
+        ("gr.gravitational_waves", "Gravitational waves"),
         ("gr.schwarzschild_metric", "Schwarzschild metric"),
         ("gr.schwarzschild_radius", "Schwarzschild radius"),
         ("gr.event_horizon", "Event horizon"),

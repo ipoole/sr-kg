@@ -7,9 +7,11 @@ sr.spacetime_foundations,sr.principle_of_locality,50
 sr.spacetime_foundations,sr.metric_tensor,60
 sr.spacetime_foundations,sr.spacetime_interval,70
 sr.spacetime_foundations,sr.lorentz_transformations,80
-sr.spacetime_foundations,sr.light_cone,90
-sr.spacetime_foundations,sr.minkowski_diagram,100
-sr.spacetime_foundations,sr.lorentz_invariance,110
+sr.spacetime_foundations,sr.time_dilation,90
+sr.spacetime_foundations,sr.length_contraction,100
+sr.spacetime_foundations,sr.light_cone,110
+sr.spacetime_foundations,sr.minkowski_diagram,120
+sr.spacetime_foundations,sr.lorentz_invariance,130
 sr.relativistic_mechanics,sr.proper_time,10
 sr.relativistic_mechanics,sr.four_vectors,20
 sr.relativistic_mechanics,sr.position_four_vector,30

@@ -562,7 +562,7 @@ Deferred for this seed pass.
 
 ## Completed GR Authoring
 
-The 55 existing GR concepts across GR-1 through GR-6 have completed full
+The 56 existing GR concepts across GR-1 through GR-6 have completed full
 content, question, source and graphic review. Their runtime CSV is authoritative;
 completed drafts have been retired rather than maintained as duplicate text.
 Current membership and status are recorded in `module_members.csv` and `nodes.csv`.
