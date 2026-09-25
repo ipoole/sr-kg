@@ -157,20 +157,8 @@ Link domains through genuine prerequisites. Prefer conservative edge types and
 record uncertain split/merge decisions rather than forcing them during a seed
 pass.
 
-Workflow statuses are:
-
-- `seed`: enough runtime content for structure and viewer testing, but not a
-  full authoring pass;
-- `prerequisite_support`: reusable supporting mathematics not yet treated as
-  a direct learning target;
-- `full`: the concept has completed the authoring and review checklist; and
-- blank: no status recorded; this optional field does not imply completion.
-
-Status is workflow metadata, not part of the subject model. Mark `full` only
-after reviewing content, sources, questions and graphics and validating the build.
-
 For a multi-module pass, complete one module at a time. Audit planned concepts,
-statuses, block and question counts, module membership, links, and edges; then
+block and question counts, module membership, links, and edges; then
 run a domain-filtered build. Re-read the guide when a long pass risks stylistic
 drift and prefer one commit per coherent module. Use current module membership
 for authoring batches; domain plans describe
@@ -262,7 +250,7 @@ Before finishing a concept or module, confirm:
 - CSV fields have the expected column count;
 - cross-references, edge endpoints, and references resolve;
 - questions are progressive and varied;
-- module membership and authoring status are correct;
+- module membership is correct;
 - icon/detail SVGs, accessible titles, designs, and captions are synchronized;
 - the graphics review sheet has been visually checked;
 - remaining issues are recorded in the appropriate worklist; and

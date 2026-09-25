@@ -22,11 +22,6 @@ Use this structure when starting a new GR or maths concept:
 ```markdown
 ## `concept.id`: Concept title
 
-### Status
-
-Current `nodes.csv` `authoring_status`, if any, and what would move the concept
-to the next authoring state.
-
 ### Scope
 
 What this concept owns, what it should only remind the reader of, and what
@@ -46,7 +41,7 @@ Planned or drafted question set, starting easy and becoming more challenging.
 
 ### Graphics
 
-Graphic intention, current status, and visual checks needed.
+Graphic intention and visual checks needed.
 
 ### References
 
@@ -61,7 +56,7 @@ Concept-specific open points.
 
 ### Status
 
-`prerequisite_support`: seed blocks and a graphic exist so GR content can link
+Supporting-maths draft: seed blocks and a graphic exist so GR content can link
 to this concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -103,7 +98,7 @@ local coordinate patch mapped to a plane.
 
 ### Status
 
-`prerequisite_support`: seed blocks and a graphic exist so GR content can link
+Supporting-maths draft: seed blocks and a graphic exist so GR content can link
 to this concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -145,7 +140,7 @@ coordinate axes.
 
 ### Status
 
-`prerequisite_support`: seed blocks now exist so GR content can link to this
+Supporting-maths draft: seed blocks now exist so GR content can link to this
 concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -206,7 +201,7 @@ coordinate-change arrow.
 
 ### Status
 
-`prerequisite_support`: seed blocks now exist so GR content can link to this
+Supporting-maths draft: seed blocks now exist so GR content can link to this
 concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -269,7 +264,7 @@ Needs a spacetime/manifold curve with event points along it.
 
 ### Status
 
-`prerequisite_support`: seed blocks and a graphic exist so GR content can link
+Supporting-maths draft: seed blocks and a graphic exist so GR content can link
 to this concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -310,7 +305,7 @@ Needs a tangent-plane visual attached at a point, with local basis arrows.
 
 ### Status
 
-`prerequisite_support`: seed blocks now exist so GR content can link to this
+Supporting-maths draft: seed blocks now exist so GR content can link to this
 concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -376,7 +371,7 @@ acting on tangent arrows.
 
 ### Status
 
-`prerequisite_support`: seed blocks and a graphic exist so GR content can link
+Supporting-maths draft: seed blocks and a graphic exist so GR content can link
 to this concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -436,7 +431,7 @@ points on a manifold.
 
 ### Status
 
-`prerequisite_support`: seed blocks exist so GR content can link to this
+Supporting-maths draft: seed blocks exist so GR content can link to this
 concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -499,7 +494,7 @@ Deferred for this seed pass.
 
 ### Status
 
-`prerequisite_support`: seed blocks exist so GR content can link to this
+Supporting-maths draft: seed blocks exist so GR content can link to this
 concept. It is not yet a direct maths learning target.
 
 ### Scope
@@ -565,7 +560,8 @@ Deferred for this seed pass.
 The 56 existing GR concepts across GR-1 through GR-6 have completed full
 content, question, source and graphic review. Their runtime CSV is authoritative;
 completed drafts have been retired rather than maintained as duplicate text.
-Current membership and status are recorded in `module_members.csv` and `nodes.csv`.
+Current membership is recorded in `module_members.csv`; display metadata is
+recorded in `nodes.csv`.
 
 The [notation glossary](notation_glossary.md#general-relativity) records the
 shared signature, curvature, action, matter and orbital conventions. The SR and

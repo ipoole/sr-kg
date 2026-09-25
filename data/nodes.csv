@@ -1,115 +1,115 @@
-id,display_id,label,domain,domain_title,authoring_status
-sr.principle_of_relativity,SR-1.3,Principle of relativity,sr,Special Relativity and Classical Fields,full
-sr.constancy_of_speed_of_light,SR-1.2,Constancy of the speed of light,sr,Special Relativity and Classical Fields,full
-sr.inertial_frames,SR-1.1,Inertial frames,sr,Special Relativity and Classical Fields,full
-sr.spacetime_event,SR-1.4,Spacetime event,sr,Special Relativity and Classical Fields,full
-sr.principle_of_locality,SR-1.5,Principle of locality,sr,Special Relativity and Classical Fields,full
-sr.lorentz_transformations,SR-1.8,Lorentz transformations,sr,Special Relativity and Classical Fields,full
-sr.spacetime_interval,SR-1.7,Spacetime interval,sr,Special Relativity and Classical Fields,full
-sr.metric_tensor,SR-1.6,Metric tensor,sr,Special Relativity and Classical Fields,full
-sr.light_cone,SR-1.11,Light cone,sr,Special Relativity and Classical Fields,full
-sr.minkowski_diagram,SR-1.12,Minkowski diagram,sr,Special Relativity and Classical Fields,full
-sr.time_dilation,SR-1.9,Time dilation,sr,Special Relativity and Classical Fields,full
-sr.length_contraction,SR-1.10,Length contraction,sr,Special Relativity and Classical Fields,full
-sr.proper_time,SR-2.1,Proper time,sr,Special Relativity and Classical Fields,full
-sr.four_vectors,SR-2.2,Four-vectors,sr,Special Relativity and Classical Fields,full
-sr.position_four_vector,SR-2.3,Position four-vector,sr,Special Relativity and Classical Fields,full
-sr.velocity_four_vector,SR-2.4,Velocity four-vector,sr,Special Relativity and Classical Fields,full
-sr.momentum_four_vector,SR-2.5,Momentum four-vector,sr,Special Relativity and Classical Fields,full
-sr.mass_energy_equivalence,SR-2.6,Mass-energy equivalence,sr,Special Relativity and Classical Fields,full
-sr.action_principle,SR-3.2,Action principle,sr,Special Relativity and Classical Fields,full
-sr.lagrangian,SR-3.1,Lagrangian,sr,Special Relativity and Classical Fields,full
-sr.euler_lagrange_equations,SR-3.3,Euler–Lagrange equations,sr,Special Relativity and Classical Fields,full
-sr.hamiltonian_formalism,SR-3.5,Hamiltonian formalism,sr,Special Relativity and Classical Fields,full
-sr.canonical_momentum,SR-3.4,Canonical momentum,sr,Special Relativity and Classical Fields,full
-sr.noether_theorem,SR-5.1,Noether's theorem,sr,Special Relativity and Classical Fields,full
-sr.scalar_field,SR-3.6,Scalar field,sr,Special Relativity and Classical Fields,full
-sr.vector_field,SR-3.7,Vector field,sr,Special Relativity and Classical Fields,full
-sr.field_lagrangian,SR-3.8,Field Lagrangian,sr,Special Relativity and Classical Fields,full
-sr.field_equations,SR-3.9,Field equations,sr,Special Relativity and Classical Fields,full
-sr.vector_potential,SR-4.1,Vector potential \(A_\mu\),sr,Special Relativity and Classical Fields,full
-sr.field_tensor,SR-4.2,Field tensor \(F_{\mu\nu}\),sr,Special Relativity and Classical Fields,full
-sr.electric_field,SR-4.3,Electric field,sr,Special Relativity and Classical Fields,full
-sr.magnetic_field,SR-4.4,Magnetic field,sr,Special Relativity and Classical Fields,full
-sr.electromagnetic_field,SR-4.5,Electromagnetic field,sr,Special Relativity and Classical Fields,full
-sr.maxwells_equations,SR-5.3,Maxwell's equations,sr,Special Relativity and Classical Fields,full
-sr.lorenz_gauge,SR-4.9,Lorenz gauge,sr,Special Relativity and Classical Fields,full
-sr.gauge_invariance,SR-4.6,Gauge invariance,sr,Special Relativity and Classical Fields,full
-sr.four_current,SR-5.2,Four-current,sr,Special Relativity and Classical Fields,full
-sr.minimal_coupling,SR-4.7,Minimal coupling,sr,Special Relativity and Classical Fields,full
-sr.lorentz_force_law,SR-4.8,Lorentz force law,sr,Special Relativity and Classical Fields,full
-sr.charge_conservation,SR-5.4,Charge conservation,sr,Special Relativity and Classical Fields,full
-sr.em_energy_density,SR-4.12,Energy density of EM field,sr,Special Relativity and Classical Fields,full
-sr.poynting_vector,SR-4.10,Momentum density (Poynting vector),sr,Special Relativity and Classical Fields,full
-sr.em_stress_energy,SR-4.11,Stress–energy of EM field,sr,Special Relativity and Classical Fields,full
-sr.energy_momentum_tensor,SR-5.5,Energy--momentum tensor,sr,Special Relativity and Classical Fields,full
-sr.electromagnetic_waves,SR-5.7,Electromagnetic waves,sr,Special Relativity and Classical Fields,full
-sr.wave_equation,SR-5.6,Wave equation,sr,Special Relativity and Classical Fields,full
-sr.radiation_reaction,SR-5.8,Radiation reaction,sr,Special Relativity and Classical Fields,full
-sr.lorentz_invariance,SR-1.13,Lorentz invariance,sr,Special Relativity and Classical Fields,full
-sr.gauge_fixing,SR-4.13,Gauge fixing,sr,Special Relativity and Classical Fields,full
-math.manifold,MATHS-1.1,Manifold,math,Mathematics,prerequisite_support
-math.coordinate_chart,MATHS-1.2,Coordinate chart,math,Mathematics,prerequisite_support
-math.coordinate_transformation,MATHS-1.3,Coordinate transformation,math,Mathematics,prerequisite_support
-math.worldline,MATHS-1.4,Worldline,math,Mathematics,prerequisite_support
-math.tangent_space,MATHS-1.5,Tangent space,math,Mathematics,prerequisite_support
-math.cotangent_space,MATHS-1.6,Cotangent space,math,Mathematics,prerequisite_support
-math.tensor_field,MATHS-2.1,Tensor field,math,Mathematics,prerequisite_support
-math.index_notation,MATHS-2.2,Abstract and component indices,math,Mathematics,prerequisite_support
-math.tensor_transformation_law,MATHS-2.3,Tensor transformation law,math,Mathematics,prerequisite_support
-gr.gravity_as_geometry,GR-1.5,Gravity as geometry,gr,General Relativity,full
-gr.equivalence_principle,GR-1.1,Equivalence principle,gr,General Relativity,full
-gr.local_inertial_frame,GR-1.2,Local inertial frame,gr,General Relativity,full
-gr.freely_falling_observer,GR-1.3,Freely falling observer,gr,General Relativity,full
-gr.tidal_gravity,GR-1.4,Tidal gravity,gr,General Relativity,full
-gr.metric_tensor,GR-1.6,Spacetime metric,gr,General Relativity,full
-gr.inverse_metric,GR-1.7,Inverse metric,gr,General Relativity,full
-gr.volume_element,GR-1.8,Volume element,gr,General Relativity,full
-gr.line_element,GR-1.9,Line element,gr,General Relativity,full
-gr.proper_time,GR-1.10,Proper time in curved spacetime,gr,General Relativity,full
-gr.null_curve,GR-1.11,Null curve,gr,General Relativity,full
-gr.causal_structure,GR-1.12,Causal structure,gr,General Relativity,full
-gr.local_flatness,GR-1.13,Local flatness,gr,General Relativity,full
-gr.metric_signature,GR-1.14,Metric signature convention,gr,General Relativity,full
-gr.connection,GR-2.1,Connection,gr,General Relativity,full
-gr.christoffel_symbols,GR-2.2,Christoffel symbols,gr,General Relativity,full
-gr.covariant_derivative,GR-2.3,Covariant derivative,gr,General Relativity,full
-gr.metric_compatibility,GR-2.4,Metric compatibility,gr,General Relativity,full
-gr.torsion_free_connection,GR-2.5,Torsion-free connection,gr,General Relativity,full
-gr.parallel_transport,GR-2.6,Parallel transport,gr,General Relativity,full
-gr.geodesic,GR-2.7,Geodesic,gr,General Relativity,full
-gr.geodesic_equation,GR-2.8,Geodesic equation,gr,General Relativity,full
-gr.geodesic_action,GR-2.9,Geodesic action,gr,General Relativity,full
-gr.four_velocity,GR-2.10,Four-velocity in curved spacetime,gr,General Relativity,full
-gr.four_acceleration,GR-2.11,Four-acceleration,gr,General Relativity,full
-gr.geodesic_deviation,GR-2.12,Geodesic deviation,gr,General Relativity,full
-gr.riemann_tensor,GR-3.1,Riemann curvature tensor,gr,General Relativity,full
-gr.ricci_tensor,GR-3.2,Ricci tensor,gr,General Relativity,full
-gr.ricci_scalar,GR-3.3,Ricci scalar,gr,General Relativity,full
-gr.einstein_tensor,GR-3.4,Einstein tensor,gr,General Relativity,full
-gr.bianchi_identity,GR-3.5,Bianchi identity,gr,General Relativity,full
-gr.curvature_invariants,GR-3.6,Curvature invariants,gr,General Relativity,full
-gr.stress_energy_tensor,GR-4.1,Stress-energy tensor in GR,gr,General Relativity,full
-gr.perfect_fluid,GR-4.2,Perfect fluid,gr,General Relativity,full
-gr.energy_conditions,GR-4.3,Energy conditions,gr,General Relativity,full
-gr.covariant_conservation,GR-4.4,Covariant conservation,gr,General Relativity,full
-gr.equation_of_state,GR-4.5,Equation of state,gr,General Relativity,full
-gr.einstein_field_equations,GR-4.6,Einstein field equations,gr,General Relativity,full
-gr.cosmological_constant,GR-4.7,Cosmological constant,gr,General Relativity,full
-gr.einstein_hilbert_action,GR-3.7,Einstein-Hilbert action,gr,General Relativity,full
-gr.stress_energy_variation,GR-4.8,Stress-energy from action variation,gr,General Relativity,full
-gr.trace_reversed_equations,GR-4.9,Trace-reversed equations,gr,General Relativity,full
-gr.vacuum_field_equations,GR-4.10,Vacuum field equations,gr,General Relativity,full
-gr.weak_field_metric,GR-5.1,Weak-field metric,gr,General Relativity,full
-gr.newtonian_limit,GR-5.2,Newtonian limit,gr,General Relativity,full
-gr.gravitational_redshift,GR-5.3,Gravitational redshift,gr,General Relativity,full
-gr.light_deflection,GR-5.4,Light deflection,gr,General Relativity,full
-gr.perihelion_precession,GR-5.5,Perihelion precession,gr,General Relativity,full
-gr.post_newtonian_approximation,GR-5.6,Post-Newtonian approximation,gr,General Relativity,full
-gr.gravitational_waves,GR-5.7,Gravitational waves,gr,General Relativity,full
-gr.schwarzschild_metric,GR-6.1,Schwarzschild metric,gr,General Relativity,full
-gr.schwarzschild_radius,GR-6.2,Schwarzschild radius,gr,General Relativity,full
-gr.event_horizon,GR-6.3,Event horizon,gr,General Relativity,full
-gr.coordinate_singularity,GR-6.4,Coordinate singularity,gr,General Relativity,full
-gr.black_hole_singularity,GR-6.5,Black hole singularity,gr,General Relativity,full
-gr.effective_potential_orbits,GR-6.6,Effective potential for orbits,gr,General Relativity,full
+id,display_id,label,domain,domain_title
+sr.principle_of_relativity,SR-1.3,Principle of relativity,sr,Special Relativity and Classical Fields
+sr.constancy_of_speed_of_light,SR-1.2,Constancy of the speed of light,sr,Special Relativity and Classical Fields
+sr.inertial_frames,SR-1.1,Inertial frames,sr,Special Relativity and Classical Fields
+sr.spacetime_event,SR-1.4,Spacetime event,sr,Special Relativity and Classical Fields
+sr.principle_of_locality,SR-1.5,Principle of locality,sr,Special Relativity and Classical Fields
+sr.lorentz_transformations,SR-1.8,Lorentz transformations,sr,Special Relativity and Classical Fields
+sr.spacetime_interval,SR-1.7,Spacetime interval,sr,Special Relativity and Classical Fields
+sr.metric_tensor,SR-1.6,Metric tensor,sr,Special Relativity and Classical Fields
+sr.light_cone,SR-1.11,Light cone,sr,Special Relativity and Classical Fields
+sr.minkowski_diagram,SR-1.12,Minkowski diagram,sr,Special Relativity and Classical Fields
+sr.time_dilation,SR-1.9,Time dilation,sr,Special Relativity and Classical Fields
+sr.length_contraction,SR-1.10,Length contraction,sr,Special Relativity and Classical Fields
+sr.proper_time,SR-2.1,Proper time,sr,Special Relativity and Classical Fields
+sr.four_vectors,SR-2.2,Four-vectors,sr,Special Relativity and Classical Fields
+sr.position_four_vector,SR-2.3,Position four-vector,sr,Special Relativity and Classical Fields
+sr.velocity_four_vector,SR-2.4,Velocity four-vector,sr,Special Relativity and Classical Fields
+sr.momentum_four_vector,SR-2.5,Momentum four-vector,sr,Special Relativity and Classical Fields
+sr.mass_energy_equivalence,SR-2.6,Mass-energy equivalence,sr,Special Relativity and Classical Fields
+sr.action_principle,SR-3.2,Action principle,sr,Special Relativity and Classical Fields
+sr.lagrangian,SR-3.1,Lagrangian,sr,Special Relativity and Classical Fields
+sr.euler_lagrange_equations,SR-3.3,Euler–Lagrange equations,sr,Special Relativity and Classical Fields
+sr.hamiltonian_formalism,SR-3.5,Hamiltonian formalism,sr,Special Relativity and Classical Fields
+sr.canonical_momentum,SR-3.4,Canonical momentum,sr,Special Relativity and Classical Fields
+sr.noether_theorem,SR-5.1,Noether's theorem,sr,Special Relativity and Classical Fields
+sr.scalar_field,SR-3.6,Scalar field,sr,Special Relativity and Classical Fields
+sr.vector_field,SR-3.7,Vector field,sr,Special Relativity and Classical Fields
+sr.field_lagrangian,SR-3.8,Field Lagrangian,sr,Special Relativity and Classical Fields
+sr.field_equations,SR-3.9,Field equations,sr,Special Relativity and Classical Fields
+sr.vector_potential,SR-4.1,Vector potential \(A_\mu\),sr,Special Relativity and Classical Fields
+sr.field_tensor,SR-4.2,Field tensor \(F_{\mu\nu}\),sr,Special Relativity and Classical Fields
+sr.electric_field,SR-4.3,Electric field,sr,Special Relativity and Classical Fields
+sr.magnetic_field,SR-4.4,Magnetic field,sr,Special Relativity and Classical Fields
+sr.electromagnetic_field,SR-4.5,Electromagnetic field,sr,Special Relativity and Classical Fields
+sr.maxwells_equations,SR-5.3,Maxwell's equations,sr,Special Relativity and Classical Fields
+sr.lorenz_gauge,SR-4.9,Lorenz gauge,sr,Special Relativity and Classical Fields
+sr.gauge_invariance,SR-4.6,Gauge invariance,sr,Special Relativity and Classical Fields
+sr.four_current,SR-5.2,Four-current,sr,Special Relativity and Classical Fields
+sr.minimal_coupling,SR-4.7,Minimal coupling,sr,Special Relativity and Classical Fields
+sr.lorentz_force_law,SR-4.8,Lorentz force law,sr,Special Relativity and Classical Fields
+sr.charge_conservation,SR-5.4,Charge conservation,sr,Special Relativity and Classical Fields
+sr.em_energy_density,SR-4.12,Energy density of EM field,sr,Special Relativity and Classical Fields
+sr.poynting_vector,SR-4.10,Momentum density (Poynting vector),sr,Special Relativity and Classical Fields
+sr.em_stress_energy,SR-4.11,Stress–energy of EM field,sr,Special Relativity and Classical Fields
+sr.energy_momentum_tensor,SR-5.5,Energy--momentum tensor,sr,Special Relativity and Classical Fields
+sr.electromagnetic_waves,SR-5.7,Electromagnetic waves,sr,Special Relativity and Classical Fields
+sr.wave_equation,SR-5.6,Wave equation,sr,Special Relativity and Classical Fields
+sr.radiation_reaction,SR-5.8,Radiation reaction,sr,Special Relativity and Classical Fields
+sr.lorentz_invariance,SR-1.13,Lorentz invariance,sr,Special Relativity and Classical Fields
+sr.gauge_fixing,SR-4.13,Gauge fixing,sr,Special Relativity and Classical Fields
+math.manifold,MATHS-1.1,Manifold,math,Mathematics
+math.coordinate_chart,MATHS-1.2,Coordinate chart,math,Mathematics
+math.coordinate_transformation,MATHS-1.3,Coordinate transformation,math,Mathematics
+math.worldline,MATHS-1.4,Worldline,math,Mathematics
+math.tangent_space,MATHS-1.5,Tangent space,math,Mathematics
+math.cotangent_space,MATHS-1.6,Cotangent space,math,Mathematics
+math.tensor_field,MATHS-2.1,Tensor field,math,Mathematics
+math.index_notation,MATHS-2.2,Abstract and component indices,math,Mathematics
+math.tensor_transformation_law,MATHS-2.3,Tensor transformation law,math,Mathematics
+gr.gravity_as_geometry,GR-1.5,Gravity as geometry,gr,General Relativity
+gr.equivalence_principle,GR-1.1,Equivalence principle,gr,General Relativity
+gr.local_inertial_frame,GR-1.2,Local inertial frame,gr,General Relativity
+gr.freely_falling_observer,GR-1.3,Freely falling observer,gr,General Relativity
+gr.tidal_gravity,GR-1.4,Tidal gravity,gr,General Relativity
+gr.metric_tensor,GR-1.6,Spacetime metric,gr,General Relativity
+gr.inverse_metric,GR-1.7,Inverse metric,gr,General Relativity
+gr.volume_element,GR-1.8,Volume element,gr,General Relativity
+gr.line_element,GR-1.9,Line element,gr,General Relativity
+gr.proper_time,GR-1.10,Proper time in curved spacetime,gr,General Relativity
+gr.null_curve,GR-1.11,Null curve,gr,General Relativity
+gr.causal_structure,GR-1.12,Causal structure,gr,General Relativity
+gr.local_flatness,GR-1.13,Local flatness,gr,General Relativity
+gr.metric_signature,GR-1.14,Metric signature convention,gr,General Relativity
+gr.connection,GR-2.1,Connection,gr,General Relativity
+gr.christoffel_symbols,GR-2.2,Christoffel symbols,gr,General Relativity
+gr.covariant_derivative,GR-2.3,Covariant derivative,gr,General Relativity
+gr.metric_compatibility,GR-2.4,Metric compatibility,gr,General Relativity
+gr.torsion_free_connection,GR-2.5,Torsion-free connection,gr,General Relativity
+gr.parallel_transport,GR-2.6,Parallel transport,gr,General Relativity
+gr.geodesic,GR-2.7,Geodesic,gr,General Relativity
+gr.geodesic_equation,GR-2.8,Geodesic equation,gr,General Relativity
+gr.geodesic_action,GR-2.9,Geodesic action,gr,General Relativity
+gr.four_velocity,GR-2.10,Four-velocity in curved spacetime,gr,General Relativity
+gr.four_acceleration,GR-2.11,Four-acceleration,gr,General Relativity
+gr.geodesic_deviation,GR-2.12,Geodesic deviation,gr,General Relativity
+gr.riemann_tensor,GR-3.1,Riemann curvature tensor,gr,General Relativity
+gr.ricci_tensor,GR-3.2,Ricci tensor,gr,General Relativity
+gr.ricci_scalar,GR-3.3,Ricci scalar,gr,General Relativity
+gr.einstein_tensor,GR-3.4,Einstein tensor,gr,General Relativity
+gr.bianchi_identity,GR-3.5,Bianchi identity,gr,General Relativity
+gr.curvature_invariants,GR-3.6,Curvature invariants,gr,General Relativity
+gr.stress_energy_tensor,GR-4.1,Stress-energy tensor in GR,gr,General Relativity
+gr.perfect_fluid,GR-4.2,Perfect fluid,gr,General Relativity
+gr.energy_conditions,GR-4.3,Energy conditions,gr,General Relativity
+gr.covariant_conservation,GR-4.4,Covariant conservation,gr,General Relativity
+gr.equation_of_state,GR-4.5,Equation of state,gr,General Relativity
+gr.einstein_field_equations,GR-4.6,Einstein field equations,gr,General Relativity
+gr.cosmological_constant,GR-4.7,Cosmological constant,gr,General Relativity
+gr.einstein_hilbert_action,GR-3.7,Einstein-Hilbert action,gr,General Relativity
+gr.stress_energy_variation,GR-4.8,Stress-energy from action variation,gr,General Relativity
+gr.trace_reversed_equations,GR-4.9,Trace-reversed equations,gr,General Relativity
+gr.vacuum_field_equations,GR-4.10,Vacuum field equations,gr,General Relativity
+gr.weak_field_metric,GR-5.1,Weak-field metric,gr,General Relativity
+gr.newtonian_limit,GR-5.2,Newtonian limit,gr,General Relativity
+gr.gravitational_redshift,GR-5.3,Gravitational redshift,gr,General Relativity
+gr.light_deflection,GR-5.4,Light deflection,gr,General Relativity
+gr.perihelion_precession,GR-5.5,Perihelion precession,gr,General Relativity
+gr.post_newtonian_approximation,GR-5.6,Post-Newtonian approximation,gr,General Relativity
+gr.gravitational_waves,GR-5.7,Gravitational waves,gr,General Relativity
+gr.schwarzschild_metric,GR-6.1,Schwarzschild metric,gr,General Relativity
+gr.schwarzschild_radius,GR-6.2,Schwarzschild radius,gr,General Relativity
+gr.event_horizon,GR-6.3,Event horizon,gr,General Relativity
+gr.coordinate_singularity,GR-6.4,Coordinate singularity,gr,General Relativity
+gr.black_hole_singularity,GR-6.5,Black hole singularity,gr,General Relativity
+gr.effective_potential_orbits,GR-6.6,Effective potential for orbits,gr,General Relativity

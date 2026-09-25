@@ -13,8 +13,7 @@ concept or module. The current dataset initially folds all modules.
 Select a module to read its overview, concept list, boundary links and declared
 supports. Expand it to show its concepts on the graph. Concept pages include
 teaching blocks, graphics where available, relationship sections, questions and
-references. The `FULL` badge is an authoring status, not a reading-mode or
-mastery indicator.
+references.
 
 The header **Search** button opens a separate panel, also available on narrow
 screens. Search matches concept IDs, titles and prose, and module metadata,

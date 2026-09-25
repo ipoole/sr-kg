@@ -88,6 +88,50 @@ def test_real_data_study_question_types_are_canonical():
     assert set(study_questions["question_type"]).issubset(STUDY_QUESTION_TYPES)
 
 
+def test_filtered_study_questions_do_not_reference_authored_question_numbers():
+    study_questions = _read_csv("study_questions.csv")
+    filtered_types_by_mode = {
+        "core": {"short_answer"},
+        "maths": {"calculation"},
+        "context": {"multiple_choice"},
+    }
+    reference_pattern = re.compile(
+        r"\bq\d+\b|\bquestion\s+\d+\b|\bprevious question\b",
+        re.IGNORECASE,
+    )
+
+    failures = []
+    for mode, question_types in filtered_types_by_mode.items():
+        filtered = study_questions[study_questions["question_type"].isin(question_types)]
+        for row in filtered.itertuples(index=False):
+            text = f"{row.prompt} {row.answer}"
+            if reference_pattern.search(text):
+                failures.append(f"{mode}: {row.question_id}")
+
+    assert failures == []
+
+
+def test_lorentz_maths_view_has_standard_boost_setup_context():
+    content_blocks = _read_csv("content_blocks.csv")
+    lorentz_blocks = content_blocks[content_blocks["concept_id"] == "sr.lorentz_transformations"]
+    maths_kinds = {
+        "construction",
+        "derivation",
+        "derivation_step",
+        "result",
+        "decomposition",
+        "convention",
+        "worked_example",
+    }
+    visible_blocks = lorentz_blocks[lorentz_blocks["kind"].isin(maths_kinds)]
+
+    assert "sr.lorentz_transformations.setup" in set(visible_blocks["block_id"])
+    assert visible_blocks.loc[
+        visible_blocks["block_id"] == "sr.lorentz_transformations.setup",
+        "body",
+    ].str.contains("standard boost", case=False).any()
+
+
 def test_gr_and_maths_text_does_not_double_escape_latex_backslashes():
     nodes = _read_csv("nodes.csv")
     concept_ids = set(nodes.loc[nodes["domain"].isin({"gr", "math"}), "id"])

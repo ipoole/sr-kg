@@ -77,7 +77,7 @@ If \(\beta=0.6\), \(\gamma=1.25\), \(ct=10\,\mathrm m\), and \(x=4\,\mathrm m\),
 \[ ct'=1.25(10-0.6\times4)=1.25(7.6)=9.5\,\mathrm m, \]
 \[ x'=1.25(4-0.6\times10)=1.25(-2)=-2.5\,\mathrm m. \]
 The same event receives different coordinates in the boosted frame."
-sr.lorentz_transformations.q4,sr.lorentz_transformations,40,calculation,"For the same event in q3, compute \(ct'^2-x'^2\) and compare it with \(ct^2-x^2\).","Using the transformed coordinates,
+sr.lorentz_transformations.q4,sr.lorentz_transformations,40,calculation,"A boost calculation gives \(ct'=9.5\,\mathrm m\) and \(x'=-2.5\,\mathrm m\) for an event whose original coordinates are \(ct=10\,\mathrm m\) and \(x=4\,\mathrm m\). Compute \(ct'^2-x'^2\) and compare it with \(ct^2-x^2\).","Using the transformed coordinates,
 \[ ct'^2-x'^2=9.5^2-(-2.5)^2=90.25-6.25=84. \]
 Using the original coordinates,
 \[ ct^2-x^2=10^2-4^2=100-16=84. \]

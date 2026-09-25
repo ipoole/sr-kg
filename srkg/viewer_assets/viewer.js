@@ -2452,8 +2452,8 @@
             graphContext: "where-used",
             relation: "DERIVES_FROM",
             focusDirection: "incoming",
-            lensLabel: "Immediate usage",
-            treeLensLabel: "Usage tree"
+            lensLabel: "Derivation/construction usage",
+            treeLensLabel: "Derivation/construction usage tree"
           },
           "study-questions": {graphContext: "neighbourhood", lensLabel: "Neighbourhood"},
           references: {graphContext: "neighbourhood", lensLabel: "Neighbourhood"}
@@ -2488,7 +2488,9 @@
             phrase: "is constructed from",
             abbreviation: "CF",
             sortOrder: 30,
-            backlinkTitle: "Built from this"
+            backlinkTitle: "Built from this",
+            derivationTree: true,
+            tracePhrase: "is constructed from"
           },
           COMPONENT_OF: {
             label: "Component of",
@@ -2536,6 +2538,8 @@
               decomposition: true,
               derivation: true,
               example: true,
+              warning: true,
+              convention: true,
               summary: true
             },
             questionTypes: {
@@ -2545,10 +2549,12 @@
           maths: {
             label: "Maths",
             blockKinds: {
+              construction: true,
               derivation: true,
               derivation_step: true,
               result: true,
               decomposition: true,
+              convention: true,
               worked_example: true
             },
             questionTypes: {
@@ -2659,6 +2665,13 @@
           return edgeRelationPolicyFor(relation).derivationTree === true;
         }
 
+        function derivationTraversalRelationLabel() {
+          return orderedRelations()
+            .filter(relationHasDerivationTreeSemantics)
+            .map(relationDisplayLabel)
+            .join(" or ") || relationDisplayLabel(derivationRelation());
+        }
+
         function lensLabelForSectionRole(role) {
           var policy = detailSectionGraphPolicyFor(role);
           if (role === DetailSectionRole.DERIVED_FROM && derivedFromFullTreeEnabled) {
@@ -2744,10 +2757,6 @@
           return String(kind || "")
             .replace(/_/g, " ")
             .replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
-        }
-
-        function authoringStatusLabel(status) {
-          return contentBlockKindLabel(status);
         }
 
         function contentBlockKindClass(kind) {
@@ -2907,12 +2916,6 @@
               '<span class="concept-module-chip-label">Module</span> ' +
               renderConceptText(owningModule.title || owningModuleId) +
               "</button>";
-          }
-          if (concept.authoring_status) {
-            html += '<span class="concept-authoring-status concept-authoring-status-' +
-              escapeHtml(contentBlockKindClass(concept.authoring_status)) + '">' +
-              escapeHtml(authoringStatusLabel(concept.authoring_status)) +
-              "</span>";
           }
           html += "</div>";
           html += renderConceptToc(tocItems);
@@ -3804,7 +3807,7 @@
           var html = '<div class="concept-sticky-header module-sticky-header">';
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
-          html += '<span class="concept-authoring-status module-domain-label">' +
+          html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
           html += renderModuleGraphFoldControl(moduleId);
@@ -5087,7 +5090,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.from) === current &&
-                  edgeRelation(edge) === derivationRelation();
+                  relationHasDerivationTreeSemantics(edgeRelation(edge));
               })
               .sort(function(a, b) {
                 return compareConceptIds(String(a.to), String(b.to));
@@ -5175,20 +5178,18 @@
           direction = direction || (relationIsDirected(relation) ? "incoming" : "undirected");
           var lensContext = activeConceptSectionContext;
           if (lensContext === "derived-from") {
-            var derivedFromRelation = relationForSectionRole(DetailSectionRole.DERIVED_FROM);
             var derivedFromDirection = focusDirectionForSectionRole(DetailSectionRole.DERIVED_FROM);
             return {
-              state: relation === derivedFromRelation && direction === derivedFromDirection
+              state: relationHasDerivationTreeSemantics(relation) && direction === derivedFromDirection
                 ? (derivedFromFullTreeEnabled ? "tree" : "immediate")
                 : "none",
               direction: direction
             };
           }
           if (lensContext === "where-used") {
-            var whereUsedRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
             var whereUsedDirection = focusDirectionForSectionRole(DetailSectionRole.WHERE_USED);
             return {
-              state: relation === whereUsedRelation && direction === whereUsedDirection
+              state: relationHasDerivationTreeSemantics(relation) && direction === whereUsedDirection
                 ? (backlinksFullTreeEnabled ? "tree" : "immediate")
                 : "none",
               direction: direction
@@ -5611,7 +5612,7 @@
 
           if (trace.orderedEdges.length === 0) {
             html += '<p class="reading-mode-empty">No ' +
-              escapeHtml(derivationRelation()) +
+              escapeHtml(derivationTraversalRelationLabel()) +
               " links are recorded for this concept.</p>";
             html += "</section>";
             return html;
@@ -5642,7 +5643,6 @@
 
         function derivedFromEdgesFor(nodeId, fullTree) {
           nodeId = String(nodeId);
-          var sourceRelation = relationForSectionRole(DetailSectionRole.DERIVED_FROM);
           var entries = [];
           var queue = [{nodeId: nodeId, depth: 0}];
           var visitedNodes = {};
@@ -5654,7 +5654,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.from) === current.nodeId &&
-                  edgeRelation(edge) === sourceRelation &&
+                  relationHasDerivationTreeSemantics(edgeRelation(edge)) &&
                   getConcept(edge.to);
               })
               .sort(function(a, b) {
@@ -5681,7 +5681,6 @@
 
         function derivedFromThisEntriesFor(nodeId, fullTree) {
           nodeId = String(nodeId);
-          var usageRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
           var entries = [];
           var queue = [{nodeId: nodeId, depth: 0}];
           var visitedNodes = {};
@@ -5693,7 +5692,7 @@
             allEdges
               .filter(function(edge) {
                 return String(edge.to) === current.nodeId &&
-                  edgeRelation(edge) === usageRelation &&
+                  relationHasDerivationTreeSemantics(edgeRelation(edge)) &&
                   getConcept(edge.from);
               })
               .sort(function(a, b) {
@@ -5723,15 +5722,19 @@
           return ' style="--tree-depth:' + String(depth) + '"';
         }
 
-        function fullTreeToggleHtml(className, checked) {
+        function fullTreeToggleHtml(className, checked, label) {
           return '<label class="concept-full-tree-toggle">' +
             '<input type="checkbox" class="' + escapeHtml(className) + '"' +
-            (checked ? " checked" : "") + "> Full tree</label>";
+            (checked ? " checked" : "") + "> " +
+            escapeHtml(label || "Full tree") + "</label>";
         }
 
         function derivedFromTreeItemHtml(item, noteClassName) {
           var html = "<li" + treeIndentStyle(item) + ">";
           html += relationshipConceptHtml(item.nodeId);
+          html += ' <span class="concept-tree-relation" style="color:' +
+            escapeHtml(relationColour(edgeRelation(item.edge))) + '">' +
+            escapeHtml(relationDisplayLabel(edgeRelation(item.edge))) + "</span>";
           if (item.edge.note) {
             html += '<div class="' + escapeHtml(noteClassName) + '">' +
               renderConceptText(item.edge.note) + "</div>";
@@ -5759,16 +5762,17 @@
         function backLinkRelationGroupsObject(nodeId) {
           nodeId = String(nodeId);
           var groups = {};
-          var usageRelation = relationForSectionRole(DetailSectionRole.WHERE_USED);
           var derivedEntries = derivedFromThisEntriesFor(nodeId, backlinksFullTreeEnabled);
-          if (derivedEntries.length > 0) {
-            groups[usageRelation] = derivedEntries;
-          }
+          derivedEntries.forEach(function(item) {
+            var itemRelation = edgeRelation(item.edge);
+            if (!groups[itemRelation]) { groups[itemRelation] = []; }
+            groups[itemRelation].push(item);
+          });
 
           allEdges.forEach(function(edge) {
             var relation = edgeRelation(edge);
             var relatedNodeId = null;
-            if (relation === usageRelation) { return; }
+            if (relationHasDerivationTreeSemantics(relation)) { return; }
             if (edgeRelationDirected(edge)) {
               if (String(edge.to) !== nodeId) { return; }
               relatedNodeId = String(edge.from);
@@ -5823,6 +5827,7 @@
               return {
                 relation: relation,
                 title: backlinkGroupTitle(relation),
+                graphHighlighted: relationHasDerivationTreeSemantics(relation),
                 items: sortedBacklinkItems(groups[relation])
               };
             });
@@ -5839,13 +5844,21 @@
             '" data-lens-label="' +
             escapeHtml(lensLabelForSectionRole(DetailSectionRole.WHERE_USED)) + '" open>';
           html += "<summary>Where this is used</summary>";
+          html += '<p class="concept-backlink-scope-note">' +
+            "Auto graph highlights derivation/construction usage; other incoming links are listed but not traversed." +
+            "</p>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
-            backlinksFullTreeEnabled
+            backlinksFullTreeEnabled,
+            "Full derivation/construction tree"
           );
           groups.forEach(function(group) {
             html += '<section class="concept-backlink-group">';
-            html += '<div class="concept-backlink-group-title">' + escapeHtml(group.title) + "</div>";
+            html += '<div class="concept-backlink-group-title">' +
+              escapeHtml(group.title) +
+              ' <span class="concept-backlink-group-scope">' +
+              escapeHtml(group.graphHighlighted ? "graph-highlighted" : "listed only") +
+              "</span></div>";
             html += '<ul class="concept-backlink-list">';
             group.items.forEach(function(item) {
               html += derivedFromTreeItemHtml(item, "concept-backlink-note");
@@ -6563,7 +6576,7 @@
           document.getElementById("kg_status").innerText =
             (statusPrefix ? statusPrefix + " " + displayId + ". " : "") +
             "Derivation trace: " + displayId + " plus " + traceNodeCount +
-            " derived-from node" + (traceNodeCount === 1 ? "" : "s") +
+            " derivation-path node" + (traceNodeCount === 1 ? "" : "s") +
             ". Click a visible node to trace from it.";
         }
 
@@ -7332,7 +7345,7 @@
             var traceNodeCount = Math.max(0, visibleIds.length - 1);
             document.getElementById("kg_status").innerText =
               "Derivation trace: " + conceptDisplayId(nodeId) + " plus " + traceNodeCount +
-              " derived-from node" + (traceNodeCount === 1 ? "" : "s") +
+              " derivation-path node" + (traceNodeCount === 1 ? "" : "s") +
               ". Click a visible node to trace from it.";
           }
         }

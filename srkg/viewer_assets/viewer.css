@@ -877,7 +877,15 @@
 
     #info_panel .module-domain-label {
         background: #e7f0f6;
+        border: 1px solid #ccd6e2;
+        border-radius: 999px;
         color: #28516c;
+        flex: 0 0 auto;
+        font-size: 0.72em;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.32em 0.55em;
+        text-transform: uppercase;
     }
 
     #info_panel .module-graph-fold-control {
@@ -1033,31 +1041,6 @@
     #info_panel .concept-module-context {
         color: #555;
         margin: 0 0 0.75em;
-    }
-
-    #info_panel .concept-authoring-status {
-        background: #eef2f7;
-        border: 1px solid #ccd6e2;
-        border-radius: 999px;
-        color: #3a4654;
-        flex: 0 0 auto;
-        font-size: 0.72em;
-        font-weight: 700;
-        line-height: 1;
-        padding: 0.32em 0.55em;
-        text-transform: uppercase;
-    }
-
-    #info_panel .concept-authoring-status-seed {
-        background: #fff7e6;
-        border-color: #e4bf74;
-        color: #78540d;
-    }
-
-    #info_panel .concept-authoring-status-prerequisite_support {
-        background: #eef7f2;
-        border-color: #a8d2b7;
-        color: #245b38;
     }
 
     #info_panel .reading-mode-empty {
@@ -1686,14 +1669,33 @@
         font-weight: 700;
     }
 
+    #info_panel .concept-backlink-scope-note {
+        color: #555;
+        font-size: 0.92em;
+        margin: 0.55em 0 0;
+    }
+
     #info_panel .concept-backlink-group {
         margin-top: 0.75em;
     }
 
     #info_panel .concept-backlink-group-title {
+        align-items: center;
         color: #555;
+        display: flex;
+        flex-wrap: wrap;
         font-weight: 700;
+        gap: 0.45em;
         margin-bottom: 0.35em;
+    }
+
+    #info_panel .concept-backlink-group-scope {
+        border: 1px solid #d4d4d8;
+        border-radius: 999px;
+        color: #666;
+        font-size: 0.78em;
+        font-weight: 600;
+        padding: 0.08em 0.5em;
     }
 
     #info_panel .concept-backlink-list {

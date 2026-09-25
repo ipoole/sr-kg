@@ -5,9 +5,8 @@ general relativity and supporting mathematics. It is primarily aimed at personal
 study around Theoretical Minimum level, with an ambition to support a wider
 range of backgrounds.
 
-The current data contains 47 SR/classical-field concepts and 55 GR concepts
-marked `full`, plus nine mathematics concepts marked `prerequisite_support`.
-These are authoring statuses, not learner progress or difficulty ratings.
+The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
+nine supporting mathematics concepts.
 
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,

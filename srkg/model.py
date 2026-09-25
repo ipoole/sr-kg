@@ -190,7 +190,6 @@ class Concept:
     display_id: str = ""
     domain: str = ""
     domain_title: str = ""
-    authoring_status: str = ""
     sections: list[ConceptSection] = field(default_factory=list)
     content_blocks: list[ContentBlock] = field(default_factory=list)
     study_questions: list[StudyQuestion] = field(default_factory=list)
@@ -208,7 +207,6 @@ class Concept:
             "label": self.label,
             "domain": self.domain,
             "domain_title": self.domain_title,
-            "authoring_status": self.authoring_status,
             "sections": [section.to_viewer_data() for section in self.sections],
             "content_blocks": [
                 block.to_viewer_data() for block in self.content_blocks

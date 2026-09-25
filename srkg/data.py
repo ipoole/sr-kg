@@ -102,7 +102,6 @@ def build_concepts(
             display_id=display_id,
             domain=str(row.get("domain", "")).strip(),
             domain_title=str(row.get("domain_title", "")).strip(),
-            authoring_status=str(row.get("authoring_status", "")).strip(),
             sections=_sections_from_content_blocks(blocks_by_concept.get(cid, [])),
             content_blocks=blocks_by_concept.get(cid, []),
             svg_icon=svg_icon or "",

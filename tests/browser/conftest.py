@@ -61,7 +61,11 @@ class BrowserGraph:
         self.page.locator("#kg_search_close").click()
 
 
-def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _write_browser_fixture(
+    tmp_path: Path,
+    *,
+    include_constructed_from: bool = False,
+) -> tuple[Path, Path, Path]:
     (tmp_path / "manifest.yaml").write_text(
         "\n".join([
             "name: browser-test-kb",
@@ -196,7 +200,7 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "body": "Delta definition",
         },
     ]).to_csv(content_blocks_path, index=False)
-    pd.DataFrame([
+    edge_rows = [
         {
             "source": "3.1",
             "target": "2.1",
@@ -233,8 +237,17 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "relation": "REQUIRES",
             "note": "Delta depends on gamma",
         },
-    ]).to_csv(edges_path, index=False)
-    pd.DataFrame([
+    ]
+    if include_constructed_from:
+        edge_rows.insert(3, {
+            "source": "2.2",
+            "target": "2.1",
+            "relation": "CONSTRUCTED_FROM",
+            "note": "Gamma is constructed from beta",
+        })
+    pd.DataFrame(edge_rows).to_csv(edges_path, index=False)
+
+    edge_key_rows = [
         {
             "relation": "REQUIRES",
             "directed": "true",
@@ -256,7 +269,16 @@ def _write_browser_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "meaning": "source can be mathematically derived from target",
             "example": "Delta derives from Gamma",
         },
-    ]).to_csv(edge_key_path, index=False)
+    ]
+    if include_constructed_from:
+        edge_key_rows.append({
+            "relation": "CONSTRUCTED_FROM",
+            "directed": "true",
+            "category": "knowledge",
+            "meaning": "source is structurally built from target",
+            "example": "Gamma is built from Beta",
+        })
+    pd.DataFrame(edge_key_rows).to_csv(edge_key_path, index=False)
     pd.DataFrame([
         {
             "question_id": "2.1.q1",
@@ -437,7 +459,7 @@ def _open_browser_graph(playwright_api, browser, output_path: Path):
     context = browser.new_context(viewport={"width": 1280, "height": 800})
     try:
         page = context.new_page()
-        page.set_default_timeout(5000)
+        page.set_default_timeout(10000)
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on(
             "console",
@@ -507,6 +529,14 @@ def browser_fixture_output(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def constructed_browser_fixture_output(tmp_path_factory):
+    tmp_path = tmp_path_factory.mktemp("browser-constructed-fixture")
+    _write_browser_fixture(tmp_path, include_constructed_from=True)
+    with patch("srkg.data.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
+        return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
+
+
+@pytest.fixture(scope="session")
 def repo_browser_output(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("repo-browser")
     return _prepare_browser_output(
@@ -520,6 +550,13 @@ def repo_browser_output(tmp_path_factory):
 def browser_graph(browser_fixture_output, playwright_browser):
     playwright_api, browser = playwright_browser
     with _open_browser_graph(playwright_api, browser, browser_fixture_output) as graph:
+        yield graph
+
+
+@pytest.fixture
+def constructed_browser_graph(constructed_browser_fixture_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(playwright_api, browser, constructed_browser_fixture_output) as graph:
         yield graph
 
 

@@ -1335,7 +1335,7 @@ def test_detail_section_graph_policy_marks_toc_sections(shared_browser_graph):
     ) == {
         "role": "where-used",
         "context": "where-used",
-        "label": "Immediate usage",
+        "label": "Derivation/construction usage",
     }
     assert page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-study-questions"]'
@@ -1899,13 +1899,30 @@ def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
     block_kinds = _visible_content_block_kinds(page)
     assert "definition" in block_kinds
     assert "intuition" in block_kinds
-    assert "warning" not in block_kinds
+    assert "warning" in block_kinds
     assert "derivation_step" not in block_kinds
     assert "historical_note" not in block_kinds
     questions = page.locator("#info_panel details.study-questions")
     assert not questions.evaluate("node => node.open")
     questions.locator(":scope > summary").click()
     assert questions.locator(".study-question").count() == 1
+
+
+@pytest.mark.browser
+def test_real_lorentz_maths_mode_keeps_boost_context(clean_repo_browser_graph):
+    page = clean_repo_browser_graph.page
+
+    clean_repo_browser_graph.click_concept("sr.lorentz_transformations")
+    page.locator("#kg_details_view_select").select_option("maths")
+
+    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "maths"
+    block_kinds = _visible_content_block_kinds(page)
+    assert "construction" in block_kinds
+    assert "Standard boost setup" in page.locator("#info_panel").inner_text()
+    questions = page.locator("#info_panel details.study-questions")
+    questions.locator(":scope > summary").click()
+    prompts = questions.locator(".study-question-prompt").all_inner_texts()
+    assert not any("q3" in prompt.lower() for prompt in prompts)
 
 
 @pytest.mark.browser
@@ -2263,6 +2280,32 @@ def test_concept_details_show_backlinks_grouped_by_relation(shared_browser_graph
     assert backlinks.locator(".edge-detail-concept").evaluate_all(
         "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
     ) == ["2.2", "2.1", "2.1"]
+    assert "Auto graph highlights derivation/construction usage" in backlinks.inner_text()
+    assert backlinks.locator(".concept-backlink-group-scope").evaluate_all(
+        "nodes => nodes.map(node => node.textContent.trim())"
+    ) == ["graph-highlighted", "listed only", "listed only"]
+
+
+@pytest.mark.browser
+def test_where_used_auto_lens_scope_matches_usage_text(constructed_browser_graph):
+    page = constructed_browser_graph.page
+
+    constructed_browser_graph.click_concept("2.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+    page.locator(
+        '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-1-where-this-is-used"]'
+    ).click()
+
+    lens = page.locator("#kg_focus_lens")
+    assert lens.get_attribute("data-lens-context") == "where-used"
+    assert lens.get_attribute("data-lens-label") == "Derivation/construction usage"
+    backlinks_text = page.locator("#info_panel .concept-backlinks").inner_text()
+    assert "Full derivation/construction tree" in backlinks_text
+    assert "listed only" in backlinks_text
+    assert page.locator(
+        '#kg_focus_lens .kg-focus-lens-incoming '
+        '.kg-focus-lens-relation[data-relation="CONSTRUCTED_FROM"][data-direction="incoming"]'
+    ).get_attribute("data-state") == "immediate"
 
 
 @pytest.mark.browser
@@ -2298,6 +2341,27 @@ def test_derived_from_full_tree_expands_only_derives_from_ancestry(browser_graph
 
 
 @pytest.mark.browser
+def test_derived_from_full_tree_includes_constructed_from_ancestry(constructed_browser_graph):
+    page = constructed_browser_graph.page
+
+    constructed_browser_graph.click_concept("3.1")
+
+    derived_from = page.locator("#info_panel .concept-derived-from")
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() == 0
+
+    derived_from.locator(".concept-derived-from-full-tree").check()
+
+    derived_from = page.locator("#info_panel .concept-derived-from")
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="1.1"]').count() == 1
+    assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() == 1
+    assert "Constructed from" in derived_from.locator(".concept-tree-relation").evaluate_all(
+        "nodes => nodes.map(node => node.textContent).join('\\n')"
+    )
+
+
+@pytest.mark.browser
 def test_derived_from_concept_hover_shows_preview(browser_graph):
     page = browser_graph.page
 
@@ -2326,6 +2390,58 @@ def test_backlinks_full_tree_expands_only_derives_from_descendants(browser_graph
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="3.1"]').count() == 1
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() >= 1
+
+
+@pytest.mark.browser
+def test_backlinks_full_tree_includes_constructed_from_descendants(constructed_browser_graph):
+    page = constructed_browser_graph.page
+
+    constructed_browser_graph.click_concept("2.1")
+
+    backlinks = page.locator("#info_panel .concept-backlinks")
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert "Built from this" in backlinks.inner_text()
+
+    backlinks.locator(".concept-backlinks-full-tree").check()
+
+    backlinks = page.locator("#info_panel .concept-backlinks")
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="3.1"]').count() >= 1
+    assert "Constructed from" in backlinks.locator(".concept-tree-relation").evaluate_all(
+        "nodes => nodes.map(node => node.textContent).join('\\n')"
+    )
+
+
+@pytest.mark.browser
+def test_auto_derivation_lens_includes_constructed_from_tree_edges(constructed_browser_graph):
+    page = constructed_browser_graph.page
+
+    constructed_browser_graph.click_concept("3.1")
+    page.locator("#kg_graph_view_select").select_option("focused")
+    page.locator("#info_panel .concept-derived-from-full-tree").check()
+
+    page.wait_for_function(
+        """() => {
+          const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
+          const constructedEdge = edges.get().find(edge =>
+            edge.relation === "CONSTRUCTED_FROM" && edge.from === "2.2" && edge.to === "2.1"
+          );
+          const lensStates = Object.fromEntries(
+            Array.from(document.querySelectorAll("#kg_focus_lens .kg-focus-lens-relation"))
+              .map(node => [
+                `${node.getAttribute("data-relation")}::${node.getAttribute("data-direction")}`,
+                node.getAttribute("data-state")
+              ])
+          );
+          return hidden["3.1"] === false &&
+            hidden["2.2"] === false &&
+            hidden["2.1"] === false &&
+            constructedEdge &&
+            constructedEdge.hidden === false &&
+            lensStates["DERIVES_FROM::outgoing"] === "tree" &&
+            lensStates["CONSTRUCTED_FROM::outgoing"] === "tree";
+        }"""
+    )
 
 
 @pytest.mark.browser

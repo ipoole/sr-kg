@@ -158,12 +158,12 @@ No hierarchical module schema is needed to try this.
 **Observed:** At desktop width, the floating Tools panel occupies a substantial
 part of the graph. The sticky concept header and open contents list occupy much
 of the reading pane on the Lorentz page. “FULL” remains visible in Maths mode
-because it denotes authoring status. At a fresh narrow viewport, the graph sits
+because it is a now-removed concept badge. At a fresh narrow viewport, the graph sits
 above the text; opening Tools creates a large overlay. The layout does adapt,
 but a small display still makes reading compete with controls and graph space.
 
 **Recommend:** Use a compact contents control with a clear current-section label;
-make authoring status secondary and explicitly named. On narrow screens, trial
+remove the obsolete concept badge. On narrow screens, trial
 Read/Map switching with reading first. Provide explicit expand/fold controls as
 well as double-click gestures. Keep graph adjustment available without making it
 the dominant interaction in a reading session.
@@ -205,7 +205,7 @@ follow the next connection and can explain what they discovered.
 
 | Document | Assessment and action |
 | --- | --- |
-| README | Accurate GR count, but little learner orientation and understated runtime dependencies. Added audience, current coverage, a short study entry point and explicit CDN/relative-asset dependencies. Authoring completeness is labelled as status, not asserted as independent physics validation. |
+| README | Accurate GR count, but little learner orientation and understated runtime dependencies. Added audience, current coverage, a short study entry point and explicit CDN/relative-asset dependencies. |
 | Architecture | Broadly matches the implementation. Corrected runtime dependencies and added the limitation of note anchors. Linked learner-facing behaviour rather than expanding the architecture into a manual. |
 | Modules | The Full graph edge-policy paragraph omitted lens overrides; Focussed wording omitted Manual control and module selection. Corrected these. The ownership and folding contracts remain useful. |
 | Layout | The claimed required keep/reset decision was stronger than implementation. Corrected it to an immediately applied override plus non-blocking warning. Other persistence distinctions remain useful. |
@@ -221,7 +221,7 @@ its fine-grained graph as a prerequisite for the improvements above.
 ## Suggested sequence and open decisions
 
 1. Fix exact-title search and filtered question references; clarify ambiguous
-   relation and authoring-status labels.
+   relation labels.
 2. Trial improved reading controls and one module route on SR-1. Check both a
    familiar concept and a topic where the owner needs a refresher.
 3. Use that experience to decide on resume/revisit support, richer worked examples
