@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr4-detail">
+<title id="title-gr4-detail">GR-4 Matter and Einstein Equations detail graphic</title>
+<defs><linearGradient id="gr4d-space" x1="0" x2="1"><stop stop-color="#e7eef9"/><stop offset=".5" stop-color="#fbfcff"/><stop offset="1" stop-color="#f9e9e5"/></linearGradient><radialGradient id="gr4d-matter"><stop stop-color="#fff5ba"/><stop offset=".45" stop-color="#d95c45"/><stop offset="1" stop-color="#8f1f2a"/></radialGradient></defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr4d-space)"/>
+<g fill="none" stroke="#5378a3" stroke-width="5" opacity=".78"><path d="M58 161C105 122 166 126 215 173S291 219 333 200"/><path d="M45 224C100 183 161 186 211 228S294 271 349 243"/><path d="M45 290C104 247 165 249 215 292S298 334 350 306"/><path d="M62 354C111 316 169 318 216 360S289 398 330 380"/></g>
+<path d="M111 116C151 183 175 222 214 256S278 323 301 395" fill="none" stroke="#1f4fbf" stroke-width="10" stroke-linecap="round"/>
+<circle cx="371" cy="256" r="69" fill="url(#gr4d-matter)"/><g fill="#fff4bd"><circle cx="352" cy="236" r="7"/><circle cx="392" cy="259" r="10"/><circle cx="365" cy="282" r="6"/></g>
+<path d="M245 223V289M222 256H288" stroke="#c78a00" stroke-width="10" stroke-linecap="round"/><circle cx="255" cy="256" r="47" fill="none" stroke="#d8a735" stroke-width="4"/>
+<g font-family="STIX Two Math, Cambria Math, serif" font-style="italic" font-size="28"><text x="77" y="111" fill="#385b7e">G</text><text x="410" y="337" fill="#9a2930">T</text></g>
+</svg>

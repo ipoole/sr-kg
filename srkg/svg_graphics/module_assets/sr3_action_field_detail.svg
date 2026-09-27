@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-sr3-detail">
+<title id="title-sr3-detail">SR-3 Action and Field Theory detail graphic</title>
+<defs><linearGradient id="sr3d-field" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef4ff"/><stop offset="1" stop-color="#eaf6ed"/></linearGradient></defs>
+<rect x="26" y="26" width="460" height="460" rx="50" fill="url(#sr3d-field)" stroke="#dbe3f3" stroke-width="3"/>
+<g fill="none" stroke="#aeb9ca" stroke-width="3" opacity=".65">
+  <path d="M62 151C143 106 209 194 286 149S406 95 456 138"/><path d="M56 217C137 168 207 252 286 209S407 151 462 197"/>
+  <path d="M54 289C136 239 208 324 291 278S411 222 464 268"/><path d="M66 366C149 314 220 395 304 350S414 297 454 337"/>
+</g>
+<path d="M92 399C147 339 161 208 256 255S362 279 423 103" fill="none" stroke="#c78a00" stroke-width="14" stroke-linecap="round"/>
+<path d="M92 399C181 304 186 149 256 255S362 261 423 103" fill="none" stroke="#1f4fbf" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+<path d="M92 399C130 379 220 371 256 255S322 112 423 103" fill="none" stroke="#248a3d" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+<circle cx="92" cy="399" r="14" fill="#222"/><circle cx="423" cy="103" r="14" fill="#222"/>
+<circle cx="256" cy="255" r="14" fill="#fff7d0" stroke="#8a5d00" stroke-width="5"/>
+<g font-family="STIX Two Math, Cambria Math, serif" font-style="italic"><text x="66" y="430" font-size="26">A</text><text x="431" y="97" font-size="26">B</text><text x="274" y="247" font-size="31" fill="#8a5d00">S</text></g>
+<rect x="309" y="373" width="133" height="66" rx="18" fill="#fff" stroke="#c8c8c8" stroke-width="3"/>
+<text x="375" y="416" text-anchor="middle" font-family="STIX Two Math, Cambria Math, serif" font-size="28" fill="#8a5d00">δS = 0</text>
+</svg>

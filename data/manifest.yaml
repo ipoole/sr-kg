@@ -8,6 +8,7 @@ files:
   references: references.csv
   reference_links: reference_links.csv
   graphic_designs: concept_graphic_designs.csv
+  module_graphic_designs: module_graphic_designs.csv
   modules: modules.csv
   module_members: module_members.csv
   module_supports: module_supports.csv

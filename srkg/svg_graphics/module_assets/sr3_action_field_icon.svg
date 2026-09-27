@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-sr3-icon">
+<title id="title-sr3-icon">SR-3 Action and Field Theory icon</title>
+<defs>
+  <linearGradient id="sr3-field" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef4ff"/><stop offset="1" stop-color="#eaf6ed"/></linearGradient>
+  <filter id="sr3-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<circle cx="256" cy="256" r="226" fill="url(#sr3-field)"/>
+<g fill="none" stroke="#c8c8c8" stroke-width="3" opacity=".7">
+  <path d="M76 162C151 118 213 201 286 157S399 104 447 143"/>
+  <path d="M62 227C139 180 208 260 285 217S402 162 455 207"/>
+  <path d="M58 298C136 249 209 331 291 285S407 232 459 278"/>
+  <path d="M71 369C151 320 220 397 301 354S410 304 448 343"/>
+</g>
+<path d="M100 390C151 333 163 210 256 255S359 279 414 112" fill="none" stroke="#c78a00" stroke-width="15" stroke-linecap="round"/>
+<path d="M101 390C183 302 189 158 257 255S358 265 414 112" fill="none" stroke="#1f4fbf" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+<path d="M101 390C138 370 220 366 257 255S319 121 414 112" fill="none" stroke="#248a3d" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+<circle cx="100" cy="390" r="15" fill="#222"/><circle cx="414" cy="112" r="15" fill="#222"/>
+<circle cx="256" cy="255" r="38" fill="#c78a00" opacity=".2" filter="url(#sr3-glow)"/>
+<circle cx="256" cy="255" r="12" fill="#fff7d0" stroke="#8a5d00" stroke-width="5"/>
+</svg>

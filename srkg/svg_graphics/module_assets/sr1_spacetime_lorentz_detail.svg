@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SR-1 Spacetime and Lorentz Symmetry detail graphic</title>
+  <desc id="desc">An invariant spacetime event, its light cone, two inertial coordinate frames and interval curves.</desc>
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f6c34a" stop-opacity=".55"/>
+      <stop offset=".55" stop-color="#f6c34a" stop-opacity=".11"/>
+      <stop offset="1" stop-color="#f6c34a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="future" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#1f4fbf" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#1f4fbf" stop-opacity=".03"/>
+    </linearGradient>
+    <marker id="black-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 8 5 0 10Z" fill="#222"/></marker>
+    <marker id="green-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 8 5 0 10Z" fill="#248a3d"/></marker>
+  </defs>
+  <rect x="20" y="20" width="472" height="472" rx="54" fill="#fbfcff" stroke="#dbe3f3" stroke-width="3"/>
+  <path d="M256 48 462 256 256 464 50 256Z" fill="#edf3ff" stroke="#1f4fbf" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M256 48 462 256H50Z" fill="url(#future)"/>
+  <path d="M256 464 462 256H50Z" fill="url(#future)" opacity=".72"/>
+  <g stroke="#c8c8c8" stroke-width="2" stroke-dasharray="5 8" opacity=".7">
+    <path d="M100 256 256 100 412 256" fill="none"/>
+    <path d="M100 256 256 412 412 256" fill="none"/>
+    <path d="M152 256 256 152 360 256" fill="none"/>
+    <path d="M152 256 256 360 360 256" fill="none"/>
+  </g>
+  <path d="M256 426V74" stroke="#222" stroke-width="5" stroke-linecap="round" marker-end="url(#black-arrow)"/>
+  <path d="M86 256H426" stroke="#222" stroke-width="5" stroke-linecap="round" marker-end="url(#black-arrow)"/>
+  <path d="M151 411 361 80" stroke="#248a3d" stroke-width="5" stroke-linecap="round" marker-end="url(#green-arrow)"/>
+  <path d="M89 362 421 151" stroke="#248a3d" stroke-width="5" stroke-linecap="round" marker-end="url(#green-arrow)"/>
+  <path d="M105 181C170 103 342 103 407 181M105 331C170 409 342 409 407 331" fill="none" stroke="#c78a00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="73" fill="url(#halo)"/>
+  <circle cx="256" cy="256" r="17" fill="#c78a00" stroke="#222" stroke-width="4"/>
+  <circle cx="256" cy="256" r="6" fill="#fff8db"/>
+  <g font-family="STIX Two Math, Cambria Math, Times New Roman, serif" font-size="28" font-style="italic">
+    <text x="267" y="82" fill="#222">ct</text><text x="418" y="286" fill="#222">x</text>
+    <text x="354" y="100" fill="#248a3d">ct′</text><text x="421" y="151" fill="#248a3d">x′</text>
+  </g>
+</svg>

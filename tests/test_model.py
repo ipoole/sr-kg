@@ -162,7 +162,7 @@ def test_module_serializes_content_members_and_supports():
                 "note": "SR frame concept is reused locally.",
             },
         ],
-        "content_blocks": [
+            "content_blocks": [
             {
                 "block_id": "gr.m01_motivation.overview",
                 "module_id": "gr.m01_motivation",
@@ -170,6 +170,10 @@ def test_module_serializes_content_members_and_supports():
                 "kind": "overview",
                 "title": "Route",
                 "body": "Start from the equivalence principle.",
-            },
-        ],
-    }
+                },
+            ],
+            "svg_icon": "",
+            "svg_detail": "",
+            "svg_icon_caption": "",
+            "svg_detail_caption": "",
+        }

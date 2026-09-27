@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr5-detail">
+<title id="title-gr5-detail">GR-5 Weak-Field Gravity detail graphic</title>
+<defs><radialGradient id="gr5d-space"><stop stop-color="#fffdf4"/><stop offset=".58" stop-color="#edf4fb"/><stop offset="1" stop-color="#dde8f5"/></radialGradient><radialGradient id="gr5d-sun"><stop stop-color="#fff8b8"/><stop offset=".55" stop-color="#e5a41d"/><stop offset="1" stop-color="#bd6d00"/></radialGradient></defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr5d-space)"/><circle cx="256" cy="256" r="58" fill="url(#gr5d-sun)"/>
+<ellipse cx="256" cy="256" rx="167" ry="92" fill="none" stroke="#d22f2f" stroke-width="8" transform="rotate(-18 256 256)"/>
+<path d="M60 145C142 139 184 159 219 191C238 208 249 218 270 218C313 218 330 184 362 161C388 142 415 137 454 139" fill="none" stroke="#1f4fbf" stroke-width="11" stroke-linecap="round"/><path d="M60 145C142 139 184 159 219 191C238 208 249 218 270 218C313 218 330 184 362 161C388 142 415 137 454 139" fill="none" stroke="#b8dcff" stroke-width="3" stroke-linecap="round"/>
+<circle cx="99" cy="322" r="17" fill="#385b7e" stroke="#fff" stroke-width="5"/><path d="M111 312L132 294" stroke="#385b7e" stroke-width="6" stroke-linecap="round"/>
+<g fill="#7895b6"><circle cx="111" cy="92" r="4"/><circle cx="403" cy="106" r="5"/><circle cx="422" cy="335" r="4"/><circle cx="151" cy="401" r="5"/></g>
+<g font-family="STIX Two Math, Cambria Math, serif" font-style="italic" fill="#48698e"><text x="65" y="132" font-size="24">light</text><text x="344" y="362" font-size="27">Φ</text></g>
+</svg>

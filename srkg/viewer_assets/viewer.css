@@ -1792,6 +1792,13 @@
         width: 100%;
     }
 
+    #info_panel .module-graphic svg {
+        aspect-ratio: 8 / 5;
+        margin: 0 0 0.35rem;
+        max-height: 28rem;
+        width: min(100%, 48rem);
+    }
+
     #info_panel .concept-graphic-caption {
         color: #555;
         font-size: 0.95em;

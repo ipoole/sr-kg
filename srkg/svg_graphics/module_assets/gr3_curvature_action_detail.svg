@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr3-detail">
+<title id="title-gr3-detail">GR-3 Curvature and Gravitational Action detail graphic</title>
+<defs><radialGradient id="gr3d-space"><stop stop-color="#fffdf6"/><stop offset=".55" stop-color="#f2f6fb"/><stop offset="1" stop-color="#e5edf8"/></radialGradient><filter id="gr3d-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr3d-space)"/>
+<circle cx="256" cy="256" r="151" fill="none" stroke="#c78a00" stroke-width="14" opacity=".88"/><circle cx="256" cy="256" r="171" fill="none" stroke="#d8a735" stroke-width="3" opacity=".65"/>
+<g fill="none" stroke-linecap="round"><path d="M256 114C314 137 348 184 344 240C341 291 310 326 256 398" stroke="#1f4fbf" stroke-width="12"/><path d="M398 256C375 314 328 348 272 344C221 341 186 310 114 256" stroke="#d22f2f" stroke-width="12"/><path d="M256 398C198 375 164 328 168 272C171 221 202 186 256 114" stroke="#248a3d" stroke-width="12"/><path d="M114 256C137 198 184 164 240 168C291 171 326 202 398 256" stroke="#385b7e" stroke-width="12"/></g>
+<circle cx="256" cy="256" r="61" fill="#c78a00" opacity=".18" filter="url(#gr3d-glow)"/><circle cx="256" cy="256" r="34" fill="#fff7d0" stroke="#8a5d00" stroke-width="7"/><path d="M239 256C239 235 274 231 278 253C281 270 261 283 243 273" fill="none" stroke="#8a5d00" stroke-width="6" stroke-linecap="round"/>
+<g font-family="STIX Two Math, Cambria Math, serif" font-style="italic" fill="#48698e"><text x="118" y="116" font-size="28">R</text><text x="337" y="423" font-size="26">δS = 0</text></g>
+</svg>

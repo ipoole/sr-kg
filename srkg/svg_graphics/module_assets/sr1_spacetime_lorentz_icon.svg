@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SR-1 Spacetime and Lorentz Symmetry icon</title>
+  <desc id="desc">A luminous event inside a light-cone diamond, crossed by two equally weighted inertial coordinate frames.</desc>
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f6c34a" stop-opacity=".58"/>
+      <stop offset=".48" stop-color="#f6c34a" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#f6c34a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f4fbf" stop-opacity=".05"/>
+      <stop offset=".5" stop-color="#1f4fbf" stop-opacity=".19"/>
+      <stop offset="1" stop-color="#1f4fbf" stop-opacity=".05"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+  <circle cx="256" cy="256" r="230" fill="#f9fbff"/>
+  <path d="M256 38 462 256 256 474 50 256Z" fill="url(#cone)" stroke="#1f4fbf" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M256 38V474M50 256H462" fill="none" stroke="#222" stroke-width="7" stroke-linecap="round"/>
+  <path d="M139 72 373 440M73 374 439 138" fill="none" stroke="#248a3d" stroke-width="7" stroke-linecap="round"/>
+  <path d="M127 191C184 122 328 122 385 191M127 321C184 390 328 390 385 321" fill="none" stroke="#c78a00" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+  <circle cx="256" cy="256" r="70" fill="url(#halo)" filter="url(#soft)"/>
+  <circle cx="256" cy="256" r="20" fill="#c78a00" stroke="#222" stroke-width="5"/>
+  <circle cx="256" cy="256" r="7" fill="#fff8db"/>
+</svg>

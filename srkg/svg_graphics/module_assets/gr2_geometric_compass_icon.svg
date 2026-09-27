@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr2-icon">
+<title id="title-gr2-icon">GR-2 Connections and Geodesics icon</title>
+<defs>
+  <linearGradient id="gr2-space" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#e9f4ee"/><stop offset=".55" stop-color="#f7fbff"/><stop offset="1" stop-color="#e7eef9"/></linearGradient>
+  <marker id="gr2-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5 0 10Z" fill="#248a3d"/></marker>
+</defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr2-space)"/>
+<g fill="none" stroke="#a6b4c7" stroke-width="3" opacity=".7">
+  <path d="M55 343C143 306 204 331 272 306S388 224 456 178"/>
+  <path d="M45 287C134 255 200 282 264 260S382 185 445 137"/>
+  <path d="M78 398C161 356 220 382 290 351S404 274 467 229"/>
+</g>
+<path d="M75 374C151 329 178 271 246 258S346 198 433 111" fill="none" stroke="#248a3d" stroke-width="12" stroke-linecap="round" marker-end="url(#gr2-arrow)"/>
+<g fill="none" stroke-linecap="round" stroke-width="7">
+  <g transform="translate(151 319) rotate(-34)"><circle r="13" fill="#fff" stroke="#385b7e" stroke-width="4"/><path d="M0 0V-53" stroke="#1f4fbf"/><path d="M0 0H47" stroke="#d22f2f"/></g>
+  <g transform="translate(253 253) rotate(-22)"><circle r="17" fill="#fff7d0" stroke="#8a5d00" stroke-width="5"/><path d="M0 0V-73" stroke="#1f4fbf"/><path d="M0 0H66" stroke="#d22f2f"/></g>
+  <g transform="translate(353 186) rotate(-40)"><circle r="13" fill="#fff" stroke="#385b7e" stroke-width="4"/><path d="M0 0V-53" stroke="#1f4fbf"/><path d="M0 0H47" stroke="#d22f2f"/></g>
+</g>
+</svg>

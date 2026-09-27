@@ -34,6 +34,29 @@ def test_real_data_concepts_use_semantic_ids_and_display_ids():
     assert not (nodes["id"] == nodes["display_id"]).any()
 
 
+def test_module_graphic_designs_are_optional_and_reference_known_modules():
+    designs = _read_csv("module_graphic_designs.csv")
+    modules = _read_csv("modules.csv")
+
+    assert designs["module_id"].is_unique
+    assert set(designs["module_id"]) == {
+        "gr.foundations_and_spacetime_geometry",
+        "gr.connections_transport_and_motion",
+        "gr.curvature_and_gravitational_action",
+        "gr.matter_and_einstein_equations",
+        "gr.weak_field_and_classical_tests",
+        "gr.schwarzschild_geometry_and_black_holes",
+        "sr.spacetime_foundations",
+        "sr.relativistic_mechanics",
+        "sr.variational_and_field_theory",
+        "sr.electromagnetic_structure_gauge_and_stress_energy",
+        "sr.field_dynamics_conservation_and_radiation",
+    }
+    assert set(designs["module_id"]).issubset(set(modules["module_id"]))
+    assert designs["icon_caption"].str.strip().ne("").all()
+    assert designs["detail_caption"].str.strip().ne("").all()
+
+
 def test_real_data_display_ids_and_sequences_follow_owning_modules():
     nodes = _read_csv("nodes.csv").set_index("id")
     modules = _read_csv("modules.csv").set_index("module_id")

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-sr4-icon">
+<title id="title-sr4-icon">SR-4 Covariant Electromagnetism icon</title>
+<defs><radialGradient id="sr4-core"><stop stop-color="#fff7cf"/><stop offset="1" stop-color="#f1c14f"/></radialGradient></defs>
+<circle cx="256" cy="256" r="226" fill="#f9fbff"/>
+<g fill="none" stroke-linecap="round">
+  <path d="M57 256C114 122 204 118 256 256S398 390 455 256" stroke="#1f4fbf" stroke-width="15"/>
+  <path d="M256 57C390 114 394 204 256 256S122 398 256 455" stroke="#d22f2f" stroke-width="15"/>
+  <path d="M79 188C162 218 183 329 256 256S350 188 433 218" stroke="#1f4fbf" stroke-width="5" opacity=".42"/>
+  <path d="M188 79C218 162 329 183 256 256S188 350 218 433" stroke="#d22f2f" stroke-width="5" opacity=".42"/>
+</g>
+<rect x="198" y="198" width="116" height="116" rx="28" transform="rotate(45 256 256)" fill="url(#sr4-core)" stroke="#222" stroke-width="6"/>
+<circle cx="256" cy="256" r="17" fill="#222"/><circle cx="256" cy="256" r="7" fill="#fff"/>
+</svg>

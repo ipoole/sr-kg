@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-sr5-detail">
+<title id="title-sr5-detail">SR-5 Field Dynamics and Radiation detail graphic</title>
+<defs><marker id="sr5d-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 8 5 0 10Z" fill="#248a3d"/></marker><radialGradient id="sr5d-source"><stop stop-color="#fff8d5"/><stop offset="1" stop-color="#c78a00"/></radialGradient></defs>
+<rect x="26" y="26" width="460" height="460" rx="50" fill="#f9fbff" stroke="#dbe3f3" stroke-width="3"/>
+<circle cx="105" cy="256" r="30" fill="url(#sr5d-source)" stroke="#222" stroke-width="5"/>
+<g fill="none" stroke-linecap="round">
+  <path d="M137 256C172 153 207 359 242 256S312 153 347 256 417 359 452 256" stroke="#1f4fbf" stroke-width="11"/>
+  <path d="M137 256C172 359 207 153 242 256S312 359 347 256 417 153 452 256" stroke="#d22f2f" stroke-width="8" opacity=".82"/>
+  <path d="M143 256H452" stroke="#248a3d" stroke-width="7" marker-end="url(#sr5d-arrow)"/>
+</g>
+<g fill="none" stroke="#aeb9ca" stroke-width="4" opacity=".62"><path d="M163 171A105 105 0 0 1 163 341"/><path d="M205 111A177 177 0 0 1 205 401"/></g>
+<g font-family="STIX Two Math, Cambria Math, serif" font-size="27" font-style="italic"><text x="239" y="151" fill="#1f4fbf">E</text><text x="307" y="379" fill="#d22f2f">B</text><text x="392" y="239" fill="#248a3d">S</text></g>
+<rect x="53" y="372" width="169" height="61" rx="18" fill="#fff" stroke="#c8c8c8" stroke-width="3"/>
+<text x="137" y="411" text-anchor="middle" font-family="STIX Two Math, Cambria Math, serif" font-size="22">local source</text>
+</svg>

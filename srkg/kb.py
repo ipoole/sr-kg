@@ -31,6 +31,7 @@ DEFAULT_KB_FILES = {
     "references": "references.csv",
     "reference_links": "reference_links.csv",
     "graphic_designs": "concept_graphic_designs.csv",
+    "module_graphic_designs": "module_graphic_designs.csv",
     "modules": "modules.csv",
     "module_members": "module_members.csv",
     "module_supports": "module_supports.csv",
@@ -131,6 +132,11 @@ MODULE_CONTENT_BLOCK_COLUMNS = (
     "title",
     "body",
 )
+MODULE_GRAPHIC_DESIGN_COLUMNS = (
+    "module_id",
+    "icon_caption",
+    "detail_caption",
+)
 
 
 class KnowledgeBaseLoadError(ValueError):
@@ -150,6 +156,7 @@ class KnowledgeBasePaths:
     references: Path | None = None
     reference_links: Path | None = None
     graphic_designs: Path | None = None
+    module_graphic_designs: Path | None = None
     modules: Path | None = None
     module_members: Path | None = None
     module_supports: Path | None = None
@@ -248,6 +255,7 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
         references=_resolve_manifest_path(root, files["references"]),
         reference_links=_resolve_manifest_path(root, files["reference_links"]),
         graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("graphic_designs")),
+        module_graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("module_graphic_designs")),
         modules=_resolve_existing_optional_manifest_path(root, files.get("modules")),
         module_members=_resolve_existing_optional_manifest_path(root, files.get("module_members")),
         module_supports=_resolve_existing_optional_manifest_path(root, files.get("module_supports")),
@@ -272,6 +280,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
     references_df = _read_optional_csv(paths.references)
     reference_links_df = _read_optional_csv(paths.reference_links)
     graphic_designs_df = _read_optional_csv(paths.graphic_designs)
+    module_graphic_designs_df = _read_optional_csv(paths.module_graphic_designs)
     modules_df = _read_optional_csv(paths.modules)
     module_members_df = _read_optional_csv(paths.module_members)
     module_supports_df = _read_optional_csv(paths.module_supports)
@@ -306,6 +315,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         module_supports_df,
         module_content_blocks_df,
     )
+    _validate_module_graphic_designs(modules_df, module_graphic_designs_df)
 
     concepts = tuple(build_concepts(
         nodes_df,
@@ -320,6 +330,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         module_members_df,
         module_supports_df,
         module_content_blocks_df,
+        module_graphic_designs_df,
     ))
     try:
         published_layout = load_published_layout(
@@ -618,6 +629,38 @@ def _validate_reference_links(
         raise KnowledgeBaseLoadError(
             "reference_links.csv references unknown source id(s): "
             + ", ".join(sorted(set(unknown_sources)))
+        )
+
+
+def _validate_module_graphic_designs(
+    modules_df: pd.DataFrame | None,
+    designs_df: pd.DataFrame | None,
+) -> None:
+    """Validate optional module graphics without requiring every module to have one."""
+    if designs_df is None:
+        return
+    missing = set(MODULE_GRAPHIC_DESIGN_COLUMNS) - set(designs_df.columns)
+    if missing:
+        raise KnowledgeBaseLoadError(
+            "module_graphic_designs.csv is missing columns: " + ", ".join(sorted(missing))
+        )
+    ids = designs_df["module_id"].astype(str).str.strip()
+    if ids.eq("").any():
+        raise KnowledgeBaseLoadError("module_graphic_designs.csv has empty module_id value(s)")
+    duplicates = sorted(ids[ids.duplicated()].unique())
+    if duplicates:
+        raise KnowledgeBaseLoadError(
+            "Duplicate module graphic id(s): " + ", ".join(duplicates)
+        )
+    known = (
+        set(modules_df["module_id"].astype(str).str.strip())
+        if modules_df is not None else set()
+    )
+    unknown = sorted(set(ids) - known)
+    if unknown:
+        raise KnowledgeBaseLoadError(
+            "module_graphic_designs.csv references unknown module id(s): "
+            + ", ".join(unknown)
         )
 
 

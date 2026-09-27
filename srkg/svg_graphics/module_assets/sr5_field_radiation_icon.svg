@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-sr5-icon">
+<title id="title-sr5-icon">SR-5 Field Dynamics and Radiation icon</title>
+<defs><marker id="sr5-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 8 5 0 10Z" fill="#248a3d"/></marker><radialGradient id="sr5-source"><stop stop-color="#fff8d5"/><stop offset="1" stop-color="#c78a00"/></radialGradient></defs>
+<circle cx="256" cy="256" r="226" fill="#f9fbff"/>
+<circle cx="120" cy="256" r="31" fill="url(#sr5-source)" stroke="#222" stroke-width="5"/>
+<g fill="none" stroke-linecap="round">
+  <path d="M151 256C185 158 217 354 251 256S317 158 351 256 417 354 451 256" stroke="#1f4fbf" stroke-width="12"/>
+  <path d="M151 256C185 354 217 158 251 256S317 354 351 256 417 158 451 256" stroke="#d22f2f" stroke-width="9" opacity=".82"/>
+  <path d="M158 256H452" stroke="#248a3d" stroke-width="8" marker-end="url(#sr5-arrow)"/>
+</g>
+<g fill="none" stroke="#c8c8c8" stroke-width="4" opacity=".62"><path d="M177 169A105 105 0 0 1 177 343"/><path d="M219 111A177 177 0 0 1 219 401"/></g>
+</svg>

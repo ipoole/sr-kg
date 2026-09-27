@@ -47,6 +47,12 @@ Folded boxes follow the bounds of their concepts and labels. Folding changes
 representation rather than stored coordinates. Movement and persistence follow
 the [layout contract](layout.md).
 
+Module artwork is optional. When present, a landscape icon occupies the upper
+part of the folded box and a smaller title and concept count sit below it. The
+box still follows the expanded member footprint: artwork never changes authored
+positions, anchors, edge endpoints or persistence. Modules without artwork keep
+the centred text presentation, so small modules need not carry graphics.
+
 ## Boundary edges
 
 The viewer projects concept edges onto visible objects and aggregates links

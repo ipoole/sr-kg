@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr1-detail">
+<title id="title-gr1-detail">GR-1 Foundations of Curved Spacetime detail graphic</title>
+<defs>
+  <radialGradient id="gr1d-space" cx="48%" cy="45%" r="62%"><stop stop-color="#fbfdff"/><stop offset="1" stop-color="#e3ecf7"/></radialGradient>
+  <filter id="gr1d-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr1d-space)"/>
+<g fill="none" stroke="#718cae" stroke-width="3.5" opacity=".7">
+  <path d="M63 137C145 111 191 148 256 182S373 215 449 175"/><path d="M45 205C139 173 190 202 256 237S375 276 467 235"/>
+  <path d="M43 279C139 238 189 268 256 308S376 346 469 301"/><path d="M59 353C146 310 193 342 256 377S369 411 453 370"/>
+  <path d="M139 64C112 146 151 193 184 256S214 371 174 448"/><path d="M207 45C174 139 205 191 239 256S276 373 236 467"/>
+  <path d="M281 43C241 139 271 190 310 256S346 375 302 469"/><path d="M355 59C311 145 344 192 378 256S410 369 371 453"/>
+</g>
+<path d="M88 402C122 335 176 313 211 251S272 143 425 105" fill="none" stroke="#c78a00" stroke-width="14" stroke-linecap="round"/>
+<path d="M88 402C122 335 176 313 211 251S272 143 425 105" fill="none" stroke="#fff4bd" stroke-width="4" stroke-linecap="round"/>
+<circle cx="214" cy="247" r="45" fill="#c78a00" opacity=".17" filter="url(#gr1d-glow)"/><circle cx="214" cy="247" r="13" fill="#fff7d0" stroke="#8a5d00" stroke-width="5"/>
+<path d="M197 225L214 247 237 231" fill="none" stroke="#8a5d00" stroke-width="4" stroke-linecap="round"/>
+<g fill="#48698e" font-family="STIX Two Math, Cambria Math, serif" font-style="italic" font-size="25"><text x="362" y="90">ds²</text><text x="91" y="431">τ</text></g>
+</svg>

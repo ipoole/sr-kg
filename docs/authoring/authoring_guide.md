@@ -240,6 +240,11 @@ Generated review sheets and HTML are build artifacts. Regenerate
 `output/interactive_graph.html` when needed, let the reviewer open it
 manually, and do not commit generated HTML unless explicitly requested.
 
+Module graphics are optional and should primarily give a module a memorable
+visual identity, not diagram every member concept. Use a strong landscape motif
+with rounded framing; keep the icon sparse and enrich the same motif for the
+detail page. Small modules need not have graphics.
+
 ## Completion Checklist
 
 Before finishing a concept or module, confirm:

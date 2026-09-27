@@ -20,6 +20,7 @@ data/
   references.csv
   reference_links.csv
   concept_graphic_designs.csv
+  module_graphic_designs.csv
   modules.csv
   module_members.csv
   module_supports.csv
@@ -177,6 +178,15 @@ inside block bodies. It is a local text-disclosure device, not a `kind` value.
 
 Modules are flat in the current schema. Do not add hierarchical parent fields
 until the viewer can make hierarchy visible and selectable.
+
+## module_graphic_designs.csv
+
+This optional file records recognition-oriented module artwork keyed by stable
+`module_id`. It uses the same design, avoidance and caption fields as
+`concept_graphic_designs.csv`, with `module_id` replacing concept `id`. Only
+modules with authored artwork need rows; small modules may remain text-only.
+Registered modules receive landscape `icon` and `detail` SVG variants from the
+module graphic registry. Captions are required for registered artwork.
 
 ## module_members.csv
 

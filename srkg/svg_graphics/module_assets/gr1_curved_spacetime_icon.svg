@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr1-icon">
+<title id="title-gr1-icon">GR-1 Foundations of Curved Spacetime icon</title>
+<defs>
+  <radialGradient id="gr1-space" cx="50%" cy="46%" r="58%"><stop stop-color="#f8fbff"/><stop offset="1" stop-color="#e5edf8"/></radialGradient>
+  <filter id="gr1-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="11"/></filter>
+</defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr1-space)"/>
+<g fill="none" stroke="#7e96b4" stroke-width="4" opacity=".67">
+  <path d="M63 137C145 111 191 148 256 182S373 215 449 175"/>
+  <path d="M45 205C139 173 190 202 256 237S375 276 467 235"/>
+  <path d="M43 279C139 238 189 268 256 308S376 346 469 301"/>
+  <path d="M59 353C146 310 193 342 256 377S369 411 453 370"/>
+  <path d="M139 64C112 146 151 193 184 256S214 371 174 448"/>
+  <path d="M207 45C174 139 205 191 239 256S276 373 236 467"/>
+  <path d="M281 43C241 139 271 190 310 256S346 375 302 469"/>
+  <path d="M355 59C311 145 344 192 378 256S410 369 371 453"/>
+</g>
+<path d="M94 393C126 332 178 310 211 251S267 147 417 112" fill="none" stroke="#c78a00" stroke-width="14" stroke-linecap="round"/>
+<path d="M94 393C126 332 178 310 211 251S267 147 417 112" fill="none" stroke="#fff4bd" stroke-width="4" stroke-linecap="round"/>
+<circle cx="214" cy="247" r="42" fill="#c78a00" opacity=".17" filter="url(#gr1-glow)"/>
+<circle cx="214" cy="247" r="13" fill="#fff7d0" stroke="#8a5d00" stroke-width="5"/>
+<path d="M197 225L214 247 237 231" fill="none" stroke="#8a5d00" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -3224,16 +3224,18 @@
           };
         }
 
-        function fittedModuleLabel(title, memberCount, width, height) {
+        function fittedModuleLabel(title, memberCount, width, height, options) {
+          options = options || {};
           var context = document.createElement("canvas").getContext("2d");
           var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
-          var countFontSize = 80; // Fixed graph-space size, independent of title and box.
+          var countFontSize = options.countFontSize || 80;
+          var lineWidth = width * (options.lineWidthFraction || 0.88);
           function linesAt(size) {
             context.font = "bold " + size + "px Arial";
             var lines = [], line = "";
             String(title).split(/\s+/).forEach(function(word) {
               var candidate = line ? line + " " + word : word;
-              if (context.measureText(candidate).width <= width * 0.88) {
+              if (context.measureText(candidate).width <= lineWidth) {
                 line = candidate;
               } else {
                 if (line) { lines.push(line); }
@@ -3244,20 +3246,23 @@
             return lines;
           }
           // Cap titles in graph-space units: extra box area need not enlarge text.
-          var low = 1, high = Math.min(160, Math.min(width, height) * 0.3);
+          var low = 1, high = Math.min(options.titleFontCap || 160, Math.min(width, height) * 0.3);
           for (var i = 0; i < 16; i += 1) {
             var size = (low + high) / 2;
             var lines = linesAt(size);
             var titleFits = lines.every(function(line) {
-              return context.measureText(line).width <= width * 0.88;
+              return context.measureText(line).width <= lineWidth;
             });
             context.font = countFontSize + "px Arial";
-            if ((lines.length * size + countFontSize) * 1.25 <= height * 0.84 && titleFits &&
+            var labelHeight = options.availableHeight || height * 0.84;
+            var lineHeightFactor = options.lineHeightFactor || 1.25;
+            if ((lines.length * size + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
                 context.measureText(countLabel).width <= width * 0.88) {
               low = size;
             } else { high = size; }
           }
           var titleLines = linesAt(low);
+          var verticalShift = Number(options.verticalShift) || 0;
           return {
             text: titleLines.map(function(line) {
               return "<b>" + escapeHtml(line) + "</b>";
@@ -3267,22 +3272,86 @@
             // vis centres the first baseline using the base (count) font size,
             // even for larger bold title lines. Correct each style's baseline
             // so the combined title/count block is centred inside its box.
-            titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2,
-            countOffset: titleLines.length * (countFontSize - low) / 2
+            titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
+            countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
           };
         }
+
+        function moduleGraphicLayout(width, height) {
+          var pad = Math.max(18, Math.min(width, height) * 0.055);
+          var availableWidth = Math.max(1, width - 2 * pad);
+          var availableHeight = Math.max(1, height * 0.62 - 2 * pad);
+          var graphicWidth = Math.min(availableWidth, availableHeight * 1.6);
+          var graphicHeight = graphicWidth / 1.6;
+          var graphicX = (width - graphicWidth) / 2;
+          var graphicY = pad;
+          var labelTop = graphicY + graphicHeight + pad * 0.55;
+          var labelBottom = height - pad * 0.6;
+          return {
+            graphic: {x: graphicX, y: graphicY, width: graphicWidth, height: graphicHeight},
+            labelArea: {
+              top: labelTop - height / 2,
+              bottom: labelBottom - height / 2,
+              height: Math.max(1, labelBottom - labelTop)
+            },
+            labelCenter: (labelTop + labelBottom) / 2 - height / 2
+          };
+        }
+        window.kgModuleGraphicLayout = moduleGraphicLayout;
+
+        function moduleCornerRadius(width, height) {
+          return Math.min(width, height) * 0.18;
+        }
+
+        function moduleGraphicCornerRadius(width, height, layout) {
+          layout = layout || moduleGraphicLayout(width, height);
+          var outerRadius = moduleCornerRadius(width, height);
+          // Inset a rounded module boundary rather than introducing an
+          // unrelated second curve. Averaging the unequal landscape insets
+          // keeps the two corner arcs visually close to concentric.
+          var inset = (layout.graphic.x + layout.graphic.y) / 2;
+          return Math.max(
+            0,
+            Math.min(
+              outerRadius - inset,
+              layout.graphic.width / 2,
+              layout.graphic.height / 2
+            )
+          );
+        }
+        window.kgModuleGraphicCornerRadius = moduleGraphicCornerRadius;
 
         function moduleGraphNode(moduleId) {
           var module = getModule(moduleId) || {};
           var memberCount = moduleMemberIds(module).length;
           var position = moduleGraphNodePosition(moduleId);
           var footprint = foldedModules[String(moduleId)].footprint;
-          var fittedLabel = fittedModuleLabel(module.title || moduleId, memberCount, footprint.width, footprint.height);
+          var hasGraphic = Boolean(module.svg_icon);
+          var graphicLayout = hasGraphic
+            ? moduleGraphicLayout(footprint.width, footprint.height)
+            : null;
+          var fittedLabel = fittedModuleLabel(
+            module.title || moduleId,
+            memberCount,
+            footprint.width,
+            footprint.height,
+            hasGraphic ? {
+              countFontSize: 52,
+              titleFontCap: 128,
+              verticalShift: graphicLayout.labelCenter,
+              availableHeight: graphicLayout.labelArea.height * 0.94,
+              lineWidthFraction: 0.72,
+              lineHeightFactor: 1.06
+            } : {}
+          );
           var visualColor = moduleVisualColor(moduleId);
           return {
             id: moduleGraphNodeId(moduleId),
             isModuleNode: true,
             moduleId: String(moduleId),
+            hasModuleGraphic: hasGraphic,
+            moduleGraphicLabelArea: graphicLayout ? graphicLayout.labelArea : null,
+            moduleGraphicLabelCenter: graphicLayout ? graphicLayout.labelCenter : null,
             label: fittedLabel.text,
             moduleFootprintWidth: footprint.width,
             moduleFootprintHeight: footprint.height,
@@ -3291,7 +3360,7 @@
             scaling: {label: {drawThreshold: 0}},
             shape: "box",
             shapeProperties: {
-              borderRadius: Math.min(footprint.width, footprint.height) * 0.18
+              borderRadius: moduleCornerRadius(footprint.width, footprint.height)
             },
             x: position.x,
             y: position.y,
@@ -3327,6 +3396,60 @@
               }
             }
           };
+        }
+
+        function moduleGraphicImage(moduleId) {
+          var module = getModule(moduleId) || {};
+          return module.svg_icon
+            ? getSvgNodeImage(moduleGraphNodeId(moduleId) + "::graphic", module.svg_icon)
+            : null;
+        }
+        window.kgModuleGraphicImage = moduleGraphicImage;
+
+        function roundedRectPath(ctx, x, y, width, height, radius) {
+          radius = Math.min(radius, width / 2, height / 2);
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.lineTo(x + width - radius, y);
+          ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+          ctx.lineTo(x + width, y + height - radius);
+          ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+          ctx.lineTo(x + radius, y + height);
+          ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+          ctx.lineTo(x, y + radius);
+          ctx.quadraticCurveTo(x, y, x + radius, y);
+          ctx.closePath();
+        }
+
+        function drawFoldedModuleGraphics(ctx) {
+          foldedModuleIdList().forEach(function(moduleId) {
+            var nodeId = moduleGraphNodeId(moduleId);
+            var node = nodes.get(nodeId);
+            var rendered = network.body.nodes[nodeId];
+            var image = moduleGraphicImage(moduleId);
+            if (!node || node.hidden || !node.hasModuleGraphic || !rendered ||
+                !image || !image.complete || image.naturalWidth <= 0) { return; }
+            var shape = rendered.shape;
+            var layout = moduleGraphicLayout(shape.width, shape.height);
+            var width = layout.graphic.width;
+            var height = layout.graphic.height;
+            var x = shape.left + layout.graphic.x;
+            var y = shape.top + layout.graphic.y;
+            var radius = moduleGraphicCornerRadius(shape.width, shape.height, layout);
+            ctx.save();
+            roundedRectPath(ctx, x, y, width, height, radius);
+            ctx.clip();
+            ctx.fillStyle = "#fbfcff";
+            ctx.fillRect(x, y, width, height);
+            ctx.drawImage(image, x, y, width, height);
+            ctx.restore();
+            ctx.save();
+            roundedRectPath(ctx, x, y, width, height, radius);
+            ctx.lineWidth = Math.max(2, Math.min(shape.width, shape.height) * 0.006);
+            ctx.strokeStyle = (node.color || {}).border || "#64748b";
+            ctx.stroke();
+            ctx.restore();
+          });
         }
 
         /* Projected boundary edges shown when module members are folded away. */
@@ -3755,6 +3878,15 @@
 
         function moduleTocItems(moduleId, module) {
           var items = [];
+          if (module.svg_detail || module.svg_icon) {
+            items.push({
+              id: contentAnchorId(moduleId, "Graphic"),
+              title: "Module graphic",
+              graphContext: "module-overview",
+              lensLabel: "Module overview",
+              sectionRole: DetailSectionRole.CONTENT
+            });
+          }
           filteredModuleContentBlocks(module).forEach(function(block) {
             var title = block.title || contentBlockKindLabel(block.kind);
             var role = contentBlockPolicyFor(block.kind).sectionRole || DetailSectionRole.CONTENT;
@@ -3877,6 +4009,28 @@
           return html;
         }
 
+        function renderModuleGraphic(moduleId, module) {
+          var svgDetail = module.svg_detail || module.svg_icon || "";
+          if (!svgDetail) { return ""; }
+          var caption = module.svg_detail_caption || module.svg_icon_caption || "";
+          var bodyHtml = '<div class="concept-graphic module-graphic">' + svgDetail + "</div>";
+          if (caption) {
+            bodyHtml += '<figcaption class="concept-graphic-caption module-graphic-caption">' +
+              renderCaptionText(caption) + "</figcaption>";
+          }
+          bodyHtml += renderNotesAtAnchor("module", moduleId, "Graphic", 0, caption);
+          return renderFoldDown({
+            anchorId: contentAnchorId(moduleId, "Graphic"),
+            className: "concept-figure module-figure",
+            sectionRole: DetailSectionRole.CONTENT,
+            open: true,
+            title: "Module graphic",
+            bodyTag: "figure",
+            bodyClass: "concept-figure-body module-figure-body",
+            bodyHtml: bodyHtml
+          });
+        }
+
         function showModule(moduleId, options) {
           options = options || {};
           hideConceptPreview(true);
@@ -3891,6 +4045,7 @@
           currentConceptTocItems = tocItems.slice();
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
+          html += renderModuleGraphic(moduleId, module);
           filteredModuleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
@@ -7431,6 +7586,7 @@
 
         network.on("beforeDrawing", updateRenderedEdgeWidths);
         network.on("afterDrawing", function(ctx) {
+          drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           updateNodeLabelPositions();
         });

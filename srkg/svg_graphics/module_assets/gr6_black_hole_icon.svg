@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title-gr6-icon">
+<title id="title-gr6-icon">GR-6 Schwarzschild Black Holes icon</title>
+<defs>
+  <radialGradient id="gr6-space"><stop stop-color="#294762"/><stop offset=".58" stop-color="#132739"/><stop offset="1" stop-color="#07111c"/></radialGradient>
+  <filter id="gr6-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
+  <linearGradient id="gr6-ring" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#d22f2f"/><stop offset=".34" stop-color="#ffe27b"/><stop offset=".7" stop-color="#fff8c8"/><stop offset="1" stop-color="#d88a00"/></linearGradient>
+</defs>
+<circle cx="256" cy="256" r="226" fill="url(#gr6-space)"/>
+<g fill="#aec7de" opacity=".8"><circle cx="113" cy="111" r="3"/><circle cx="403" cy="128" r="4"/><circle cx="425" cy="327" r="3"/><circle cx="110" cy="369" r="4"/><circle cx="159" cy="82" r="2"/><circle cx="365" cy="407" r="2"/></g>
+<ellipse cx="256" cy="256" rx="178" ry="72" fill="none" stroke="#d88a00" stroke-width="28" opacity=".32" filter="url(#gr6-glow)"/>
+<ellipse cx="256" cy="256" rx="178" ry="72" fill="none" stroke="url(#gr6-ring)" stroke-width="17"/>
+<path d="M88 256C146 222 190 213 256 213S371 226 424 256C365 273 316 282 256 282S148 274 88 256Z" fill="#07111c"/>
+<circle cx="256" cy="256" r="82" fill="#020407"/>
+<path d="M180 226A82 82 0 0 1 332 226" fill="none" stroke="#fff1a6" stroke-width="7" opacity=".9"/>
+</svg>

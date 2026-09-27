@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SR-2 Relativistic Particle Mechanics icon</title>
+  <desc id="desc">A bright massive particle on a timelike worldline with clock ticks and a four-momentum arrow.</desc>
+  <defs>
+    <radialGradient id="particle" cx="38%" cy="32%" r="66%">
+      <stop offset="0" stop-color="#fff3b0"/><stop offset=".42" stop-color="#e0a51c"/><stop offset="1" stop-color="#9a6100"/>
+    </radialGradient>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="14"/></filter>
+    <marker id="momentum" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 8 5 0 10Z" fill="#248a3d"/></marker>
+  </defs>
+  <circle cx="256" cy="256" r="230" fill="#f9fbff"/>
+  <path d="M104 454C111 365 171 323 235 276S365 184 394 58" fill="none" stroke="#1f4fbf" stroke-width="15" stroke-linecap="round"/>
+  <g stroke="#222" stroke-width="6" stroke-linecap="round">
+    <path d="M135 384 112 371"/><path d="M178 333 157 314"/><path d="M230 290 211 266"/>
+    <path d="M287 245 269 220"/><path d="M338 197 319 177"/><path d="M374 137 349 127"/>
+  </g>
+  <circle cx="258" cy="258" r="57" fill="#c78a00" opacity=".24" filter="url(#glow)"/>
+  <circle cx="258" cy="258" r="30" fill="url(#particle)" stroke="#222" stroke-width="5"/>
+  <circle cx="248" cy="247" r="8" fill="#fff9d7" opacity=".85"/>
+  <path d="M277 242 406 134" fill="none" stroke="#248a3d" stroke-width="13" stroke-linecap="round" marker-end="url(#momentum)"/>
+  <path d="M93 455V66M93 455H436" fill="none" stroke="#555" stroke-width="5" stroke-linecap="round" opacity=".58"/>
+</svg>

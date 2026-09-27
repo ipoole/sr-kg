@@ -16,6 +16,7 @@ import pandas as pd
 
 from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
 from srkg.concept_svg_graphics import createSvgGraphic
+from srkg.module_svg_graphics import createModuleSvgGraphic
 from srkg.model import (
     Concept,
     ConceptReference,
@@ -196,6 +197,7 @@ def build_modules_from_dfs(
     module_members_df: pd.DataFrame | None,
     module_supports_df: pd.DataFrame | None,
     module_content_blocks_df: pd.DataFrame | None,
+    module_graphic_designs_df: pd.DataFrame | None = None,
 ) -> list[Module]:
     """Build flat authored modules from optional module source data frames."""
     if modules_df is None or module_members_df is None or module_content_blocks_df is None:
@@ -217,6 +219,9 @@ def build_modules_from_dfs(
     )
     blocks_by_module = _module_content_blocks_by_module(
         build_module_content_blocks_from_df(module_content_blocks_df)
+    )
+    graphic_captions = _graphic_captions_by_id(
+        module_graphic_designs_df, id_column="module_id"
     )
 
     modules: list[Module] = []
@@ -240,6 +245,10 @@ def build_modules_from_dfs(
             members=members,
             supports=supports_by_module.get(module_id, []),
             content_blocks=blocks_by_module.get(module_id, []),
+            svg_icon=createModuleSvgGraphic(module_id, "icon") or "",
+            svg_detail=createModuleSvgGraphic(module_id, "detail") or "",
+            svg_icon_caption=graphic_captions.get(module_id, {}).get("icon_caption", ""),
+            svg_detail_caption=graphic_captions.get(module_id, {}).get("detail_caption", ""),
         ))
     return sorted(modules, key=lambda module: (module.domain, module.sequence, module.module_id))
 
@@ -424,6 +433,8 @@ def _parse_int(value, default: int) -> int:
 
 def _graphic_captions_by_id(
     graphic_designs_df: pd.DataFrame | None,
+    *,
+    id_column: str = "id",
 ) -> dict[str, dict[str, str]]:
     """Return optional SVG caption metadata keyed by concept id."""
     if graphic_designs_df is None or graphic_designs_df.empty:
@@ -431,7 +442,7 @@ def _graphic_captions_by_id(
 
     captions = {}
     for _, row in graphic_designs_df.iterrows():
-        cid = str(row.get("id", "")).strip()
+        cid = str(row.get(id_column, "")).strip()
         if not cid:
             continue
         captions[cid] = {

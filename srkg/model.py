@@ -131,6 +131,10 @@ class Module:
     members: list[str] = field(default_factory=list)
     supports: list[ModuleSupport] = field(default_factory=list)
     content_blocks: list[ModuleContentBlock] = field(default_factory=list)
+    svg_icon: str = ""
+    svg_detail: str = ""
+    svg_icon_caption: str = ""
+    svg_detail_caption: str = ""
 
     def to_viewer_data(self) -> dict[str, object]:
         return {
@@ -146,6 +150,10 @@ class Module:
             "content_blocks": [
                 block.to_viewer_data() for block in self.content_blocks
             ],
+            "svg_icon": self.svg_icon,
+            "svg_detail": self.svg_detail or self.svg_icon,
+            "svg_icon_caption": self.svg_icon_caption,
+            "svg_detail_caption": self.svg_detail_caption or self.svg_icon_caption,
         }
 
 
