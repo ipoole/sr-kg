@@ -1,93 +1,91 @@
 # Viewer behaviour
 
-This describes the current interface, not a proposed learning system. Source
-contracts live in [KB schema](kb_schema.md); graph representation and saved
-positions live in [Modules](modules.md) and [Layout](layout.md).
+This describes the implemented viewer. Source contracts live in
+[KB schema](kb_schema.md); module representation and saved positions live in
+[Modules](modules.md) and [Layout](layout.md). The concise user-facing
+introduction is [Viewer quick start](viewer_quick_start.md).
+
+## Core state
+
+Four independent axes determine the graph:
+
+1. **Selection**: no selection, one concept, or one module.
+2. **Context rule**: named or custom relationship traversals and a shared depth.
+3. **Display scope**: Full graph, Context only, or Hidden.
+4. **Module representation**: each module folded or expanded.
+
+Selecting or clearing an object does not alter the other axes. Changing context
+does not fold modules or move the camera. Folding does not change semantic
+context. Browser Back and Forward retrace selections, not complete viewer state.
 
 ## Starting and navigating
 
-The first visit opens a Features dialog. Dismissing it is remembered locally;
-**Tools → Features** reopens it. The initial details pane invites selection of a
-concept or module. The current dataset initially folds all modules.
+The first visit opens the Quick start; dismissal is remembered locally and
+**Tools → Quick start** reopens it. Startup has no selection, Foundations at one
+hop, Full graph, authored module defaults, layout editing off, and one initial
+fit of the displayed graph.
 
-Select a module to read its overview, concept list, boundary links and declared
-supports. Expand it to show its concepts on the graph. Concept pages include
-teaching blocks, graphics where available, relationship sections, questions and
-references.
+Click graph objects, module lists, search results, or details links to select.
+Search covers concept IDs, titles and prose plus module metadata and member
+titles. Exact ID/title matches rank first. Concept previews and edge inspection
+do not replace the current selection details.
 
-The header **Search** button opens a separate panel, also available on narrow
-screens. Search matches concept IDs, titles and prose, and module metadata,
-overviews and member titles. Exact ID/title matches rank first, partial ID/title
-matches next, and other text matches last. Concept and module results share this
-ranking; ties use display order within each type, with concepts before modules
-when their ranks tie. Find or Enter opens the first result. Empty search lists
-all concepts in display order.
+A selected concept inside a folded module is represented by its normal circular
+concept face and title inside the module box; the module title and concept count
+remain below it. Explicit module selection instead uses a strong outer module
+outline. The viewer offers actions to expand the selected concept's module or
+all context modules. Double-clicking and module-detail controls fold or expand
+modules without changing selection.
 
-Snippets use plain-text mathematical notation and retain source-section labels
-and match highlighting. Search is not a question, reference or personal-note
-search. Arrow Down from the input focuses the first result; Tab moves through
-controls and results. Escape or Close search closes the panel and returns focus
-to the Search button.
+## Context and display
 
-Concept links navigate between pages; previews allow a brief look at linked
-material. Browser Back and Forward retrace concept and module selections.
-Concept and module URLs have stable-ID hashes. History is not a saved study
-session: it does not record question attempts or restore a complete reading state.
+Named contexts are Connections, Prerequisites, Derivation, Foundations, Uses
+and Related. Foundations combines derivation, construction and prerequisite
+inputs. Custom context exposes clearly worded
+relation/direction checkboxes and can be reopened for editing.
+Depth is one hop, two hops or Transitive and applies uniformly to the rule.
 
-## Reading and practice
+In Full graph, the Context relation set filters edges across the whole graph.
+With no selection, every matching edge has its relation colour. With a
+selection, matching edges reached in the chosen direction and depth retain
+their colours; all other matching edges are light grey. Direction and depth do
+not restrict the global edge set. Context only contains just the context
+subgraph. Hidden suppresses the graph while retaining selection, context and
+module state.
 
-The Details selector controls visibility and filters content by block kind.
-These are content filters, not difficulty levels or prerequisites assessments.
-Graphics and relationship sections may remain alongside the filtered prose.
+The details selector controls presentation only: Full details, Folded, Core,
+Maths, Context, Practice, or Hide details. Scrolling and opening sections update
+only details navigation. Reading filters are content filters, not difficulty or
+mastery levels.
 
-| Mode | Prose shown | Questions shown |
-| --- | --- | --- |
-| Full details | All kinds, with note-like kinds initially folded | All types |
-| Folded | All kinds, with top-level detail sections folded | All types, within the folded section |
-| Core | Overview, definition, intuition, explanation, construction, result, decomposition, derivation, example, summary | Short answer |
-| Maths | Derivation, derivation step, result, decomposition, worked example | Calculation |
-| Context | Misconception, warning, historical note, convention | Multiple choice |
-| Practice | Example, worked example, derivation step, result, summary | All types |
+## Camera and layout
 
-Practice opens the questions section. Answers are individually revealed; there
-is no answer entry, automatic marking, attempt history or mastery tracking.
-Questions are numbered after filtering, so authored references such as “q3”
-can become misleading. Modules retain overview blocks in every prose filter,
-alongside any other matching blocks and their navigation sections. They have no
-module question collection. Folded still closes their sections initially. Opening
-a module does not change the reading mode used when returning to a concept.
+Pan and zoom affect only the camera. Selecting an off-screen object pans only
+far enough to reveal its current representation and preserves zoom. The Fit
+control explicitly offers Reveal selection, Fit selection, Fit context and Fit
+displayed graph. Context, display, folding, details and viewport changes do not
+fit or rezoom automatically.
 
-The contents list jumps within the current page. On wide screens it starts open;
-on narrow screens it starts closed. Dragging the divider changes pane sizes.
-Hide graph or Hide details gives the other view more space.
+Node dragging is disabled during ordinary browsing; a drag attempt explains how
+to unlock it. Enable **Tools → Layouts → Edit layout** to move nodes. Changes are
+Temporary by default, remain across viewer-state changes, and are discarded when
+editing is turned off or the page reloads. Personal changes are saved locally.
+The choice is independent of display scope; Hidden cannot be dragged. Layouts
+can be exported, reset to the published layout, or retained
+when a newer published revision is detected. Camera state is never persisted.
 
-## Graph context
+## Reading and personal work
 
-Graph offers Full graph, Focussed and Hide graph. Full graph retains a structural
-background; Focussed hides unrelated objects. Show lens reveals the context
-controls; hiding the lens panel does not disable its effect.
+Concept details contain teaching blocks, graphics, relationships, questions and
+references. **Show in graph** in Derived from and Where this is used explicitly
+selects Derivation or Uses context respectively; the section's Full-tree choice
+sets one-hop or Transitive depth. A hidden graph changes to Context only so the
+requested result is visible. Modules contain their overview, graphic, member
+list, boundary links and declared supports. Mathematical text is rendered with
+MathJax.
 
-Auto follows the active detail section, including changes while scrolling.
-Manual selects relation directions and one-hop or tree traversals, retaining
-those choices across concept selection. Its controls use stored edge direction:
-for example, outgoing `REQUIRES` links lead to prerequisites. The outgoing
-`COMPONENT_OF` context is labelled “Part of”; incoming component controls and
-backlinks use “Parts of this”. These labels do not reverse the stored edges.
-
-Current derivation and usage trees traverse `DERIVES_FROM` only. The text under
-“Where this is used” also groups other incoming relations, so that section's
-text and automatic graph context do not have identical scope. See
-[open issues](../issues.md) for the accepted construction-traversal extension.
-
-## Personal work
-
-Enable **Tools → Notes → Note editing** to add notes at supported locations in
-concept or module content. Notes save in this browser and can be exported and
-imported as CSV. They do not alter the knowledge base. Note placement depends
-on section titles and local text-block positions; it is not guaranteed to
-survive editorial restructuring unchanged.
-
-Global graph edits are saved locally, whereas Focussed drags are temporary.
-See [Layout](layout.md) for reset, export and published-revision handling.
-Notes, note-editing preference and splash dismissal are also stored locally.
-Browser profile and origin affect availability; this is not cross-device sync.
+Enable **Tools → Notes → Note editing** to add browser-local notes. CSV import
+and export preserve stable content anchors; unresolved notes remain visible as
+needing placement rather than being moved speculatively. Notes, note-editing
+preference, personal layout and Quick start dismissal are local to the browser
+profile and origin; they are not cross-device sync.

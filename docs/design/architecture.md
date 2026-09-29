@@ -22,20 +22,16 @@ is an artifact, not an alternative authoring source.
 The concept graph provides navigation; flat ordered blocks provide the teaching
 narrative. Block kinds express meaning. Folding, reading modes, visual treatment
 and visibility are viewer policy; see [Viewer behaviour](viewer.md).
-The focus lens follows the active detail block
-in Auto mode. Manual mode allows arbitrary relation-and-direction traversals at
-one-hop or tree depth and preserves them as concept selection changes. Modules
-containing reached concepts expand temporarily so folding does not hide the
-chosen context. In Full mode, the lens is a foreground overlay: its selected
-edges override the structural-edge filter applied to the background. Focussed
-mode hides that background. This keeps authoring manageable without a second
-block-dependency graph or pervasive depth labels.
+The viewer keeps four concerns independent: selection, context rule, display
+scope and camera. A single renderer derives the selected context from a relation
+preset and depth, then projects it through the current folded or expanded module
+representation. Full display adds the structural graph as subdued background;
+Context-only display omits it. Neither mode silently changes folding or camera.
 
-Graph and details are peer views of the same KB. Selection and the active detail
-section determine highlighted context: ordinary neighbourhoods or derivation
-ancestry and descendants. Current derivation trees follow `DERIVES_FROM` only;
-construction has a separate context. The focus lens explains that context. Search,
-cross-references and browser history provide navigation beyond visible nodes.
+Graph and details are peer views of the same KB. Selecting a detail section can
+offer a relevant context, but applying it remains an explicit user action.
+Search, cross-references and browser history provide navigation beyond visible
+nodes.
 Module semantics and graph filtering are described in [Modules](modules.md).
 
 Concept graphics are deterministic SVGs, used directly in details and as
@@ -46,18 +42,15 @@ Rendering constants and drawing mechanics remain in code.
 
 User notes and personal global-layout overrides live in browser-local storage,
 separate from authored content. Notes can target concept or module sections and
-support backwards-compatible CSV import/export; layout has a
-versioned publication workflow described in [Layout](layout.md). Neither writes
-back to the KB automatically. Browser origin and profile determine which local
-state is available. Notes are anchored by target ID, section title and a local
-text-block index, rather than the authored `block_id`; changing section titles
-or splitting prose can therefore affect their placement.
+support backwards-compatible CSV import/export; layout has a versioned
+publication workflow described in [Layout](layout.md). Neither writes back to
+the KB automatically. Browser origin and profile determine which local state is
+available. New notes use the authored `block_id` where available and retain
+textual context around their insertion point. Existing title/index anchors are
+migrated when they resolve unambiguously. Notes whose content no longer has a
+safe match remain stored and are visibly flagged for placement.
 
 ## Future plans
-
-Derivation paths will include both `DERIVES_FROM` and `CONSTRUCTED_FROM`,
-retaining their distinct relation meanings. This decision is accepted but not
-yet implemented; see [open issues](../issues.md).
 
 Fine-grained dependency-driven presentation remains an experiment, not a schema
 commitment; see the [pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).

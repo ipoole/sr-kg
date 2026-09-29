@@ -473,15 +473,15 @@ def test_normalise_edges_replaces_blank_relation_without_mutating_input():
         {
             "source": "1.2",
             "target": "1.3",
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "note": "",
         },
     ])
 
     normalised = normalise_edges(edges_df)
 
-    assert normalised["relation"].tolist() == ["REFERENCE", "DEPENDS_ON"]
-    assert edges_df["relation"].tolist() == ["", "DEPENDS_ON"]
+    assert normalised["relation"].tolist() == ["REFERENCE", "REQUIRES"]
+    assert edges_df["relation"].tolist() == ["", "REQUIRES"]
 
 
 def test_validate_edge_endpoints_accepts_known_stringified_node_ids():
@@ -574,7 +574,7 @@ def test_load_edge_key_parses_metadata_and_skips_blank_relations(tmp_path):
     edge_key_path.write_text(
         "\n".join([
             "relation,directed,category,meaning,example",
-            "DEPENDS_ON,false,dependency,source depends on target,A depends on B",
+            "REQUIRES,false,dependency,source requires target,A requires B",
             ",true,ignored,ignored,ignored",
             "USES,yes,usage,source uses target,A uses B",
         ]),
@@ -584,12 +584,12 @@ def test_load_edge_key_parses_metadata_and_skips_blank_relations(tmp_path):
     edge_key = load_edge_key(edge_key_path)
 
     assert edge_key == {
-        "DEPENDS_ON": {
-            "relation": "DEPENDS_ON",
+        "REQUIRES": {
+            "relation": "REQUIRES",
             "directed": False,
             "category": "dependency",
-            "meaning": "source depends on target",
-            "example": "A depends on B",
+            "meaning": "source requires target",
+            "example": "A requires B",
         },
         "USES": {
             "relation": "USES",

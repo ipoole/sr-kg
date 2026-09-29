@@ -2,15 +2,13 @@
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
       <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
       <div class="kg-shell-control kg-shell-graph-control">
-        <label for="kg_graph_view_select">Graph</label>
-        <select id="kg_graph_view_select" class="kg-canvas-select" aria-label="Graph view">
-          <option value="hide">Hide graph</option>
-          <option value="all" selected>Full graph</option>
-          <option value="focused">Focussed</option>
+        <label for="kg_display_scope_select">Display</label>
+        <select id="kg_display_scope_select" class="kg-canvas-select" aria-label="Graph display scope">
+          <option value="full" selected>Full graph</option>
+          <option value="context">Context only</option>
+          <option value="hidden">Hidden</option>
         </select>
-        <button id="kg_clear_selection" class="kg-shell-button" type="button" title="Clear selection">Clear</button>
-        <button id="kg_focus_lens_toggle" class="kg-shell-button" type="button" aria-pressed="false">Show lens</button>
-        <span id="kg_temporary_layout_warning" class="kg-temporary-layout-warning" role="status" hidden>Temporary layout</span>
+        <button id="kg_clear_selection" class="kg-shell-button" type="button" title="Clear selection">Clear selection</button>
       </div>
       __TITLE_HTML__
       <div class="kg-shell-control kg-shell-details-control">
@@ -29,9 +27,8 @@
     <div id="kg_controls">
       <b>Knowledge graph explorer</b><br>
       <button onclick="kgShowEdgeKey()">Edge key</button>
-      <button id="kg_features_button" type="button" onclick="kgShowSplash()">Features</button>
-      <div id="kg_status">Click a node to highlight its immediate neighbours.</div>
-      <div id="kg_focus_lens" class="kg-focus-lens" aria-live="polite"></div>
+      <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
+      <div id="kg_status">Ready. Use Context to choose the graph relationships.</div>
       <details id="kg_modules_section" class="kg-fold">
         <summary>Modules</summary>
         <div class="kg-module-actions" aria-label="Module graph actions">
@@ -42,6 +39,20 @@
       </details>
       <details id="kg_layouts_section" class="kg-fold">
         <summary>Layouts</summary>
+        <label class="kg-layout-edit-toggle">
+          <input id="kg_layout_edit_toggle" type="checkbox">
+          <span>Edit layout</span>
+        </label>
+        <label class="kg-layout-persistence" for="kg_layout_edit_persistence">
+          <span>Changes</span>
+          <select id="kg_layout_edit_persistence">
+            <option value="temporary" selected>Temporary</option>
+            <option value="personal">Personal</option>
+          </select>
+        </label>
+        <div id="kg_layout_edit_message" class="kg-layout-status">
+          Node dragging is off.
+        </div>
         <div id="kg_layout_status" class="kg-layout-status" aria-live="polite"></div>
         <div id="kg_layout_revision_warning" class="kg-layout-warning" hidden>
           <div>A newer published layout is available.</div>
@@ -71,6 +82,53 @@
 
     </div>
 
+      <section id="kg_graph_context_panel" class="kg-graph-context-panel" aria-label="Graph context controls">
+        <div class="kg-graph-context-controls">
+          <div class="kg-context-control-group" aria-label="Context rule">
+            <label for="kg_context_preset_select">Context</label>
+            <select id="kg_context_preset_select" class="kg-canvas-select">
+              <option value="connections">Connections</option>
+              <option value="prerequisites">Prerequisites</option>
+              <option value="derivation">Derivation</option>
+              <option value="foundations" selected>Foundations</option>
+              <option value="uses">Uses</option>
+              <option value="related">Related</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <button id="kg_custom_context_edit" class="kg-shell-button" type="button" hidden>Edit custom…</button>
+            <label for="kg_context_depth_select">Depth</label>
+            <select id="kg_context_depth_select" class="kg-canvas-select">
+              <option value="one-hop" selected>1 hop</option>
+              <option value="two-hops">2 hops</option>
+              <option value="transitive">Transitive</option>
+            </select>
+          </div>
+          <div class="kg-context-control-group" aria-label="Camera framing">
+            <label for="kg_fit_select" class="kg-visually-hidden">Fit target</label>
+            <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target">
+              <option value="reveal">Reveal selection</option>
+              <option value="selection">Fit selection</option>
+              <option value="context" selected>Fit context</option>
+              <option value="displayed">Fit displayed graph</option>
+            </select>
+            <button id="kg_fit_apply" class="kg-shell-button" type="button">Fit</button>
+          </div>
+        </div>
+        <div id="kg_context_summary" class="kg-context-summary" aria-live="polite"></div>
+        <div id="kg_context_notice" class="kg-context-notice" aria-live="polite" hidden></div>
+        <div id="kg_representation_actions" class="kg-representation-actions" hidden>
+          <button id="kg_expand_selected_module" type="button">Expand selected concept's module</button>
+          <button id="kg_expand_context_modules" type="button">Expand context modules</button>
+        </div>
+        <div id="kg_custom_context" class="kg-custom-context" hidden>
+          <div id="kg_custom_context_rules"></div>
+          <div class="kg-custom-context-actions">
+            <button id="kg_custom_context_apply" type="button">Apply custom context</button>
+            <button id="kg_custom_context_cancel" type="button">Cancel</button>
+          </div>
+        </div>
+      </section>
+
       <details id="kg_search_section" class="kg-search-panel">
         <summary>Search concepts and modules</summary>
         <div id="kg_search_block">
@@ -86,56 +144,63 @@
       <h2>__VIEW_TITLE__</h2>
       <p>Select a concept or module, or double-click a module to expand it.</p>
     </div>
+    <dialog id="kg_inspection_dialog" class="kg-inspection" aria-labelledby="kg_inspection_title">
+      <div class="kg-inspection-head">
+        <h2 id="kg_inspection_title">Inspection</h2>
+        <button id="kg_inspection_close" type="button" aria-label="Close inspection">Close</button>
+      </div>
+      <div id="kg_inspection_body"></div>
+    </dialog>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
-      <h2 id="kg_splash_title">Knowledge graph browser</h2>
-      <p>Explore the physics knowledge base through two peer views: the graph shows concept relationships, while the details pane gives the study text for the selected concept.</p>
+      <h2 id="kg_splash_title">Viewer quick start</h2>
+      <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
       <div class="kg-splash-feature-grid">
         <section>
-          <h3>Navigation and layout</h3>
+          <h3>Start with the map</h3>
           <ul>
-            <li>Select from the graph, searchable concept list, or concept links.</li>
-            <li>Use browser back and forward to retrace selected concepts.</li>
-            <li>Show, hide, or focus the graph; show, hide, or filter details.</li>
-            <li>Drag the divider to rebalance graph and details space.</li>
-            <li>Move nodes in the full graph; personal layouts survive reload and can be exported or reset. <span class="kg-status-badge">New</span></li>
+            <li>Click a module to read its introduction and connections.</li>
+            <li>Double-click a module to expand it and reveal its concepts.</li>
+            <li>Use Search to go directly to a concept or module.</li>
+            <li>Clear selection without changing the map arrangement.</li>
           </ul>
         </section>
         <section>
-          <h3>Study content</h3>
+          <h3>Choose the context</h3>
           <ul>
-            <li>Reading modes switch between full, core, maths, context, and practice views.</li>
-            <li>Semantic blocks render as textbook-style callouts, folded notes, and study questions.</li>
-            <li>Preview linked concepts inline without leaving the current concept.</li>
-            <li>Add browser-local notes, then export or import them as CSV.</li>
+            <li>Context filters Full graph edges and, with a selection, chooses the relationships around it.</li>
+            <li>Use named contexts such as Prerequisites, Derivation, Foundations, Uses, or Related.</li>
+            <li>Choose one hop, two hops, or the complete transitive chain.</li>
+            <li>Changing context does not move the graph or fold modules.</li>
           </ul>
         </section>
         <section>
-          <h3>Graph semantics</h3>
+          <h3>Control the surroundings</h3>
           <ul>
-            <li>Use the focus lens in Auto mode to follow the active detail section, or choose arbitrary relation-and-direction traversals in Manual mode. <span class="kg-status-badge">New</span></li>
-            <li>Derived-from and where-used sections can show immediate links or full trees.</li>
-            <li>Inspect relation colours and meanings from the edge key.</li>
-            <li>Hover edges for MathJax-rendered notes or click them for relationship details.</li>
+            <li>Full graph shows every edge type named by Context; a selection colours only its reached context.</li>
+            <li>Context only removes that background; Hidden gives details more room.</li>
+            <li>A selected concept inside a folded module appears as a circular concept face within the module.</li>
           </ul>
         </section>
         <section>
-          <h3>Maths and graphics</h3>
+          <h3>Move and read</h3>
           <ul>
-            <li>MathJax renders equations in details, graph labels, previews, and edge notes.</li>
-            <li>Generated SVG concept graphics appear in details and graph nodes where available.</li>
+            <li>Pan and zoom freely; selection only pans enough to reveal an off-screen item.</li>
+            <li>Use Fit to frame the selection, context, or displayed graph.</li>
+            <li>Preview links and inspect edges without losing the current details.</li>
+            <li>Browser Back and Forward retrace selected concepts and modules.</li>
           </ul>
         </section>
         <section>
-          <h3>Modules <span class="kg-status-badge">New</span></h3>
+          <h3>Personal layout</h3>
           <ul>
-            <li>Browse authored topic groups and open module-level study pages.</li>
-            <li>Collapse modules into topic nodes, then expand them to reveal their concepts.</li>
-            <li>Inspect summarised boundary links between folded modules and the surrounding graph.</li>
+            <li>Node dragging is off during ordinary browsing.</li>
+            <li>Enable Tools → Layouts → Edit layout to move nodes.</li>
+            <li>Moves are temporary by default; choose Personal to save them locally.</li>
           </ul>
         </section>
         <section>
-          <h3>General Relativity <span class="kg-status-badge">New</span></h3>
-          <p>The current GR concepts have been fully authored through weak-field radiation and black-hole foundations.</p>
+          <h3>Content status</h3>
+          <p>Modules are available. General Relativity remains work in progress: its current text is authored to seed level.</p>
         </section>
       </div>
       <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex.</p>

@@ -24,14 +24,14 @@ def test_write_pyvis_html_creates_output_and_serializes_node_attributes(tmp_path
         {"id": "2.1", "label": "Beta"},
     ])
     edges_df = pd.DataFrame([
-        {"source": "2.1", "target": "1.1", "relation": "DEPENDS_ON", "note": ""},
+        {"source": "2.1", "target": "1.1", "relation": "REQUIRES", "note": ""},
     ])
 
     write_pyvis_html(
         nodes_df=nodes_df,
         edges_df=edges_df,
-        edge_key={"DEPENDS_ON": {"directed": True}},
-        edge_colour_map={"DEPENDS_ON": "#123456"},
+        edge_key={"REQUIRES": {"directed": True}},
+        edge_colour_map={"REQUIRES": "#123456"},
         hierarchy_levels={"1.1": 1, "2.1": 0},
         hierarchy_positions={"1.1": (10, 20), "2.1": (30, 40)},
         module_visuals_by_concept={
@@ -70,7 +70,7 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
         {
             "source": "2.1",
             "target": "1.1",
-            "relation": "DEPENDS_ON",
+            "relation": "REQUIRES",
             "note": "Use <carefully>",
         },
         {
@@ -85,11 +85,11 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
         nodes_df=nodes_df,
         edges_df=edges_df,
         edge_key={
-            "DEPENDS_ON": {"directed": True},
+            "REQUIRES": {"directed": True},
             "RELATED": {"directed": False},
         },
         edge_colour_map={
-            "DEPENDS_ON": "#123456",
+            "REQUIRES": "#123456",
             "RELATED": "#abcdef",
         },
         hierarchy_levels={"1.1": 1, "2.1": 0},
@@ -105,7 +105,7 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
         for edge in _dataset(html_text, "edges")
     }
 
-    directed = edges[("2.1", "1.1", "DEPENDS_ON")]
+    directed = edges[("2.1", "1.1", "REQUIRES")]
     undirected = edges[("1.1", "2.1", "RELATED")]
     assert directed["arrows"] == "to"
     assert directed["color"] == {
@@ -113,7 +113,7 @@ def test_write_pyvis_html_serializes_directed_and_undirected_edge_attributes(tmp
         "highlight": "#123456",
         "hover": "#123456",
     }
-    assert directed["title"] == "Beta DEPENDS_ON Alpha\n\nUse &lt;carefully&gt;"
+    assert directed["title"] == "Beta REQUIRES Alpha\n\nUse &lt;carefully&gt;"
     assert directed["width"] == EDGE_WIDTH
     assert undirected["arrows"] == ""
     assert undirected["color"]["color"] == "#abcdef"
@@ -128,14 +128,14 @@ def test_write_pyvis_html_does_not_enable_graph_keyboard_capture(tmp_path):
         {"id": "2.1", "label": "Beta"},
     ])
     edges_df = pd.DataFrame([
-        {"source": "2.1", "target": "1.1", "relation": "DEPENDS_ON", "note": ""},
+        {"source": "2.1", "target": "1.1", "relation": "REQUIRES", "note": ""},
     ])
 
     write_pyvis_html(
         nodes_df=nodes_df,
         edges_df=edges_df,
-        edge_key={"DEPENDS_ON": {"directed": True}},
-        edge_colour_map={"DEPENDS_ON": "#123456"},
+        edge_key={"REQUIRES": {"directed": True}},
+        edge_colour_map={"REQUIRES": "#123456"},
         hierarchy_levels={"1.1": 1, "2.1": 0},
         hierarchy_positions={"1.1": (10, 20), "2.1": (30, 40)},
         out_path=out_path,

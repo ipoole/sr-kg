@@ -44,29 +44,29 @@ def test_stable_edge_colour_is_repeatable_palette_colour():
 
 def test_enrich_edge_key_with_colours_preserves_metadata_and_adds_colour():
     edge_key = {
-        "DEPENDS_ON": {
-            "relation": "DEPENDS_ON",
+        "REQUIRES": {
+            "relation": "REQUIRES",
             "directed": True,
-            "meaning": "source depends on target",
+            "meaning": "source requires target",
         },
         "RELATED": {
             "relation": "RELATED",
             "directed": False,
         },
     }
-    colour_map = {"DEPENDS_ON": "#123456"}
+    colour_map = {"REQUIRES": "#123456"}
 
     enriched = enrich_edge_key_with_colours(edge_key, colour_map)
 
-    assert enriched["DEPENDS_ON"] == {
-        "relation": "DEPENDS_ON",
+    assert enriched["REQUIRES"] == {
+        "relation": "REQUIRES",
         "directed": True,
-        "meaning": "source depends on target",
+        "meaning": "source requires target",
         "colour": "#123456",
     }
     assert enriched["RELATED"]["directed"] is False
     assert enriched["RELATED"]["colour"] == EDGE_COLOURS[0]
-    assert "colour" not in edge_key["DEPENDS_ON"]
+    assert "colour" not in edge_key["REQUIRES"]
 
 
 def test_relation_is_directed_defaults_to_true():

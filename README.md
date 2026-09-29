@@ -39,8 +39,9 @@ Generated HTML is a build artifact; do not commit it unless explicitly requested
 Select a module for an overview and concept list, or use the header **Search** button to
 find a concept. Follow links to explore related material and use browser Back
 to return. **Details** filters the reading material; **Practice** shows questions
-with answers you can reveal for self-checking. **Graph → Focussed** isolates the
-selected context, while **Hide graph** gives the reading pane more space.
+with answers you can reveal for self-checking. Use **Context** and **Depth** to
+choose related material, and **Display** to show the full graph, only that context,
+or the details pane on its own.
 
 See [Viewer behaviour](docs/design/viewer.md) for reading modes, navigation and
 personal notes. The viewer does not currently record mastery or question attempts.

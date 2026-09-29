@@ -78,6 +78,9 @@ def test_folded_box_matches_footprint_and_scales_its_label(browser_graph):
 def test_box_drag_translates_anchor_and_members_without_expansion_jump(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
+    browser_graph.open_control_section("kg_layouts_section")
+    page.locator("#kg_layout_edit_persistence").select_option("personal")
+    page.locator("#kg_layout_edit_toggle").check()
     fold_applications(browser_graph)
     page.evaluate("""id => {
       const p = network.body.nodes[id];

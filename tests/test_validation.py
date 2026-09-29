@@ -10,12 +10,12 @@ from srkg.validation import (
 
 def _edge_key():
     return {
-        "DEPENDS_ON": {
-            "relation": "DEPENDS_ON",
+        "REQUIRES": {
+            "relation": "REQUIRES",
             "directed": True,
             "category": "dependency",
-            "meaning": "source depends on target",
-            "example": "Beta depends on Alpha",
+            "meaning": "source requires target",
+            "example": "Beta requires Alpha",
         },
         "RELATED": {
             "relation": "RELATED",
@@ -48,7 +48,7 @@ def _nodes_df():
 
 def _edges_df():
     return pd.DataFrame([
-        {"source": "2.1", "target": "1.1", "relation": "DEPENDS_ON", "note": ""},
+        {"source": "2.1", "target": "1.1", "relation": "REQUIRES", "note": ""},
     ])
 
 
@@ -72,8 +72,8 @@ def test_validate_graph_data_reports_required_values():
 def test_validate_graph_data_reports_directed_cycles_as_errors():
     nodes_df = _nodes_df()
     edges_df = pd.DataFrame([
-        {"source": "2.1", "target": "1.1", "relation": "DEPENDS_ON", "note": ""},
-        {"source": "1.1", "target": "2.1", "relation": "DEPENDS_ON", "note": ""},
+        {"source": "2.1", "target": "1.1", "relation": "REQUIRES", "note": ""},
+        {"source": "1.1", "target": "2.1", "relation": "REQUIRES", "note": ""},
     ])
 
     issues = validate_graph_data(nodes_df, edges_df, _edge_key())
@@ -89,7 +89,7 @@ def test_format_validation_issues_summarizes_counts_and_locations():
     issues = validate_graph_data(
         _nodes_df(),
         pd.DataFrame([
-            {"source": "2.1", "target": "missing", "relation": "DEPENDS_ON", "note": ""},
+            {"source": "2.1", "target": "missing", "relation": "REQUIRES", "note": ""},
         ]),
         _edge_key(),
     )

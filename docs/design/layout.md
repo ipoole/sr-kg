@@ -3,8 +3,8 @@
 ## One global layout
 
 Concepts have absolute graph-space coordinates and modules have persistent
-anchors. Full graph mode is the global editing view. Camera position, zoom,
-selection and visibility are separate from layout.
+anchors. Camera position, zoom, selection and visibility are separate from
+layout.
 
 Moving a concept changes its position without recalculating its module anchor.
 Moving a folded module translates its members together. Folding and expansion
@@ -27,17 +27,20 @@ ranks wrap. Cross-module and non-structural edges do not distort an island.
 Module-free library fixtures use a compact grid. These are deterministic
 fallbacks, not a runtime reflow policy.
 
-## Focussed views
+## Explicit editing
 
-Focussed mode keeps global coordinates, hides unrelated objects and fits the
-camera to the visible context. Concept and folded-module drags are temporary
-adjustments, visibly distinguished from global editing. They are discarded when
-the view is rebuilt or left and never change saved coordinates or module anchors.
+Dragging is disabled during ordinary browsing. **Tools → Layouts → Edit layout**
+enables it and visibly states whether changes are Temporary or Personal.
+Temporary is the default; its in-memory overlay survives graph-state changes and
+is discarded when editing is disabled or the page reloads. Personal moves are
+saved as browser-local overrides. This choice is independent of Full graph or
+Context-only display; Hidden display cannot be edited. Changing display never
+automatically fits the camera.
 
 ## Personal persistence and publication
 
-Browser-local overrides save global edits relative to the published layout and
-survive reload. They exclude camera, selection, visibility and focussed changes.
+Browser-local overrides save Personal edits relative to the published layout and
+survive reload. They exclude camera, selection, display and Temporary changes.
 A published-revision mismatch displays a keep-or-reset warning under
 **Tools → Layouts**. Existing personal positions are applied immediately;
 the warning does not block their use pending a decision.
@@ -49,5 +52,5 @@ published revision when adopting it. Browser editing never writes source files.
 
 ## Future plans
 
-Separate persistent focussed layouts and their export remain deferred. Automatic
-repacking would need an explicit interaction that preserves deliberate edits.
+Separate layouts for different contexts remain deferred. Automatic repacking
+would need an explicit interaction that preserves deliberate edits.

@@ -3,7 +3,9 @@
 - **Design** describes current contracts and consequential decisions:
   [schema](design/kb_schema.md), [architecture](design/architecture.md),
   [viewer behaviour](design/viewer.md), [modules](design/modules.md), and
-  [layout](design/layout.md).
+  [layout](design/layout.md). The [viewer state terminology](design/viewer_terminology.md)
+  defines the vocabulary used by the accepted [revised viewer UI model](design/viewer_ui_model.md),
+  with a user-facing [viewer quick start](design/viewer_quick_start.md).
 - **Authoring** holds the [authoring guide](authoring/authoring_guide.md),
   notation conventions, working drafts, and outstanding editorial work.
 - **Discussion** holds speculative ideas, not instructions for current behaviour.

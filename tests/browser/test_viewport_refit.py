@@ -30,10 +30,10 @@ def _enter_browsing_mode(browser_graph, mode):
     page = browser_graph.page
     browser_graph.click_concept("3.1")
 
-    if mode == "all":
+    if mode == "full":
         return
-    if mode == "focused":
-        page.locator("#kg_graph_view_select").select_option("focused")
+    if mode == "context":
+        page.locator("#kg_display_scope_select").select_option("context")
         page.wait_for_function(
             """() => {
               const hidden = Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]));
@@ -48,8 +48,8 @@ def _enter_browsing_mode(browser_graph, mode):
 
 
 @pytest.mark.browser
-@pytest.mark.parametrize("mode", ["all", "focused"])
-def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
+@pytest.mark.parametrize("mode", ["full", "context"])
+def test_panel_visibility_preserves_camera_in_browsing_modes(
     browser_graph,
     mode,
 ):
@@ -69,12 +69,16 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
         }"""
     )
     graph_pane_expanded = page.locator("#kg_graph_pane").bounding_box()
+    page.wait_for_timeout(500)
+    details_hidden = _view_state(page)
 
     assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
     assert graph_pane_visible["width"] < shell["width"] * 0.55
     assert graph_pane_expanded["width"] > shell["width"] * 0.95
+    assert math.isclose(details_hidden["scale"], panes_visible["scale"], abs_tol=1e-6)
+    assert _view_distance(details_hidden, panes_visible) < 0.1
 
-    if mode == "all":
+    if mode == "full":
         assert panes_visible["hiddenNodes"] == {
             "1.1": False,
             "2.1": False,
@@ -97,6 +101,77 @@ def test_panel_visibility_changes_automatic_fit_space_in_browsing_modes(
             ("3.1", "2.2", "DERIVES_FROM"),
             ("3.1", "2.2", "REQUIRES"),
         ]
+
+
+@pytest.mark.browser
+def test_splitter_and_context_changes_preserve_camera(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept("3.1")
+    before = _view_state(page)
+
+    page.locator("#kg_context_depth_select").select_option("two-hops")
+    page.locator("#kg_pane_splitter").press("End")
+    page.wait_for_timeout(500)
+    after = _view_state(page)
+
+    assert math.isclose(after["scale"], before["scale"], abs_tol=1e-6)
+    assert _view_distance(after, before) < 0.1
+
+
+@pytest.mark.browser
+def test_offscreen_selection_is_revealed_without_zooming_or_recentering(browser_graph):
+    page = browser_graph.page
+    page.evaluate(
+        """() => network.moveTo({
+          position: {x: 10000, y: 10000},
+          scale: 0.4,
+          animation: false
+        })"""
+    )
+    page.wait_for_timeout(50)
+
+    browser_graph.click_concept("3.1")
+    page.wait_for_timeout(50)
+
+    result = page.evaluate(
+        """() => {
+          const point = network.canvasToDOM(network.getPositions(["3.1"])["3.1"]);
+          return {
+            point,
+            width: document.getElementById("mynetwork").clientWidth,
+            height: document.getElementById("mynetwork").clientHeight,
+            scale: network.getScale()
+          };
+        }"""
+    )
+    assert math.isclose(result["scale"], 0.4, abs_tol=1e-6)
+    assert 28 <= result["point"]["x"] <= result["width"] - 28
+    assert 28 <= result["point"]["y"] <= result["height"] - 28
+    assert abs(result["point"]["x"] - result["width"] / 2) > 50
+
+
+@pytest.mark.browser
+def test_fit_controls_are_explicit_camera_actions(browser_graph):
+    page = browser_graph.page
+    assert page.locator("#kg_fit_select option").evaluate_all(
+        "options => options.map(option => option.value)"
+    ) == ["reveal", "selection", "context", "displayed"]
+
+    page.evaluate(
+        """() => network.moveTo({
+          position: {x: 5000, y: 5000},
+          scale: 0.2,
+          animation: false
+        })"""
+    )
+    before = _view_state(page)
+    page.locator("#kg_fit_select").select_option("displayed")
+    page.locator("#kg_fit_apply").click()
+    page.wait_for_timeout(300)
+    after = _view_state(page)
+
+    assert not math.isclose(after["scale"], before["scale"], abs_tol=1e-3)
+    assert _view_distance(after, before) > 100
 
 
 @pytest.mark.browser

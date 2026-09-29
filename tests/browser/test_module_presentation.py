@@ -148,6 +148,126 @@ def test_graphic_corner_rounding_tracks_the_inset_module_boundary(
 
 
 @pytest.mark.browser
+def test_folded_module_represents_selected_concept_with_normal_selected_face(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_collapse_all").click()
+    browser_graph.click_concept("2.1")
+
+    node = page.evaluate("() => nodes.get('module::test.m02_applications')")
+    proxy = page.evaluate(
+        "() => kgFoldedModuleConceptProxy('test.m02_applications')"
+    )
+    concept_node = page.evaluate("() => nodes.get('2.1')")
+
+    assert node["selectedConceptProxyId"] == "2.1"
+    assert node["label"].endswith("\n3 concepts")
+    assert proxy["conceptId"] == "2.1"
+    assert proxy["radius"] == pytest.approx(concept_node["visualSize"] * 1.4)
+    assert proxy["borderWidth"] == 6
+    assert proxy["moduleGraphicSuppressed"] is True
+    assert page.locator('.kg-node-label[data-node-id="2.1"]').is_visible()
+    assert page.locator(
+        '.kg-node-label[data-node-id="2.1"]'
+    ).inner_text().split() == ["2.1", "Beta"]
+
+    drawn = page.evaluate("""() => {
+      const expected = kgFoldedModuleConceptProxy('test.m02_applications');
+      const ctx = network.canvas.frame.canvas.getContext('2d');
+      const originalArc = ctx.arc, originalStroke = ctx.stroke;
+      let activeArc = null, match = null;
+      ctx.arc = function(x, y, radius, ...args) {
+        activeArc = {x, y, radius};
+        return originalArc.call(this, x, y, radius, ...args);
+      };
+      ctx.stroke = function(...args) {
+        if (activeArc && Math.abs(activeArc.x - expected.x) < 0.01 &&
+            Math.abs(activeArc.y - expected.y) < 0.01 &&
+            Math.abs(activeArc.radius - expected.radius) < 0.01) {
+          match = {...activeArc, lineWidth:this.lineWidth, strokeStyle:this.strokeStyle};
+        }
+        return originalStroke.apply(this, args);
+      };
+      try { network.redraw(); } finally {
+        ctx.arc = originalArc;
+        ctx.stroke = originalStroke;
+      }
+      return match;
+    }""")
+    assert drawn["lineWidth"] == 6
+    assert drawn["strokeStyle"] == "#000000"
+
+    page.locator("#kg_clear_selection").click()
+    assert page.evaluate(
+        "() => nodes.get('module::test.m02_applications').selectedConceptProxyId"
+    ) == ""
+    assert not page.locator('.kg-node-label[data-node-id="2.1"]').is_visible()
+    assert browser_graph.page_errors == []
+
+
+@pytest.mark.browser
+def test_folded_module_keeps_thick_outline_only_for_module_selection(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_collapse_all").click()
+
+    page.locator(
+        '.kg-module-item[data-module-id="test.m02_applications"]'
+    ).click()
+    selected_module = page.evaluate(
+        "() => nodes.get('module::test.m02_applications')"
+    )
+    assert selected_module["borderWidthSelected"] == 6
+    assert page.evaluate("() => network.getSelectedNodes()") == [
+        "module::test.m02_applications"
+    ]
+
+    browser_graph.click_concept("2.1")
+    concept_proxy = page.evaluate(
+        "() => nodes.get('module::test.m02_applications')"
+    )
+    assert concept_proxy["selectedConceptProxyId"] == "2.1"
+    assert concept_proxy["borderWidthSelected"] == 2
+
+
+@pytest.mark.browser
+def test_selected_concept_replaces_authored_folded_module_graphic(
+    shared_repo_browser_graph,
+):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.click_concept("sr.four_vectors")
+
+    node = page.evaluate("() => nodes.get('module::sr.relativistic_mechanics')")
+    assert node["hasModuleGraphic"] is True
+    assert node["selectedConceptProxyId"] == "sr.four_vectors"
+
+    landscape_draws_inside_module = page.evaluate("""() => {
+      const nodeId = 'module::sr.relativistic_mechanics';
+      const shape = network.body.nodes[nodeId].shape;
+      const ctx = network.canvas.frame.canvas.getContext('2d');
+      const original = ctx.drawImage, calls = [];
+      ctx.drawImage = function(...args) {
+        if (args.length === 5) {
+          const [image, x, y, width, height] = args;
+          if (x >= shape.left && y >= shape.top &&
+              x + width <= shape.left + shape.width &&
+              y + height <= shape.top + shape.height) {
+            calls.push({width, height, sourceWidth:image.naturalWidth});
+          }
+        }
+        return original.apply(this, args);
+      };
+      try { network.redraw(); } finally { ctx.drawImage = original; }
+      return calls;
+    }""")
+    assert landscape_draws_inside_module == []
+    assert page.locator(
+        '.kg-node-label[data-node-id="sr.four_vectors"]'
+    ).is_visible()
+    assert shared_repo_browser_graph.page_errors == []
+
+
+@pytest.mark.browser
 def test_module_corners_and_secondary_count_scale_with_box(browser_graph):
     page = browser_graph.page
     browser_graph.open_control_section('kg_modules_section')
@@ -169,6 +289,8 @@ def test_module_corners_and_secondary_count_scale_with_box(browser_graph):
 @pytest.mark.browser
 def test_large_module_title_font_is_capped_without_changing_footprint(browser_graph):
     page = browser_graph.page
+    browser_graph.open_control_section('kg_layouts_section')
+    page.locator('#kg_layout_edit_toggle').check()
     page.evaluate("""() => {
       network.moveNode('2.1', 15000, 18000);
       network.emit('dragEnd', {nodes:['2.1']});
@@ -190,6 +312,8 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
     before = page.evaluate("() => nodes.get().filter(n => n.isModuleNode).map(n => n.font.size)")
     assert before == [80, 80]
     page.locator('#kg_modules_expand_all').click()
+    browser_graph.open_control_section('kg_layouts_section')
+    page.locator('#kg_layout_edit_toggle').check()
     page.evaluate("""() => {
       network.moveNode('2.1', 15000, 18000);
       network.emit('dragEnd', {nodes:['2.1']});

@@ -9,6 +9,13 @@ MODULE = "test.m02_applications"
 NODE = "module::" + MODULE
 
 
+def _enable_editing(graph, *, personal=False):
+    graph.open_control_section("kg_layouts_section")
+    if personal:
+        graph.page.locator("#kg_layout_edit_persistence").select_option("personal")
+    graph.page.locator("#kg_layout_edit_toggle").check()
+
+
 def _fold(graph):
     graph.open_control_section("kg_modules_section")
     graph.page.locator(f'.kg-module-item[data-module-id="{MODULE}"]').click()
@@ -30,6 +37,7 @@ def _assert_box(page):
 def test_reset_while_folded_restores_footprint_without_moving_other_modules(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
+    _enable_editing(browser_graph, personal=True)
     page.evaluate("""() => {
       network.moveNode('2.1', 8000, 3000);
       network.emit('dragEnd', {nodes:['2.1']});
@@ -48,6 +56,7 @@ def test_concept_edits_change_footprint_not_anchors_or_neighbours(browser_graph,
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
     old_footprint = page.evaluate("id => kgModuleFootprint(id)", MODULE)
+    _enable_editing(browser_graph, personal=True)
     page.evaluate("""p => {
       network.moveNode('2.1', p.x, p.y);
       network.emit('dragEnd', {nodes:['2.1']});
@@ -64,16 +73,15 @@ def test_concept_edits_change_footprint_not_anchors_or_neighbours(browser_graph,
 def test_focused_adjustments_do_not_change_persistent_footprint(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
-    footprint = page.evaluate("id => kgModuleFootprint(id)", MODULE)
     browser_graph.click_concept("3.1")
-    page.locator('#kg_graph_view_select').select_option('focused')
+    page.locator('#kg_display_scope_select').select_option('context')
+    _enable_editing(browser_graph)
     page.evaluate("""() => {
       network.moveNode('2.1', 5000, 5000);
       network.emit('dragEnd', {nodes:['2.1']});
     }""")
-    assert page.evaluate("id => kgModuleFootprint(id)", MODULE) == footprint
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
-    page.locator('#kg_graph_view_select').select_option('all')
+    page.locator('#kg_display_scope_select').select_option('full')
     _fold(browser_graph)
     _assert_box(page)
 
@@ -99,7 +107,8 @@ def test_temporary_folded_move_then_expansion_does_not_save_positions(browser_gr
     page = browser_graph.page
     _fold(browser_graph)
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
-    page.locator('#kg_graph_view_select').select_option('focused')
+    page.locator('#kg_display_scope_select').select_option('context')
+    _enable_editing(browser_graph)
     page.evaluate("""id => {
       network.moveNode(id, 7000, 8000);
       network.emit('dragEnd', {nodes:[id]});
@@ -108,7 +117,7 @@ def test_temporary_folded_move_then_expansion_does_not_save_positions(browser_gr
     assert page.evaluate("id => network.getPositions([id])[id]", NODE) == {"x": 7000, "y": 8000}
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
-    page.locator('#kg_graph_view_select').select_option('all')
+    page.locator('#kg_display_scope_select').select_option('full')
     _fold(browser_graph)
     _assert_box(page)
 
@@ -116,6 +125,7 @@ def test_temporary_folded_move_then_expansion_does_not_save_positions(browser_gr
 @pytest.mark.browser
 def test_export_reload_and_repeated_folding_preserve_geometry(browser_graph, tmp_path):
     page = browser_graph.page
+    _enable_editing(browser_graph, personal=True)
     _fold(browser_graph)
     page.evaluate("""id => {
       const p = network.body.nodes[id];

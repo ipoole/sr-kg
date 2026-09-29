@@ -39,9 +39,10 @@ space within one unambiguous expanded-module footprint folds that module. Global
 expand/collapse controls provide the same operations in bulk.
 
 The viewer separates preferred folding from effective representation. Navigation
-to a concept temporarily expands its module if necessary; when that requirement
-ends, the preferred state can return. Authored defaults initialise preferences.
-Selection may be a concept, module, relationship, or nothing.
+to a concept does not change folding: if its module is folded, the selected
+concept's circular face and title replace the module artwork while the module
+footer remains. Authored defaults initialise preferences. Selection may be a
+concept, a module, or nothing; relationship details are temporary inspection.
 
 Folded boxes follow the bounds of their concepts and labels. Folding changes
 representation rather than stored coordinates. Movement and persistence follow
@@ -51,7 +52,9 @@ Module artwork is optional. When present, a landscape icon occupies the upper
 part of the folded box and a smaller title and concept count sit below it. The
 box still follows the expanded member footprint: artwork never changes authored
 positions, anchors, edge endpoints or persistence. Modules without artwork keep
-the centred text presentation, so small modules need not carry graphics.
+the centred text presentation, so small modules need not carry graphics. While
+a contained concept is selected, its standard circular face and title occupy
+the upper area regardless of whether the module has authored artwork.
 
 ## Boundary edges
 
@@ -61,11 +64,13 @@ use a neutral summary. Hover and relationship details expose the concrete links
 so folding does not erase their meaning. No separate authored module-edge graph
 is required.
 
-Full graph mode uses the three structural relations for its background, filtering
-before boundary aggregation. A concept's lens-selected foreground edges override
-that filter, including non-structural relations. Focussed concept views use the
-Auto section context or Manual lens rules; module selection uses module context.
-This display policy does not remove relationships from the KB or its detail pages.
+In Full graph, the active Context relation set filters eligible edges before
+boundary aggregation. With no selection all eligible edges keep their relation
+colours; with a selection, reached context edges keep their colours and the
+remaining eligible edges become light grey. Context-only display omits the
+background. Folding changes only representation: a reached concept in a folded
+module is represented by that module, without automatic expansion. This display
+policy does not remove relationships from the KB or its detail pages.
 
 ## Future plans
 

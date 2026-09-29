@@ -105,6 +105,29 @@ def test_four_vector_examples_retain_taxonomy_and_teaching_dependency():
     assert ("sr.momentum_four_vector", "sr.velocity_four_vector", "DERIVES_FROM") in triples
 
 
+def test_em_density_and_flux_are_components_of_the_em_stress_energy_tensor():
+    edges = _read_csv("edges.csv")
+    blocks = _read_csv("content_blocks.csv").set_index("block_id")
+    component_edges = set(
+        zip(
+            edges.loc[edges["relation"] == "COMPONENT_OF", "source"],
+            edges.loc[edges["relation"] == "COMPONENT_OF", "target"],
+        )
+    )
+
+    assert ("sr.em_energy_density", "sr.em_stress_energy") in component_edges
+    assert ("sr.poynting_vector", "sr.em_stress_energy") in component_edges
+    assert ("sr.em_energy_density", "sr.energy_momentum_tensor") not in component_edges
+    assert ("sr.poynting_vector", "sr.energy_momentum_tensor") not in component_edges
+    for block_id in (
+        "sr.em_energy_density.tensor_component",
+        "sr.poynting_vector.tensor_origin",
+    ):
+        assert r"\cref{electromagnetic stress--energy tensor}{sr.em_stress_energy}" in blocks.loc[
+            block_id, "body"
+        ]
+
+
 def test_real_data_study_question_types_are_canonical():
     study_questions = _read_csv("study_questions.csv")
 
