@@ -120,12 +120,14 @@
             <button id="kg_fit_apply" class="kg-shell-button" type="button">Fit</button>
           </div>
         </div>
-        <div id="kg_context_summary" class="kg-context-summary" aria-live="polite"></div>
-        <div id="kg_context_notice" class="kg-context-notice" aria-live="polite" hidden></div>
-        <div id="kg_representation_actions" class="kg-representation-actions" hidden>
-          <button id="kg_expand_selected_module" type="button">Expand selected concept's module</button>
-          <button id="kg_expand_context_modules" type="button">Expand context modules</button>
+        <div class="kg-context-meta-row">
+          <div id="kg_context_summary" class="kg-context-summary" aria-live="polite"></div>
+          <div id="kg_representation_actions" class="kg-representation-actions" hidden>
+            <button id="kg_expand_selected_module" type="button">Expand selected concept's module</button>
+            <button id="kg_expand_context_modules" type="button">Expand context modules</button>
+          </div>
         </div>
+        <div id="kg_context_notice" class="kg-context-notice" aria-live="polite" hidden></div>
         <div id="kg_custom_context" class="kg-custom-context" hidden>
           <div id="kg_custom_context_rules"></div>
           <div class="kg-custom-context-actions">
@@ -160,7 +162,7 @@
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
       <h2 id="kg_splash_title">Viewer quick start</h2>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
-      <p>The user model has been simplified and improved.<span class="kg-status-badge">NEW</span></p>
+      <p>The user model has been simplified and the UI space optimised for phones.<span class="kg-status-badge">NEW</span></p>
       <div class="kg-splash-feature-grid">
         <section>
           <h3>Start with the map</h3>
@@ -193,6 +195,7 @@
           <ul>
             <li>Pan and zoom freely; selection only pans enough to reveal an off-screen item.</li>
             <li>Use Fit to frame the selection, context, or displayed graph.</li>
+            <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>
           </ul>

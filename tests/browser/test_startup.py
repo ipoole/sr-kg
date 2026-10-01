@@ -150,7 +150,7 @@ def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
     )
     summary = page.locator("#kg_context_summary")
     assert summary.get_attribute("data-selection-type") == "module"
-    assert "Foundations" in summary.inner_text()
+    assert "Foundations" in summary.get_attribute("aria-label")
 
     page.locator("#kg_context_preset_select").select_option("connections")
     page.locator("#kg_display_scope_select").select_option("context")
@@ -188,7 +188,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
         "2.2": 1,
         "3.1": 1,
     }
-    assert "Applications" in page.locator("#kg_context_summary").inner_text()
+    assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
     assert page.locator("#kg_context_summary").get_attribute("data-display-scope") == "full"
 
 
@@ -273,7 +273,7 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
         "2.2": False,
         "3.1": False,
     }
-    assert "Applications" in page.locator("#kg_context_summary").inner_text()
+    assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
 
 
 @pytest.mark.browser
@@ -317,12 +317,62 @@ def test_selecting_member_concept_keeps_selected_module_folded(browser_graph):
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId).hidden === false""", module_node_id)
     assert page.evaluate("""() => nodes.get("2.1").hidden === true""")
     assert page.locator("#kg_context_summary").get_attribute("data-selection-type") == "concept"
-    assert "2.1 Beta" in page.locator("#kg_context_summary").inner_text()
+    assert "2.1 Beta" in page.locator("#kg_context_summary").get_attribute("aria-label")
 
     page.evaluate("() => kgToggleControls()")
     page.locator("#kg_expand_selected_module").click()
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
     assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
+
+
+@pytest.mark.browser
+def test_expand_context_is_offered_for_context_represented_by_other_folded_module(
+    browser_graph,
+):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator(
+        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
+    ).click()
+    browser_graph.click_concept("2.1")
+
+    assert page.locator("#kg_expand_selected_module").is_hidden()
+    context_action = page.locator("#kg_expand_context_modules")
+    assert context_action.is_visible()
+    assert context_action.inner_text() == "Expand 1 folded"
+    assert context_action.get_attribute("aria-label") == (
+        "Expand 1 context concept represented by 1 folded module"
+    )
+
+    context_action.click()
+    assert page.evaluate(
+        "() => nodes.get('module::test.m01_foundations') === null"
+    )
+    assert context_action.is_hidden()
+
+
+@pytest.mark.browser
+def test_expand_context_is_offered_for_selected_folded_module(browser_graph):
+    page = browser_graph.page
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    page.locator(
+        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
+    ).click()
+
+    context_action = page.locator("#kg_expand_context_modules")
+    assert page.locator("#kg_expand_selected_module").is_hidden()
+    assert context_action.is_visible()
+    assert context_action.inner_text() == "Expand 3 folded"
+
+    context_action.click()
+    assert page.evaluate(
+        "() => nodes.get('module::test.m02_applications') === null"
+    )
+    assert context_action.is_hidden()
 
 
 @pytest.mark.browser
@@ -360,7 +410,7 @@ def test_selecting_another_module_preserves_existing_folded_module(browser_graph
     assert page.evaluate("""() => nodes.get("1.1").hidden === true""")
     assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
     assert page.locator("#info_panel h2").inner_text() == "Applications"
-    assert "Applications" in page.locator("#kg_context_summary").inner_text()
+    assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
 
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
 
@@ -719,6 +769,47 @@ def test_double_clicking_concept_node_collapses_owning_module(browser_graph):
 
 
 @pytest.mark.browser
+def test_double_tapping_concept_node_collapses_owning_module_on_phone(browser_graph):
+    page = browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 800})
+    point = page.evaluate(
+        """() => {
+          const position = network.getPositions(["2.1"])["2.1"];
+          const dom = network.canvasToDOM(position);
+          const canvas = network.canvas.frame.canvas;
+          const rect = canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
+        }"""
+    )
+
+    page.evaluate(
+        """async point => {
+          const canvas = network.canvas.frame.canvas;
+          const fire = type => canvas.dispatchEvent(new PointerEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            clientX: point.x,
+            clientY: point.y,
+            pointerId: 7,
+            pointerType: "touch",
+            isPrimary: true
+          }));
+          fire("pointerdown");
+          fire("pointerup");
+          await new Promise(resolve => setTimeout(resolve, 120));
+          fire("pointerdown");
+          fire("pointerup");
+        }""",
+        point,
+    )
+
+    assert page.evaluate(
+        "() => nodes.get('module::test.m02_applications').hidden === false"
+    )
+    assert page.evaluate("() => nodes.get('2.1').hidden === true")
+
+
+@pytest.mark.browser
 def test_double_clicking_empty_space_inside_expanded_module_collapses_it(browser_graph):
     page = browser_graph.page
     module_id = "test.m02_applications"
@@ -1048,7 +1139,7 @@ def test_layout_editing_defaults_to_temporary_and_reports_move_consequences(brow
 
 
 @pytest.mark.browser
-def test_drag_attempt_while_layout_is_locked_shows_context_notice(browser_graph):
+def test_drag_attempt_while_layout_is_locked_shows_context_notice_once(browser_graph):
     page = browser_graph.page
     point = page.evaluate(
         """() => {
@@ -1064,7 +1155,18 @@ def test_drag_attempt_while_layout_is_locked_shows_context_notice(browser_graph)
     page.mouse.move(point["x"] + 12, point["y"] + 8)
     page.mouse.up()
 
-    assert "Layout is locked" in page.locator("#kg_context_notice").inner_text()
+    assert "Layout locked" in page.locator("#kg_context_notice").inner_text()
+    page.wait_for_function(
+        "() => document.getElementById('kg_context_notice').hidden",
+        timeout=4000,
+    )
+
+    page.mouse.move(point["x"], point["y"])
+    page.mouse.down()
+    page.mouse.move(point["x"] + 12, point["y"] + 8)
+    page.mouse.up()
+    page.wait_for_timeout(200)
+    assert page.locator("#kg_context_notice").is_hidden()
 
 
 @pytest.mark.browser
@@ -1610,7 +1712,7 @@ def test_workspace_header_controls_are_centered_over_their_panes(browser_graph):
 
 
 @pytest.mark.browser
-def test_phone_header_fits_search_and_controls_in_two_rows(browser_graph):
+def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     page = browser_graph.page
 
     page.set_viewport_size({"width": 390, "height": 800})
@@ -1619,12 +1721,13 @@ def test_phone_header_fits_search_and_controls_in_two_rows(browser_graph):
 
     header = page.locator("#kg_app_header").bounding_box()
     workspace = page.locator("#kg_workspace").bounding_box()
-    assert header["height"] <= 88
+    assert header["height"] <= 48
     assert abs(workspace["y"] - header["height"]) <= 1
     assert not page.locator(".kg-shell-graph-control label").is_visible()
     assert not page.locator(".kg-shell-details-control label").is_visible()
-    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Full graph"
-    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full details"
+    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Full"
+    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Details"
+    assert page.locator("#kg_clear_selection").inner_text() == "Clear"
 
     metrics = page.evaluate(
         """() => {
@@ -1659,6 +1762,124 @@ def test_phone_header_fits_search_and_controls_in_two_rows(browser_graph):
 
     assert not overlaps
     assert all(rect["x"] >= 0 and rect["right"] <= 390 for rect in metrics.values())
+    assert max(rect["y"] for rect in metrics.values()) - min(
+        rect["y"] for rect in metrics.values()
+    ) <= 2
+
+    page.set_viewport_size({"width": 900, "height": 800})
+    page.wait_for_function(
+        "() => document.querySelector('#kg_display_scope_select option:checked').textContent === 'Full graph'"
+    )
+    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full details"
+    assert page.locator("#kg_clear_selection").inner_text() == "Clear selection"
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit context"
+
+
+@pytest.mark.browser
+def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(browser_graph.output_path.as_uri() + "?phone-context", wait_until="domcontentloaded")
+    page.wait_for_selector("#kg_graph_context_panel")
+
+    ids = [
+        "kg_context_preset_select",
+        "kg_context_depth_select",
+        "kg_fit_select",
+        "kg_fit_apply",
+    ]
+    boxes = [page.locator(f"#{control_id}").bounding_box() for control_id in ids]
+    assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) <= 2
+    assert all(box["x"] >= 0 and box["x"] + box["width"] <= 390 for box in boxes)
+    assert not page.locator(
+        '.kg-graph-context-controls label:not(.kg-visually-hidden)'
+    ).first.is_visible()
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
+
+    summary = page.locator("#kg_context_summary")
+    assert "Foundations" not in summary.inner_text()
+    assert "Full graph" not in summary.inner_text()
+    assert summary.evaluate("element => element.scrollWidth <= element.clientWidth")
+    assert page.locator("#kg_graph_context_panel").bounding_box()["height"] <= 70
+
+
+@pytest.mark.browser
+def test_phone_context_status_and_representation_actions_share_one_row(browser_graph):
+    page = browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 800})
+    browser_graph.click_concept("2.1")
+    point = page.evaluate(
+        """() => {
+          const position = network.getPositions(["2.1"])["2.1"];
+          const dom = network.canvasToDOM(position);
+          const rect = network.canvas.frame.canvas.getBoundingClientRect();
+          return {x: rect.left + dom.x, y: rect.top + dom.y};
+        }"""
+    )
+    page.evaluate(
+        """async point => {
+          const canvas = network.canvas.frame.canvas;
+          const fire = type => canvas.dispatchEvent(new PointerEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            clientX: point.x,
+            clientY: point.y,
+            pointerId: 8,
+            pointerType: "touch",
+            isPrimary: true
+          }));
+          fire("pointerdown");
+          fire("pointerup");
+          await new Promise(resolve => setTimeout(resolve, 120));
+          fire("pointerdown");
+          fire("pointerup");
+        }""",
+        point,
+    )
+
+    summary = page.locator("#kg_context_summary")
+    selected_action = page.locator("#kg_expand_selected_module")
+    context_action = page.locator("#kg_expand_context_modules")
+    selected_action.wait_for(state="visible")
+    context_action.wait_for(state="visible")
+    boxes = [item.bounding_box() for item in (summary, selected_action, context_action)]
+
+    assert summary.inner_text().endswith("context concepts")
+    assert "·" not in summary.inner_text()
+    assert selected_action.inner_text() == "Expand module"
+    assert context_action.inner_text().startswith("Expand ")
+    assert context_action.inner_text().endswith(" folded")
+    assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) <= 6
+
+
+@pytest.mark.browser
+def test_phone_concept_masthead_shares_one_row_until_contents_open(repo_browser_graph):
+    page = repo_browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(
+        repo_browser_graph.output_path.as_uri() + "#concept-sr.wave_equation",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_selector("#info_panel .concept-title")
+
+    title = page.locator("#info_panel .concept-title")
+    module_chip = page.locator("#info_panel .concept-module-chip")
+    toc = page.locator("#info_panel .concept-toc")
+    toc_summary = toc.locator(":scope > summary")
+    boxes = [item.bounding_box() for item in (title, module_chip, toc_summary)]
+
+    assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) <= 6
+    assert module_chip.inner_text() == "SR-5"
+    assert module_chip.get_attribute("aria-label") == "Module: SR-5 Field Dynamics and Radiation"
+    assert not toc.evaluate("element => element.open")
+
+    title_row_bottom = page.locator("#info_panel .concept-title-row").bounding_box()["y"] + (
+        page.locator("#info_panel .concept-title-row").bounding_box()["height"]
+    )
+    toc_summary.click()
+    assert toc.evaluate("element => element.open")
+    assert toc.locator(".concept-toc-links").bounding_box()["y"] >= title_row_bottom
 
 
 @pytest.mark.browser
@@ -2595,7 +2816,10 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 7
-    assert "The user model has been simplified and improved" in dialog.inner_text()
+    assert (
+        "The user model has been simplified and the UI space optimised for phones"
+        in dialog.inner_text()
+    )
     assert "Study" in dialog.inner_text()
     assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 2
     assert "Covers Special Relativity and General Relativity" in dialog.inner_text()

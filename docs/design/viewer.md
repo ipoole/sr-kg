@@ -56,7 +56,9 @@ module state.
 The details selector controls presentation only: Full details, Folded, Core,
 Maths, Context, Practice, or Hide details. Scrolling and opening sections update
 only details navigation. Reading filters are content filters, not difficulty or
-mastery levels.
+mastery levels. Pinching or using Ctrl/Cmd-wheel over the details pane scales
+both its text and its concept or module graphics without changing the graph
+camera.
 
 ## Camera and layout
 

@@ -16,6 +16,8 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     caption = figure.locator("figcaption")
     assert "light cone" in caption.inner_text().lower()
     svg_box = figure.locator('svg[viewBox="0 0 768 480"]').bounding_box()
+    body_box = figure.locator('.concept-figure-body').bounding_box()
+    assert 0.47 <= svg_box['width'] / body_box['width'] <= 0.53
     caption_box = caption.bounding_box()
     assert caption_box['y'] >= svg_box['y'] + svg_box['height'] + 4
     assert page.locator('#info_panel .concept-toc a').filter(has_text="Module graphic").count() == 1

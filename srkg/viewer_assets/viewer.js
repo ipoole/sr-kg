@@ -235,6 +235,7 @@
         var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
         var infoPanelPinchState = null;
+        var infoPanelGraphicZoomBasePx = null;
         var readingMode = "full";
         var activeConceptSectionTargetId = null;
         var currentConceptTocItems = [];
@@ -244,6 +245,7 @@
         var backlinksFullTreeEnabled = false;
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
+        var contextNoticeTimer = null;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -589,9 +591,25 @@
         function showContextNotice(message, kind) {
           var notice = document.getElementById("kg_context_notice");
           if (!notice) { return; }
+          if (contextNoticeTimer !== null) {
+            clearTimeout(contextNoticeTimer);
+            contextNoticeTimer = null;
+          }
           notice.textContent = message || "";
           notice.hidden = !message;
           notice.setAttribute("data-kind", kind || "info");
+        }
+
+        function showTransientContextNotice(message, kind, duration) {
+          showContextNotice(message, kind);
+          contextNoticeTimer = setTimeout(function() {
+            var notice = document.getElementById("kg_context_notice");
+            if (notice && notice.getAttribute("data-kind") === kind) {
+              notice.hidden = true;
+              notice.textContent = "";
+            }
+            contextNoticeTimer = null;
+          }, duration || 2800);
         }
 
         function updateLayoutFromDrag(params) {
@@ -2760,11 +2778,22 @@
         function setInfoPanelFontSize(sizePx) {
           var graphView = currentGraphView();
           var panel = document.getElementById("info_panel");
+          if (!Number.isFinite(infoPanelGraphicZoomBasePx)) {
+            infoPanelGraphicZoomBasePx = currentInfoPanelFontSize();
+          }
           var nextSize = Math.max(
             kgInfoPanelConfig.textZoomMinPx,
             Math.min(kgInfoPanelConfig.textZoomMaxPx, Number(sizePx))
           );
           panel.style.fontSize = nextSize + "px";
+          panel.style.setProperty(
+            "--kg-details-graphic-width",
+            String((nextSize / infoPanelGraphicZoomBasePx) * 100) + "%"
+          );
+          panel.style.setProperty(
+            "--kg-details-module-graphic-width",
+            String((nextSize / infoPanelGraphicZoomBasePx) * 50) + "%"
+          );
           schedulePanelContentRefresh();
           preserveGraphView(graphView);
         }
@@ -3531,19 +3560,31 @@
         }
 
         function renderConceptMasthead(nodeId, concept, tocItems) {
+          var conceptTitleText = conceptDisplayId(nodeId) + " " +
+            searchDisplayText(concept.label || "");
           var html = '<div class="concept-sticky-header">';
           html += '<div class="concept-title-row">';
-          html += '<h2 class="concept-title">' +
+          html += '<h2 class="concept-title" title="' + escapeHtml(conceptTitleText) + '">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
           html += renderContentReadCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
           var owningModule = owningModuleId ? getModule(owningModuleId) : null;
           if (owningModule) {
+            var owningModuleTitle = searchDisplayText(owningModule.title || owningModuleId);
+            var compactModuleMatch = owningModuleTitle.match(/^(?:SR|GR|MATHS)-\d+/);
+            var compactModuleTitle = compactModuleMatch
+              ? compactModuleMatch[0]
+              : owningModuleTitle;
             html += '<button type="button" class="concept-module-chip module-detail-link" data-module-id="' +
-              escapeHtml(owningModuleId) + '">' +
+              escapeHtml(owningModuleId) + '" aria-label="Module: ' +
+              escapeHtml(owningModuleTitle) + '" title="Module: ' +
+              escapeHtml(owningModuleTitle) + '">' +
               '<span class="concept-module-chip-label">Module</span> ' +
-              renderConceptText(owningModule.title || owningModuleId) +
+              '<span class="concept-module-chip-full">' +
+              renderConceptText(owningModule.title || owningModuleId) + "</span>" +
+              '<span class="concept-module-chip-compact">' +
+              escapeHtml(compactModuleTitle) + "</span>" +
               "</button>";
           }
           html += "</div>";
@@ -5719,6 +5760,52 @@
           return "1 hop";
         }
 
+        function phoneViewportActive() {
+          var width = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          return width <= 550 || window.matchMedia("(max-width: 550px)").matches;
+        }
+
+        function setResponsiveOptionLabels(selectId, labels, compact) {
+          var select = document.getElementById(selectId);
+          if (!select) { return; }
+          Array.prototype.forEach.call(select.options, function(option) {
+            var label = labels[option.value];
+            if (label) { option.textContent = compact ? label[1] : label[0]; }
+          });
+        }
+
+        function updateResponsiveControlLabels() {
+          var compact = phoneViewportActive();
+          setResponsiveOptionLabels("kg_display_scope_select", {
+            full: ["Full graph", "Full"],
+            context: ["Context only", "Context"],
+            hidden: ["Hidden", "Hidden"]
+          }, compact);
+          setResponsiveOptionLabels("kg_details_view_select", {
+            hide: ["Hide details", "Hide"],
+            full: ["Full details", "Details"],
+            folded: ["Folded", "Folded"],
+            core: ["Core", "Core"],
+            maths: ["Maths", "Maths"],
+            context: ["Context", "Context"],
+            practice: ["Practice", "Practice"]
+          }, compact);
+          setResponsiveOptionLabels("kg_fit_select", {
+            reveal: ["Reveal selection", "Reveal"],
+            selection: ["Fit selection", "Selection"],
+            context: ["Fit context", "Context"],
+            displayed: ["Fit displayed graph", "All"]
+          }, compact);
+          var clearButton = document.getElementById("kg_clear_selection");
+          if (clearButton) { clearButton.textContent = compact ? "Clear" : "Clear selection"; }
+          var expandSelected = document.getElementById("kg_expand_selected_module");
+          if (expandSelected) {
+            expandSelected.textContent = compact
+              ? "Expand module"
+              : "Expand selected concept's module";
+          }
+        }
+
         function updateGraphContextControls() {
           var selection = viewerSelectionSnapshot();
           var context = computeViewerContext(selection, viewerState.contextRule);
@@ -5739,6 +5826,17 @@
           if (customEdit) {
             customEdit.hidden = viewerState.contextRule.preset !== ContextPreset.CUSTOM;
           }
+          var representedCount = 0;
+          var representedModuleCount = 0;
+          foldedModuleIdList().forEach(function(moduleId) {
+            var moduleRepresentsContext = false;
+            moduleMemberIds(getModule(moduleId)).forEach(function(id) {
+              if (!context.keep[String(id)]) { return; }
+              representedCount += 1;
+              moduleRepresentsContext = true;
+            });
+            if (moduleRepresentsContext) { representedModuleCount += 1; }
+          });
           if (representationActions) {
             var selectedConceptModule = selection.type === "concept"
               ? moduleIdForConcept(selection.id)
@@ -5746,7 +5844,20 @@
             var selectedConceptIsFolded = Boolean(
               selectedConceptModule && selectedModuleIsFolded(selectedConceptModule)
             );
-            representationActions.hidden = !selectedConceptIsFolded;
+            var expandSelected = document.getElementById("kg_expand_selected_module");
+            var expandContext = document.getElementById("kg_expand_context_modules");
+            var contextCanExpand = !noSelection && representedCount > 0;
+            expandSelected.hidden = !selectedConceptIsFolded;
+            expandContext.hidden = !contextCanExpand;
+            expandContext.textContent = "Expand " + String(representedCount) + " folded";
+            var expandContextLabel =
+              "Expand " + String(representedCount) + " context concept" +
+              (representedCount === 1 ? "" : "s") + " represented by " +
+              String(representedModuleCount) + " folded module" +
+              (representedModuleCount === 1 ? "" : "s");
+            expandContext.setAttribute("aria-label", expandContextLabel);
+            expandContext.title = expandContextLabel;
+            representationActions.hidden = !selectedConceptIsFolded && !contextCanExpand;
             representationActions.setAttribute(
               "data-selected-module-id",
               selectedConceptIsFolded ? selectedConceptModule : ""
@@ -5760,12 +5871,6 @@
           } else if (selection.type === "module") {
             selectionLabel = getModule(selection.id).title || selection.id;
           }
-          var representedCount = 0;
-          foldedModuleIdList().forEach(function(moduleId) {
-            moduleMemberIds(getModule(moduleId)).forEach(function(id) {
-              if (context.keep[String(id)]) { representedCount += 1; }
-            });
-          });
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
             : viewerState.displayScope === DisplayScope.HIDDEN ? "Graph hidden" : "Full graph";
@@ -5773,7 +5878,7 @@
           summary.setAttribute("data-context-preset", viewerState.contextRule.preset);
           summary.setAttribute("data-context-depth", viewerState.contextRule.depth);
           summary.setAttribute("data-display-scope", viewerState.displayScope);
-          summary.textContent = selectionLabel + " · " +
+          var fullSummary = selectionLabel + " · " +
             contextPresetLabel(viewerState.contextRule.preset) + " · " +
             contextDepthLabel(viewerState.contextRule.depth) + " · " + scopeLabel +
             " — " + String(context.nodeIds.length) + " context concept" +
@@ -5781,6 +5886,10 @@
             String(context.edgeIds.length) + " context edge" +
             (context.edgeIds.length === 1 ? "" : "s") +
             (representedCount ? "; " + String(representedCount) + " represented by folded modules" : "");
+          summary.textContent = String(context.nodeIds.length) + " context concept" +
+            (context.nodeIds.length === 1 ? "" : "s");
+          summary.title = fullSummary;
+          summary.setAttribute("aria-label", fullSummary);
         }
 
         function setViewerContextRule(rule) {
@@ -7145,6 +7254,8 @@
         }
 
         function handleViewportResize() {
+          updateResponsiveControlLabels();
+          updateGraphContextControls();
           applyWorkspaceSplit();
           scheduleViewportRefresh();
         }
@@ -7702,6 +7813,9 @@
           ? network.canvas.frame.canvas
           : null;
         var lockedDragProbe = null;
+        var lockedLayoutNoticeShown = false;
+        var touchTapStart = null;
+        var lastTouchTap = null;
         function graphNodeAtPointerEvent(e) {
           if (!network.getNodeAt || viewerState.displayScope === DisplayScope.HIDDEN) { return null; }
           var surface = graphCanvas || graphContainer;
@@ -7716,10 +7830,14 @@
         (graphCanvas || graphContainer).addEventListener("pointermove", function(e) {
           if (!lockedDragProbe || layoutDraggingEnabled()) { return; }
           if (Math.hypot(e.clientX - lockedDragProbe.x, e.clientY - lockedDragProbe.y) < 5) { return; }
-          showContextNotice(
-            "Layout is locked — enable layout editing under Tools → Layouts.",
-            "layout-locked"
-          );
+          if (!lockedLayoutNoticeShown) {
+            lockedLayoutNoticeShown = true;
+            showTransientContextNotice(
+              "Layout locked — enable editing in Tools → Layouts.",
+              "layout-locked",
+              2800
+            );
+          }
           lockedDragProbe = null;
         }, true);
         ["pointerup", "pointercancel", "pointerleave"].forEach(function(eventName) {
@@ -7727,6 +7845,57 @@
             lockedDragProbe = null;
           }, true);
         });
+        (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
+          if (e.pointerType !== "touch") { return; }
+          touchTapStart = {
+            pointerId: e.pointerId,
+            x: e.clientX,
+            y: e.clientY,
+            time: Date.now()
+          };
+        }, true);
+        (graphCanvas || graphContainer).addEventListener("pointerup", function(e) {
+          if (e.pointerType !== "touch" || !touchTapStart ||
+              touchTapStart.pointerId !== e.pointerId) {
+            return;
+          }
+          var now = Date.now();
+          var moved = Math.hypot(e.clientX - touchTapStart.x, e.clientY - touchTapStart.y);
+          var duration = now - touchTapStart.time;
+          touchTapStart = null;
+          if (moved > 14 || duration > 400) {
+            lastTouchTap = null;
+            return;
+          }
+          var isDoubleTap = Boolean(
+            lastTouchTap &&
+            now - lastTouchTap.time <= 500 &&
+            Math.hypot(e.clientX - lastTouchTap.x, e.clientY - lastTouchTap.y) <= 28
+          );
+          lastTouchTap = {x: e.clientX, y: e.clientY, time: now};
+          if (!isDoubleTap) { return; }
+          lastTouchTap = null;
+          var surface = graphCanvas || graphContainer;
+          var rect = surface.getBoundingClientRect();
+          var nodeId = graphNodeAtPointerEvent(e);
+          var handled = nodeId ? handleGraphNodeDoubleClick(nodeId) : false;
+          if (!handled) {
+            handled = collapseExpandedModuleAtDomPoint({
+              x: e.clientX - rect.left,
+              y: e.clientY - rect.top
+            });
+          }
+          if (handled) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+        (graphCanvas || graphContainer).addEventListener("pointercancel", function(e) {
+          if (e.pointerType === "touch") {
+            touchTapStart = null;
+            lastTouchTap = null;
+          }
+        }, true);
         (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
           if (viewerState.displayScope === DisplayScope.HIDDEN || !network.getNodeAt) { return; }
           var rect = (graphCanvas || graphContainer).getBoundingClientRect();
@@ -8376,6 +8545,7 @@
         migrateUserNotesState();
         renderNotesOverview();
         renderStudyScorecard();
+        updateResponsiveControlLabels();
         updateGraphViewControls();
         updateDetailsViewControls();
         renderCustomContextRules();

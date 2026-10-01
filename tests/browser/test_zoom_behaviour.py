@@ -123,6 +123,61 @@ def test_ctrl_wheel_over_details_zooms_details_text_without_graph_zoom(browser_g
 
 
 @pytest.mark.browser
+def test_ctrl_wheel_over_details_zooms_concept_graphic(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept("2.2")
+    graphic = page.locator("#info_panel .concept-graphic svg")
+    initial_box = graphic.bounding_box()
+
+    page.locator("#info_panel").evaluate(
+        """panel => panel.dispatchEvent(new WheelEvent("wheel", {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          deltaY: -600
+        }))"""
+    )
+
+    page.wait_for_function(
+        """initialWidth => {
+          const graphic = document.querySelector("#info_panel .concept-graphic svg");
+          return graphic && graphic.getBoundingClientRect().width > initialWidth * 1.03;
+        }""",
+        arg=initial_box["width"],
+    )
+    assert graphic.bounding_box()["height"] > initial_box["height"] * 1.03
+
+
+@pytest.mark.browser
+def test_ctrl_wheel_over_details_zooms_module_graphic(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="sr.spacetime_foundations"]'
+    ).click()
+    graphic = page.locator("#info_panel .module-graphic > svg")
+    initial_box = graphic.bounding_box()
+
+    page.locator("#info_panel").evaluate(
+        """panel => panel.dispatchEvent(new WheelEvent("wheel", {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          deltaY: -600
+        }))"""
+    )
+
+    page.wait_for_function(
+        """initialWidth => {
+          const graphic = document.querySelector("#info_panel .module-graphic > svg");
+          return graphic && graphic.getBoundingClientRect().width > initialWidth * 1.03;
+        }""",
+        arg=initial_box["width"],
+    )
+    assert graphic.bounding_box()["height"] > initial_box["height"] * 1.03
+
+
+@pytest.mark.browser
 def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser_graph):
     page = browser_graph.page
     page.evaluate(
@@ -174,16 +229,18 @@ def test_ctrl_wheel_over_controls_zooms_controls_text_without_graph_zoom(browser
 
 
 @pytest.mark.browser
-def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_graph):
+def test_touch_pinch_over_details_zooms_text_and_graphic_without_graph_zoom(browser_graph):
     page = browser_graph.page
-    browser_graph.click_concept("2.1")
-    page.wait_for_selector('#info_panel[data-concept-id="2.1"]')
+    browser_graph.click_concept("2.2")
+    page.wait_for_selector('#info_panel[data-concept-id="2.2"]')
 
     if not page.evaluate("""() => Boolean(window.TouchEvent && window.Touch)"""):
         pytest.skip("Browser does not support synthetic TouchEvent construction")
 
     initial_scale = page.evaluate("() => network.getScale()")
     initial_font_size = _font_size(page, "#info_panel")
+    graphic = page.locator("#info_panel .concept-graphic > svg")
+    initial_graphic_box = graphic.bounding_box()
 
     move_was_cancelled = page.locator("#info_panel").evaluate(
         """panel => {
@@ -235,6 +292,7 @@ def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_
     assert move_was_cancelled
     assert abs(zoomed_scale - initial_scale) < 0.001
     assert zoomed_font_size > initial_font_size
+    assert graphic.bounding_box()["width"] > initial_graphic_box["width"]
 
     page.locator("#info_panel").evaluate(
         """panel => {
@@ -280,3 +338,4 @@ def test_touch_pinch_over_details_zooms_details_text_without_graph_zoom(browser_
 
     reduced_font_size = _font_size(page, "#info_panel")
     assert reduced_font_size < zoomed_font_size
+    assert graphic.bounding_box()["width"] < initial_graphic_box["width"] * 1.01
