@@ -11,6 +11,7 @@ from pathlib import Path
 from html import escape as html_escape
 
 from srkg.config import (
+    CONTENT_READ_PROGRESS_STORAGE_KEY,
     EDGE_HOVER_WIDTH,
     GLOBAL_LAYOUT_STORAGE_KEY,
     INFO_PANEL_FONT_SIZE_PX,
@@ -29,6 +30,7 @@ from srkg.config import (
     NODE_LABEL_WIDTH,
     NOTE_EDITING_STORAGE_KEY,
     SPLASH_DISMISSED_STORAGE_KEY,
+    STUDY_PROGRESS_STORAGE_KEY,
     USER_NOTES_STORAGE_KEY,
 )
 
@@ -170,5 +172,7 @@ def _viewer_runtime_config() -> dict[str, object]:
             "noteEditing": NOTE_EDITING_STORAGE_KEY,
             "splashDismissed": SPLASH_DISMISSED_STORAGE_KEY,
             "globalLayout": GLOBAL_LAYOUT_STORAGE_KEY,
+            "studyProgress": STUDY_PROGRESS_STORAGE_KEY,
+            "contentReadProgress": CONTENT_READ_PROGRESS_STORAGE_KEY,
         },
     }

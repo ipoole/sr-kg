@@ -110,6 +110,7 @@ def _write_root_kb(tmp_path, *, content_body: str, question_prompt: str = "Quest
             "  edges: edges.csv",
             "  content_blocks: content_blocks.csv",
             "  study_questions: study_questions.csv",
+            "  study_question_options: study_question_options.csv",
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "",
@@ -142,10 +143,14 @@ def _write_root_kb(tmp_path, *, content_body: str, question_prompt: str = "Quest
             "concept_id": "2.1",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": question_prompt,
             "answer": question_answer,
         },
     ]).to_csv(tmp_path / "study_questions.csv", index=False)
+    pd.DataFrame(columns=[
+        "question_id", "option_id", "sequence", "text", "is_correct",
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
     pd.DataFrame(columns=[
         "reference_id",
         "reference_type",
@@ -226,6 +231,7 @@ def test_load_validation_issues_from_root_reports_content_block_integrity(tmp_pa
             "  edges: edges.csv",
             "  content_blocks: content_blocks.csv",
             "  study_questions: study_questions.csv",
+            "  study_question_options: study_question_options.csv",
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "",
@@ -240,10 +246,14 @@ def test_load_validation_issues_from_root_reports_content_block_integrity(tmp_pa
             "concept_id": "1.1",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Question?",
             "answer": "",
         },
     ]).to_csv(tmp_path / "study_questions.csv", index=False)
+    pd.DataFrame(columns=[
+        "question_id", "option_id", "sequence", "text", "is_correct",
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
     pd.DataFrame([
         {
             "block_id": "missing.definition",

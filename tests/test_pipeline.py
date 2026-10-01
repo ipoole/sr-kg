@@ -17,6 +17,7 @@ def _write_manifest(root):
             "  edge_key: edges_key.csv",
             "  content_blocks: content_blocks.csv",
             "  study_questions: study_questions.csv",
+            "  study_question_options: study_question_options.csv",
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "  graphic_designs: concept_graphic_designs.csv",
@@ -87,10 +88,14 @@ def _write_minimal_root(root, *, alpha_body="Definition with </script> marker"):
             "concept_id": "test.alpha",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Alpha question?",
             "answer": "Alpha answer.",
         },
     ]).to_csv(root / "study_questions.csv", index=False)
+    pd.DataFrame(columns=[
+        "question_id", "option_id", "sequence", "text", "is_correct",
+    ]).to_csv(root / "study_question_options.csv", index=False)
     pd.DataFrame([
         {
             "reference_id": "ref.alpha",

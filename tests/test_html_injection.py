@@ -46,6 +46,8 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert 'var publishedLayout = {"schema_version": 1, "revision": "unpublished", "concepts": {}, "modules": {}};' in injected
     assert "var edgeKey = {};" in injected
     assert '"globalLayout": "srkg.layout.global.v1"' in injected
+    assert '"studyProgress": "srkg.studyProgress.v1"' in injected
+    assert '"contentReadProgress": "srkg.contentReadProgress.v1"' in injected
 
 
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():

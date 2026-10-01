@@ -224,7 +224,14 @@
         var userNotesStorageKey = kgStorageKeys.userNotes;
         var noteEditingStorageKey = kgStorageKeys.noteEditing;
         var splashDismissedStorageKey = kgStorageKeys.splashDismissed;
+        var studyProgressStorageKey = kgStorageKeys.studyProgress || "srkg.studyProgress.v1";
+        var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
+          "srkg.contentReadProgress.v1";
         var userNotesState = loadUserNotes();
+        var studyQuestionIndex = buildStudyQuestionIndex();
+        var studyProgressState = loadStudyProgress();
+        var contentBlockIndex = buildContentBlockIndex();
+        var contentReadProgressState = loadContentReadProgress();
         var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
         var infoPanelPinchState = null;
@@ -1042,6 +1049,9 @@
           if (options.id) {
             attrs += ' data-note-id="' + escapeHtml(options.id) + '"';
           }
+          if (options.contentBlockId) {
+            attrs += ' data-content-block-id="' + escapeHtml(options.contentBlockId) + '"';
+          }
           if (options.open) {
             attrs += " open";
           }
@@ -1129,6 +1139,252 @@
             return false;
           }
         }
+
+        function buildStudyQuestionIndex() {
+          var index = {};
+          Object.keys(conceptData || {}).forEach(function(conceptId) {
+            var concept = conceptData[conceptId] || {};
+            var questions = Array.isArray(concept.study_questions)
+              ? concept.study_questions
+              : [];
+            questions.forEach(function(question) {
+              var questionId = String(question && question.question_id || "");
+              if (!questionId) { return; }
+              index[questionId] = {
+                conceptId: String(conceptId),
+                question: question
+              };
+            });
+          });
+          return index;
+        }
+
+        function buildContentBlockIndex() {
+          var index = {};
+          function addBlocks(ownerType, ownerId, blocks) {
+            (Array.isArray(blocks) ? blocks : []).forEach(function(block) {
+              var blockId = String(block && block.block_id || "");
+              if (!blockId) { return; }
+              index[blockId] = {
+                ownerType: ownerType,
+                ownerId: String(ownerId),
+                title: String(block.title || "")
+              };
+            });
+          }
+          Object.keys(conceptData || {}).forEach(function(conceptId) {
+            addBlocks("concept", conceptId, conceptData[conceptId].content_blocks);
+          });
+          Object.keys(moduleData || {}).forEach(function(moduleId) {
+            addBlocks("module", moduleId, moduleData[moduleId].content_blocks);
+          });
+          return index;
+        }
+
+        function emptyContentReadProgress() {
+          return {version: 1, blocks: {}};
+        }
+
+        function loadContentReadProgress() {
+          var raw = safeLocalStorageGet(contentReadProgressStorageKey);
+          if (!raw) { return emptyContentReadProgress(); }
+          try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || Number(parsed.version) !== 1 ||
+                !parsed.blocks || typeof parsed.blocks !== "object") {
+              return emptyContentReadProgress();
+            }
+            var state = emptyContentReadProgress();
+            Object.keys(parsed.blocks).forEach(function(blockId) {
+              if (contentBlockIndex[blockId] && parsed.blocks[blockId] === true) {
+                state.blocks[blockId] = true;
+              }
+            });
+            return state;
+          } catch (err) {
+            return emptyContentReadProgress();
+          }
+        }
+
+        function saveContentReadProgress() {
+          return safeLocalStorageSet(
+            contentReadProgressStorageKey,
+            JSON.stringify(contentReadProgressState)
+          );
+        }
+
+        function contentOwnerBlockIds(ownerType, ownerId) {
+          ownerType = String(ownerType || "");
+          ownerId = String(ownerId || "");
+          return Object.keys(contentBlockIndex).filter(function(blockId) {
+            var block = contentBlockIndex[blockId];
+            return block.ownerType === ownerType && block.ownerId === ownerId;
+          });
+        }
+
+        function contentOwnerReadComplete(ownerType, ownerId) {
+          var blockIds = contentOwnerBlockIds(ownerType, ownerId);
+          return blockIds.length > 0 && blockIds.every(function(blockId) {
+            return contentReadProgressState.blocks[blockId] === true;
+          });
+        }
+
+        function renderContentReadCompletionIndicator(ownerType, ownerId) {
+          var complete = contentOwnerReadComplete(ownerType, ownerId);
+          return '<span class="content-read-complete-indicator" role="img"' +
+            ' aria-label="All content blocks read" title="All content blocks read"' +
+            ' data-content-owner-type="' + escapeHtml(ownerType) + '"' +
+            ' data-content-owner-id="' + escapeHtml(ownerId) + '"' +
+            (complete ? "" : " hidden") + ">✓</span>";
+        }
+
+        function updateContentReadCompletionIndicators() {
+          document.querySelectorAll(".content-read-complete-indicator").forEach(
+            function(indicator) {
+              indicator.hidden = !contentOwnerReadComplete(
+                indicator.getAttribute("data-content-owner-type"),
+                indicator.getAttribute("data-content-owner-id")
+              );
+            }
+          );
+        }
+
+        function setContentBlockRead(blockId, isRead) {
+          blockId = String(blockId || "");
+          if (!contentBlockIndex[blockId]) { return false; }
+          if (isRead) {
+            contentReadProgressState.blocks[blockId] = true;
+          } else {
+            delete contentReadProgressState.blocks[blockId];
+          }
+          saveContentReadProgress();
+          updateContentReadCompletionIndicators();
+          return true;
+        }
+
+        window.kgContentReadProgress = {
+          storageKey: contentReadProgressStorageKey,
+          isRead: function(blockId) {
+            return contentReadProgressState.blocks[String(blockId || "")] === true;
+          },
+          setRead: setContentBlockRead
+        };
+
+        function emptyStudyProgress() {
+          return {version: 1, questions: {}};
+        }
+
+        function normalizeStudyProgressEntry(entry) {
+          if (!entry || typeof entry !== "object") { return null; }
+          var attemptCount = Number(entry.attemptCount);
+          var outcome = String(entry.lastOutcome || "");
+          var attemptedAt = String(entry.lastAttemptAt || "");
+          if (!Number.isInteger(attemptCount) || attemptCount < 1) { return null; }
+          if (["correct", "incorrect", "unknown"].indexOf(outcome) === -1) {
+            return null;
+          }
+          if (!attemptedAt || Number.isNaN(Date.parse(attemptedAt))) { return null; }
+          return {
+            attemptCount: attemptCount,
+            lastOutcome: outcome,
+            lastAttemptAt: attemptedAt
+          };
+        }
+
+        function loadStudyProgress() {
+          var raw = safeLocalStorageGet(studyProgressStorageKey);
+          if (!raw) { return emptyStudyProgress(); }
+          try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || Number(parsed.version) !== 1 ||
+                !parsed.questions || typeof parsed.questions !== "object") {
+              return emptyStudyProgress();
+            }
+            var state = emptyStudyProgress();
+            Object.keys(parsed.questions).forEach(function(questionId) {
+              if (!studyQuestionIndex[questionId]) { return; }
+              var entry = normalizeStudyProgressEntry(parsed.questions[questionId]);
+              if (entry) { state.questions[questionId] = entry; }
+            });
+            return state;
+          } catch (err) {
+            return emptyStudyProgress();
+          }
+        }
+
+        function copyStudyProgress(value) {
+          return JSON.parse(JSON.stringify(value));
+        }
+
+        function saveStudyProgress() {
+          return safeLocalStorageSet(
+            studyProgressStorageKey,
+            JSON.stringify(studyProgressState)
+          );
+        }
+
+        function announceStudyProgressChange(questionId) {
+          try {
+            window.dispatchEvent(new CustomEvent("kg:study-progress-changed", {
+              detail: {questionId: questionId || ""}
+            }));
+          } catch (err) {
+            // Progress remains usable in older browsers without CustomEvent.
+          }
+        }
+
+        function recordStudyAttempt(questionId, outcome, attemptedAt) {
+          questionId = String(questionId || "");
+          outcome = String(outcome || "");
+          if (!studyQuestionIndex[questionId] ||
+              ["correct", "incorrect", "unknown"].indexOf(outcome) === -1) {
+            return null;
+          }
+          var previous = studyProgressState.questions[questionId];
+          var date = attemptedAt ? new Date(attemptedAt) : new Date();
+          if (Number.isNaN(date.getTime())) { date = new Date(); }
+          var entry = {
+            attemptCount: previous ? previous.attemptCount + 1 : 1,
+            lastOutcome: outcome,
+            lastAttemptAt: date.toISOString()
+          };
+          studyProgressState.questions[questionId] = entry;
+          saveStudyProgress();
+          announceStudyProgressChange(questionId);
+          return copyStudyProgress(entry);
+        }
+
+        function resetStudyQuestion(questionId) {
+          questionId = String(questionId || "");
+          if (!Object.prototype.hasOwnProperty.call(studyProgressState.questions, questionId)) {
+            return false;
+          }
+          delete studyProgressState.questions[questionId];
+          saveStudyProgress();
+          announceStudyProgressChange(questionId);
+          return true;
+        }
+
+        function resetAllStudyProgress() {
+          studyProgressState = emptyStudyProgress();
+          saveStudyProgress();
+          announceStudyProgressChange("");
+          return true;
+        }
+
+        window.kgStudyProgress = {
+          storageKey: studyProgressStorageKey,
+          getState: function() {
+            return copyStudyProgress(studyProgressState);
+          },
+          getQuestion: function(questionId) {
+            var entry = studyProgressState.questions[String(questionId || "")];
+            return entry ? copyStudyProgress(entry) : null;
+          },
+          recordAttempt: recordStudyAttempt,
+          resetQuestion: resetStudyQuestion,
+          resetAll: resetAllStudyProgress
+        };
 
         function loadUserNotes() {
           var raw = safeLocalStorageGet(userNotesStorageKey);
@@ -1484,6 +1740,106 @@
               warning +
               "</button>";
           }).join("");
+        }
+
+        function attemptedStudyQuestions() {
+          return Object.keys(studyProgressState.questions).map(function(questionId) {
+            var indexed = studyQuestionIndex[questionId];
+            if (!indexed) { return null; }
+            var concept = getConcept(indexed.conceptId) || {};
+            var questions = Array.isArray(concept.study_questions)
+              ? concept.study_questions
+              : [];
+            return {
+              questionId: questionId,
+              conceptId: indexed.conceptId,
+              concept: concept,
+              question: indexed.question,
+              questionNumber: questions.indexOf(indexed.question) + 1,
+              progress: studyProgressState.questions[questionId]
+            };
+          }).filter(Boolean).sort(function(a, b) {
+            return String(b.progress.lastAttemptAt).localeCompare(
+              String(a.progress.lastAttemptAt)
+            );
+          });
+        }
+
+        function studyQuestionPrompt(question) {
+          return searchDisplayText(
+            question && (question.prompt || question.question) || "Question"
+          );
+        }
+
+        function renderStudyScorecard() {
+          var summary = document.getElementById("kg_study_summary");
+          var list = document.getElementById("kg_study_list");
+          var badge = document.getElementById("kg_study_badge");
+          var resetAll = document.getElementById("kg_study_reset_all");
+          if (!summary || !list || !badge || !resetAll) { return; }
+
+          var entries = attemptedStudyQuestions();
+          var correctCount = entries.filter(function(entry) {
+            return entry.progress.lastOutcome === "correct";
+          }).length;
+          if (entries.length === 0) {
+            summary.textContent = "No questions attempted yet.";
+            list.innerHTML = "";
+            badge.textContent = "";
+            resetAll.hidden = true;
+            return;
+          }
+
+          summary.textContent = correctCount + " correct out of " +
+            entries.length + " attempted";
+          badge.textContent = correctCount + "/" + entries.length;
+          resetAll.hidden = false;
+          list.innerHTML = entries.map(function(entry) {
+            var outcome = entry.progress.lastOutcome;
+            var attempts = entry.progress.attemptCount;
+            var conceptLabel = conceptDisplayId(entry.conceptId) +
+              (entry.concept.label ? " " + searchDisplayText(entry.concept.label) : "");
+            var questionLabel = entry.questionNumber > 0
+              ? "Question " + entry.questionNumber + ": "
+              : "";
+            return '<div class="kg-study-row" data-question-id="' +
+              escapeHtml(entry.questionId) + '">' +
+              '<button type="button" class="kg-study-question-link" data-question-id="' +
+              escapeHtml(entry.questionId) + '">' +
+              '<span class="kg-study-question-concept">' + escapeHtml(conceptLabel) + "</span>" +
+              '<span class="kg-study-question-prompt">' + escapeHtml(
+                questionLabel + studyQuestionPrompt(entry.question)
+              ) + "</span>" +
+              '<span class="kg-study-question-meta" data-outcome="' +
+              escapeHtml(outcome) + '"><span aria-hidden="true">' +
+              studyOutcomeIcon(outcome) + "</span> " +
+              escapeHtml(studyOutcomeText(outcome)) + " · " + attempts + " attempt" +
+              (attempts === 1 ? "" : "s") + "</span></button>" +
+              '<button type="button" class="kg-study-reset-question" data-question-id="' +
+              escapeHtml(entry.questionId) + '" aria-label="Reset progress for ' +
+              escapeHtml(conceptLabel) + '">Reset</button></div>';
+          }).join("");
+        }
+
+        function openScorecardQuestion(questionId) {
+          var indexed = studyQuestionIndex[questionId];
+          if (!indexed) { return; }
+          setDetailsView("practice");
+          navigateToConcept(indexed.conceptId, "Selected");
+          window.requestAnimationFrame(function() {
+            var selector = '.study-question[data-question-id="' +
+              cssAttributeValueEscape(questionId) + '"]';
+            var questionCard = document.querySelector(selector);
+            if (!questionCard) { return; }
+            var section = questionCard.closest(".study-questions");
+            if (section) { section.open = true; }
+            questionCard.open = true;
+            document.querySelectorAll('.study-question[data-scorecard-target="true"]').forEach(
+              function(card) { card.removeAttribute("data-scorecard-target"); }
+            );
+            questionCard.setAttribute("data-scorecard-target", "true");
+            scrollInfoPanelTargetBelowStickyToc(questionCard);
+          });
         }
 
         function renderUserNote(note) {
@@ -3041,8 +3397,17 @@
             "</span>" +
             '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
             escapeHtml(policy.label) +
-            '"></span>' +
-            "</span>";
+            '"></span></span>' +
+            renderContentBlockReadToggle(block.block_id, title);
+        }
+
+        function renderContentBlockReadToggle(blockId, title) {
+          var checked = contentReadProgressState.blocks[String(blockId || "")] === true;
+          return '<input type="checkbox" class="content-block-read-toggle"' +
+            ' aria-label="Mark ' + escapeHtml(title) + ' as read"' +
+            ' title="Mark as read"' +
+            (checked ? " checked" : "") +
+            ">";
         }
 
         function renderContentBlock(conceptId, block) {
@@ -3057,6 +3422,7 @@
             }
             return renderFoldDown({
               anchorId: anchorId,
+              contentBlockId: block.block_id,
               className: contentBlockClassName(block, policy),
               summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
@@ -3082,6 +3448,7 @@
           });
           return renderFoldDown({
             anchorId: anchorId,
+            contentBlockId: block.block_id,
             className: contentBlockClassName(block, policy),
             open: true,
             summaryHtml: renderContentBlockHeading(block, title),
@@ -3169,6 +3536,7 @@
           html += '<h2 class="concept-title">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
+          html += renderContentReadCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
           var owningModule = owningModuleId ? getModule(owningModuleId) : null;
           if (owningModule) {
@@ -4229,6 +4597,7 @@
             }
             return renderFoldDown({
               anchorId: anchorId,
+              contentBlockId: block.block_id,
               className: contentBlockClassName(block, policy) + " module-content-block",
               summaryHtml: renderContentBlockHeading(block, title),
               bodyClass: bodyClass,
@@ -4238,6 +4607,7 @@
 
           return renderFoldDown({
             anchorId: anchorId,
+            contentBlockId: block.block_id,
             className: contentBlockClassName(block, policy) + " module-content-block",
             open: true,
             summaryHtml: renderContentBlockHeading(block, title),
@@ -4293,6 +4663,7 @@
           var html = '<div class="concept-sticky-header module-sticky-header">';
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
+          html += renderContentReadCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
@@ -6048,6 +6419,328 @@
           }
         }
 
+        function studyOutcomeText(outcome) {
+          if (outcome === "correct") { return "Correct"; }
+          if (outcome === "unknown") { return "I don’t know"; }
+          if (outcome === "incorrect") { return "Incorrect"; }
+          return "";
+        }
+
+        function studyOutcomeIcon(outcome) {
+          return outcome === "correct" ? "✓" : "✕";
+        }
+
+        function studyOutcomeFeedbackText(outcome) {
+          if (outcome === "correct") { return "Correct — nicely done."; }
+          if (outcome === "unknown") {
+            return "No problem — review the answer, then try when ready.";
+          }
+          if (outcome === "incorrect") {
+            return "Not quite — review the answer and have another go.";
+          }
+          return "";
+        }
+
+        function studyOptionResultHtml(result) {
+          var text = "";
+          if (result === "correct") { text = "✓ Correct answer"; }
+          if (result === "incorrect") { text = "✕ Your answer"; }
+          if (result === "unknown") { text = "✕ I don’t know"; }
+          return text
+            ? '<span class="study-option-result" data-outcome="' +
+              escapeHtml(result) + '">' + escapeHtml(text) + "</span>"
+            : "";
+        }
+
+        function studyQuestionStatusHtml(progress) {
+          var outcome = progress && progress.lastOutcome ? progress.lastOutcome : "";
+          if (!outcome) {
+            return '<span class="study-question-status" data-outcome=""></span>';
+          }
+          return '<span class="study-question-status" data-outcome="' +
+            escapeHtml(outcome) + '"><span aria-hidden="true">' +
+            studyOutcomeIcon(outcome) + "</span> " +
+            escapeHtml(studyOutcomeText(outcome)) + "</span>";
+        }
+
+        function automaticQuestionCorrectOption(question) {
+          var options = Array.isArray(question && question.options) ? question.options : [];
+          return options.find(function(option) { return option && option.is_correct === true; }) || null;
+        }
+
+        function automaticQuestionFeedbackHtml(question, progress) {
+          if (!progress || !progress.lastOutcome) { return ""; }
+          var answer = question && question.answer ? question.answer : "";
+          var html = '<div class="study-question-feedback">';
+          html += '<div class="study-question-result" data-outcome="' +
+            escapeHtml(progress.lastOutcome) + '"><span aria-hidden="true">' +
+            studyOutcomeIcon(progress.lastOutcome) + "</span> " +
+            escapeHtml(studyOutcomeFeedbackText(progress.lastOutcome)) + "</div>";
+          if (answer) {
+            html += renderStudyText(answer, "concept-body study-answer-body");
+          }
+          html += "</div>";
+          return html;
+        }
+
+        function renderAutomaticStudyQuestion(question, index) {
+          var questionId = String(question.question_id || "");
+          var prompt = question.prompt || question.question || "";
+          var options = Array.isArray(question.options) ? question.options : [];
+          var progress = studyProgressState.questions[questionId] || null;
+          var correctOption = automaticQuestionCorrectOption(question);
+          var inputName = "study-response-" + questionId;
+          var html = '<details class="study-question study-question-automatic" data-question-id="' +
+            escapeHtml(questionId) + '" open>';
+          html += '<summary class="study-question-heading"><span class="study-question-title">Question ' +
+            (index + 1) + "</span>" + studyQuestionStatusHtml(progress) + "</summary>";
+          html += '<div class="study-question-body">';
+          html += renderStudyText(prompt, "concept-body study-question-prompt");
+          html += '<fieldset class="study-options"><legend class="kg-visually-hidden">Choose one answer</legend>';
+          options.forEach(function(option) {
+            var optionId = String(option.option_id || "");
+            var result = progress && correctOption && optionId === String(correctOption.option_id)
+              ? "correct"
+              : "";
+            html += '<label class="study-option" data-option-id="' + escapeHtml(optionId) + '"' +
+              (result ? ' data-result="' + result + '"' : "") + ">";
+            html += '<input type="radio" name="' + escapeHtml(inputName) + '" value="' +
+              escapeHtml(optionId) + '">';
+            html += '<span class="study-option-text">' + renderConceptText(option.text || "") + "</span>";
+            html += studyOptionResultHtml(result);
+            html += "</label>";
+          });
+          html += '<label class="study-option study-option-unknown" data-option-id="__unknown__">';
+          html += '<input type="radio" name="' + escapeHtml(inputName) + '" value="__unknown__">';
+          html += '<span class="study-option-text">? — I don’t know; show me the answer</span>';
+          html += "</label></fieldset>";
+          html += '<button type="button" class="study-check-answer" disabled>Check answer</button>';
+          html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
+            automaticQuestionFeedbackHtml(question, progress) + "</div>";
+          html += "</div></details>";
+          return html;
+        }
+
+        function selfAssessedQuestionFeedbackHtml(question, progress, response, pending) {
+          if (!pending && (!progress || !progress.lastOutcome)) { return ""; }
+          var html = '<div class="study-question-feedback study-self-feedback">';
+          if (pending) {
+            html += '<div class="study-question-result study-review-prompt">' +
+              "Compare your answer, then mark it honestly.</div>";
+          } else {
+            html += '<div class="study-question-result" data-outcome="' +
+              escapeHtml(progress.lastOutcome) + '"><span aria-hidden="true">' +
+              studyOutcomeIcon(progress.lastOutcome) + "</span> " +
+              escapeHtml(studyOutcomeFeedbackText(progress.lastOutcome)) + "</div>";
+          }
+          if (response) {
+            html += '<div class="study-answer-label">Your answer</div>';
+            html += renderStudyText(response, "concept-body study-your-answer");
+          }
+          html += '<div class="study-answer-label">Model answer</div>';
+          html += renderStudyText(question.answer || "", "concept-body study-answer-body");
+          if (pending) {
+            html += '<div class="study-self-mark-actions" aria-label="Mark your answer">';
+            html += '<button type="button" class="study-self-mark" data-outcome="correct">✓ Correct</button>';
+            html += '<button type="button" class="study-self-mark" data-outcome="incorrect">✕ Incorrect</button>';
+            html += "</div>";
+          }
+          html += "</div>";
+          return html;
+        }
+
+        function renderSelfAssessedStudyQuestion(question, index) {
+          var questionId = String(question && question.question_id || "");
+          var prompt = question && (question.prompt || question.question)
+            ? (question.prompt || question.question)
+            : "";
+          if (!prompt) { return ""; }
+          var progress = studyProgressState.questions[questionId] || null;
+          var html = '<details class="study-question study-question-self-assessed" data-question-id="' +
+            escapeHtml(questionId) + '" open>';
+          html += '<summary class="study-question-heading"><span class="study-question-title">Question ' +
+            (index + 1) + "</span>" + studyQuestionStatusHtml(progress) + "</summary>";
+          html += '<div class="study-question-body">';
+          html += renderStudyText(prompt, "concept-body study-question-prompt");
+          html += '<label class="study-self-response-label">Your answer';
+          html += '<textarea class="study-self-response" rows="3"></textarea></label>';
+          html += '<div class="study-self-actions">';
+          html += '<button type="button" class="study-self-check-answer">Check answer</button>';
+          html += '<button type="button" class="study-self-unknown">? I don’t know — show answer</button>';
+          html += "</div>";
+          html += '<div class="study-response-validation" role="alert"></div>';
+          html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
+            selfAssessedQuestionFeedbackHtml(question, progress, "", false) + "</div>";
+          html += "</div></details>";
+          return html;
+        }
+
+        function studyOptionElement(card, optionId) {
+          var match = null;
+          card.querySelectorAll(".study-option").forEach(function(optionElement) {
+            if (!match && optionElement.getAttribute("data-option-id") === optionId) {
+              match = optionElement;
+            }
+          });
+          return match;
+        }
+
+        function setStudyOptionResult(optionElement, result) {
+          if (!optionElement) { return; }
+          optionElement.removeAttribute("data-result");
+          var oldResult = optionElement.querySelector(".study-option-result");
+          if (oldResult) { oldResult.remove(); }
+          if (!result) { return; }
+          optionElement.setAttribute("data-result", result);
+          optionElement.insertAdjacentHTML("beforeend", studyOptionResultHtml(result));
+        }
+
+        function applyAutomaticQuestionResult(card, question, progress, selectedOptionId) {
+          var correctOption = automaticQuestionCorrectOption(question);
+          card.querySelectorAll(".study-option").forEach(function(optionElement) {
+            setStudyOptionResult(optionElement, "");
+          });
+          if (correctOption) {
+            var correctElement = studyOptionElement(card, String(correctOption.option_id));
+            setStudyOptionResult(correctElement, "correct");
+          }
+          if (progress.lastOutcome !== "correct") {
+            var selectedElement = studyOptionElement(card, selectedOptionId);
+            if (selectedElement) {
+              setStudyOptionResult(
+                selectedElement,
+                progress.lastOutcome === "unknown" ? "unknown" : "incorrect"
+              );
+            }
+          }
+          var status = card.querySelector(".study-question-status");
+          if (status) {
+            status.setAttribute("data-outcome", progress.lastOutcome);
+            status.innerHTML = '<span aria-hidden="true">' +
+              studyOutcomeIcon(progress.lastOutcome) + "</span> " +
+              escapeHtml(studyOutcomeText(progress.lastOutcome));
+          }
+          var feedbackHost = card.querySelector(".study-feedback-host");
+          if (feedbackHost) {
+            feedbackHost.innerHTML = automaticQuestionFeedbackHtml(question, progress);
+          }
+          var button = card.querySelector(".study-check-answer");
+          if (button) { button.disabled = true; }
+          card.setAttribute("data-last-submitted-option-id", selectedOptionId);
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([card]).catch(function(err) {
+              console.warn("MathJax study feedback typesetting failed:", err);
+            });
+          }
+        }
+
+        function submitAutomaticStudyQuestion(card) {
+          if (!card) { return; }
+          var questionId = String(card.getAttribute("data-question-id") || "");
+          var indexed = studyQuestionIndex[questionId];
+          var question = indexed && indexed.question;
+          var selected = card.querySelector('input[type="radio"]:checked');
+          if (!question || !selected) { return; }
+          var selectedOptionId = String(selected.value || "");
+          if (card.getAttribute("data-last-submitted-option-id") === selectedOptionId) {
+            return;
+          }
+          var correctOption = automaticQuestionCorrectOption(question);
+          var outcome = selectedOptionId === "__unknown__"
+            ? "unknown"
+            : (correctOption && selectedOptionId === String(correctOption.option_id)
+              ? "correct"
+              : "incorrect");
+          var progress = recordStudyAttempt(questionId, outcome);
+          if (!progress) { return; }
+          applyAutomaticQuestionResult(card, question, progress, selectedOptionId);
+        }
+
+        function setStudyCardStatus(card, outcome) {
+          var status = card && card.querySelector(".study-question-status");
+          if (!status) { return; }
+          status.setAttribute("data-outcome", outcome || "");
+          status.innerHTML = outcome
+            ? '<span aria-hidden="true">' + studyOutcomeIcon(outcome) + "</span> " +
+              escapeHtml(studyOutcomeText(outcome))
+            : "";
+        }
+
+        function typesetStudyCard(card) {
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([card]).catch(function(err) {
+              console.warn("MathJax study feedback typesetting failed:", err);
+            });
+          }
+        }
+
+        function renderSelfAssessedFeedback(card, question, progress, response, pending) {
+          var feedbackHost = card.querySelector(".study-feedback-host");
+          if (feedbackHost) {
+            feedbackHost.innerHTML = selfAssessedQuestionFeedbackHtml(
+              question,
+              progress,
+              response,
+              pending
+            );
+          }
+          typesetStudyCard(card);
+        }
+
+        function submitSelfAssessedQuestion(card) {
+          if (!card) { return; }
+          var questionId = String(card.getAttribute("data-question-id") || "");
+          var indexed = studyQuestionIndex[questionId];
+          var question = indexed && indexed.question;
+          var textarea = card.querySelector(".study-self-response");
+          var response = textarea ? String(textarea.value || "").trim() : "";
+          var validation = card.querySelector(".study-response-validation");
+          if (!question || !textarea) { return; }
+          if (!response) {
+            if (validation) { validation.textContent = "Enter an answer, or choose I don’t know."; }
+            textarea.focus();
+            return;
+          }
+          if (validation) { validation.textContent = ""; }
+          card.setAttribute("data-pending-response", response);
+          renderSelfAssessedFeedback(card, question, null, response, true);
+          var checkButton = card.querySelector(".study-self-check-answer");
+          if (checkButton) { checkButton.disabled = true; }
+        }
+
+        function markSelfAssessedQuestion(card, outcome) {
+          if (!card || ["correct", "incorrect"].indexOf(outcome) === -1) { return; }
+          var questionId = String(card.getAttribute("data-question-id") || "");
+          var indexed = studyQuestionIndex[questionId];
+          var question = indexed && indexed.question;
+          var response = String(card.getAttribute("data-pending-response") || "");
+          if (!question || !response) { return; }
+          var progress = recordStudyAttempt(questionId, outcome);
+          if (!progress) { return; }
+          card.removeAttribute("data-pending-response");
+          setStudyCardStatus(card, outcome);
+          renderSelfAssessedFeedback(card, question, progress, response, false);
+          var unknownButton = card.querySelector(".study-self-unknown");
+          if (unknownButton) { unknownButton.disabled = true; }
+        }
+
+        function submitUnknownSelfAssessedQuestion(card) {
+          if (!card) { return; }
+          var questionId = String(card.getAttribute("data-question-id") || "");
+          var indexed = studyQuestionIndex[questionId];
+          var question = indexed && indexed.question;
+          if (!question) { return; }
+          var progress = recordStudyAttempt(questionId, "unknown");
+          if (!progress) { return; }
+          card.removeAttribute("data-pending-response");
+          setStudyCardStatus(card, "unknown");
+          renderSelfAssessedFeedback(card, question, progress, "", false);
+          var checkButton = card.querySelector(".study-self-check-answer");
+          var unknownButton = card.querySelector(".study-self-unknown");
+          if (checkButton) { checkButton.disabled = true; }
+          if (unknownButton) { unknownButton.disabled = true; }
+        }
+
         function showConcept(nodeId, options) {
           options = options || {};
           hideConceptPreview(true);
@@ -6092,19 +6785,11 @@
               (readingMode === "practice" ? " open" : "") + ">";
             html += "<summary>Study Questions</summary>";
             studyQuestions.forEach(function(item, index) {
-              var question = item && (item.prompt || item.question) ? (item.prompt || item.question) : "";
-              var answer = item && item.answer ? item.answer : "";
-              if (!question) { return; }
-              html += '<section class="study-question">';
-              html += '<div class="study-question-title">Question ' + (index + 1) + "</div>";
-              html += renderStudyText(question, "concept-body study-question-prompt");
-              if (answer) {
-                html += '<details class="study-answer">';
-                html += "<summary>Answer</summary>";
-                html += renderStudyText(answer, "concept-body study-answer-body");
-                html += "</details>";
+              if (item && item.marking_mode === "automatic") {
+                html += renderAutomaticStudyQuestion(item, index);
+              } else {
+                html += renderSelfAssessedStudyQuestion(item, index);
               }
-              html += "</section>";
             });
             html += "</details>";
           }
@@ -7133,6 +7818,30 @@
           setDetailsView(e.target.value);
         });
 
+        document.getElementById("kg_study_list").addEventListener("click", function(e) {
+          var reset = e.target.closest(".kg-study-reset-question");
+          if (reset) {
+            e.preventDefault();
+            var resetQuestionId = reset.getAttribute("data-question-id");
+            var resetIndexed = studyQuestionIndex[resetQuestionId];
+            if (resetStudyQuestion(resetQuestionId) && resetIndexed &&
+                activeNodeId === resetIndexed.conceptId) {
+              refreshActiveConcept();
+            }
+            return;
+          }
+          var questionLink = e.target.closest(".kg-study-question-link");
+          if (!questionLink) { return; }
+          e.preventDefault();
+          openScorecardQuestion(questionLink.getAttribute("data-question-id"));
+        });
+        document.getElementById("kg_study_reset_all").addEventListener("click", function() {
+          if (!window.confirm("Reset all study progress?")) { return; }
+          resetAllStudyProgress();
+          refreshActiveConcept();
+        });
+        window.addEventListener("kg:study-progress-changed", renderStudyScorecard);
+
         document.getElementById("kg_context_preset_select").addEventListener("change", function(e) {
           var preset = e.target.value;
           var customPanel = document.getElementById("kg_custom_context");
@@ -7390,6 +8099,39 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var selfCheckButton = e.target.closest(".study-self-check-answer");
+          if (selfCheckButton) {
+            e.preventDefault();
+            submitSelfAssessedQuestion(selfCheckButton.closest(".study-question-self-assessed"));
+            return;
+          }
+
+          var selfUnknownButton = e.target.closest(".study-self-unknown");
+          if (selfUnknownButton) {
+            e.preventDefault();
+            submitUnknownSelfAssessedQuestion(
+              selfUnknownButton.closest(".study-question-self-assessed")
+            );
+            return;
+          }
+
+          var selfMarkButton = e.target.closest(".study-self-mark");
+          if (selfMarkButton) {
+            e.preventDefault();
+            markSelfAssessedQuestion(
+              selfMarkButton.closest(".study-question-self-assessed"),
+              selfMarkButton.getAttribute("data-outcome")
+            );
+            return;
+          }
+
+          var studyCheckButton = e.target.closest(".study-check-answer");
+          if (studyCheckButton) {
+            e.preventDefault();
+            submitAutomaticStudyQuestion(studyCheckButton.closest(".study-question-automatic"));
+            return;
+          }
+
           var relationshipGraphButton = e.target.closest(".concept-relationship-show-graph");
           if (relationshipGraphButton) {
             e.preventDefault();
@@ -7495,6 +8237,35 @@
         });
 
         document.getElementById("info_panel").addEventListener("change", function(e) {
+          var readToggle = e.target.closest(".content-block-read-toggle");
+          if (readToggle) {
+            var contentBlock = readToggle.closest("[data-content-block-id]");
+            if (contentBlock) {
+              setContentBlockRead(
+                contentBlock.getAttribute("data-content-block-id"),
+                readToggle.checked
+              );
+            }
+            return;
+          }
+
+          var studyResponse = e.target.closest(
+            '.study-question-automatic input[type="radio"]'
+          );
+          if (studyResponse) {
+            var studyCard = studyResponse.closest(".study-question-automatic");
+            var studyButton = studyCard ? studyCard.querySelector(".study-check-answer") : null;
+            if (studyButton) { studyButton.disabled = false; }
+            if (studyCard) {
+              studyCard.querySelectorAll(
+                '.study-option[data-result="incorrect"], .study-option[data-result="unknown"]'
+              ).forEach(function(optionElement) {
+                optionElement.removeAttribute("data-result");
+              });
+            }
+            return;
+          }
+
           var derivedFromFullTree = e.target.closest(".concept-derived-from-full-tree");
           if (derivedFromFullTree) {
             var derivedSection = derivedFromFullTree.closest(".concept-derived-from");
@@ -7518,6 +8289,34 @@
         });
 
         document.getElementById("info_panel").addEventListener("input", function(e) {
+          var studyResponse = e.target.closest(".study-self-response");
+          if (studyResponse) {
+            var studyCard = studyResponse.closest(".study-question-self-assessed");
+            var questionId = studyCard
+              ? String(studyCard.getAttribute("data-question-id") || "")
+              : "";
+            var indexed = studyQuestionIndex[questionId];
+            var question = indexed && indexed.question;
+            var progress = studyProgressState.questions[questionId] || null;
+            var checkButton = studyCard
+              ? studyCard.querySelector(".study-self-check-answer")
+              : null;
+            var unknownButton = studyCard
+              ? studyCard.querySelector(".study-self-unknown")
+              : null;
+            var validation = studyCard
+              ? studyCard.querySelector(".study-response-validation")
+              : null;
+            if (checkButton) { checkButton.disabled = false; }
+            if (unknownButton) { unknownButton.disabled = false; }
+            if (validation) { validation.textContent = ""; }
+            if (studyCard && question && studyCard.hasAttribute("data-pending-response")) {
+              studyCard.removeAttribute("data-pending-response");
+              renderSelfAssessedFeedback(studyCard, question, progress, "", false);
+            }
+            return;
+          }
+
           if (!noteEditingEnabled) { return; }
           var titleInput = e.target.closest(".user-note-title-input");
           if (titleInput) {
@@ -7576,6 +8375,7 @@
         buildModuleList();
         migrateUserNotesState();
         renderNotesOverview();
+        renderStudyScorecard();
         updateGraphViewControls();
         updateDetailsViewControls();
         renderCustomContextRules();

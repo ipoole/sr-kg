@@ -77,6 +77,26 @@ class ModuleContentBlock:
 
 
 @dataclass(frozen=True)
+class StudyQuestionOption:
+    """One authored response option for an automatically marked question."""
+
+    question_id: str
+    option_id: str
+    sequence: int
+    text: str
+    is_correct: bool = False
+
+    def to_viewer_data(self) -> dict[str, object]:
+        return {
+            "question_id": self.question_id,
+            "option_id": self.option_id,
+            "sequence": self.sequence,
+            "text": self.text,
+            "is_correct": self.is_correct,
+        }
+
+
+@dataclass(frozen=True)
 class StudyQuestion:
     """A question/answer pair attached to a concept."""
 
@@ -86,6 +106,8 @@ class StudyQuestion:
     prompt: str
     answer: str = ""
     question_type: str = ""
+    marking_mode: str = "self_assessed"
+    options: tuple[StudyQuestionOption, ...] = ()
 
     def to_viewer_data(self) -> dict[str, object]:
         return {
@@ -93,9 +115,11 @@ class StudyQuestion:
             "concept_id": self.concept_id,
             "sequence": self.sequence,
             "question_type": self.question_type,
+            "marking_mode": self.marking_mode,
             "prompt": self.prompt,
             "question": self.prompt,
             "answer": self.answer,
+            "options": [option.to_viewer_data() for option in self.options],
         }
 
 

@@ -64,6 +64,12 @@
           <button id="kg_layout_reset" type="button">Reset to published layout</button>
         </div>
       </details>
+      <details id="kg_study_section" class="kg-fold">
+        <summary>Study <span id="kg_study_badge" class="kg-study-badge"></span></summary>
+        <div id="kg_study_summary" aria-live="polite"></div>
+        <div id="kg_study_list"></div>
+        <button id="kg_study_reset_all" type="button" hidden>Reset all study progress</button>
+      </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>
         <label class="kg-notes-toggle">
@@ -154,6 +160,7 @@
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
       <h2 id="kg_splash_title">Viewer quick start</h2>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
+      <p>The user model has been simplified and improved.<span class="kg-status-badge">NEW</span></p>
       <div class="kg-splash-feature-grid">
         <section>
           <h3>Start with the map</h3>
@@ -199,8 +206,17 @@
           </ul>
         </section>
         <section>
+          <h3>Study<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>Practice questions reveal their answers only after an attempt or “I don't know”.</li>
+            <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
+            <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
+            <li>Blue ticks record read content blocks and completed concepts or modules.</li>
+          </ul>
+        </section>
+        <section>
           <h3>Content status</h3>
-          <p>Modules are available. General Relativity remains work in progress: its current text is authored to seed level.</p>
+          <p>Covers Special Relativity and General Relativity.</p>
         </section>
       </div>
       <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex.</p>

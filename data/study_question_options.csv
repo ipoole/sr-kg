@@ -1,0 +1,714 @@
+question_id,option_id,sequence,text,is_correct
+sr.constancy_of_speed_of_light.q3,sr.constancy_of_speed_of_light.q3.a,10,"\(600\,\mathrm m\)",true
+sr.constancy_of_speed_of_light.q3,sr.constancy_of_speed_of_light.q3.b,20,"\(60\,\mathrm m\)",false
+sr.constancy_of_speed_of_light.q3,sr.constancy_of_speed_of_light.q3.c,30,"\(6000\,\mathrm m\)",false
+sr.constancy_of_speed_of_light.q3,sr.constancy_of_speed_of_light.q3.d,40,"\(1.5\times10^{14}\,\mathrm m\)",false
+sr.principle_of_locality.q4,sr.principle_of_locality.q4.a,20,"\(3.0\,\mu\mathrm s\)",true
+sr.principle_of_locality.q4,sr.principle_of_locality.q4.b,10,"\(0.30\,\mu\mathrm s\)",false
+sr.principle_of_locality.q4,sr.principle_of_locality.q4.c,30,"\(30\,\mu\mathrm s\)",false
+sr.principle_of_locality.q4,sr.principle_of_locality.q4.d,40,Zero; the response is instantaneous,false
+sr.lorentz_transformations.q3,sr.lorentz_transformations.q3.a,30,"\(ct'=9.5\,\mathrm m,\ x'=-2.5\,\mathrm m\)",true
+sr.lorentz_transformations.q3,sr.lorentz_transformations.q3.b,10,"\(ct'=15.5\,\mathrm m,\ x'=12.5\,\mathrm m\)",false
+sr.lorentz_transformations.q3,sr.lorentz_transformations.q3.c,20,"\(ct'=7.6\,\mathrm m,\ x'=-2.0\,\mathrm m\)",false
+sr.lorentz_transformations.q3,sr.lorentz_transformations.q3.d,40,"\(ct'=9.5\,\mathrm m,\ x'=2.5\,\mathrm m\)",false
+sr.spacetime_interval.q3,sr.spacetime_interval.q3.a,40,\(\Delta s^2=0\): lightlike,true
+sr.spacetime_interval.q3,sr.spacetime_interval.q3.b,10,\(\Delta s^2=0\): timelike,false
+sr.spacetime_interval.q3,sr.spacetime_interval.q3.c,20,"\(\Delta s^2=128\,\mathrm{m^2}\): timelike",false
+sr.spacetime_interval.q3,sr.spacetime_interval.q3.d,30,"\(\Delta s^2=-100\,\mathrm{m^2}\): spacelike",false
+sr.spacetime_interval.q4,sr.spacetime_interval.q4.a,10,"\(119\,\mathrm{m^2}\): timelike",true
+sr.spacetime_interval.q4,sr.spacetime_interval.q4.b,20,"\(169\,\mathrm{m^2}\): timelike",false
+sr.spacetime_interval.q4,sr.spacetime_interval.q4.c,30,"\(-119\,\mathrm{m^2}\): spacelike",false
+sr.spacetime_interval.q4,sr.spacetime_interval.q4.d,40,"\(7\,\mathrm{m^2}\): timelike",false
+sr.metric_tensor.q3,sr.metric_tensor.q3.a,20,"\(16\,\mathrm{m^2}\): timelike",true
+sr.metric_tensor.q3,sr.metric_tensor.q3.b,10,"\(34\,\mathrm{m^2}\): timelike",false
+sr.metric_tensor.q3,sr.metric_tensor.q3.c,30,"\(-16\,\mathrm{m^2}\): spacelike",false
+sr.metric_tensor.q3,sr.metric_tensor.q3.d,40,"\(8\,\mathrm{m^2}\): timelike",false
+sr.light_cone.q3,sr.light_cone.q3.a,30,"\(-24\,\mathrm{m^2}\): outside the light cone",true
+sr.light_cone.q3,sr.light_cone.q3.b,10,"\(24\,\mathrm{m^2}\): inside the light cone",false
+sr.light_cone.q3,sr.light_cone.q3.c,20,\(0\): on the light cone,false
+sr.light_cone.q3,sr.light_cone.q3.d,40,"\(-2\,\mathrm{m^2}\): on the light cone",false
+sr.light_cone.q4,sr.light_cone.q4.a,40,"Yes; \(c\Delta t=600\,\mathrm m\), equal to the spatial separation",true
+sr.light_cone.q4,sr.light_cone.q4.b,10,"No; \(c\Delta t=60\,\mathrm m\)",false
+sr.light_cone.q4,sr.light_cone.q4.c,20,No; the event is timelike,false
+sr.light_cone.q4,sr.light_cone.q4.d,30,No; the event is on the past light cone,false
+sr.minkowski_diagram.q3,sr.minkowski_diagram.q3.a,10,"\(x=4\,\mathrm m\)",true
+sr.minkowski_diagram.q3,sr.minkowski_diagram.q3.b,20,"\(x=16\,\mathrm m\)",false
+sr.minkowski_diagram.q3,sr.minkowski_diagram.q3.c,30,"\(x=8\,\mathrm m\)",false
+sr.minkowski_diagram.q3,sr.minkowski_diagram.q3.d,40,"\(x=0.5\,\mathrm m\)",false
+sr.proper_time.q3,sr.proper_time.q3.a,20,"\(8\,\mathrm s\)",true
+sr.proper_time.q3,sr.proper_time.q3.b,10,"\(12.5\,\mathrm s\)",false
+sr.proper_time.q3,sr.proper_time.q3.c,30,"\(6\,\mathrm s\)",false
+sr.proper_time.q3,sr.proper_time.q3.d,40,"\(10\,\mathrm s\)",false
+sr.proper_time.q4,sr.proper_time.q4.a,30,\(d\tau=4\),true
+sr.proper_time.q4,sr.proper_time.q4.b,10,\(d\tau=8\),false
+sr.proper_time.q4,sr.proper_time.q4.c,20,\(d\tau=\sqrt{34}\),false
+sr.proper_time.q4,sr.proper_time.q4.d,40,\(d\tau=2\),false
+sr.time_dilation.q2,sr.time_dilation.q2.a,40,"\(9\,\mathrm s\)",true
+sr.time_dilation.q2,sr.time_dilation.q2.b,10,"\(25\,\mathrm s\)",false
+sr.time_dilation.q2,sr.time_dilation.q2.c,20,"\(12\,\mathrm s\)",false
+sr.time_dilation.q2,sr.time_dilation.q2.d,30,"\(15\,\mathrm s\)",false
+sr.length_contraction.q2,sr.length_contraction.q2.a,10,"\(80\,\mathrm m\)",true
+sr.length_contraction.q2,sr.length_contraction.q2.b,20,"\(125\,\mathrm m\)",false
+sr.length_contraction.q2,sr.length_contraction.q2.c,30,"\(60\,\mathrm m\)",false
+sr.length_contraction.q2,sr.length_contraction.q2.d,40,"\(100\,\mathrm m\)",false
+sr.four_vectors.q3,sr.four_vectors.q3.a,20,\(0\): the vector is null,true
+sr.four_vectors.q3,sr.four_vectors.q3.b,10,\(50\): the vector is timelike,false
+sr.four_vectors.q3,sr.four_vectors.q3.c,30,\(-50\): the vector is spacelike,false
+sr.four_vectors.q3,sr.four_vectors.q3.d,40,\(16\): the vector is timelike,false
+sr.four_vectors.q4,sr.four_vectors.q4.a,30,\(A_\mu B^\mu=2\),true
+sr.four_vectors.q4,sr.four_vectors.q4.b,10,\(A_\mu B^\mu=10\),false
+sr.four_vectors.q4,sr.four_vectors.q4.c,20,\(A_\mu B^\mu=-2\),false
+sr.four_vectors.q4,sr.four_vectors.q4.d,40,\(A_\mu B^\mu=24\),false
+sr.position_four_vector.q4,sr.position_four_vector.q4.a,40,"\(x^\mu=(1.2,0.8,0,0)\,\mathrm m\)",true
+sr.position_four_vector.q4,sr.position_four_vector.q4.b,10,"\(x^\mu=(12,0.8,0,0)\,\mathrm m\)",false
+sr.position_four_vector.q4,sr.position_four_vector.q4.c,20,"\(x^\mu=(0.12,0.8,0,0)\,\mathrm m\)",false
+sr.position_four_vector.q4,sr.position_four_vector.q4.d,30,"\(x^\mu=(4.0,0.8,0,0)\,\mathrm m\)",false
+sr.position_four_vector.q5,sr.position_four_vector.q5.a,10,"\(7\,\mathrm{m^2}\): timelike",true
+sr.position_four_vector.q5,sr.position_four_vector.q5.b,20,"\(25\,\mathrm{m^2}\): timelike",false
+sr.position_four_vector.q5,sr.position_four_vector.q5.c,30,"\(-7\,\mathrm{m^2}\): spacelike",false
+sr.position_four_vector.q5,sr.position_four_vector.q5.d,40,"\(16\,\mathrm{m^2}\): timelike",false
+sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.a,20,"\(U^\mu/c=(1.25,0.75,0,0)\)",true
+sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.b,10,"\(U^\mu/c=(1.25,0.60,0,0)\)",false
+sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.c,30,"\(U^\mu/c=(0.80,0.75,0,0)\)",false
+sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.d,40,"\(U^\mu/c=(1,0.60,0,0)\)",false
+sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.a,30,\(U_\mu U^\mu/c^2=1\),true
+sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.b,10,\(U_\mu U^\mu/c^2=2.125\),false
+sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.c,20,\(U_\mu U^\mu/c^2=0.5\),false
+sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.d,40,\(U_\mu U^\mu/c^2=-1\),false
+sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.a,40,"\(E=2.5,\ |\mathbf p|=1.5\)",true
+sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.b,10,"\(E=1.6,\ |\mathbf p|=1.5\)",false
+sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.c,20,"\(E=2.5,\ |\mathbf p|=1.2\)",false
+sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.d,30,"\(E=2,\ |\mathbf p|=0.6\)",false
+sr.momentum_four_vector.q4,sr.momentum_four_vector.q4.a,10,\(m=2\),true
+sr.momentum_four_vector.q4,sr.momentum_four_vector.q4.b,20,\(m=4\),false
+sr.momentum_four_vector.q4,sr.momentum_four_vector.q4.c,30,\(m=\sqrt{8.5}\),false
+sr.momentum_four_vector.q4,sr.momentum_four_vector.q4.d,40,\(m=1\),false
+sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.a,20,"\(1.0\,\mathrm{kg}\)",true
+sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.b,10,"\(3.0\times10^8\,\mathrm{kg}\)",false
+sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.c,30,"\(9.0\times10^{16}\,\mathrm{kg}\)",false
+sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.d,40,"\(0.50\,\mathrm{kg}\)",false
+sr.lagrangian.q4,sr.lagrangian.q4.a,30,\(L=4\),true
+sr.lagrangian.q4,sr.lagrangian.q4.b,10,\(L=14\),false
+sr.lagrangian.q4,sr.lagrangian.q4.c,20,\(L=1\),false
+sr.lagrangian.q4,sr.lagrangian.q4.d,40,\(L=-4\),false
+sr.canonical_momentum.q3,sr.canonical_momentum.q3.a,40,\(p=12\),true
+sr.canonical_momentum.q3,sr.canonical_momentum.q3.b,10,\(p=7\),false
+sr.canonical_momentum.q3,sr.canonical_momentum.q3.c,20,\(p=24\),false
+sr.canonical_momentum.q3,sr.canonical_momentum.q3.d,30,\(p=\tfrac34\),false
+sr.canonical_momentum.q4,sr.canonical_momentum.q4.a,10,\(p_{\rm can}=11\),true
+sr.canonical_momentum.q4,sr.canonical_momentum.q4.b,20,\(p_{\rm can}=1\),false
+sr.canonical_momentum.q4,sr.canonical_momentum.q4.c,30,\(p_{\rm can}=30\),false
+sr.canonical_momentum.q4,sr.canonical_momentum.q4.d,40,\(p_{\rm can}=6\),false
+sr.scalar_field.q4,sr.scalar_field.q4.a,20,\(\phi=10\),true
+sr.scalar_field.q4,sr.scalar_field.q4.b,10,\(\phi=14\),false
+sr.scalar_field.q4,sr.scalar_field.q4.c,30,\(\phi=7\),false
+sr.scalar_field.q4,sr.scalar_field.q4.d,40,\(\phi=24\),false
+sr.field_lagrangian.q4,sr.field_lagrangian.q4.a,30,\(S=15\),true
+sr.field_lagrangian.q4,sr.field_lagrangian.q4.b,10,\(S=8\),false
+sr.field_lagrangian.q4,sr.field_lagrangian.q4.c,20,\(S=\tfrac35\),false
+sr.field_lagrangian.q4,sr.field_lagrangian.q4.d,40,\(S=3\),false
+sr.electric_field.q4,sr.electric_field.q4.a,40,\(E_x=2\),true
+sr.electric_field.q4,sr.electric_field.q4.b,10,\(E_x=-2\),false
+sr.electric_field.q4,sr.electric_field.q4.c,20,\(E_x=10-2x\),false
+sr.electric_field.q4,sr.electric_field.q4.d,30,\(E_x=0\),false
+sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.a,10,"\(\mathbf F=(46,0,0)\)",true
+sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.b,20,"\(\mathbf F=(6,40,0)\)",false
+sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.c,30,"\(\mathbf F=(23,0,0)\)",false
+sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.d,40,"\(\mathbf F=(-34,0,0)\)",false
+sr.wave_equation.q3,sr.wave_equation.q3.a,20,"\(\omega=6.0\times10^8\,\mathrm{s^{-1}}\)",true
+sr.wave_equation.q3,sr.wave_equation.q3.b,10,"\(\omega=1.5\times10^8\,\mathrm{s^{-1}}\)",false
+sr.wave_equation.q3,sr.wave_equation.q3.c,30,"\(\omega=6.0\times10^{16}\,\mathrm{s^{-1}}\)",false
+sr.wave_equation.q3,sr.wave_equation.q3.d,40,"\(\omega=3.0\times10^8\,\mathrm{s^{-1}}\)",false
+gr.metric_tensor.q3,gr.metric_tensor.q3.a,30,\(ds^2=3\): timelike,true
+gr.metric_tensor.q3,gr.metric_tensor.q3.b,10,\(ds^2=5\): timelike,false
+gr.metric_tensor.q3,gr.metric_tensor.q3.c,20,\(ds^2=-3\): spacelike,false
+gr.metric_tensor.q3,gr.metric_tensor.q3.d,40,\(ds^2=1\): null,false
+gr.inverse_metric.q3,gr.inverse_metric.q3.a,40,"\(\operatorname{diag}(1/4,-1/9)\)",true
+gr.inverse_metric.q3,gr.inverse_metric.q3.b,10,"\(\operatorname{diag}(4,-9)\)",false
+gr.inverse_metric.q3,gr.inverse_metric.q3.c,20,"\(\operatorname{diag}(-1/4,1/9)\)",false
+gr.inverse_metric.q3,gr.inverse_metric.q3.d,30,"\(\operatorname{diag}(1/2,-1/3)\)",false
+gr.volume_element.q3,gr.volume_element.q3.a,10,\(3\),true
+gr.volume_element.q3,gr.volume_element.q3.b,20,\(9\),false
+gr.volume_element.q3,gr.volume_element.q3.c,30,\(-3\),false
+gr.volume_element.q3,gr.volume_element.q3.d,40,\(1/3\),false
+gr.line_element.q3,gr.line_element.q3.a,20,\(ds^2=8\),true
+gr.line_element.q3,gr.line_element.q3.b,10,\(ds^2=10\),false
+gr.line_element.q3,gr.line_element.q3.c,30,\(ds^2=-8\),false
+gr.line_element.q3,gr.line_element.q3.d,40,\(ds^2=2\),false
+gr.proper_time.q3,gr.proper_time.q3.a,30,\(d\tau=2\),true
+gr.proper_time.q3,gr.proper_time.q3.b,10,\(d\tau=4\),false
+gr.proper_time.q3,gr.proper_time.q3.c,20,\(d\tau=16\),false
+gr.proper_time.q3,gr.proper_time.q3.d,40,\(d\tau=1/2\),false
+gr.metric_signature.q3,gr.metric_signature.q3.a,40,Timelike,true
+gr.metric_signature.q3,gr.metric_signature.q3.b,10,Null,false
+gr.metric_signature.q3,gr.metric_signature.q3.c,20,Spacelike,false
+gr.metric_signature.q3,gr.metric_signature.q3.d,30,The classification is convention-independent but unknowable,false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.a,10,\(\Gamma^1{}_{20}=3\),true
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.b,20,\(\Gamma^1{}_{20}=-3\),false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.c,30,\(\Gamma^1{}_{20}=0\),false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.d,40,It is unconstrained,false
+gr.four_velocity.q3,gr.four_velocity.q3.a,20,\(g_{\mu\nu}u^\mu u^\nu=1\),true
+gr.four_velocity.q3,gr.four_velocity.q3.b,10,\(g_{\mu\nu}u^\mu u^\nu=0\),false
+gr.four_velocity.q3,gr.four_velocity.q3.c,30,\(g_{\mu\nu}u^\mu u^\nu=-1\),false
+gr.four_velocity.q3,gr.four_velocity.q3.d,40,\(g_{\mu\nu}u^\mu u^\nu=c\),false
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.a,30,\(R=-1\),true
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.b,10,\(R=5\),false
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.c,20,\(R=1\),false
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.d,40,\(R=-5\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.a,40,\(p=4\),true
+gr.equation_of_state.q3,gr.equation_of_state.q3.b,10,\(p=36\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.c,20,\(p=12\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.d,30,\(p=1/36\),false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.a,10,\(g_{00}=1.000002\),true
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.b,20,\(g_{00}=0.999998\),false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.c,30,\(g_{00}=2\times10^{-6}\),false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.d,40,\(g_{00}=1.0000002\),false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.a,20,\(\nu_B/\nu_A=0.9\),true
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.b,10,\(\nu_B/\nu_A=0.81\),false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.c,30,\(\nu_B/\nu_A=1/0.9\),false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.d,40,\(\nu_B/\nu_A=0.6561\),false
+gr.light_deflection.q3,gr.light_deflection.q3.a,30,It halves,true
+gr.light_deflection.q3,gr.light_deflection.q3.b,10,It doubles,false
+gr.light_deflection.q3,gr.light_deflection.q3.c,20,It falls by a factor of four,false
+gr.light_deflection.q3,gr.light_deflection.q3.d,40,It is unchanged,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.a,40,It halves,true
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.b,10,It doubles,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.c,20,It falls by a factor of four,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.d,30,It is unchanged,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.a,10,It doubles,true
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.b,20,It halves,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.c,30,It increases by a factor of four,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.d,40,It is unchanged,false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.a,20,It increases by a factor of \(64\),true
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.b,10,It increases by a factor of \(6\),false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.c,30,It increases by a factor of \(2\),false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.d,40,It decreases by a factor of \(64\),false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.a,30,It becomes \(1/8\) as large,true
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.b,10,It becomes \(1/4\) as large,false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.c,20,It becomes \(1/2\) as large,false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.d,40,It becomes \(1/16\) as large,false
+gr.proper_time.q4,gr.proper_time.q4.a,40,"\(8\,\mathrm s\)",true
+gr.proper_time.q4,gr.proper_time.q4.b,10,"\(12.5\,\mathrm s\)",false
+gr.proper_time.q4,gr.proper_time.q4.c,20,"\(6\,\mathrm s\)",false
+gr.proper_time.q4,gr.proper_time.q4.d,30,"\(10\,\mathrm s\)",false
+gr.four_velocity.q4,gr.four_velocity.q4.a,10,\(v/c=\sqrt3/2\),true
+gr.four_velocity.q4,gr.four_velocity.q4.b,20,\(v/c=1/2\),false
+gr.four_velocity.q4,gr.four_velocity.q4.c,30,\(v/c=\sqrt2/2\),false
+gr.four_velocity.q4,gr.four_velocity.q4.d,40,\(v/c=2\),false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.a,20,It becomes \(1/729\) as large,true
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.b,10,It becomes \(1/243\) as large,false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.c,30,It becomes \(1/9\) as large,false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.d,40,It becomes \(729\) times larger,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.d,40,\(6.283\) radians,false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.a,40,1PN: \(10^{-2}\); 2PN: \(10^{-4}\),true
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.b,10,1PN: \(10^{-1}\); 2PN: \(10^{-2}\),false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.c,20,1PN: \(10^{-2}\); 2PN: \(10^{-2}\),false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.d,30,1PN: \(10^{-4}\); 2PN: \(10^{-8}\),false
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.a,10,\(\mathcal C=0.05\),true
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.b,20,\(\mathcal C=0.10\),false
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.c,30,\(\mathcal C=5\),false
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.d,40,\(\mathcal C=20\),false
+sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.a,20,"\(p^\mu=(mc,\mathbf0)\)",true
+sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.b,10,"\(p^\mu=(0,mc,0,0)\)",false
+sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.c,30,"\(p^\mu=(mc^2,\mathbf0)\)",false
+sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.d,40,"\(p^\mu=(0,\mathbf0)\)",false
+sr.field_tensor.q2,sr.field_tensor.q2.a,30,It is antisymmetric: \(F_{\mu\nu}=-F_{\nu\mu}\),true
+sr.field_tensor.q2,sr.field_tensor.q2.b,10,It is symmetric: \(F_{\mu\nu}=F_{\nu\mu}\),false
+sr.field_tensor.q2,sr.field_tensor.q2.c,20,It is diagonal in every frame,false
+sr.field_tensor.q2,sr.field_tensor.q2.d,40,It must vanish without sources,false
+sr.electric_field.q3,sr.electric_field.q3.a,40,Force per unit charge on an instantaneously stationary test charge,true
+sr.electric_field.q3,sr.electric_field.q3.b,10,Force per unit mass on any test body,false
+sr.electric_field.q3,sr.electric_field.q3.c,20,Potential energy per unit volume,false
+sr.electric_field.q3,sr.electric_field.q3.d,30,The rate of change of magnetic flux,false
+sr.electric_field.q6,sr.electric_field.q6.a,10,The field tensor \(F_{\mu\nu}\),true
+sr.electric_field.q6,sr.electric_field.q6.b,20,The electric three-vector alone,false
+sr.electric_field.q6,sr.electric_field.q6.c,30,The magnetic three-vector alone,false
+sr.electric_field.q6,sr.electric_field.q6.d,40,The scalar potential alone,false
+sr.magnetic_field.q6,sr.magnetic_field.q6.a,20,\(\nabla\cdot\mathbf B=0\),true
+sr.magnetic_field.q6,sr.magnetic_field.q6.b,10,\(\nabla\times\mathbf B=0\),false
+sr.magnetic_field.q6,sr.magnetic_field.q6.c,30,\(\nabla\cdot\mathbf E=0\),false
+sr.magnetic_field.q6,sr.magnetic_field.q6.d,40,\(\partial_t\mathbf B=0\),false
+sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.a,30,"Lorenz gauge, after Ludvig Lorenz",true
+sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.b,10,"Lorentz gauge, after Hendrik Lorentz",false
+sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.c,20,"Loren gauge, after Ludvig Loren",false
+sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.d,40,Both spellings name the same physicist,false
+sr.poynting_vector.q2,sr.poynting_vector.q2.a,40,Electromagnetic energy flux,true
+sr.poynting_vector.q2,sr.poynting_vector.q2.b,10,Electric charge density,false
+sr.poynting_vector.q2,sr.poynting_vector.q2.c,20,Magnetic flux density,false
+sr.poynting_vector.q2,sr.poynting_vector.q2.d,30,Electromagnetic scalar potential,false
+sr.em_stress_energy.q6,sr.em_stress_energy.q6.a,10,No; it repackages the existing field's energy and momentum,true
+sr.em_stress_energy.q6,sr.em_stress_energy.q6.b,20,Yes; it is an independent fifth electromagnetic field,false
+sr.em_stress_energy.q6,sr.em_stress_energy.q6.c,30,Yes; it replaces the field tensor,false
+sr.em_stress_energy.q6,sr.em_stress_energy.q6.d,40,No; it describes charge but not field energy,false
+sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.a,20,The local four-current vanishes in the region,true
+sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.b,10,The electromagnetic field vanishes in the region,false
+sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.c,30,The wave has no energy,false
+sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.d,40,No source exists anywhere in spacetime,false
+sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.a,30,Reaction to the charge's own emitted radiation,true
+sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.b,10,The force from an external electromagnetic field,false
+sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.c,20,Relativistic momentum,false
+sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.d,40,The magnetic part of the external force,false
+gr.connection.q2,gr.connection.q2.a,40,Metric compatibility and zero torsion,true
+gr.connection.q2,gr.connection.q2.b,10,Zero curvature and zero torsion,false
+gr.connection.q2,gr.connection.q2.c,20,Metric compatibility and zero curvature,false
+gr.connection.q2,gr.connection.q2.d,30,A coordinate chart and an affine parameter,false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.a,10,No; curvature may still be nonzero,true
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.b,20,Yes; zero torsion forces zero curvature,false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.c,30,"Yes, but only in four dimensions",false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.d,40,No; because torsion and curvature are identical,false
+gr.parallel_transport.q2,gr.parallel_transport.q2.a,20,\(u^\nu\nabla_\nu V^\mu=0\),true
+gr.parallel_transport.q2,gr.parallel_transport.q2.b,10,\(\partial_\nu V^\mu=0\),false
+gr.parallel_transport.q2,gr.parallel_transport.q2.c,30,\(\nabla_\mu V^\mu=0\),false
+gr.parallel_transport.q2,gr.parallel_transport.q2.d,40,\(u^\nu V_\nu=0\),false
+gr.geodesic.q2,gr.geodesic.q2.a,30,\(u^\nu\nabla_\nu u^\mu=0\),true
+gr.geodesic.q2,gr.geodesic.q2.b,10,\(\partial_\nu u^\mu=0\),false
+gr.geodesic.q2,gr.geodesic.q2.c,20,\(\nabla_\mu u^\mu=0\),false
+gr.geodesic.q2,gr.geodesic.q2.d,40,\(u_\mu u^\mu=0\),false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.a,40,Yes; coordinate acceleration can be nonzero while four-acceleration vanishes,true
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.b,10,No; free fall requires every coordinate acceleration to vanish,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.c,20,Only if spacetime is flat,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.d,30,Only for a massless body,false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.a,10,No; trace-free Weyl curvature may remain,true
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.b,20,Yes; Ricci contains all four-dimensional curvature,false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.c,30,"Yes, provided matter is absent",false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.d,40,No; because Ricci never vanishes,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.a,20,No; it is a geometric identity,true
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.b,10,Yes; it is an independent matter equation,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.c,30,Yes; it must be imposed as a gauge condition,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.d,40,No; it is a coordinate convention,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.a,30,Every timelike observer measures nonnegative local energy density,true
+gr.energy_conditions.q2,gr.energy_conditions.q2.b,10,Every observer measures zero pressure,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.c,20,The stress-energy trace must be positive,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.d,40,Energy density must be identical in every frame,false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.a,40,\(T=g^{\alpha\beta}T_{\alpha\beta}\),true
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.b,10,\(T=T_{00}\),false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.c,20,\(T=\det(T_{\mu\nu})\),false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.d,30,\(T=\nabla^\mu T_{\mu\nu}\),false
+gr.event_horizon.q3,gr.event_horizon.q3.a,10,Yes; a large regular horizon need not have singular local curvature,true
+gr.event_horizon.q3,gr.event_horizon.q3.b,20,No; every horizon is a curvature singularity,false
+gr.event_horizon.q3,gr.event_horizon.q3.c,30,Only a photon can cross it,false
+gr.event_horizon.q3,gr.event_horizon.q3.d,40,Only if the observer fires rockets outward,false
+sr.time_dilation.q1,sr.time_dilation.q1.a,10,\(\Delta t=\gamma\Delta\tau\),true
+sr.time_dilation.q1,sr.time_dilation.q1.b,20,\(\Delta t=\Delta\tau/\gamma\),false
+sr.time_dilation.q1,sr.time_dilation.q1.c,30,\(\Delta t=\Delta\tau\),false
+sr.time_dilation.q1,sr.time_dilation.q1.d,40,\(\Delta t=\gamma^2\Delta\tau\),false
+sr.length_contraction.q1,sr.length_contraction.q1.a,10,\(L=\gamma L_0\),false
+sr.length_contraction.q1,sr.length_contraction.q1.b,20,\(L=L_0/\gamma\),true
+sr.length_contraction.q1,sr.length_contraction.q1.c,30,\(L=L_0\),false
+sr.length_contraction.q1,sr.length_contraction.q1.d,40,\(L=L_0/\gamma^2\),false
+sr.principle_of_relativity.q1,sr.principle_of_relativity.q1.a,10,The lab with the smaller speed has the more correct laws,false
+sr.principle_of_relativity.q1,sr.principle_of_relativity.q1.b,20,Uniform motion does not make one inertial frame physically privileged; the same laws apply in both,true
+sr.principle_of_relativity.q1,sr.principle_of_relativity.q1.c,30,The laws agree only for optical experiments,false
+sr.principle_of_relativity.q1,sr.principle_of_relativity.q1.d,40,Different inertial frames must disagree about every measured quantity,false
+sr.constancy_of_speed_of_light.q1,sr.constancy_of_speed_of_light.q1.a,10,The observer moving toward the pulse measures a larger speed,false
+sr.constancy_of_speed_of_light.q1,sr.constancy_of_speed_of_light.q1.b,20,The observer chasing the pulse measures a smaller speed,false
+sr.constancy_of_speed_of_light.q1,sr.constancy_of_speed_of_light.q1.c,30,"Both observers measure the same speed, \(c\)",true
+sr.constancy_of_speed_of_light.q1,sr.constancy_of_speed_of_light.q1.d,40,Only the source rest frame can measure the light speed correctly,false
+sr.inertial_frames.q1,sr.inertial_frames.q1.a,10,A car braking sharply at traffic lights,false
+sr.inertial_frames.q1,sr.inertial_frames.q1.b,20,A lift just as its cable tension changes,false
+sr.inertial_frames.q1,sr.inertial_frames.q1.c,30,A spacecraft coasting far from large masses with its engines off,true
+sr.inertial_frames.q1,sr.inertial_frames.q1.d,40,A train rounding a bend at constant speed,false
+sr.spacetime_event.q1,sr.spacetime_event.q1.a,10,A train journey from London to Edinburgh,false
+sr.spacetime_event.q1,sr.spacetime_event.q1.b,20,A detector click at a specified position and time,true
+sr.spacetime_event.q1,sr.spacetime_event.q1.c,30,A planet's whole orbit,false
+sr.spacetime_event.q1,sr.spacetime_event.q1.d,40,A light beam crossing a laboratory over several nanoseconds,false
+sr.principle_of_locality.q1,sr.principle_of_locality.q1.a,10,Gauge fixing,false
+sr.principle_of_locality.q1,sr.principle_of_locality.q1.b,20,Mass-energy equivalence,false
+sr.principle_of_locality.q1,sr.principle_of_locality.q1.c,30,Hamiltonian evolution,false
+sr.principle_of_locality.q1,sr.principle_of_locality.q1.d,40,Locality: influences are mediated through nearby field values rather than instant action at a distance,true
+sr.lorentz_transformations.q1,sr.lorentz_transformations.q1.a,10,It is a Lorentz transformation with unusual units,false
+sr.lorentz_transformations.q1,sr.lorentz_transformations.q1.b,20,It is valid only for massive particles,false
+sr.lorentz_transformations.q1,sr.lorentz_transformations.q1.c,30,It is not a Lorentz transformation,true
+sr.lorentz_transformations.q1,sr.lorentz_transformations.q1.d,40,It proves that light speed is frame-dependent,false
+sr.spacetime_interval.q1,sr.spacetime_interval.q1.a,10,It is the ordinary Euclidean distance between the events,false
+sr.spacetime_interval.q1,sr.spacetime_interval.q1.b,20,It is the invariant spacetime interval,true
+sr.spacetime_interval.q1,sr.spacetime_interval.q1.c,30,It is the relative speed of the observers,false
+sr.spacetime_interval.q1,sr.spacetime_interval.q1.d,40,It is the electromagnetic field strength,false
+sr.metric_tensor.q1,sr.metric_tensor.q1.a,10,"\(\mathrm{diag}(1,1,1,1)\)",false
+sr.metric_tensor.q1,sr.metric_tensor.q1.b,20,"\(\mathrm{diag}(-1,1,1,1)\)",false
+sr.metric_tensor.q1,sr.metric_tensor.q1.c,30,"\(\mathrm{diag}(0,1,1,1)\)",false
+sr.metric_tensor.q1,sr.metric_tensor.q1.d,40,"\(\mathrm{diag}(1,-1,-1,-1)\)",true
+sr.light_cone.q1,sr.light_cone.q1.a,10,"Outside the light cone, so it is spacelike",true
+sr.light_cone.q1,sr.light_cone.q1.b,20,Exactly on the light cone,false
+sr.light_cone.q1,sr.light_cone.q1.c,30,Inside the future light cone,false
+sr.light_cone.q1,sr.light_cone.q1.d,40,Inside the past light cone only,false
+sr.minkowski_diagram.q1,sr.minkowski_diagram.q1.a,10,The path of a light ray in every frame,false
+sr.minkowski_diagram.q1,sr.minkowski_diagram.q1.b,20,A line of constant laboratory time,false
+sr.minkowski_diagram.q1,sr.minkowski_diagram.q1.c,30,The worldline of the moving frame's spatial origin,true
+sr.minkowski_diagram.q1,sr.minkowski_diagram.q1.d,40,The electromagnetic field direction,false
+sr.proper_time.q1,sr.proper_time.q1.a,10,The coordinate time assigned by a chosen inertial frame,false
+sr.proper_time.q1,sr.proper_time.q1.b,20,The time read by a clock along its own timelike worldline,true
+sr.proper_time.q1,sr.proper_time.q1.c,30,The time light takes to reach an observer,false
+sr.proper_time.q1,sr.proper_time.q1.d,40,The same number as distance divided by \(c\),false
+sr.four_vectors.q1,sr.four_vectors.q1.a,10,It has exactly four positive components,false
+sr.four_vectors.q1,sr.four_vectors.q1.b,20,Its components transform under Lorentz transformations like spacetime displacement components,true
+sr.four_vectors.q1,sr.four_vectors.q1.c,30,Its Euclidean length is fixed,false
+sr.four_vectors.q1,sr.four_vectors.q1.d,40,Its spatial components are always zero,false
+sr.position_four_vector.q1,sr.position_four_vector.q1.a,10,To make time disappear,false
+sr.position_four_vector.q1,sr.position_four_vector.q1.b,20,To give the time component dimensions of length,true
+sr.position_four_vector.q1,sr.position_four_vector.q1.c,30,To force every event to be lightlike,false
+sr.position_four_vector.q1,sr.position_four_vector.q1.d,40,To avoid Lorentz transformations,false
+sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.a,10,Coordinate time in any convenient frame,false
+sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.b,20,Proper time along the particle's worldline,true
+sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.c,30,Spatial distance along the path,false
+sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.d,40,Laboratory clock synchronization error,false
+sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.a,10,"\(p^\mu=(m,\mathbf v)\)",false
+sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.b,20,"\(p^\mu\coloneqq mU^\mu\coloneqq(E/c,\mathbf p)\)",true
+sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.c,30,"\(p^\mu=(E,\mathbf p)\)",false
+sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.d,40,"\(p^\mu=(c,\mathbf v)\)",false
+sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.a,10,The kinetic energy of any moving particle,false
+sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.b,20,The rest energy of a system with invariant mass \(m\),true
+sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.c,30,The potential energy of an electromagnetic field only,false
+sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.d,40,The energy lost by every object per second,false
+sr.action_principle.q1,sr.action_principle.q1.a,10,\(S=0\),false
+sr.action_principle.q1,sr.action_principle.q1.b,20,\(\delta S\overset{\text{stationary}}{=}0\),true
+sr.action_principle.q1,sr.action_principle.q1.c,30,\(L=0\),false
+sr.action_principle.q1,sr.action_principle.q1.d,40,\(\dot q=0\),false
+sr.lagrangian.q1,sr.lagrangian.q1.a,10,It is the local function integrated to form the action,true
+sr.lagrangian.q1,sr.lagrangian.q1.b,20,It is always the total conserved energy,false
+sr.lagrangian.q1,sr.lagrangian.q1.c,30,It is a list of all possible forces,false
+sr.lagrangian.q1,sr.lagrangian.q1.d,40,It is the same thing as a spacetime interval,false
+sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.a,10,\(L=0\),false
+sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.b,20,\(\partial L/\partial q=0\),false
+sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.c,30,\(\frac{d}{dt}(\partial L/\partial\dot q)-\partial L/\partial q\overset{\text{stationary action}}{=}0\),true
+sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.d,40,\(S=L/t\),false
+sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.a,10,Coordinates and accelerations,false
+sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.b,20,Coordinates and canonical momenta,true
+sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.c,30,Forces and masses only,false
+sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.d,40,Spacetime intervals only,false
+sr.canonical_momentum.q1,sr.canonical_momentum.q1.a,10,\(p=\partial L/\partial q\),false
+sr.canonical_momentum.q1,sr.canonical_momentum.q1.b,20,\(p\coloneqq\partial L/\partial\dot q\),true
+sr.canonical_momentum.q1,sr.canonical_momentum.q1.c,30,\(p=L\dot q\),false
+sr.canonical_momentum.q1,sr.canonical_momentum.q1.d,40,\(p=q/\dot q\),false
+sr.noether_theorem.q1,sr.noether_theorem.q1.a,10,Discrete labels to graph layout,false
+sr.noether_theorem.q1,sr.noether_theorem.q1.b,20,Continuous symmetries of the action to conserved quantities,true
+sr.noether_theorem.q1,sr.noether_theorem.q1.c,30,Any equation to any conservation law,false
+sr.noether_theorem.q1,sr.noether_theorem.q1.d,40,Coordinate names to units,false
+sr.scalar_field.q1,sr.scalar_field.q1.a,10,Scalar field,true
+sr.scalar_field.q1,sr.scalar_field.q1.b,20,Vector field,false
+sr.scalar_field.q1,sr.scalar_field.q1.c,30,Antisymmetric tensor field,false
+sr.scalar_field.q1,sr.scalar_field.q1.d,40,Four-current,false
+sr.vector_field.q1,sr.vector_field.q1.a,10,Scalar field,false
+sr.vector_field.q1,sr.vector_field.q1.b,20,Vector field,true
+sr.vector_field.q1,sr.vector_field.q1.c,30,Scalar invariant,false
+sr.vector_field.q1,sr.vector_field.q1.d,40,Proper time,false
+sr.field_lagrangian.q1,sr.field_lagrangian.q1.a,10,A single particle velocity,false
+sr.field_lagrangian.q1,sr.field_lagrangian.q1.b,20,A Lagrangian density \(\mathcal L\),true
+sr.field_lagrangian.q1,sr.field_lagrangian.q1.c,30,Only the total charge,false
+sr.field_lagrangian.q1,sr.field_lagrangian.q1.d,40,The graph layout energy,false
+sr.field_equations.q1,sr.field_equations.q1.a,10,Field equations,true
+sr.field_equations.q1,sr.field_equations.q1.b,20,The module display number,false
+sr.field_equations.q1,sr.field_equations.q1.c,30,A gauge name only,false
+sr.field_equations.q1,sr.field_equations.q1.d,40,A historical note,false
+sr.vector_potential.q1,sr.vector_potential.q1.a,10,Proper time,false
+sr.vector_potential.q1,sr.vector_potential.q1.b,20,The electromagnetic field tensor,true
+sr.vector_potential.q1,sr.vector_potential.q1.c,30,The invariant interval alone,false
+sr.vector_potential.q1,sr.vector_potential.q1.d,40,The graph layout,false
+sr.field_tensor.q1,sr.field_tensor.q1.a,10,It removes magnetism,false
+sr.field_tensor.q1,sr.field_tensor.q1.b,20,It packages them into one Lorentz-transforming tensor,true
+sr.field_tensor.q1,sr.field_tensor.q1.c,30,It has only one scalar component,false
+sr.field_tensor.q1,sr.field_tensor.q1.d,40,It applies only in one inertial frame,false
+sr.electric_field.q1,sr.electric_field.q1.a,10,In the time-space components of \(F_{\mu\nu}\),true
+sr.electric_field.q1,sr.electric_field.q1.b,20,Only in the metric tensor,false
+sr.electric_field.q1,sr.electric_field.q1.c,30,Only as a scalar invariant,false
+sr.electric_field.q1,sr.electric_field.q1.d,40,Only in historical notes,false
+sr.magnetic_field.q1,sr.magnetic_field.q1.a,10,The diagonal of the metric,false
+sr.magnetic_field.q1,sr.magnetic_field.q1.b,20,The purely spatial antisymmetric components of \(F_{\mu\nu}\),true
+sr.magnetic_field.q1,sr.magnetic_field.q1.c,30,The scalar field value,false
+sr.magnetic_field.q1,sr.magnetic_field.q1.d,40,Only the time-time component,false
+sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.a,10,Proper time,false
+sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.b,20,"The field tensor \(F_{\mu
+u}\)",true
+sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.c,30,Only the scalar potential,false
+sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.d,40,A single electric-field component,false
+sr.maxwells_equations.q1,sr.maxwells_equations.q1.a,10,They become unrelated to electric and magnetic fields,false
+sr.maxwells_equations.q1,sr.maxwells_equations.q1.b,20,Their relativistic structure is visible without choosing a special frame,true
+sr.maxwells_equations.q1,sr.maxwells_equations.q1.c,30,They no longer need sources,false
+sr.maxwells_equations.q1,sr.maxwells_equations.q1.d,40,They stop describing waves,false
+sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.a,10,\(\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0\),true
+sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.b,20,\(F_{\mu\nu}=0\),false
+sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.c,30,\(A_\mu=0\) in every frame,false
+sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.d,40,\(\partial_\mu j^\mu=1\),false
+sr.gauge_invariance.q1,sr.gauge_invariance.q1.a,10,Gauge invariance,true
+sr.gauge_invariance.q1,sr.gauge_invariance.q1.b,20,Time dilation,false
+sr.gauge_invariance.q1,sr.gauge_invariance.q1.c,30,Mass-energy equivalence,false
+sr.gauge_invariance.q1,sr.gauge_invariance.q1.d,40,A change of metric signature,false
+sr.four_current.q1,sr.four_current.q1.a,10,Four-current,true
+sr.four_current.q1,sr.four_current.q1.b,20,Proper time,false
+sr.four_current.q1,sr.four_current.q1.c,30,Scalar field only,false
+sr.four_current.q1,sr.four_current.q1.d,40,Magnetic field only,false
+sr.minimal_coupling.q1,sr.minimal_coupling.q1.a,10,Minimal coupling,true
+sr.minimal_coupling.q1,sr.minimal_coupling.q1.b,20,Proper time alone,false
+sr.minimal_coupling.q1,sr.minimal_coupling.q1.c,30,Radiation reaction,false
+sr.minimal_coupling.q1,sr.minimal_coupling.q1.d,40,Gauge fixing,false
+sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.a,10,\(\mathbf F\overset{\text{3-vector}}{=}q(\mathbf E+\mathbf v\times\mathbf B)\),true
+sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.b,20,\(\mathbf F=m\mathbf a/q\),false
+sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.c,30,\(\mathbf F=q(\mathbf E\cdot\mathbf B)\),false
+sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.d,40,\(\mathbf F=\nabla\cdot\mathbf E\),false
+sr.charge_conservation.q1,sr.charge_conservation.q1.a,10,\(\partial_\mu j^\mu\overset{\text{charge conservation}}{=}0\),true
+sr.charge_conservation.q1,sr.charge_conservation.q1.b,20,\(F_{\mu\nu}=0\),false
+sr.charge_conservation.q1,sr.charge_conservation.q1.c,30,\(p_\mu p^\mu=m^2\),false
+sr.charge_conservation.q1,sr.charge_conservation.q1.d,40,\(\nabla\times\mathbf E=0\),false
+sr.em_energy_density.q1,sr.em_energy_density.q1.a,10,Field energy per unit volume,true
+sr.em_energy_density.q1,sr.em_energy_density.q1.b,20,Charge per unit volume only,false
+sr.em_energy_density.q1,sr.em_energy_density.q1.c,30,Gauge freedom per unit time,false
+sr.em_energy_density.q1,sr.em_energy_density.q1.d,40,Proper time along a worldline,false
+sr.poynting_vector.q1,sr.poynting_vector.q1.a,10,\(\mathbf S\overset{\text{SI}}{=}(1/\mu_0)\mathbf E\times\mathbf B\),true
+sr.poynting_vector.q1,sr.poynting_vector.q1.b,20,\(\mathbf S=\nabla\cdot\mathbf E\),false
+sr.poynting_vector.q1,sr.poynting_vector.q1.c,30,\(\mathbf S=m\mathbf v\),false
+sr.poynting_vector.q1,sr.poynting_vector.q1.d,40,\(\mathbf S=\rho\mathbf v\),false
+sr.em_stress_energy.q1,sr.em_stress_energy.q1.a,10,"It also describes momentum density, flux, and stress",true
+sr.em_stress_energy.q1,sr.em_stress_energy.q1.b,20,It removes the electromagnetic field,false
+sr.em_stress_energy.q1,sr.em_stress_energy.q1.c,30,It fixes a gauge,false
+sr.em_stress_energy.q1,sr.em_stress_energy.q1.d,40,It replaces charge conservation,false
+sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.a,10,Local densities and fluxes of energy and momentum,true
+sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.b,20,Only electric charge density,false
+sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.c,30,Only particle rest mass,false
+sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.d,40,Only gauge choices,false
+sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.a,10,They are mutually perpendicular,true
+sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.b,20,They are always parallel,false
+sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.c,30,Only \(\mathbf E\) exists,false
+sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.d,40,The propagation direction is arbitrary,false
+sr.wave_equation.q1,sr.wave_equation.q1.a,10,The d'Alembertian \(\Box\coloneqq\partial_\mu\partial^\mu\),true
+sr.wave_equation.q1,sr.wave_equation.q1.b,20,Only the ordinary gradient,false
+sr.wave_equation.q1,sr.wave_equation.q1.c,30,Only the curl of velocity,false
+sr.wave_equation.q1,sr.wave_equation.q1.d,40,The mass-energy invariant,false
+sr.radiation_reaction.q1,sr.radiation_reaction.q1.a,10,Radiation reaction,true
+sr.radiation_reaction.q1,sr.radiation_reaction.q1.b,20,Gauge fixing,false
+sr.radiation_reaction.q1,sr.radiation_reaction.q1.c,30,Length contraction,false
+sr.radiation_reaction.q1,sr.radiation_reaction.q1.d,40,Charge conservation,false
+sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.a,10,Lorentz invariance,true
+sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.b,20,Gauge fixing,false
+sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.c,30,Radiation reaction,false
+sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.d,40,Charge conservation,false
+sr.gauge_fixing.q1,sr.gauge_fixing.q1.a,10,Choosing a representative potential from a gauge-equivalent family,true
+sr.gauge_fixing.q1,sr.gauge_fixing.q1.b,20,Changing the physical electromagnetic field,false
+sr.gauge_fixing.q1,sr.gauge_fixing.q1.c,30,Making charge non-conserved,false
+sr.gauge_fixing.q1,sr.gauge_fixing.q1.d,40,Replacing Lorentz transformations,false
+gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.a,10,A force field acting on fixed spacetime,true
+gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.b,20,Conservation of energy,false
+gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.c,30,The use of coordinates,false
+gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.d,40,The finite speed of light,false
+gr.equivalence_principle.q1,gr.equivalence_principle.q1.a,10,The effects of gravity in a sufficiently small freely falling laboratory,true
+gr.equivalence_principle.q1,gr.equivalence_principle.q1.b,20,All tidal effects over an extended region,false
+gr.equivalence_principle.q1,gr.equivalence_principle.q1.c,30,The speed of light,false
+gr.equivalence_principle.q1,gr.equivalence_principle.q1.d,40,The need for coordinates,false
+gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.a,10,A frame adapted to a freely falling observer near one event,true
+gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.b,20,A global inertial frame covering all curved spacetime,false
+gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.c,30,A frame where tidal gravity disappears everywhere,false
+gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.d,40,A coordinate system that changes the speed of light,false
+gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.a,10,A spacecraft coasting with engines off and no support force,true
+gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.b,20,A person standing on the ground,false
+gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.c,30,A rocket firing engines to hover,false
+gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.d,40,A laboratory held fixed by a tower,false
+gr.tidal_gravity.q1,gr.tidal_gravity.q1.a,10,Relative acceleration of nearby freely falling bodies,true
+gr.tidal_gravity.q1,gr.tidal_gravity.q1.b,20,The absolute speed of a single falling body,false
+gr.tidal_gravity.q1,gr.tidal_gravity.q1.c,30,The choice of units for \(c\),false
+gr.tidal_gravity.q1,gr.tidal_gravity.q1.d,40,A force that vanishes only at infinity,false
+gr.metric_tensor.q1,gr.metric_tensor.q1.a,10,Supplies the local rule for intervals and inner products,true
+gr.metric_tensor.q1,gr.metric_tensor.q1.b,20,Lists all possible coordinate systems,false
+gr.metric_tensor.q1,gr.metric_tensor.q1.c,30,Measures only matter density,false
+gr.metric_tensor.q1,gr.metric_tensor.q1.d,40,Replaces the need for clocks,false
+gr.inverse_metric.q1,gr.inverse_metric.q1.a,10,\(g^{\mu\alpha}g_{\alpha\nu}=\delta^\mu{}_\nu\),true
+gr.inverse_metric.q1,gr.inverse_metric.q1.b,20,\(g^{\mu\nu}=g_{\mu\nu}\) in all coordinates,false
+gr.inverse_metric.q1,gr.inverse_metric.q1.c,30,\(g^{\mu\nu}=0\),false
+gr.inverse_metric.q1,gr.inverse_metric.q1.d,40,\(g_{\mu\nu}dx^\mu dx^\nu=0\),false
+gr.volume_element.q1,gr.volume_element.q1.a,10,It is the invariant spacetime volume measure,true
+gr.volume_element.q1,gr.volume_element.q1.b,20,It is the electromagnetic field strength,false
+gr.volume_element.q1,gr.volume_element.q1.c,30,It is the definition of proper velocity,false
+gr.volume_element.q1,gr.volume_element.q1.d,40,It is a coordinate chart,false
+gr.line_element.q1,gr.line_element.q1.a,10,The local spacetime interval of a small displacement,true
+gr.line_element.q1,gr.line_element.q1.b,20,The total mass of a source,false
+gr.line_element.q1,gr.line_element.q1.c,30,A coordinate transformation,false
+gr.line_element.q1,gr.line_element.q1.d,40,The number of spacetime dimensions,false
+gr.proper_time.q1,gr.proper_time.q1.a,10,The time recorded by a clock along a timelike worldline,true
+gr.proper_time.q1,gr.proper_time.q1.b,20,The coordinate label \(t\) in every chart,false
+gr.proper_time.q1,gr.proper_time.q1.c,30,The same number for every path between two events,false
+gr.proper_time.q1,gr.proper_time.q1.d,40,A quantity only defined in flat spacetime,false
+gr.null_curve.q1,gr.null_curve.q1.a,10,\(ds^2=0\) along the curve,true
+gr.null_curve.q1,gr.null_curve.q1.b,20,No coordinate displacement,false
+gr.null_curve.q1,gr.null_curve.q1.c,30,Infinite proper time,false
+gr.null_curve.q1,gr.null_curve.q1.d,40,A spacelike tangent everywhere,false
+gr.causal_structure.q1,gr.causal_structure.q1.a,10,"The metric through its timelike, null, and spacelike directions",true
+gr.causal_structure.q1,gr.causal_structure.q1.b,20,The names chosen for coordinates,false
+gr.causal_structure.q1,gr.causal_structure.q1.c,30,The colour used in a diagram,false
+gr.causal_structure.q1,gr.causal_structure.q1.d,40,The volume element alone,false
+gr.local_flatness.q1,gr.local_flatness.q1.a,10,The metric is Minkowskian at that event,true
+gr.local_flatness.q1,gr.local_flatness.q1.b,20,Curvature vanishes everywhere,false
+gr.local_flatness.q1,gr.local_flatness.q1.c,30,All tidal effects vanish over any finite region,false
+gr.local_flatness.q1,gr.local_flatness.q1.d,40,Every coordinate grid is inertial,false
+gr.metric_signature.q1,gr.metric_signature.q1.a,10,"Mostly minus, \(+---\)",true
+gr.metric_signature.q1,gr.metric_signature.q1.b,20,"Mostly plus, \(-+++\)",false
+gr.metric_signature.q1,gr.metric_signature.q1.c,30,"Euclidean, \(++++\)",false
+gr.metric_signature.q1,gr.metric_signature.q1.d,40,No sign convention is needed,false
+gr.connection.q1,gr.connection.q1.a,10,Vectors at different events belong to different tangent spaces,true
+gr.connection.q1,gr.connection.q1.b,20,Coordinates must be physical,false
+gr.connection.q1,gr.connection.q1.c,30,The metric is always constant,false
+gr.connection.q1,gr.connection.q1.d,40,Scalars cannot be differentiated,false
+gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.a,10,Coordinate coefficients of a connection,true
+gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.b,20,Components of a scalar,false
+gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.c,30,Curvature invariants,false
+gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.d,40,Matter densities,false
+gr.covariant_derivative.q1,gr.covariant_derivative.q1.a,10,Make the result transform tensorially,true
+gr.covariant_derivative.q1,gr.covariant_derivative.q1.b,20,Change the metric signature,false
+gr.covariant_derivative.q1,gr.covariant_derivative.q1.c,30,Add matter,false
+gr.covariant_derivative.q1,gr.covariant_derivative.q1.d,40,Choose natural units,false
+gr.metric_compatibility.q1,gr.metric_compatibility.q1.a,10,\(\nabla_\alpha g_{\mu\nu}=0\),true
+gr.metric_compatibility.q1,gr.metric_compatibility.q1.b,20,\(g_{\mu\nu}=0\),false
+gr.metric_compatibility.q1,gr.metric_compatibility.q1.c,30,\(R=0\),false
+gr.metric_compatibility.q1,gr.metric_compatibility.q1.d,40,\(ds^2=0\),false
+gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.a,10,\(\Gamma^\rho{}_{\mu\nu}=\Gamma^\rho{}_{\nu\mu}\),true
+gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.b,20,Every Christoffel symbol vanishes,false
+gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.c,30,Curvature vanishes,false
+gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.d,40,The metric is Euclidean,false
+gr.parallel_transport.q1,gr.parallel_transport.q1.a,10,Spacetime curvature,true
+gr.parallel_transport.q1,gr.parallel_transport.q1.b,20,A change of units,false
+gr.parallel_transport.q1,gr.parallel_transport.q1.c,30,Renaming an index,false
+gr.parallel_transport.q1,gr.parallel_transport.q1.d,40,A constant scalar,false
+gr.geodesic.q1,gr.geodesic.q1.a,10,Free fall without non-gravitational force,true
+gr.geodesic.q1,gr.geodesic.q1.b,20,A supported observer,false
+gr.geodesic.q1,gr.geodesic.q1.c,30,Any coordinate line,false
+gr.geodesic.q1,gr.geodesic.q1.d,40,A spacelike signal,false
+gr.geodesic_equation.q1,gr.geodesic_equation.q1.a,10,Connection and coordinate-basis change,true
+gr.geodesic_equation.q1,gr.geodesic_equation.q1.b,20,Rocket thrust,false
+gr.geodesic_equation.q1,gr.geodesic_equation.q1.c,30,Matter density alone,false
+gr.geodesic_equation.q1,gr.geodesic_equation.q1.d,40,Metric signature only,false
+gr.geodesic_action.q1,gr.geodesic_action.q1.a,10,Endpoint events,true
+gr.geodesic_action.q1,gr.geodesic_action.q1.b,20,Every point of the path,false
+gr.geodesic_action.q1,gr.geodesic_action.q1.c,30,The Christoffel symbols at zero,false
+gr.geodesic_action.q1,gr.geodesic_action.q1.d,40,Coordinate time everywhere,false
+gr.four_velocity.q1,gr.four_velocity.q1.a,10,Proper time,true
+gr.four_velocity.q1,gr.four_velocity.q1.b,20,Any spatial distance,false
+gr.four_velocity.q1,gr.four_velocity.q1.c,30,Curvature scalar,false
+gr.four_velocity.q1,gr.four_velocity.q1.d,40,Coordinate volume,false
+gr.four_acceleration.q1,gr.four_acceleration.q1.a,10,A rocket firing to hover,true
+gr.four_acceleration.q1,gr.four_acceleration.q1.b,20,A freely falling test body,false
+gr.four_acceleration.q1,gr.four_acceleration.q1.c,30,A geodesic observer,false
+gr.four_acceleration.q1,gr.four_acceleration.q1.d,40,An unforced satellite,false
+gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.a,10,Relative acceleration of nearby geodesics,true
+gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.b,20,One object's coordinate speed,false
+gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.c,30,A coordinate transformation,false
+gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.d,40,Metric determinant,false
+gr.riemann_tensor.q1,gr.riemann_tensor.q1.a,10,Failure of covariant derivatives to commute,true
+gr.riemann_tensor.q1,gr.riemann_tensor.q1.b,20,Coordinate labels alone,false
+gr.riemann_tensor.q1,gr.riemann_tensor.q1.c,30,Matter density only,false
+gr.riemann_tensor.q1,gr.riemann_tensor.q1.d,40,Metric signature,false
+gr.ricci_tensor.q1,gr.ricci_tensor.q1.a,10,Contracting the Riemann tensor,true
+gr.ricci_tensor.q1,gr.ricci_tensor.q1.b,20,Differentiating a scalar twice only,false
+gr.ricci_tensor.q1,gr.ricci_tensor.q1.c,30,Choosing coordinates,false
+gr.ricci_tensor.q1,gr.ricci_tensor.q1.d,40,Setting curvature to zero,false
+gr.ricci_scalar.q1,gr.ricci_scalar.q1.a,10,\(g^{\mu\nu}R_{\mu\nu}\),true
+gr.ricci_scalar.q1,gr.ricci_scalar.q1.b,20,\(R_{\mu\nu}=0\),false
+gr.ricci_scalar.q1,gr.ricci_scalar.q1.c,30,\(g_{\mu\nu}g^{\mu\nu}=0\),false
+gr.ricci_scalar.q1,gr.ricci_scalar.q1.d,40,\(\nabla_\mu R=0\),false
+gr.einstein_tensor.q1,gr.einstein_tensor.q1.a,10,Its covariant divergence vanishes identically,true
+gr.einstein_tensor.q1,gr.einstein_tensor.q1.b,20,It is always zero,false
+gr.einstein_tensor.q1,gr.einstein_tensor.q1.c,30,It is a scalar,false
+gr.einstein_tensor.q1,gr.einstein_tensor.q1.d,40,It depends only on coordinates,false
+gr.bianchi_identity.q1,gr.bianchi_identity.q1.a,10,\(\nabla^\mu G_{\mu\nu}=0\),true
+gr.bianchi_identity.q1,gr.bianchi_identity.q1.b,20,\(G_{\mu\nu}=0\) everywhere,false
+gr.bianchi_identity.q1,gr.bianchi_identity.q1.c,30,\(R=1\),false
+gr.bianchi_identity.q1,gr.bianchi_identity.q1.d,40,All coordinates are inertial,false
+gr.curvature_invariants.q1,gr.curvature_invariants.q1.a,10,Their values are coordinate-independent,true
+gr.curvature_invariants.q1,gr.curvature_invariants.q1.b,20,They always vanish,false
+gr.curvature_invariants.q1,gr.curvature_invariants.q1.c,30,They choose a chart,false
+gr.curvature_invariants.q1,gr.curvature_invariants.q1.d,40,They remove curvature,false
+gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.a,10,"Energy density, momentum flux, and stress",true
+gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.b,20,Coordinates only,false
+gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.c,30,Curvature only,false
+gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.d,40,Metric signature,false
+gr.perfect_fluid.q1,gr.perfect_fluid.q1.a,10,Viscosity,true
+gr.perfect_fluid.q1,gr.perfect_fluid.q1.b,20,Energy density,false
+gr.perfect_fluid.q1,gr.perfect_fluid.q1.c,30,Isotropic pressure,false
+gr.perfect_fluid.q1,gr.perfect_fluid.q1.d,40,Four-velocity,false
+gr.energy_conditions.q1,gr.energy_conditions.q1.a,10,Assumptions restricting stress-energy,true
+gr.energy_conditions.q1,gr.energy_conditions.q1.b,20,Identities obeyed by every quantum field,false
+gr.energy_conditions.q1,gr.energy_conditions.q1.c,30,Coordinate choices,false
+gr.energy_conditions.q1,gr.energy_conditions.q1.d,40,Definitions of curvature,false
+gr.covariant_conservation.q1,gr.covariant_conservation.q1.a,10,\(\nabla_\mu T^{\mu\nu}=0\),true
+gr.covariant_conservation.q1,gr.covariant_conservation.q1.b,20,\(T^{\mu\nu}=0\),false
+gr.covariant_conservation.q1,gr.covariant_conservation.q1.c,30,\(\partial_\mu g^{\mu\nu}=0\),false
+gr.covariant_conservation.q1,gr.covariant_conservation.q1.d,40,\(R=1\),false
+gr.equation_of_state.q1,gr.equation_of_state.q1.a,10,Pressure to energy density,true
+gr.equation_of_state.q1,gr.equation_of_state.q1.b,20,Curvature to coordinates,false
+gr.equation_of_state.q1,gr.equation_of_state.q1.c,30,Torsion to metric signature,false
+gr.equation_of_state.q1,gr.equation_of_state.q1.d,40,Four-velocity to proper time only,false
+gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.a,10,Curvature to stress-energy,true
+gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.b,20,Coordinates to units only,false
+gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.c,30,Torsion to charge,false
+gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.d,40,Pressure to temperature only,false
+gr.cosmological_constant.q1,gr.cosmological_constant.q1.a,10,Support spacetime curvature,true
+gr.cosmological_constant.q1,gr.cosmological_constant.q1.b,20,Force the metric to be flat,false
+gr.cosmological_constant.q1,gr.cosmological_constant.q1.c,30,Remove covariance,false
+gr.cosmological_constant.q1,gr.cosmological_constant.q1.d,40,Set all tensors to zero,false
+gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.a,10,Ricci scalar,true
+gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.b,20,Proper time only,false
+gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.c,30,Electric potential,false
+gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.d,40,Torsion scalar in standard GR,false
+gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.a,10,A metric variation,true
+gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.b,20,Renaming coordinates only,false
+gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.c,30,Setting curvature to zero,false
+gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.d,40,Choosing a module,false
+gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.a,10,The scalar-curvature term inside the Einstein tensor,true
+gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.b,20,The stress-energy tensor,false
+gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.c,30,The metric,false
+gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.d,40,All curvature,false
+gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.a,10,\(R_{\mu\nu}=0\),true
+gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.b,20,\(R^\rho{}_{\sigma\mu\nu}=0\) necessarily,false
+gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.c,30,\(g_{\mu\nu}=0\),false
+gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.weak_field_metric.q1,gr.weak_field_metric.q1.a,10,\(g_{\mu\nu}=\eta_{\mu\nu}+h_{\mu\nu}\) with small \(h\),true
+gr.weak_field_metric.q1,gr.weak_field_metric.q1.b,20,\(g_{\mu\nu}=0\),false
+gr.weak_field_metric.q1,gr.weak_field_metric.q1.c,30,\(R=1\),false
+gr.weak_field_metric.q1,gr.weak_field_metric.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.newtonian_limit.q1,gr.newtonian_limit.q1.a,10,\(g_{00}\),true
+gr.newtonian_limit.q1,gr.newtonian_limit.q1.b,20,The determinant alone,false
+gr.newtonian_limit.q1,gr.newtonian_limit.q1.c,30,Only \(g_{12}\),false
+gr.newtonian_limit.q1,gr.newtonian_limit.q1.d,40,No metric component,false
+gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.a,10,Clock rates and measured frequencies at different potentials,true
+gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.b,20,Rest masses only,false
+gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.c,30,Coordinate labels only,false
+gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.d,40,Curvature invariants only,false
+gr.light_deflection.q1,gr.light_deflection.q1.a,10,Light follows null geodesics of curved spacetime,true
+gr.light_deflection.q1,gr.light_deflection.q1.b,20,Light becomes massive,false
+gr.light_deflection.q1,gr.light_deflection.q1.c,30,Coordinates exert force,false
+gr.light_deflection.q1,gr.light_deflection.q1.d,40,The speed of light changes locally,false
+gr.perihelion_precession.q1,gr.perihelion_precession.q1.a,10,The orbit's closest-approach direction,true
+gr.perihelion_precession.q1,gr.perihelion_precession.q1.b,20,The central mass necessarily,false
+gr.perihelion_precession.q1,gr.perihelion_precession.q1.c,30,Coordinate time,false
+gr.perihelion_precession.q1,gr.perihelion_precession.q1.d,40,The metric signature,false
+gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.a,10,Weak fields and \(v/c\ll1\),true
+gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.b,20,Arbitrarily strong horizons,false
+gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.c,30,No gravity,false
+gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.d,40,Exact spherical symmetry always,false
+gr.gravitational_waves.q1,gr.gravitational_waves.q1.a,10,A small propagating metric perturbation with physical tidal effects,true
+gr.gravitational_waves.q1,gr.gravitational_waves.q1.b,20,A sound wave in interstellar gas,false
+gr.gravitational_waves.q1,gr.gravitational_waves.q1.c,30,A coordinate ripple with no observable consequence,false
+gr.gravitational_waves.q1,gr.gravitational_waves.q1.d,40,A Newtonian inverse-square force pulse,false
+gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.a,10,"Static, spherically symmetric, and vacuum",true
+gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.b,20,Rotating and charged,false
+gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.c,30,Homogeneous cosmology,false
+gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.d,40,Only a weak-field approximation,false
+gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.a,10,\(2GM/c^2\),true
+gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.b,20,\(GM/c\),false
+gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.c,30,\(c^2/GM\),false
+gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.d,40,\(8\pi GM\),false
+gr.event_horizon.q1,gr.event_horizon.q1.a,10,A global causal boundary,true
+gr.event_horizon.q1,gr.event_horizon.q1.b,20,A material shell,false
+gr.event_horizon.q1,gr.event_horizon.q1.c,30,A curvature divergence in every case,false
+gr.event_horizon.q1,gr.event_horizon.q1.d,40,A coordinate grid line only,false
+gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.a,10,Whether regular coordinates and finite invariants remove the divergence,true
+gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.b,20,Whether one metric component is large,false
+gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.c,30,Whether time is present,false
+gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.d,40,Whether mass is nonzero,false
+gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.a,10,\(r=0\),true
+gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.b,20,Every point at \(r=r_s\),false
+gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.c,30,Spatial infinity,false
+gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.d,40,Every circular orbit,false
+gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.a,10,Conserved energy and angular momentum from symmetry,true
+gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.b,20,Vanishing mass only,false
+gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.c,30,A coordinate singularity,false
+gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.d,40,Nonzero torsion,false

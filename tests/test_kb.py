@@ -16,6 +16,7 @@ def _write_manifest(root):
             "  edge_key: edges_key.csv",
             "  content_blocks: content_blocks.csv",
             "  study_questions: study_questions.csv",
+            "  study_question_options: study_question_options.csv",
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "  graphic_designs: concept_graphic_designs.csv",
@@ -34,10 +35,18 @@ def _write_minimal_kb(root):
             "concept_id": "test.alpha",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Alpha question?",
             "answer": "Alpha answer.",
         },
     ]).to_csv(root / "study_questions.csv", index=False)
+    pd.DataFrame(columns=[
+        "question_id",
+        "option_id",
+        "sequence",
+        "text",
+        "is_correct",
+    ]).to_csv(root / "study_question_options.csv", index=False)
     pd.DataFrame([
         {
             "id": "test.alpha",
@@ -294,6 +303,16 @@ def test_load_knowledge_base_requires_study_questions_file(tmp_path):
     assert "Required KB file 'study_questions' not found" in str(exc.value)
 
 
+def test_load_knowledge_base_requires_study_question_options_file(tmp_path):
+    _write_minimal_kb(tmp_path)
+    (tmp_path / "study_question_options.csv").unlink()
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert "Required KB file 'study_question_options' not found" in str(exc.value)
+
+
 def test_load_knowledge_base_requires_references_file(tmp_path):
     _write_minimal_kb(tmp_path)
     (tmp_path / "references.csv").unlink()
@@ -497,7 +516,169 @@ def test_load_knowledge_base_rejects_missing_study_question_columns(tmp_path):
         load_knowledge_base(tmp_path)
 
     assert str(exc.value) == (
-        "study_questions.csv is missing columns: answer, question_type"
+        "study_questions.csv is missing columns: answer, marking_mode, question_type"
+    )
+
+
+def test_load_knowledge_base_builds_structured_automatic_question_options(tmp_path):
+    _write_minimal_kb(tmp_path)
+    questions = pd.read_csv(tmp_path / "study_questions.csv", dtype=str).fillna("")
+    questions.loc[0, "question_type"] = "calculation"
+    questions.loc[0, "marking_mode"] = "automatic"
+    questions.to_csv(tmp_path / "study_questions.csv", index=False)
+    pd.DataFrame([
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": "test.alpha.q1.a",
+            "sequence": 10,
+            "text": r"\(2\)",
+            "is_correct": "false",
+        },
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": "test.alpha.q1.b",
+            "sequence": 20,
+            "text": r"\(4\)",
+            "is_correct": "true",
+        },
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
+
+    question = load_knowledge_base(tmp_path).concept_data()["test.alpha"]["study_questions"][0]
+
+    assert question["marking_mode"] == "automatic"
+    assert question["options"] == [
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": "test.alpha.q1.a",
+            "sequence": 10,
+            "text": r"\(2\)",
+            "is_correct": False,
+        },
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": "test.alpha.q1.b",
+            "sequence": 20,
+            "text": r"\(4\)",
+            "is_correct": True,
+        },
+    ]
+
+
+@pytest.mark.parametrize(
+    ("marking_mode", "options", "message"),
+    [
+        (
+            "automatic",
+            [],
+            "Automatic study question test.alpha.q1 must have at least two options",
+        ),
+        (
+            "automatic",
+            [
+                ("a", 10, "One", "true"),
+                ("b", 20, "Two", "true"),
+            ],
+            "Automatic study question test.alpha.q1 must have exactly one correct option",
+        ),
+        (
+            "self_assessed",
+            [
+                ("a", 10, "One", "true"),
+                ("b", 20, "Two", "false"),
+            ],
+            "Self-assessed study question test.alpha.q1 must not have options",
+        ),
+    ],
+)
+def test_load_knowledge_base_validates_options_against_marking_mode(
+    tmp_path,
+    marking_mode,
+    options,
+    message,
+):
+    _write_minimal_kb(tmp_path)
+    questions = pd.read_csv(tmp_path / "study_questions.csv", dtype=str).fillna("")
+    questions.loc[0, "marking_mode"] = marking_mode
+    questions.to_csv(tmp_path / "study_questions.csv", index=False)
+    pd.DataFrame([
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": f"test.alpha.q1.{option_id}",
+            "sequence": sequence,
+            "text": text,
+            "is_correct": is_correct,
+        }
+        for option_id, sequence, text, is_correct in options
+    ], columns=[
+        "question_id",
+        "option_id",
+        "sequence",
+        "text",
+        "is_correct",
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == message
+
+
+def test_load_knowledge_base_rejects_invalid_study_question_marking_mode(tmp_path):
+    _write_minimal_kb(tmp_path)
+    questions = pd.read_csv(tmp_path / "study_questions.csv", dtype=str).fillna("")
+    questions.loc[0, "marking_mode"] = "computer_guesses"
+    questions.to_csv(tmp_path / "study_questions.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "study_questions.csv has invalid marking_mode value(s): computer_guesses"
+    )
+
+
+def test_load_knowledge_base_rejects_duplicate_study_question_option_ids(tmp_path):
+    _write_minimal_kb(tmp_path)
+    pd.DataFrame([
+        {
+            "question_id": "test.alpha.q1",
+            "option_id": "test.alpha.q1.a",
+            "sequence": sequence,
+            "text": text,
+            "is_correct": is_correct,
+        }
+        for sequence, text, is_correct in (
+            (10, "First", "true"),
+            (20, "Second", "false"),
+        )
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "Duplicate study question option id(s) in study_question_options.csv: "
+        "test.alpha.q1.a"
+    )
+
+
+def test_load_knowledge_base_rejects_options_for_unknown_questions(tmp_path):
+    _write_minimal_kb(tmp_path)
+    pd.DataFrame([
+        {
+            "question_id": "missing.q1",
+            "option_id": "missing.q1.a",
+            "sequence": 10,
+            "text": "Missing",
+            "is_correct": "true",
+        },
+    ]).to_csv(tmp_path / "study_question_options.csv", index=False)
+
+    with pytest.raises(KnowledgeBaseLoadError) as exc:
+        load_knowledge_base(tmp_path)
+
+    assert str(exc.value) == (
+        "study_question_options.csv references unknown question id(s): missing.q1"
     )
 
 
@@ -509,6 +690,7 @@ def test_load_knowledge_base_rejects_duplicate_study_question_ids(tmp_path):
             "concept_id": "test.alpha",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "First?",
             "answer": "",
         },
@@ -517,6 +699,7 @@ def test_load_knowledge_base_rejects_duplicate_study_question_ids(tmp_path):
             "concept_id": "test.alpha",
             "sequence": 20,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Second?",
             "answer": "",
         },
@@ -538,6 +721,7 @@ def test_load_knowledge_base_rejects_study_questions_for_unknown_concepts(tmp_pa
             "concept_id": "missing",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Question?",
             "answer": "",
         },

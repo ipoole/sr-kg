@@ -195,8 +195,22 @@ three calculations or symbol manipulations. Prefer a mix of:
 - a connection or synthesis question.
 
 Use only schema-supported types: `short_answer`, `multiple_choice`, and
-`calculation`. Keep IDs stable and answers concise but sufficient for
-self-study.
+`calculation`. Choose marking separately: `automatic` requires structured
+options with one correct answer; `self_assessed` requires none. Prefer
+automatic marking when plausible alternatives test the intended knowledge,
+but keep explanation and synthesis questions self-assessed when recognition
+would make them shallow.
+
+Numerical and simple algebraic calculations are especially valuable. Ask the
+learner to identify and apply the right formula, with distractors based on
+realistic sign, factor, unit, inverse, or power errors. Vary the position of the
+correct option, keep every alternative credible, and do not author an “I don't
+know” option: the viewer supplies it.
+
+Keep question and option IDs stable because browser-local progress uses them.
+Write the `answer` as useful feedback, not merely a repetition of the correct
+option. Model answers should be concise but sufficient for self-study. See the
+[study-question design](../design/study.md) for the interaction contract.
 
 ## Graphics
 

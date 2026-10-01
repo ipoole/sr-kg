@@ -574,10 +574,15 @@ def _validate_study_question_text(
 
     for concept in concepts:
         for question in concept.study_questions:
-            for field_name, text in (
+            authored_text = [
                 ("prompt", question.prompt),
                 ("answer", question.answer),
-            ):
+            ]
+            authored_text.extend(
+                (f"option {option.option_id}", option.text)
+                for option in question.options
+            )
+            for field_name, text in authored_text:
                 location = f"study question {question.question_id} {field_name}"
                 issues.extend(_validate_control_characters(text, location))
                 issues.extend(_validate_backslash_end(text, location))

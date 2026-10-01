@@ -5,7 +5,11 @@ import re
 
 import pandas as pd
 
-from srkg.kb import STUDY_QUESTION_TYPES, load_knowledge_base
+from srkg.kb import (
+    STUDY_QUESTION_MARKING_MODES,
+    STUDY_QUESTION_TYPES,
+    load_knowledge_base,
+)
 
 
 DATA_ROOT = Path(__file__).resolve().parents[1] / "data"
@@ -132,6 +136,117 @@ def test_real_data_study_question_types_are_canonical():
     study_questions = _read_csv("study_questions.csv")
 
     assert set(study_questions["question_type"]).issubset(STUDY_QUESTION_TYPES)
+    assert set(study_questions["marking_mode"]).issubset(
+        STUDY_QUESTION_MARKING_MODES
+    )
+
+
+def test_existing_authored_multiple_choice_questions_are_structured():
+    study_questions = _read_csv("study_questions.csv")
+    options = _read_csv("study_question_options.csv")
+    multiple_choice = study_questions[
+        study_questions["question_type"].eq("multiple_choice")
+    ]
+    automatic = multiple_choice[multiple_choice["marking_mode"].eq("automatic")]
+    assert len(automatic) == len(multiple_choice) == 105
+    assert set(automatic["question_id"]).issubset(set(options["question_id"]))
+    assert options.groupby("question_id").size().eq(4).all()
+    assert options[options["is_correct"].eq("true")].groupby("question_id").size().eq(1).all()
+
+
+def test_editorially_selected_calculations_and_concepts_are_automatically_marked():
+    study_questions = _read_csv("study_questions.csv").set_index("question_id")
+    options = _read_csv("study_question_options.csv")
+    automatic_calculations = {
+        "sr.constancy_of_speed_of_light.q3",
+        "sr.principle_of_locality.q4",
+        "sr.lorentz_transformations.q3",
+        "sr.spacetime_interval.q3",
+        "sr.spacetime_interval.q4",
+        "sr.metric_tensor.q3",
+        "sr.light_cone.q3",
+        "sr.light_cone.q4",
+        "sr.minkowski_diagram.q3",
+        "sr.proper_time.q3",
+        "sr.proper_time.q4",
+        "sr.time_dilation.q2",
+        "sr.length_contraction.q2",
+        "sr.four_vectors.q3",
+        "sr.four_vectors.q4",
+        "sr.position_four_vector.q4",
+        "sr.position_four_vector.q5",
+        "sr.velocity_four_vector.q3",
+        "sr.velocity_four_vector.q4",
+        "sr.momentum_four_vector.q3",
+        "sr.momentum_four_vector.q4",
+        "sr.mass_energy_equivalence.q4",
+        "sr.lagrangian.q4",
+        "sr.canonical_momentum.q3",
+        "sr.canonical_momentum.q4",
+        "sr.scalar_field.q4",
+        "sr.field_lagrangian.q4",
+        "sr.electric_field.q4",
+        "sr.lorentz_force_law.q3",
+        "sr.wave_equation.q3",
+        "gr.metric_tensor.q3",
+        "gr.inverse_metric.q3",
+        "gr.volume_element.q3",
+        "gr.line_element.q3",
+        "gr.proper_time.q3",
+        "gr.metric_signature.q3",
+        "gr.torsion_free_connection.q3",
+        "gr.four_velocity.q3",
+        "gr.ricci_scalar.q3",
+        "gr.equation_of_state.q3",
+        "gr.weak_field_metric.q3",
+        "gr.gravitational_redshift.q3",
+        "gr.light_deflection.q3",
+        "gr.perihelion_precession.q3",
+        "gr.schwarzschild_radius.q3",
+        "gr.black_hole_singularity.q3",
+        "gr.tidal_gravity.q4",
+        "gr.proper_time.q4",
+        "gr.four_velocity.q4",
+        "gr.curvature_invariants.q4",
+        "gr.perihelion_precession.q4",
+        "gr.post_newtonian_approximation.q4",
+        "gr.schwarzschild_radius.q4",
+    }
+    automatic_concepts = {
+        "sr.momentum_four_vector.q5",
+        "sr.field_tensor.q2",
+        "sr.electric_field.q3",
+        "sr.electric_field.q6",
+        "sr.magnetic_field.q6",
+        "sr.lorenz_gauge.q6",
+        "sr.poynting_vector.q2",
+        "sr.em_stress_energy.q6",
+        "sr.electromagnetic_waves.q2",
+        "sr.lorentz_force_law.q6",
+        "gr.connection.q2",
+        "gr.torsion_free_connection.q2",
+        "gr.parallel_transport.q2",
+        "gr.geodesic.q2",
+        "gr.geodesic_equation.q2",
+        "gr.ricci_tensor.q2",
+        "gr.bianchi_identity.q2",
+        "gr.energy_conditions.q2",
+        "gr.trace_reversed_equations.q2",
+        "gr.event_horizon.q3",
+    }
+    selected = automatic_calculations | automatic_concepts
+
+    assert study_questions.loc[list(selected), "marking_mode"].eq("automatic").all()
+    selected_options = options[options["question_id"].isin(selected)]
+    assert set(selected_options["question_id"]) == selected
+    assert selected_options.groupby("question_id").size().eq(4).all()
+    assert (
+        selected_options[selected_options["is_correct"].eq("true")]
+        .groupby("question_id")
+        .size()
+        .eq(1)
+        .all()
+    )
 
 
 def test_filtered_study_questions_do_not_reference_authored_question_numbers():

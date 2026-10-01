@@ -28,6 +28,7 @@ DEFAULT_KB_FILES = {
     "edge_key": "edges_key.csv",
     "content_blocks": "content_blocks.csv",
     "study_questions": "study_questions.csv",
+    "study_question_options": "study_question_options.csv",
     "references": "references.csv",
     "reference_links": "reference_links.csv",
     "graphic_designs": "concept_graphic_designs.csv",
@@ -71,6 +72,7 @@ STUDY_QUESTION_COLUMNS = (
     "concept_id",
     "sequence",
     "question_type",
+    "marking_mode",
     "prompt",
     "answer",
 )
@@ -79,6 +81,17 @@ STUDY_QUESTION_TYPES = {
     "multiple_choice",
     "calculation",
 }
+STUDY_QUESTION_MARKING_MODES = {
+    "automatic",
+    "self_assessed",
+}
+STUDY_QUESTION_OPTION_COLUMNS = (
+    "question_id",
+    "option_id",
+    "sequence",
+    "text",
+    "is_correct",
+)
 REFERENCE_COLUMNS = (
     "reference_id",
     "reference_type",
@@ -153,6 +166,7 @@ class KnowledgeBasePaths:
     edge_key: Path | None = None
     content_blocks: Path | None = None
     study_questions: Path | None = None
+    study_question_options: Path | None = None
     references: Path | None = None
     reference_links: Path | None = None
     graphic_designs: Path | None = None
@@ -252,6 +266,7 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
         edge_key=_resolve_existing_optional_manifest_path(root, files.get("edge_key")),
         content_blocks=_resolve_manifest_path(root, files["content_blocks"]),
         study_questions=_resolve_manifest_path(root, files["study_questions"]),
+        study_question_options=_resolve_manifest_path(root, files["study_question_options"]),
         references=_resolve_manifest_path(root, files["references"]),
         reference_links=_resolve_manifest_path(root, files["reference_links"]),
         graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("graphic_designs")),
@@ -270,6 +285,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
     _require_file(paths.edges, "edges")
     _require_file(paths.content_blocks, "content_blocks")
     _require_file(paths.study_questions, "study_questions")
+    _require_file(paths.study_question_options, "study_question_options")
     _require_file(paths.references, "references")
     _require_file(paths.reference_links, "reference_links")
 
@@ -277,6 +293,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
     edges_df = normalise_edges(_read_csv(paths.edges))
     content_blocks_df = _read_optional_csv(paths.content_blocks)
     study_questions_df = _read_optional_csv(paths.study_questions)
+    study_question_options_df = _read_optional_csv(paths.study_question_options)
     references_df = _read_optional_csv(paths.references)
     reference_links_df = _read_optional_csv(paths.reference_links)
     graphic_designs_df = _read_optional_csv(paths.graphic_designs)
@@ -299,7 +316,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
 
     validate_edge_endpoints(nodes_df, edges_df)
     _validate_content_blocks(nodes_df, content_blocks_df)
-    _validate_study_questions(nodes_df, study_questions_df)
+    _validate_study_questions(nodes_df, study_questions_df, study_question_options_df)
     _validate_references(references_df)
     _validate_reference_links(
         nodes_df,
@@ -324,6 +341,7 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         study_questions_df,
         references_df,
         reference_links_df,
+        study_question_options_df,
     ))
     modules = tuple(build_modules_from_dfs(
         modules_df,
@@ -463,6 +481,7 @@ def _validate_content_blocks(
 def _validate_study_questions(
     nodes_df: pd.DataFrame,
     study_questions_df: pd.DataFrame | None,
+    study_question_options_df: pd.DataFrame | None,
 ) -> None:
     if study_questions_df is None:
         return
@@ -483,7 +502,14 @@ def _validate_study_questions(
             + ", ".join(duplicate_question_ids)
         )
 
-    for column in ("question_id", "concept_id", "sequence", "question_type", "prompt"):
+    for column in (
+        "question_id",
+        "concept_id",
+        "sequence",
+        "question_type",
+        "marking_mode",
+        "prompt",
+    ):
         values = study_questions_df[column].astype(str).str.strip()
         if values.eq("").any():
             raise KnowledgeBaseLoadError(f"study_questions.csv has empty {column} value(s)")
@@ -510,6 +536,18 @@ def _validate_study_questions(
             + ", ".join(invalid_question_types)
         )
 
+    marking_modes = study_questions_df["marking_mode"].astype(str).str.strip()
+    invalid_marking_modes = sorted(
+        marking_mode
+        for marking_mode in marking_modes.unique()
+        if marking_mode not in STUDY_QUESTION_MARKING_MODES
+    )
+    if invalid_marking_modes:
+        raise KnowledgeBaseLoadError(
+            "study_questions.csv has invalid marking_mode value(s): "
+            + ", ".join(invalid_marking_modes)
+        )
+
     concept_ids = set(nodes_df["id"].astype(str).str.strip())
     question_concept_ids = study_questions_df["concept_id"].astype(str).str.strip()
     unknown_ids = sorted(
@@ -520,6 +558,96 @@ def _validate_study_questions(
             "study_questions.csv references unknown concept id(s): "
             + ", ".join(unknown_ids)
         )
+
+    if study_question_options_df is None:
+        return
+
+    missing_option_columns = (
+        set(STUDY_QUESTION_OPTION_COLUMNS) - set(study_question_options_df.columns)
+    )
+    if missing_option_columns:
+        raise KnowledgeBaseLoadError(
+            "study_question_options.csv is missing columns: "
+            + ", ".join(sorted(missing_option_columns))
+        )
+
+    for column in STUDY_QUESTION_OPTION_COLUMNS:
+        values = study_question_options_df[column].astype(str).str.strip()
+        if values.eq("").any():
+            raise KnowledgeBaseLoadError(
+                f"study_question_options.csv has empty {column} value(s)"
+            )
+
+    option_ids = study_question_options_df["option_id"].astype(str).str.strip()
+    duplicate_option_ids = sorted(
+        option_id
+        for option_id in option_ids[option_ids.duplicated()].unique()
+        if option_id
+    )
+    if duplicate_option_ids:
+        raise KnowledgeBaseLoadError(
+            "Duplicate study question option id(s) in study_question_options.csv: "
+            + ", ".join(duplicate_option_ids)
+        )
+
+    option_sequences = study_question_options_df["sequence"].astype(str).str.strip()
+    non_numeric_option_sequences = sorted(
+        value for value in option_sequences.unique() if not _is_integer(value)
+    )
+    if non_numeric_option_sequences:
+        raise KnowledgeBaseLoadError(
+            "study_question_options.csv has non-numeric sequence value(s): "
+            + ", ".join(non_numeric_option_sequences)
+        )
+
+    correct_values = (
+        study_question_options_df["is_correct"].astype(str).str.strip().str.lower()
+    )
+    invalid_correct_values = sorted(
+        value for value in correct_values.unique() if value not in {"true", "false"}
+    )
+    if invalid_correct_values:
+        raise KnowledgeBaseLoadError(
+            "study_question_options.csv has invalid is_correct value(s): "
+            + ", ".join(invalid_correct_values)
+        )
+
+    known_question_ids = set(question_ids)
+    option_question_ids = (
+        study_question_options_df["question_id"].astype(str).str.strip()
+    )
+    unknown_question_ids = sorted(set(option_question_ids) - known_question_ids)
+    if unknown_question_ids:
+        raise KnowledgeBaseLoadError(
+            "study_question_options.csv references unknown question id(s): "
+            + ", ".join(unknown_question_ids)
+        )
+
+    options_by_question = {
+        question_id: study_question_options_df[option_question_ids.eq(question_id)]
+        for question_id in known_question_ids
+    }
+    mode_by_question = dict(zip(question_ids, marking_modes, strict=True))
+    for question_id in sorted(known_question_ids):
+        options = options_by_question[question_id]
+        marking_mode = mode_by_question[question_id]
+        if marking_mode == "self_assessed" and not options.empty:
+            raise KnowledgeBaseLoadError(
+                f"Self-assessed study question {question_id} must not have options"
+            )
+        if marking_mode != "automatic":
+            continue
+        if len(options) < 2:
+            raise KnowledgeBaseLoadError(
+                f"Automatic study question {question_id} must have at least two options"
+            )
+        correct_count = (
+            options["is_correct"].astype(str).str.strip().str.lower().eq("true").sum()
+        )
+        if correct_count != 1:
+            raise KnowledgeBaseLoadError(
+                f"Automatic study question {question_id} must have exactly one correct option"
+            )
 
 
 def _validate_references(references_df: pd.DataFrame | None) -> None:

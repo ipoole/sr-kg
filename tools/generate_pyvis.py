@@ -14,7 +14,10 @@ Expected manifest-backed content_blocks.csv columns:
     block_id,concept_id,sequence,kind,title,body
 
 Expected manifest-backed study_questions.csv columns:
-    question_id,concept_id,sequence,question_type,prompt,answer
+    question_id,concept_id,sequence,question_type,marking_mode,prompt,answer
+
+Expected manifest-backed study_question_options.csv columns:
+    question_id,option_id,sequence,text,is_correct
 
 Expected manifest-backed references.csv columns:
     reference_id,reference_type,citation,authors,title,year,url,note

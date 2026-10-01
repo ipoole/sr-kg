@@ -2000,32 +2000,6 @@ def test_legacy_concept_toc_includes_sections_and_study_questions(browser_graph)
 
 
 @pytest.mark.browser
-def test_study_questions_show_prompts_but_keep_answers_closed(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.1")
-
-    questions = page.locator("#info_panel details.study-questions")
-    assert questions.count() == 1
-    assert not questions.evaluate("node => node.open")
-    assert not questions.locator(".study-question").is_visible()
-
-    questions.locator(":scope > summary").click()
-
-    assert "\\n" not in questions.inner_text()
-    assert questions.locator(".study-question").count() == 1
-    assert questions.locator(".study-question .concept-line").count() >= 3
-
-    answer = questions.locator("details.study-answer")
-    assert answer.count() == 1
-    assert not answer.locator(".study-answer-body").is_visible()
-
-    answer.locator("summary").click()
-
-    assert answer.locator(".study-answer-body").is_visible()
-
-
-@pytest.mark.browser
 def test_practice_reading_mode_opens_study_questions_by_default(browser_graph):
     page = browser_graph.page
 
@@ -2615,13 +2589,18 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").inner_text() == "Viewer quick start"
-    assert dialog.locator(".kg-splash-feature-grid section").count() == 6
-    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 6
+    assert dialog.locator(".kg-splash-feature-grid section").count() == 7
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 7
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 6
-    assert "General Relativity remains work in progress" in dialog.inner_text()
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 7
+    assert "The user model has been simplified and improved" in dialog.inner_text()
+    assert "Study" in dialog.inner_text()
+    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 2
+    assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
+    assert "General Relativity remains work in progress" not in dialog.inner_text()
+    assert "tracks attempts and latest results locally" in dialog.inner_text()
     assert "Edit layout" in dialog.inner_text()
     assert "temporary by default" in dialog.inner_text().lower()
 

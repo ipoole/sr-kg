@@ -4,6 +4,9 @@ This viewer presents the knowledge graph at two levels: **modules** show the
 overall structure, while **concepts** reveal the detailed physics. Full behaviour
 is documented in [Viewer behaviour](viewer.md).
 
+**New:** The user model has been simplified and improved so selection, context,
+display, module folding and camera changes behave independently and predictably.
+
 ## Start with the map
 
 The viewer opens with modules folded.
@@ -47,6 +50,11 @@ Pan and zoom freely. Selection pans only enough to reveal an off-screen object.
 Use **Fit** to frame the selection, context, or displayed graph.
 
 The details pane contains explanations, graphics, relationships and questions.
+Use the small checkbox in a teaching block's header to leave a persistent blue
+tick when you have read it; the tick remains visible while the block is folded.
+Completing every block adds a larger blue tick beside the concept or module
+title.
+
 **Show in graph** in a relationship section explicitly changes Context; merely
 scrolling or opening a section does not. Previews and edge inspection preserve
 selection. Browser Back and Forward retrace selected concepts and modules.
@@ -54,3 +62,17 @@ selection. Browser Back and Forward retrace selected concepts and modules.
 Dragging is normally locked. Enable **Tools → Layouts → Edit layout** to move
 nodes. Changes are **Temporary** by default and last until editing is turned off
 or the page reloads; choose **Personal** to save them in this browser.
+
+## Study — NEW
+
+Choose **Practice** to answer study questions. Answers appear only after an
+attempt (or **I don't know**). Automatic questions mark your choice; free-text
+questions show a model answer and ask you to mark yourself honestly. A green
+tick records a correct latest attempt, while a red cross marks an incorrect or
+“I don't know” result. Questions remain available for another attempt and can
+be folded once reviewed. **Tools → Study** shows attempts and latest results,
+kept only in this browser, and links back to each question.
+
+## Content status
+
+Covers Special Relativity and General Relativity.

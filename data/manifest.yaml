@@ -5,6 +5,7 @@ files:
   edge_key: edges_key.csv
   content_blocks: content_blocks.csv
   study_questions: study_questions.csv
+  study_question_options: study_question_options.csv
   references: references.csv
   reference_links: reference_links.csv
   graphic_designs: concept_graphic_designs.csv

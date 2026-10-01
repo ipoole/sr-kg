@@ -62,9 +62,11 @@ def test_concept_serializes_sections_and_study_questions():
             "concept_id": "sr.inertial_frames",
             "sequence": 10,
             "question_type": "short_answer",
+            "marking_mode": "self_assessed",
             "prompt": "Question?",
             "question": "Question?",
             "answer": "Answer.",
+            "options": [],
         },
     ]
     assert data["references"] == [

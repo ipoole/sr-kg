@@ -39,12 +39,18 @@ Generated HTML is a build artifact; do not commit it unless explicitly requested
 Select a module for an overview and concept list, or use the header **Search** button to
 find a concept. Follow links to explore related material and use browser Back
 to return. **Details** filters the reading material; **Practice** shows questions
-with answers you can reveal for self-checking. Use **Context** and **Depth** to
-choose related material, and **Display** to show the full graph, only that context,
-or the details pane on its own.
+that you answer or self-mark before seeing their model answers. Automatic
+questions include an “I don't know” choice; free-text questions ask you to
+compare with a model answer. Clear ticks and crosses show the latest result.
+Use **Context** and **Depth** to choose related material, and **Display** to show
+the full graph, only that context, or the details pane on its own.
 
 See [Viewer behaviour](docs/design/viewer.md) for reading modes, navigation and
-personal notes. The viewer does not currently record mastery or question attempts.
+personal notes. The **Study** tools keep browser-local attempt counts and latest
+results, with links back to each attempted question and controls to reset
+progress. Teaching blocks also have a locally persistent blue read tick. See
+the [Viewer quick start](docs/design/viewer_quick_start.md) for a short
+introduction.
 
 ## Validate and test
 

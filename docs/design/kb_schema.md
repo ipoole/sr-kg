@@ -17,6 +17,7 @@ data/
   edges_key.csv
   content_blocks.csv
   study_questions.csv
+  study_question_options.csv
   references.csv
   reference_links.csv
   concept_graphic_designs.csv
@@ -48,6 +49,7 @@ the source file is required, not that its manifest entry must be written.
 | `files.edge_key` | No | Relation metadata file. |
 | `files.content_blocks` | Yes | Ordered canonical concept-content file. |
 | `files.study_questions` | Yes | Ordered canonical study-question file. |
+| `files.study_question_options` | Yes | Ordered alternatives for automatically marked study questions. May be header-only. |
 | `files.references` | Yes | Bibliographic/source reference registry. |
 | `files.reference_links` | Yes | Links from KB items to source references. |
 | `files.graphic_designs` | No | Concept graphic caption metadata. |
@@ -80,7 +82,9 @@ Put concept prose in `content_blocks.csv`; do not add new prose columns to
 each block.
 
 Use only the current study-question types: `short_answer`, `multiple_choice`,
-and `calculation`. Multiple-choice options currently live in the `prompt` text.
+and `calculation`. Marking is independently `automatic` or `self_assessed`;
+structured automatic-question alternatives live in
+`study_question_options.csv`.
 
 Add source material through `references.csv` and `reference_links.csv`. Prefer
 linking a reference to the most specific useful item, such as a derivation block
@@ -241,12 +245,38 @@ sections. Reading-mode filtering and answer disclosure are described in
 
 | Column | Required | Meaning |
 | --- | --- | --- |
-| `question_id` | Yes | Stable identifier for this question. |
+| `question_id` | Yes | Stable identifier for this question. Browser-local progress is keyed by it, so do not change it during routine editing. |
 | `concept_id` | Yes | Concept this question belongs to. Must exist in `nodes.csv`. |
 | `sequence` | Yes | Numeric ordering key within the concept. |
 | `question_type` | Yes | Question format tag. Allowed values are `short_answer`, `multiple_choice`, and `calculation`. |
+| `marking_mode` | Yes | Response assessment: `automatic` or `self_assessed`. Independent of `question_type`; a calculation may use either. |
 | `prompt` | Yes | Question text, including MathJax and supported custom macros. |
 | `answer` | No | Answer text. The column must exist, but values may be blank during drafting. |
+
+An authored question remains `self_assessed` until its alternatives are
+structured and its correct option is unambiguous. Do not mark a question
+`automatic` merely because prompt text contains lettered choices. For an
+automatic question, `answer` should explain the result after marking; for a
+self-assessed question, it is the model answer used for comparison.
+
+## study_question_options.csv
+
+`study_question_options.csv` contains the ordered alternatives used to mark
+automatic questions. The viewer adds its own `?` response, so it must not be
+authored here.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `question_id` | Yes | Existing question in `study_questions.csv`. |
+| `option_id` | Yes | Stable, globally unique option identifier, conventionally derived from the question ID. |
+| `sequence` | Yes | Numeric ordering key within the question. |
+| `text` | Yes | Option text, including MathJax and supported custom macros. |
+| `is_correct` | Yes | `true` for the one correct option; otherwise `false`. |
+
+An automatic question must have at least two options and exactly one correct
+option. A self-assessed question must have none. Keep `option_id` stable, use
+credible distractors, and vary the correct option's sequence. The viewer adds
+the non-answer `?` choice and records it as an `unknown` outcome.
 
 ## references.csv
 

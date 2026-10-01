@@ -26,6 +26,7 @@ from srkg.model import (
     ModuleContentBlock,
     ModuleSupport,
     StudyQuestion,
+    StudyQuestionOption,
 )
 
 CONTENT_SECTION_COLUMNS = (
@@ -42,6 +43,7 @@ def build_concept_data(
     study_questions_df: pd.DataFrame | None = None,
     references_df: pd.DataFrame | None = None,
     reference_links_df: pd.DataFrame | None = None,
+    study_question_options_df: pd.DataFrame | None = None,
 ) -> dict[str, dict[str, object]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
     return {
@@ -53,6 +55,7 @@ def build_concept_data(
             study_questions_df,
             references_df,
             reference_links_df,
+            study_question_options_df,
         )
     }
 
@@ -64,6 +67,7 @@ def build_concepts(
     study_questions_df: pd.DataFrame | None = None,
     references_df: pd.DataFrame | None = None,
     reference_links_df: pd.DataFrame | None = None,
+    study_question_options_df: pd.DataFrame | None = None,
 ) -> list[Concept]:
     """Build internal concept models from source CSV data."""
     concepts = []
@@ -74,7 +78,7 @@ def build_concepts(
         else []
     )
     study_questions = (
-        build_study_questions_from_df(study_questions_df)
+        build_study_questions_from_df(study_questions_df, study_question_options_df)
         if study_questions_df is not None
         else []
     )
@@ -253,8 +257,40 @@ def build_modules_from_dfs(
     return sorted(modules, key=lambda module: (module.domain, module.sequence, module.module_id))
 
 
-def build_study_questions_from_df(study_questions_df: pd.DataFrame) -> list[StudyQuestion]:
+def build_study_question_options_from_df(
+    study_question_options_df: pd.DataFrame,
+) -> list[StudyQuestionOption]:
+    """Build authored response options from their CSV-style data frame."""
+    options: list[StudyQuestionOption] = []
+    for _, row in study_question_options_df.iterrows():
+        question_id = str(row.get("question_id", "")).strip()
+        option_id = str(row.get("option_id", "")).strip()
+        text = str(row.get("text", "")).strip()
+        if not question_id or not option_id or not text:
+            continue
+        options.append(StudyQuestionOption(
+            question_id=question_id,
+            option_id=option_id,
+            sequence=_parse_int(row.get("sequence", ""), default=0),
+            text=text,
+            is_correct=parse_bool(row.get("is_correct", ""), default=False),
+        ))
+    return sorted(options, key=lambda option: (
+        option.question_id,
+        option.sequence,
+        option.option_id,
+    ))
+
+
+def build_study_questions_from_df(
+    study_questions_df: pd.DataFrame,
+    study_question_options_df: pd.DataFrame | None = None,
+) -> list[StudyQuestion]:
     """Build study questions from a study_questions.csv-style data frame."""
+    options_by_question: dict[str, list[StudyQuestionOption]] = {}
+    if study_question_options_df is not None:
+        for option in build_study_question_options_from_df(study_question_options_df):
+            options_by_question.setdefault(option.question_id, []).append(option)
     questions: list[StudyQuestion] = []
     for _, row in study_questions_df.iterrows():
         question_id = str(row.get("question_id", "")).strip()
@@ -267,8 +303,10 @@ def build_study_questions_from_df(study_questions_df: pd.DataFrame) -> list[Stud
             concept_id=concept_id,
             sequence=_parse_int(row.get("sequence", ""), default=0),
             question_type=str(row.get("question_type", "")).strip(),
+            marking_mode=str(row.get("marking_mode", "")).strip() or "self_assessed",
             prompt=prompt,
             answer=str(row.get("answer", "")).strip(),
+            options=tuple(options_by_question.get(question_id, [])),
         ))
     return sorted(questions, key=lambda question: (
         question.concept_id,
