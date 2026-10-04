@@ -90,7 +90,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--title",
         nargs="+",
-        default=["Knowledge Graph"],
+        default=["Special and General Relativity"],
         help="Title shown at the top of the viewer",
     )
     parser.add_argument(

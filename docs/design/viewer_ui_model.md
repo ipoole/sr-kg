@@ -109,6 +109,12 @@ Initial load fits the displayed graph. Selection may minimally reveal an
 off-screen object. No other selection, context, scope, folding, details,
 viewport, or custom-rule change automatically pans, fits, or rezooms.
 
+In Context-only display with one visible selection representation, using **Fit
+context** arms **Fit++**. A second press temporarily contracts visible context
+nodes towards that representation, preserving their radial directions and
+leaving node-and-edge clearance, then fits them. This explicit presentation
+adjustment is never persisted and is discarded on navigation.
+
 ### Details and inspection
 
 The existing Details reading filters initially remain. They affect details
@@ -141,6 +147,7 @@ completed move explain the active consequence in the context bar.
 | Choose display scope | Displayed-graph membership | Selection, context rule, representation, camera, layout |
 | Fold/expand module | Module representation and projected objects | Selection, semantic context, scope, camera, layout |
 | Fit or pan/zoom | Camera | All semantic state and layout |
+| Fit++ in a selected Context-only view | Temporary context presentation and camera | Semantic state and every saved or edited layout |
 | Scroll details | Active section | Selection and graph state |
 | Change Details mode | Details presentation and viewport | Selection and graph state |
 | Preview or inspect edge | Inspection | Selection and graph state |

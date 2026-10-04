@@ -39,9 +39,11 @@ offered actions to expand its module or any folded part of its context.
 ## Move, read and edit
 
 Pan and zoom freely; selection pans only enough to reveal an off-screen item.
-Use **Fit** to frame the selection, context or displayed graph. Pinch or
-Ctrl/Cmd-wheel over details to magnify its text and graphics without changing
-the graph camera.
+Use **Fit** to frame the selection, context or displayed graph. In Context only,
+fitting a selected context changes the button to **Fit++**; press it to draw the
+visible nodes closer without changing a saved layout. Navigating away restores
+their positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and
+graphics without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or

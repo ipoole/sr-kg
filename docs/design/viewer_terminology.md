@@ -117,6 +117,11 @@ An explicit camera operation that chooses a centre and zoom to frame a named set
 of displayed objects, such as **Fit selection**, **Fit context**, or **Fit full
 graph**. Fit changes only the camera.
 
+After **Fit context** in an eligible Context-only view, **Fit++** is a distinct
+explicit presentation action: it temporarily contracts the visible context
+around its selected representation and then fits the camera. It changes no
+layout and is discarded when the user navigates away.
+
 The distinctions are:
 
 - Display scope: **what is available to see?**

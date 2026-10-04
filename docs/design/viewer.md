@@ -68,6 +68,13 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
+After **Fit context** frames a selected Context-only view, the button becomes
+**Fit++**. This explicit action moves each visible context node radially towards
+the selected concept or folded module until it reaches another node's clearance
+zone, then fits the result. The contraction is presentation state only: saved
+and manually edited layouts are unchanged, and selection, context, scope or
+module-representation navigation restores the underlying positions.
+
 Node dragging is disabled during ordinary browsing; a drag attempt explains how
 to unlock it. Enable **Tools → Layouts → Edit layout** to move nodes. Changes are
 Temporary by default, remain across viewer-state changes, and are discarded when

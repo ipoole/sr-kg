@@ -197,6 +197,8 @@
         var layoutEditModeEnabled = false;
         var layoutEditPersistence = "temporary";
         var temporaryLayout = {concepts: {}, modules: {}};
+        var contextFitPrimedKey = null;
+        var contextContractionState = null;
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
@@ -472,6 +474,7 @@
         }
 
         function resetToPublishedLayout() {
+          resetContextFitInteraction({restore: false});
           if (personalLayoutSaveTimer !== null) {
             clearTimeout(personalLayoutSaveTimer);
             personalLayoutSaveTimer = null;
@@ -616,6 +619,13 @@
           if (!layoutDraggingEnabled()) { return; }
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
           if (draggedIds.length === 0) { return; }
+          if (contextContractionState) {
+            showContextNotice(
+              "Contracted context adjusted temporarily — navigating away restores the layout.",
+              "context-contracted"
+            );
+            return;
+          }
           var affectedModules = {};
           draggedIds.forEach(function(nodeId) {
             var position = graphPositionForNode(nodeId);
@@ -4324,6 +4334,7 @@
         /* Module fold actions. */
         function setSelectedModuleFoldState(moduleId, folded) {
           if (!getModule(moduleId)) { return; }
+          resetContextFitInteraction();
           moduleId = String(moduleId);
           preferredFoldedModules[moduleId] = Boolean(folded);
           if (folded) {
@@ -4365,6 +4376,7 @@
         }
 
         function foldAllModules() {
+          resetContextFitInteraction();
           var ids = moduleIdsWithMembers();
           ids.forEach(function(moduleId) {
             preferredFoldedModules[String(moduleId)] = true;
@@ -4384,6 +4396,7 @@
         }
 
         function unfoldAllModules() {
+          resetContextFitInteraction();
           var ids = moduleIdsWithMembers();
           ids.forEach(function(moduleId) {
             preferredFoldedModules[String(moduleId)] = false;
@@ -5898,6 +5911,7 @@
         }
 
         function setViewerContextRule(rule) {
+          resetContextFitInteraction();
           viewerState.contextRule = createContextRule(
             rule && rule.preset,
             rule && rule.depth,
@@ -5908,6 +5922,7 @@
         }
 
         function showRelationshipSectionInGraph(preset, fullTree) {
+          resetContextFitInteraction();
           viewerState.contextRule = createContextRule(
             preset,
             fullTree ? ContextDepth.TRANSITIVE : ContextDepth.ONE_HOP
@@ -5921,6 +5936,7 @@
         }
 
         function setViewerDisplayScope(scope) {
+          resetContextFitInteraction();
           scope = scope === DisplayScope.CONTEXT || scope === DisplayScope.HIDDEN
             ? scope
             : DisplayScope.FULL;
@@ -6017,6 +6033,341 @@
           return revealNodeIds(selectionRepresentationNodeIds(), options);
         }
 
+        function updateFitApplyButton() {
+          var button = document.getElementById("kg_fit_apply");
+          if (!button) { return; }
+          var primed = Boolean(contextFitPrimedKey);
+          button.textContent = primed ? "Fit++" : "Fit";
+          button.setAttribute("data-fit-action", primed ? "contract" : "fit");
+          button.setAttribute(
+            "aria-label",
+            primed ? "Temporarily contract and fit this context" : "Fit selected target"
+          );
+          button.title = primed
+            ? "Temporarily contract this context around the selection"
+            : "";
+        }
+
+        function clearContextFitPriming() {
+          contextFitPrimedKey = null;
+          updateFitApplyButton();
+        }
+
+        function restoreContextContractionPositions() {
+          if (!contextContractionState) { return false; }
+          Object.keys(contextContractionState.restorePositions).forEach(function(nodeId) {
+            var position = contextContractionState.restorePositions[nodeId];
+            if (nodes.get(nodeId) && validLayoutPosition(position)) {
+              network.moveNode(nodeId, position.x, position.y);
+            }
+          });
+          contextContractionState = null;
+          updateNodeLabelPositions();
+          return true;
+        }
+
+        function underlyingContextNodePosition(nodeId) {
+          var moduleId = moduleIdFromGraphNodeId(nodeId);
+          if (moduleId && selectedModuleIsFolded(moduleId)) {
+            return moduleGraphNodePosition(moduleId);
+          }
+          if (getConcept(nodeId)) {
+            return effectiveConceptPosition(nodeId);
+          }
+          return graphPositionForNode(nodeId);
+        }
+
+        function resetContextFitInteraction(options) {
+          options = options || {};
+          if (options.restore !== false) {
+            restoreContextContractionPositions();
+          } else {
+            contextContractionState = null;
+          }
+          clearContextFitPriming();
+        }
+
+        function contextContractionCandidate() {
+          var selection = viewerSelectionSnapshot();
+          if (
+            viewerState.displayScope !== DisplayScope.CONTEXT ||
+            selection.type === "none" ||
+            !lastGraphRender
+          ) {
+            return null;
+          }
+          var anchorIds = selectionRepresentationNodeIds(selection);
+          var nodeIds = representedNodeIds(lastGraphRender.contextNodeIds);
+          if (anchorIds.length !== 1 || nodeIds.length < 2) { return null; }
+          var anchorId = String(anchorIds[0]);
+          if (nodeIds.indexOf(anchorId) === -1 || !visibleGraphNode(anchorId)) { return null; }
+          nodeIds = nodeIds.map(String).filter(function(id, index, values) {
+            return visibleGraphNode(id) && values.indexOf(id) === index;
+          });
+          if (nodeIds.length < 2) { return null; }
+          return {
+            anchorId: anchorId,
+            nodeIds: nodeIds,
+            key: JSON.stringify({
+              selection: selection,
+              contextRule: viewerState.contextRule,
+              nodeIds: nodeIds.slice().sort()
+            })
+          };
+        }
+
+        function contractionNodeExtents(nodeId) {
+          nodeId = String(nodeId);
+          var node = nodes.get(nodeId) || {};
+          if (node.isModuleNode === true || moduleIdFromGraphNodeId(nodeId)) {
+            var width = Number(node.moduleFootprintWidth) || 1;
+            var height = Number(node.moduleFootprintHeight) || 1;
+            return {
+              left: width / 2,
+              right: width / 2,
+              top: height / 2,
+              bottom: height / 2,
+              width: width,
+              height: height
+            };
+          }
+          var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+          var radius = baseRadius;
+          if (nodeId === String(activeNodeId || "")) {
+            radius *= activeNodeRadiusScale;
+          }
+          var footprint = conceptFootprintExtents(nodeId);
+          var labelVisibilityScale = Number(kgNodeLabelConfig.hideBelowPx) /
+            Math.max(1, nodeLabelFontSize);
+          var minimumVisibleLabelInflation = labelVisibilityScale > 0
+            ? Math.max(1, 0.25 / labelVisibilityScale)
+            : 1;
+          var left = Math.max(radius, footprint.left * minimumVisibleLabelInflation);
+          var right = Math.max(radius, footprint.right * minimumVisibleLabelInflation);
+          var top = Math.max(radius, footprint.top);
+          var bottom = Math.max(
+            radius,
+            radius + Math.max(0, footprint.bottom - baseRadius) *
+              minimumVisibleLabelInflation
+          );
+          var label = nodeLabelEls[nodeId];
+          var scale = network && network.getScale ? Number(network.getScale()) : 1;
+          if (
+            label &&
+            Number.isFinite(scale) &&
+            scale > 0 &&
+            window.getComputedStyle(label).display !== "none"
+          ) {
+            var renderedLabelBounds = label.getBoundingClientRect();
+            var renderedLabelWidth = renderedLabelBounds.width / scale;
+            var renderedLabelHeight = renderedLabelBounds.height / scale;
+            left = Math.max(left, renderedLabelWidth / 2);
+            right = Math.max(right, renderedLabelWidth / 2);
+            bottom = Math.max(
+              bottom,
+              radius + (3 / scale) + renderedLabelHeight
+            );
+          }
+          return {
+            left: left,
+            right: right,
+            top: top,
+            bottom: bottom,
+            width: left + right,
+            height: top + bottom
+          };
+        }
+
+        function contractionClearance(left, right) {
+          var characteristicSize = Math.max(
+            Math.min(left.width, left.height),
+            Math.min(right.width, right.height)
+          );
+          return Math.max(60, Math.min(240, characteristicSize * 0.18));
+        }
+
+        function segmentEntryParameter(start, end, bounds) {
+          var delta = {x: end.x - start.x, y: end.y - start.y};
+          var entry = 0;
+          var exit = 1;
+          [
+            {origin: start.x, delta: delta.x, min: bounds.left, max: bounds.right},
+            {origin: start.y, delta: delta.y, min: bounds.top, max: bounds.bottom}
+          ].forEach(function(axis) {
+            if (entry > exit) { return; }
+            if (Math.abs(axis.delta) < 0.000001) {
+              if (axis.origin < axis.min || axis.origin > axis.max) {
+                entry = 2;
+                exit = 1;
+              }
+              return;
+            }
+            var first = (axis.min - axis.origin) / axis.delta;
+            var second = (axis.max - axis.origin) / axis.delta;
+            if (first > second) {
+              var swap = first;
+              first = second;
+              second = swap;
+            }
+            entry = Math.max(entry, first);
+            exit = Math.min(exit, second);
+          });
+          if (entry > exit || exit < 0 || entry > 1) { return null; }
+          return Math.max(0, entry);
+        }
+
+        function contractionObstacleBounds(movingExtents, obstacle) {
+          var clearance = contractionClearance(movingExtents, obstacle.extents);
+          return {
+            left: obstacle.position.x - obstacle.extents.left - clearance - movingExtents.right,
+            right: obstacle.position.x + obstacle.extents.right + clearance + movingExtents.left,
+            top: obstacle.position.y - obstacle.extents.top - clearance - movingExtents.bottom,
+            bottom: obstacle.position.y + obstacle.extents.bottom + clearance + movingExtents.top
+          };
+        }
+
+        function contractionCollisionEntry(start, end, movingExtents, obstacle) {
+          return segmentEntryParameter(
+            start,
+            end,
+            contractionObstacleBounds(movingExtents, obstacle)
+          );
+        }
+
+        function contractionPositionInsideBounds(position, bounds) {
+          return position.x > bounds.left && position.x < bounds.right &&
+            position.y > bounds.top && position.y < bounds.bottom;
+        }
+
+        function clearInitialContractionCollision(start, anchor, extents, placed) {
+          var radial = {x: start.x - anchor.x, y: start.y - anchor.y};
+          var length = Math.hypot(radial.x, radial.y);
+          if (length < 0.000001) { return copyLayoutPosition(start); }
+          var direction = {x: radial.x / length, y: radial.y / length};
+          var position = copyLayoutPosition(start);
+
+          for (var iteration = 0; iteration < 24; iteration += 1) {
+            var overlapping = placed.map(function(obstacle) {
+              return contractionObstacleBounds(extents, obstacle);
+            }).filter(function(bounds) {
+              return contractionPositionInsideBounds(position, bounds);
+            });
+            if (overlapping.length === 0) { break; }
+
+            var travel = 0;
+            overlapping.forEach(function(bounds) {
+              var horizontalExit = Infinity;
+              var verticalExit = Infinity;
+              if (direction.x > 0.000001) {
+                horizontalExit = (bounds.right - position.x) / direction.x;
+              } else if (direction.x < -0.000001) {
+                horizontalExit = (bounds.left - position.x) / direction.x;
+              }
+              if (direction.y > 0.000001) {
+                verticalExit = (bounds.bottom - position.y) / direction.y;
+              } else if (direction.y < -0.000001) {
+                verticalExit = (bounds.top - position.y) / direction.y;
+              }
+              travel = Math.max(travel, Math.min(horizontalExit, verticalExit));
+            });
+            if (!Number.isFinite(travel) || travel < 0) { break; }
+            position = {
+              x: position.x + direction.x * (travel + 0.5),
+              y: position.y + direction.y * (travel + 0.5)
+            };
+          }
+          return position;
+        }
+
+        function contractCurrentContext(candidate) {
+          candidate = candidate || contextContractionCandidate();
+          if (!candidate) { return false; }
+          restoreContextContractionPositions();
+
+          var originalPositions = network.getPositions(candidate.nodeIds);
+          var restorePositions = {};
+          candidate.nodeIds.forEach(function(nodeId) {
+            var position = underlyingContextNodePosition(nodeId);
+            if (validLayoutPosition(position)) {
+              restorePositions[nodeId] = copyLayoutPosition(position);
+            }
+          });
+          var anchorPosition = originalPositions[candidate.anchorId];
+          if (!validLayoutPosition(anchorPosition)) { return false; }
+          var ordered = candidate.nodeIds.filter(function(id) {
+            return id !== candidate.anchorId && validLayoutPosition(originalPositions[id]);
+          }).sort(function(leftId, rightId) {
+            var left = originalPositions[leftId];
+            var right = originalPositions[rightId];
+            var leftDistance = Math.hypot(
+              left.x - anchorPosition.x,
+              left.y - anchorPosition.y
+            );
+            var rightDistance = Math.hypot(
+              right.x - anchorPosition.x,
+              right.y - anchorPosition.y
+            );
+            return leftDistance - rightDistance || String(leftId).localeCompare(String(rightId));
+          });
+          var placed = [{
+            id: candidate.anchorId,
+            position: copyLayoutPosition(anchorPosition),
+            extents: contractionNodeExtents(candidate.anchorId)
+          }];
+          var finalPositions = {};
+          finalPositions[candidate.anchorId] = copyLayoutPosition(anchorPosition);
+
+          ordered.forEach(function(nodeId) {
+            var start = originalPositions[nodeId];
+            var extents = contractionNodeExtents(nodeId);
+            var collisionFreeStart = clearInitialContractionCollision(
+              start,
+              anchorPosition,
+              extents,
+              placed
+            );
+            var movedOutward = Math.hypot(
+              collisionFreeStart.x - start.x,
+              collisionFreeStart.y - start.y
+            ) > 0.001;
+            var stop = 1;
+            if (!movedOutward) {
+              placed.forEach(function(obstacle) {
+                var entry = contractionCollisionEntry(
+                  start,
+                  anchorPosition,
+                  extents,
+                  obstacle
+                );
+                if (entry !== null) { stop = Math.min(stop, entry); }
+              });
+              stop = Math.max(0, stop - 0.0001);
+            }
+            var finalPosition = movedOutward ? collisionFreeStart : {
+              x: start.x + (anchorPosition.x - start.x) * stop,
+              y: start.y + (anchorPosition.y - start.y) * stop
+            };
+            network.moveNode(nodeId, finalPosition.x, finalPosition.y);
+            finalPositions[nodeId] = finalPosition;
+            placed.push({id: nodeId, position: finalPosition, extents: extents});
+          });
+
+          contextContractionState = {
+            key: candidate.key,
+            anchorId: candidate.anchorId,
+            originalPositions: originalPositions,
+            restorePositions: restorePositions,
+            finalPositions: finalPositions
+          };
+          updateNodeLabelPositions();
+          showTransientContextNotice(
+            "Context contracted temporarily — navigating away restores the layout.",
+            "context-contracted",
+            3600
+          );
+          return true;
+        }
+
         function fitViewerTarget(target) {
           var selection = viewerSelectionSnapshot();
           var ids = [];
@@ -6030,8 +6381,35 @@
           } else {
             ids = representedNodeIds(lastGraphRender ? lastGraphRender.contextNodeIds : []);
           }
+          var contractionCandidate = target === "context"
+            ? contextContractionCandidate()
+            : null;
+          if (
+            contractionCandidate &&
+            contextFitPrimedKey === contractionCandidate.key
+          ) {
+            clearContextFitPriming();
+            if (contractCurrentContext(contractionCandidate)) {
+              ids = contractionCandidate.nodeIds;
+            }
+            fitNodesToAvailableRect(ids, {maxScale: 0.85});
+            return;
+          }
+          clearContextFitPriming();
           fitNodesToAvailableRect(ids, {maxScale: target === "selection" ? 0.75 : 0.85});
+          if (contractionCandidate) {
+            contextFitPrimedKey = contractionCandidate.key;
+            updateFitApplyButton();
+          }
         }
+
+        window.kgContextContractionSnapshot = function() {
+          return {
+            primed: Boolean(contextFitPrimedKey),
+            active: Boolean(contextContractionState),
+            anchorId: contextContractionState ? contextContractionState.anchorId : null
+          };
+        };
 
         function contextTraversalLabelParts(relation, direction) {
           var label = relationDisplayLabel(relation);
@@ -7289,6 +7667,7 @@
 
           var changed = activeNodeId !== (type === "concept" ? id : null) ||
             activeModuleId !== (type === "module" ? id : null);
+          if (changed) { resetContextFitInteraction(); }
           closeInspection();
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
@@ -7464,6 +7843,7 @@
 
         function clearViewerSelection(options) {
           options = options || {};
+          resetContextFitInteraction();
           closeInspection();
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
@@ -8037,6 +8417,9 @@
             customTraversals: viewerState.contextRule.customTraversals
           });
         });
+        document.getElementById("kg_fit_select").addEventListener("change", function() {
+          clearContextFitPriming();
+        });
         document.getElementById("kg_fit_apply").addEventListener("click", function() {
           fitViewerTarget(document.getElementById("kg_fit_select").value);
         });
@@ -8071,6 +8454,7 @@
           }
         });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
+          resetContextFitInteraction();
           var contextIds = lastGraphRender ? lastGraphRender.contextNodeIds : [];
           var changed = false;
           contextIds.forEach(function(conceptId) {

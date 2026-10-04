@@ -1,6 +1,12 @@
 from tools.generate_pyvis import build_parser
 
 
+def test_generate_pyvis_parser_defaults_to_relativity_title():
+    args = build_parser().parse_args([])
+
+    assert args.title == ["Special and General Relativity"]
+
+
 def test_generate_pyvis_parser_accepts_module_report_options():
     args = build_parser().parse_args([
         "--data-root",

@@ -37,6 +37,10 @@ saved as browser-local overrides. This choice is independent of Full graph or
 Context-only display; Hidden display cannot be edited. Changing display never
 automatically fits the camera.
 
+**Fit++** contraction is separate from both layout modes. It temporarily moves
+only the current visible context, writes neither overlay nor saved positions,
+and is discarded on navigation.
+
 ## Personal persistence and publication
 
 Browser-local overrides save Personal edits relative to the published layout and
