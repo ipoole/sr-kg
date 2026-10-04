@@ -244,6 +244,39 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
 
 
 @pytest.mark.browser
+def test_study_questions_share_one_stable_note_anchor(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept("2.1")
+    page.locator("#kg_notes_section summary").click()
+    page.locator("#kg_notes_edit_toggle").check()
+
+    study = page.locator("#info_panel details.study-questions")
+    assert study.locator(".kg-add-note").count() == 1
+    if not study.evaluate("element => element.open"):
+        study.locator(":scope > summary").click()
+    study.locator(".kg-add-note").click()
+    study.locator(".user-note-title-input").fill("Review the question set")
+    study.locator(".user-note-body-input").fill("Return to these questions later.")
+    study.locator(".user-note-close").click()
+
+    stored = page.evaluate(
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+    )
+    assert stored["anchor"]["sectionKey"] == "study-questions"
+    assert stored["section"] == "Study Questions"
+
+    browser_graph.click_concept("1.1")
+    browser_graph.click_concept("2.1")
+    study = page.locator("#info_panel details.study-questions")
+    if not study.evaluate("element => element.open"):
+        study.locator(":scope > summary").click()
+    assert study.locator("details.user-note summary").inner_text() == (
+        "Review the question set"
+    )
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
+
+
+@pytest.mark.browser
 def test_legacy_concept_note_csv_still_imports(browser_graph):
     page = browser_graph.page
     import_path = browser_graph.output_path.parent / "legacy-notes.csv"

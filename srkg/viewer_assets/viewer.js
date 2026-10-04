@@ -1575,6 +1575,11 @@
                 ));
               });
             }
+            if (Array.isArray(concept.study_questions) && concept.study_questions.length > 0) {
+              candidates = candidates.concat(
+                noteAnchorSpecs("", "study-questions", "Study Questions", "")
+              );
+            }
           } else if (targetType === "module") {
             var module = getModule(targetId);
             if (!module) { return candidates; }
@@ -6900,6 +6905,10 @@
                 html += renderSelfAssessedStudyQuestion(item, index);
               }
             });
+            html += renderNotesAtAnchor(
+              "concept", nodeId, "Study Questions", 0, "",
+              noteAnchorSpecs("", "study-questions", "Study Questions", "")[0]
+            );
             html += "</details>";
           }
           html += renderUnmatchedNotes("concept", nodeId);
@@ -8334,6 +8343,10 @@
           if (addNoteButton) {
             e.preventDefault();
             if (!noteEditingEnabled) { return; }
+            var enclosingSection = addNoteButton.closest("#info_panel > details");
+            var enclosingSectionId = enclosingSection && enclosingSection.open
+              ? enclosingSection.id
+              : "";
             createUserNote(
               addNoteButton.getAttribute("data-target-type") || "concept",
               addNoteButton.getAttribute("data-target-id") || activeNodeId,
@@ -8348,6 +8361,10 @@
               }
             );
             refreshActiveConcept();
+            if (enclosingSectionId) {
+              var refreshedSection = document.getElementById(enclosingSectionId);
+              if (refreshedSection) { refreshedSection.open = true; }
+            }
             return;
           }
 

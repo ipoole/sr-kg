@@ -2881,4 +2881,46 @@
           grid-row: 2;
           margin-top: 5px;
         }
+        #info_panel .module-sticky-header {
+          align-items: start;
+          column-gap: 5px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        #info_panel .module-sticky-header .concept-title-row {
+          grid-column: 1;
+          grid-row: 1;
+          min-width: 0;
+        }
+        #info_panel .module-sticky-header .concept-toc {
+          align-self: start;
+          grid-column: 2;
+          grid-row: 1;
+          margin: 0;
+          min-width: 0;
+        }
+        #info_panel .module-sticky-header .concept-toc-title {
+          margin: 0;
+          white-space: nowrap;
+        }
+        #info_panel .module-sticky-header .concept-toc[open] {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          margin-top: 5px;
+        }
+
+        /* iOS WebKit magnifies the page when a smaller form control receives
+           focus. Keep editable controls at its safe text size; compact buttons
+           and surrounding labels can remain smaller. */
+        select,
+        textarea,
+        input[type="text"],
+        input[type="search"],
+        input[type="email"],
+        input[type="url"],
+        input[type="tel"],
+        input[type="number"],
+        input:not([type]) {
+          font-size: 16px !important;
+        }
       }

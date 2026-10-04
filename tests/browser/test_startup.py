@@ -1776,6 +1776,26 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
 
 
 @pytest.mark.browser
+def test_phone_text_controls_avoid_ios_focus_zoom(browser_graph):
+    page = browser_graph.page
+
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(browser_graph.output_path.as_uri() + "?phone-form-fonts", wait_until="domcontentloaded")
+
+    controls = page.locator(
+        'select, textarea, input[type="text"], input[type="search"], '
+        'input[type="email"], input[type="url"], input[type="tel"], '
+        'input[type="number"], input:not([type])'
+    )
+    font_sizes = controls.evaluate_all(
+        "elements => elements.map(element => parseFloat(getComputedStyle(element).fontSize))"
+    )
+
+    assert font_sizes
+    assert min(font_sizes) >= 16
+
+
+@pytest.mark.browser
 def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     page = browser_graph.page
 
@@ -1790,7 +1810,8 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
         "kg_fit_apply",
     ]
     boxes = [page.locator(f"#{control_id}").bounding_box() for control_id in ids]
-    assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) <= 2
+    centres = [box["y"] + box["height"] / 2 for box in boxes]
+    assert max(centres) - min(centres) <= 2
     assert all(box["x"] >= 0 and box["x"] + box["width"] <= 390 for box in boxes)
     assert not page.locator(
         '.kg-graph-context-controls label:not(.kg-visually-hidden)'
@@ -1877,6 +1898,34 @@ def test_phone_concept_masthead_shares_one_row_until_contents_open(repo_browser_
     title_row_bottom = page.locator("#info_panel .concept-title-row").bounding_box()["y"] + (
         page.locator("#info_panel .concept-title-row").bounding_box()["height"]
     )
+    toc_summary.click()
+    assert toc.evaluate("element => element.open")
+    assert toc.locator(".concept-toc-links").bounding_box()["y"] >= title_row_bottom
+
+
+@pytest.mark.browser
+def test_phone_module_masthead_places_contents_to_right_until_open(repo_browser_graph):
+    page = repo_browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 800})
+    page.goto(
+        repo_browser_graph.output_path.as_uri() + "#module-sr.spacetime_foundations",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_selector("#info_panel .module-sticky-header .module-title")
+
+    masthead = page.locator("#info_panel .module-sticky-header")
+    title = masthead.locator(".module-title")
+    title_row = masthead.locator(".concept-title-row")
+    toc = masthead.locator(".concept-toc")
+    toc_summary = toc.locator(":scope > summary")
+    title_box = title.bounding_box()
+    toc_box = toc_summary.bounding_box()
+
+    assert not toc.evaluate("element => element.open")
+    assert toc_box["x"] >= title_box["x"] + title_box["width"]
+    assert abs(toc_box["y"] - title_box["y"]) <= 6
+
+    title_row_bottom = title_row.bounding_box()["y"] + title_row.bounding_box()["height"]
     toc_summary.click()
     assert toc.evaluate("element => element.open")
     assert toc.locator(".concept-toc-links").bounding_box()["y"] >= title_row_bottom
