@@ -40,15 +40,18 @@ Rendering constants and drawing mechanics remain in code.
 
 ## User state
 
-User notes and personal global-layout overrides live in browser-local storage,
-separate from authored content. Notes can target concept or module sections and
-support backwards-compatible CSV import/export; layout has a versioned
-publication workflow described in [Layout](layout.md). Neither writes back to
-the KB automatically. Browser origin and profile determine which local state is
-available. New notes use the authored `block_id` where available and retain
-textual context around their insertion point. Existing title/index anchors are
-migrated when they resolve unambiguously. Notes whose content no longer has a
-safe match remain stored and are visibly flagged for placement.
+Notes, personal layout, study attempts and reading marks form one local-first
+[personal-data model](personal_data.md), separate from authored content and
+transient viewer state. A versioned portable archive supports backup and
+transfer; browser origin and profile still determine which local copy is
+available. Layout has the separate publication workflow described in
+[Layout](layout.md). Browser data never writes back to the KB automatically.
+
+Notes can target concept or module sections. New notes use the authored
+`block_id` where available and retain textual context around their insertion
+point. Existing title/index anchors are migrated when they resolve
+unambiguously. Notes whose content no longer has a safe match remain stored and
+are visibly flagged for placement.
 
 ## Future plans
 

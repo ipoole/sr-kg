@@ -46,11 +46,12 @@ Use **Context** and **Depth** to choose related material, and **Display** to sho
 the full graph, only that context, or the details pane on its own.
 
 See [Viewer behaviour](docs/design/viewer.md) for reading modes, navigation and
-personal notes. The **Study** tools keep browser-local attempt counts and latest
-results, with links back to each attempted question and controls to reset
-progress. Teaching blocks also have a locally persistent blue read tick. See
-the [Viewer quick start](docs/design/viewer_quick_start.md) for a short
-introduction.
+personal notes. The **Study** tools keep attempt counts and latest results, with
+links back to each attempted question and controls to reset progress. Teaching
+blocks also have a persistent blue read tick. Notes, personal layout, study
+attempts and reading marks remain local by default; **Tools → Personal data**
+exports or imports them together as a transparent CSV archive. See the
+[Viewer quick start](docs/design/viewer_quick_start.md) for a short introduction.
 
 ## Validate and test
 

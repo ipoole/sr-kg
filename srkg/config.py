@@ -41,6 +41,8 @@ SPLASH_DISMISSED_STORAGE_KEY = "srkg.splash.dismissed.v1"
 GLOBAL_LAYOUT_STORAGE_KEY = "srkg.layout.global.v1"
 STUDY_PROGRESS_STORAGE_KEY = "srkg.studyProgress.v1"
 CONTENT_READ_PROGRESS_STORAGE_KEY = "srkg.contentReadProgress.v1"
+PERSONAL_DATA_STORAGE_KEY = "srkg.personalData.v1"
+PERSONAL_DATA_DEVICE_STORAGE_KEY = "srkg.personalData.device.v1"
 UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
 EDGE_COLOURS = [
     "#1f77b4",

@@ -70,6 +70,14 @@
         <div id="kg_study_list"></div>
         <button id="kg_study_reset_all" type="button" hidden>Reset all study progress</button>
       </details>
+      <details id="kg_personal_data_section" class="kg-fold">
+        <summary>Personal data</summary>
+        <p id="kg_personal_data_status" aria-live="polite">Stored in this browser.</p>
+        <button id="kg_personal_data_export" type="button">Export personal data</button>
+        <button id="kg_personal_data_import_button" type="button">Import personal data</button>
+        <input id="kg_personal_data_import_input" type="file"
+               accept=".zip,application/zip" hidden>
+      </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>
         <label class="kg-notes-toggle">
@@ -159,6 +167,22 @@
       </div>
       <div id="kg_inspection_body"></div>
     </dialog>
+    <dialog id="kg_personal_data_import_dialog" class="kg-personal-data-dialog"
+            aria-labelledby="kg_personal_data_import_title">
+      <h2 id="kg_personal_data_import_title">Import personal data</h2>
+      <p id="kg_personal_data_import_summary"></p>
+      <fieldset>
+        <legend>How should it be imported?</legend>
+        <label><input type="radio" name="kg_personal_import_mode" value="merge" checked>
+          Merge with data in this browser</label>
+        <label><input type="radio" name="kg_personal_import_mode" value="replace">
+          Replace data in this browser</label>
+      </fieldset>
+      <div class="kg-personal-data-dialog-actions">
+        <button id="kg_personal_data_import_cancel" type="button">Cancel</button>
+        <button id="kg_personal_data_import_apply" type="button">Import</button>
+      </div>
+    </dialog>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
       <h2 id="kg_splash_title">Viewer quick start</h2>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
@@ -215,6 +239,7 @@
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
+            <li>Tools → Personal data exports or imports notes, layout, study and reading records together.<span class="kg-status-badge">NEW</span></li>
           </ul>
         </section>
         <section>

@@ -44,7 +44,8 @@ and is discarded on navigation.
 ## Personal persistence and publication
 
 Browser-local overrides save Personal edits relative to the published layout and
-survive reload. They exclude camera, selection, display and Temporary changes.
+survive reload. They form part of the unified [personal-data](personal_data.md)
+profile and archive. They exclude camera, selection, display and Temporary changes.
 A published-revision mismatch displays a keep-or-reset warning under
 **Tools → Layouts**. Existing personal positions are applied immediately;
 the warning does not block their use pending a decision.

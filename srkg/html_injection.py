@@ -29,6 +29,8 @@ from srkg.config import (
     NODE_LABEL_HIDE_BELOW_PX,
     NODE_LABEL_WIDTH,
     NOTE_EDITING_STORAGE_KEY,
+    PERSONAL_DATA_DEVICE_STORAGE_KEY,
+    PERSONAL_DATA_STORAGE_KEY,
     SPLASH_DISMISSED_STORAGE_KEY,
     STUDY_PROGRESS_STORAGE_KEY,
     USER_NOTES_STORAGE_KEY,
@@ -83,6 +85,10 @@ def inject_controls(
         },
     )
     js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(
+        _asset_text("personal_data.js")
+    ) + _script_tag(
+        _asset_text("personal_data_archive.js")
+    ) + _script_tag(
         _render_template(
             "viewer.js",
             {
@@ -174,5 +180,7 @@ def _viewer_runtime_config() -> dict[str, object]:
             "globalLayout": GLOBAL_LAYOUT_STORAGE_KEY,
             "studyProgress": STUDY_PROGRESS_STORAGE_KEY,
             "contentReadProgress": CONTENT_READ_PROGRESS_STORAGE_KEY,
+            "personalData": PERSONAL_DATA_STORAGE_KEY,
+            "personalDataDevice": PERSONAL_DATA_DEVICE_STORAGE_KEY,
         },
     }

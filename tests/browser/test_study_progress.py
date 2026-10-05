@@ -43,7 +43,9 @@ def test_study_progress_records_latest_outcome_and_attempt_count(browser_graph):
 def test_study_progress_discards_malformed_and_unknown_stored_entries(browser_graph):
     page = browser_graph.page
     page.evaluate(
-        """() => localStorage.setItem("srkg.studyProgress.v1", JSON.stringify({
+        """() => {
+          localStorage.removeItem("srkg.personalData.v1");
+          localStorage.setItem("srkg.studyProgress.v1", JSON.stringify({
           version: 1,
           questions: {
             "2.1.q1": {
@@ -62,7 +64,8 @@ def test_study_progress_discards_malformed_and_unknown_stored_entries(browser_gr
               lastAttemptAt: ""
             }
           }
-        }))"""
+          }));
+        }"""
     )
     page.reload(wait_until="load")
     page.wait_for_function("() => Boolean(window.kgStudyProgress)")

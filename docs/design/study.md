@@ -54,10 +54,13 @@ Colour is never the only result cue: ticks or crosses always appear with text.
 
 ## Progress and scorecard
 
-Progress is browser-local and keyed by stable `question_id`. Store only the
-attempt count, latest outcome, and latest-attempt time--not the learner's typed
-answer. The Study control-panel section lists attempted questions, newest
-first, and summarises the number currently correct out of the number attempted.
+Progress is local-first and keyed by stable `question_id`. Individual,
+timestamped attempt events make cross-browser archive merging lossless; the
+viewer derives the attempt count, latest outcome and latest-attempt time. It
+does not store the learner's typed answer. The Study control-panel section
+lists attempted questions, newest first, and summarises the number currently
+correct out of the number attempted. Study events are included in the unified
+[personal-data archive](personal_data.md).
 
 Following a scorecard entry selects its concept, opens Practice details, and
 brings the question into view. Progress can be reset per question or, with

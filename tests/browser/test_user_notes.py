@@ -172,7 +172,10 @@ def test_user_notes_export_and_import_csv(browser_graph):
     assert "anchor_context_before" in rows[0]
     assert "anchor_context_after" in rows[0]
 
-    page.evaluate("""() => localStorage.removeItem("srkg.userNotes.v1")""")
+    page.evaluate("""() => {
+      localStorage.removeItem("srkg.userNotes.v1");
+      localStorage.removeItem("srkg.personalData.v1");
+    }""")
     page.reload(wait_until="domcontentloaded")
     page.wait_for_selector("#kg_controls", state="attached")
     page.wait_for_function("""() => typeof network !== "undefined" && typeof nodes !== "undefined" """)
@@ -314,7 +317,9 @@ def test_legacy_concept_note_csv_still_imports(browser_graph):
 @pytest.mark.browser
 def test_legacy_local_storage_note_is_loaded_and_migrated(browser_graph):
     page = browser_graph.page
-    page.evaluate("""() => localStorage.setItem('srkg.userNotes.v1', JSON.stringify({
+    page.evaluate("""() => {
+      localStorage.removeItem('srkg.personalData.v1');
+      localStorage.setItem('srkg.userNotes.v1', JSON.stringify({
       version: 1,
       notes: [{
         id: 'stored-v1-note',
@@ -326,7 +331,8 @@ def test_legacy_local_storage_note_is_loaded_and_migrated(browser_graph):
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z'
       }]
-    }))""")
+      }));
+    }""")
     page.reload(wait_until="domcontentloaded")
     page.wait_for_function("() => typeof network !== 'undefined'")
     browser_graph.click_concept("2.1")

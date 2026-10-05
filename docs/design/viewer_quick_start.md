@@ -53,13 +53,21 @@ Dragging is locked while browsing. Enable **Tools → Layouts → Edit layout**;
 moves are **Temporary** until editing ends or the page reloads, or **Personal**
 when saved in this browser.
 
+## Personal data
+
+Notes, Personal layout moves, question attempts and blue reading ticks are
+stored together in this browser. **Tools → Personal data** exports them as one
+ZIP of readable CSV files. Import that archive in another browser and choose
+**Merge** to combine work or **Replace** to restore the exported snapshot.
+Neither action changes authored graph content.
+
 ## Study — NEW
 
 Choose **Practice** to answer questions. Answers appear after an attempt or **I
 don't know**. Automatic questions mark your choice; for free text, compare the
 model answer and mark yourself. Green ticks and red crosses record the latest
 result. **Tools → Study** lists attempts and links to each question. Progress is
-stored only in this browser.
+stored locally and is included in the Personal data archive.
 
 ## Content status
 

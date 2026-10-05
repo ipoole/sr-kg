@@ -1026,12 +1026,15 @@ def test_stale_personal_layout_can_be_kept_or_reset(browser_graph):
     page = browser_graph.page
     storage_key = "srkg.layout.global.v1"
     page.evaluate(
-        """([key, revision]) => localStorage.setItem(key, JSON.stringify({
+        """([key, revision]) => {
+          localStorage.removeItem("srkg.personalData.v1");
+          localStorage.setItem(key, JSON.stringify({
           schema_version: 1,
           published_revision: revision + "-old",
           concepts: {"2.1": {x: 222, y: 333}},
           modules: {}
-        }))""",
+        }));
+        }""",
         [storage_key, "unpublished"],
     )
     page.reload(wait_until="domcontentloaded")
@@ -2870,7 +2873,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
         in dialog.inner_text()
     )
     assert "Study" in dialog.inner_text()
-    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 2
+    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 4
     assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
     assert "General Relativity remains work in progress" not in dialog.inner_text()
     assert "tracks attempts and latest results locally" in dialog.inner_text()

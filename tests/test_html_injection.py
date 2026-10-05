@@ -40,6 +40,7 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert 'coloneqq: "\\\\mathrel{:=}"' in injected
     assert "function kgAfterReady()" in injected
     assert "var kgModuleGeometry =" in injected
+    assert "global.kgCreatePersonalDataStore = createStore" in injected
     assert injected.index("var kgModuleGeometry =") < injected.index("var conceptData =")
     assert "var conceptData = {};" in injected
     assert "var moduleData = {};" in injected
@@ -48,6 +49,8 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '"globalLayout": "srkg.layout.global.v1"' in injected
     assert '"studyProgress": "srkg.studyProgress.v1"' in injected
     assert '"contentReadProgress": "srkg.contentReadProgress.v1"' in injected
+    assert '"personalData": "srkg.personalData.v1"' in injected
+    assert '"personalDataDevice": "srkg.personalData.device.v1"' in injected
 
 
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():

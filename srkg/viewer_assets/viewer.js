@@ -185,6 +185,11 @@
         var originalNodes = {};
         var originalEdges = {};
         var globalLayoutStorageKey = kgStorageKeys.globalLayout;
+        var personalDataStore = window.kgCreatePersonalDataStore({
+          storage: window.localStorage,
+          storageKeys: kgStorageKeys
+        });
+        window.kgPersonalData = personalDataStore;
         var personalLayoutState = loadPersonalLayoutState();
         var globalLayout = buildInitialGlobalLayout();
         var personalLayoutSaveTimer = null;
@@ -248,6 +253,7 @@
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
+        var pendingPersonalDataImport = null;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -373,17 +379,10 @@
         }
 
         function loadPersonalLayoutState() {
-          var raw = safeLocalStorageGet(globalLayoutStorageKey);
-          if (!raw) { return null; }
-          try {
-            var parsed = JSON.parse(raw);
-            if (!parsed || parsed.schema_version !== 1) { return null; }
-            if (!parsed.concepts || typeof parsed.concepts !== "object") { return null; }
-            if (!parsed.modules || typeof parsed.modules !== "object") { return null; }
-            return parsed;
-          } catch (e) {
-            return null;
-          }
+          var parsed = personalDataStore.getLayoutState();
+          if (!parsed || Object.keys(parsed.concepts).length === 0 &&
+              Object.keys(parsed.modules).length === 0) { return null; }
+          return parsed;
         }
 
         function personalLayoutOverrides() {
@@ -411,6 +410,11 @@
           var overrides = personalLayoutOverrides();
           if (Object.keys(overrides.concepts).length === 0 && Object.keys(overrides.modules).length === 0) {
             personalLayoutState = null;
+            personalDataStore.replaceLayout({
+              schema_version: 1,
+              published_revision: String(publishedLayout.revision),
+              concepts: {}, modules: {}
+            });
             safeLocalStorageRemove(globalLayoutStorageKey);
             updateLayoutControls();
             return;
@@ -423,6 +427,7 @@
             concepts: overrides.concepts,
             modules: overrides.modules
           };
+          personalDataStore.replaceLayout(personalLayoutState);
           safeLocalStorageSet(globalLayoutStorageKey, JSON.stringify(personalLayoutState));
           updateLayoutControls();
         }
@@ -480,6 +485,11 @@
             personalLayoutSaveTimer = null;
           }
           personalLayoutState = null;
+          personalDataStore.replaceLayout({
+            schema_version: 1,
+            published_revision: String(publishedLayout.revision),
+            concepts: {}, modules: {}
+          });
           safeLocalStorageRemove(globalLayoutStorageKey);
           globalLayout = buildInitialGlobalLayout(false);
           temporaryLayout = {concepts: {}, modules: {}};
@@ -1209,29 +1219,8 @@
           return index;
         }
 
-        function emptyContentReadProgress() {
-          return {version: 1, blocks: {}};
-        }
-
         function loadContentReadProgress() {
-          var raw = safeLocalStorageGet(contentReadProgressStorageKey);
-          if (!raw) { return emptyContentReadProgress(); }
-          try {
-            var parsed = JSON.parse(raw);
-            if (!parsed || Number(parsed.version) !== 1 ||
-                !parsed.blocks || typeof parsed.blocks !== "object") {
-              return emptyContentReadProgress();
-            }
-            var state = emptyContentReadProgress();
-            Object.keys(parsed.blocks).forEach(function(blockId) {
-              if (contentBlockIndex[blockId] && parsed.blocks[blockId] === true) {
-                state.blocks[blockId] = true;
-              }
-            });
-            return state;
-          } catch (err) {
-            return emptyContentReadProgress();
-          }
+          return personalDataStore.getReadingState(contentBlockIndex);
         }
 
         function saveContentReadProgress() {
@@ -1280,11 +1269,8 @@
         function setContentBlockRead(blockId, isRead) {
           blockId = String(blockId || "");
           if (!contentBlockIndex[blockId]) { return false; }
-          if (isRead) {
-            contentReadProgressState.blocks[blockId] = true;
-          } else {
-            delete contentReadProgressState.blocks[blockId];
-          }
+          personalDataStore.setRead(blockId, isRead);
+          contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
           return true;
@@ -1298,46 +1284,8 @@
           setRead: setContentBlockRead
         };
 
-        function emptyStudyProgress() {
-          return {version: 1, questions: {}};
-        }
-
-        function normalizeStudyProgressEntry(entry) {
-          if (!entry || typeof entry !== "object") { return null; }
-          var attemptCount = Number(entry.attemptCount);
-          var outcome = String(entry.lastOutcome || "");
-          var attemptedAt = String(entry.lastAttemptAt || "");
-          if (!Number.isInteger(attemptCount) || attemptCount < 1) { return null; }
-          if (["correct", "incorrect", "unknown"].indexOf(outcome) === -1) {
-            return null;
-          }
-          if (!attemptedAt || Number.isNaN(Date.parse(attemptedAt))) { return null; }
-          return {
-            attemptCount: attemptCount,
-            lastOutcome: outcome,
-            lastAttemptAt: attemptedAt
-          };
-        }
-
         function loadStudyProgress() {
-          var raw = safeLocalStorageGet(studyProgressStorageKey);
-          if (!raw) { return emptyStudyProgress(); }
-          try {
-            var parsed = JSON.parse(raw);
-            if (!parsed || Number(parsed.version) !== 1 ||
-                !parsed.questions || typeof parsed.questions !== "object") {
-              return emptyStudyProgress();
-            }
-            var state = emptyStudyProgress();
-            Object.keys(parsed.questions).forEach(function(questionId) {
-              if (!studyQuestionIndex[questionId]) { return; }
-              var entry = normalizeStudyProgressEntry(parsed.questions[questionId]);
-              if (entry) { state.questions[questionId] = entry; }
-            });
-            return state;
-          } catch (err) {
-            return emptyStudyProgress();
-          }
+          return personalDataStore.getStudyState(studyQuestionIndex);
         }
 
         function copyStudyProgress(value) {
@@ -1368,16 +1316,12 @@
               ["correct", "incorrect", "unknown"].indexOf(outcome) === -1) {
             return null;
           }
-          var previous = studyProgressState.questions[questionId];
           var date = attemptedAt ? new Date(attemptedAt) : new Date();
           if (Number.isNaN(date.getTime())) { date = new Date(); }
-          var entry = {
-            attemptCount: previous ? previous.attemptCount + 1 : 1,
-            lastOutcome: outcome,
-            lastAttemptAt: date.toISOString()
-          };
-          studyProgressState.questions[questionId] = entry;
+          personalDataStore.addStudyAttempt(questionId, outcome, date.toISOString());
+          studyProgressState = loadStudyProgress();
           saveStudyProgress();
+          var entry = studyProgressState.questions[questionId];
           announceStudyProgressChange(questionId);
           return copyStudyProgress(entry);
         }
@@ -1387,14 +1331,16 @@
           if (!Object.prototype.hasOwnProperty.call(studyProgressState.questions, questionId)) {
             return false;
           }
-          delete studyProgressState.questions[questionId];
+          personalDataStore.resetStudy(questionId);
+          studyProgressState = loadStudyProgress();
           saveStudyProgress();
           announceStudyProgressChange(questionId);
           return true;
         }
 
         function resetAllStudyProgress() {
-          studyProgressState = emptyStudyProgress();
+          personalDataStore.resetStudy("");
+          studyProgressState = loadStudyProgress();
           saveStudyProgress();
           announceStudyProgressChange("");
           return true;
@@ -1415,24 +1361,15 @@
         };
 
         function loadUserNotes() {
-          var raw = safeLocalStorageGet(userNotesStorageKey);
-          if (!raw) { return {version: 2, notes: []}; }
-          try {
-            var parsed = JSON.parse(raw);
-            if (!parsed || !Array.isArray(parsed.notes)) {
-              return {version: 2, notes: []};
-            }
-            return {
-              version: 2,
-              notes: parsed.notes.map(normalizeUserNote).filter(Boolean)
-            };
-          } catch (err) {
-            return {version: 2, notes: []};
-          }
+          return {
+            version: 2,
+            notes: personalDataStore.getNotes().map(normalizeUserNote).filter(Boolean)
+          };
         }
 
         function saveUserNotes() {
-          var saved = safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
+          var saved = personalDataStore.replaceNotes(userNotesState.notes);
+          safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
           setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
           refreshNodeTooltips();
           renderNotesOverview();
@@ -2354,6 +2291,83 @@
           saveUserNotes();
           return imported;
         }
+
+        function setPersonalDataStatus(message) {
+          var status = document.getElementById("kg_personal_data_status");
+          if (status) { status.textContent = String(message || ""); }
+        }
+
+        function personalDataSummaryText(summary) {
+          return [
+            summary.notes + " note" + (summary.notes === 1 ? "" : "s"),
+            summary.layout + " personal layout position" + (summary.layout === 1 ? "" : "s"),
+            summary.study + " study attempt record" + (summary.study === 1 ? "" : "s"),
+            summary.reading + " read mark" + (summary.reading === 1 ? "" : "s")
+          ].join(", ");
+        }
+
+        function exportPersonalData() {
+          writePersonalLayoutNow();
+          var bytes = window.kgPersonalDataArchive.exportBytes(personalDataStore.getSnapshot());
+          var blob = new Blob([bytes], {type: "application/zip"});
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "srkg-personal-data.zip";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+          setPersonalDataStatus("Personal data exported.");
+        }
+
+        function showPersonalDataImport(profile) {
+          pendingPersonalDataImport = profile;
+          var summary = window.kgPersonalDataArchive.summarize(profile);
+          document.getElementById("kg_personal_data_import_summary").textContent =
+            "This archive contains " + personalDataSummaryText(summary) + ".";
+          var merge = document.querySelector(
+            'input[name="kg_personal_import_mode"][value="merge"]'
+          );
+          if (merge) { merge.checked = true; }
+          var dialog = document.getElementById("kg_personal_data_import_dialog");
+          if (dialog.showModal) { dialog.showModal(); }
+          else { dialog.setAttribute("open", ""); }
+        }
+
+        function closePersonalDataImport() {
+          pendingPersonalDataImport = null;
+          var dialog = document.getElementById("kg_personal_data_import_dialog");
+          if (dialog.close) { dialog.close(); }
+          else { dialog.removeAttribute("open"); }
+        }
+
+        function applyPersonalDataImport() {
+          if (!pendingPersonalDataImport) { return; }
+          var selected = document.querySelector(
+            'input[name="kg_personal_import_mode"]:checked'
+          );
+          var mode = selected ? selected.value : "merge";
+          if (mode === "replace" && !window.confirm(
+            "Replace all personal data currently stored in this browser?"
+          )) { return; }
+          var succeeded = mode === "replace"
+            ? personalDataStore.replaceSnapshot(pendingPersonalDataImport)
+            : personalDataStore.mergeSnapshot(pendingPersonalDataImport);
+          if (!succeeded) {
+            setPersonalDataStatus("Could not save the imported personal data.");
+            return;
+          }
+          try {
+            window.sessionStorage.setItem(
+              "srkg.personalData.importStatus",
+              "Personal data " + (mode === "replace" ? "replaced" : "merged") + "."
+            );
+          } catch (err) { /* reload still applies the import */ }
+          window.location.reload();
+        }
+
+        window.kgExportPersonalData = exportPersonalData;
 
         /* Concept details panel rendering and MathJax refresh. */
         function renderCaptionText(s) {
@@ -8479,6 +8493,40 @@
         });
 
         document.getElementById("kg_splash_dismiss").addEventListener("click", dismissSplash);
+
+        try {
+          var personalImportStatus = window.sessionStorage.getItem(
+            "srkg.personalData.importStatus"
+          );
+          if (personalImportStatus) {
+            setPersonalDataStatus(personalImportStatus);
+            window.sessionStorage.removeItem("srkg.personalData.importStatus");
+          }
+        } catch (err) { /* status remains the local-storage default */ }
+
+        document.getElementById("kg_personal_data_export").addEventListener("click", function() {
+          exportPersonalData();
+        });
+        document.getElementById("kg_personal_data_import_button").addEventListener("click", function() {
+          document.getElementById("kg_personal_data_import_input").click();
+        });
+        document.getElementById("kg_personal_data_import_input").addEventListener("change", function(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) { return; }
+          file.arrayBuffer().then(function(buffer) {
+            showPersonalDataImport(window.kgPersonalDataArchive.importBytes(buffer));
+          }).catch(function() {
+            setPersonalDataStatus("Could not import this personal-data archive.");
+          }).finally(function() {
+            e.target.value = "";
+          });
+        });
+        document.getElementById("kg_personal_data_import_cancel").addEventListener(
+          "click", closePersonalDataImport
+        );
+        document.getElementById("kg_personal_data_import_apply").addEventListener(
+          "click", applyPersonalDataImport
+        );
 
         var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
         notesEditToggle.checked = noteEditingEnabled;
