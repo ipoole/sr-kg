@@ -84,6 +84,21 @@
       #kg_controls.kg-hidden {
         display: none;
       }
+      .kg-product-brand {
+        align-items: baseline;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px 7px;
+        margin-bottom: 2px;
+      }
+      .kg-product-name {
+        color: #123e5a;
+        font-size: 1.08em;
+      }
+      .kg-product-tagline {
+        color: #526476;
+        font-size: 0.9em;
+      }
       #kg_display_scope_select {
         min-width: 132px;
       }

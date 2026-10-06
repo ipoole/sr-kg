@@ -2866,7 +2866,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
-    assert dialog.locator("#kg_splash_title").inner_text() == "Viewer quick start"
+    assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
     assert dialog.locator(".kg-splash-feature-grid section").count() == 7
     assert dialog.locator(".kg-splash-feature-grid section h3").count() == 7
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(

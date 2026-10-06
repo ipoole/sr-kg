@@ -33,6 +33,10 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     )
 
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in injected
+    assert "<title>PhysicsKG - An Atlas of Physics Knowledge</title>" in injected
+    assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in injected
+    assert '<b class="kg-product-name">PhysicsKG</b>' in injected
+    assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
     assert '<div id="kg_view_title">SR &lt;Graph&gt; &amp; Fields</div>' in injected
     assert "<h2>SR &lt;Graph&gt; &amp; Fields</h2>" in injected
     assert 'id="kg_controls"' in injected
@@ -51,6 +55,15 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '"contentReadProgress": "srkg.contentReadProgress.v1"' in injected
     assert '"personalData": "srkg.personalData.v1"' in injected
     assert '"personalDataDevice": "srkg.personalData.device.v1"' in injected
+
+
+def test_favicon_asset_is_compact_accessible_svg():
+    from srkg.html_injection import ASSET_DIR
+
+    favicon = (ASSET_DIR / "favicon.svg").read_text(encoding="utf-8")
+
+    assert '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"' in favicon
+    assert '<title id="title">PhysicsKG</title>' in favicon
 
 
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():

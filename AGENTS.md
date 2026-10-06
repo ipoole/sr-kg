@@ -39,11 +39,11 @@ because Chromium must launch outside the normal command sandbox.
 
 ## Build Artifacts
 
-`output/interactive_graph.html` is a generated build product. After any material
+`output/PhysicsKG.html` is a generated build product. After any material
 data, content, layout, or viewer change, rebuild it with:
 
 ```bash
-conda run -n sr-kg python tools/generate_pyvis.py --data-root data --out output/interactive_graph.html
+conda run -n sr-kg python tools/generate_pyvis.py --data-root data --out output/PhysicsKG.html
 ```
 
 Because the file is large, leave it out of commits unless the user explicitly

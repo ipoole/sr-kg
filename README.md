@@ -1,6 +1,6 @@
-# SR Knowledge Graph
+# PhysicsKG
 
-A knowledge-graph study companion for special relativity, classical fields,
+**An Atlas of Physics Knowledge.** A knowledge-graph study companion for special relativity, classical fields,
 general relativity and supporting mathematics. It is primarily aimed at personal
 study around Theoretical Minimum level, with an ambition to support a wider
 range of backgrounds.
@@ -26,10 +26,10 @@ From the repository root:
 
 ```bash
 conda run -n sr-kg python tools/generate_pyvis.py \
-  --data-root data --out output/interactive_graph.html
+  --data-root data --out output/PhysicsKG.html
 ```
 
-Open `output/interactive_graph.html` in a browser. The generated page references
+Open `output/PhysicsKG.html` in a browser. The generated page references
 CDN-hosted vis-network assets and MathJax, as well as a relative
 `lib/bindings/utils.js` asset; it is not a self-contained offline file.
 Generated HTML is a build artifact; do not commit it unless explicitly requested.

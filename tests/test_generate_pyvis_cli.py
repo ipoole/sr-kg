@@ -1,10 +1,11 @@
 from tools.generate_pyvis import build_parser
 
 
-def test_generate_pyvis_parser_defaults_to_relativity_title():
+def test_generate_pyvis_parser_defaults_to_product_title():
     args = build_parser().parse_args([])
 
-    assert args.title == ["Special and General Relativity"]
+    assert args.title == ["PhysicsKG - An Atlas of Physics Knowledge"]
+    assert args.out == "PhysicsKG.html"
 
 
 def test_generate_pyvis_parser_accepts_module_report_options():

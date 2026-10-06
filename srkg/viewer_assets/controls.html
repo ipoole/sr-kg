@@ -25,7 +25,10 @@
       </div>
     </header>
     <div id="kg_controls">
-      <b>Knowledge graph explorer</b><br>
+      <div class="kg-product-brand">
+        <b class="kg-product-name">__PRODUCT_NAME__</b>
+        <span class="kg-product-tagline">__PRODUCT_TAGLINE__</span>
+      </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
       <div id="kg_status">Ready. Use Context to choose the graph relationships.</div>
@@ -184,7 +187,7 @@
       </div>
     </dialog>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
-      <h2 id="kg_splash_title">Viewer quick start</h2>
+      <h2 id="kg_splash_title">__PRODUCT_NAME__ quick start</h2>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
       <p>The user model has been simplified and the UI space optimised for phones.<span class="kg-status-badge">NEW</span></p>
       <div class="kg-splash-feature-grid">

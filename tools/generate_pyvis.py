@@ -46,7 +46,7 @@ Expected edges_key.csv columns:
 Only the documented columns are supported.
 
 Usage:
-    python generate_pyvis.py --data-root data --out interactive_graph.html
+    python generate_pyvis.py --data-root data --out PhysicsKG.html
 
 Dependencies:
     pip install pandas networkx pyvis
@@ -63,6 +63,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from srkg.kb import resolve_knowledge_base_paths
+from srkg.branding import PRODUCT_TITLE
 from srkg.pipeline import generate_viewer_from_root
 from srkg.dag import format_dag_reports, load_dag_reports
 from srkg.module_diagnostics import (
@@ -84,13 +85,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="data",
         help="Path to a KB data root containing manifest.yaml.",
     )
-    parser.add_argument("--out", default="interactive_graph.html", help="Output HTML file")
+    parser.add_argument("--out", default="PhysicsKG.html", help="Output HTML file")
     parser.add_argument("--height", default="100vh")
     parser.add_argument("--width", default="100%")
     parser.add_argument(
         "--title",
         nargs="+",
-        default=["Special and General Relativity"],
+        default=[PRODUCT_TITLE],
         help="Title shown at the top of the viewer",
     )
     parser.add_argument(

@@ -6,9 +6,12 @@ inserts everything into the generated PyVis document. Browser behaviour lives
 in ``srkg/viewer_assets`` so CSS and JavaScript can be reviewed independently.
 """
 
+import base64
 import json
 from pathlib import Path
 from html import escape as html_escape
+
+from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE
 
 from srkg.config import (
     CONTENT_READ_PROGRESS_STORAGE_KEY,
@@ -82,6 +85,8 @@ def inject_controls(
         {
             "__TITLE_HTML__": f'<div id="kg_view_title">{html_escape(view_title)}</div>',
             "__VIEW_TITLE__": html_escape(view_title),
+            "__PRODUCT_NAME__": html_escape(PRODUCT_NAME),
+            "__PRODUCT_TAGLINE__": html_escape(PRODUCT_TAGLINE),
         },
     )
     js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(
@@ -106,7 +111,7 @@ def inject_controls(
         )
     )
 
-    head_assets = MATHJAX_ASSET + "\n" + css
+    head_assets = _product_head_html() + "\n" + MATHJAX_ASSET + "\n" + css
     if 'name="viewport"' not in html_text and "name='viewport'" not in html_text:
         head_assets = VIEWPORT_META + "\n" + head_assets
 
@@ -114,6 +119,16 @@ def inject_controls(
     html_text = html_text.replace("<body>", "<body>\n" + controls)
     html_text = html_text.replace("</body>", js + "\n</body>")
     return html_text
+
+
+def _product_head_html() -> str:
+    """Return standalone document identity metadata, including its favicon."""
+    favicon = base64.b64encode(_asset_text("favicon.svg").encode("utf-8")).decode("ascii")
+    return (
+        f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
+        '<link rel="icon" type="image/svg+xml" '
+        f'href="data:image/svg+xml;base64,{favicon}">'
+    )
 
 
 def _asset_text(name: str) -> str:

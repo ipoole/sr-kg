@@ -169,7 +169,7 @@ Example filtered build:
 ```bash
 conda run -n sr-kg python tools/generate_pyvis.py \
   --data-root data \
-  --out output/interactive_graph.html \
+  --out output/PhysicsKG.html \
   --domains gr \
   --also-load-linked-concepts
 ```
@@ -251,7 +251,7 @@ Graphics workflow:
 6. inspect clipping, collisions, icon legibility, and conceptual distinctness.
 
 Generated review sheets and HTML are build artifacts. Regenerate
-`output/interactive_graph.html` when needed, let the reviewer open it
+`output/PhysicsKG.html` when needed, let the reviewer open it
 manually, and do not commit generated HTML unless explicitly requested.
 
 Module graphics are optional and should primarily give a module a memorable
