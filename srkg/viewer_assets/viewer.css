@@ -2789,16 +2789,49 @@
         }
         #kg_app_header .kg-shell-button,
         #kg_app_header .kg-canvas-select {
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
           font-size: 11px;
-          padding: 4px;
+          font-weight: 400;
+          line-height: 1.15;
+          min-height: 27px;
+          padding: 3px 4px;
+        }
+        #kg_app_header .kg-canvas-select,
+        .kg-graph-context-controls .kg-canvas-select {
+          -webkit-appearance: none;
+          appearance: none;
+          background-color: #fff;
+          background-image:
+            linear-gradient(45deg, transparent 50%, #334155 50%),
+            linear-gradient(135deg, #334155 50%, transparent 50%);
+          background-position:
+            calc(100% - 9px) 50%,
+            calc(100% - 5px) 50%;
+          background-repeat: no-repeat;
+          background-size: 4px 4px, 4px 4px;
+          font: 400 11px/1.15 Arial, sans-serif;
+          padding-right: 16px;
         }
         .kg-shell-graph-control,
         .kg-shell-details-control {
+          background: #f8fafc;
+          border: 1px solid #d7e0ea;
+          border-radius: 7px;
           flex: 0 1 auto;
           gap: 3px;
+          padding: 2px 3px;
         }
-        #kg_display_scope_select { width: 58px; }
-        #kg_details_view_select { width: 66px; }
+        .kg-shell-control label {
+          display: inline-flex;
+          flex: 0 0 auto;
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          line-height: 1.15;
+          white-space: nowrap;
+        }
+        #kg_display_scope_select { width: 68px; }
+        #kg_details_view_select { width: 56px; }
         #kg_clear_selection { white-space: nowrap; }
         #kg_controls { top: calc(var(--kg-header-height) + 8px); }
 
@@ -2819,14 +2852,30 @@
         .kg-graph-context-controls label:not(.kg-visually-hidden) {
           display: none;
         }
+        .kg-graph-context-controls label.kg-group-label {
+          display: inline-flex;
+          flex: 0 0 auto;
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          line-height: 1.15;
+          white-space: nowrap;
+        }
         .kg-graph-context-controls .kg-canvas-select,
         .kg-graph-context-controls .kg-shell-button {
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
           font-size: 11px;
+          font-weight: 400;
+          line-height: 1.15;
+          min-height: 25px;
           padding: 3px 4px;
         }
-        #kg_context_preset_select { width: 86px; }
-        #kg_context_depth_select { width: 58px; }
-        #kg_fit_select { width: 68px; }
+        .kg-graph-context-controls .kg-canvas-select {
+          padding-right: 16px;
+        }
+        #kg_context_preset_select { width: 108px; }
+        #kg_context_depth_select { width: 68px; }
+        #kg_fit_select { width: 78px; }
         #kg_fit_apply { white-space: nowrap; }
         .kg-context-summary {
           font-size: 10.5px;

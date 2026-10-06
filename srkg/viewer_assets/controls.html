@@ -2,7 +2,7 @@
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
       <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
       <div class="kg-shell-control kg-shell-graph-control">
-        <label for="kg_display_scope_select">Display</label>
+        <label for="kg_display_scope_select">Graph</label>
         <select id="kg_display_scope_select" class="kg-canvas-select" aria-label="Graph display scope">
           <option value="full" selected>Full graph</option>
           <option value="context">Context only</option>
@@ -99,7 +99,7 @@
       <section id="kg_graph_context_panel" class="kg-graph-context-panel" aria-label="Graph context controls">
         <div class="kg-graph-context-controls">
           <div class="kg-context-control-group" aria-label="Context rule">
-            <label for="kg_context_preset_select">Context</label>
+            <label for="kg_context_preset_select" class="kg-group-label">Context</label>
             <select id="kg_context_preset_select" class="kg-canvas-select">
               <option value="connections">Connections</option>
               <option value="prerequisites">Prerequisites</option>
@@ -118,7 +118,7 @@
             </select>
           </div>
           <div class="kg-context-control-group" aria-label="Camera framing">
-            <label for="kg_fit_select" class="kg-visually-hidden">Fit target</label>
+            <label for="kg_fit_select" class="kg-group-label">Frame</label>
             <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target">
               <option value="reveal">Reveal selection</option>
               <option value="selection">Fit selection</option>

@@ -1726,10 +1726,12 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     workspace = page.locator("#kg_workspace").bounding_box()
     assert header["height"] <= 48
     assert abs(workspace["y"] - header["height"]) <= 1
-    assert not page.locator(".kg-shell-graph-control label").is_visible()
-    assert not page.locator(".kg-shell-details-control label").is_visible()
+    assert page.locator(".kg-shell-graph-control label").inner_text() == "Graph"
+    assert page.locator(".kg-shell-graph-control label").is_visible()
+    assert page.locator(".kg-shell-details-control label").inner_text() == "Details"
+    assert page.locator(".kg-shell-details-control label").is_visible()
     assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Full"
-    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Details"
+    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full"
     assert page.locator("#kg_clear_selection").inner_text() == "Clear"
 
     metrics = page.evaluate(
@@ -1816,9 +1818,12 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     centres = [box["y"] + box["height"] / 2 for box in boxes]
     assert max(centres) - min(centres) <= 2
     assert all(box["x"] >= 0 and box["x"] + box["width"] <= 390 for box in boxes)
-    assert not page.locator(
-        '.kg-graph-context-controls label:not(.kg-visually-hidden)'
-    ).first.is_visible()
+    visible_labels = page.locator(".kg-graph-context-controls .kg-group-label")
+    assert visible_labels.count() == 2
+    assert visible_labels.nth(0).inner_text() == "Context"
+    assert visible_labels.nth(1).inner_text() == "Frame"
+    assert visible_labels.nth(0).is_visible()
+    assert visible_labels.nth(1).is_visible()
     assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
 
     summary = page.locator("#kg_context_summary")

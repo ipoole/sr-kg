@@ -5815,7 +5815,7 @@
           }, compact);
           setResponsiveOptionLabels("kg_details_view_select", {
             hide: ["Hide details", "Hide"],
-            full: ["Full details", "Details"],
+            full: ["Full details", "Full"],
             folded: ["Folded", "Folded"],
             core: ["Core", "Core"],
             maths: ["Maths", "Maths"],
