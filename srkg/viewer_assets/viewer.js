@@ -7379,10 +7379,18 @@
           typesetInfoPanel(options);
         }
 
+        window.kgCloseEdgeKey = function() {
+          setInfoPanelVisible(false);
+        };
+
         window.kgShowEdgeKey = function() {
           setInfoPanelVisible(true);
           var relations = Object.keys(edgeKey).sort();
-          var html = "<h2>Edge Key</h2>";
+          var html = '<div class="edge-key-header">' +
+            "<h2>Edge Key</h2>" +
+            '<button id="kg_edge_key_close" type="button" ' +
+            'aria-label="Close edge key" onclick="kgCloseEdgeKey()">Close</button>' +
+            "</div>";
 
           if (relations.length === 0) {
             html += "<p>No edge key data was loaded.</p>";
@@ -7395,7 +7403,6 @@
           html += "<thead><tr>" +
             "<th>Relation</th>" +
             "<th>Direction</th>" +
-            "<th>Category</th>" +
             "<th>Meaning</th>" +
             "<th>Example</th>" +
             "</tr></thead><tbody>";
@@ -7407,7 +7414,6 @@
               '<td><strong class="edge-key-relation" style="color:' + escapeHtml(colour) + '">' +
               escapeHtml(relation) + "</strong></td>" +
               "<td>" + (item.directed ? "directed" : "undirected") + "</td>" +
-              "<td>" + escapeHtml(item.category || "") + "</td>" +
               "<td>" + escapeHtml(item.meaning || "") + "</td>" +
               "<td>" + escapeHtml(item.example || "") + "</td>" +
               "</tr>";

@@ -2181,6 +2181,21 @@
         width: 100%;
     }
 
+    #info_panel .edge-key-header {
+        align-items: center;
+        background: #fff;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.6em;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+
+    #info_panel .edge-key-header h2 {
+        margin: 0;
+    }
+
     #info_panel .edge-key-table th,
     #info_panel .edge-key-table td {
         border: 1px solid #ddd;

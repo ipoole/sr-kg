@@ -72,3 +72,6 @@ stored locally and is included in the Personal data archive.
 ## Content status
 
 Covers Special Relativity and General Relativity.
+
+**Enhanced historical context — NEW:** selected concepts now explain how key
+ideas developed, who contributed, and how their physical meaning changed.

@@ -108,6 +108,12 @@ Use block kinds semantically, not as presentation instructions. In particular:
 - `convention`: notation, sign, units, coordinates, frame, or gauge; and
 - `warning`: a genuine trap, caveat, or limitation.
 
+Use `historical_note` selectively where history improves understanding or
+recognition. Explain the problem being addressed, the contribution made, and
+how the concept's meaning changed; do not write a detached mini-biography.
+Treat disputed priority and parallel contributions neutrally and support
+specific attributions with suitable sources.
+
 Repeated kinds are allowed. Avoid one large explanation block containing
 several separable teaching moves.
 

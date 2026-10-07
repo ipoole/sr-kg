@@ -1348,16 +1348,22 @@ def test_module_details_omit_redundant_domain_line(browser_graph):
 
 
 @pytest.mark.browser
-def test_edge_key_colours_relation_name_without_colour_column(browser_graph):
+def test_edge_key_omits_redundant_category_and_can_be_dismissed(browser_graph):
     page = browser_graph.page
 
     page.evaluate("() => kgShowEdgeKey()")
 
     headings = page.locator("#info_panel .edge-key-table th").all_inner_texts()
-    assert headings == ["Relation", "Direction", "Category", "Meaning", "Example"]
+    assert headings == ["Relation", "Direction", "Meaning", "Example"]
     relation = page.locator("#info_panel .edge-key-relation").first
     assert relation.inner_text()
     assert relation.evaluate("el => getComputedStyle(el).color") != "rgb(0, 0, 0)"
+
+    close = page.locator("#kg_edge_key_close")
+    assert close.is_visible()
+    close.click()
+    assert not page.locator("#info_panel").is_visible()
+    assert page.locator("#kg_details_view_select").input_value() == "hide"
 
 
 @pytest.mark.browser
