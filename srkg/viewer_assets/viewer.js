@@ -2494,6 +2494,7 @@
           if (document.getElementById("kg_workspace")) { return; }
           var panel = document.getElementById("info_panel");
           var contextPanel = document.getElementById("kg_graph_context_panel");
+          var emptyGraphState = document.getElementById("kg_empty_graph_state");
           var originalGraphParent = graphContainer.parentElement;
           var shell = document.createElement("main");
           var graphPane = document.createElement("section");
@@ -2524,6 +2525,9 @@
           shell.appendChild(detailsPane);
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
+          if (emptyGraphState) {
+            graphSurface.appendChild(emptyGraphState);
+          }
           if (contextPanel) {
             graphPane.insertBefore(contextPanel, graphSurface);
           }
@@ -5858,6 +5862,13 @@
           if (customEdit) {
             customEdit.hidden = viewerState.contextRule.preset !== ContextPreset.CUSTOM;
           }
+          updateFitApplyButton();
+          var emptyGraphState = document.getElementById("kg_empty_graph_state");
+          if (emptyGraphState) {
+            emptyGraphState.hidden = !(
+              viewerState.displayScope === DisplayScope.CONTEXT && noSelection
+            );
+          }
           var representedCount = 0;
           var representedModuleCount = 0;
           foldedModuleIdList().forEach(function(moduleId) {
@@ -6050,16 +6061,37 @@
         function updateFitApplyButton() {
           var button = document.getElementById("kg_fit_apply");
           if (!button) { return; }
-          var primed = Boolean(contextFitPrimedKey);
+          var fitSelect = document.getElementById("kg_fit_select");
+          var target = fitSelect ? fitSelect.value : "context";
+          var selection = viewerSelectionSnapshot();
+          var hasTarget = false;
+          if (target === "reveal" || target === "selection") {
+            hasTarget = selection.type !== "none" &&
+              selectionRepresentationNodeIds(selection).length > 0;
+          } else if (target === "displayed") {
+            hasTarget = Boolean(lastGraphRender && lastGraphRender.fitIds.length > 0);
+          } else {
+            hasTarget = selection.type !== "none" && representedNodeIds(
+              lastGraphRender ? lastGraphRender.contextNodeIds : []
+            ).length > 0;
+          }
+          var primed = hasTarget && Boolean(contextFitPrimedKey);
+          button.disabled = !hasTarget;
           button.textContent = primed ? "Fit++" : "Fit";
           button.setAttribute("data-fit-action", primed ? "contract" : "fit");
           button.setAttribute(
             "aria-label",
-            primed ? "Temporarily contract and fit this context" : "Fit selected target"
+            !hasTarget
+              ? "No available objects to fit"
+              : primed ? "Temporarily contract and fit this context" : "Fit selected target"
           );
-          button.title = primed
-            ? "Temporarily contract this context around the selection"
-            : "";
+          button.title = !hasTarget
+            ? (target === "displayed"
+              ? "Nothing is displayed to fit"
+              : "Select a concept or module to use this frame")
+            : primed
+              ? "Temporarily contract this context around the selection"
+              : "";
         }
 
         function clearContextFitPriming() {
@@ -6104,7 +6136,6 @@
         function contextContractionCandidate() {
           var selection = viewerSelectionSnapshot();
           if (
-            viewerState.displayScope !== DisplayScope.CONTEXT ||
             selection.type === "none" ||
             !lastGraphRender
           ) {
@@ -8357,6 +8388,12 @@
         });
         document.getElementById("kg_search_close").addEventListener("click", function() {
           setSearchOpen(false);
+        });
+        document.getElementById("kg_empty_graph_search").addEventListener("click", function() {
+          setSearchOpen(true);
+        });
+        document.getElementById("kg_empty_graph_show_full").addEventListener("click", function() {
+          setViewerDisplayScope(DisplayScope.FULL);
         });
         document.getElementById("kg_search_section").addEventListener("toggle", function(e) {
           document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(e.target.open));

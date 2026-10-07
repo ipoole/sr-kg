@@ -73,8 +73,8 @@ contains the context subgraph. Graph hidden contains no graph objects but
 preserves the other state.
 
 With no selection the context is empty. Full graph still shows its background;
-Context only explains that a selection is required rather than silently
-changing scope.
+Context only presents Search and Show full graph recovery actions rather than
+silently changing scope.
 
 ### Selection
 
@@ -109,11 +109,15 @@ Initial load fits the displayed graph. Selection may minimally reveal an
 off-screen object. No other selection, context, scope, folding, details,
 viewport, or custom-rule change automatically pans, fits, or rezooms.
 
-In Context-only display with one visible selection representation, using **Fit
-context** arms **Fit++**. A second press temporarily contracts visible context
-nodes towards that representation, preserving their radial directions and
-leaving node-and-edge clearance, then fits them. This explicit presentation
-adjustment is never persisted and is discarded on navigation.
+Fit is disabled when its chosen frame has no target. Reveal, Selection and
+Context require a selection; All requires at least one displayed object.
+
+With one represented selection anchor in Full or Context-only display, using
+**Fit context** arms **Fit++**. A second press temporarily contracts represented
+context nodes towards that anchor, preserving their radial directions and
+leaving node-and-edge clearance, then fits them. Background nodes in Full graph
+do not move. This explicit presentation adjustment is never persisted and is
+discarded on navigation.
 
 ### Details and inspection
 
@@ -147,7 +151,7 @@ completed move explain the active consequence in the context bar.
 | Choose display scope | Displayed-graph membership | Selection, context rule, representation, camera, layout |
 | Fold/expand module | Module representation and projected objects | Selection, semantic context, scope, camera, layout |
 | Fit or pan/zoom | Camera | All semantic state and layout |
-| Fit++ in a selected Context-only view | Temporary context presentation and camera | Semantic state and every saved or edited layout |
+| Fit++ after Fit context with a selection | Temporary context presentation and camera | Semantic state, background positions and every saved or edited layout |
 | Scroll details | Active section | Selection and graph state |
 | Change Details mode | Details presentation and viewport | Selection and graph state |
 | Preview or inspect edge | Inspection | Selection and graph state |

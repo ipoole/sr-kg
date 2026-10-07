@@ -68,12 +68,19 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
-After **Fit context** frames a selected Context-only view, the button becomes
-**Fit++**. This explicit action moves each visible context node radially towards
-the selected concept or folded module until it reaches another node's clearance
-zone, then fits the result. The contraction is presentation state only: saved
-and manually edited layouts are unchanged, and selection, context, scope or
-module-representation navigation restores the underlying positions.
+When the selected Frame target has no objects, Fit is disabled. In particular,
+Reveal, Selection and Context require a selection; All requires a non-empty
+displayed graph. Context-only display with no selection shows an empty-state
+message offering Search and Show full graph rather than an unexplained blank
+canvas.
+
+After **Fit context** frames a selected context in either Full or Context-only
+display, the button becomes **Fit++**. This explicit action moves each represented
+context node radially towards the selected concept or folded module until it
+reaches another node's clearance zone, then fits the result. In Full display,
+background nodes remain fixed. The contraction is presentation state only:
+saved and manually edited layouts are unchanged, and selection, context, scope
+or module-representation navigation restores the underlying positions.
 
 Node dragging is disabled during ordinary browsing; a drag attempt explains how
 to unlock it. Enable **Tools → Layouts → Edit layout** to move nodes. Changes are
