@@ -2873,17 +2873,19 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
-    assert dialog.locator(".kg-splash-feature-grid section").count() == 7
-    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 7
+    assert dialog.locator(".kg-splash-feature-grid section").count() == 8
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 8
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 7
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 8
     assert (
         "The user model has been simplified and the UI space optimised for phones"
         in dialog.inner_text()
     )
     assert "Study" in dialog.inner_text()
+    assert "Personal layouts, notes, study-question records" in dialog.inner_text()
+    assert "synchronise through Google Drive" in dialog.inner_text()
     assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 5
     assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
     assert "Manifolds and Coordinates exposition enhanced with motivating example" in dialog.inner_text()

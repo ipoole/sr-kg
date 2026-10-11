@@ -82,5 +82,6 @@ inverse, or power errors. Explanation, comparison, and synthesis questions
 should remain self-assessed when recognition would make them shallow.
 
 Options initially retain authored order. Randomisation, automated free-text
-grading, points, streaks, timers, badges, cloud synchronisation, and spaced
-repetition are outside the first implementation.
+grading, points, streaks, timers, badges and spaced repetition are outside the
+first implementation. Study events participate in the general personal-data
+synchronisation; there is no separate study account or service.

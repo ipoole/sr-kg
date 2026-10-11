@@ -74,6 +74,7 @@ def inject_controls(
     view_title: str,
     module_data: dict[str, dict[str, object]] | None = None,
     published_layout: dict[str, object] | None = None,
+    google_drive_client_id: str = "",
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("</head>", "<body>", "</body>"):
@@ -94,6 +95,10 @@ def inject_controls(
     ) + _script_tag(
         _asset_text("personal_data_archive.js")
     ) + _script_tag(
+        _asset_text("personal_data_sync.js")
+    ) + _script_tag(
+        _asset_text("personal_data_google_drive.js")
+    ) + _script_tag(
         _render_template(
             "viewer.js",
             {
@@ -106,7 +111,9 @@ def inject_controls(
                     "modules": {},
                 }),
                 "__EDGE_KEY__": _json_for_script(edge_key),
-                "__VIEWER_CONFIG__": _json_for_script(_viewer_runtime_config()),
+                "__VIEWER_CONFIG__": _json_for_script(
+                    _viewer_runtime_config(google_drive_client_id)
+                ),
             },
         )
     )
@@ -174,7 +181,7 @@ def _css_replacements() -> dict[str, object]:
     }
 
 
-def _viewer_runtime_config() -> dict[str, object]:
+def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
@@ -187,6 +194,9 @@ def _viewer_runtime_config() -> dict[str, object]:
             "fontSizePx": INFO_PANEL_FONT_SIZE_PX,
             "textZoomMinPx": INFO_PANEL_TEXT_ZOOM_MIN_PX,
             "textZoomMaxPx": INFO_PANEL_TEXT_ZOOM_MAX_PX,
+        },
+        "cloudSync": {
+            "googleDriveClientId": str(google_drive_client_id or ""),
         },
         "storageKeys": {
             "userNotes": USER_NOTES_STORAGE_KEY,

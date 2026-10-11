@@ -80,6 +80,13 @@
         <button id="kg_personal_data_import_button" type="button">Import personal data</button>
         <input id="kg_personal_data_import_input" type="file"
                accept=".zip,application/zip" hidden>
+        <div id="kg_cloud_sync" class="kg-cloud-sync">
+          <strong>Google Drive sync <span class="kg-muted-label">optional</span></strong>
+          <p id="kg_cloud_sync_status" aria-live="polite"></p>
+          <button id="kg_cloud_sync_connect" type="button">Connect Google Drive</button>
+          <button id="kg_cloud_sync_now" type="button" hidden>Sync now</button>
+          <button id="kg_cloud_sync_disconnect" type="button" hidden>Disconnect</button>
+        </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>
@@ -251,7 +258,15 @@
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
-            <li>Tools → Personal data exports or imports notes, layout, study and reading records together.<span class="kg-status-badge">NEW</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>Personal data<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
+            <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
+            <li>Tools → Personal data can download or import a portable archive.</li>
+            <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
           </ul>
         </section>
         <section>

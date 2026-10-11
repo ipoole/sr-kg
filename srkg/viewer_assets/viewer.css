@@ -1548,6 +1548,23 @@
       color: #425466;
     }
 
+    .kg-cloud-sync {
+      border-top: 1px solid #d7e0e7;
+      margin-top: 0.65rem;
+      padding-top: 0.55rem;
+    }
+
+    .kg-cloud-sync p {
+      color: #425466;
+      margin: 0.25rem 0;
+    }
+
+    .kg-muted-label {
+      color: #607586;
+      font-size: 0.8em;
+      font-weight: normal;
+    }
+
     .kg-personal-data-dialog {
       max-width: min(30rem, calc(100vw - 2rem));
       border: 1px solid #9fb2c3;

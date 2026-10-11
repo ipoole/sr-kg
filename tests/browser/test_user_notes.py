@@ -247,6 +247,33 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
 
 
 @pytest.mark.browser
+def test_module_example_note_stays_at_its_anchor(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.locator("#kg_notes_section summary").click()
+    page.locator("#kg_notes_edit_toggle").check()
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    example = page.locator(
+        '#info_panel .module-content-block[data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.terrain_setup"]'
+    )
+    if not example.evaluate("element => element.open"):
+        example.locator(":scope > summary").click()
+    add_note = example.locator(".kg-add-note").last
+    add_note.evaluate(
+        "element => element.setAttribute('data-anchor-context-before', 'corrupted')"
+    )
+    add_note.click()
+
+    assert example.locator("details.user-note").count() == 1
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
+
+
+@pytest.mark.browser
 def test_study_questions_share_one_stable_note_anchor(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")

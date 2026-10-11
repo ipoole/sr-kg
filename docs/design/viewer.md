@@ -109,7 +109,9 @@ are marked read.
 
 Enable **Tools → Notes → Note editing** to add browser-local notes. CSV import
 and export preserve stable content anchors; unresolved notes remain visible as
-needing placement rather than being moved speculatively. Notes, note-editing
-preference, personal layout and Quick start dismissal are local to the browser
-profile and origin; they are not cross-device sync. Content read marks and
-study-question progress are local in the same way.
+needing placement rather than being moved speculatively. Notes, Personal layout,
+study-question attempts and content read marks belong to the unified personal
+profile. They remain local by default, can be downloaded or imported together,
+and can optionally be synchronised on demand through the visible
+`PhysicsKG personal data.zip` file in Google Drive. Note-editing preference and
+Quick start dismissal remain browser-local preferences and are not synchronised.

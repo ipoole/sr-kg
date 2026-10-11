@@ -7,6 +7,7 @@
       var kgNodeLabelConfig = kgViewerConfig.nodeLabels || {};
       var kgInfoPanelConfig = kgViewerConfig.infoPanel || {};
       var kgStorageKeys = kgViewerConfig.storageKeys || {};
+      var kgCloudSyncConfig = kgViewerConfig.cloudSync || {};
       var edgeHoverWidth = kgViewerConfig.edgeHoverWidth;
 
       var DisplayScope = Object.freeze({
@@ -254,6 +255,8 @@
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
         var pendingPersonalDataImport = null;
+        var googleDriveAuthorizer = null;
+        var personalDataSyncEngine = null;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -1542,6 +1545,20 @@
           return candidates;
         }
 
+        function canonicalNoteAnchor(targetType, targetId, blockId, sectionKey, blockIndex) {
+          blockId = String(blockId || "");
+          sectionKey = String(sectionKey || "");
+          blockIndex = Number(blockIndex) || 0;
+          if (!blockId && !sectionKey) { return null; }
+          var matches = noteAnchorCandidates(targetType, targetId).filter(function(candidate) {
+            var sameScope = blockId
+              ? candidate.blockId === blockId
+              : candidate.sectionKey === sectionKey;
+            return sameScope && candidate.blockIndex === blockIndex;
+          });
+          return matches.length === 1 ? matches[0] : null;
+        }
+
         function uniqueBestNoteAnchor(candidates, anchor) {
           var before = normalizeNoteAnchorContext(anchor.contextBefore);
           var after = normalizeNoteAnchorContext(anchor.contextAfter);
@@ -2295,6 +2312,84 @@
         function setPersonalDataStatus(message) {
           var status = document.getElementById("kg_personal_data_status");
           if (status) { status.textContent = String(message || ""); }
+        }
+
+        function setCloudSyncStatus(message) {
+          var status = document.getElementById("kg_cloud_sync_status");
+          if (status) { status.textContent = String(message || ""); }
+        }
+
+        function showCloudSyncConnected(connected) {
+          document.getElementById("kg_cloud_sync_connect").hidden = connected;
+          document.getElementById("kg_cloud_sync_now").hidden = !connected;
+          document.getElementById("kg_cloud_sync_disconnect").hidden = !connected;
+        }
+
+        function initialiseGoogleDriveSync() {
+          var clientId = String(kgCloudSyncConfig.googleDriveClientId || "");
+          var connect = document.getElementById("kg_cloud_sync_connect");
+          if (!clientId) {
+            connect.disabled = true;
+            setCloudSyncStatus("Not configured in this copy of PhysicsKG.");
+            return;
+          }
+          googleDriveAuthorizer = window.kgCreateGoogleDriveAuthorizer({clientId: clientId});
+          setCloudSyncStatus("Not connected. Personal data remains in this browser.");
+        }
+
+        function connectGoogleDrive() {
+          if (!googleDriveAuthorizer) { return; }
+          setCloudSyncStatus("Connecting to Google Drive…");
+          googleDriveAuthorizer.connect().then(function() {
+            var provider = window.kgCreateGoogleDrivePersonalDataProvider({
+              token: googleDriveAuthorizer.token
+            });
+            personalDataSyncEngine = window.kgCreatePersonalDataSyncEngine({
+              store: personalDataStore,
+              archive: window.kgPersonalDataArchive,
+              provider: provider,
+              onStatus: function(status) { setCloudSyncStatus(status.detail); }
+            });
+            showCloudSyncConnected(true);
+            setCloudSyncStatus(
+              "Connected. Sync uses “" + provider.fileName + "” in your Google Drive."
+            );
+          }).catch(function(error) {
+            setCloudSyncStatus(error && error.message || "Could not connect to Google Drive.");
+          });
+        }
+
+        function syncPersonalDataNow() {
+          if (!personalDataSyncEngine) { return; }
+          writePersonalLayoutNow();
+          personalDataSyncEngine.synchronize().then(function() {
+            personalLayoutState = loadPersonalLayoutState();
+            globalLayout = buildInitialGlobalLayout();
+            temporaryLayout = {concepts: {}, modules: {}};
+            applyGlobalLayoutPositions();
+            updateLayoutControls();
+            userNotesState = loadUserNotes();
+            studyProgressState = loadStudyProgress();
+            contentReadProgressState = loadContentReadProgress();
+            refreshNodeTooltips();
+            renderNotesOverview();
+            renderStudyScorecard();
+            refreshActiveConcept();
+            updateContentReadCompletionIndicators();
+          }).catch(function(error) {
+            if (error && error.code === "auth_required") {
+              showCloudSyncConnected(false);
+              personalDataSyncEngine = null;
+              setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
+            }
+          });
+        }
+
+        function disconnectGoogleDrive() {
+          if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
+          personalDataSyncEngine = null;
+          showCloudSyncConnected(false);
+          setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
         }
 
         function personalDataSummaryText(summary) {
@@ -8570,6 +8665,16 @@
         document.getElementById("kg_personal_data_import_apply").addEventListener(
           "click", applyPersonalDataImport
         );
+        initialiseGoogleDriveSync();
+        document.getElementById("kg_cloud_sync_connect").addEventListener(
+          "click", connectGoogleDrive
+        );
+        document.getElementById("kg_cloud_sync_now").addEventListener(
+          "click", syncPersonalDataNow
+        );
+        document.getElementById("kg_cloud_sync_disconnect").addEventListener(
+          "click", disconnectGoogleDrive
+        );
 
         var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
         notesEditToggle.checked = noteEditingEnabled;
@@ -8818,19 +8923,27 @@
           if (addNoteButton) {
             e.preventDefault();
             if (!noteEditingEnabled) { return; }
+            var noteTargetType = addNoteButton.getAttribute("data-target-type") || "concept";
+            var noteTargetId = addNoteButton.getAttribute("data-target-id") || activeNodeId;
+            var noteBlockId = addNoteButton.getAttribute("data-anchor-block-id") || "";
+            var noteSectionKey = addNoteButton.getAttribute("data-anchor-section-key") || "";
+            var noteAnchorIndex = Number(addNoteButton.getAttribute("data-anchor-index")) || 0;
+            var canonicalAnchor = canonicalNoteAnchor(
+              noteTargetType, noteTargetId, noteBlockId, noteSectionKey, noteAnchorIndex
+            );
             var enclosingSection = addNoteButton.closest("#info_panel > details");
             var enclosingSectionId = enclosingSection && enclosingSection.open
               ? enclosingSection.id
               : "";
             createUserNote(
-              addNoteButton.getAttribute("data-target-type") || "concept",
-              addNoteButton.getAttribute("data-target-id") || activeNodeId,
+              noteTargetType,
+              noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
-              Number(addNoteButton.getAttribute("data-anchor-index")) || 0,
+              noteAnchorIndex,
               addNoteButton.getAttribute("data-anchor-after") || "",
-              {
-                blockId: addNoteButton.getAttribute("data-anchor-block-id") || "",
-                sectionKey: addNoteButton.getAttribute("data-anchor-section-key") || "",
+              canonicalAnchor || {
+                blockId: noteBlockId,
+                sectionKey: noteSectionKey,
                 contextBefore: addNoteButton.getAttribute("data-anchor-context-before") || "",
                 contextAfter: addNoteButton.getAttribute("data-anchor-context-after") || ""
               }

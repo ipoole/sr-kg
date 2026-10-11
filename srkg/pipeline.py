@@ -38,6 +38,7 @@ def generate_viewer_from_root(
     domains: list[str] | tuple[str, ...] | None = None,
     also_load_linked_concepts: bool = False,
     relations: list[str] | tuple[str, ...] | None = None,
+    google_drive_client_id: str = "",
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a knowledge-base data root."""
     kb = load_knowledge_base(data_root)
@@ -53,6 +54,7 @@ def generate_viewer_from_root(
         height=height,
         width=width,
         title=title,
+        google_drive_client_id=google_drive_client_id,
     )
 
 
@@ -179,6 +181,7 @@ def generate_viewer_from_kb(
     height: str,
     width: str,
     title: str,
+    google_drive_client_id: str = "",
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a loaded knowledge base."""
     edge_colour_map = build_edge_colour_map(kb.edge_key)
@@ -240,6 +243,7 @@ def generate_viewer_from_kb(
         title,
         module_data=kb.module_data(),
         published_layout=published_layout.to_viewer_data(),
+        google_drive_client_id=google_drive_client_id,
     )
     output_file.write_text(html_text, encoding="utf-8")
 

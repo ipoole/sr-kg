@@ -55,11 +55,13 @@ when saved in this browser.
 
 ## Personal data
 
-Notes, Personal layout moves, question attempts and blue reading ticks are
-stored together in this browser. **Tools → Personal data** exports them as one
-ZIP of readable CSV files. Import that archive in another browser and choose
-**Merge** to combine work or **Replace** to restore the exported snapshot.
-Neither action changes authored graph content.
+Personal layouts, notes, study-question attempts and results, and blue reading
+ticks are stored together in this browser. **Tools → Personal data** downloads
+them as one portable ZIP of readable CSV files. Import that archive in another
+browser and choose **Merge** to combine work or **Replace** to restore the
+exported snapshot. Optionally sign in with a Google account to synchronise this
+data through Google Drive across browsers and devices. None of these actions
+changes authored graph content.
 
 ## Study — NEW
 

@@ -55,6 +55,16 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '"contentReadProgress": "srkg.contentReadProgress.v1"' in injected
     assert '"personalData": "srkg.personalData.v1"' in injected
     assert '"personalDataDevice": "srkg.personalData.device.v1"' in injected
+    assert '"googleDriveClientId": ""' in injected
+
+
+def test_inject_controls_adds_google_drive_client_id_to_runtime_config():
+    injected = inject_controls(
+        _base_pyvis_html(), {}, {}, "Title",
+        google_drive_client_id="example.apps.googleusercontent.com",
+    )
+
+    assert '"googleDriveClientId": "example.apps.googleusercontent.com"' in injected
 
 
 def test_favicon_asset_is_compact_accessible_svg():

@@ -14,8 +14,9 @@ Selection, context, camera, folded modules, open details, temporary layout edits
 and control preferences are not personal data. They are not exported or merged.
 
 The viewer remains local-first. Without setup, personal data is stored only in
-the current browser. Export and import provide optional portability; a future
-sync provider will use the same snapshot and merge operations.
+the current browser. Export and import provide optional portability. The
+optional Google Drive provider uses the same snapshot and merge operations to
+synchronise explicitly across browsers and devices.
 
 ## Runtime model
 
@@ -98,10 +99,31 @@ chooses:
 Import is atomic: malformed input changes nothing. The old notes-only CSV
 import remains available for compatibility.
 
-## Future synchronisation
+## Synchronisation architecture
 
-A provider adapter will download an archive or equivalent profile snapshot,
-invoke the same validated merge operation, then upload the resulting snapshot
-with provider revision checks. Local storage remains the working copy, so the
-viewer continues to work offline. Google Drive, Dropbox or another provider
-therefore changes transport and authentication, not the personal-data model.
+The provider-neutral sync engine downloads the portable archive, validates and
+merges it through the personal-data store, then uploads the merged archive. A
+provider supplies only revision-aware `read` and `write` operations. If a write
+reports a concurrent change, the engine reads, merges and retries up to a
+bounded limit.
+
+Local storage remains the working copy, so viewing and editing continue
+offline. Authentication, cloud file discovery and transport belong to provider
+adapters; they do not change the personal-data model or archive format.
+
+### Google Drive provider
+
+The first provider uses the narrow `drive.file` OAuth scope and creates the
+visible file `PhysicsKG personal data.zip` in the user's Drive. Each browser
+finds that app-created file by name. A user explicitly connects and presses
+**Sync now**; disconnecting removes authorization from the current page but
+does not delete either copy of the data.
+
+The standalone viewer uses Google Identity Services' browser token flow. The
+repository's public OAuth web-client ID is the normal build default and
+authorises `https://ipoole.github.io`. Other deployments can override it with
+`--google-drive-client-id` or `PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID`; their hosting
+origin must be registered for that client. The ID is public configuration, not
+a secret. Access tokens are kept only in memory and may expire, requiring the
+user to connect again. Fully unattended token refresh would require a backend
+and is deliberately outside the first implementation.
