@@ -3426,7 +3426,15 @@
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
-            <li>Tools → Personal data exports or imports notes, layout, study and reading records together.<span class="kg-status-badge">NEW</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>Personal data<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
+            <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
+            <li>Tools → Personal data can download or import a portable archive.</li>
+            <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
           </ul>
         </section>
         <section>
@@ -6085,6 +6093,20 @@ var kgModuleGeometry = (function() {
             });
           }
           return candidates;
+        }
+
+        function canonicalNoteAnchor(targetType, targetId, blockId, sectionKey, blockIndex) {
+          blockId = String(blockId || "");
+          sectionKey = String(sectionKey || "");
+          blockIndex = Number(blockIndex) || 0;
+          if (!blockId && !sectionKey) { return null; }
+          var matches = noteAnchorCandidates(targetType, targetId).filter(function(candidate) {
+            var sameScope = blockId
+              ? candidate.blockId === blockId
+              : candidate.sectionKey === sectionKey;
+            return sameScope && candidate.blockIndex === blockIndex;
+          });
+          return matches.length === 1 ? matches[0] : null;
         }
 
         function uniqueBestNoteAnchor(candidates, anchor) {
@@ -13451,19 +13473,27 @@ var kgModuleGeometry = (function() {
           if (addNoteButton) {
             e.preventDefault();
             if (!noteEditingEnabled) { return; }
+            var noteTargetType = addNoteButton.getAttribute("data-target-type") || "concept";
+            var noteTargetId = addNoteButton.getAttribute("data-target-id") || activeNodeId;
+            var noteBlockId = addNoteButton.getAttribute("data-anchor-block-id") || "";
+            var noteSectionKey = addNoteButton.getAttribute("data-anchor-section-key") || "";
+            var noteAnchorIndex = Number(addNoteButton.getAttribute("data-anchor-index")) || 0;
+            var canonicalAnchor = canonicalNoteAnchor(
+              noteTargetType, noteTargetId, noteBlockId, noteSectionKey, noteAnchorIndex
+            );
             var enclosingSection = addNoteButton.closest("#info_panel > details");
             var enclosingSectionId = enclosingSection && enclosingSection.open
               ? enclosingSection.id
               : "";
             createUserNote(
-              addNoteButton.getAttribute("data-target-type") || "concept",
-              addNoteButton.getAttribute("data-target-id") || activeNodeId,
+              noteTargetType,
+              noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
-              Number(addNoteButton.getAttribute("data-anchor-index")) || 0,
+              noteAnchorIndex,
               addNoteButton.getAttribute("data-anchor-after") || "",
-              {
-                blockId: addNoteButton.getAttribute("data-anchor-block-id") || "",
-                sectionKey: addNoteButton.getAttribute("data-anchor-section-key") || "",
+              canonicalAnchor || {
+                blockId: noteBlockId,
+                sectionKey: noteSectionKey,
                 contextBefore: addNoteButton.getAttribute("data-anchor-context-before") || "",
                 contextAfter: addNoteButton.getAttribute("data-anchor-context-after") || ""
               }
