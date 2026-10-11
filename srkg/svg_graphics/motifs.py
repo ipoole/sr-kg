@@ -303,13 +303,13 @@ def _draw_tangent_basis(
     marker_id = f"basis_{int(x)}_{int(y)}"
     defs = [_arrow_marker(marker_id, colour=colour, size=5)]
     body = [
-        _line(x, y, x + 86, y - 8, stroke=colour, stroke_width=5,
+        _line(x, y, x + 86, y, stroke=colour, stroke_width=5,
               stroke_linecap="round", marker_end=f"url(#{marker_id})"),
-        _line(x, y, x + 28, y - 76, stroke=colour, stroke_width=5,
+        _line(x, y, x + 59.6, y - 68, stroke=colour, stroke_width=5,
               stroke_linecap="round", marker_end=f"url(#{marker_id})"),
-        _text(x + 96, y - 10, x_label, font_size=26, font_family=FONT,
+        _text(x + 96, y + 4, x_label, font_size=26, font_family=FONT,
               font_style="italic", fill=colour),
-        _text(x + 34, y - 88, y_label, font_size=26, font_family=FONT,
+        _text(x + 66, y - 76, y_label, font_size=26, font_family=FONT,
               font_style="italic", fill=colour),
     ]
     return body, defs

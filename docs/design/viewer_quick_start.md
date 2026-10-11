@@ -73,5 +73,7 @@ stored locally and is included in the Personal data archive.
 
 Covers Special Relativity and General Relativity.
 
+**Manifolds and Coordinates exposition enhanced with motivating example — NEW.**
+
 **Enhanced historical context — NEW:** selected concepts now explain how key
 ideas developed, who contributed, and how their physical meaning changed.

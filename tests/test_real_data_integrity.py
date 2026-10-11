@@ -148,7 +148,7 @@ def test_existing_authored_multiple_choice_questions_are_structured():
         study_questions["question_type"].eq("multiple_choice")
     ]
     automatic = multiple_choice[multiple_choice["marking_mode"].eq("automatic")]
-    assert len(automatic) == len(multiple_choice) == 105
+    assert len(automatic) == len(multiple_choice) == 124
     assert set(automatic["question_id"]).issubset(set(options["question_id"]))
     assert options.groupby("question_id").size().eq(4).all()
     assert options[options["is_correct"].eq("true")].groupby("question_id").size().eq(1).all()

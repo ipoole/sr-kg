@@ -2,6 +2,18 @@ import pytest
 
 
 @pytest.mark.browser
+def test_tangent_space_graphic_caption_typesets_its_math(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.click_concept("math.tangent_space")
+
+    caption = page.locator("#info_panel .concept-graphic-caption")
+    caption.locator("mjx-container").first.wait_for()
+    assert caption.locator("mjx-container").count() == 2
+    assert "T_pM" not in caption.inner_text()
+    assert "two-dimensional" in caption.inner_text()
+
+
+@pytest.mark.browser
 def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
     shared_repo_browser_graph.open_control_section("kg_modules_section")

@@ -2884,8 +2884,9 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
         in dialog.inner_text()
     )
     assert "Study" in dialog.inner_text()
-    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 4
+    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 5
     assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
+    assert "Manifolds and Coordinates exposition enhanced with motivating example" in dialog.inner_text()
     assert "General Relativity remains work in progress" not in dialog.inner_text()
     assert "tracks attempts and latest results locally" in dialog.inner_text()
     assert "Edit layout" in dialog.inner_text()
