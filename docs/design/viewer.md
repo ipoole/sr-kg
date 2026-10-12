@@ -75,19 +75,24 @@ message offering Search and Show full graph rather than an unexplained blank
 canvas.
 
 After **Fit context** frames a selected context in either Full or Context-only
-display, the button becomes **Fit++**. This explicit action moves each represented
-context node radially towards the selected concept or folded module until it
-reaches another node's clearance zone, then fits the result. In Full display,
-background nodes remain fixed. The contraction is presentation state only:
-saved and manually edited layouts are unchanged, and selection, context, scope
-or module-representation navigation restores the underlying positions.
+display, the button becomes **Fit++**. This explicit action contracts the
+represented context breadth-first through its graph structure. One-hop nodes
+move towards the selection first; each later layer then moves towards a newly
+placed parent in the preceding layer. If several shortest routes reach a node,
+the closest candidate parent in its new position is used. Movement stops at
+another node's clearance zone before the result is fitted. In Full display,
+background nodes remain fixed. The represented context nodes may then be
+dragged to refine the temporary arrangement. The contraction remains
+presentation state only: saved and manually edited layouts are unchanged, and
+selection, context, scope or module-representation navigation restores the
+underlying positions.
 
 Node dragging is disabled during ordinary browsing; a drag attempt explains how
-to unlock it. Enable **Tools → Layouts → Edit layout** to move nodes. Changes are
-Temporary by default, remain across viewer-state changes, and are discarded when
-editing is turned off or the page reloads. Personal changes are saved locally.
-The choice is independent of display scope; Hidden cannot be dragged. Layouts
-can be exported, reset to the published layout, or retained
+to unlock it. Enable **Tools → Layouts → Edit personal layout** to move nodes and
+save their positions locally. This is independent of display scope; Hidden
+cannot be dragged. During Fit++, Personal editing is suspended while represented
+context nodes are temporarily draggable. Layouts can be exported, reset to the
+published layout, or retained
 when a newer published revision is detected. Camera state is never persisted.
 
 ## Reading and personal work

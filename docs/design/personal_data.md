@@ -10,7 +10,7 @@ content and transient viewer state. It currently comprises:
 - study-question attempts;
 - content-block read marks.
 
-Selection, context, camera, folded modules, open details, temporary layout edits
+Selection, context, camera, folded modules, open details, temporary Fit++ adjustments
 and control preferences are not personal data. They are not exported or merged.
 
 The viewer remains local-first. Without setup, personal data is stored only in

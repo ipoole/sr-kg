@@ -201,8 +201,6 @@
           displayScope: DisplayScope.FULL
         };
         var layoutEditModeEnabled = false;
-        var layoutEditPersistence = "temporary";
-        var temporaryLayout = {concepts: {}, modules: {}};
         var contextFitPrimedKey = null;
         var contextContractionState = null;
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
@@ -322,12 +320,8 @@
           return globalLayout.concepts[String(conceptId)] || null;
         }
 
-        function temporaryConceptPosition(conceptId) {
-          return temporaryLayout.concepts[String(conceptId)] || null;
-        }
-
         function effectiveConceptPosition(conceptId) {
-          return temporaryConceptPosition(conceptId) || globalConceptPosition(conceptId);
+          return globalConceptPosition(conceptId);
         }
 
         function setGlobalConceptPosition(conceptId, position) {
@@ -349,12 +343,8 @@
           return validLayoutPosition(entry.anchor) ? entry.anchor : null;
         }
 
-        function temporaryModuleAnchor(moduleId) {
-          return temporaryLayout.modules[String(moduleId)] || null;
-        }
-
         function effectiveModuleAnchor(moduleId) {
-          return temporaryModuleAnchor(moduleId) || globalModuleAnchor(moduleId);
+          return globalModuleAnchor(moduleId);
         }
 
         function nodeWithGlobalPosition(node) {
@@ -495,7 +485,6 @@
           });
           safeLocalStorageRemove(globalLayoutStorageKey);
           globalLayout = buildInitialGlobalLayout(false);
-          temporaryLayout = {concepts: {}, modules: {}};
           applyGlobalLayoutPositions();
           updateLayoutControls();
         }
@@ -551,17 +540,25 @@
           document.getElementById("kg_layout_revision_warning").hidden = !status.revisionMismatch;
           document.getElementById("kg_layout_reset").disabled = !status.hasOverrides;
           var toggle = document.getElementById("kg_layout_edit_toggle");
-          var persistence = document.getElementById("kg_layout_edit_persistence");
           var message = document.getElementById("kg_layout_edit_message");
-          if (toggle) { toggle.checked = layoutEditModeEnabled; }
-          if (persistence) { persistence.value = layoutEditPersistence; }
+          if (toggle) {
+            toggle.checked = layoutEditModeEnabled;
+            toggle.disabled = Boolean(contextContractionState);
+            toggle.title = contextContractionState
+              ? "Personal layout editing resumes when the Fit++ arrangement ends"
+              : "";
+          }
           if (message) {
-            if (!layoutEditModeEnabled) {
+            if (contextContractionState && layoutEditModeEnabled) {
+              message.textContent =
+                "Personal editing is suspended during this temporary Fit++ arrangement.";
+            } else if (contextContractionState) {
+              message.textContent =
+                "Fit++ is temporary; drag context nodes to adjust this arrangement.";
+            } else if (!layoutEditModeEnabled) {
               message.textContent = "Node dragging is off.";
             } else if (viewerState.displayScope === DisplayScope.HIDDEN) {
-              message.textContent = "Layout editing is on. Show the graph to move nodes.";
-            } else if (layoutEditPersistence === "temporary") {
-              message.textContent = "Moves are temporary and are not saved.";
+              message.textContent = "Personal editing is on. Show the graph to move nodes.";
             } else {
               message.textContent = "Moves are saved to your personal layout in this browser.";
             }
@@ -573,34 +570,39 @@
         }
 
         function persistentLayoutEditingEnabled() {
-          return layoutEditModeEnabled && layoutEditPersistence === "personal" &&
-            viewerState.displayScope !== DisplayScope.HIDDEN;
-        }
-
-        function temporaryLayoutEditingEnabled() {
-          return layoutEditModeEnabled && layoutEditPersistence === "temporary" &&
+          return layoutEditModeEnabled && !contextContractionState &&
             viewerState.displayScope !== DisplayScope.HIDDEN;
         }
 
         function layoutDraggingEnabled() {
-          return layoutEditModeEnabled && viewerState.displayScope !== DisplayScope.HIDDEN;
+          return viewerState.displayScope !== DisplayScope.HIDDEN &&
+            (Boolean(contextContractionState) || persistentLayoutEditingEnabled());
+        }
+
+        function nodeDraggingEnabled(nodeId) {
+          var node = nodes.get(String(nodeId));
+          if (!node || node.hidden || viewerState.displayScope === DisplayScope.HIDDEN) {
+            return false;
+          }
+          if (contextContractionState) {
+            return Object.prototype.hasOwnProperty.call(
+              contextContractionState.finalPositions,
+              String(nodeId)
+            );
+          }
+          return persistentLayoutEditingEnabled();
+        }
+
+        function updateNodeDragLocks() {
+          if (!nodes) { return; }
+          nodes.update(nodes.get().map(function(node) {
+            var enabled = nodeDraggingEnabled(node.id);
+            return {id: node.id, fixed: {x: !enabled, y: !enabled}};
+          }));
         }
 
         function setLayoutEditingEnabled(enabled) {
-          var restoreTemporary = temporaryLayoutEditingEnabled() && !enabled;
           layoutEditModeEnabled = enabled === true;
-          updateGraphViewControls();
-          if (restoreTemporary) { discardTemporaryLayout(); }
-        }
-
-        function setLayoutEditPersistence(value) {
-          value = value === "personal" ? "personal" : "temporary";
-          var discardTemporary = layoutEditPersistence === "temporary" &&
-            value !== "temporary" && Object.keys(temporaryLayout.concepts).concat(
-              Object.keys(temporaryLayout.modules)
-            ).length > 0;
-          layoutEditPersistence = value;
-          if (discardTemporary) { discardTemporaryLayout(); }
           updateGraphViewControls();
         }
 
@@ -633,8 +635,21 @@
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
           if (draggedIds.length === 0) { return; }
           if (contextContractionState) {
+            draggedIds.forEach(function(nodeId) {
+              var position = graphPositionForNode(nodeId);
+              if (
+                position &&
+                Object.prototype.hasOwnProperty.call(
+                  contextContractionState.finalPositions,
+                  String(nodeId)
+                )
+              ) {
+                contextContractionState.finalPositions[String(nodeId)] =
+                  copyLayoutPosition(position);
+              }
+            });
             showContextNotice(
-              "Contracted context adjusted temporarily — navigating away restores the layout.",
+              "Temporary context arrangement adjusted — navigating away restores the layout.",
               "context-contracted"
             );
             return;
@@ -646,21 +661,13 @@
             var moduleId = moduleIdFromGraphNodeId(nodeId);
             if (moduleId && selectedModuleIsFolded(moduleId)) {
               var anchor = syncFoldedModulePosition(moduleId);
-              if (temporaryLayoutEditingEnabled()) {
-                temporaryLayout.modules[String(moduleId)] = copyLayoutPosition(anchor);
-              } else {
-                setGlobalModuleAnchor(moduleId, anchor);
-                restoreFoldedModuleMembers(moduleId);
-                affectedModules[moduleId] = true;
-              }
+              setGlobalModuleAnchor(moduleId, anchor);
+              restoreFoldedModuleMembers(moduleId);
+              affectedModules[moduleId] = true;
               return;
             }
             if (getConcept(nodeId)) {
-              if (temporaryLayoutEditingEnabled()) {
-                temporaryLayout.concepts[String(nodeId)] = copyLayoutPosition(position);
-              } else {
-                setGlobalConceptPosition(nodeId, position);
-              }
+              setGlobalConceptPosition(nodeId, position);
               var owner = moduleIdForConcept(nodeId);
               if (owner) { affectedModules[owner] = true; }
             }
@@ -668,23 +675,15 @@
           Object.keys(affectedModules).forEach(function(moduleId) {
             refreshFoldedModuleGeometry(moduleId, false);
           });
-          if (temporaryLayoutEditingEnabled()) {
-            showContextNotice(
-              "Temporary layout adjusted — changes will be discarded when editing is turned off or the page is reloaded.",
-              "temporary-layout"
-            );
-          } else {
-            showContextNotice(
-              "Personal layout updated — saved in this browser.",
-              "personal-layout"
-            );
-          }
+          showContextNotice(
+            "Personal layout updated — saved in this browser.",
+            "personal-layout"
+          );
         }
 
         window.kgGlobalLayoutSnapshot = globalLayoutSnapshot;
         window.kgLayoutEditingEnabled = globalLayoutEditingEnabled;
         window.kgPersistentLayoutEditingEnabled = persistentLayoutEditingEnabled;
-        window.kgTemporaryLayoutEditingEnabled = temporaryLayoutEditingEnabled;
         window.kgLayoutDraggingEnabled = layoutDraggingEnabled;
         window.kgPersonalLayoutStatus = personalLayoutStatus;
         window.kgKeepPersonalLayout = keepPersonalLayout;
@@ -2459,7 +2458,6 @@
           personalDataSyncEngine.synchronize().then(function() {
             personalLayoutState = loadPersonalLayoutState();
             globalLayout = buildInitialGlobalLayout();
-            temporaryLayout = {concepts: {}, modules: {}};
             applyGlobalLayoutPositions();
             updateLayoutControls();
             userNotesState = loadUserNotes();
@@ -3119,17 +3117,8 @@
               dragNodes: layoutDraggingEnabled()
             }});
           }
+          updateNodeDragLocks();
           updateLayoutControls();
-        }
-
-        function discardTemporaryLayout() {
-          temporaryLayout = {concepts: {}, modules: {}};
-          applyGlobalLayoutPositions();
-          renderGraphFromViewerState();
-          showContextNotice(
-            "Temporary layout discarded — Personal layout restored.",
-            "temporary-layout-discarded"
-          );
         }
 
         function getConcept(nodeId) {
@@ -4014,22 +4003,12 @@
 
         window.kgModuleFootprint = moduleFootprint;
 
-        function refreshFoldedModuleGeometry(moduleId, preserveTemporary) {
+        function refreshFoldedModuleGeometry(moduleId) {
           var oldState = foldedModules[String(moduleId)];
           if (!oldState) { return; }
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
-          var oldPosition = preserveTemporary && temporaryModuleAnchor(moduleId) && oldNode
-            ? graphPositionForNode(nodeId)
-            : null;
           var geometry = moduleMemberGeometry(moduleId);
-          if (oldPosition) {
-            geometry.position = {
-              x: oldPosition.x - geometry.footprint.offset.x,
-              y: oldPosition.y - geometry.footprint.offset.y
-            };
-            temporaryLayout.modules[String(moduleId)] = copyLayoutPosition(geometry.position);
-          }
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -4042,7 +4021,7 @@
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
           foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, true);
+            refreshFoldedModuleGeometry(moduleId);
           });
         }
 
@@ -4087,16 +4066,12 @@
         }
 
         function restoreFoldedModuleMembers(moduleId) {
-          if (!persistentLayoutEditingEnabled() && !temporaryLayoutEditingEnabled()) { return; }
+          if (!persistentLayoutEditingEnabled()) { return; }
           moduleId = String(moduleId);
           var state = foldedModules[moduleId];
           if (!state || !state.position || !state.memberOffsets) { return; }
           syncFoldedModulePosition(moduleId);
-          if (temporaryLayoutEditingEnabled()) {
-            temporaryLayout.modules[moduleId] = copyLayoutPosition(state.position);
-          } else {
-            setGlobalModuleAnchor(moduleId, state.position);
-          }
+          setGlobalModuleAnchor(moduleId, state.position);
           var updates = [];
           moduleMemberIds(getModule(moduleId)).forEach(function(id) {
             var offset = state.memberOffsets[String(id)] || {x: 0, y: 0};
@@ -4104,11 +4079,7 @@
               x: state.position.x + offset.x,
               y: state.position.y + offset.y
             };
-            if (temporaryLayoutEditingEnabled()) {
-              temporaryLayout.concepts[String(id)] = copyLayoutPosition(position);
-            } else {
-              setGlobalConceptPosition(id, position);
-            }
+            setGlobalConceptPosition(id, position);
             if (nodes.get(id)) {
               updates.push({id: id, x: position.x, y: position.y});
             }
@@ -6326,6 +6297,11 @@
             }
           });
           contextContractionState = null;
+          var notice = document.getElementById("kg_context_notice");
+          if (notice && notice.getAttribute("data-kind") === "context-contracted") {
+            showContextNotice("", "context-contracted");
+          }
+          updateGraphViewControls();
           updateNodeLabelPositions();
           return true;
         }
@@ -6347,6 +6323,11 @@
             restoreContextContractionPositions();
           } else {
             contextContractionState = null;
+            var notice = document.getElementById("kg_context_notice");
+            if (notice && notice.getAttribute("data-kind") === "context-contracted") {
+              showContextNotice("", "context-contracted");
+            }
+            updateGraphViewControls();
           }
           clearContextFitPriming();
         }
@@ -6368,14 +6349,88 @@
             return visibleGraphNode(id) && values.indexOf(id) === index;
           });
           if (nodeIds.length < 2) { return null; }
+          var nodeKeep = {};
+          var adjacency = {};
+          nodeIds.forEach(function(nodeId) {
+            nodeKeep[nodeId] = true;
+            adjacency[nodeId] = [];
+          });
+          (lastGraphRender.contextEdgeIds || []).forEach(function(edgeId) {
+            var edge = originalEdges[String(edgeId)] || edges.get(String(edgeId));
+            if (!edge) { return; }
+            var fromIds = representedNodeIds([String(edge.from)]);
+            var toIds = representedNodeIds([String(edge.to)]);
+            var from = fromIds.length === 1 ? String(fromIds[0]) : null;
+            var to = toIds.length === 1 ? String(toIds[0]) : null;
+            if (!from || !to || from === to || !nodeKeep[from] || !nodeKeep[to]) {
+              return;
+            }
+            if (adjacency[from].indexOf(to) === -1) { adjacency[from].push(to); }
+            if (adjacency[to].indexOf(from) === -1) { adjacency[to].push(from); }
+          });
+          Object.keys(adjacency).forEach(function(nodeId) {
+            adjacency[nodeId].sort();
+          });
           return {
             anchorId: anchorId,
             nodeIds: nodeIds,
+            adjacency: adjacency,
             key: JSON.stringify({
               selection: selection,
               contextRule: viewerState.contextRule,
               nodeIds: nodeIds.slice().sort()
             })
+          };
+        }
+
+        function contractionGraphPlan(candidate) {
+          var depthByNode = {};
+          var parentCandidates = {};
+          var queue = [candidate.anchorId];
+          depthByNode[candidate.anchorId] = 0;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            var nextDepth = depthByNode[current] + 1;
+            (candidate.adjacency[current] || []).forEach(function(neighbour) {
+              if (depthByNode[neighbour] === undefined) {
+                depthByNode[neighbour] = nextDepth;
+                parentCandidates[neighbour] = [current];
+                queue.push(neighbour);
+              } else if (
+                depthByNode[neighbour] === nextDepth &&
+                parentCandidates[neighbour].indexOf(current) === -1
+              ) {
+                parentCandidates[neighbour].push(current);
+              }
+            });
+          }
+          Object.keys(parentCandidates).forEach(function(nodeId) {
+            parentCandidates[nodeId].sort();
+          });
+          return {
+            depthByNode: depthByNode,
+            parentCandidates: parentCandidates,
+            maximumDepth: Object.keys(depthByNode).reduce(function(maximum, nodeId) {
+              return Math.max(maximum, depthByNode[nodeId]);
+            }, 0)
+          };
+        }
+
+        window.kgContractionGraphPlan = contractionGraphPlan;
+
+        function reducedContractionExtents(extents) {
+          var left = Number(extents.left) * 0.9;
+          var right = Number(extents.right) * 0.9;
+          var top = Number(extents.top);
+          var bottom = Number(extents.bottom) * 0.9;
+          return {
+            left: left,
+            right: right,
+            top: top,
+            bottom: bottom,
+            width: left + right,
+            height: top + bottom
           };
         }
 
@@ -6385,14 +6440,14 @@
           if (node.isModuleNode === true || moduleIdFromGraphNodeId(nodeId)) {
             var width = Number(node.moduleFootprintWidth) || 1;
             var height = Number(node.moduleFootprintHeight) || 1;
-            return {
+            return reducedContractionExtents({
               left: width / 2,
               right: width / 2,
               top: height / 2,
               bottom: height / 2,
               width: width,
               height: height
-            };
+            });
           }
           var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
           var radius = baseRadius;
@@ -6431,14 +6486,14 @@
               radius + (3 / scale) + renderedLabelHeight
             );
           }
-          return {
+          return reducedContractionExtents({
             left: left,
             right: right,
             top: top,
             bottom: bottom,
             width: left + right,
             height: top + bottom
-          };
+          });
         }
 
         function contractionClearance(left, right) {
@@ -6557,76 +6612,102 @@
           });
           var anchorPosition = originalPositions[candidate.anchorId];
           if (!validLayoutPosition(anchorPosition)) { return false; }
-          var ordered = candidate.nodeIds.filter(function(id) {
-            return id !== candidate.anchorId && validLayoutPosition(originalPositions[id]);
-          }).sort(function(leftId, rightId) {
-            var left = originalPositions[leftId];
-            var right = originalPositions[rightId];
-            var leftDistance = Math.hypot(
-              left.x - anchorPosition.x,
-              left.y - anchorPosition.y
-            );
-            var rightDistance = Math.hypot(
-              right.x - anchorPosition.x,
-              right.y - anchorPosition.y
-            );
-            return leftDistance - rightDistance || String(leftId).localeCompare(String(rightId));
-          });
+          var plan = contractionGraphPlan(candidate);
           var placed = [{
             id: candidate.anchorId,
             position: copyLayoutPosition(anchorPosition),
             extents: contractionNodeExtents(candidate.anchorId)
           }];
           var finalPositions = {};
+          var parentByNode = {};
           finalPositions[candidate.anchorId] = copyLayoutPosition(anchorPosition);
 
-          ordered.forEach(function(nodeId) {
-            var start = originalPositions[nodeId];
-            var extents = contractionNodeExtents(nodeId);
-            var collisionFreeStart = clearInitialContractionCollision(
-              start,
-              anchorPosition,
-              extents,
-              placed
-            );
-            var movedOutward = Math.hypot(
-              collisionFreeStart.x - start.x,
-              collisionFreeStart.y - start.y
-            ) > 0.001;
-            var stop = 1;
-            if (!movedOutward) {
-              placed.forEach(function(obstacle) {
-                var entry = contractionCollisionEntry(
-                  start,
-                  anchorPosition,
-                  extents,
-                  obstacle
-                );
-                if (entry !== null) { stop = Math.min(stop, entry); }
+          for (var depth = 1; depth <= plan.maximumDepth; depth += 1) {
+            var layer = candidate.nodeIds.filter(function(nodeId) {
+              return plan.depthByNode[nodeId] === depth &&
+                validLayoutPosition(originalPositions[nodeId]);
+            }).map(function(nodeId) {
+              var start = originalPositions[nodeId];
+              var candidates = (plan.parentCandidates[nodeId] || []).filter(function(parentId) {
+                return validLayoutPosition(finalPositions[parentId]);
               });
-              stop = Math.max(0, stop - 0.0001);
-            }
-            var finalPosition = movedOutward ? collisionFreeStart : {
-              x: start.x + (anchorPosition.x - start.x) * stop,
-              y: start.y + (anchorPosition.y - start.y) * stop
-            };
-            network.moveNode(nodeId, finalPosition.x, finalPosition.y);
-            finalPositions[nodeId] = finalPosition;
-            placed.push({id: nodeId, position: finalPosition, extents: extents});
-          });
+              var parentId = candidates.sort(function(leftId, rightId) {
+                var left = finalPositions[leftId];
+                var right = finalPositions[rightId];
+                var leftDistance = Math.hypot(start.x - left.x, start.y - left.y);
+                var rightDistance = Math.hypot(start.x - right.x, start.y - right.y);
+                return leftDistance - rightDistance ||
+                  String(leftId).localeCompare(String(rightId));
+              })[0];
+              var parentPosition = parentId ? finalPositions[parentId] : null;
+              return {
+                nodeId: nodeId,
+                parentId: parentId,
+                parentPosition: parentPosition,
+                distance: parentPosition
+                  ? Math.hypot(start.x - parentPosition.x, start.y - parentPosition.y)
+                  : Infinity
+              };
+            }).filter(function(item) {
+              return Boolean(item.parentId && item.parentPosition);
+            }).sort(function(left, right) {
+              return left.distance - right.distance ||
+                String(left.nodeId).localeCompare(String(right.nodeId));
+            });
+
+            layer.forEach(function(item) {
+              var nodeId = item.nodeId;
+              var start = originalPositions[nodeId];
+              var target = item.parentPosition;
+              var extents = contractionNodeExtents(nodeId);
+              var collisionFreeStart = clearInitialContractionCollision(
+                start,
+                target,
+                extents,
+                placed
+              );
+              var movedOutward = Math.hypot(
+                collisionFreeStart.x - start.x,
+                collisionFreeStart.y - start.y
+              ) > 0.001;
+              var stop = 1;
+              if (!movedOutward) {
+                placed.forEach(function(obstacle) {
+                  var entry = contractionCollisionEntry(
+                    start,
+                    target,
+                    extents,
+                    obstacle
+                  );
+                  if (entry !== null) { stop = Math.min(stop, entry); }
+                });
+                stop = Math.max(0, stop - 0.0001);
+              }
+              var finalPosition = movedOutward ? collisionFreeStart : {
+                x: start.x + (target.x - start.x) * stop,
+                y: start.y + (target.y - start.y) * stop
+              };
+              network.moveNode(nodeId, finalPosition.x, finalPosition.y);
+              finalPositions[nodeId] = finalPosition;
+              parentByNode[nodeId] = item.parentId;
+              placed.push({id: nodeId, position: finalPosition, extents: extents});
+            });
+          }
 
           contextContractionState = {
             key: candidate.key,
             anchorId: candidate.anchorId,
             originalPositions: originalPositions,
             restorePositions: restorePositions,
-            finalPositions: finalPositions
+            finalPositions: finalPositions,
+            depthByNode: plan.depthByNode,
+            parentByNode: parentByNode
           };
+          updateGraphViewControls();
           updateNodeLabelPositions();
-          showTransientContextNotice(
-            "Context contracted temporarily — navigating away restores the layout.",
-            "context-contracted",
-            3600
+          showContextNotice(
+            "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
+            "context-contracted"
           );
           return true;
         }
@@ -6670,7 +6751,13 @@
           return {
             primed: Boolean(contextFitPrimedKey),
             active: Boolean(contextContractionState),
-            anchorId: contextContractionState ? contextContractionState.anchorId : null
+            anchorId: contextContractionState ? contextContractionState.anchorId : null,
+            depthByNode: contextContractionState
+              ? Object.assign({}, contextContractionState.depthByNode)
+              : {},
+            parentByNode: contextContractionState
+              ? Object.assign({}, contextContractionState.parentByNode)
+              : {}
           };
         };
 
@@ -8283,6 +8370,7 @@
             includedNodeIds: Object.keys(included).sort(),
             fitIds: fitIds.slice()
           };
+          updateNodeDragLocks();
           updateNodeLabelPositions();
           updateGraphContextControls();
           return lastGraphRender;
@@ -8481,17 +8569,22 @@
           return network.getNodeAt({x: e.clientX - rect.left, y: e.clientY - rect.top});
         }
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
-          if (layoutDraggingEnabled()) { return; }
           var nodeId = graphNodeAtPointerEvent(e);
-          lockedDragProbe = nodeId ? {x: e.clientX, y: e.clientY} : null;
+          if (!nodeId || nodeDraggingEnabled(nodeId)) {
+            lockedDragProbe = null;
+            return;
+          }
+          lockedDragProbe = {x: e.clientX, y: e.clientY};
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointermove", function(e) {
-          if (!lockedDragProbe || layoutDraggingEnabled()) { return; }
+          if (!lockedDragProbe) { return; }
           if (Math.hypot(e.clientX - lockedDragProbe.x, e.clientY - lockedDragProbe.y) < 5) { return; }
           if (!lockedLayoutNoticeShown) {
             lockedLayoutNoticeShown = true;
             showTransientContextNotice(
-              "Layout locked — enable editing in Tools → Layouts.",
+              contextContractionState
+                ? "Only context nodes can be adjusted in this temporary Fit++ arrangement."
+                : "Layout locked — enable editing in Tools → Layouts.",
               "layout-locked",
               2800
             );
@@ -8871,10 +8964,6 @@
 
         document.getElementById("kg_layout_edit_toggle").addEventListener("change", function(e) {
           setLayoutEditingEnabled(e.target.checked);
-        });
-
-        document.getElementById("kg_layout_edit_persistence").addEventListener("change", function(e) {
-          setLayoutEditPersistence(e.target.value);
         });
 
         document.getElementById("kg_layout_export").addEventListener("click", function(e) {

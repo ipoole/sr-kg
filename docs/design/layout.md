@@ -29,23 +29,23 @@ fallbacks, not a runtime reflow policy.
 
 ## Explicit editing
 
-Dragging is disabled during ordinary browsing. **Tools → Layouts → Edit layout**
-enables it and visibly states whether changes are Temporary or Personal.
-Temporary is the default; its in-memory overlay survives graph-state changes and
-is discarded when editing is disabled or the page reloads. Personal moves are
-saved as browser-local overrides. This choice is independent of Full graph or
-Context-only display; Hidden display cannot be edited. Changing display never
-automatically fits the camera.
+Dragging is disabled during ordinary browsing. **Tools → Layouts → Edit personal
+layout** enables it; moves are saved as browser-local overrides. Editing is
+independent of Full graph or Context-only display; Hidden display cannot be
+edited. Changing display never automatically fits the camera.
 
-**Fit++** contraction is separate from both layout modes. It temporarily moves
-only the current visible context, writes neither overlay nor saved positions,
-and is discarded on navigation.
+**Fit++** contraction temporarily moves only the represented context
+breadth-first through its graph structure. Those context nodes can then be
+dragged to refine the temporary arrangement; background nodes remain locked.
+Fit++ writes no saved positions and navigation restores the underlying layout.
+While it is active, the Personal editing control is suspended and resumes its
+previous setting after navigation.
 
 ## Personal persistence and publication
 
 Browser-local overrides save Personal edits relative to the published layout and
 survive reload. They form part of the unified [personal-data](personal_data.md)
-profile and archive. They exclude camera, selection, display and Temporary changes.
+profile and archive. They exclude camera, selection, display and Fit++ changes.
 A published-revision mismatch displays a keep-or-reset warning under
 **Tools → Layouts**. Existing personal positions are applied immediately;
 the warning does not block their use pending a decision.

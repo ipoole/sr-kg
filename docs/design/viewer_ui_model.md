@@ -114,10 +114,11 @@ Context require a selection; All requires at least one displayed object.
 
 With one represented selection anchor in Full or Context-only display, using
 **Fit context** arms **Fit++**. A second press temporarily contracts represented
-context nodes towards that anchor, preserving their radial directions and
-leaving node-and-edge clearance, then fits them. Background nodes in Full graph
-do not move. This explicit presentation adjustment is never persisted and is
-discarded on navigation.
+context nodes breadth-first along their graph connections, starting at that
+anchor and leaving node-and-edge clearance, then fits them. Where several
+shortest routes reach a node, its closest newly placed parent is used.
+Background nodes in Full graph do not move. This explicit presentation
+adjustment is never persisted and is discarded on navigation.
 
 ### Details and inspection
 
@@ -136,10 +137,12 @@ explicit endpoint selection actions.
 ### Layout editing
 
 Node dragging is disabled during ordinary browsing. Tools -> Layouts enables
-editing with an explicit persistence choice independent of display scope.
-Temporary is the default and lasts until editing is disabled or the page reloads;
-Personal writes browser-local overrides. A locked drag attempt and every
-completed move explain the active consequence in the context bar.
+Personal editing, which writes browser-local overrides independently of display
+scope. Fit++ automatically makes only its represented context nodes draggable;
+these changes are temporary and navigation restores the underlying positions.
+The Personal control is suspended during Fit++ and resumes its prior setting
+afterward. A locked drag attempt and every completed move explain the active
+consequence in the context bar.
 
 ## State transitions
 
@@ -151,11 +154,12 @@ completed move explain the active consequence in the context bar.
 | Choose display scope | Displayed-graph membership | Selection, context rule, representation, camera, layout |
 | Fold/expand module | Module representation and projected objects | Selection, semantic context, scope, camera, layout |
 | Fit or pan/zoom | Camera | All semantic state and layout |
-| Fit++ after Fit context with a selection | Temporary context presentation and camera | Semantic state, background positions and every saved or edited layout |
+| Fit++ after Fit context with a selection | Temporary context presentation and camera; context nodes become draggable | Semantic state, background positions and every saved or edited layout |
 | Scroll details | Active section | Selection and graph state |
 | Change Details mode | Details presentation and viewport | Selection and graph state |
 | Preview or inspect edge | Inspection | Selection and graph state |
-| Layout-edit drag | Temporary overlay or Personal layout, as explicitly chosen | Selection, context rule, scope |
+| Personal layout drag | Personal layout | Selection, context rule, scope |
+| Fit++ context drag | Temporary Fit++ presentation | Selection, context rule, scope, saved layouts, background positions |
 | Browser Back/Forward | Selection | Context rule, scope, representation, camera |
 
 ## Startup

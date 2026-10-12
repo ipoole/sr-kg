@@ -284,13 +284,16 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         if node_id != "3.1"
     }
     assert all(after_distances[node_id] < before_distances[node_id] for node_id in after_distances)
-    assert "temporarily" in page.locator("#kg_context_notice").inner_text().lower()
+    assert "temporary" in page.locator("#kg_context_notice").inner_text().lower()
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == published
     assert page.evaluate("() => kgContextContractionSnapshot()") == {
         "primed": False,
         "active": True,
         "anchorId": "3.1",
+        "depthByNode": {"1.1": 2, "2.1": 1, "2.2": 1, "3.1": 0},
+        "parentByNode": {"1.1": "2.1", "2.1": "3.1", "2.2": "3.1"},
     }
+    assert after["1.1"]["x"] < after["2.1"]["x"] < after["3.1"]["x"]
 
     bounds = page.evaluate(
         """ids => Object.fromEntries(ids.map(id => [id, network.getBoundingBox(id)]))""",
@@ -309,7 +312,8 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
 
     page.evaluate("() => kgToggleControls()")
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_toggle").check()
+    assert page.locator("#kg_layout_edit_toggle").is_disabled()
+    assert page.evaluate("() => kgLayoutDraggingEnabled()") is True
     page.evaluate(
         """() => {
           network.moveNode("2.1", 777, 888);
@@ -331,6 +335,35 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         )
     assert fit_button.inner_text() == "Fit"
     assert page.evaluate("() => kgContextContractionSnapshot().active") is False
+
+
+@pytest.mark.browser
+def test_contraction_graph_plan_walks_arbitrary_depth_and_keeps_shortest_parents(
+    browser_graph,
+):
+    plan = browser_graph.page.evaluate(
+        """() => kgContractionGraphPlan({
+          anchorId: "root",
+          nodeIds: ["root", "near", "left", "right", "leaf"],
+          adjacency: {
+            root: ["near"],
+            near: ["root", "left", "right"],
+            left: ["near", "leaf"],
+            right: ["near", "leaf"],
+            leaf: ["left", "right"]
+          }
+        })"""
+    )
+
+    assert plan["maximumDepth"] == 3
+    assert plan["depthByNode"] == {
+        "root": 0,
+        "near": 1,
+        "left": 2,
+        "right": 2,
+        "leaf": 3,
+    }
+    assert plan["parentCandidates"]["leaf"] == ["left", "right"]
 
 
 @pytest.mark.browser
@@ -373,6 +406,57 @@ def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
 
 
 @pytest.mark.browser
+def test_fit_plus_unlocks_only_context_and_suspends_personal_editing(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_layouts_section")
+    assert page.locator("#kg_layout_edit_persistence").count() == 0
+    personal_toggle = page.locator("#kg_layout_edit_toggle")
+    personal_toggle.check()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is True
+
+    before_layout = page.evaluate("() => kgGlobalLayoutSnapshot()")
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_context_depth_select").select_option("one-hop")
+    _close_tools_overlay(page)
+    page.locator("#kg_fit_apply").click()
+    page.wait_for_timeout(300)
+    page.locator("#kg_fit_apply").click()
+    page.wait_for_timeout(300)
+
+    page.evaluate("() => kgToggleControls()")
+    browser_graph.open_control_section("kg_layouts_section")
+    assert personal_toggle.is_checked()
+    assert personal_toggle.is_disabled()
+    assert "suspended" in page.locator("#kg_layout_edit_message").inner_text().lower()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is False
+    assert page.evaluate("() => kgLayoutDraggingEnabled()") is True
+    assert page.evaluate("() => nodes.get('2.1').fixed.x") is False
+    assert page.evaluate("() => nodes.get('1.1').fixed.x") is True
+
+    page.evaluate(
+        """() => {
+          network.moveNode("2.1", 777, 888);
+          network.emit("dragEnd", {nodes: ["2.1"]});
+        }"""
+    )
+    assert page.evaluate("() => network.getPositions(['2.1'])['2.1']") == {
+        "x": 777,
+        "y": 888,
+    }
+    assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before_layout
+    assert "navigating away" in page.locator("#kg_context_notice").inner_text().lower()
+
+    browser_graph.click_concept("2.1")
+    assert personal_toggle.is_enabled()
+    assert personal_toggle.is_checked()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is True
+    restored = page.evaluate("() => network.getPositions(['2.1'])['2.1']")
+    expected = before_layout["concepts"]["2.1"]
+    assert restored["x"] == pytest.approx(expected["x"], abs=2)
+    assert restored["y"] == pytest.approx(expected["y"], abs=2)
+
+
+@pytest.mark.browser
 def test_context_contraction_uses_folded_module_as_selection_anchor(browser_graph):
     page = browser_graph.page
     module_id = "test.m02_applications"
@@ -412,6 +496,20 @@ def test_context_contraction_uses_folded_module_as_selection_anchor(browser_grap
 
     assert after[module_node_id] == before[module_node_id]
     assert abs(after["1.1"]["x"]) < abs(before["1.1"]["x"])
+    assert page.evaluate("() => kgGlobalLayoutSnapshot().modules") == page.evaluate(
+        "() => publishedLayout.modules"
+    )
+    assert page.evaluate("id => nodes.get(id).fixed.x", module_node_id) is False
+    page.evaluate(
+        """id => {
+          network.moveNode(id, 444, 555);
+          network.emit("dragEnd", {nodes: [id]});
+        }""",
+        module_node_id,
+    )
+    assert page.evaluate(
+        "id => network.getPositions([id])[id]", module_node_id
+    ) == {"x": 444, "y": 555}
     assert page.evaluate("() => kgGlobalLayoutSnapshot().modules") == page.evaluate(
         "() => publishedLayout.modules"
     )

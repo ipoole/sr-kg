@@ -2639,17 +2639,6 @@
         width: auto;
     }
 
-    .kg-layout-persistence {
-        align-items: center;
-        display: flex;
-        gap: 0.45em;
-        margin: 0.35rem 0;
-    }
-
-    .kg-layout-persistence select {
-        font: inherit;
-    }
-
     .kg-layout-warning {
         background: #fff7d6;
         border: 1px solid #d6a700;

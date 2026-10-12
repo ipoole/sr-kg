@@ -39,11 +39,12 @@ offered actions to expand its module or any folded part of its context.
 ## Move, read and edit
 
 Pan and zoom freely; selection pans only enough to reveal an off-screen item.
-Use **Fit** to frame the selection, context or displayed graph. In Context only,
-fitting a selected context changes the button to **Fit++**; press it to draw the
-visible nodes closer without changing a saved layout. Navigating away restores
-their positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and
-graphics without changing the graph camera.
+Use **Fit** to frame the selection, context or displayed graph. In Full or
+Context-only display, fitting a selected context changes the button to
+**Fit++**; press it to draw the visible context nodes closer along their graph
+connections without changing a saved layout. Navigating away restores their
+positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics
+without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or
@@ -51,9 +52,9 @@ module. Use a block's speech-bubble `+`, then choose a paragraph, to add a note;
 a filled bubble means notes are already present. **Show in graph** changes
 Context. Back and Forward retrace selections.
 
-Dragging is locked while browsing. Enable **Tools → Layouts → Edit layout**;
-moves are **Temporary** until editing ends or the page reloads, or **Personal**
-when saved in this browser.
+Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
+layout** to save moved nodes in this browser. After Fit++, represented context
+nodes can instead be adjusted temporarily; navigating away restores them.
 
 ## Personal data
 
