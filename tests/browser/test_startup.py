@@ -1410,7 +1410,7 @@ def test_legacy_concept_uses_coarse_details_sections(shared_browser_graph):
 
     shared_browser_graph.click_concept("2.1")
 
-    assert page.locator("#info_panel h3").evaluate_all(
+    assert page.locator("#info_panel h3 .kg-noteable-title").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Definition", "Explanation"]
     assert page.locator("#info_panel .content-block").count() == 0
@@ -1441,7 +1441,7 @@ def test_revised_concept_renders_note_block_kinds_folded(shared_browser_graph):
 
     notes = page.locator("#info_panel details.content-block-note")
     assert notes.count() == 2
-    assert notes.locator("summary").evaluate_all(
+    assert notes.locator("summary .content-block-title-text").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Gamma warning", "Gamma history"]
     assert not notes.nth(0).locator(".content-block-note-body").is_visible()
@@ -1482,7 +1482,7 @@ def test_revised_concept_renders_derivation_steps_folded(shared_browser_graph):
 
     step = page.locator("#info_panel details.content-block-derivation_step")
     assert step.count() == 1
-    assert step.locator("summary").inner_text() == "Gamma algebra step"
+    assert step.locator("summary .content-block-title-text").inner_text() == "Gamma algebra step"
     assert not step.locator(".content-block-fold-body").is_visible()
 
     step.locator("summary").click()
@@ -2221,9 +2221,10 @@ def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(br
     definition.locator(":scope > summary").click()
     assert definition.evaluate("el => el.open")
 
-    page.locator("#kg_notes_edit_toggle").evaluate(
-        "el => { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); }"
-    )
+    page.locator(
+        "#info_panel #kg-toc-2-2-definition .kg-note-block-action"
+    ).click()
+    page.keyboard.press("Escape")
     assert page.locator("#info_panel #kg-toc-2-2-definition").evaluate("el => el.open")
 
 

@@ -1,3 +1,5 @@
+import struct
+
 import pytest
 
 from srkg.html_injection import inject_controls, require_html_marker
@@ -35,6 +37,8 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in injected
     assert "<title>PhysicsKG - An Atlas of Physics Knowledge</title>" in injected
     assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in injected
+    assert '<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,' in injected
+    assert '<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,' in injected
     assert '<b class="kg-product-name">PhysicsKG</b>' in injected
     assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
     assert '<div id="kg_view_title">SR &lt;Graph&gt; &amp; Fields</div>' in injected
@@ -74,6 +78,18 @@ def test_favicon_asset_is_compact_accessible_svg():
 
     assert '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"' in favicon
     assert '<title id="title">PhysicsKG</title>' in favicon
+
+
+def test_favicon_png_fallbacks_have_expected_dimensions():
+    from srkg.html_injection import ASSET_DIR
+
+    for name, expected_size in (
+        ("favicon-32.png", (32, 32)),
+        ("apple-touch-icon.png", (180, 180)),
+    ):
+        image = (ASSET_DIR / name).read_bytes()
+        assert image.startswith(b"\x89PNG\r\n\x1a\n")
+        assert struct.unpack(">II", image[16:24]) == expected_size
 
 
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():

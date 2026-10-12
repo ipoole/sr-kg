@@ -230,7 +230,6 @@
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
-        var noteEditingStorageKey = kgStorageKeys.noteEditing;
         var splashDismissedStorageKey = kgStorageKeys.splashDismissed;
         var studyProgressStorageKey = kgStorageKeys.studyProgress || "srkg.studyProgress.v1";
         var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
@@ -240,8 +239,9 @@
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
         var contentReadProgressState = loadContentReadProgress();
-        var noteEditingEnabled = loadNoteEditingPreference();
         var openUserNoteId = null;
+        var notePlacementSuppressClickUntil = 0;
+        var notePlacementPointerStart = null;
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
         var readingMode = "full";
@@ -1093,6 +1093,9 @@
           if (options.contentBlockId) {
             attrs += ' data-content-block-id="' + escapeHtml(options.contentBlockId) + '"';
           }
+          if (options.noteBlock) {
+            attrs += ' data-note-block="true"';
+          }
           if (options.open) {
             attrs += " open";
           }
@@ -1379,14 +1382,6 @@
           return saved;
         }
 
-        function loadNoteEditingPreference() {
-          return safeLocalStorageGet(noteEditingStorageKey) === "true";
-        }
-
-        function saveNoteEditingPreference() {
-          safeLocalStorageSet(noteEditingStorageKey, noteEditingEnabled ? "true" : "false");
-        }
-
         function splashDismissed() {
           return safeLocalStorageGet(splashDismissedStorageKey) === "true";
         }
@@ -1593,6 +1588,18 @@
           return candidate;
         }
 
+        function repairResolvedNoteAnchor(note, candidate) {
+          if (!candidate) { return null; }
+          var anchor = note.anchor || (note.anchor = {});
+          anchor.blockId = candidate.blockId;
+          anchor.sectionKey = candidate.sectionKey;
+          anchor.blockIndex = candidate.blockIndex;
+          anchor.contextBefore = candidate.contextBefore;
+          anchor.contextAfter = candidate.contextAfter;
+          note.updatedAt = new Date().toISOString();
+          return candidate;
+        }
+
         function resolveNoteAnchor(note) {
           var candidates = noteAnchorCandidates(note.targetType, note.targetId);
           var anchor = note.anchor || {};
@@ -1607,7 +1614,29 @@
             });
           }
           if (scoped.length > 0) {
-            return uniqueBestNoteAnchor(scoped, anchor);
+            var resolved = uniqueBestNoteAnchor(scoped, anchor);
+            if (resolved) { return resolved; }
+
+            // Early module-note builds could retain a valid stable block and
+            // preceding paragraph while recording stale context fields. Use
+            // that authored paragraph identity as a constrained repair path.
+            var legacyAfter = normalizeNoteAnchorContext(anchor.afterText);
+            var paragraphMatches = scoped.filter(function(candidate) {
+              return legacyAfter &&
+                normalizeNoteAnchorContext(candidate.legacyAfter) === legacyAfter;
+            });
+            if (paragraphMatches.length === 1) {
+              return repairResolvedNoteAnchor(note, paragraphMatches[0]);
+            }
+            if (!legacyAfter && Number(anchor.blockIndex || 0) === 0) {
+              var leadingMatches = scoped.filter(function(candidate) {
+                return candidate.blockIndex === 0;
+              });
+              if (leadingMatches.length === 1) {
+                return repairResolvedNoteAnchor(note, leadingMatches[0]);
+              }
+            }
+            return null;
           }
           if (anchor.blockId || anchor.sectionKey) { return null; }
 
@@ -1649,8 +1678,12 @@
 
         function migrateUserNotesState() {
           if (!userNotesState || !Array.isArray(userNotesState.notes)) { return; }
+          var before = JSON.stringify(userNotesState.notes);
           userNotesState.version = 2;
           userNotesState.notes.forEach(function(note) { resolveNoteAnchor(note); });
+          if (JSON.stringify(userNotesState.notes) !== before) {
+            personalDataStore.replaceNotes(userNotesState.notes);
+          }
           safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
         }
 
@@ -1671,6 +1704,48 @@
           }).sort(function(a, b) {
             return String(a.createdAt).localeCompare(String(b.createdAt));
           });
+        }
+
+        function noteCountForBlock(targetType, targetId, blockId, sectionKey) {
+          blockId = String(blockId || "");
+          sectionKey = String(sectionKey || "");
+          return userNotesState.notes.filter(function(note) {
+            if (note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
+              return false;
+            }
+            var resolved = resolveNoteAnchor(note);
+            if (!resolved) { return false; }
+            return blockId
+              ? resolved.blockId === blockId
+              : resolved.sectionKey === sectionKey;
+          }).length;
+        }
+
+        function renderNoteBlockAction(targetType, targetId, sectionName, blockId, sectionKey, withReadToggle) {
+          var count = noteCountForBlock(targetType, targetId, blockId, sectionKey);
+          var hasNotes = count > 0;
+          var label = hasNotes
+            ? "Notes present in " + sectionName + "; add another note"
+            : "Add a note to " + sectionName;
+          return '<span class="kg-note-heading-actions' +
+            (withReadToggle ? " kg-note-heading-actions-with-read" : "") + '">' +
+            '<span class="kg-note-placement-instruction" role="status" aria-live="polite">' +
+            'Choose paragraph ↓<span class="kg-visually-hidden">. The note will appear ' +
+            'below it. Press Escape to cancel.</span>' +
+            "</span>" +
+            '<button type="button" class="kg-note-placement-cancel">Cancel</button>' +
+            '<button type="button" class="kg-note-block-action' +
+            (withReadToggle ? " kg-note-block-action-with-read" : "") +
+            '" data-note-state="' + (hasNotes ? "present" : "empty") +
+            '" data-target-type="' + escapeHtml(targetType) +
+            '" data-target-id="' + escapeHtml(targetId) +
+            '" data-section="' + escapeHtml(sectionName) +
+            '" data-anchor-block-id="' + escapeHtml(blockId || "") +
+            '" data-anchor-section-key="' + escapeHtml(sectionKey || "") +
+            '" aria-label="' + escapeHtml(label) + '" aria-pressed="false" title="' +
+            escapeHtml(label) + '">' +
+            '<span class="kg-note-bubble-glyph" aria-hidden="true">' +
+            "+</span></button></span>";
         }
 
         function findUserNote(noteId) {
@@ -1830,33 +1905,24 @@
         }
 
         function renderUserNote(note) {
-          if (noteEditingEnabled) {
-            var shouldOpen = note.id === openUserNoteId;
-            var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
-              (shouldOpen ? " open" : "") + ">";
-            html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
-            html += '<div class="user-note-editor">';
-            html += '<label>Title<input class="user-note-title-input" data-note-id="' +
-              escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
-            html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
-              escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
-            html += '<div class="user-note-actions">';
-            html += '<button type="button" class="user-note-close" data-note-id="' +
-              escapeHtml(note.id) + '">Close</button>';
-            html += '<button type="button" class="user-note-delete" data-note-id="' +
-              escapeHtml(note.id) + '">Delete</button>';
-            html += '<span class="user-note-saved">Saved locally</span>';
-            html += "</div></div>";
-            html += "</details>";
-            return html;
-          }
-          return renderFoldDown({
-            className: "user-note",
-            id: note.id,
-            title: note.title || "Untitled note",
-            bodyClass: "user-note-body",
-            bodyHtml: renderConceptText(note.body || "")
-          });
+          var shouldOpen = note.id === openUserNoteId;
+          var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
+            (shouldOpen ? " open" : "") + ">";
+          html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
+          html += '<div class="user-note-editor">';
+          html += '<label>Title<input class="user-note-title-input" data-note-id="' +
+            escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
+          html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
+            escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
+          html += '<div class="user-note-actions">';
+          html += '<button type="button" class="user-note-close" data-note-id="' +
+            escapeHtml(note.id) + '">Close</button>';
+          html += '<button type="button" class="user-note-delete" data-note-id="' +
+            escapeHtml(note.id) + '">Delete</button>';
+          html += '<span class="user-note-saved">Saved locally</span>';
+          html += "</div></div>";
+          html += "</details>";
+          return html;
         }
 
         function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec) {
@@ -1879,6 +1945,28 @@
             '" data-target-type="' + escapeHtml(targetType) +
             '" data-target-id="' + escapeHtml(targetId) + '">+ note</button>';
           html += "</div>";
+          return html;
+        }
+
+        function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text) {
+          var blocks = splitConceptBlocks(String(text || ""));
+          var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
+          var html = renderNotesAtAnchor(
+            targetType, targetId, sectionName, 0, "", specs[0]
+          );
+          blocks.forEach(function(textBlock, index) {
+            html += '<div class="concept-line">' +
+              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+              "</div>";
+            html += renderNotesAtAnchor(
+              targetType,
+              targetId,
+              sectionName,
+              index + 1,
+              String(textBlock.text || "").slice(0, 160),
+              specs[index + 1]
+            );
+          });
           return html;
         }
 
@@ -2022,8 +2110,14 @@
           if (!raw) { return ""; }
           var blocks = splitConceptBlocks(raw);
           var specs = noteAnchorSpecs(blockId, "legacy:" + sectionKey, title, raw);
-          var html = '<h3 id="' + escapeHtml(contentAnchorId(conceptId, title)) + '">' +
-            escapeHtml(title) + "</h3>";
+          var html = '<section class="legacy-content-block" data-note-block="true"' +
+            (blockId ? ' data-content-block-id="' + escapeHtml(blockId) + '"' : "") + ">";
+          html += '<h3 class="kg-noteable-heading" id="' +
+            escapeHtml(contentAnchorId(conceptId, title)) + '">' +
+            '<span class="kg-noteable-title">' + escapeHtml(title) + "</span>" +
+            renderNoteBlockAction(
+              "concept", conceptId, title, blockId, "legacy:" + sectionKey, false
+            ) + "</h3>";
           html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
           html += renderNotesAtAnchor("concept", conceptId, title, 0, "", specs[0]);
           blocks.forEach(function(block, index) {
@@ -2032,7 +2126,7 @@
               "concept", conceptId, title, index + 1, block.text.slice(0, 160), specs[index + 1]
             );
           });
-          html += "</div>";
+          html += "</div></section>";
           return html;
         }
 
@@ -3545,7 +3639,7 @@
             .replace(/^-+|-+$/g, "") || "unknown";
         }
 
-        function renderContentBlockHeading(block, title) {
+        function renderContentBlockHeading(targetType, targetId, block, title) {
           var policy = contentBlockPolicyFor(block.kind);
           return '<span class="content-block-title-line">' +
             '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
@@ -3555,7 +3649,15 @@
             '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
             escapeHtml(policy.label) +
             '"></span></span>' +
+            renderNoteBlockAction(
+              targetType, targetId, title, block.block_id, "", true
+            ) +
             renderContentBlockReadToggle(block.block_id, title);
+        }
+
+        function renderNoteableHeading(targetType, targetId, title, sectionKey) {
+          return '<span class="kg-noteable-title">' + renderConceptText(title) + "</span>" +
+            renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
         }
 
         function renderContentBlockReadToggle(blockId, title) {
@@ -3572,6 +3674,9 @@
           var policy = contentBlockPolicyFor(block.kind);
           var anchorId = contentAnchorId(conceptId, title);
           var bodyClass = "concept-body content-block-body";
+          var bodyHtml = renderNoteAnchoredBody(
+            "concept", conceptId, title, block.block_id, "", block.body
+          );
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
             if (policy.note) {
@@ -3580,35 +3685,20 @@
             return renderFoldDown({
               anchorId: anchorId,
               contentBlockId: block.block_id,
+              noteBlock: true,
               className: contentBlockClassName(block, policy),
-              summaryHtml: renderContentBlockHeading(block, title),
+              summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
               bodyClass: bodyClass,
-              bodyHtml: renderConceptText(block.body)
+              bodyHtml: bodyHtml
             });
           }
-          var blocks = splitConceptBlocks(block.body);
-          var specs = noteAnchorSpecs(block.block_id, "", title, block.body);
-          var bodyHtml = "";
-          bodyHtml += renderNotesAtAnchor("concept", conceptId, title, 0, "", specs[0]);
-          blocks.forEach(function(textBlock, index) {
-            bodyHtml += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-            bodyHtml += renderNotesAtAnchor(
-              "concept",
-              conceptId,
-              title,
-              index + 1,
-              textBlock.text.slice(0, 160),
-              specs[index + 1]
-            );
-          });
           return renderFoldDown({
             anchorId: anchorId,
             contentBlockId: block.block_id,
+            noteBlock: true,
             className: contentBlockClassName(block, policy),
             open: true,
-            summaryHtml: renderContentBlockHeading(block, title),
+            summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
             bodyClass: bodyClass,
             bodyHtml: bodyHtml
           });
@@ -4747,21 +4837,9 @@
           var policy = contentBlockPolicyFor(block.kind);
           var anchorId = contentAnchorId(moduleId, title);
           var bodyClass = "concept-body content-block-body";
-          var specs = noteAnchorSpecs(block.block_id, "", title, block.body);
-          var bodyHtml = renderNotesAtAnchor("module", moduleId, title, 0, "", specs[0]);
-          splitConceptBlocks(block.body).forEach(function(textBlock, index) {
-            bodyHtml += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-            bodyHtml += renderNotesAtAnchor(
-              "module",
-              moduleId,
-              title,
-              index + 1,
-              String(textBlock.text || "").slice(0, 160),
-              specs[index + 1]
-            );
-          });
+          var bodyHtml = renderNoteAnchoredBody(
+            "module", moduleId, title, block.block_id, "", block.body
+          );
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
             if (policy.note) {
@@ -4770,8 +4848,9 @@
             return renderFoldDown({
               anchorId: anchorId,
               contentBlockId: block.block_id,
+              noteBlock: true,
               className: contentBlockClassName(block, policy) + " module-content-block",
-              summaryHtml: renderContentBlockHeading(block, title),
+              summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
               bodyClass: bodyClass,
               bodyHtml: bodyHtml
             });
@@ -4780,9 +4859,10 @@
           return renderFoldDown({
             anchorId: anchorId,
             contentBlockId: block.block_id,
+            noteBlock: true,
             className: contentBlockClassName(block, policy) + " module-content-block",
             open: true,
-            summaryHtml: renderContentBlockHeading(block, title),
+            summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
             bodyClass: bodyClass,
             bodyHtml: bodyHtml
           });
@@ -4917,9 +4997,12 @@
           );
           return renderFoldDown({
             anchorId: contentAnchorId(moduleId, "Graphic"),
+            noteBlock: true,
             className: "concept-figure module-figure",
             open: true,
-            title: "Module graphic",
+            summaryHtml: renderNoteableHeading(
+              "module", moduleId, "Module graphic", "graphic"
+            ),
             bodyTag: "figure",
             bodyClass: "concept-figure-body module-figure-body",
             bodyHtml: bodyHtml
@@ -4960,7 +5043,6 @@
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
-          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           renderNotesOverview();
           openUserNoteId = null;
           var initialItem = initialTocItem(tocItems);
@@ -4986,13 +5068,54 @@
           );
           return renderFoldDown({
             anchorId: contentAnchorId(conceptId, "Graphic"),
+            noteBlock: true,
             className: "concept-figure",
             open: true,
-            title: "Graphic",
+            summaryHtml: renderNoteableHeading("concept", conceptId, "Graphic", "graphic"),
             bodyTag: "figure",
             bodyClass: "concept-figure-body",
             bodyHtml: bodyHtml
           });
+        }
+
+        function cancelNotePlacement(block, restoreFocus) {
+          block = block || document.querySelector('#info_panel [data-note-placement="active"]');
+          if (!block) { return; }
+          var action = block.querySelector(
+            ":scope > summary .kg-note-block-action, " +
+            ":scope > .kg-noteable-heading .kg-note-block-action"
+          );
+          block.removeAttribute("data-note-placement");
+          block.querySelectorAll(".concept-line").forEach(function(line) {
+            line.removeAttribute("tabindex");
+            line.removeAttribute("aria-label");
+          });
+          if (action) { action.setAttribute("aria-pressed", "false"); }
+          if (restoreFocus && action) {
+            window.requestAnimationFrame(function() { action.focus(); });
+          }
+        }
+
+        function beginNotePlacement(action) {
+          var block = action && action.closest("#info_panel > [data-note-block]");
+          if (!block) { return; }
+          cancelNotePlacement();
+          if (block.tagName === "DETAILS") { block.open = true; }
+          var lines = block.querySelectorAll(".concept-line");
+          if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
+            var blockNoteButton = block.querySelector(".kg-add-note");
+            if (blockNoteButton) { blockNoteButton.click(); }
+            return;
+          }
+          block.setAttribute("data-note-placement", "active");
+          action.setAttribute("aria-pressed", "true");
+          lines.forEach(function(line) {
+            line.setAttribute("tabindex", "0");
+            line.setAttribute("aria-label", "Place note after this paragraph");
+          });
+          if (lines.length > 0) {
+            window.requestAnimationFrame(function() { lines[0].focus(); });
+          }
         }
 
         function openTargetForToc(target) {
@@ -7413,9 +7536,11 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions"' +
+              '" class="study-questions" data-note-block="true"' +
               (readingMode === "practice" ? " open" : "") + ">";
-            html += "<summary>Study Questions</summary>";
+            html += "<summary>" + renderNoteableHeading(
+              "concept", nodeId, "Study Questions", "study-questions"
+            ) + "</summary>";
             studyQuestions.forEach(function(item, index) {
               if (item && item.marking_mode === "automatic") {
                 html += renderAutomaticStudyQuestion(item, index);
@@ -7463,7 +7588,6 @@
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
-          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           renderNotesOverview();
           openUserNoteId = null;
           var initialItem = initialTocItem(tocItems);
@@ -7983,7 +8107,6 @@
           panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>";
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
-          panel.classList.toggle("kg-note-editing", false);
           panel.scrollTop = 0;
         }
 
@@ -8676,15 +8799,6 @@
           "click", disconnectGoogleDrive
         );
 
-        var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
-        notesEditToggle.checked = noteEditingEnabled;
-        notesEditToggle.addEventListener("change", function(e) {
-          noteEditingEnabled = e.target.checked;
-          saveNoteEditingPreference();
-          setNotesStatus(noteEditingEnabled ? "Note editing enabled." : "Note editing disabled.");
-          refreshActiveConcept();
-        });
-
         document.getElementById("kg_notes_list").addEventListener("click", function(e) {
           var item = e.target.closest(".kg-note-list-item");
           if (!item) { return; }
@@ -8922,7 +9036,6 @@
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
             var noteTargetType = addNoteButton.getAttribute("data-target-type") || "concept";
             var noteTargetId = addNoteButton.getAttribute("data-target-id") || activeNodeId;
             var noteBlockId = addNoteButton.getAttribute("data-anchor-block-id") || "";
@@ -8935,7 +9048,8 @@
             var enclosingSectionId = enclosingSection && enclosingSection.open
               ? enclosingSection.id
               : "";
-            createUserNote(
+            cancelNotePlacement(addNoteButton.closest('[data-note-placement="active"]'));
+            var createdNote = createUserNote(
               noteTargetType,
               noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
@@ -8953,13 +9067,52 @@
               var refreshedSection = document.getElementById(enclosingSectionId);
               if (refreshedSection) { refreshedSection.open = true; }
             }
+            window.requestAnimationFrame(function() {
+              var titleInput = noteEditorField(createdNote.id, ".user-note-title-input");
+              if (titleInput) {
+                titleInput.focus();
+                titleInput.select();
+              }
+            });
+            return;
+          }
+
+          var noteBlockAction = e.target.closest(".kg-note-block-action");
+          if (noteBlockAction) {
+            e.preventDefault();
+            e.stopPropagation();
+            beginNotePlacement(noteBlockAction);
+            return;
+          }
+
+          var notePlacementCancel = e.target.closest(".kg-note-placement-cancel");
+          if (notePlacementCancel) {
+            e.preventDefault();
+            e.stopPropagation();
+            cancelNotePlacement(
+              notePlacementCancel.closest('[data-note-placement="active"]'),
+              true
+            );
+            return;
+          }
+
+          var placementBlock = e.target.closest('[data-note-placement="active"]');
+          var placementLine = e.target.closest(".concept-line");
+          if (
+            placementBlock && placementLine &&
+            Date.now() >= notePlacementSuppressClickUntil &&
+            !e.target.closest("a, button, input, textarea, select, label")
+          ) {
+            e.preventDefault();
+            var placementRow = placementLine.nextElementSibling;
+            var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
+            if (placementButton) { placementButton.click(); }
             return;
           }
 
           var closeNoteButton = e.target.closest(".user-note-close");
           if (closeNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
             closeUserNote(closeNoteButton.getAttribute("data-note-id"));
             return;
           }
@@ -8967,7 +9120,6 @@
           var deleteNoteButton = e.target.closest(".user-note-delete");
           if (deleteNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
             deleteUserNote(deleteNoteButton.getAttribute("data-note-id"));
             refreshActiveConcept();
             return;
@@ -9091,7 +9243,6 @@
             return;
           }
 
-          if (!noteEditingEnabled) { return; }
           var titleInput = e.target.closest(".user-note-title-input");
           if (titleInput) {
             updateUserNote(titleInput.getAttribute("data-note-id"), {title: titleInput.value});
@@ -9110,6 +9261,50 @@
           adjustInfoPanelTextZoom(e.deltaY);
         }, {passive: false});
 
+        document.getElementById("info_panel").addEventListener("keydown", function(e) {
+          var placementBlock = e.target.closest('[data-note-placement="active"]') ||
+            document.querySelector('#info_panel [data-note-placement="active"]');
+          if (!placementBlock) { return; }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            cancelNotePlacement(placementBlock, true);
+            return;
+          }
+          if (e.key !== "Enter" && e.key !== " ") { return; }
+          var placementLine = e.target.closest(".concept-line");
+          if (!placementLine) { return; }
+          e.preventDefault();
+          var placementRow = placementLine.nextElementSibling;
+          var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
+          if (placementButton) { placementButton.click(); }
+        });
+
+        document.getElementById("info_panel").addEventListener("pointerdown", function(e) {
+          if (!e.target.closest('[data-note-placement="active"] .concept-line')) {
+            notePlacementPointerStart = null;
+            return;
+          }
+          notePlacementPointerStart = {x: e.clientX, y: e.clientY};
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointermove", function(e) {
+          if (!notePlacementPointerStart) { return; }
+          var dx = e.clientX - notePlacementPointerStart.x;
+          var dy = e.clientY - notePlacementPointerStart.y;
+          if ((dx * dx) + (dy * dy) > 64) {
+            notePlacementSuppressClickUntil = Date.now() + 400;
+          }
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointerup", function() {
+          notePlacementPointerStart = null;
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointercancel", function() {
+          notePlacementPointerStart = null;
+          notePlacementSuppressClickUntil = Date.now() + 400;
+        }, {passive: true});
+
         document.getElementById("info_panel").addEventListener("scroll", scheduleDetailScrollSync, {passive: true});
 
         document.getElementById("kg_controls").addEventListener("wheel", function(e) {
@@ -9127,7 +9322,6 @@
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
             if (
-              noteEditingEnabled &&
               e.target.classList.contains("user-note") &&
               !e.target.open
             ) {

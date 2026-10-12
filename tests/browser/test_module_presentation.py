@@ -24,7 +24,7 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     figure = page.locator('#info_panel .module-figure')
     assert figure.count() == 1
     assert figure.locator('svg[viewBox="0 0 768 480"]').count() == 1
-    assert figure.locator('summary').inner_text().strip() == "Module graphic"
+    assert figure.locator('summary .kg-noteable-title').inner_text().strip() == "Module graphic"
     caption = figure.locator("figcaption")
     assert "light cone" in caption.inner_text().lower()
     svg_box = figure.locator('svg[viewBox="0 0 768 480"]').bounding_box()
@@ -39,6 +39,20 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     ).click()
     assert page.locator('#info_panel .module-figure').count() == 0
     assert page.locator('#info_panel .concept-toc a').filter(has_text="Module graphic").count() == 0
+
+
+@pytest.mark.browser
+def test_maths_one_module_content_has_no_blank_rendered_lines(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    blank_lines = page.locator("#info_panel .concept-line").evaluate_all(
+        "lines => lines.filter(line => !line.textContent.trim()).length"
+    )
+    assert blank_lines == 0
 
 
 @pytest.mark.browser

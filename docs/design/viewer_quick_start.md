@@ -47,7 +47,9 @@ graphics without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or
-module. **Show in graph** changes Context. Back and Forward retrace selections.
+module. Use a block's speech-bubble `+`, then choose a paragraph, to add a note;
+a filled bubble means notes are already present. **Show in graph** changes
+Context. Back and Forward retrace selections.
 
 Dragging is locked while browsing. Enable **Tools → Layouts → Edit layout**;
 moves are **Temporary** until editing ends or the page reloads, or **Personal**

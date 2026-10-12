@@ -53,6 +53,9 @@ blocks also have a persistent blue read tick. Notes, personal layout, study
 attempts and reading marks remain local by default; **Tools → Personal data**
 downloads or imports them together as a portable ZIP of readable CSV files. See the
 [Viewer quick start](docs/design/viewer_quick_start.md) for a short introduction.
+Use the speech-bubble `+` in a block heading, then choose a paragraph, to add a
+note without leaving permanent insertion controls throughout the text. A filled
+bubble means that block already has notes.
 
 An optional, explicitly invoked Google Drive connection synchronises the same visible
 `PhysicsKG personal data.zip` file between browsers. Local storage remains the

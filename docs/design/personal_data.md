@@ -43,6 +43,14 @@ A note retains its stable note ID, target and anchor data, text, `created_at`,
 an ID wins. Deleted records remain as tombstones so another browser cannot
 resurrect a deleted note.
 
+The viewer adds notes through the speech-bubble control in a content-block
+heading and a temporary paragraph-placement mode. A selected paragraph places
+the note below it; atomic blocks such as graphics and Study Questions use one
+block-level anchor. Authored block IDs and nearby text make anchors resilient to
+editorial changes. Legacy module notes with a valid stable block and
+unambiguous recorded paragraph are repaired during local migration; genuinely
+ambiguous notes remain visible as needing placement.
+
 ### Layout
 
 Each concept position and module anchor is an independent record containing

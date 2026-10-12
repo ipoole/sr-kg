@@ -31,7 +31,6 @@ from srkg.config import (
     NODE_LABEL_FONT_WEIGHT,
     NODE_LABEL_HIDE_BELOW_PX,
     NODE_LABEL_WIDTH,
-    NOTE_EDITING_STORAGE_KEY,
     PERSONAL_DATA_DEVICE_STORAGE_KEY,
     PERSONAL_DATA_STORAGE_KEY,
     SPLASH_DISMISSED_STORAGE_KEY,
@@ -130,17 +129,30 @@ def inject_controls(
 
 def _product_head_html() -> str:
     """Return standalone document identity metadata, including its favicon."""
-    favicon = base64.b64encode(_asset_text("favicon.svg").encode("utf-8")).decode("ascii")
+    favicon_svg = base64.b64encode(
+        _asset_text("favicon.svg").encode("utf-8")
+    ).decode("ascii")
+    favicon_png = base64.b64encode(_asset_bytes("favicon-32.png")).decode("ascii")
+    touch_icon = base64.b64encode(_asset_bytes("apple-touch-icon.png")).decode("ascii")
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
         '<link rel="icon" type="image/svg+xml" '
-        f'href="data:image/svg+xml;base64,{favicon}">'
+        f'href="data:image/svg+xml;base64,{favicon_svg}">\n'
+        '<link rel="icon" type="image/png" sizes="32x32" '
+        f'href="data:image/png;base64,{favicon_png}">\n'
+        '<link rel="apple-touch-icon" sizes="180x180" '
+        f'href="data:image/png;base64,{touch_icon}">'
     )
 
 
 def _asset_text(name: str) -> str:
     """Read a viewer asset from the package-local asset directory."""
     return (ASSET_DIR / name).read_text(encoding="utf-8")
+
+
+def _asset_bytes(name: str) -> bytes:
+    """Read a binary viewer asset from the package-local asset directory."""
+    return (ASSET_DIR / name).read_bytes()
 
 
 def _render_template(name: str, replacements: dict[str, object]) -> str:
@@ -200,7 +212,6 @@ def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object
         },
         "storageKeys": {
             "userNotes": USER_NOTES_STORAGE_KEY,
-            "noteEditing": NOTE_EDITING_STORAGE_KEY,
             "splashDismissed": SPLASH_DISMISSED_STORAGE_KEY,
             "globalLayout": GLOBAL_LAYOUT_STORAGE_KEY,
             "studyProgress": STUDY_PROGRESS_STORAGE_KEY,

@@ -107,11 +107,15 @@ currently feed a score or summary. A larger, non-interactive blue tick appears
 beside a concept or module title when all content blocks directly owned by it
 are marked read.
 
-Enable **Tools → Notes → Note editing** to add browser-local notes. CSV import
-and export preserve stable content anchors; unresolved notes remain visible as
-needing placement rather than being moved speculatively. Notes, Personal layout,
-study-question attempts and content read marks belong to the unified personal
-profile. They remain local by default, can be downloaded or imported together,
-and can optionally be synchronised on demand through the visible
-`PhysicsKG personal data.zip` file in Google Drive. Note-editing preference and
-Quick start dismissal remain browser-local preferences and are not synchronised.
+Use the speech-bubble `+` in a content-block heading, then choose a paragraph,
+to add a browser-local note. A filled bubble means the block already has notes
+and still adds another. The chosen paragraph highlights and the note is placed
+below it; paragraph spaces are not separate targets. Graphics and Study
+Questions use their one block-level note position immediately. CSV import and
+export preserve stable content anchors;
+unresolved notes remain visible as needing placement rather than being moved
+speculatively. Notes, Personal layout, study-question attempts and content read
+marks belong to the unified personal profile. They remain local by default, can
+be downloaded or imported together, and can optionally be synchronised on
+demand through the visible `PhysicsKG personal data.zip` file in Google Drive.
+Quick start dismissal remains a browser-local preference and is not synchronised.
