@@ -42,7 +42,8 @@ find a concept. Follow links to explore related material and use browser Back
 to return. **Details** filters the reading material; **Practice** shows questions
 that you answer or self-mark before seeing their model answers. Automatic
 questions include an “I don't know” choice; free-text questions ask you to
-compare with a model answer. Clear ticks and crosses show the latest result.
+compare with a model answer. Clear ticks and crosses show the latest result,
+and optional graph ticks summarise reading and question completion.
 Use **Context** and **Depth** to choose related material, and **Display** to show
 the full graph, only that context, or the details pane on its own.
 

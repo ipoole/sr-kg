@@ -206,6 +206,7 @@
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
+        var moduleFootprintCache = {};
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -232,11 +233,14 @@
         var studyProgressStorageKey = kgStorageKeys.studyProgress || "srkg.studyProgress.v1";
         var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
           "srkg.contentReadProgress.v1";
+        var graphCompletionMarkersStorageKey = "srkg.graphCompletionMarkers.v1";
         var userNotesState = loadUserNotes();
         var studyQuestionIndex = buildStudyQuestionIndex();
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
         var contentReadProgressState = loadContentReadProgress();
+        var graphCompletionMarkersEnabled =
+          safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
         var openUserNoteId = null;
         var notePlacementSuppressClickUntil = 0;
         var notePlacementPointerStart = null;
@@ -465,9 +469,7 @@
             var position = globalLayout.concepts[id];
             return {id: id, x: position.x, y: position.y};
           }));
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, false);
-          });
+          refreshModuleFootprints();
           updateNodeLabelPositions();
         }
 
@@ -673,7 +675,7 @@
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, false);
+            refreshModuleFootprintGeometry(moduleId);
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -966,6 +968,35 @@
           });
         }
 
+        function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
+          ctx.save();
+          ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
+          ctx.fillStyle = colour;
+          ctx.strokeStyle = "rgba(255,255,255,0.78)";
+          ctx.lineWidth = Math.max(0.8, radius * 0.09);
+          ctx.font = "bold " + String(radius * 2.5) + "px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.strokeText("✓", x, y + radius * 0.08);
+          ctx.fillText("✓", x, y + radius * 0.08);
+          ctx.restore();
+        }
+
+        function drawGraphCompletionMarkers(ctx) {
+          graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
+            marker.symbols.forEach(function(symbol) {
+              drawGraphCompletionTick(
+                ctx,
+                symbol.x,
+                symbol.y,
+                symbol.radius,
+                symbol.colour,
+                marker.opacity
+              );
+            });
+          });
+        }
+
         function getSvgNodeImage(nodeId, svgText) {
           var cached = svgImageCache[nodeId];
           if (cached === null) {
@@ -1238,10 +1269,16 @@
         function contentOwnerBlockIds(ownerType, ownerId) {
           ownerType = String(ownerType || "");
           ownerId = String(ownerId || "");
-          return Object.keys(contentBlockIndex).filter(function(blockId) {
+          var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
             var block = contentBlockIndex[blockId];
             return block.ownerType === ownerType && block.ownerId === ownerId;
           });
+          if (ownerType === "module") {
+            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
+              blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
+            });
+          }
+          return blockIds;
         }
 
         function contentOwnerReadComplete(ownerType, ownerId) {
@@ -1278,6 +1315,7 @@
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
+          if (network && network.redraw) { network.redraw(); }
           return true;
         }
 
@@ -1312,6 +1350,7 @@
           } catch (err) {
             // Progress remains usable in older browsers without CustomEvent.
           }
+          if (network && network.redraw) { network.redraw(); }
         }
 
         function recordStudyAttempt(questionId, outcome, attemptedAt) {
@@ -1364,6 +1403,153 @@
           resetQuestion: resetStudyQuestion,
           resetAll: resetAllStudyProgress
         };
+
+        function conceptQuestionIds(conceptId) {
+          var concept = getConcept(conceptId) || {};
+          return (Array.isArray(concept.study_questions) ? concept.study_questions : [])
+            .map(function(question) {
+              return String(question && question.question_id || "");
+            })
+            .filter(Boolean);
+        }
+
+        function questionsComplete(questionIds) {
+          questionIds = (questionIds || []).filter(function(questionId, index, ids) {
+            return questionId && ids.indexOf(questionId) === index;
+          });
+          return questionIds.length > 0 && questionIds.every(function(questionId) {
+            var progress = studyProgressState.questions[questionId];
+            return progress && progress.lastOutcome === "correct";
+          });
+        }
+
+        function graphCompletionState(ownerType, ownerId) {
+          ownerType = String(ownerType || "");
+          ownerId = String(ownerId || "");
+          var questionIds = [];
+          if (ownerType === "concept") {
+            questionIds = conceptQuestionIds(ownerId);
+          } else if (ownerType === "module") {
+            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
+              questionIds = questionIds.concat(conceptQuestionIds(conceptId));
+            });
+          }
+          return {
+            read: contentOwnerReadComplete(ownerType, ownerId),
+            questions: questionsComplete(questionIds)
+          };
+        }
+
+        function graphCompletionMarkerAnchor(node) {
+          var nodeId = String(node.id);
+          var position = network.getPositions([nodeId])[nodeId];
+          if (!position) { return null; }
+          if (node.isModuleNode) {
+            var rendered = network.body.nodes[nodeId];
+            var shape = rendered && rendered.shape;
+            var width = shape ? Number(shape.width) : Number(node.moduleFootprintWidth);
+            var height = shape ? Number(shape.height) : Number(node.moduleFootprintHeight);
+            var left = shape ? Number(shape.left) : position.x - width / 2;
+            var top = shape ? Number(shape.top) : position.y - height / 2;
+            if (![width, height, left, top].every(Number.isFinite)) { return null; }
+            var moduleRadius = Math.max(16, Math.min(42, Math.min(width, height) * 0.025));
+            return {
+              kind: "module",
+              x: left + width - moduleRadius * 0.9,
+              y: top + height - moduleRadius * 0.9,
+              radius: moduleRadius
+            };
+          }
+          var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+          var conceptRadius = nodeId === String(activeNodeId || "")
+            ? baseRadius * activeNodeRadiusScale
+            : baseRadius;
+          var markerRadius = Math.max(4, conceptRadius * 0.13);
+          return {
+            kind: "concept",
+            x: position.x + conceptRadius * 0.78 / Math.sqrt(2),
+            y: position.y + conceptRadius * 0.78 / Math.sqrt(2),
+            radius: markerRadius,
+            nodeX: position.x,
+            nodeY: position.y,
+            nodeRadius: conceptRadius
+          };
+        }
+
+        function graphCompletionSymbolLayout(marker) {
+          var completions = [];
+          if (marker.read) { completions.push({kind: "read", colour: "#1267c4"}); }
+          if (marker.questions) {
+            completions.push({kind: "questions", colour: "#238636"});
+          }
+          return completions.map(function(completion, index) {
+            if (marker.anchor.kind === "concept") {
+              var angle = completions.length === 1
+                ? Math.PI / 4
+                : (completion.kind === "read" ? Math.PI / 6 : Math.PI / 3);
+              var radialDistance = marker.anchor.nodeRadius * 0.88;
+              return {
+                kind: completion.kind,
+                colour: completion.colour,
+                x: marker.anchor.nodeX + Math.cos(angle) * radialDistance,
+                y: marker.anchor.nodeY + Math.sin(angle) * radialDistance,
+                radius: marker.anchor.radius
+              };
+            }
+            var reverseIndex = completions.length - index - 1;
+            var offset = reverseIndex * marker.anchor.radius * 1.45;
+            return {
+              kind: completion.kind,
+              colour: completion.colour,
+              x: marker.anchor.x - offset,
+              y: marker.anchor.y,
+              radius: marker.anchor.radius
+            };
+          });
+        }
+
+        function graphCompletionMarkersSnapshot() {
+          var result = {enabled: graphCompletionMarkersEnabled, markers: []};
+          if (!graphCompletionMarkersEnabled || !network || !nodes) { return result; }
+          nodes.get().forEach(function(node) {
+            if (node.hidden) { return; }
+            var ownerType = node.isModuleNode ? "module" : "concept";
+            var ownerId = node.isModuleNode
+              ? moduleIdFromGraphNodeId(node.id)
+              : String(node.id);
+            if (!ownerId || (ownerType === "concept" && !getConcept(ownerId))) { return; }
+            var state = graphCompletionState(ownerType, ownerId);
+            if (!state.read && !state.questions) { return; }
+            var anchor = graphCompletionMarkerAnchor(node);
+            if (!anchor) { return; }
+            var marker = {
+              nodeId: String(node.id),
+              ownerType: ownerType,
+              ownerId: ownerId,
+              read: state.read,
+              questions: state.questions,
+              opacity: node.opacity === undefined ? 1 : Number(node.opacity),
+              anchor: anchor
+            };
+            marker.symbols = graphCompletionSymbolLayout(marker);
+            result.markers.push(marker);
+          });
+          return result;
+        }
+
+        function setGraphCompletionMarkersEnabled(enabled) {
+          graphCompletionMarkersEnabled = enabled !== false;
+          safeLocalStorageSet(
+            graphCompletionMarkersStorageKey,
+            graphCompletionMarkersEnabled ? "true" : "false"
+          );
+          var toggle = document.getElementById("kg_graph_completion_markers");
+          if (toggle) { toggle.checked = graphCompletionMarkersEnabled; }
+          if (network && network.redraw) { network.redraw(); }
+        }
+
+        window.kgGraphCompletionMarkersSnapshot = graphCompletionMarkersSnapshot;
+        window.kgSetGraphCompletionMarkersEnabled = setGraphCompletionMarkersEnabled;
 
         function loadUserNotes() {
           return {
@@ -2468,6 +2654,7 @@
             renderStudyScorecard();
             refreshActiveConcept();
             updateContentReadCompletionIndicators();
+            if (network && network.redraw) { network.redraw(); }
           }).catch(function(error) {
             if (error && error.code === "auth_required") {
               showCloudSyncConnected(false);
@@ -4009,6 +4196,7 @@
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -4018,15 +4206,24 @@
           }
         }
 
+        function refreshModuleFootprintGeometry(moduleId) {
+          if (selectedModuleIsFolded(moduleId)) {
+            refreshFoldedModuleGeometry(moduleId);
+          } else {
+            moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
+          }
+        }
+
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId);
+          moduleIds().forEach(function(moduleId) {
+            refreshModuleFootprintGeometry(moduleId);
           });
         }
 
         function foldModule(moduleId) {
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (!globalModuleAnchor(moduleId)) {
             setGlobalModuleAnchor(moduleId, geometry.position);
@@ -4223,6 +4420,54 @@
         function moduleCornerRadius(width, height) {
           return Math.min(width, height) * 0.18;
         }
+
+        function expandedModuleOutlineSnapshot() {
+          return moduleIds().filter(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) { return false; }
+            return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
+              var node = nodes.get(conceptId);
+              return node && !node.hidden;
+            });
+          }).map(function(moduleId) {
+            var footprint = moduleFootprintCache[String(moduleId)] || moduleFootprint(moduleId);
+            moduleFootprintCache[String(moduleId)] = footprint;
+            return {
+              moduleId: moduleId,
+              left: footprint.left,
+              right: footprint.right,
+              top: footprint.top,
+              bottom: footprint.bottom,
+              width: footprint.width,
+              height: footprint.height,
+              radius: moduleCornerRadius(footprint.width, footprint.height),
+              colour: "#6b7280",
+              opacity: 0.22
+            };
+          });
+        }
+
+        function drawExpandedModuleOutlines(ctx) {
+          var scale = network && network.getScale ? Number(network.getScale()) : 1;
+          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            ctx.save();
+            ctx.globalAlpha = outline.opacity;
+            ctx.strokeStyle = outline.colour;
+            ctx.lineWidth = 1.25 / scale;
+            roundedRectPath(
+              ctx,
+              outline.left,
+              outline.top,
+              outline.width,
+              outline.height,
+              outline.radius
+            );
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
         function moduleGraphicCornerRadius(width, height, layout) {
           layout = layout || moduleGraphicLayout(width, height);
@@ -8532,10 +8777,14 @@
           });
         }
 
-        network.on("beforeDrawing", updateRenderedEdgeWidths);
+        network.on("beforeDrawing", function(ctx) {
+          drawExpandedModuleOutlines(ctx);
+          updateRenderedEdgeWidths();
+        });
         network.on("afterDrawing", function(ctx) {
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
+          drawGraphCompletionMarkers(ctx);
           updateNodeLabelPositions();
         });
         network.on("dragEnd", function(params) {
@@ -8766,6 +9015,10 @@
           resetAllStudyProgress();
           refreshActiveConcept();
         });
+        document.getElementById("kg_graph_completion_markers").addEventListener(
+          "change",
+          function(e) { setGraphCompletionMarkersEnabled(e.target.checked); }
+        );
         window.addEventListener("kg:study-progress-changed", renderStudyScorecard);
 
         document.getElementById("kg_context_preset_select").addEventListener("change", function(e) {
@@ -9433,6 +9686,8 @@
         migrateUserNotesState();
         renderNotesOverview();
         renderStudyScorecard();
+        document.getElementById("kg_graph_completion_markers").checked =
+          graphCompletionMarkersEnabled;
         updateResponsiveControlLabels();
         updateGraphViewControls();
         updateDetailsViewControls();

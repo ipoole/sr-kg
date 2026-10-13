@@ -302,6 +302,16 @@
         font-size: 0.86em;
         font-weight: 600;
       }
+      .kg-study-display-option {
+        align-items: center;
+        display: flex;
+        font-size: 0.92em;
+        gap: 0.4em;
+        margin: 0.25em 0 0.55em;
+      }
+      .kg-study-display-option input {
+        margin: 0;
+      }
       #kg_study_summary {
         color: #444;
         font-size: 12px;

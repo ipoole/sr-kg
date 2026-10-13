@@ -35,7 +35,8 @@ concept face and title inside the module box; the module title and concept count
 remain below it. Explicit module selection instead uses a strong outer module
 outline. The viewer offers actions to expand the selected concept's module or
 all context modules. Double-clicking and module-detail controls fold or expand
-modules without changing selection.
+modules without changing selection. An expanded module retains a faint rounded
+outline at the exact bounds and shape its folded module box would occupy.
 
 ## Context and display
 
@@ -111,6 +112,13 @@ the block is folded. Read marks can be toggled and persist locally; they do not
 currently feed a score or summary. A larger, non-interactive blue tick appears
 beside a concept or module title when all content blocks directly owned by it
 are marked read.
+
+The graph also shows discreet completion markers by default: blue when all
+content blocks on a concept have been read, or when a module's own blocks and
+all blocks on its member concepts have been read; green when all questions on a
+concept—or across a module's member concepts—are currently correct. **Tools →
+Study → Show completion ticks in graph** controls both marker types without
+changing the recorded progress.
 
 Use the speech-bubble `+` in a content-block heading, then choose a paragraph,
 to add a browser-local note. A filled bubble means the block already has notes
