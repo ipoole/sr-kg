@@ -108,3 +108,37 @@ def test_concept_and_folded_module_markers_follow_read_and_question_completion(b
         )"""
     )
     assert module_marker["questions"] is False
+
+
+@pytest.mark.browser
+def test_completion_marker_snapshot_batches_graph_position_reads(browser_graph):
+    page = browser_graph.page
+    page.evaluate(
+        """() => {
+          ['2.1', '2.2'].forEach(conceptId =>
+            conceptData[conceptId].content_blocks.forEach(block =>
+              kgContentReadProgress.setRead(block.block_id, true)
+            )
+          );
+        }"""
+    )
+
+    result = page.evaluate(
+        """() => {
+          const original = network.getPositions.bind(network);
+          let calls = 0;
+          network.getPositions = (...args) => {
+            calls += 1;
+            return original(...args);
+          };
+          try {
+            const snapshot = kgGraphCompletionMarkersSnapshot();
+            return {calls, markerCount: snapshot.markers.length};
+          } finally {
+            network.getPositions = original;
+          }
+        }"""
+    )
+
+    assert result["markerCount"] >= 2
+    assert result["calls"] == 1

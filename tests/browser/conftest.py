@@ -481,10 +481,12 @@ def _create_fixture_svg_graphic(concept_id: str, variant: str = "icon") -> str |
 
 
 @contextmanager
-def _open_browser_graph(playwright_api, browser, output_path: Path):
+def _open_browser_graph(playwright_api, browser, output_path: Path, context_options=None):
     page_errors: list[str] = []
     console_errors: list[str] = []
-    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    options = {"viewport": {"width": 1280, "height": 800}}
+    options.update(context_options or {})
+    context = browser.new_context(**options)
     try:
         page = context.new_page()
         page.set_default_timeout(10000)
@@ -599,6 +601,23 @@ def shared_browser_graph(browser_fixture_output, playwright_browser):
 def repo_browser_graph(repo_browser_output, playwright_browser):
     playwright_api, browser = playwright_browser
     with _open_browser_graph(playwright_api, browser, repo_browser_output) as graph:
+        yield graph
+
+
+@pytest.fixture
+def mobile_repo_browser_graph(repo_browser_output, playwright_browser):
+    playwright_api, browser = playwright_browser
+    with _open_browser_graph(
+        playwright_api,
+        browser,
+        repo_browser_output,
+        context_options={
+            "viewport": {"width": 430, "height": 932},
+            "device_scale_factor": 3,
+            "has_touch": True,
+            "is_mobile": True,
+        },
+    ) as graph:
         yield graph
 
 

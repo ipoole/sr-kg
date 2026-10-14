@@ -35,8 +35,7 @@ concept face and title inside the module box; the module title and concept count
 remain below it. Explicit module selection instead uses a strong outer module
 outline. The viewer offers actions to expand the selected concept's module or
 all context modules. Double-clicking and module-detail controls fold or expand
-modules without changing selection. An expanded module retains a faint rounded
-outline at the exact bounds and shape its folded module box would occupy.
+modules without changing selection.
 
 ## Context and display
 
