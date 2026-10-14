@@ -4881,8 +4881,8 @@ var kgModuleGeometry = (function() {
         var preferredFoldedModules = {};
         var moduleFootprintCache = {};
         var graphCompletionStateCache = null;
-        var graphCompletionMarkersSuspended = false;
-        var graphCompletionMarkersResumeTimer = null;
+        var graphOverlayDrawingSuspended = false;
+        var graphOverlayResumeTimer = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -5663,7 +5663,7 @@ var kgModuleGeometry = (function() {
         }
 
         function drawGraphCompletionMarkers(ctx) {
-          if (graphCompletionMarkersSuspended) { return; }
+          if (graphOverlayDrawingSuspended) { return; }
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
               drawGraphCompletionTick(
@@ -5678,21 +5678,21 @@ var kgModuleGeometry = (function() {
           });
         }
 
-        function suspendGraphCompletionMarkers() {
-          graphCompletionMarkersSuspended = true;
-          if (graphCompletionMarkersResumeTimer) {
-            clearTimeout(graphCompletionMarkersResumeTimer);
-            graphCompletionMarkersResumeTimer = null;
+        function suspendGraphOverlays() {
+          graphOverlayDrawingSuspended = true;
+          if (graphOverlayResumeTimer) {
+            clearTimeout(graphOverlayResumeTimer);
+            graphOverlayResumeTimer = null;
           }
         }
 
-        function resumeGraphCompletionMarkersSoon() {
-          if (graphCompletionMarkersResumeTimer) {
-            clearTimeout(graphCompletionMarkersResumeTimer);
+        function resumeGraphOverlaysSoon() {
+          if (graphOverlayResumeTimer) {
+            clearTimeout(graphOverlayResumeTimer);
           }
-          graphCompletionMarkersResumeTimer = setTimeout(function() {
-            graphCompletionMarkersResumeTimer = null;
-            graphCompletionMarkersSuspended = false;
+          graphOverlayResumeTimer = setTimeout(function() {
+            graphOverlayResumeTimer = null;
+            graphOverlayDrawingSuspended = false;
             if (network && network.redraw) { network.redraw(); }
           }, 80);
         }
@@ -9177,6 +9177,7 @@ var kgModuleGeometry = (function() {
         }
 
         function drawExpandedModuleOutlines(ctx) {
+          if (graphOverlayDrawingSuspended) { return; }
           var scale = network && network.getScale ? Number(network.getScale()) : 1;
           if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
           expandedModuleOutlineSnapshot().forEach(function(outline) {
@@ -13539,15 +13540,15 @@ var kgModuleGeometry = (function() {
           : null;
         var graphInteractionSurface = graphCanvas || graphContainer;
         graphInteractionSurface.addEventListener("touchstart", function() {
-          suspendGraphCompletionMarkers();
+          suspendGraphOverlays();
         }, {capture: true, passive: true});
         graphInteractionSurface.addEventListener("touchend", function(e) {
           if (!e.touches || e.touches.length === 0) {
-            resumeGraphCompletionMarkersSoon();
+            resumeGraphOverlaysSoon();
           }
         }, {capture: true, passive: true});
         graphInteractionSurface.addEventListener("touchcancel", function() {
-          resumeGraphCompletionMarkersSoon();
+          resumeGraphOverlaysSoon();
         }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
