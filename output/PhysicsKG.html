@@ -374,16 +374,6 @@
         font-size: 0.86em;
         font-weight: 600;
       }
-      .kg-study-display-option {
-        align-items: center;
-        display: flex;
-        font-size: 0.92em;
-        gap: 0.4em;
-        margin: 0.25em 0 0.55em;
-      }
-      .kg-study-display-option input {
-        margin: 0;
-      }
       #kg_study_summary {
         color: #444;
         font-size: 12px;
@@ -3358,10 +3348,6 @@
       </details>
       <details id="kg_study_section" class="kg-fold">
         <summary>Study <span id="kg_study_badge" class="kg-study-badge"></span></summary>
-        <label class="kg-study-display-option">
-          <input id="kg_graph_completion_markers" type="checkbox" checked>
-          <span>Show completion ticks in graph</span>
-        </label>
         <div id="kg_study_summary" aria-live="polite"></div>
         <div id="kg_study_list"></div>
         <button id="kg_study_reset_all" type="button" hidden>Reset all study progress</button>
@@ -3548,7 +3534,6 @@
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
-            <li>Blue and green graph ticks summarise reading and question completion; one Study option hides both.</li>
           </ul>
         </section>
         <section>
@@ -4879,9 +4864,6 @@ var kgModuleGeometry = (function() {
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
-        var graphCompletionStateCache = null;
-        var graphOverlayDrawingSuspended = false;
-        var graphOverlayResumeTimer = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -4908,14 +4890,11 @@ var kgModuleGeometry = (function() {
         var studyProgressStorageKey = kgStorageKeys.studyProgress || "srkg.studyProgress.v1";
         var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
           "srkg.contentReadProgress.v1";
-        var graphCompletionMarkersStorageKey = "srkg.graphCompletionMarkers.v1";
         var userNotesState = loadUserNotes();
         var studyQuestionIndex = buildStudyQuestionIndex();
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
         var contentReadProgressState = loadContentReadProgress();
-        var graphCompletionMarkersEnabled =
-          safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
         var openUserNoteId = null;
         var notePlacementSuppressClickUntil = 0;
         var notePlacementPointerStart = null;
@@ -5144,7 +5123,9 @@ var kgModuleGeometry = (function() {
             var position = globalLayout.concepts[id];
             return {id: id, x: position.x, y: position.y};
           }));
-          refreshModuleFootprints();
+          foldedModuleIdList().forEach(function(moduleId) {
+            refreshFoldedModuleGeometry(moduleId, false);
+          });
           updateNodeLabelPositions();
         }
 
@@ -5350,9 +5331,7 @@ var kgModuleGeometry = (function() {
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) {
-              refreshFoldedModuleGeometry(moduleId);
-            }
+            refreshFoldedModuleGeometry(moduleId, false);
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -5645,59 +5624,6 @@ var kgModuleGeometry = (function() {
           });
         }
 
-        function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
-          ctx.save();
-          ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.beginPath();
-          ctx.moveTo(x - radius * 0.72, y - radius * 0.02);
-          ctx.lineTo(x - radius * 0.18, y + radius * 0.55);
-          ctx.lineTo(x + radius * 0.78, y - radius * 0.62);
-          ctx.strokeStyle = "rgba(255,255,255,0.78)";
-          ctx.lineWidth = Math.max(1.4, radius * 0.62);
-          ctx.stroke();
-          ctx.strokeStyle = colour;
-          ctx.lineWidth = Math.max(0.9, radius * 0.34);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        function drawGraphCompletionMarkers(ctx) {
-          if (graphOverlayDrawingSuspended) { return; }
-          graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
-            marker.symbols.forEach(function(symbol) {
-              drawGraphCompletionTick(
-                ctx,
-                symbol.x,
-                symbol.y,
-                symbol.radius,
-                symbol.colour,
-                marker.opacity
-              );
-            });
-          });
-        }
-
-        function suspendGraphOverlays() {
-          graphOverlayDrawingSuspended = true;
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-            graphOverlayResumeTimer = null;
-          }
-        }
-
-        function resumeGraphOverlaysSoon() {
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-          }
-          graphOverlayResumeTimer = setTimeout(function() {
-            graphOverlayResumeTimer = null;
-            graphOverlayDrawingSuspended = false;
-            if (network && network.redraw) { network.redraw(); }
-          }, 80);
-        }
-
         function getSvgNodeImage(nodeId, svgText) {
           var cached = svgImageCache[nodeId];
           if (cached === null) {
@@ -5970,16 +5896,10 @@ var kgModuleGeometry = (function() {
         function contentOwnerBlockIds(ownerType, ownerId) {
           ownerType = String(ownerType || "");
           ownerId = String(ownerId || "");
-          var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
+          return Object.keys(contentBlockIndex).filter(function(blockId) {
             var block = contentBlockIndex[blockId];
             return block.ownerType === ownerType && block.ownerId === ownerId;
           });
-          if (ownerType === "module") {
-            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
-              blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
-            });
-          }
-          return blockIds;
         }
 
         function contentOwnerReadComplete(ownerType, ownerId) {
@@ -6016,7 +5936,6 @@ var kgModuleGeometry = (function() {
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
-          if (network && network.redraw) { network.redraw(); }
           return true;
         }
 
@@ -6051,7 +5970,6 @@ var kgModuleGeometry = (function() {
           } catch (err) {
             // Progress remains usable in older browsers without CustomEvent.
           }
-          if (network && network.redraw) { network.redraw(); }
         }
 
         function recordStudyAttempt(questionId, outcome, attemptedAt) {
@@ -6104,183 +6022,6 @@ var kgModuleGeometry = (function() {
           resetQuestion: resetStudyQuestion,
           resetAll: resetAllStudyProgress
         };
-
-        function conceptQuestionIds(conceptId) {
-          var concept = getConcept(conceptId) || {};
-          return (Array.isArray(concept.study_questions) ? concept.study_questions : [])
-            .map(function(question) {
-              return String(question && question.question_id || "");
-            })
-            .filter(Boolean);
-        }
-
-        function questionsComplete(questionIds) {
-          questionIds = (questionIds || []).filter(function(questionId, index, ids) {
-            return questionId && ids.indexOf(questionId) === index;
-          });
-          return questionIds.length > 0 && questionIds.every(function(questionId) {
-            var progress = studyProgressState.questions[questionId];
-            return progress && progress.lastOutcome === "correct";
-          });
-        }
-
-        function graphCompletionState(ownerType, ownerId) {
-          ownerType = String(ownerType || "");
-          ownerId = String(ownerId || "");
-          if (
-            !graphCompletionStateCache ||
-            graphCompletionStateCache.readState !== contentReadProgressState ||
-            graphCompletionStateCache.studyState !== studyProgressState
-          ) {
-            graphCompletionStateCache = {
-              readState: contentReadProgressState,
-              studyState: studyProgressState,
-              values: {}
-            };
-          }
-          var cacheKey = ownerType + "::" + ownerId;
-          if (graphCompletionStateCache.values[cacheKey]) {
-            return graphCompletionStateCache.values[cacheKey];
-          }
-          var questionIds = [];
-          if (ownerType === "concept") {
-            questionIds = conceptQuestionIds(ownerId);
-          } else if (ownerType === "module") {
-            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
-              questionIds = questionIds.concat(conceptQuestionIds(conceptId));
-            });
-          }
-          var state = {
-            read: contentOwnerReadComplete(ownerType, ownerId),
-            questions: questionsComplete(questionIds)
-          };
-          graphCompletionStateCache.values[cacheKey] = state;
-          return state;
-        }
-
-        function graphCompletionMarkerAnchor(node, positions) {
-          var nodeId = String(node.id);
-          var position = positions[nodeId];
-          if (!position) { return null; }
-          if (node.isModuleNode) {
-            var rendered = network.body.nodes[nodeId];
-            var shape = rendered && rendered.shape;
-            var width = shape ? Number(shape.width) : Number(node.moduleFootprintWidth);
-            var height = shape ? Number(shape.height) : Number(node.moduleFootprintHeight);
-            var left = shape ? Number(shape.left) : position.x - width / 2;
-            var top = shape ? Number(shape.top) : position.y - height / 2;
-            if (![width, height, left, top].every(Number.isFinite)) { return null; }
-            var moduleRadius = Math.max(16, Math.min(42, Math.min(width, height) * 0.025));
-            return {
-              kind: "module",
-              x: left + width - moduleRadius * 0.9,
-              y: top + height - moduleRadius * 0.9,
-              radius: moduleRadius
-            };
-          }
-          var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
-          var conceptRadius = nodeId === String(activeNodeId || "")
-            ? baseRadius * activeNodeRadiusScale
-            : baseRadius;
-          var markerRadius = Math.max(4, conceptRadius * 0.13);
-          return {
-            kind: "concept",
-            x: position.x + conceptRadius * 0.78 / Math.sqrt(2),
-            y: position.y + conceptRadius * 0.78 / Math.sqrt(2),
-            radius: markerRadius,
-            nodeX: position.x,
-            nodeY: position.y,
-            nodeRadius: conceptRadius
-          };
-        }
-
-        function graphCompletionSymbolLayout(marker) {
-          var completions = [];
-          if (marker.read) { completions.push({kind: "read", colour: "#1267c4"}); }
-          if (marker.questions) {
-            completions.push({kind: "questions", colour: "#238636"});
-          }
-          return completions.map(function(completion, index) {
-            if (marker.anchor.kind === "concept") {
-              var angle = completions.length === 1
-                ? Math.PI / 4
-                : (completion.kind === "read" ? Math.PI / 6 : Math.PI / 3);
-              var radialDistance = marker.anchor.nodeRadius * 0.88;
-              return {
-                kind: completion.kind,
-                colour: completion.colour,
-                x: marker.anchor.nodeX + Math.cos(angle) * radialDistance,
-                y: marker.anchor.nodeY + Math.sin(angle) * radialDistance,
-                radius: marker.anchor.radius
-              };
-            }
-            var reverseIndex = completions.length - index - 1;
-            var offset = reverseIndex * marker.anchor.radius * 1.45;
-            return {
-              kind: completion.kind,
-              colour: completion.colour,
-              x: marker.anchor.x - offset,
-              y: marker.anchor.y,
-              radius: marker.anchor.radius
-            };
-          });
-        }
-
-        function graphCompletionMarkersSnapshot() {
-          var result = {enabled: graphCompletionMarkersEnabled, markers: []};
-          if (!graphCompletionMarkersEnabled || !network || !nodes) { return result; }
-          var candidates = nodes.get().map(function(node) {
-            if (node.hidden) { return; }
-            var ownerType = node.isModuleNode ? "module" : "concept";
-            var ownerId = node.isModuleNode
-              ? moduleIdFromGraphNodeId(node.id)
-              : String(node.id);
-            if (!ownerId || (ownerType === "concept" && !getConcept(ownerId))) { return; }
-            var state = graphCompletionState(ownerType, ownerId);
-            if (!state.read && !state.questions) { return; }
-            return {
-              node: node,
-              ownerType: ownerType,
-              ownerId: ownerId,
-              state: state
-            };
-          }).filter(Boolean);
-          if (!candidates.length) { return result; }
-          var positions = network.getPositions(candidates.map(function(candidate) {
-            return candidate.node.id;
-          }));
-          candidates.forEach(function(candidate) {
-            var node = candidate.node;
-            var anchor = graphCompletionMarkerAnchor(node, positions);
-            if (!anchor) { return; }
-            var marker = {
-              nodeId: String(node.id),
-              ownerType: candidate.ownerType,
-              ownerId: candidate.ownerId,
-              read: candidate.state.read,
-              questions: candidate.state.questions,
-              opacity: node.opacity === undefined ? 1 : Number(node.opacity),
-              anchor: anchor
-            };
-            marker.symbols = graphCompletionSymbolLayout(marker);
-            result.markers.push(marker);
-          });
-          return result;
-        }
-
-        function setGraphCompletionMarkersEnabled(enabled) {
-          graphCompletionMarkersEnabled = enabled !== false;
-          safeLocalStorageSet(
-            graphCompletionMarkersStorageKey,
-            graphCompletionMarkersEnabled ? "true" : "false"
-          );
-          var toggle = document.getElementById("kg_graph_completion_markers");
-          if (toggle) { toggle.checked = graphCompletionMarkersEnabled; }
-          if (network && network.redraw) { network.redraw(); }
-        }
-
-        window.kgGraphCompletionMarkersSnapshot = graphCompletionMarkersSnapshot;
-        window.kgSetGraphCompletionMarkersEnabled = setGraphCompletionMarkersEnabled;
 
         function loadUserNotes() {
           return {
@@ -7385,7 +7126,6 @@ var kgModuleGeometry = (function() {
             renderStudyScorecard();
             refreshActiveConcept();
             updateContentReadCompletionIndicators();
-            if (network && network.redraw) { network.redraw(); }
           }).catch(function(error) {
             if (error && error.code === "auth_required") {
               showCloudSyncConnected(false);
@@ -13454,7 +13194,6 @@ var kgModuleGeometry = (function() {
         network.on("afterDrawing", function(ctx) {
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
-          drawGraphCompletionMarkers(ctx);
           updateNodeLabelPositions();
         });
         network.on("dragEnd", function(params) {
@@ -13477,18 +13216,6 @@ var kgModuleGeometry = (function() {
         var graphCanvas = network.canvas && network.canvas.frame
           ? network.canvas.frame.canvas
           : null;
-        var graphInteractionSurface = graphCanvas || graphContainer;
-        graphInteractionSurface.addEventListener("touchstart", function() {
-          suspendGraphOverlays();
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchend", function(e) {
-          if (!e.touches || e.touches.length === 0) {
-            resumeGraphOverlaysSoon();
-          }
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchcancel", function() {
-          resumeGraphOverlaysSoon();
-        }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         var touchTapStart = null;
@@ -13697,10 +13424,6 @@ var kgModuleGeometry = (function() {
           resetAllStudyProgress();
           refreshActiveConcept();
         });
-        document.getElementById("kg_graph_completion_markers").addEventListener(
-          "change",
-          function(e) { setGraphCompletionMarkersEnabled(e.target.checked); }
-        );
         window.addEventListener("kg:study-progress-changed", renderStudyScorecard);
 
         document.getElementById("kg_context_preset_select").addEventListener("change", function(e) {
@@ -14368,8 +14091,6 @@ var kgModuleGeometry = (function() {
         migrateUserNotesState();
         renderNotesOverview();
         renderStudyScorecard();
-        document.getElementById("kg_graph_completion_markers").checked =
-          graphCompletionMarkersEnabled;
         updateResponsiveControlLabels();
         updateGraphViewControls();
         updateDetailsViewControls();
