@@ -4879,7 +4879,6 @@ var kgModuleGeometry = (function() {
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
-        var moduleFootprintCache = {};
         var graphCompletionStateCache = null;
         var graphOverlayDrawingSuspended = false;
         var graphOverlayResumeTimer = null;
@@ -5351,7 +5350,9 @@ var kgModuleGeometry = (function() {
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            refreshModuleFootprintGeometry(moduleId);
+            if (selectedModuleIsFolded(moduleId)) {
+              refreshFoldedModuleGeometry(moduleId);
+            }
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -8926,7 +8927,6 @@ var kgModuleGeometry = (function() {
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
           var geometry = moduleMemberGeometry(moduleId);
-          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -8936,24 +8936,15 @@ var kgModuleGeometry = (function() {
           }
         }
 
-        function refreshModuleFootprintGeometry(moduleId) {
-          if (selectedModuleIsFolded(moduleId)) {
-            refreshFoldedModuleGeometry(moduleId);
-          } else {
-            moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
-          }
-        }
-
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
-          moduleIds().forEach(function(moduleId) {
-            refreshModuleFootprintGeometry(moduleId);
+          foldedModuleIdList().forEach(function(moduleId) {
+            refreshFoldedModuleGeometry(moduleId);
           });
         }
 
         function foldModule(moduleId) {
           var geometry = moduleMemberGeometry(moduleId);
-          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (!globalModuleAnchor(moduleId)) {
             setGlobalModuleAnchor(moduleId, geometry.position);
@@ -9150,55 +9141,6 @@ var kgModuleGeometry = (function() {
         function moduleCornerRadius(width, height) {
           return Math.min(width, height) * 0.18;
         }
-
-        function expandedModuleOutlineSnapshot() {
-          return moduleIds().filter(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) { return false; }
-            return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
-              var node = nodes.get(conceptId);
-              return node && !node.hidden;
-            });
-          }).map(function(moduleId) {
-            var footprint = moduleFootprintCache[String(moduleId)] || moduleFootprint(moduleId);
-            moduleFootprintCache[String(moduleId)] = footprint;
-            return {
-              moduleId: moduleId,
-              left: footprint.left,
-              right: footprint.right,
-              top: footprint.top,
-              bottom: footprint.bottom,
-              width: footprint.width,
-              height: footprint.height,
-              radius: moduleCornerRadius(footprint.width, footprint.height),
-              colour: "#6b7280",
-              opacity: 0.22
-            };
-          });
-        }
-
-        function drawExpandedModuleOutlines(ctx) {
-          if (graphOverlayDrawingSuspended) { return; }
-          var scale = network && network.getScale ? Number(network.getScale()) : 1;
-          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
-          expandedModuleOutlineSnapshot().forEach(function(outline) {
-            ctx.save();
-            ctx.globalAlpha = outline.opacity;
-            ctx.strokeStyle = outline.colour;
-            ctx.lineWidth = 1.25 / scale;
-            roundedRectPath(
-              ctx,
-              outline.left,
-              outline.top,
-              outline.width,
-              outline.height,
-              outline.radius
-            );
-            ctx.stroke();
-            ctx.restore();
-          });
-        }
-
-        window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
         function moduleGraphicCornerRadius(width, height, layout) {
           layout = layout || moduleGraphicLayout(width, height);
@@ -13508,10 +13450,7 @@ var kgModuleGeometry = (function() {
           });
         }
 
-        network.on("beforeDrawing", function(ctx) {
-          drawExpandedModuleOutlines(ctx);
-          updateRenderedEdgeWidths();
-        });
+        network.on("beforeDrawing", updateRenderedEdgeWidths);
         network.on("afterDrawing", function(ctx) {
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
