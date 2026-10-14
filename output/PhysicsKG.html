@@ -4881,6 +4881,8 @@ var kgModuleGeometry = (function() {
         var preferredFoldedModules = {};
         var moduleFootprintCache = {};
         var graphCompletionStateCache = null;
+        var graphCompletionMarkersSuspended = false;
+        var graphCompletionMarkersResumeTimer = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -5645,18 +5647,23 @@ var kgModuleGeometry = (function() {
         function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
           ctx.save();
           ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
-          ctx.fillStyle = colour;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          ctx.moveTo(x - radius * 0.72, y - radius * 0.02);
+          ctx.lineTo(x - radius * 0.18, y + radius * 0.55);
+          ctx.lineTo(x + radius * 0.78, y - radius * 0.62);
           ctx.strokeStyle = "rgba(255,255,255,0.78)";
-          ctx.lineWidth = Math.max(0.8, radius * 0.09);
-          ctx.font = "bold " + String(radius * 2.5) + "px Arial";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.strokeText("✓", x, y + radius * 0.08);
-          ctx.fillText("✓", x, y + radius * 0.08);
+          ctx.lineWidth = Math.max(1.4, radius * 0.62);
+          ctx.stroke();
+          ctx.strokeStyle = colour;
+          ctx.lineWidth = Math.max(0.9, radius * 0.34);
+          ctx.stroke();
           ctx.restore();
         }
 
         function drawGraphCompletionMarkers(ctx) {
+          if (graphCompletionMarkersSuspended) { return; }
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
               drawGraphCompletionTick(
@@ -5669,6 +5676,25 @@ var kgModuleGeometry = (function() {
               );
             });
           });
+        }
+
+        function suspendGraphCompletionMarkers() {
+          graphCompletionMarkersSuspended = true;
+          if (graphCompletionMarkersResumeTimer) {
+            clearTimeout(graphCompletionMarkersResumeTimer);
+            graphCompletionMarkersResumeTimer = null;
+          }
+        }
+
+        function resumeGraphCompletionMarkersSoon() {
+          if (graphCompletionMarkersResumeTimer) {
+            clearTimeout(graphCompletionMarkersResumeTimer);
+          }
+          graphCompletionMarkersResumeTimer = setTimeout(function() {
+            graphCompletionMarkersResumeTimer = null;
+            graphCompletionMarkersSuspended = false;
+            if (network && network.redraw) { network.redraw(); }
+          }, 80);
         }
 
         function getSvgNodeImage(nodeId, svgText) {
@@ -13511,6 +13537,18 @@ var kgModuleGeometry = (function() {
         var graphCanvas = network.canvas && network.canvas.frame
           ? network.canvas.frame.canvas
           : null;
+        var graphInteractionSurface = graphCanvas || graphContainer;
+        graphInteractionSurface.addEventListener("touchstart", function() {
+          suspendGraphCompletionMarkers();
+        }, {capture: true, passive: true});
+        graphInteractionSurface.addEventListener("touchend", function(e) {
+          if (!e.touches || e.touches.length === 0) {
+            resumeGraphCompletionMarkersSoon();
+          }
+        }, {capture: true, passive: true});
+        graphInteractionSurface.addEventListener("touchcancel", function() {
+          resumeGraphCompletionMarkersSoon();
+        }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         var touchTapStart = null;
