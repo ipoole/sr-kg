@@ -68,19 +68,31 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
-After **Fit context** frames a selected Context-only view, the button becomes
-**Fit++**. This explicit action moves each visible context node radially towards
-the selected concept or folded module until it reaches another node's clearance
-zone, then fits the result. The contraction is presentation state only: saved
-and manually edited layouts are unchanged, and selection, context, scope or
-module-representation navigation restores the underlying positions.
+When the selected Frame target has no objects, Fit is disabled. In particular,
+Reveal, Selection and Context require a selection; All requires a non-empty
+displayed graph. Context-only display with no selection shows an empty-state
+message offering Search and Show full graph rather than an unexplained blank
+canvas.
+
+After **Fit context** frames a selected context in either Full or Context-only
+display, the button becomes **Fit++**. This explicit action contracts the
+represented context breadth-first through its graph structure. One-hop nodes
+move towards the selection first; each later layer then moves towards a newly
+placed parent in the preceding layer. If several shortest routes reach a node,
+the closest candidate parent in its new position is used. Movement stops at
+another node's clearance zone before the result is fitted. In Full display,
+background nodes remain fixed. The represented context nodes may then be
+dragged to refine the temporary arrangement. The contraction remains
+presentation state only: saved and manually edited layouts are unchanged, and
+selection, context, scope or module-representation navigation restores the
+underlying positions.
 
 Node dragging is disabled during ordinary browsing; a drag attempt explains how
-to unlock it. Enable **Tools → Layouts → Edit layout** to move nodes. Changes are
-Temporary by default, remain across viewer-state changes, and are discarded when
-editing is turned off or the page reloads. Personal changes are saved locally.
-The choice is independent of display scope; Hidden cannot be dragged. Layouts
-can be exported, reset to the published layout, or retained
+to unlock it. Enable **Tools → Layouts → Edit personal layout** to move nodes and
+save their positions locally. This is independent of display scope; Hidden
+cannot be dragged. During Fit++, Personal editing is suspended while represented
+context nodes are temporarily draggable. Layouts can be exported, reset to the
+published layout, or retained
 when a newer published revision is detected. Camera state is never persisted.
 
 ## Reading and personal work
@@ -100,9 +112,22 @@ currently feed a score or summary. A larger, non-interactive blue tick appears
 beside a concept or module title when all content blocks directly owned by it
 are marked read.
 
-Enable **Tools → Notes → Note editing** to add browser-local notes. CSV import
-and export preserve stable content anchors; unresolved notes remain visible as
-needing placement rather than being moved speculatively. Notes, note-editing
-preference, personal layout and Quick start dismissal are local to the browser
-profile and origin; they are not cross-device sync. Content read marks and
-study-question progress are local in the same way.
+The graph also shows discreet completion markers by default: blue when all
+content blocks on a concept have been read, or when a module's own blocks and
+all blocks on its member concepts have been read; green when all questions on a
+concept—or across a module's member concepts—are currently correct. **Tools →
+Study → Show completion ticks in graph** controls both marker types without
+changing the recorded progress.
+
+Use the speech-bubble `+` in a content-block heading, then choose a paragraph,
+to add a browser-local note. A filled bubble means the block already has notes
+and still adds another. The chosen paragraph highlights and the note is placed
+below it; paragraph spaces are not separate targets. Graphics and Study
+Questions use their one block-level note position immediately. CSV import and
+export preserve stable content anchors;
+unresolved notes remain visible as needing placement rather than being moved
+speculatively. Notes, Personal layout, study-question attempts and content read
+marks belong to the unified personal profile. They remain local by default, can
+be downloaded or imported together, and can optionally be synchronised on
+demand through the visible `PhysicsKG personal data.zip` file in Google Drive.
+Quick start dismissal remains a browser-local preference and is not synchronised.

@@ -36,13 +36,15 @@ INFO_PANEL_MOBILE_FONT_SIZE_PX = 11
 INFO_PANEL_TEXT_ZOOM_MIN_PX = 6
 INFO_PANEL_TEXT_ZOOM_MAX_PX = 28
 USER_NOTES_STORAGE_KEY = "srkg.userNotes.v1"
-NOTE_EDITING_STORAGE_KEY = "srkg.noteEditing.v1"
 SPLASH_DISMISSED_STORAGE_KEY = "srkg.splash.dismissed.v1"
 GLOBAL_LAYOUT_STORAGE_KEY = "srkg.layout.global.v1"
 STUDY_PROGRESS_STORAGE_KEY = "srkg.studyProgress.v1"
 CONTENT_READ_PROGRESS_STORAGE_KEY = "srkg.contentReadProgress.v1"
 PERSONAL_DATA_STORAGE_KEY = "srkg.personalData.v1"
 PERSONAL_DATA_DEVICE_STORAGE_KEY = "srkg.personalData.device.v1"
+DEFAULT_GOOGLE_DRIVE_CLIENT_ID = (
+    "45956259452-4sd6v6vmi653bqfs5vfdcsn2bab85ea8.apps.googleusercontent.com"
+)
 UNDIRECTED_EDGE_COLOUR = "#c8c8c8"
 EDGE_COLOURS = [
     "#1f77b4",

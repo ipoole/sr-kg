@@ -1,3 +1,5 @@
+import struct
+
 import pytest
 
 from srkg.html_injection import inject_controls, require_html_marker
@@ -35,6 +37,8 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in injected
     assert "<title>PhysicsKG - An Atlas of Physics Knowledge</title>" in injected
     assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in injected
+    assert '<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,' in injected
+    assert '<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,' in injected
     assert '<b class="kg-product-name">PhysicsKG</b>' in injected
     assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
     assert '<div id="kg_view_title">SR &lt;Graph&gt; &amp; Fields</div>' in injected
@@ -55,6 +59,27 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '"contentReadProgress": "srkg.contentReadProgress.v1"' in injected
     assert '"personalData": "srkg.personalData.v1"' in injected
     assert '"personalDataDevice": "srkg.personalData.device.v1"' in injected
+    assert '"googleDriveClientId": ""' in injected
+
+
+def test_inject_controls_adds_google_drive_client_id_to_runtime_config():
+    injected = inject_controls(
+        _base_pyvis_html(), {}, {}, "Title",
+        google_drive_client_id="example.apps.googleusercontent.com",
+    )
+
+    assert '"googleDriveClientId": "example.apps.googleusercontent.com"' in injected
+
+
+def test_inject_controls_removes_unused_bootstrap_javascript():
+    source = _base_pyvis_html().replace(
+        "</head>",
+        '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script></head>',
+    )
+
+    injected = inject_controls(source, {}, {}, "Title")
+
+    assert "bootstrap.bundle.min.js" not in injected
 
 
 def test_favicon_asset_is_compact_accessible_svg():
@@ -64,6 +89,18 @@ def test_favicon_asset_is_compact_accessible_svg():
 
     assert '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"' in favicon
     assert '<title id="title">PhysicsKG</title>' in favicon
+
+
+def test_favicon_png_fallbacks_have_expected_dimensions():
+    from srkg.html_injection import ASSET_DIR
+
+    for name, expected_size in (
+        ("favicon-32.png", (32, 32)),
+        ("apple-touch-icon.png", (180, 180)),
+    ):
+        image = (ASSET_DIR / name).read_bytes()
+        assert image.startswith(b"\x89PNG\r\n\x1a\n")
+        assert struct.unpack(">II", image[16:24]) == expected_size
 
 
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():

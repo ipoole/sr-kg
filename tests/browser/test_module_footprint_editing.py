@@ -9,10 +9,8 @@ MODULE = "test.m02_applications"
 NODE = "module::" + MODULE
 
 
-def _enable_editing(graph, *, personal=False):
+def _enable_editing(graph):
     graph.open_control_section("kg_layouts_section")
-    if personal:
-        graph.page.locator("#kg_layout_edit_persistence").select_option("personal")
     graph.page.locator("#kg_layout_edit_toggle").check()
 
 
@@ -37,7 +35,7 @@ def _assert_box(page):
 def test_reset_while_folded_restores_footprint_without_moving_other_modules(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
-    _enable_editing(browser_graph, personal=True)
+    _enable_editing(browser_graph)
     page.evaluate("""() => {
       network.moveNode('2.1', 8000, 3000);
       network.emit('dragEnd', {nodes:['2.1']});
@@ -56,7 +54,7 @@ def test_concept_edits_change_footprint_not_anchors_or_neighbours(browser_graph,
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
     old_footprint = page.evaluate("id => kgModuleFootprint(id)", MODULE)
-    _enable_editing(browser_graph, personal=True)
+    _enable_editing(browser_graph)
     page.evaluate("""p => {
       network.moveNode('2.1', p.x, p.y);
       network.emit('dragEnd', {nodes:['2.1']});
@@ -67,23 +65,6 @@ def test_concept_edits_change_footprint_not_anchors_or_neighbours(browser_graph,
     assert after["modules"] == before["modules"]
     assert after["concepts"]["1.1"] == before["concepts"]["1.1"]
     assert page.evaluate("id => kgModuleFootprint(id)", MODULE) != old_footprint
-
-
-@pytest.mark.browser
-def test_focused_adjustments_do_not_change_persistent_footprint(browser_graph):
-    page = browser_graph.page
-    before = page.evaluate("() => kgGlobalLayoutSnapshot()")
-    browser_graph.click_concept("3.1")
-    page.locator('#kg_display_scope_select').select_option('context')
-    _enable_editing(browser_graph)
-    page.evaluate("""() => {
-      network.moveNode('2.1', 5000, 5000);
-      network.emit('dragEnd', {nodes:['2.1']});
-    }""")
-    assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
-    page.locator('#kg_display_scope_select').select_option('full')
-    _fold(browser_graph)
-    _assert_box(page)
 
 
 @pytest.mark.browser
@@ -103,29 +84,9 @@ def test_late_label_measurement_resizes_box_without_changing_layout(browser_grap
 
 
 @pytest.mark.browser
-def test_temporary_folded_move_then_expansion_does_not_save_positions(browser_graph):
-    page = browser_graph.page
-    _fold(browser_graph)
-    before = page.evaluate("() => kgGlobalLayoutSnapshot()")
-    page.locator('#kg_display_scope_select').select_option('context')
-    _enable_editing(browser_graph)
-    page.evaluate("""id => {
-      network.moveNode(id, 7000, 8000);
-      network.emit('dragEnd', {nodes:[id]});
-      document.fonts.dispatchEvent(new Event('loadingdone'));
-    }""", NODE)
-    assert page.evaluate("id => network.getPositions([id])[id]", NODE) == {"x": 7000, "y": 8000}
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
-    assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
-    page.locator('#kg_display_scope_select').select_option('full')
-    _fold(browser_graph)
-    _assert_box(page)
-
-
-@pytest.mark.browser
 def test_export_reload_and_repeated_folding_preserve_geometry(browser_graph, tmp_path):
     page = browser_graph.page
-    _enable_editing(browser_graph, personal=True)
+    _enable_editing(browser_graph)
     _fold(browser_graph)
     page.evaluate("""id => {
       const p = network.body.nodes[id];

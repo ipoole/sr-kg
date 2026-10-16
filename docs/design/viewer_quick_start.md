@@ -39,27 +39,32 @@ offered actions to expand its module or any folded part of its context.
 ## Move, read and edit
 
 Pan and zoom freely; selection pans only enough to reveal an off-screen item.
-Use **Fit** to frame the selection, context or displayed graph. In Context only,
-fitting a selected context changes the button to **Fit++**; press it to draw the
-visible nodes closer without changing a saved layout. Navigating away restores
-their positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and
-graphics without changing the graph camera.
+Use **Fit** to frame the selection, context or displayed graph. In Full or
+Context-only display, fitting a selected context changes the button to
+**Fit++**; press it to draw the visible context nodes closer along their graph
+connections without changing a saved layout. Navigating away restores their
+positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics
+without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or
-module. **Show in graph** changes Context. Back and Forward retrace selections.
+module. Use a block's speech-bubble `+`, then choose a paragraph, to add a note;
+a filled bubble means notes are already present. **Show in graph** changes
+Context. Back and Forward retrace selections.
 
-Dragging is locked while browsing. Enable **Tools → Layouts → Edit layout**;
-moves are **Temporary** until editing ends or the page reloads, or **Personal**
-when saved in this browser.
+Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
+layout** to save moved nodes in this browser. After Fit++, represented context
+nodes can instead be adjusted temporarily; navigating away restores them.
 
 ## Personal data
 
-Notes, Personal layout moves, question attempts and blue reading ticks are
-stored together in this browser. **Tools → Personal data** exports them as one
-ZIP of readable CSV files. Import that archive in another browser and choose
-**Merge** to combine work or **Replace** to restore the exported snapshot.
-Neither action changes authored graph content.
+Personal layouts, notes, study-question attempts and results, and blue reading
+ticks are stored together in this browser. **Tools → Personal data** downloads
+them as one portable ZIP of readable CSV files. Import that archive in another
+browser and choose **Merge** to combine work or **Replace** to restore the
+exported snapshot. Optionally sign in with a Google account to synchronise this
+data through Google Drive across browsers and devices. None of these actions
+changes authored graph content.
 
 ## Study — NEW
 
@@ -67,8 +72,15 @@ Choose **Practice** to answer questions. Answers appear after an attempt or **I
 don't know**. Automatic questions mark your choice; for free text, compare the
 model answer and mark yourself. Green ticks and red crosses record the latest
 result. **Tools → Study** lists attempts and links to each question. Progress is
-stored locally and is included in the Personal data archive.
+stored locally and is included in the Personal data archive. By default the
+graph shows discreet blue reading-complete and green questions-complete ticks
+on concepts and folded modules; one **Tools → Study** option hides both.
 
 ## Content status
 
 Covers Special Relativity and General Relativity.
+
+**Manifolds and Coordinates exposition enhanced with motivating example — NEW.**
+
+**Enhanced historical context — NEW:** selected concepts now explain how key
+ideas developed, who contributed, and how their physical meaning changed.

@@ -712,3 +712,111 @@ gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.a,10,Conserved
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.b,20,Vanishing mass only,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.c,30,A coordinate singularity,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.d,40,Nonzero torsion,false
+math.manifold.q1,math.manifold.q1.a,10,It must be a flat subset of one global Euclidean space,false
+math.manifold.q1,math.manifold.q1.b,20,It locally resembles Euclidean space through compatible smooth charts,true
+math.manifold.q1,math.manifold.q1.c,30,It is defined by a metric and a preferred coordinate system,false
+math.manifold.q1,math.manifold.q1.d,40,It must be embedded in a higher-dimensional space,false
+math.manifold.q2,math.manifold.q2.a,10,A coordinate chart,false
+math.manifold.q2,math.manifold.q2.b,20,A topology,false
+math.manifold.q2,math.manifold.q2.c,30,A metric,true
+math.manifold.q2,math.manifold.q2.d,40,A parametrized curve,false
+math.manifold.q3,math.manifold.q3.a,10,Their coordinate values must agree point by point,false
+math.manifold.q3,math.manifold.q3.b,20,Their domains must cover equal-sized regions,false
+math.manifold.q3,math.manifold.q3.c,30,Their coordinate axes must be orthogonal,false
+math.manifold.q3,math.manifold.q3.d,40,Their transition maps and inverses must be smooth,true
+math.coordinate_chart.q1,math.coordinate_chart.q1.a,10,A tangent vector,false
+math.coordinate_chart.q1,math.coordinate_chart.q1.b,20,A physical distance from the origin,false
+math.coordinate_chart.q1,math.coordinate_chart.q1.c,30,An ordered tuple of real-number labels,true
+math.coordinate_chart.q1,math.coordinate_chart.q1.d,40,A unique observer,false
+math.coordinate_chart.q2,math.coordinate_chart.q2.a,10,"\((4,2)\)",true
+math.coordinate_chart.q2,math.coordinate_chart.q2.b,20,"\((2,4)\)",false
+math.coordinate_chart.q2,math.coordinate_chart.q2.c,30,"\((3,1)\)",false
+math.coordinate_chart.q2,math.coordinate_chart.q2.d,40,"\((4,-2)\)",false
+math.coordinate_chart.q3,math.coordinate_chart.q3.a,10,The manifold is physically singular there,false
+math.coordinate_chart.q3,math.coordinate_chart.q3.b,20,The chart may fail there even if the manifold is regular,true
+math.coordinate_chart.q3,math.coordinate_chart.q3.c,30,Every tensor field must vanish there,false
+math.coordinate_chart.q3,math.coordinate_chart.q3.d,40,No other chart can include that point,false
+math.coordinate_transformation.q1,math.coordinate_transformation.q1.a,10,The metric tensor,false
+math.coordinate_transformation.q1,math.coordinate_transformation.q1.b,20,The Jacobian matrix,true
+math.coordinate_transformation.q1,math.coordinate_transformation.q1.c,30,The curvature tensor,false
+math.coordinate_transformation.q1,math.coordinate_transformation.q1.d,40,The coordinate tuple itself,false
+math.coordinate_transformation.q2,math.coordinate_transformation.q2.a,10,6,false
+math.coordinate_transformation.q2,math.coordinate_transformation.q2.b,20,"\(1/6\)",false
+math.coordinate_transformation.q2,math.coordinate_transformation.q2.c,30,"\(3/2\)",false
+math.coordinate_transformation.q2,math.coordinate_transformation.q2.d,40,"\(2/3\)",true
+math.coordinate_transformation.q3,math.coordinate_transformation.q3.a,10,Every coordinate transformation is a Lorentz transformation,false
+math.coordinate_transformation.q3,math.coordinate_transformation.q3.b,20,Lorentz transformations apply only on curved manifolds,false
+math.coordinate_transformation.q3,math.coordinate_transformation.q3.c,30,A Lorentz transformation is a linear flat-spacetime special case,true
+math.coordinate_transformation.q3,math.coordinate_transformation.q3.d,40,Lorentz transformations change physical events while coordinate transformations do not,false
+math.worldline.q1,math.worldline.q1.a,10,A tensor field over all spacetime,false
+math.worldline.q1,math.worldline.q1.b,20,A coordinate chart,false
+math.worldline.q1,math.worldline.q1.c,30,A set of simultaneous events,false
+math.worldline.q1,math.worldline.q1.d,40,A parametrized curve through spacetime,true
+math.worldline.q2,math.worldline.q2.a,10,"\((6,9)\)",false
+math.worldline.q2,math.worldline.q2.b,20,"\((2,6)\)",true
+math.worldline.q2,math.worldline.q2.c,30,"\((2,3)\)",false
+math.worldline.q2,math.worldline.q2.d,40,"\((1,6)\)",false
+math.worldline.q3,math.worldline.q3.a,10,Massive particles are timelike and light is null,true
+math.worldline.q3,math.worldline.q3.b,20,Massive particles are null and light is timelike,false
+math.worldline.q3,math.worldline.q3.c,30,Both massive particles and light are spacelike,false
+math.worldline.q3,math.worldline.q3.d,40,All physical histories are null,false
+math.tangent_space.q1,math.tangent_space.q1.a,10,The set of all points near \(p\),false
+math.tangent_space.q1,math.tangent_space.q1.b,20,The vector space of tangents attached at \(p\),true
+math.tangent_space.q1,math.tangent_space.q1.c,30,The set of coordinate charts containing \(p\),false
+math.tangent_space.q1,math.tangent_space.q1.d,40,The dual space of linear maps on vectors,false
+math.tangent_space.q2,math.tangent_space.q2.a,10,"\((2,4)\)",false
+math.tangent_space.q2,math.tangent_space.q2.b,20,"\((1,2)\)",false
+math.tangent_space.q2,math.tangent_space.q2.c,30,"\((1,4)\)",true
+math.tangent_space.q2,math.tangent_space.q2.d,40,"\((2,2)\)",false
+math.tangent_space.q3,math.tangent_space.q3.a,10,Their components always have different dimensions,false
+math.tangent_space.q3,math.tangent_space.q3.b,20,A connection or transport rule is needed to compare their different tangent spaces,true
+math.tangent_space.q3,math.tangent_space.q3.c,30,Vector subtraction is forbidden even in flat Cartesian space,false
+math.tangent_space.q3,math.tangent_space.q3.d,40,Only covectors can be compared at different points,false
+math.cotangent_space.q1,math.cotangent_space.q1.a,10,It maps a tangent vector linearly to a real number,true
+math.cotangent_space.q1,math.cotangent_space.q1.b,20,It maps a point to another point,false
+math.cotangent_space.q1,math.cotangent_space.q1.c,30,It measures vector length without extra structure,false
+math.cotangent_space.q1,math.cotangent_space.q1.d,40,It transports a vector to a neighbouring tangent space,false
+math.cotangent_space.q2,math.cotangent_space.q2.a,10,10,false
+math.cotangent_space.q2,math.cotangent_space.q2.b,20,-2,false
+math.cotangent_space.q2,math.cotangent_space.q2.c,30,2,true
+math.cotangent_space.q2,math.cotangent_space.q2.d,40,14,false
+math.cotangent_space.q3,math.cotangent_space.q3.a,10,"\(dx^\mu(\partial/\partial x^\nu)=\delta^\mu{}_{\nu}\)",true
+math.cotangent_space.q3,math.cotangent_space.q3.b,20,"\(dx^\mu(\partial/\partial x^\nu)=g^{\mu\nu}\)",false
+math.cotangent_space.q3,math.cotangent_space.q3.c,30,"\(dx^\mu(\partial/\partial x^\nu)=0\) for all \(\mu,\nu\)",false
+math.cotangent_space.q3,math.cotangent_space.q3.d,40,"\(dx^\mu(\partial/\partial x^\nu)=x^\mu x^\nu\)",false
+math.tensor_field.q1,math.tensor_field.q1.a,10,It has at least two indices,false
+math.tensor_field.q1,math.tensor_field.q1.b,20,It assigns a tensor smoothly at each point,true
+math.tensor_field.q1,math.tensor_field.q1.c,30,Its components are constant in every chart,false
+math.tensor_field.q1,math.tensor_field.q1.d,40,It is defined only at one point,false
+math.tensor_field.q2,math.tensor_field.q2.a,10,"Scalar \((0,0)\); vector \((1,0)\); covector \((0,1)\)",true
+math.tensor_field.q2,math.tensor_field.q2.b,20,"Scalar \((1,0)\); vector \((0,0)\); covector \((0,1)\)",false
+math.tensor_field.q2,math.tensor_field.q2.c,30,"Scalar \((0,1)\); vector \((1,1)\); covector \((1,0)\)",false
+math.tensor_field.q2,math.tensor_field.q2.d,40,"Scalar \((0,0)\); vector \((0,1)\); covector \((1,0)\)",false
+math.tensor_field.q3,math.tensor_field.q3.a,10,2,true
+math.tensor_field.q3,math.tensor_field.q3.b,20,10,false
+math.tensor_field.q3,math.tensor_field.q3.c,30,-2,false
+math.tensor_field.q3,math.tensor_field.q3.d,40,14,false
+math.index_notation.q1,math.index_notation.q1.a,10,A free index selecting one component,false
+math.index_notation.q1,math.index_notation.q1.b,20,A label for a coordinate chart,false
+math.index_notation.q1,math.index_notation.q1.c,30,A repeated dummy index that is summed,true
+math.index_notation.q1,math.index_notation.q1.d,40,An index that must not be renamed,false
+math.index_notation.q2,math.index_notation.q2.a,10,10,false
+math.index_notation.q2,math.index_notation.q2.b,20,2,true
+math.index_notation.q2,math.index_notation.q2.c,30,-2,false
+math.index_notation.q2,math.index_notation.q2.d,40,14,false
+math.index_notation.q3,math.index_notation.q3.a,10,"\(T^{\mu\nu}=V^\mu\)",true
+math.index_notation.q3,math.index_notation.q3.b,20,"\(A^\mu=B^\mu+C^\mu\)",false
+math.index_notation.q3,math.index_notation.q3.c,30,"\(S=A^\mu B_\mu\)",false
+math.index_notation.q3,math.index_notation.q3.d,40,"\(T^\mu{}_{\nu}=A^\mu B_\nu\)",false
+math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.a,10,Both use the new-with-respect-to-old Jacobian,false
+math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.b,20,Both use the inverse Jacobian,false
+math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.c,30,Upper indices do not transform but lower indices do,false
+math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.d,40,Contravariant uses the Jacobian and covariant uses the inverse,true
+math.tensor_transformation_law.q2,math.tensor_transformation_law.q2.a,10,"\(V^{x'}=6\), \(\omega_{x'}=4\)",true
+math.tensor_transformation_law.q2,math.tensor_transformation_law.q2.b,20,"\(V^{x'}=3/2\), \(\omega_{x'}=16\)",false
+math.tensor_transformation_law.q2,math.tensor_transformation_law.q2.c,30,"\(V^{x'}=6\), \(\omega_{x'}=16\)",false
+math.tensor_transformation_law.q2,math.tensor_transformation_law.q2.d,40,"\(V^{x'}=3\), \(\omega_{x'}=8\)",false
+math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.a,10,One,false
+math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.b,20,Two,false
+math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.c,30,Three,true
+math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.d,40,Six,false

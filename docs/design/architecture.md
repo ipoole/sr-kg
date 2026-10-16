@@ -43,9 +43,10 @@ Rendering constants and drawing mechanics remain in code.
 Notes, personal layout, study attempts and reading marks form one local-first
 [personal-data model](personal_data.md), separate from authored content and
 transient viewer state. A versioned portable archive supports backup and
-transfer; browser origin and profile still determine which local copy is
-available. Layout has the separate publication workflow described in
-[Layout](layout.md). Browser data never writes back to the KB automatically.
+transfer. An optional Google Drive adapter synchronises that archive on demand,
+while local storage remains the working copy in each browser. Layout has the
+separate publication workflow described in [Layout](layout.md). Browser data
+never writes back to the KB automatically.
 
 Notes can target concept or module sections. New notes use the authored
 `block_id` where available and retain textual context around their insertion

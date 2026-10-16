@@ -26,6 +26,17 @@ def _view_distance(left, right):
     )
 
 
+def _close_tools_overlay(page):
+    page.evaluate(
+        """() => {
+          const controls = document.getElementById("kg_controls");
+          if (controls && !controls.classList.contains("kg-hidden")) {
+            kgToggleControls();
+          }
+        }"""
+    )
+
+
 def _enter_browsing_mode(browser_graph, mode):
     page = browser_graph.page
     browser_graph.click_concept("3.1")
@@ -175,8 +186,66 @@ def test_fit_controls_are_explicit_camera_actions(browser_graph):
 
 
 @pytest.mark.browser
+def test_fit_is_disabled_exactly_when_its_frame_target_is_empty(browser_graph):
+    page = browser_graph.page
+    fit_select = page.locator("#kg_fit_select")
+    fit_button = page.locator("#kg_fit_apply")
+    scope_select = page.locator("#kg_display_scope_select")
+
+    expected_without_selection = {
+        "full": {
+            "reveal": True,
+            "selection": True,
+            "context": True,
+            "displayed": False,
+        },
+        "context": {
+            "reveal": True,
+            "selection": True,
+            "context": True,
+            "displayed": True,
+        },
+    }
+    for scope, expected in expected_without_selection.items():
+        scope_select.select_option(scope)
+        for frame, disabled in expected.items():
+            fit_select.select_option(frame)
+            assert fit_button.is_disabled() is disabled, (scope, frame, "clear")
+
+    browser_graph.click_concept("3.1")
+    for scope in ("full", "context"):
+        scope_select.select_option(scope)
+        for frame in ("reveal", "selection", "context", "displayed"):
+            fit_select.select_option(frame)
+            assert fit_button.is_enabled(), (scope, frame, "selected")
+
+
+@pytest.mark.browser
+def test_empty_context_graph_offers_search_and_full_graph_recovery(browser_graph):
+    page = browser_graph.page
+    empty_state = page.locator("#kg_empty_graph_state")
+
+    assert empty_state.is_hidden()
+    page.locator("#kg_display_scope_select").select_option("context")
+    assert empty_state.is_visible()
+    assert "No context to display" in empty_state.inner_text()
+    assert "Search" in empty_state.inner_text()
+    assert "Full graph" in empty_state.inner_text()
+
+    empty_state.locator("#kg_empty_graph_search").click()
+    assert page.locator("#kg_search_section").get_attribute("open") is not None
+    page.locator("#kg_search_close").click()
+
+    empty_state.locator("#kg_empty_graph_show_full").click()
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert empty_state.is_hidden()
+    assert page.evaluate("() => kgDisplayedGraphSnapshot().fitIds.length") > 0
+
+
+@pytest.mark.browser
 def test_second_context_fit_contracts_around_selection_until_navigation(browser_graph):
     page = browser_graph.page
+    _close_tools_overlay(page)
     published = page.evaluate("() => kgGlobalLayoutSnapshot()")
     browser_graph.click_concept("3.1")
     page.locator("#kg_context_depth_select").select_option("two-hops")
@@ -215,13 +284,16 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         if node_id != "3.1"
     }
     assert all(after_distances[node_id] < before_distances[node_id] for node_id in after_distances)
-    assert "temporarily" in page.locator("#kg_context_notice").inner_text().lower()
+    assert "temporary" in page.locator("#kg_context_notice").inner_text().lower()
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == published
     assert page.evaluate("() => kgContextContractionSnapshot()") == {
         "primed": False,
         "active": True,
         "anchorId": "3.1",
+        "depthByNode": {"1.1": 2, "2.1": 1, "2.2": 1, "3.1": 0},
+        "parentByNode": {"1.1": "2.1", "2.1": "3.1", "2.2": "3.1"},
     }
+    assert after["1.1"]["x"] < after["2.1"]["x"] < after["3.1"]["x"]
 
     bounds = page.evaluate(
         """ids => Object.fromEntries(ids.map(id => [id, network.getBoundingBox(id)]))""",
@@ -238,8 +310,10 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
                 or right["bottom"] <= left["top"]
             )
 
+    page.evaluate("() => kgToggleControls()")
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_toggle").check()
+    assert page.locator("#kg_layout_edit_toggle").is_disabled()
+    assert page.evaluate("() => kgLayoutDraggingEnabled()") is True
     page.evaluate(
         """() => {
           network.moveNode("2.1", 777, 888);
@@ -261,6 +335,125 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         )
     assert fit_button.inner_text() == "Fit"
     assert page.evaluate("() => kgContextContractionSnapshot().active") is False
+
+
+@pytest.mark.browser
+def test_contraction_graph_plan_walks_arbitrary_depth_and_keeps_shortest_parents(
+    browser_graph,
+):
+    plan = browser_graph.page.evaluate(
+        """() => kgContractionGraphPlan({
+          anchorId: "root",
+          nodeIds: ["root", "near", "left", "right", "leaf"],
+          adjacency: {
+            root: ["near"],
+            near: ["root", "left", "right"],
+            left: ["near", "leaf"],
+            right: ["near", "leaf"],
+            leaf: ["left", "right"]
+          }
+        })"""
+    )
+
+    assert plan["maximumDepth"] == 3
+    assert plan["depthByNode"] == {
+        "root": 0,
+        "near": 1,
+        "left": 2,
+        "right": 2,
+        "leaf": 3,
+    }
+    assert plan["parentCandidates"]["leaf"] == ["left", "right"]
+
+
+@pytest.mark.browser
+def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
+    page = browser_graph.page
+    _close_tools_overlay(page)
+    browser_graph.click_concept("3.1")
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    page.locator("#kg_context_depth_select").select_option("one-hop")
+    page.evaluate(
+        """() => {
+          network.moveNode("3.1", 0, 0);
+          network.moveNode("2.1", -1200, 0);
+          network.moveNode("2.2", 0, -1400);
+          network.moveNode("1.1", 1800, 1600);
+        }"""
+    )
+    context_ids = ["2.1", "2.2", "3.1"]
+    all_ids = ["1.1", *context_ids]
+    before = page.evaluate("ids => network.getPositions(ids)", all_ids)
+
+    fit_button = page.locator("#kg_fit_apply")
+    fit_button.click()
+    page.wait_for_timeout(300)
+    assert fit_button.inner_text() == "Fit++"
+
+    fit_button.click()
+    page.wait_for_timeout(300)
+    after = page.evaluate("ids => network.getPositions(ids)", all_ids)
+
+    assert after["1.1"] == before["1.1"]
+    assert after["3.1"] == before["3.1"]
+    assert math.hypot(after["2.1"]["x"], after["2.1"]["y"]) < math.hypot(
+        before["2.1"]["x"], before["2.1"]["y"]
+    )
+    assert math.hypot(after["2.2"]["x"], after["2.2"]["y"]) < math.hypot(
+        before["2.2"]["x"], before["2.2"]["y"]
+    )
+    assert page.evaluate("() => kgContextContractionSnapshot().active") is True
+
+
+@pytest.mark.browser
+def test_fit_plus_unlocks_only_context_and_suspends_personal_editing(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_layouts_section")
+    assert page.locator("#kg_layout_edit_persistence").count() == 0
+    personal_toggle = page.locator("#kg_layout_edit_toggle")
+    personal_toggle.check()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is True
+
+    before_layout = page.evaluate("() => kgGlobalLayoutSnapshot()")
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_context_depth_select").select_option("one-hop")
+    _close_tools_overlay(page)
+    page.locator("#kg_fit_apply").click()
+    page.wait_for_timeout(300)
+    page.locator("#kg_fit_apply").click()
+    page.wait_for_timeout(300)
+
+    page.evaluate("() => kgToggleControls()")
+    browser_graph.open_control_section("kg_layouts_section")
+    assert personal_toggle.is_checked()
+    assert personal_toggle.is_disabled()
+    assert "suspended" in page.locator("#kg_layout_edit_message").inner_text().lower()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is False
+    assert page.evaluate("() => kgLayoutDraggingEnabled()") is True
+    assert page.evaluate("() => nodes.get('2.1').fixed.x") is False
+    assert page.evaluate("() => nodes.get('1.1').fixed.x") is True
+
+    page.evaluate(
+        """() => {
+          network.moveNode("2.1", 777, 888);
+          network.emit("dragEnd", {nodes: ["2.1"]});
+        }"""
+    )
+    assert page.evaluate("() => network.getPositions(['2.1'])['2.1']") == {
+        "x": 777,
+        "y": 888,
+    }
+    assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before_layout
+    assert "navigating away" in page.locator("#kg_context_notice").inner_text().lower()
+
+    browser_graph.click_concept("2.1")
+    assert personal_toggle.is_enabled()
+    assert personal_toggle.is_checked()
+    assert page.evaluate("() => kgPersistentLayoutEditingEnabled()") is True
+    restored = page.evaluate("() => network.getPositions(['2.1'])['2.1']")
+    expected = before_layout["concepts"]["2.1"]
+    assert restored["x"] == pytest.approx(expected["x"], abs=2)
+    assert restored["y"] == pytest.approx(expected["y"], abs=2)
 
 
 @pytest.mark.browser
@@ -291,6 +484,7 @@ def test_context_contraction_uses_folded_module_as_selection_anchor(browser_grap
         "ids => network.getPositions(ids)", [module_node_id, "1.1"]
     )
 
+    _close_tools_overlay(page)
     page.locator("#kg_fit_apply").click()
     page.wait_for_timeout(300)
     assert page.locator("#kg_fit_apply").inner_text() == "Fit++"
@@ -302,6 +496,20 @@ def test_context_contraction_uses_folded_module_as_selection_anchor(browser_grap
 
     assert after[module_node_id] == before[module_node_id]
     assert abs(after["1.1"]["x"]) < abs(before["1.1"]["x"])
+    assert page.evaluate("() => kgGlobalLayoutSnapshot().modules") == page.evaluate(
+        "() => publishedLayout.modules"
+    )
+    assert page.evaluate("id => nodes.get(id).fixed.x", module_node_id) is False
+    page.evaluate(
+        """id => {
+          network.moveNode(id, 444, 555);
+          network.emit("dragEnd", {nodes: [id]});
+        }""",
+        module_node_id,
+    )
+    assert page.evaluate(
+        "id => network.getPositions([id])[id]", module_node_id
+    ) == {"x": 444, "y": 555}
     assert page.evaluate("() => kgGlobalLayoutSnapshot().modules") == page.evaluate(
         "() => publishedLayout.modules"
     )
@@ -328,6 +536,7 @@ def test_real_graph_context_contraction_reduces_spread(repo_browser_graph):
     node_ids = page.evaluate("() => kgDisplayedGraphSnapshot().fitIds")
     anchor_id = "gr.metric_tensor"
     before = page.evaluate("ids => network.getPositions(ids)", node_ids)
+    _close_tools_overlay(page)
     page.locator("#kg_fit_apply").click()
     page.wait_for_timeout(300)
     page.locator("#kg_fit_apply").click()
@@ -368,6 +577,7 @@ def test_context_contraction_keeps_nodes_out_of_visible_concept_labels(repo_brow
     page.locator("#kg_context_preset_select").select_option("derivation")
     page.locator("#kg_context_depth_select").select_option("transitive")
     page.locator("#kg_display_scope_select").select_option("context")
+    _close_tools_overlay(page)
     page.locator("#kg_fit_apply").click()
     page.wait_for_timeout(300)
     page.locator("#kg_fit_apply").click()

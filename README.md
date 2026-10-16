@@ -10,7 +10,8 @@ nine supporting mathematics concepts.
 
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,
-relationship exploration, personal notes and persistent graph layouts.
+relationship exploration and a unified personal-data profile for notes, layouts,
+study progress and reading marks.
 
 ## Setup
 
@@ -41,7 +42,8 @@ find a concept. Follow links to explore related material and use browser Back
 to return. **Details** filters the reading material; **Practice** shows questions
 that you answer or self-mark before seeing their model answers. Automatic
 questions include an “I don't know” choice; free-text questions ask you to
-compare with a model answer. Clear ticks and crosses show the latest result.
+compare with a model answer. Clear ticks and crosses show the latest result,
+and optional graph ticks summarise reading and question completion.
 Use **Context** and **Depth** to choose related material, and **Display** to show
 the full graph, only that context, or the details pane on its own.
 
@@ -50,8 +52,29 @@ personal notes. The **Study** tools keep attempt counts and latest results, with
 links back to each attempted question and controls to reset progress. Teaching
 blocks also have a persistent blue read tick. Notes, personal layout, study
 attempts and reading marks remain local by default; **Tools → Personal data**
-exports or imports them together as a transparent CSV archive. See the
+downloads or imports them together as a portable ZIP of readable CSV files. See the
 [Viewer quick start](docs/design/viewer_quick_start.md) for a short introduction.
+Use the speech-bubble `+` in a block heading, then choose a paragraph, to add a
+note without leaving permanent insertion controls throughout the text. A filled
+bubble means that block already has notes.
+
+An optional, explicitly invoked Google Drive connection synchronises the same visible
+`PhysicsKG personal data.zip` file between browsers. Local storage remains the
+working copy and the viewer remains usable without connecting. The project's
+public Google OAuth web-client ID is used by default and authorises the
+`https://ipoole.github.io` origin. A different deployment can override it at
+build time:
+
+```bash
+conda run -n sr-kg python tools/generate_pyvis.py \
+  --data-root data --out output/PhysicsKG.html \
+  --google-drive-client-id CLIENT_ID.apps.googleusercontent.com
+```
+
+The `PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID` environment variable is the equivalent
+override. An empty override disables Google Drive controls for a build. See
+[Personal data](docs/design/personal_data.md) for the data and synchronisation
+model.
 
 ## Validate and test
 
@@ -73,6 +96,7 @@ conda run -n sr-kg pytest -q tests/browser
 - [Documentation index](docs/readme.md): where guidance, drafts and discussion live.
 - [Architecture](docs/design/architecture.md): generation, presentation and user state.
 - [Viewer behaviour](docs/design/viewer.md): current learner-facing controls and limitations.
+- [Personal data](docs/design/personal_data.md): local-first storage, portable archives and Google Drive synchronisation.
 - [KB schema](docs/design/kb_schema.md): source-file contracts.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
 - [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.

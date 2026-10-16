@@ -8,6 +8,7 @@ in ``srkg/viewer_assets`` so CSS and JavaScript can be reviewed independently.
 
 import base64
 import json
+import re
 from pathlib import Path
 from html import escape as html_escape
 
@@ -31,7 +32,6 @@ from srkg.config import (
     NODE_LABEL_FONT_WEIGHT,
     NODE_LABEL_HIDE_BELOW_PX,
     NODE_LABEL_WIDTH,
-    NOTE_EDITING_STORAGE_KEY,
     PERSONAL_DATA_DEVICE_STORAGE_KEY,
     PERSONAL_DATA_STORAGE_KEY,
     SPLASH_DISMISSED_STORAGE_KEY,
@@ -60,6 +60,12 @@ MATHJAX_ASSET = """
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 """
 
+_BOOTSTRAP_JAVASCRIPT = re.compile(
+    r"\s*<script\b[^>]*\bsrc=[\"'][^\"']*bootstrap(?:\.bundle)?(?:\.min)?\.js"
+    r"[^\"']*[\"'][^>]*>\s*</script>",
+    re.IGNORECASE,
+)
+
 
 def require_html_marker(html_text: str, marker: str) -> None:
     """Fail clearly if PyVis output no longer contains an injection marker."""
@@ -74,10 +80,16 @@ def inject_controls(
     view_title: str,
     module_data: dict[str, dict[str, object]] | None = None,
     published_layout: dict[str, object] | None = None,
+    google_drive_client_id: str = "",
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)
+
+    # PyVis includes Bootstrap JavaScript for its optional configuration UI.
+    # PhysicsKG does not instantiate those widgets, so parsing/executing it is
+    # pure startup cost. Keep the small CSS dependency used by PyVis markup.
+    html_text = _BOOTSTRAP_JAVASCRIPT.sub("", html_text)
 
     css = _style_tag(_render_template("viewer.css", _css_replacements()))
     controls = _render_template(
@@ -94,6 +106,10 @@ def inject_controls(
     ) + _script_tag(
         _asset_text("personal_data_archive.js")
     ) + _script_tag(
+        _asset_text("personal_data_sync.js")
+    ) + _script_tag(
+        _asset_text("personal_data_google_drive.js")
+    ) + _script_tag(
         _render_template(
             "viewer.js",
             {
@@ -106,7 +122,9 @@ def inject_controls(
                     "modules": {},
                 }),
                 "__EDGE_KEY__": _json_for_script(edge_key),
-                "__VIEWER_CONFIG__": _json_for_script(_viewer_runtime_config()),
+                "__VIEWER_CONFIG__": _json_for_script(
+                    _viewer_runtime_config(google_drive_client_id)
+                ),
             },
         )
     )
@@ -123,17 +141,30 @@ def inject_controls(
 
 def _product_head_html() -> str:
     """Return standalone document identity metadata, including its favicon."""
-    favicon = base64.b64encode(_asset_text("favicon.svg").encode("utf-8")).decode("ascii")
+    favicon_svg = base64.b64encode(
+        _asset_text("favicon.svg").encode("utf-8")
+    ).decode("ascii")
+    favicon_png = base64.b64encode(_asset_bytes("favicon-32.png")).decode("ascii")
+    touch_icon = base64.b64encode(_asset_bytes("apple-touch-icon.png")).decode("ascii")
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
         '<link rel="icon" type="image/svg+xml" '
-        f'href="data:image/svg+xml;base64,{favicon}">'
+        f'href="data:image/svg+xml;base64,{favicon_svg}">\n'
+        '<link rel="icon" type="image/png" sizes="32x32" '
+        f'href="data:image/png;base64,{favicon_png}">\n'
+        '<link rel="apple-touch-icon" sizes="180x180" '
+        f'href="data:image/png;base64,{touch_icon}">'
     )
 
 
 def _asset_text(name: str) -> str:
     """Read a viewer asset from the package-local asset directory."""
     return (ASSET_DIR / name).read_text(encoding="utf-8")
+
+
+def _asset_bytes(name: str) -> bytes:
+    """Read a binary viewer asset from the package-local asset directory."""
+    return (ASSET_DIR / name).read_bytes()
 
 
 def _render_template(name: str, replacements: dict[str, object]) -> str:
@@ -174,7 +205,7 @@ def _css_replacements() -> dict[str, object]:
     }
 
 
-def _viewer_runtime_config() -> dict[str, object]:
+def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
@@ -188,9 +219,11 @@ def _viewer_runtime_config() -> dict[str, object]:
             "textZoomMinPx": INFO_PANEL_TEXT_ZOOM_MIN_PX,
             "textZoomMaxPx": INFO_PANEL_TEXT_ZOOM_MAX_PX,
         },
+        "cloudSync": {
+            "googleDriveClientId": str(google_drive_client_id or ""),
+        },
         "storageKeys": {
             "userNotes": USER_NOTES_STORAGE_KEY,
-            "noteEditing": NOTE_EDITING_STORAGE_KEY,
             "splashDismissed": SPLASH_DISMISSED_STORAGE_KEY,
             "globalLayout": GLOBAL_LAYOUT_STORAGE_KEY,
             "studyProgress": STUDY_PROGRESS_STORAGE_KEY,

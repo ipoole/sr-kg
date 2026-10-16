@@ -53,6 +53,39 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
 
 
 @pytest.mark.browser
+def test_folded_startup_does_not_decode_hidden_concept_icons(repo_browser_graph):
+    page = repo_browser_graph.page
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+
+    # Every decoded SVG image owns a document. A folded startup should decode
+    # the handful of visible module graphics, not every hidden concept icon.
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
+def test_tiny_all_concept_view_does_not_decode_every_icon(repo_browser_graph):
+    page = repo_browser_graph.page
+    module_ids = page.locator("#kg_module_list .kg-module-item").evaluate_all(
+        "items => items.map(item => item.getAttribute('data-module-id'))"
+    )
+    for module_id in module_ids:
+        page.locator(
+            f'#kg_module_list .kg-module-item[data-module-id="{module_id}"]'
+        ).evaluate("item => item.click()")
+        page.locator(
+            '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
+        ).click()
+    page.evaluate("network.fit({animation: false}); network.redraw();")
+    page.wait_for_timeout(500)
+
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+    assert page.evaluate("network.getScale()") < 0.25
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
 def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph):
     page = shared_browser_graph.page
 
@@ -647,7 +680,6 @@ def test_expand_all_restores_members_around_moved_module_node(browser_graph):
     browser_graph.open_control_section("kg_modules_section")
     page.locator("#kg_modules_collapse_all").click()
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
     offset = page.evaluate("() => kgModuleFootprint('test.m02_applications').offset")
     page.evaluate("""moduleNodeId => network.moveNode(moduleNodeId, 900, 600)""", module_node_id)
@@ -923,7 +955,6 @@ def test_folding_module_preserves_anchor_with_offset_box_centre(browser_graph):
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
     anchor = page.evaluate(
         """() => window.kgGlobalLayoutSnapshot().modules["test.m02_applications"].anchor"""
@@ -966,7 +997,6 @@ def test_all_mode_drag_updates_authoritative_global_layout(browser_graph):
     ) == before
 
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
 
     page.evaluate(
@@ -996,7 +1026,6 @@ def test_personal_global_layout_overrides_survive_reload(browser_graph):
     page.reload(wait_until="domcontentloaded")
     page.wait_for_function("() => typeof window.kgGlobalLayoutSnapshot === 'function'")
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
 
     page.evaluate(
@@ -1075,7 +1104,6 @@ def test_layout_controls_report_export_and_reset_state(browser_graph):
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
     page.locator("#kg_display_scope_select").select_option("context")
     page.locator("#kg_display_scope_select").select_option("full")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
 
     page.evaluate(
@@ -1106,12 +1134,11 @@ def test_layout_controls_report_export_and_reset_state(browser_graph):
 
 
 @pytest.mark.browser
-def test_layout_editing_defaults_to_temporary_and_reports_move_consequences(browser_graph):
+def test_layout_editing_is_personal_and_reports_move_consequences(browser_graph):
     page = browser_graph.page
-    original = page.evaluate("() => kgGlobalLayoutSnapshot().concepts['2.1']")
 
     browser_graph.open_control_section("kg_layouts_section")
-    assert page.locator("#kg_layout_edit_persistence").input_value() == "temporary"
+    assert page.locator("#kg_layout_edit_persistence").count() == 0
     page.locator("#kg_layout_edit_toggle").check()
     page.evaluate(
         """() => {
@@ -1120,25 +1147,16 @@ def test_layout_editing_defaults_to_temporary_and_reports_move_consequences(brow
         }"""
     )
 
-    assert page.evaluate("() => kgGlobalLayoutSnapshot().concepts['2.1']") == original
-    assert "Temporary layout adjusted" in page.locator("#kg_context_notice").inner_text()
-    page.locator("#kg_layout_edit_toggle").uncheck()
-    assert page.evaluate("() => network.getPositions(['2.1'])['2.1']") == original
-    assert "Personal layout restored" in page.locator("#kg_context_notice").inner_text()
-
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
-    page.locator("#kg_layout_edit_toggle").check()
-    page.evaluate(
-        """() => {
-          network.moveNode("2.1", 333, 444);
-          network.emit("dragEnd", {nodes: ["2.1"]});
-        }"""
-    )
     assert page.evaluate("() => kgGlobalLayoutSnapshot().concepts['2.1']") == {
-        "x": 333,
-        "y": 444,
+        "x": 777,
+        "y": 888,
     }
     assert "Personal layout updated" in page.locator("#kg_context_notice").inner_text()
+    page.locator("#kg_layout_edit_toggle").uncheck()
+    assert page.evaluate("() => kgGlobalLayoutSnapshot().concepts['2.1']") == {
+        "x": 777,
+        "y": 888,
+    }
 
 
 @pytest.mark.browser
@@ -1170,106 +1188,6 @@ def test_drag_attempt_while_layout_is_locked_shows_context_notice_once(browser_g
     page.mouse.up()
     page.wait_for_timeout(200)
     assert page.locator("#kg_context_notice").is_hidden()
-
-
-@pytest.mark.browser
-def test_focussed_mode_allows_temporary_concept_layout_adjustments(browser_graph):
-    page = browser_graph.page
-    before = page.evaluate("""() => window.kgGlobalLayoutSnapshot()""")
-    published = page.evaluate("""() => publishedLayout""")
-    assert before == published
-
-    browser_graph.click_concept("3.1")
-    page.locator("#kg_display_scope_select").select_option("context")
-
-    during = page.evaluate("""() => window.kgGlobalLayoutSnapshot()""")
-    assert during == before
-    visible_positions = page.evaluate(
-        """() => network.getPositions(nodes.get().filter(node => !node.hidden).map(node => node.id))"""
-    )
-    for concept_id, position in visible_positions.items():
-        assert abs(position["x"] - before["concepts"][concept_id]["x"]) < 2
-        assert abs(position["y"] - before["concepts"][concept_id]["y"]) < 2
-    assert page.evaluate("""() => window.kgLayoutEditingEnabled()""") is False
-    assert page.evaluate("""() => window.kgTemporaryLayoutEditingEnabled()""") is False
-    assert page.evaluate("() => window.kgLayoutDraggingEnabled()") is False
-
-    browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_toggle").check()
-    assert page.evaluate("""() => window.kgLayoutEditingEnabled()""") is True
-    assert page.evaluate("""() => window.kgTemporaryLayoutEditingEnabled()""") is True
-    assert page.evaluate("() => window.kgLayoutDraggingEnabled()") is True
-    assert "temporary" in page.locator("#kg_layout_edit_message").inner_text().lower()
-
-    page.evaluate(
-        """() => {
-          network.moveNode("3.1", 777, 888);
-          network.emit("dragEnd", {nodes: ["3.1"]});
-        }"""
-    )
-    assert page.evaluate("""() => network.getPositions(["3.1"])["3.1"]""") == {
-        "x": 777,
-        "y": 888,
-    }
-    assert page.evaluate("""() => window.kgGlobalLayoutSnapshot()""") == before
-
-    page.locator("#kg_display_scope_select").select_option("full")
-    assert page.evaluate("""() => window.kgLayoutEditingEnabled()""") is True
-    assert page.evaluate("""() => window.kgTemporaryLayoutEditingEnabled()""") is True
-    assert "temporary" in page.locator("#kg_layout_edit_message").inner_text().lower()
-    assert page.evaluate("""() => network.getPositions(["3.1"])["3.1"]""") == {
-        "x": 777,
-        "y": 888,
-    }
-    page.locator("#kg_layout_edit_toggle").uncheck()
-    positions = page.evaluate("""() => network.getPositions(Object.keys(publishedLayout.concepts))""")
-    for concept_id, expected in before["concepts"].items():
-        assert abs(positions[concept_id]["x"] - expected["x"]) < 2
-        assert abs(positions[concept_id]["y"] - expected["y"]) < 2
-
-
-@pytest.mark.browser
-def test_focussed_mode_allows_temporary_folded_module_adjustments(browser_graph):
-    page = browser_graph.page
-    module_id = "test.m02_applications"
-    module_node_id = f"module::{module_id}"
-    before = page.evaluate("""() => window.kgGlobalLayoutSnapshot()""")
-    footprint = page.evaluate("id => kgModuleFootprint(id)", module_id)
-
-    browser_graph.open_control_section("kg_modules_section")
-    page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
-    page.locator("#kg_display_scope_select").select_option("context")
-    browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_toggle").check()
-
-    page.evaluate(
-        """moduleNodeId => {
-          network.moveNode(moduleNodeId, 777, 888);
-          network.emit("dragEnd", {nodes: [moduleNodeId]});
-        }""",
-        module_node_id,
-    )
-    assert page.evaluate(
-        """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
-        module_node_id,
-    ) == {"x": 777, "y": 888}
-    assert page.evaluate("""() => window.kgGlobalLayoutSnapshot()""") == before
-
-    page.locator("#kg_display_scope_select").select_option("full")
-    assert page.evaluate(
-        """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
-        module_node_id,
-    ) == {"x": 777, "y": 888}
-    page.locator("#kg_layout_edit_toggle").uncheck()
-    restored = page.evaluate(
-        """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
-        module_node_id,
-    )
-    assert abs(restored["x"] - footprint["x"]) < 2
-    assert abs(restored["y"] - footprint["y"]) < 2
 
 
 @pytest.mark.browser
@@ -1348,16 +1266,22 @@ def test_module_details_omit_redundant_domain_line(browser_graph):
 
 
 @pytest.mark.browser
-def test_edge_key_colours_relation_name_without_colour_column(browser_graph):
+def test_edge_key_omits_redundant_category_and_can_be_dismissed(browser_graph):
     page = browser_graph.page
 
     page.evaluate("() => kgShowEdgeKey()")
 
     headings = page.locator("#info_panel .edge-key-table th").all_inner_texts()
-    assert headings == ["Relation", "Direction", "Category", "Meaning", "Example"]
+    assert headings == ["Relation", "Direction", "Meaning", "Example"]
     relation = page.locator("#info_panel .edge-key-relation").first
     assert relation.inner_text()
     assert relation.evaluate("el => getComputedStyle(el).color") != "rgb(0, 0, 0)"
+
+    close = page.locator("#kg_edge_key_close")
+    assert close.is_visible()
+    close.click()
+    assert not page.locator("#info_panel").is_visible()
+    assert page.locator("#kg_details_view_select").input_value() == "hide"
 
 
 @pytest.mark.browser
@@ -1404,7 +1328,7 @@ def test_legacy_concept_uses_coarse_details_sections(shared_browser_graph):
 
     shared_browser_graph.click_concept("2.1")
 
-    assert page.locator("#info_panel h3").evaluate_all(
+    assert page.locator("#info_panel h3 .kg-noteable-title").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Definition", "Explanation"]
     assert page.locator("#info_panel .content-block").count() == 0
@@ -1435,7 +1359,7 @@ def test_revised_concept_renders_note_block_kinds_folded(shared_browser_graph):
 
     notes = page.locator("#info_panel details.content-block-note")
     assert notes.count() == 2
-    assert notes.locator("summary").evaluate_all(
+    assert notes.locator("summary .content-block-title-text").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Gamma warning", "Gamma history"]
     assert not notes.nth(0).locator(".content-block-note-body").is_visible()
@@ -1476,7 +1400,7 @@ def test_revised_concept_renders_derivation_steps_folded(shared_browser_graph):
 
     step = page.locator("#info_panel details.content-block-derivation_step")
     assert step.count() == 1
-    assert step.locator("summary").inner_text() == "Gamma algebra step"
+    assert step.locator("summary .content-block-title-text").inner_text() == "Gamma algebra step"
     assert not step.locator(".content-block-fold-body").is_visible()
 
     step.locator("summary").click()
@@ -2212,12 +2136,15 @@ def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(br
     assert "warning" in _visible_content_block_kinds(page)
 
     definition = page.locator("#info_panel #kg-toc-2-2-definition")
+    assert definition.locator(":scope > .content-block-body").count() == 0
     definition.locator(":scope > summary").click()
     assert definition.evaluate("el => el.open")
+    assert definition.locator(":scope > .content-block-body").count() == 1
 
-    page.locator("#kg_notes_edit_toggle").evaluate(
-        "el => { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); }"
-    )
+    page.locator(
+        "#info_panel #kg-toc-2-2-definition .kg-note-block-action"
+    ).click()
+    page.keyboard.press("Escape")
     assert page.locator("#info_panel #kg-toc-2-2-definition").evaluate("el => el.open")
 
 
@@ -2867,23 +2794,26 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
-    assert dialog.locator(".kg-splash-feature-grid section").count() == 7
-    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 7
+    assert dialog.locator(".kg-splash-feature-grid section").count() == 8
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 8
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 7
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 8
     assert (
         "The user model has been simplified and the UI space optimised for phones"
         in dialog.inner_text()
     )
     assert "Study" in dialog.inner_text()
-    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 4
+    assert "Personal layouts, notes, study-question records" in dialog.inner_text()
+    assert "synchronise through Google Drive" in dialog.inner_text()
+    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 5
     assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
+    assert "Manifolds and Coordinates exposition enhanced with motivating example" in dialog.inner_text()
     assert "General Relativity remains work in progress" not in dialog.inner_text()
     assert "tracks attempts and latest results locally" in dialog.inner_text()
-    assert "Edit layout" in dialog.inner_text()
-    assert "temporary by default" in dialog.inner_text().lower()
+    assert "Edit personal layout" in dialog.inner_text()
+    assert "After Fit++" in dialog.inner_text()
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"

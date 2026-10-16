@@ -4886,8 +4886,14 @@ var kgModuleGeometry = (function() {
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
+<<<<<<< HEAD
         var moduleFootprintCache = {};
         var graphCompletionStateCache = null;
+=======
+        var graphCompletionStateCache = null;
+        var graphOverlayDrawingSuspended = false;
+        var graphOverlayResumeTimer = null;
+>>>>>>> efficiency-profiling
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -5357,7 +5363,13 @@ var kgModuleGeometry = (function() {
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
+<<<<<<< HEAD
             refreshModuleFootprintGeometry(moduleId);
+=======
+            if (selectedModuleIsFolded(moduleId)) {
+              refreshFoldedModuleGeometry(moduleId);
+            }
+>>>>>>> efficiency-profiling
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -5669,6 +5681,10 @@ var kgModuleGeometry = (function() {
         }
 
         function drawGraphCompletionMarkers(ctx) {
+<<<<<<< HEAD
+=======
+          if (graphOverlayDrawingSuspended) { return; }
+>>>>>>> efficiency-profiling
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
               drawGraphCompletionTick(
@@ -5683,6 +5699,28 @@ var kgModuleGeometry = (function() {
           });
         }
 
+<<<<<<< HEAD
+=======
+        function suspendGraphOverlays() {
+          graphOverlayDrawingSuspended = true;
+          if (graphOverlayResumeTimer) {
+            clearTimeout(graphOverlayResumeTimer);
+            graphOverlayResumeTimer = null;
+          }
+        }
+
+        function resumeGraphOverlaysSoon() {
+          if (graphOverlayResumeTimer) {
+            clearTimeout(graphOverlayResumeTimer);
+          }
+          graphOverlayResumeTimer = setTimeout(function() {
+            graphOverlayResumeTimer = null;
+            graphOverlayDrawingSuspended = false;
+            if (network && network.redraw) { network.redraw(); }
+          }, 80);
+        }
+
+>>>>>>> efficiency-profiling
         function getSvgNodeImage(nodeId, svgText) {
           var cached = svgImageCache[nodeId];
           if (cached === null) {
@@ -8912,7 +8950,10 @@ var kgModuleGeometry = (function() {
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
           var geometry = moduleMemberGeometry(moduleId);
+<<<<<<< HEAD
           moduleFootprintCache[String(moduleId)] = geometry.footprint;
+=======
+>>>>>>> efficiency-profiling
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -8932,8 +8973,13 @@ var kgModuleGeometry = (function() {
 
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
+<<<<<<< HEAD
           moduleIds().forEach(function(moduleId) {
             refreshModuleFootprintGeometry(moduleId);
+=======
+          foldedModuleIdList().forEach(function(moduleId) {
+            refreshFoldedModuleGeometry(moduleId);
+>>>>>>> efficiency-profiling
           });
         }
 
@@ -13530,6 +13576,18 @@ var kgModuleGeometry = (function() {
         var graphCanvas = network.canvas && network.canvas.frame
           ? network.canvas.frame.canvas
           : null;
+        var graphInteractionSurface = graphCanvas || graphContainer;
+        graphInteractionSurface.addEventListener("touchstart", function() {
+          suspendGraphOverlays();
+        }, {capture: true, passive: true});
+        graphInteractionSurface.addEventListener("touchend", function(e) {
+          if (!e.touches || e.touches.length === 0) {
+            resumeGraphOverlaysSoon();
+          }
+        }, {capture: true, passive: true});
+        graphInteractionSurface.addEventListener("touchcancel", function() {
+          resumeGraphOverlaysSoon();
+        }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         var touchTapStart = null;

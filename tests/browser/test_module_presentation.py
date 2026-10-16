@@ -2,6 +2,64 @@ import pytest
 
 
 @pytest.mark.browser
+def test_repeated_folded_projection_reuses_module_label_measurements(repo_browser_graph):
+    page = repo_browser_graph.page
+    canvases_created = page.evaluate("""() => {
+      const original = document.createElement.bind(document);
+      let calls = 0;
+      document.createElement = function(tagName, options) {
+        if (String(tagName).toLowerCase() === "canvas") { calls += 1; }
+        return original(tagName, options);
+      };
+      try {
+        window.kgClearSelection();
+        return calls;
+      } finally {
+        document.createElement = original;
+      }
+    }""")
+
+    assert canvases_created == 0
+
+
+@pytest.mark.browser
+def test_stable_redraw_does_not_rescan_edges(repo_browser_graph):
+    page = repo_browser_graph.page
+    edge_reads = page.evaluate("""async () => {
+      const original = edges.get.bind(edges);
+      let calls = 0;
+      edges.get = function(...args) {
+        calls += 1;
+        return original(...args);
+      };
+      try {
+        network.redraw();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        calls = 0;
+        network.redraw();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        return calls;
+      } finally {
+        edges.get = original;
+      }
+    }""")
+
+    assert edge_reads == 0
+
+
+@pytest.mark.browser
+def test_tangent_space_graphic_caption_typesets_its_math(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.click_concept("math.tangent_space")
+
+    caption = page.locator("#info_panel .concept-graphic-caption")
+    caption.locator("mjx-container").first.wait_for()
+    assert caption.locator("mjx-container").count() == 2
+    assert "T_pM" not in caption.inner_text()
+    assert "two-dimensional" in caption.inner_text()
+
+
+@pytest.mark.browser
 def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
     shared_repo_browser_graph.open_control_section("kg_modules_section")
@@ -12,7 +70,7 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     figure = page.locator('#info_panel .module-figure')
     assert figure.count() == 1
     assert figure.locator('svg[viewBox="0 0 768 480"]').count() == 1
-    assert figure.locator('summary').inner_text().strip() == "Module graphic"
+    assert figure.locator('summary .kg-noteable-title').inner_text().strip() == "Module graphic"
     caption = figure.locator("figcaption")
     assert "light cone" in caption.inner_text().lower()
     svg_box = figure.locator('svg[viewBox="0 0 768 480"]').bounding_box()
@@ -27,6 +85,20 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     ).click()
     assert page.locator('#info_panel .module-figure').count() == 0
     assert page.locator('#info_panel .concept-toc a').filter(has_text="Module graphic").count() == 0
+
+
+@pytest.mark.browser
+def test_maths_one_module_content_has_no_blank_rendered_lines(shared_repo_browser_graph):
+    page = shared_repo_browser_graph.page
+    shared_repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    blank_lines = page.locator("#info_panel .concept-line").evaluate_all(
+        "lines => lines.filter(line => !line.textContent.trim()).length"
+    )
+    assert blank_lines == 0
 
 
 @pytest.mark.browser

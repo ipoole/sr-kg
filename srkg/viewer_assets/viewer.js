@@ -7,6 +7,7 @@
       var kgNodeLabelConfig = kgViewerConfig.nodeLabels || {};
       var kgInfoPanelConfig = kgViewerConfig.infoPanel || {};
       var kgStorageKeys = kgViewerConfig.storageKeys || {};
+      var kgCloudSyncConfig = kgViewerConfig.cloudSync || {};
       var edgeHoverWidth = kgViewerConfig.edgeHoverWidth;
 
       var DisplayScope = Object.freeze({
@@ -200,23 +201,31 @@
           displayScope: DisplayScope.FULL
         };
         var layoutEditModeEnabled = false;
-        var layoutEditPersistence = "temporary";
-        var temporaryLayout = {concepts: {}, modules: {}};
         var contextFitPrimedKey = null;
         var contextContractionState = null;
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
+        var moduleFootprintCache = {};
+        var conceptFootprintExtentsCache = {};
+        var fittedModuleLabelCache = {};
+        var graphCompletionStateCache = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
         var hoveredEdgeBeforeHover = null;
+        var renderedEdgeWidthsDirty = true;
+        var renderedEdgeWidthScale = null;
+        var renderedEdgeWidthHoverId = null;
         var lastGraphNodeClick = null;
         var suppressedNativeDoubleClick = null;
+        var suppressedTouchDoubleTapUntil = 0;
         var pendingContainedConceptModuleSelection = null;
         var svgImageCache = {};
+        var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
+        var detailedConceptRenderMinRadiusPx = 12;
         var nodeLabelWidth = kgNodeLabelConfig.width;
         var nodeLabelFontSize = kgNodeLabelConfig.fontSize;
         var tooltipTypesetTimer = null;
@@ -229,18 +238,21 @@
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
-        var noteEditingStorageKey = kgStorageKeys.noteEditing;
         var splashDismissedStorageKey = kgStorageKeys.splashDismissed;
         var studyProgressStorageKey = kgStorageKeys.studyProgress || "srkg.studyProgress.v1";
         var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
           "srkg.contentReadProgress.v1";
+        var graphCompletionMarkersStorageKey = "srkg.graphCompletionMarkers.v1";
         var userNotesState = loadUserNotes();
         var studyQuestionIndex = buildStudyQuestionIndex();
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
         var contentReadProgressState = loadContentReadProgress();
-        var noteEditingEnabled = loadNoteEditingPreference();
+        var graphCompletionMarkersEnabled =
+          safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
         var openUserNoteId = null;
+        var notePlacementSuppressClickUntil = 0;
+        var notePlacementPointerStart = null;
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
         var readingMode = "full";
@@ -254,6 +266,8 @@
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
         var pendingPersonalDataImport = null;
+        var googleDriveAuthorizer = null;
+        var personalDataSyncEngine = null;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -319,12 +333,8 @@
           return globalLayout.concepts[String(conceptId)] || null;
         }
 
-        function temporaryConceptPosition(conceptId) {
-          return temporaryLayout.concepts[String(conceptId)] || null;
-        }
-
         function effectiveConceptPosition(conceptId) {
-          return temporaryConceptPosition(conceptId) || globalConceptPosition(conceptId);
+          return globalConceptPosition(conceptId);
         }
 
         function setGlobalConceptPosition(conceptId, position) {
@@ -346,12 +356,8 @@
           return validLayoutPosition(entry.anchor) ? entry.anchor : null;
         }
 
-        function temporaryModuleAnchor(moduleId) {
-          return temporaryLayout.modules[String(moduleId)] || null;
-        }
-
         function effectiveModuleAnchor(moduleId) {
-          return temporaryModuleAnchor(moduleId) || globalModuleAnchor(moduleId);
+          return globalModuleAnchor(moduleId);
         }
 
         function nodeWithGlobalPosition(node) {
@@ -472,9 +478,7 @@
             var position = globalLayout.concepts[id];
             return {id: id, x: position.x, y: position.y};
           }));
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, false);
-          });
+          refreshModuleFootprints();
           updateNodeLabelPositions();
         }
 
@@ -492,7 +496,6 @@
           });
           safeLocalStorageRemove(globalLayoutStorageKey);
           globalLayout = buildInitialGlobalLayout(false);
-          temporaryLayout = {concepts: {}, modules: {}};
           applyGlobalLayoutPositions();
           updateLayoutControls();
         }
@@ -548,17 +551,25 @@
           document.getElementById("kg_layout_revision_warning").hidden = !status.revisionMismatch;
           document.getElementById("kg_layout_reset").disabled = !status.hasOverrides;
           var toggle = document.getElementById("kg_layout_edit_toggle");
-          var persistence = document.getElementById("kg_layout_edit_persistence");
           var message = document.getElementById("kg_layout_edit_message");
-          if (toggle) { toggle.checked = layoutEditModeEnabled; }
-          if (persistence) { persistence.value = layoutEditPersistence; }
+          if (toggle) {
+            toggle.checked = layoutEditModeEnabled;
+            toggle.disabled = Boolean(contextContractionState);
+            toggle.title = contextContractionState
+              ? "Personal layout editing resumes when the Fit++ arrangement ends"
+              : "";
+          }
           if (message) {
-            if (!layoutEditModeEnabled) {
+            if (contextContractionState && layoutEditModeEnabled) {
+              message.textContent =
+                "Personal editing is suspended during this temporary Fit++ arrangement.";
+            } else if (contextContractionState) {
+              message.textContent =
+                "Fit++ is temporary; drag context nodes to adjust this arrangement.";
+            } else if (!layoutEditModeEnabled) {
               message.textContent = "Node dragging is off.";
             } else if (viewerState.displayScope === DisplayScope.HIDDEN) {
-              message.textContent = "Layout editing is on. Show the graph to move nodes.";
-            } else if (layoutEditPersistence === "temporary") {
-              message.textContent = "Moves are temporary and are not saved.";
+              message.textContent = "Personal editing is on. Show the graph to move nodes.";
             } else {
               message.textContent = "Moves are saved to your personal layout in this browser.";
             }
@@ -570,34 +581,39 @@
         }
 
         function persistentLayoutEditingEnabled() {
-          return layoutEditModeEnabled && layoutEditPersistence === "personal" &&
-            viewerState.displayScope !== DisplayScope.HIDDEN;
-        }
-
-        function temporaryLayoutEditingEnabled() {
-          return layoutEditModeEnabled && layoutEditPersistence === "temporary" &&
+          return layoutEditModeEnabled && !contextContractionState &&
             viewerState.displayScope !== DisplayScope.HIDDEN;
         }
 
         function layoutDraggingEnabled() {
-          return layoutEditModeEnabled && viewerState.displayScope !== DisplayScope.HIDDEN;
+          return viewerState.displayScope !== DisplayScope.HIDDEN &&
+            (Boolean(contextContractionState) || persistentLayoutEditingEnabled());
+        }
+
+        function nodeDraggingEnabled(nodeId) {
+          var node = nodes.get(String(nodeId));
+          if (!node || node.hidden || viewerState.displayScope === DisplayScope.HIDDEN) {
+            return false;
+          }
+          if (contextContractionState) {
+            return Object.prototype.hasOwnProperty.call(
+              contextContractionState.finalPositions,
+              String(nodeId)
+            );
+          }
+          return persistentLayoutEditingEnabled();
+        }
+
+        function updateNodeDragLocks() {
+          if (!nodes) { return; }
+          nodes.update(nodes.get().map(function(node) {
+            var enabled = nodeDraggingEnabled(node.id);
+            return {id: node.id, fixed: {x: !enabled, y: !enabled}};
+          }));
         }
 
         function setLayoutEditingEnabled(enabled) {
-          var restoreTemporary = temporaryLayoutEditingEnabled() && !enabled;
           layoutEditModeEnabled = enabled === true;
-          updateGraphViewControls();
-          if (restoreTemporary) { discardTemporaryLayout(); }
-        }
-
-        function setLayoutEditPersistence(value) {
-          value = value === "personal" ? "personal" : "temporary";
-          var discardTemporary = layoutEditPersistence === "temporary" &&
-            value !== "temporary" && Object.keys(temporaryLayout.concepts).concat(
-              Object.keys(temporaryLayout.modules)
-            ).length > 0;
-          layoutEditPersistence = value;
-          if (discardTemporary) { discardTemporaryLayout(); }
           updateGraphViewControls();
         }
 
@@ -630,8 +646,21 @@
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
           if (draggedIds.length === 0) { return; }
           if (contextContractionState) {
+            draggedIds.forEach(function(nodeId) {
+              var position = graphPositionForNode(nodeId);
+              if (
+                position &&
+                Object.prototype.hasOwnProperty.call(
+                  contextContractionState.finalPositions,
+                  String(nodeId)
+                )
+              ) {
+                contextContractionState.finalPositions[String(nodeId)] =
+                  copyLayoutPosition(position);
+              }
+            });
             showContextNotice(
-              "Contracted context adjusted temporarily — navigating away restores the layout.",
+              "Temporary context arrangement adjusted — navigating away restores the layout.",
               "context-contracted"
             );
             return;
@@ -643,45 +672,29 @@
             var moduleId = moduleIdFromGraphNodeId(nodeId);
             if (moduleId && selectedModuleIsFolded(moduleId)) {
               var anchor = syncFoldedModulePosition(moduleId);
-              if (temporaryLayoutEditingEnabled()) {
-                temporaryLayout.modules[String(moduleId)] = copyLayoutPosition(anchor);
-              } else {
-                setGlobalModuleAnchor(moduleId, anchor);
-                restoreFoldedModuleMembers(moduleId);
-                affectedModules[moduleId] = true;
-              }
+              setGlobalModuleAnchor(moduleId, anchor);
+              restoreFoldedModuleMembers(moduleId);
+              affectedModules[moduleId] = true;
               return;
             }
             if (getConcept(nodeId)) {
-              if (temporaryLayoutEditingEnabled()) {
-                temporaryLayout.concepts[String(nodeId)] = copyLayoutPosition(position);
-              } else {
-                setGlobalConceptPosition(nodeId, position);
-              }
+              setGlobalConceptPosition(nodeId, position);
               var owner = moduleIdForConcept(nodeId);
               if (owner) { affectedModules[owner] = true; }
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, false);
+            refreshModuleFootprintGeometry(moduleId);
           });
-          if (temporaryLayoutEditingEnabled()) {
-            showContextNotice(
-              "Temporary layout adjusted — changes will be discarded when editing is turned off or the page is reloaded.",
-              "temporary-layout"
-            );
-          } else {
-            showContextNotice(
-              "Personal layout updated — saved in this browser.",
-              "personal-layout"
-            );
-          }
+          showContextNotice(
+            "Personal layout updated — saved in this browser.",
+            "personal-layout"
+          );
         }
 
         window.kgGlobalLayoutSnapshot = globalLayoutSnapshot;
         window.kgLayoutEditingEnabled = globalLayoutEditingEnabled;
         window.kgPersistentLayoutEditingEnabled = persistentLayoutEditingEnabled;
-        window.kgTemporaryLayoutEditingEnabled = temporaryLayoutEditingEnabled;
         window.kgLayoutDraggingEnabled = layoutDraggingEnabled;
         window.kgPersonalLayoutStatus = personalLayoutStatus;
         window.kgKeepPersonalLayout = keepPersonalLayout;
@@ -736,6 +749,7 @@
         }
 
         function buildNodeLabels() {
+          conceptFootprintExtentsCache = {};
           nodeLabelLayer.innerHTML = "";
           Object.keys(conceptData).forEach(function(id) {
             var el = document.createElement("div");
@@ -757,6 +771,7 @@
             MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
               console.warn("MathJax label typesetting failed:", err);
             }).then(function() {
+              conceptFootprintExtentsCache = {};
               updateNodeLabelPositions();
               refreshModuleFootprints();
             });
@@ -803,9 +818,9 @@
           if (!nodeTooltip || viewerState.displayScope === DisplayScope.HIDDEN) { return; }
           var moduleId = moduleIdFromGraphNodeId(nodeId);
           if (moduleId && getModule(moduleId)) {
-            nodeTooltip.innerHTML = moduleTooltipHtml(moduleId);
+            replaceTypesetContent(nodeTooltip, moduleTooltipHtml(moduleId));
           } else if (getConcept(nodeId)) {
-            nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+            replaceTypesetContent(nodeTooltip, conceptTooltipHtml(nodeId));
           } else {
             return;
           }
@@ -818,7 +833,7 @@
           var edge = edges.get(edgeId);
           if (!nodeTooltip || !edgeHoverableInCurrentView(edge)) { return; }
           hideConceptPreview(true);
-          nodeTooltip.innerHTML = edgeTooltipHtml(edge);
+          replaceTypesetContent(nodeTooltip, edgeTooltipHtml(edge));
           nodeTooltip.style.display = "block";
           positionNodeTooltip(pointer);
           scheduleTooltipTypeset();
@@ -831,7 +846,7 @@
           }
           if (nodeTooltip) {
             nodeTooltip.style.display = "none";
-            nodeTooltip.innerHTML = "";
+            replaceTypesetContent(nodeTooltip, "");
           }
         }
 
@@ -898,7 +913,9 @@
             var fill = color.background || "#999999";
             var border = color.border || "#333333";
             var concept = getConcept(node.id) || {};
-            var svgIcon = concept.svg_icon || concept.svg_graphic || "";
+            var svgIcon = options.renderGraphic === false
+              ? ""
+              : (concept.svg_icon || concept.svg_graphic || "");
             var svgImage = svgIcon ? getSvgNodeImage(node.id, svgIcon) : null;
 
             ctx.save();
@@ -947,6 +964,7 @@
 
         function drawVisibleNodes(ctx) {
           var positions = network.getPositions();
+          var scale = network.getScale();
           nodes.get().forEach(function(node) {
             if (node.hidden) { return; }
             if (node.isModuleNode) { return; }
@@ -956,10 +974,49 @@
 
             drawConceptFace(ctx, node, pos, {
               active: node.id === activeNodeId,
+              renderGraphic: (
+                (Number(node.visualSize) || Number(node.size) || 18) *
+                (node.id === activeNodeId ? activeNodeRadiusScale : 1) * scale
+              ) >= detailedConceptRenderMinRadiusPx,
               transient: Boolean(
                 transientConceptHighlight &&
                 transientConceptHighlight.nodeId === String(node.id)
               )
+            });
+          });
+        }
+
+        function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
+          ctx.save();
+          ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          ctx.moveTo(x - radius * 0.72, y - radius * 0.02);
+          ctx.lineTo(x - radius * 0.18, y + radius * 0.55);
+          ctx.lineTo(x + radius * 0.78, y - radius * 0.62);
+          ctx.strokeStyle = "rgba(255,255,255,0.78)";
+          ctx.lineWidth = Math.max(1.4, radius * 0.62);
+          ctx.stroke();
+          ctx.strokeStyle = colour;
+          ctx.lineWidth = Math.max(0.9, radius * 0.34);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        function drawGraphCompletionMarkers(ctx) {
+          var scale = network.getScale();
+          graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
+            marker.symbols.forEach(function(symbol) {
+              if (symbol.radius * scale < 2.5) { return; }
+              drawGraphCompletionTick(
+                ctx,
+                symbol.x,
+                symbol.y,
+                symbol.radius,
+                symbol.colour,
+                marker.opacity
+              );
             });
           });
         }
@@ -1089,6 +1146,9 @@
           }
           if (options.contentBlockId) {
             attrs += ' data-content-block-id="' + escapeHtml(options.contentBlockId) + '"';
+          }
+          if (options.noteBlock) {
+            attrs += ' data-note-block="true"';
           }
           if (options.open) {
             attrs += " open";
@@ -1233,10 +1293,16 @@
         function contentOwnerBlockIds(ownerType, ownerId) {
           ownerType = String(ownerType || "");
           ownerId = String(ownerId || "");
-          return Object.keys(contentBlockIndex).filter(function(blockId) {
+          var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
             var block = contentBlockIndex[blockId];
             return block.ownerType === ownerType && block.ownerId === ownerId;
           });
+          if (ownerType === "module") {
+            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
+              blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
+            });
+          }
+          return blockIds;
         }
 
         function contentOwnerReadComplete(ownerType, ownerId) {
@@ -1273,6 +1339,7 @@
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
+          if (network && network.redraw) { network.redraw(); }
           return true;
         }
 
@@ -1307,6 +1374,7 @@
           } catch (err) {
             // Progress remains usable in older browsers without CustomEvent.
           }
+          if (network && network.redraw) { network.redraw(); }
         }
 
         function recordStudyAttempt(questionId, outcome, attemptedAt) {
@@ -1360,6 +1428,183 @@
           resetAll: resetAllStudyProgress
         };
 
+        function conceptQuestionIds(conceptId) {
+          var concept = getConcept(conceptId) || {};
+          return (Array.isArray(concept.study_questions) ? concept.study_questions : [])
+            .map(function(question) {
+              return String(question && question.question_id || "");
+            })
+            .filter(Boolean);
+        }
+
+        function questionsComplete(questionIds) {
+          questionIds = (questionIds || []).filter(function(questionId, index, ids) {
+            return questionId && ids.indexOf(questionId) === index;
+          });
+          return questionIds.length > 0 && questionIds.every(function(questionId) {
+            var progress = studyProgressState.questions[questionId];
+            return progress && progress.lastOutcome === "correct";
+          });
+        }
+
+        function graphCompletionState(ownerType, ownerId) {
+          ownerType = String(ownerType || "");
+          ownerId = String(ownerId || "");
+          if (
+            !graphCompletionStateCache ||
+            graphCompletionStateCache.readState !== contentReadProgressState ||
+            graphCompletionStateCache.studyState !== studyProgressState
+          ) {
+            graphCompletionStateCache = {
+              readState: contentReadProgressState,
+              studyState: studyProgressState,
+              values: {}
+            };
+          }
+          var cacheKey = ownerType + "::" + ownerId;
+          if (graphCompletionStateCache.values[cacheKey]) {
+            return graphCompletionStateCache.values[cacheKey];
+          }
+          var questionIds = [];
+          if (ownerType === "concept") {
+            questionIds = conceptQuestionIds(ownerId);
+          } else if (ownerType === "module") {
+            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
+              questionIds = questionIds.concat(conceptQuestionIds(conceptId));
+            });
+          }
+          var state = {
+            read: contentOwnerReadComplete(ownerType, ownerId),
+            questions: questionsComplete(questionIds)
+          };
+          graphCompletionStateCache.values[cacheKey] = state;
+          return state;
+        }
+
+        function graphCompletionMarkerAnchor(node, positions) {
+          var nodeId = String(node.id);
+          var position = positions[nodeId];
+          if (!position) { return null; }
+          if (node.isModuleNode) {
+            var rendered = network.body.nodes[nodeId];
+            var shape = rendered && rendered.shape;
+            var width = shape ? Number(shape.width) : Number(node.moduleFootprintWidth);
+            var height = shape ? Number(shape.height) : Number(node.moduleFootprintHeight);
+            var left = shape ? Number(shape.left) : position.x - width / 2;
+            var top = shape ? Number(shape.top) : position.y - height / 2;
+            if (![width, height, left, top].every(Number.isFinite)) { return null; }
+            var moduleRadius = Math.max(16, Math.min(42, Math.min(width, height) * 0.025));
+            return {
+              kind: "module",
+              x: left + width - moduleRadius * 0.9,
+              y: top + height - moduleRadius * 0.9,
+              radius: moduleRadius
+            };
+          }
+          var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
+          var conceptRadius = nodeId === String(activeNodeId || "")
+            ? baseRadius * activeNodeRadiusScale
+            : baseRadius;
+          var markerRadius = Math.max(4, conceptRadius * 0.13);
+          return {
+            kind: "concept",
+            x: position.x + conceptRadius * 0.78 / Math.sqrt(2),
+            y: position.y + conceptRadius * 0.78 / Math.sqrt(2),
+            radius: markerRadius,
+            nodeX: position.x,
+            nodeY: position.y,
+            nodeRadius: conceptRadius
+          };
+        }
+
+        function graphCompletionSymbolLayout(marker) {
+          var completions = [];
+          if (marker.read) { completions.push({kind: "read", colour: "#1267c4"}); }
+          if (marker.questions) {
+            completions.push({kind: "questions", colour: "#238636"});
+          }
+          return completions.map(function(completion, index) {
+            if (marker.anchor.kind === "concept") {
+              var angle = completions.length === 1
+                ? Math.PI / 4
+                : (completion.kind === "read" ? Math.PI / 6 : Math.PI / 3);
+              var radialDistance = marker.anchor.nodeRadius * 0.88;
+              return {
+                kind: completion.kind,
+                colour: completion.colour,
+                x: marker.anchor.nodeX + Math.cos(angle) * radialDistance,
+                y: marker.anchor.nodeY + Math.sin(angle) * radialDistance,
+                radius: marker.anchor.radius
+              };
+            }
+            var reverseIndex = completions.length - index - 1;
+            var offset = reverseIndex * marker.anchor.radius * 1.45;
+            return {
+              kind: completion.kind,
+              colour: completion.colour,
+              x: marker.anchor.x - offset,
+              y: marker.anchor.y,
+              radius: marker.anchor.radius
+            };
+          });
+        }
+
+        function graphCompletionMarkersSnapshot() {
+          var result = {enabled: graphCompletionMarkersEnabled, markers: []};
+          if (!graphCompletionMarkersEnabled || !network || !nodes) { return result; }
+          var candidates = nodes.get().map(function(node) {
+            if (node.hidden) { return; }
+            var ownerType = node.isModuleNode ? "module" : "concept";
+            var ownerId = node.isModuleNode
+              ? moduleIdFromGraphNodeId(node.id)
+              : String(node.id);
+            if (!ownerId || (ownerType === "concept" && !getConcept(ownerId))) { return; }
+            var state = graphCompletionState(ownerType, ownerId);
+            if (!state.read && !state.questions) { return; }
+            return {
+              node: node,
+              ownerType: ownerType,
+              ownerId: ownerId,
+              state: state
+            };
+          }).filter(Boolean);
+          if (!candidates.length) { return result; }
+          var positions = network.getPositions(candidates.map(function(candidate) {
+            return candidate.node.id;
+          }));
+          candidates.forEach(function(candidate) {
+            var node = candidate.node;
+            var anchor = graphCompletionMarkerAnchor(node, positions);
+            if (!anchor) { return; }
+            var marker = {
+              nodeId: String(node.id),
+              ownerType: candidate.ownerType,
+              ownerId: candidate.ownerId,
+              read: candidate.state.read,
+              questions: candidate.state.questions,
+              opacity: node.opacity === undefined ? 1 : Number(node.opacity),
+              anchor: anchor
+            };
+            marker.symbols = graphCompletionSymbolLayout(marker);
+            result.markers.push(marker);
+          });
+          return result;
+        }
+
+        function setGraphCompletionMarkersEnabled(enabled) {
+          graphCompletionMarkersEnabled = enabled !== false;
+          safeLocalStorageSet(
+            graphCompletionMarkersStorageKey,
+            graphCompletionMarkersEnabled ? "true" : "false"
+          );
+          var toggle = document.getElementById("kg_graph_completion_markers");
+          if (toggle) { toggle.checked = graphCompletionMarkersEnabled; }
+          if (network && network.redraw) { network.redraw(); }
+        }
+
+        window.kgGraphCompletionMarkersSnapshot = graphCompletionMarkersSnapshot;
+        window.kgSetGraphCompletionMarkersEnabled = setGraphCompletionMarkersEnabled;
+
         function loadUserNotes() {
           return {
             version: 2,
@@ -1374,14 +1619,6 @@
           refreshNodeTooltips();
           renderNotesOverview();
           return saved;
-        }
-
-        function loadNoteEditingPreference() {
-          return safeLocalStorageGet(noteEditingStorageKey) === "true";
-        }
-
-        function saveNoteEditingPreference() {
-          safeLocalStorageSet(noteEditingStorageKey, noteEditingEnabled ? "true" : "false");
         }
 
         function splashDismissed() {
@@ -1542,6 +1779,20 @@
           return candidates;
         }
 
+        function canonicalNoteAnchor(targetType, targetId, blockId, sectionKey, blockIndex) {
+          blockId = String(blockId || "");
+          sectionKey = String(sectionKey || "");
+          blockIndex = Number(blockIndex) || 0;
+          if (!blockId && !sectionKey) { return null; }
+          var matches = noteAnchorCandidates(targetType, targetId).filter(function(candidate) {
+            var sameScope = blockId
+              ? candidate.blockId === blockId
+              : candidate.sectionKey === sectionKey;
+            return sameScope && candidate.blockIndex === blockIndex;
+          });
+          return matches.length === 1 ? matches[0] : null;
+        }
+
         function uniqueBestNoteAnchor(candidates, anchor) {
           var before = normalizeNoteAnchorContext(anchor.contextBefore);
           var after = normalizeNoteAnchorContext(anchor.contextAfter);
@@ -1576,6 +1827,18 @@
           return candidate;
         }
 
+        function repairResolvedNoteAnchor(note, candidate) {
+          if (!candidate) { return null; }
+          var anchor = note.anchor || (note.anchor = {});
+          anchor.blockId = candidate.blockId;
+          anchor.sectionKey = candidate.sectionKey;
+          anchor.blockIndex = candidate.blockIndex;
+          anchor.contextBefore = candidate.contextBefore;
+          anchor.contextAfter = candidate.contextAfter;
+          note.updatedAt = new Date().toISOString();
+          return candidate;
+        }
+
         function resolveNoteAnchor(note) {
           var candidates = noteAnchorCandidates(note.targetType, note.targetId);
           var anchor = note.anchor || {};
@@ -1590,7 +1853,29 @@
             });
           }
           if (scoped.length > 0) {
-            return uniqueBestNoteAnchor(scoped, anchor);
+            var resolved = uniqueBestNoteAnchor(scoped, anchor);
+            if (resolved) { return resolved; }
+
+            // Early module-note builds could retain a valid stable block and
+            // preceding paragraph while recording stale context fields. Use
+            // that authored paragraph identity as a constrained repair path.
+            var legacyAfter = normalizeNoteAnchorContext(anchor.afterText);
+            var paragraphMatches = scoped.filter(function(candidate) {
+              return legacyAfter &&
+                normalizeNoteAnchorContext(candidate.legacyAfter) === legacyAfter;
+            });
+            if (paragraphMatches.length === 1) {
+              return repairResolvedNoteAnchor(note, paragraphMatches[0]);
+            }
+            if (!legacyAfter && Number(anchor.blockIndex || 0) === 0) {
+              var leadingMatches = scoped.filter(function(candidate) {
+                return candidate.blockIndex === 0;
+              });
+              if (leadingMatches.length === 1) {
+                return repairResolvedNoteAnchor(note, leadingMatches[0]);
+              }
+            }
+            return null;
           }
           if (anchor.blockId || anchor.sectionKey) { return null; }
 
@@ -1632,8 +1917,12 @@
 
         function migrateUserNotesState() {
           if (!userNotesState || !Array.isArray(userNotesState.notes)) { return; }
+          var before = JSON.stringify(userNotesState.notes);
           userNotesState.version = 2;
           userNotesState.notes.forEach(function(note) { resolveNoteAnchor(note); });
+          if (JSON.stringify(userNotesState.notes) !== before) {
+            personalDataStore.replaceNotes(userNotesState.notes);
+          }
           safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
         }
 
@@ -1654,6 +1943,48 @@
           }).sort(function(a, b) {
             return String(a.createdAt).localeCompare(String(b.createdAt));
           });
+        }
+
+        function noteCountForBlock(targetType, targetId, blockId, sectionKey) {
+          blockId = String(blockId || "");
+          sectionKey = String(sectionKey || "");
+          return userNotesState.notes.filter(function(note) {
+            if (note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
+              return false;
+            }
+            var resolved = resolveNoteAnchor(note);
+            if (!resolved) { return false; }
+            return blockId
+              ? resolved.blockId === blockId
+              : resolved.sectionKey === sectionKey;
+          }).length;
+        }
+
+        function renderNoteBlockAction(targetType, targetId, sectionName, blockId, sectionKey, withReadToggle) {
+          var count = noteCountForBlock(targetType, targetId, blockId, sectionKey);
+          var hasNotes = count > 0;
+          var label = hasNotes
+            ? "Notes present in " + sectionName + "; add another note"
+            : "Add a note to " + sectionName;
+          return '<span class="kg-note-heading-actions' +
+            (withReadToggle ? " kg-note-heading-actions-with-read" : "") + '">' +
+            '<span class="kg-note-placement-instruction" role="status" aria-live="polite">' +
+            'Choose paragraph ↓<span class="kg-visually-hidden">. The note will appear ' +
+            'below it. Press Escape to cancel.</span>' +
+            "</span>" +
+            '<button type="button" class="kg-note-placement-cancel">Cancel</button>' +
+            '<button type="button" class="kg-note-block-action' +
+            (withReadToggle ? " kg-note-block-action-with-read" : "") +
+            '" data-note-state="' + (hasNotes ? "present" : "empty") +
+            '" data-target-type="' + escapeHtml(targetType) +
+            '" data-target-id="' + escapeHtml(targetId) +
+            '" data-section="' + escapeHtml(sectionName) +
+            '" data-anchor-block-id="' + escapeHtml(blockId || "") +
+            '" data-anchor-section-key="' + escapeHtml(sectionKey || "") +
+            '" aria-label="' + escapeHtml(label) + '" aria-pressed="false" title="' +
+            escapeHtml(label) + '">' +
+            '<span class="kg-note-bubble-glyph" aria-hidden="true">' +
+            "+</span></button></span>";
         }
 
         function findUserNote(noteId) {
@@ -1813,33 +2144,24 @@
         }
 
         function renderUserNote(note) {
-          if (noteEditingEnabled) {
-            var shouldOpen = note.id === openUserNoteId;
-            var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
-              (shouldOpen ? " open" : "") + ">";
-            html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
-            html += '<div class="user-note-editor">';
-            html += '<label>Title<input class="user-note-title-input" data-note-id="' +
-              escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
-            html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
-              escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
-            html += '<div class="user-note-actions">';
-            html += '<button type="button" class="user-note-close" data-note-id="' +
-              escapeHtml(note.id) + '">Close</button>';
-            html += '<button type="button" class="user-note-delete" data-note-id="' +
-              escapeHtml(note.id) + '">Delete</button>';
-            html += '<span class="user-note-saved">Saved locally</span>';
-            html += "</div></div>";
-            html += "</details>";
-            return html;
-          }
-          return renderFoldDown({
-            className: "user-note",
-            id: note.id,
-            title: note.title || "Untitled note",
-            bodyClass: "user-note-body",
-            bodyHtml: renderConceptText(note.body || "")
-          });
+          var shouldOpen = note.id === openUserNoteId;
+          var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
+            (shouldOpen ? " open" : "") + ">";
+          html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
+          html += '<div class="user-note-editor">';
+          html += '<label>Title<input class="user-note-title-input" data-note-id="' +
+            escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
+          html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
+            escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
+          html += '<div class="user-note-actions">';
+          html += '<button type="button" class="user-note-close" data-note-id="' +
+            escapeHtml(note.id) + '">Close</button>';
+          html += '<button type="button" class="user-note-delete" data-note-id="' +
+            escapeHtml(note.id) + '">Delete</button>';
+          html += '<span class="user-note-saved">Saved locally</span>';
+          html += "</div></div>";
+          html += "</details>";
+          return html;
         }
 
         function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec) {
@@ -1862,6 +2184,28 @@
             '" data-target-type="' + escapeHtml(targetType) +
             '" data-target-id="' + escapeHtml(targetId) + '">+ note</button>';
           html += "</div>";
+          return html;
+        }
+
+        function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text) {
+          var blocks = splitConceptBlocks(String(text || ""));
+          var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
+          var html = renderNotesAtAnchor(
+            targetType, targetId, sectionName, 0, "", specs[0]
+          );
+          blocks.forEach(function(textBlock, index) {
+            html += '<div class="concept-line">' +
+              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+              "</div>";
+            html += renderNotesAtAnchor(
+              targetType,
+              targetId,
+              sectionName,
+              index + 1,
+              String(textBlock.text || "").slice(0, 160),
+              specs[index + 1]
+            );
+          });
           return html;
         }
 
@@ -2005,8 +2349,14 @@
           if (!raw) { return ""; }
           var blocks = splitConceptBlocks(raw);
           var specs = noteAnchorSpecs(blockId, "legacy:" + sectionKey, title, raw);
-          var html = '<h3 id="' + escapeHtml(contentAnchorId(conceptId, title)) + '">' +
-            escapeHtml(title) + "</h3>";
+          var html = '<section class="legacy-content-block" data-note-block="true"' +
+            (blockId ? ' data-content-block-id="' + escapeHtml(blockId) + '"' : "") + ">";
+          html += '<h3 class="kg-noteable-heading" id="' +
+            escapeHtml(contentAnchorId(conceptId, title)) + '">' +
+            '<span class="kg-noteable-title">' + escapeHtml(title) + "</span>" +
+            renderNoteBlockAction(
+              "concept", conceptId, title, blockId, "legacy:" + sectionKey, false
+            ) + "</h3>";
           html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
           html += renderNotesAtAnchor("concept", conceptId, title, 0, "", specs[0]);
           blocks.forEach(function(block, index) {
@@ -2015,7 +2365,7 @@
               "concept", conceptId, title, index + 1, block.text.slice(0, 160), specs[index + 1]
             );
           });
-          html += "</div>";
+          html += "</div></section>";
           return html;
         }
 
@@ -2297,6 +2647,84 @@
           if (status) { status.textContent = String(message || ""); }
         }
 
+        function setCloudSyncStatus(message) {
+          var status = document.getElementById("kg_cloud_sync_status");
+          if (status) { status.textContent = String(message || ""); }
+        }
+
+        function showCloudSyncConnected(connected) {
+          document.getElementById("kg_cloud_sync_connect").hidden = connected;
+          document.getElementById("kg_cloud_sync_now").hidden = !connected;
+          document.getElementById("kg_cloud_sync_disconnect").hidden = !connected;
+        }
+
+        function initialiseGoogleDriveSync() {
+          var clientId = String(kgCloudSyncConfig.googleDriveClientId || "");
+          var connect = document.getElementById("kg_cloud_sync_connect");
+          if (!clientId) {
+            connect.disabled = true;
+            setCloudSyncStatus("Not configured in this copy of PhysicsKG.");
+            return;
+          }
+          googleDriveAuthorizer = window.kgCreateGoogleDriveAuthorizer({clientId: clientId});
+          setCloudSyncStatus("Not connected. Personal data remains in this browser.");
+        }
+
+        function connectGoogleDrive() {
+          if (!googleDriveAuthorizer) { return; }
+          setCloudSyncStatus("Connecting to Google Drive…");
+          googleDriveAuthorizer.connect().then(function() {
+            var provider = window.kgCreateGoogleDrivePersonalDataProvider({
+              token: googleDriveAuthorizer.token
+            });
+            personalDataSyncEngine = window.kgCreatePersonalDataSyncEngine({
+              store: personalDataStore,
+              archive: window.kgPersonalDataArchive,
+              provider: provider,
+              onStatus: function(status) { setCloudSyncStatus(status.detail); }
+            });
+            showCloudSyncConnected(true);
+            setCloudSyncStatus(
+              "Connected. Sync uses “" + provider.fileName + "” in your Google Drive."
+            );
+          }).catch(function(error) {
+            setCloudSyncStatus(error && error.message || "Could not connect to Google Drive.");
+          });
+        }
+
+        function syncPersonalDataNow() {
+          if (!personalDataSyncEngine) { return; }
+          writePersonalLayoutNow();
+          personalDataSyncEngine.synchronize().then(function() {
+            personalLayoutState = loadPersonalLayoutState();
+            globalLayout = buildInitialGlobalLayout();
+            applyGlobalLayoutPositions();
+            updateLayoutControls();
+            userNotesState = loadUserNotes();
+            studyProgressState = loadStudyProgress();
+            contentReadProgressState = loadContentReadProgress();
+            refreshNodeTooltips();
+            renderNotesOverview();
+            renderStudyScorecard();
+            refreshActiveConcept();
+            updateContentReadCompletionIndicators();
+            if (network && network.redraw) { network.redraw(); }
+          }).catch(function(error) {
+            if (error && error.code === "auth_required") {
+              showCloudSyncConnected(false);
+              personalDataSyncEngine = null;
+              setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
+            }
+          });
+        }
+
+        function disconnectGoogleDrive() {
+          if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
+          personalDataSyncEngine = null;
+          showCloudSyncConnected(false);
+          setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
+        }
+
         function personalDataSummaryText(summary) {
           return [
             summary.notes + " note" + (summary.notes === 1 ? "" : "s"),
@@ -2403,14 +2831,26 @@
           return html;
         }
 
+        function clearMathTypesetting(element) {
+          if (element && window.MathJax && MathJax.typesetClear) {
+            MathJax.typesetClear([element]);
+          }
+        }
+
+        function replaceTypesetContent(element, html) {
+          if (!element) { return; }
+          clearMathTypesetting(element);
+          if (element.id === "info_panel") {
+            lazyFoldedSectionBodies = {};
+          }
+          element.innerHTML = html;
+        }
+
         function typesetInfoPanel(options) {
           options = options || {};
           var panel = document.getElementById("info_panel");
           schedulePanelContentRefit();
           if (window.MathJax && MathJax.typesetPromise) {
-            if (MathJax.typesetClear) {
-              MathJax.typesetClear([panel]);
-            }
             MathJax.typesetPromise([panel]).catch(function(err) {
               console.warn("MathJax typesetting failed:", err);
             }).then(function() {
@@ -2494,6 +2934,7 @@
           if (document.getElementById("kg_workspace")) { return; }
           var panel = document.getElementById("info_panel");
           var contextPanel = document.getElementById("kg_graph_context_panel");
+          var emptyGraphState = document.getElementById("kg_empty_graph_state");
           var originalGraphParent = graphContainer.parentElement;
           var shell = document.createElement("main");
           var graphPane = document.createElement("section");
@@ -2524,6 +2965,9 @@
           shell.appendChild(detailsPane);
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
+          if (emptyGraphState) {
+            graphSurface.appendChild(emptyGraphState);
+          }
           if (contextPanel) {
             graphPane.insertBefore(contextPanel, graphSurface);
           }
@@ -2926,17 +3370,8 @@
               dragNodes: layoutDraggingEnabled()
             }});
           }
+          updateNodeDragLocks();
           updateLayoutControls();
-        }
-
-        function discardTemporaryLayout() {
-          temporaryLayout = {concepts: {}, modules: {}};
-          applyGlobalLayoutPositions();
-          renderGraphFromViewerState();
-          showContextNotice(
-            "Temporary layout discarded — Personal layout restored.",
-            "temporary-layout-discarded"
-          );
         }
 
         function getConcept(nodeId) {
@@ -3321,6 +3756,8 @@
             questionTypes: null
           }
         });
+        var lazyFoldedSectionBodies = {};
+        var nextLazyFoldedSectionId = 1;
 
         function currentReadingModeDefinition() {
           return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
@@ -3364,6 +3801,44 @@
           panel.querySelectorAll(":scope > details").forEach(function(section) {
             section.open = Boolean(section.id && retained[section.id]);
           });
+        }
+
+        function prepareLazyFoldedSections(panel) {
+          lazyFoldedSectionBodies = {};
+          if (!panel || readingMode !== "folded") { return; }
+          panel.querySelectorAll(":scope > details:not([open])").forEach(function(section) {
+            var summary = section.querySelector(":scope > summary");
+            if (!summary || !summary.nextSibling) { return; }
+            var key = "lazy-section-" + nextLazyFoldedSectionId;
+            nextLazyFoldedSectionId += 1;
+            var html = "";
+            while (summary.nextSibling) {
+              var node = summary.nextSibling;
+              html += node.nodeType === Node.ELEMENT_NODE
+                ? node.outerHTML
+                : (node.nodeValue || "");
+              node.remove();
+            }
+            lazyFoldedSectionBodies[key] = html;
+            section.setAttribute("data-lazy-section", key);
+          });
+        }
+
+        function materializeLazyFoldedSection(section, beforeOpen) {
+          if (!section || (!section.open && beforeOpen !== true)) { return false; }
+          var key = section.getAttribute("data-lazy-section");
+          if (!key || !Object.prototype.hasOwnProperty.call(lazyFoldedSectionBodies, key)) {
+            return false;
+          }
+          section.insertAdjacentHTML("beforeend", lazyFoldedSectionBodies[key]);
+          delete lazyFoldedSectionBodies[key];
+          section.removeAttribute("data-lazy-section");
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([section]).catch(function(err) {
+              console.warn("MathJax folded-section typesetting failed:", err);
+            }).then(schedulePanelContentRefit);
+          }
+          return true;
         }
 
         function contentBlockPolicyFor(kind) {
@@ -3446,7 +3921,7 @@
             .replace(/^-+|-+$/g, "") || "unknown";
         }
 
-        function renderContentBlockHeading(block, title) {
+        function renderContentBlockHeading(targetType, targetId, block, title) {
           var policy = contentBlockPolicyFor(block.kind);
           return '<span class="content-block-title-line">' +
             '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
@@ -3456,7 +3931,15 @@
             '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
             escapeHtml(policy.label) +
             '"></span></span>' +
+            renderNoteBlockAction(
+              targetType, targetId, title, block.block_id, "", true
+            ) +
             renderContentBlockReadToggle(block.block_id, title);
+        }
+
+        function renderNoteableHeading(targetType, targetId, title, sectionKey) {
+          return '<span class="kg-noteable-title">' + renderConceptText(title) + "</span>" +
+            renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
         }
 
         function renderContentBlockReadToggle(blockId, title) {
@@ -3473,6 +3956,9 @@
           var policy = contentBlockPolicyFor(block.kind);
           var anchorId = contentAnchorId(conceptId, title);
           var bodyClass = "concept-body content-block-body";
+          var bodyHtml = renderNoteAnchoredBody(
+            "concept", conceptId, title, block.block_id, "", block.body
+          );
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
             if (policy.note) {
@@ -3481,35 +3967,20 @@
             return renderFoldDown({
               anchorId: anchorId,
               contentBlockId: block.block_id,
+              noteBlock: true,
               className: contentBlockClassName(block, policy),
-              summaryHtml: renderContentBlockHeading(block, title),
+              summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
               bodyClass: bodyClass,
-              bodyHtml: renderConceptText(block.body)
+              bodyHtml: bodyHtml
             });
           }
-          var blocks = splitConceptBlocks(block.body);
-          var specs = noteAnchorSpecs(block.block_id, "", title, block.body);
-          var bodyHtml = "";
-          bodyHtml += renderNotesAtAnchor("concept", conceptId, title, 0, "", specs[0]);
-          blocks.forEach(function(textBlock, index) {
-            bodyHtml += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-            bodyHtml += renderNotesAtAnchor(
-              "concept",
-              conceptId,
-              title,
-              index + 1,
-              textBlock.text.slice(0, 160),
-              specs[index + 1]
-            );
-          });
           return renderFoldDown({
             anchorId: anchorId,
             contentBlockId: block.block_id,
+            noteBlock: true,
             className: contentBlockClassName(block, policy),
             open: true,
-            summaryHtml: renderContentBlockHeading(block, title),
+            summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
             bodyClass: bodyClass,
             bodyHtml: bodyHtml
           });
@@ -3791,6 +4262,10 @@
         }
 
         function conceptFootprintExtents(conceptId) {
+          conceptId = String(conceptId);
+          if (conceptFootprintExtentsCache[conceptId]) {
+            return Object.assign({}, conceptFootprintExtentsCache[conceptId]);
+          }
           var node = originalNodes[String(conceptId)] || nodes.get(conceptId) || {};
           var radius = Number(node.visualSize) || Number(node.size) || 100;
           var labelHeight = nodeLabelFontSize * 3.2;
@@ -3809,12 +4284,14 @@
             labelWidth = Math.max(labelWidth, probe.scrollWidth);
             probe.remove();
           }
-          return {
+          var extents = {
             left: Math.max(radius, labelWidth / 2),
             right: Math.max(radius, labelWidth / 2),
             top: radius,
             bottom: radius + 4 + labelHeight
           };
+          conceptFootprintExtentsCache[conceptId] = extents;
+          return Object.assign({}, extents);
         }
 
         function moduleFootprint(moduleId) {
@@ -3825,22 +4302,13 @@
 
         window.kgModuleFootprint = moduleFootprint;
 
-        function refreshFoldedModuleGeometry(moduleId, preserveTemporary) {
+        function refreshFoldedModuleGeometry(moduleId) {
           var oldState = foldedModules[String(moduleId)];
           if (!oldState) { return; }
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
-          var oldPosition = preserveTemporary && temporaryModuleAnchor(moduleId) && oldNode
-            ? graphPositionForNode(nodeId)
-            : null;
           var geometry = moduleMemberGeometry(moduleId);
-          if (oldPosition) {
-            geometry.position = {
-              x: oldPosition.x - geometry.footprint.offset.x,
-              y: oldPosition.y - geometry.footprint.offset.y
-            };
-            temporaryLayout.modules[String(moduleId)] = copyLayoutPosition(geometry.position);
-          }
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -3850,15 +4318,29 @@
           }
         }
 
+        function refreshModuleFootprintGeometry(moduleId) {
+          if (selectedModuleIsFolded(moduleId)) {
+            refreshFoldedModuleGeometry(moduleId);
+          } else {
+            moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
+          }
+        }
+
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId, true);
+          moduleIds().forEach(function(moduleId) {
+            refreshModuleFootprintGeometry(moduleId);
           });
+        }
+
+        function refreshModuleFootprintsAfterFontLoad() {
+          conceptFootprintExtentsCache = {};
+          refreshModuleFootprints();
         }
 
         function foldModule(moduleId) {
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (!globalModuleAnchor(moduleId)) {
             setGlobalModuleAnchor(moduleId, geometry.position);
@@ -3898,16 +4380,12 @@
         }
 
         function restoreFoldedModuleMembers(moduleId) {
-          if (!persistentLayoutEditingEnabled() && !temporaryLayoutEditingEnabled()) { return; }
+          if (!persistentLayoutEditingEnabled()) { return; }
           moduleId = String(moduleId);
           var state = foldedModules[moduleId];
           if (!state || !state.position || !state.memberOffsets) { return; }
           syncFoldedModulePosition(moduleId);
-          if (temporaryLayoutEditingEnabled()) {
-            temporaryLayout.modules[moduleId] = copyLayoutPosition(state.position);
-          } else {
-            setGlobalModuleAnchor(moduleId, state.position);
-          }
+          setGlobalModuleAnchor(moduleId, state.position);
           var updates = [];
           moduleMemberIds(getModule(moduleId)).forEach(function(id) {
             var offset = state.memberOffsets[String(id)] || {x: 0, y: 0};
@@ -3915,11 +4393,7 @@
               x: state.position.x + offset.x,
               y: state.position.y + offset.y
             };
-            if (temporaryLayoutEditingEnabled()) {
-              temporaryLayout.concepts[String(id)] = copyLayoutPosition(position);
-            } else {
-              setGlobalConceptPosition(id, position);
-            }
+            setGlobalConceptPosition(id, position);
             if (nodes.get(id)) {
               updates.push({id: id, x: position.x, y: position.y});
             }
@@ -3951,6 +4425,18 @@
 
         function fittedModuleLabel(title, memberCount, width, height, options) {
           options = options || {};
+          var cacheKey = JSON.stringify([
+            String(title), Number(memberCount), Number(width), Number(height),
+            Number(options.countFontSize || 80),
+            Number(options.lineWidthFraction || 0.88),
+            Number(options.titleFontCap || 160),
+            Number(options.availableHeight || 0),
+            Number(options.lineHeightFactor || 1.25),
+            Number(options.verticalShift || 0)
+          ]);
+          if (fittedModuleLabelCache[cacheKey]) {
+            return Object.assign({}, fittedModuleLabelCache[cacheKey]);
+          }
           var context = document.createElement("canvas").getContext("2d");
           var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
           var countFontSize = options.countFontSize || 80;
@@ -3988,7 +4474,7 @@
           }
           var titleLines = linesAt(low);
           var verticalShift = Number(options.verticalShift) || 0;
-          return {
+          var result = {
             text: titleLines.map(function(line) {
               return "<b>" + escapeHtml(line) + "</b>";
             }).join("\n") + "\n" + countLabel,
@@ -4000,6 +4486,8 @@
             titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
             countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
           };
+          fittedModuleLabelCache[cacheKey] = result;
+          return Object.assign({}, result);
         }
 
         function moduleGraphicLayout(width, height) {
@@ -4063,6 +4551,55 @@
         function moduleCornerRadius(width, height) {
           return Math.min(width, height) * 0.18;
         }
+
+        function expandedModuleOutlineSnapshot() {
+          return moduleIds().filter(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) { return false; }
+            return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
+              var node = nodes.get(conceptId);
+              return node && !node.hidden;
+            });
+          }).map(function(moduleId) {
+            var footprint = moduleFootprintCache[String(moduleId)] || moduleFootprint(moduleId);
+            moduleFootprintCache[String(moduleId)] = footprint;
+            return {
+              moduleId: moduleId,
+              left: footprint.left,
+              right: footprint.right,
+              top: footprint.top,
+              bottom: footprint.bottom,
+              width: footprint.width,
+              height: footprint.height,
+              radius: moduleCornerRadius(footprint.width, footprint.height),
+              colour: "#6b7280",
+              opacity: 0.3,
+              lineWidth: 1.75
+            };
+          });
+        }
+
+        function drawExpandedModuleOutlines(ctx) {
+          var scale = network && network.getScale ? Number(network.getScale()) : 1;
+          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            ctx.save();
+            ctx.globalAlpha = outline.opacity;
+            ctx.strokeStyle = outline.colour;
+            ctx.lineWidth = outline.lineWidth / scale;
+            roundedRectPath(
+              ctx,
+              outline.left,
+              outline.top,
+              outline.width,
+              outline.height,
+              outline.radius
+            );
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
         function moduleGraphicCornerRadius(width, height, layout) {
           layout = layout || moduleGraphicLayout(width, height);
@@ -4530,6 +5067,10 @@
           );
         }
 
+        function touchDoubleTapWindowIsActive() {
+          return Date.now() <= suppressedTouchDoubleTapUntil;
+        }
+
         function recentGraphClickNodeId(maxAgeMs) {
           if (!lastGraphNodeClick || Date.now() - lastGraphNodeClick.time > maxAgeMs) {
             return null;
@@ -4648,21 +5189,9 @@
           var policy = contentBlockPolicyFor(block.kind);
           var anchorId = contentAnchorId(moduleId, title);
           var bodyClass = "concept-body content-block-body";
-          var specs = noteAnchorSpecs(block.block_id, "", title, block.body);
-          var bodyHtml = renderNotesAtAnchor("module", moduleId, title, 0, "", specs[0]);
-          splitConceptBlocks(block.body).forEach(function(textBlock, index) {
-            bodyHtml += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-            bodyHtml += renderNotesAtAnchor(
-              "module",
-              moduleId,
-              title,
-              index + 1,
-              String(textBlock.text || "").slice(0, 160),
-              specs[index + 1]
-            );
-          });
+          var bodyHtml = renderNoteAnchoredBody(
+            "module", moduleId, title, block.block_id, "", block.body
+          );
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
             if (policy.note) {
@@ -4671,8 +5200,9 @@
             return renderFoldDown({
               anchorId: anchorId,
               contentBlockId: block.block_id,
+              noteBlock: true,
               className: contentBlockClassName(block, policy) + " module-content-block",
-              summaryHtml: renderContentBlockHeading(block, title),
+              summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
               bodyClass: bodyClass,
               bodyHtml: bodyHtml
             });
@@ -4681,9 +5211,10 @@
           return renderFoldDown({
             anchorId: anchorId,
             contentBlockId: block.block_id,
+            noteBlock: true,
             className: contentBlockClassName(block, policy) + " module-content-block",
             open: true,
-            summaryHtml: renderContentBlockHeading(block, title),
+            summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
             bodyClass: bodyClass,
             bodyHtml: bodyHtml
           });
@@ -4818,9 +5349,12 @@
           );
           return renderFoldDown({
             anchorId: contentAnchorId(moduleId, "Graphic"),
+            noteBlock: true,
             className: "concept-figure module-figure",
             open: true,
-            title: "Module graphic",
+            summaryHtml: renderNoteableHeading(
+              "module", moduleId, "Module graphic", "graphic"
+            ),
             bodyTag: "figure",
             bodyClass: "concept-figure-body module-figure-body",
             bodyHtml: bodyHtml
@@ -4850,18 +5384,18 @@
 
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             moduleChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
-          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           renderNotesOverview();
           openUserNoteId = null;
           var initialItem = initialTocItem(tocItems);
@@ -4887,13 +5421,54 @@
           );
           return renderFoldDown({
             anchorId: contentAnchorId(conceptId, "Graphic"),
+            noteBlock: true,
             className: "concept-figure",
             open: true,
-            title: "Graphic",
+            summaryHtml: renderNoteableHeading("concept", conceptId, "Graphic", "graphic"),
             bodyTag: "figure",
             bodyClass: "concept-figure-body",
             bodyHtml: bodyHtml
           });
+        }
+
+        function cancelNotePlacement(block, restoreFocus) {
+          block = block || document.querySelector('#info_panel [data-note-placement="active"]');
+          if (!block) { return; }
+          var action = block.querySelector(
+            ":scope > summary .kg-note-block-action, " +
+            ":scope > .kg-noteable-heading .kg-note-block-action"
+          );
+          block.removeAttribute("data-note-placement");
+          block.querySelectorAll(".concept-line").forEach(function(line) {
+            line.removeAttribute("tabindex");
+            line.removeAttribute("aria-label");
+          });
+          if (action) { action.setAttribute("aria-pressed", "false"); }
+          if (restoreFocus && action) {
+            window.requestAnimationFrame(function() { action.focus(); });
+          }
+        }
+
+        function beginNotePlacement(action) {
+          var block = action && action.closest("#info_panel > [data-note-block]");
+          if (!block) { return; }
+          cancelNotePlacement();
+          if (block.tagName === "DETAILS") { block.open = true; }
+          var lines = block.querySelectorAll(".concept-line");
+          if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
+            var blockNoteButton = block.querySelector(".kg-add-note");
+            if (blockNoteButton) { blockNoteButton.click(); }
+            return;
+          }
+          block.setAttribute("data-note-placement", "active");
+          action.setAttribute("aria-pressed", "true");
+          lines.forEach(function(line) {
+            line.setAttribute("tabindex", "0");
+            line.setAttribute("aria-label", "Place note after this paragraph");
+          });
+          if (lines.length > 0) {
+            window.requestAnimationFrame(function() { lines[0].focus(); });
+          }
         }
 
         function openTargetForToc(target) {
@@ -5295,7 +5870,7 @@
           conceptPreview.classList.remove("concept-preview-pinned");
           clearTransientConceptHighlight();
           conceptPreview.style.display = "none";
-          conceptPreview.innerHTML = "";
+          replaceTypesetContent(conceptPreview, "");
         }
 
         function scheduleConceptPreviewHide() {
@@ -5315,7 +5890,7 @@
           cancelConceptPreviewHide();
           conceptPreviewPinned = Boolean(options.pinned);
           conceptPreviewAnchor = link;
-          conceptPreview.innerHTML = conceptPreviewHtml(id);
+          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id));
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
           positionConceptPreview(link);
           applyTransientConceptHighlight(id);
@@ -5858,6 +6433,13 @@
           if (customEdit) {
             customEdit.hidden = viewerState.contextRule.preset !== ContextPreset.CUSTOM;
           }
+          updateFitApplyButton();
+          var emptyGraphState = document.getElementById("kg_empty_graph_state");
+          if (emptyGraphState) {
+            emptyGraphState.hidden = !(
+              viewerState.displayScope === DisplayScope.CONTEXT && noSelection
+            );
+          }
           var representedCount = 0;
           var representedModuleCount = 0;
           foldedModuleIdList().forEach(function(moduleId) {
@@ -6050,16 +6632,37 @@
         function updateFitApplyButton() {
           var button = document.getElementById("kg_fit_apply");
           if (!button) { return; }
-          var primed = Boolean(contextFitPrimedKey);
+          var fitSelect = document.getElementById("kg_fit_select");
+          var target = fitSelect ? fitSelect.value : "context";
+          var selection = viewerSelectionSnapshot();
+          var hasTarget = false;
+          if (target === "reveal" || target === "selection") {
+            hasTarget = selection.type !== "none" &&
+              selectionRepresentationNodeIds(selection).length > 0;
+          } else if (target === "displayed") {
+            hasTarget = Boolean(lastGraphRender && lastGraphRender.fitIds.length > 0);
+          } else {
+            hasTarget = selection.type !== "none" && representedNodeIds(
+              lastGraphRender ? lastGraphRender.contextNodeIds : []
+            ).length > 0;
+          }
+          var primed = hasTarget && Boolean(contextFitPrimedKey);
+          button.disabled = !hasTarget;
           button.textContent = primed ? "Fit++" : "Fit";
           button.setAttribute("data-fit-action", primed ? "contract" : "fit");
           button.setAttribute(
             "aria-label",
-            primed ? "Temporarily contract and fit this context" : "Fit selected target"
+            !hasTarget
+              ? "No available objects to fit"
+              : primed ? "Temporarily contract and fit this context" : "Fit selected target"
           );
-          button.title = primed
-            ? "Temporarily contract this context around the selection"
-            : "";
+          button.title = !hasTarget
+            ? (target === "displayed"
+              ? "Nothing is displayed to fit"
+              : "Select a concept or module to use this frame")
+            : primed
+              ? "Temporarily contract this context around the selection"
+              : "";
         }
 
         function clearContextFitPriming() {
@@ -6076,6 +6679,11 @@
             }
           });
           contextContractionState = null;
+          var notice = document.getElementById("kg_context_notice");
+          if (notice && notice.getAttribute("data-kind") === "context-contracted") {
+            showContextNotice("", "context-contracted");
+          }
+          updateGraphViewControls();
           updateNodeLabelPositions();
           return true;
         }
@@ -6097,6 +6705,11 @@
             restoreContextContractionPositions();
           } else {
             contextContractionState = null;
+            var notice = document.getElementById("kg_context_notice");
+            if (notice && notice.getAttribute("data-kind") === "context-contracted") {
+              showContextNotice("", "context-contracted");
+            }
+            updateGraphViewControls();
           }
           clearContextFitPriming();
         }
@@ -6104,7 +6717,6 @@
         function contextContractionCandidate() {
           var selection = viewerSelectionSnapshot();
           if (
-            viewerState.displayScope !== DisplayScope.CONTEXT ||
             selection.type === "none" ||
             !lastGraphRender
           ) {
@@ -6119,14 +6731,88 @@
             return visibleGraphNode(id) && values.indexOf(id) === index;
           });
           if (nodeIds.length < 2) { return null; }
+          var nodeKeep = {};
+          var adjacency = {};
+          nodeIds.forEach(function(nodeId) {
+            nodeKeep[nodeId] = true;
+            adjacency[nodeId] = [];
+          });
+          (lastGraphRender.contextEdgeIds || []).forEach(function(edgeId) {
+            var edge = originalEdges[String(edgeId)] || edges.get(String(edgeId));
+            if (!edge) { return; }
+            var fromIds = representedNodeIds([String(edge.from)]);
+            var toIds = representedNodeIds([String(edge.to)]);
+            var from = fromIds.length === 1 ? String(fromIds[0]) : null;
+            var to = toIds.length === 1 ? String(toIds[0]) : null;
+            if (!from || !to || from === to || !nodeKeep[from] || !nodeKeep[to]) {
+              return;
+            }
+            if (adjacency[from].indexOf(to) === -1) { adjacency[from].push(to); }
+            if (adjacency[to].indexOf(from) === -1) { adjacency[to].push(from); }
+          });
+          Object.keys(adjacency).forEach(function(nodeId) {
+            adjacency[nodeId].sort();
+          });
           return {
             anchorId: anchorId,
             nodeIds: nodeIds,
+            adjacency: adjacency,
             key: JSON.stringify({
               selection: selection,
               contextRule: viewerState.contextRule,
               nodeIds: nodeIds.slice().sort()
             })
+          };
+        }
+
+        function contractionGraphPlan(candidate) {
+          var depthByNode = {};
+          var parentCandidates = {};
+          var queue = [candidate.anchorId];
+          depthByNode[candidate.anchorId] = 0;
+
+          while (queue.length > 0) {
+            var current = queue.shift();
+            var nextDepth = depthByNode[current] + 1;
+            (candidate.adjacency[current] || []).forEach(function(neighbour) {
+              if (depthByNode[neighbour] === undefined) {
+                depthByNode[neighbour] = nextDepth;
+                parentCandidates[neighbour] = [current];
+                queue.push(neighbour);
+              } else if (
+                depthByNode[neighbour] === nextDepth &&
+                parentCandidates[neighbour].indexOf(current) === -1
+              ) {
+                parentCandidates[neighbour].push(current);
+              }
+            });
+          }
+          Object.keys(parentCandidates).forEach(function(nodeId) {
+            parentCandidates[nodeId].sort();
+          });
+          return {
+            depthByNode: depthByNode,
+            parentCandidates: parentCandidates,
+            maximumDepth: Object.keys(depthByNode).reduce(function(maximum, nodeId) {
+              return Math.max(maximum, depthByNode[nodeId]);
+            }, 0)
+          };
+        }
+
+        window.kgContractionGraphPlan = contractionGraphPlan;
+
+        function reducedContractionExtents(extents) {
+          var left = Number(extents.left) * 0.9;
+          var right = Number(extents.right) * 0.9;
+          var top = Number(extents.top);
+          var bottom = Number(extents.bottom) * 0.9;
+          return {
+            left: left,
+            right: right,
+            top: top,
+            bottom: bottom,
+            width: left + right,
+            height: top + bottom
           };
         }
 
@@ -6136,14 +6822,14 @@
           if (node.isModuleNode === true || moduleIdFromGraphNodeId(nodeId)) {
             var width = Number(node.moduleFootprintWidth) || 1;
             var height = Number(node.moduleFootprintHeight) || 1;
-            return {
+            return reducedContractionExtents({
               left: width / 2,
               right: width / 2,
               top: height / 2,
               bottom: height / 2,
               width: width,
               height: height
-            };
+            });
           }
           var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
           var radius = baseRadius;
@@ -6182,14 +6868,14 @@
               radius + (3 / scale) + renderedLabelHeight
             );
           }
-          return {
+          return reducedContractionExtents({
             left: left,
             right: right,
             top: top,
             bottom: bottom,
             width: left + right,
             height: top + bottom
-          };
+          });
         }
 
         function contractionClearance(left, right) {
@@ -6308,76 +6994,102 @@
           });
           var anchorPosition = originalPositions[candidate.anchorId];
           if (!validLayoutPosition(anchorPosition)) { return false; }
-          var ordered = candidate.nodeIds.filter(function(id) {
-            return id !== candidate.anchorId && validLayoutPosition(originalPositions[id]);
-          }).sort(function(leftId, rightId) {
-            var left = originalPositions[leftId];
-            var right = originalPositions[rightId];
-            var leftDistance = Math.hypot(
-              left.x - anchorPosition.x,
-              left.y - anchorPosition.y
-            );
-            var rightDistance = Math.hypot(
-              right.x - anchorPosition.x,
-              right.y - anchorPosition.y
-            );
-            return leftDistance - rightDistance || String(leftId).localeCompare(String(rightId));
-          });
+          var plan = contractionGraphPlan(candidate);
           var placed = [{
             id: candidate.anchorId,
             position: copyLayoutPosition(anchorPosition),
             extents: contractionNodeExtents(candidate.anchorId)
           }];
           var finalPositions = {};
+          var parentByNode = {};
           finalPositions[candidate.anchorId] = copyLayoutPosition(anchorPosition);
 
-          ordered.forEach(function(nodeId) {
-            var start = originalPositions[nodeId];
-            var extents = contractionNodeExtents(nodeId);
-            var collisionFreeStart = clearInitialContractionCollision(
-              start,
-              anchorPosition,
-              extents,
-              placed
-            );
-            var movedOutward = Math.hypot(
-              collisionFreeStart.x - start.x,
-              collisionFreeStart.y - start.y
-            ) > 0.001;
-            var stop = 1;
-            if (!movedOutward) {
-              placed.forEach(function(obstacle) {
-                var entry = contractionCollisionEntry(
-                  start,
-                  anchorPosition,
-                  extents,
-                  obstacle
-                );
-                if (entry !== null) { stop = Math.min(stop, entry); }
+          for (var depth = 1; depth <= plan.maximumDepth; depth += 1) {
+            var layer = candidate.nodeIds.filter(function(nodeId) {
+              return plan.depthByNode[nodeId] === depth &&
+                validLayoutPosition(originalPositions[nodeId]);
+            }).map(function(nodeId) {
+              var start = originalPositions[nodeId];
+              var candidates = (plan.parentCandidates[nodeId] || []).filter(function(parentId) {
+                return validLayoutPosition(finalPositions[parentId]);
               });
-              stop = Math.max(0, stop - 0.0001);
-            }
-            var finalPosition = movedOutward ? collisionFreeStart : {
-              x: start.x + (anchorPosition.x - start.x) * stop,
-              y: start.y + (anchorPosition.y - start.y) * stop
-            };
-            network.moveNode(nodeId, finalPosition.x, finalPosition.y);
-            finalPositions[nodeId] = finalPosition;
-            placed.push({id: nodeId, position: finalPosition, extents: extents});
-          });
+              var parentId = candidates.sort(function(leftId, rightId) {
+                var left = finalPositions[leftId];
+                var right = finalPositions[rightId];
+                var leftDistance = Math.hypot(start.x - left.x, start.y - left.y);
+                var rightDistance = Math.hypot(start.x - right.x, start.y - right.y);
+                return leftDistance - rightDistance ||
+                  String(leftId).localeCompare(String(rightId));
+              })[0];
+              var parentPosition = parentId ? finalPositions[parentId] : null;
+              return {
+                nodeId: nodeId,
+                parentId: parentId,
+                parentPosition: parentPosition,
+                distance: parentPosition
+                  ? Math.hypot(start.x - parentPosition.x, start.y - parentPosition.y)
+                  : Infinity
+              };
+            }).filter(function(item) {
+              return Boolean(item.parentId && item.parentPosition);
+            }).sort(function(left, right) {
+              return left.distance - right.distance ||
+                String(left.nodeId).localeCompare(String(right.nodeId));
+            });
+
+            layer.forEach(function(item) {
+              var nodeId = item.nodeId;
+              var start = originalPositions[nodeId];
+              var target = item.parentPosition;
+              var extents = contractionNodeExtents(nodeId);
+              var collisionFreeStart = clearInitialContractionCollision(
+                start,
+                target,
+                extents,
+                placed
+              );
+              var movedOutward = Math.hypot(
+                collisionFreeStart.x - start.x,
+                collisionFreeStart.y - start.y
+              ) > 0.001;
+              var stop = 1;
+              if (!movedOutward) {
+                placed.forEach(function(obstacle) {
+                  var entry = contractionCollisionEntry(
+                    start,
+                    target,
+                    extents,
+                    obstacle
+                  );
+                  if (entry !== null) { stop = Math.min(stop, entry); }
+                });
+                stop = Math.max(0, stop - 0.0001);
+              }
+              var finalPosition = movedOutward ? collisionFreeStart : {
+                x: start.x + (target.x - start.x) * stop,
+                y: start.y + (target.y - start.y) * stop
+              };
+              network.moveNode(nodeId, finalPosition.x, finalPosition.y);
+              finalPositions[nodeId] = finalPosition;
+              parentByNode[nodeId] = item.parentId;
+              placed.push({id: nodeId, position: finalPosition, extents: extents});
+            });
+          }
 
           contextContractionState = {
             key: candidate.key,
             anchorId: candidate.anchorId,
             originalPositions: originalPositions,
             restorePositions: restorePositions,
-            finalPositions: finalPositions
+            finalPositions: finalPositions,
+            depthByNode: plan.depthByNode,
+            parentByNode: parentByNode
           };
+          updateGraphViewControls();
           updateNodeLabelPositions();
-          showTransientContextNotice(
-            "Context contracted temporarily — navigating away restores the layout.",
-            "context-contracted",
-            3600
+          showContextNotice(
+            "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
+            "context-contracted"
           );
           return true;
         }
@@ -6421,7 +7133,13 @@
           return {
             primed: Boolean(contextFitPrimedKey),
             active: Boolean(contextContractionState),
-            anchorId: contextContractionState ? contextContractionState.anchorId : null
+            anchorId: contextContractionState ? contextContractionState.anchorId : null,
+            depthByNode: contextContractionState
+              ? Object.assign({}, contextContractionState.depthByNode)
+              : {},
+            parentByNode: contextContractionState
+              ? Object.assign({}, contextContractionState.parentByNode)
+              : {}
           };
         };
 
@@ -6916,7 +7634,7 @@
           var dialog = document.getElementById("kg_inspection_dialog");
           var body = document.getElementById("kg_inspection_body");
           if (!dialog || !body) { return; }
-          body.innerHTML = html;
+          replaceTypesetContent(body, html);
           if (!dialog.open) { dialog.showModal(); }
           if (window.MathJax && MathJax.typesetPromise) {
             MathJax.typesetPromise([body]).catch(function(err) {
@@ -7128,7 +7846,10 @@
           }
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = automaticQuestionFeedbackHtml(question, progress);
+            replaceTypesetContent(
+              feedbackHost,
+              automaticQuestionFeedbackHtml(question, progress)
+            );
           }
           var button = card.querySelector(".study-check-answer");
           if (button) { button.disabled = true; }
@@ -7183,11 +7904,9 @@
         function renderSelfAssessedFeedback(card, question, progress, response, pending) {
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = selfAssessedQuestionFeedbackHtml(
-              question,
-              progress,
-              response,
-              pending
+            replaceTypesetContent(
+              feedbackHost,
+              selfAssessedQuestionFeedbackHtml(question, progress, response, pending)
             );
           }
           typesetStudyCard(card);
@@ -7255,9 +7974,9 @@
             currentConceptTocItems = [];
             setActiveConceptSection(null);
             var missingPanel = document.getElementById("info_panel");
-            missingPanel.innerHTML =
+            replaceTypesetContent(missingPanel,
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
-              "<p>No concept data was found for this node.</p>";
+              "<p>No concept data was found for this node.</p>");
             missingPanel.setAttribute("data-concept-id", String(nodeId));
             missingPanel.removeAttribute("data-module-id");
             missingPanel.scrollTop = 0;
@@ -7287,9 +8006,11 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions"' +
+              '" class="study-questions" data-note-block="true"' +
               (readingMode === "practice" ? " open" : "") + ">";
-            html += "<summary>Study Questions</summary>";
+            html += "<summary>" + renderNoteableHeading(
+              "concept", nodeId, "Study Questions", "study-questions"
+            ) + "</summary>";
             studyQuestions.forEach(function(item, index) {
               if (item && item.marking_mode === "automatic") {
                 html += renderAutomaticStudyQuestion(item, index);
@@ -7326,18 +8047,18 @@
           }
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             conceptChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
             panel.scrollTop = 0;
           }
           detailScrollSyncSuppressedUntil = Date.now() + 350;
-          panel.classList.toggle("kg-note-editing", noteEditingEnabled);
           renderNotesOverview();
           openUserNoteId = null;
           var initialItem = initialTocItem(tocItems);
@@ -7348,14 +8069,22 @@
           typesetInfoPanel(options);
         }
 
+        window.kgCloseEdgeKey = function() {
+          setInfoPanelVisible(false);
+        };
+
         window.kgShowEdgeKey = function() {
           setInfoPanelVisible(true);
           var relations = Object.keys(edgeKey).sort();
-          var html = "<h2>Edge Key</h2>";
+          var html = '<div class="edge-key-header">' +
+            "<h2>Edge Key</h2>" +
+            '<button id="kg_edge_key_close" type="button" ' +
+            'aria-label="Close edge key" onclick="kgCloseEdgeKey()">Close</button>' +
+            "</div>";
 
           if (relations.length === 0) {
             html += "<p>No edge key data was loaded.</p>";
-            document.getElementById("info_panel").innerHTML = html;
+            replaceTypesetContent(document.getElementById("info_panel"), html);
             schedulePanelContentRefit();
             return;
           }
@@ -7364,7 +8093,6 @@
           html += "<thead><tr>" +
             "<th>Relation</th>" +
             "<th>Direction</th>" +
-            "<th>Category</th>" +
             "<th>Meaning</th>" +
             "<th>Example</th>" +
             "</tr></thead><tbody>";
@@ -7376,14 +8104,13 @@
               '<td><strong class="edge-key-relation" style="color:' + escapeHtml(colour) + '">' +
               escapeHtml(relation) + "</strong></td>" +
               "<td>" + (item.directed ? "directed" : "undirected") + "</td>" +
-              "<td>" + escapeHtml(item.category || "") + "</td>" +
               "<td>" + escapeHtml(item.meaning || "") + "</td>" +
               "<td>" + escapeHtml(item.example || "") + "</td>" +
               "</tr>";
           });
 
           html += "</tbody></table>";
-          document.getElementById("info_panel").innerHTML = html;
+          replaceTypesetContent(document.getElementById("info_panel"), html);
           schedulePanelContentRefit();
         };
 
@@ -7848,10 +8575,12 @@
         function renderInitialInfoPanel() {
           currentConceptTocItems = [];
           var panel = document.getElementById("info_panel");
-          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>";
+          replaceTypesetContent(
+            panel,
+            "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>"
+          );
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
-          panel.classList.toggle("kg-note-editing", false);
           panel.scrollTop = 0;
         }
 
@@ -8028,6 +8757,7 @@
             includedNodeIds: Object.keys(included).sort(),
             fitIds: fitIds.slice()
           };
+          updateNodeDragLocks();
           updateNodeLabelPositions();
           updateGraphContextControls();
           return lastGraphRender;
@@ -8049,6 +8779,9 @@
           var baseVisible = {};
           var hiddenMembers = {};
           var fitIds = [];
+          var moduleNodeAdds = [];
+          var moduleNodeUpdates = [];
+          var moduleNodeMoves = [];
           baseVisibleIds.forEach(function(id) {
             baseVisible[String(id)] = true;
           });
@@ -8075,16 +8808,26 @@
             if (represented) {
               var moduleNode = moduleGraphNode(moduleId);
               if (nodes.get(graphNodeId)) {
-                nodes.update(moduleNode);
+                moduleNodeUpdates.push(moduleNode);
               } else {
-                nodes.add(moduleNode);
+                moduleNodeAdds.push(moduleNode);
               }
-              // DataSet updates truncate x/y in vis-network; dragging does not.
-              network.moveNode(graphNodeId, moduleNode.x, moduleNode.y);
+              moduleNodeMoves.push(moduleNode);
               fitIds.push(graphNodeId);
             } else if (nodes.get(graphNodeId)) {
-              nodes.update({id: graphNodeId, hidden: true});
+              moduleNodeUpdates.push({id: graphNodeId, hidden: true});
             }
+          });
+
+          if (moduleNodeAdds.length > 0) {
+            nodes.add(moduleNodeAdds);
+          }
+          if (moduleNodeUpdates.length > 0) {
+            nodes.update(moduleNodeUpdates);
+          }
+          // DataSet updates truncate x/y in vis-network; dragging does not.
+          moduleNodeMoves.forEach(function(moduleNode) {
+            network.moveNode(moduleNode.id, moduleNode.x, moduleNode.y);
           });
 
           nodes.update(Object.keys(hiddenMembers).filter(function(id) {
@@ -8111,6 +8854,7 @@
 
         /* Browser event wiring. */
         network.on("click", function(params) {
+            if (touchDoubleTapWindowIsActive()) { return; }
             cancelPendingContainedConceptModuleSelection();
             if (params.nodes.length === 0 && params.edges && params.edges.length > 0) {
                 showEdgeDetails(params.edges[0]);
@@ -8142,6 +8886,7 @@
         });
 
         network.on("doubleClick", function(params) {
+          if (touchDoubleTapWindowIsActive()) { return; }
           if (!params.nodes || params.nodes.length === 0) { return; }
           if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
           handleGraphNodeDoubleClick(params.nodes[0]);
@@ -8170,6 +8915,13 @@
         function updateRenderedEdgeWidths() {
           var scale = network.getScale();
           if (!isFinite(scale) || scale <= 0) { return; }
+          if (
+            !renderedEdgeWidthsDirty &&
+            renderedEdgeWidthScale === scale &&
+            renderedEdgeWidthHoverId === hoveredEdgeId
+          ) {
+            return;
+          }
           edges.get().forEach(function(edge) {
             var rendered = network.body.edges[edge.id];
             if (!rendered || edge.hidden) { return; }
@@ -8187,12 +8939,24 @@
               ? Math.max(width, minimumPixels / scale)
               : width;
           });
+          renderedEdgeWidthsDirty = false;
+          renderedEdgeWidthScale = scale;
+          renderedEdgeWidthHoverId = hoveredEdgeId;
         }
 
-        network.on("beforeDrawing", updateRenderedEdgeWidths);
+        edges.on("*", function() {
+          renderedEdgeWidthsDirty = true;
+        });
+
+        network.on("beforeDrawing", function(ctx) {
+          drawExpandedModuleOutlines(ctx);
+          updateRenderedEdgeWidths();
+        });
         network.on("afterDrawing", function(ctx) {
+          if (!initialGraphProjectionReady) { return; }
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
+          drawGraphCompletionMarkers(ctx);
           updateNodeLabelPositions();
         });
         network.on("dragEnd", function(params) {
@@ -8226,17 +8990,22 @@
           return network.getNodeAt({x: e.clientX - rect.left, y: e.clientY - rect.top});
         }
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
-          if (layoutDraggingEnabled()) { return; }
           var nodeId = graphNodeAtPointerEvent(e);
-          lockedDragProbe = nodeId ? {x: e.clientX, y: e.clientY} : null;
+          if (!nodeId || nodeDraggingEnabled(nodeId)) {
+            lockedDragProbe = null;
+            return;
+          }
+          lockedDragProbe = {x: e.clientX, y: e.clientY};
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointermove", function(e) {
-          if (!lockedDragProbe || layoutDraggingEnabled()) { return; }
+          if (!lockedDragProbe) { return; }
           if (Math.hypot(e.clientX - lockedDragProbe.x, e.clientY - lockedDragProbe.y) < 5) { return; }
           if (!lockedLayoutNoticeShown) {
             lockedLayoutNoticeShown = true;
             showTransientContextNotice(
-              "Layout locked — enable editing in Tools → Layouts.",
+              contextContractionState
+                ? "Only context nodes can be adjusted in this temporary Fit++ arrangement."
+                : "Layout locked — enable editing in Tools → Layouts.",
               "layout-locked",
               2800
             );
@@ -8289,8 +9058,8 @@
             });
           }
           if (handled) {
+            suppressedTouchDoubleTapUntil = Date.now() + 500;
             e.preventDefault();
-            e.stopImmediatePropagation();
           }
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointercancel", function(e) {
@@ -8306,7 +9075,10 @@
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
           }) || recentGraphClickNodeId(800);
-          if (nativeDoubleClickIsSuppressed(nodeId)) {
+          if (
+            touchDoubleTapWindowIsActive() ||
+            nativeDoubleClickIsSuppressed(nodeId)
+          ) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -8357,6 +9129,12 @@
         });
         document.getElementById("kg_search_close").addEventListener("click", function() {
           setSearchOpen(false);
+        });
+        document.getElementById("kg_empty_graph_search").addEventListener("click", function() {
+          setSearchOpen(true);
+        });
+        document.getElementById("kg_empty_graph_show_full").addEventListener("click", function() {
+          setViewerDisplayScope(DisplayScope.FULL);
         });
         document.getElementById("kg_search_section").addEventListener("toggle", function(e) {
           document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(e.target.open));
@@ -8412,6 +9190,10 @@
           resetAllStudyProgress();
           refreshActiveConcept();
         });
+        document.getElementById("kg_graph_completion_markers").addEventListener(
+          "change",
+          function(e) { setGraphCompletionMarkersEnabled(e.target.checked); }
+        );
         window.addEventListener("kg:study-progress-changed", renderStudyScorecard);
 
         document.getElementById("kg_context_preset_select").addEventListener("change", function(e) {
@@ -8527,15 +9309,16 @@
         document.getElementById("kg_personal_data_import_apply").addEventListener(
           "click", applyPersonalDataImport
         );
-
-        var notesEditToggle = document.getElementById("kg_notes_edit_toggle");
-        notesEditToggle.checked = noteEditingEnabled;
-        notesEditToggle.addEventListener("change", function(e) {
-          noteEditingEnabled = e.target.checked;
-          saveNoteEditingPreference();
-          setNotesStatus(noteEditingEnabled ? "Note editing enabled." : "Note editing disabled.");
-          refreshActiveConcept();
-        });
+        initialiseGoogleDriveSync();
+        document.getElementById("kg_cloud_sync_connect").addEventListener(
+          "click", connectGoogleDrive
+        );
+        document.getElementById("kg_cloud_sync_now").addEventListener(
+          "click", syncPersonalDataNow
+        );
+        document.getElementById("kg_cloud_sync_disconnect").addEventListener(
+          "click", disconnectGoogleDrive
+        );
 
         document.getElementById("kg_notes_list").addEventListener("click", function(e) {
           var item = e.target.closest(".kg-note-list-item");
@@ -8609,10 +9392,6 @@
 
         document.getElementById("kg_layout_edit_toggle").addEventListener("change", function(e) {
           setLayoutEditingEnabled(e.target.checked);
-        });
-
-        document.getElementById("kg_layout_edit_persistence").addEventListener("change", function(e) {
-          setLayoutEditPersistence(e.target.value);
         });
 
         document.getElementById("kg_layout_export").addEventListener("click", function(e) {
@@ -8774,20 +9553,28 @@
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
+            var noteTargetType = addNoteButton.getAttribute("data-target-type") || "concept";
+            var noteTargetId = addNoteButton.getAttribute("data-target-id") || activeNodeId;
+            var noteBlockId = addNoteButton.getAttribute("data-anchor-block-id") || "";
+            var noteSectionKey = addNoteButton.getAttribute("data-anchor-section-key") || "";
+            var noteAnchorIndex = Number(addNoteButton.getAttribute("data-anchor-index")) || 0;
+            var canonicalAnchor = canonicalNoteAnchor(
+              noteTargetType, noteTargetId, noteBlockId, noteSectionKey, noteAnchorIndex
+            );
             var enclosingSection = addNoteButton.closest("#info_panel > details");
             var enclosingSectionId = enclosingSection && enclosingSection.open
               ? enclosingSection.id
               : "";
-            createUserNote(
-              addNoteButton.getAttribute("data-target-type") || "concept",
-              addNoteButton.getAttribute("data-target-id") || activeNodeId,
+            cancelNotePlacement(addNoteButton.closest('[data-note-placement="active"]'));
+            var createdNote = createUserNote(
+              noteTargetType,
+              noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
-              Number(addNoteButton.getAttribute("data-anchor-index")) || 0,
+              noteAnchorIndex,
               addNoteButton.getAttribute("data-anchor-after") || "",
-              {
-                blockId: addNoteButton.getAttribute("data-anchor-block-id") || "",
-                sectionKey: addNoteButton.getAttribute("data-anchor-section-key") || "",
+              canonicalAnchor || {
+                blockId: noteBlockId,
+                sectionKey: noteSectionKey,
                 contextBefore: addNoteButton.getAttribute("data-anchor-context-before") || "",
                 contextAfter: addNoteButton.getAttribute("data-anchor-context-after") || ""
               }
@@ -8797,13 +9584,52 @@
               var refreshedSection = document.getElementById(enclosingSectionId);
               if (refreshedSection) { refreshedSection.open = true; }
             }
+            window.requestAnimationFrame(function() {
+              var titleInput = noteEditorField(createdNote.id, ".user-note-title-input");
+              if (titleInput) {
+                titleInput.focus();
+                titleInput.select();
+              }
+            });
+            return;
+          }
+
+          var noteBlockAction = e.target.closest(".kg-note-block-action");
+          if (noteBlockAction) {
+            e.preventDefault();
+            e.stopPropagation();
+            beginNotePlacement(noteBlockAction);
+            return;
+          }
+
+          var notePlacementCancel = e.target.closest(".kg-note-placement-cancel");
+          if (notePlacementCancel) {
+            e.preventDefault();
+            e.stopPropagation();
+            cancelNotePlacement(
+              notePlacementCancel.closest('[data-note-placement="active"]'),
+              true
+            );
+            return;
+          }
+
+          var placementBlock = e.target.closest('[data-note-placement="active"]');
+          var placementLine = e.target.closest(".concept-line");
+          if (
+            placementBlock && placementLine &&
+            Date.now() >= notePlacementSuppressClickUntil &&
+            !e.target.closest("a, button, input, textarea, select, label")
+          ) {
+            e.preventDefault();
+            var placementRow = placementLine.nextElementSibling;
+            var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
+            if (placementButton) { placementButton.click(); }
             return;
           }
 
           var closeNoteButton = e.target.closest(".user-note-close");
           if (closeNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
             closeUserNote(closeNoteButton.getAttribute("data-note-id"));
             return;
           }
@@ -8811,7 +9637,6 @@
           var deleteNoteButton = e.target.closest(".user-note-delete");
           if (deleteNoteButton) {
             e.preventDefault();
-            if (!noteEditingEnabled) { return; }
             deleteUserNote(deleteNoteButton.getAttribute("data-note-id"));
             refreshActiveConcept();
             return;
@@ -8935,7 +9760,6 @@
             return;
           }
 
-          if (!noteEditingEnabled) { return; }
           var titleInput = e.target.closest(".user-note-title-input");
           if (titleInput) {
             updateUserNote(titleInput.getAttribute("data-note-id"), {title: titleInput.value});
@@ -8954,6 +9778,50 @@
           adjustInfoPanelTextZoom(e.deltaY);
         }, {passive: false});
 
+        document.getElementById("info_panel").addEventListener("keydown", function(e) {
+          var placementBlock = e.target.closest('[data-note-placement="active"]') ||
+            document.querySelector('#info_panel [data-note-placement="active"]');
+          if (!placementBlock) { return; }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            cancelNotePlacement(placementBlock, true);
+            return;
+          }
+          if (e.key !== "Enter" && e.key !== " ") { return; }
+          var placementLine = e.target.closest(".concept-line");
+          if (!placementLine) { return; }
+          e.preventDefault();
+          var placementRow = placementLine.nextElementSibling;
+          var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
+          if (placementButton) { placementButton.click(); }
+        });
+
+        document.getElementById("info_panel").addEventListener("pointerdown", function(e) {
+          if (!e.target.closest('[data-note-placement="active"] .concept-line')) {
+            notePlacementPointerStart = null;
+            return;
+          }
+          notePlacementPointerStart = {x: e.clientX, y: e.clientY};
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointermove", function(e) {
+          if (!notePlacementPointerStart) { return; }
+          var dx = e.clientX - notePlacementPointerStart.x;
+          var dy = e.clientY - notePlacementPointerStart.y;
+          if ((dx * dx) + (dy * dy) > 64) {
+            notePlacementSuppressClickUntil = Date.now() + 400;
+          }
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointerup", function() {
+          notePlacementPointerStart = null;
+        }, {passive: true});
+
+        document.getElementById("info_panel").addEventListener("pointercancel", function() {
+          notePlacementPointerStart = null;
+          notePlacementSuppressClickUntil = Date.now() + 400;
+        }, {passive: true});
+
         document.getElementById("info_panel").addEventListener("scroll", scheduleDetailScrollSync, {passive: true});
 
         document.getElementById("kg_controls").addEventListener("wheel", function(e) {
@@ -8970,8 +9838,8 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            materializeLazyFoldedSection(e.target);
             if (
-              noteEditingEnabled &&
               e.target.classList.contains("user-note") &&
               !e.target.open
             ) {
@@ -8982,18 +9850,26 @@
           }
         }, true);
 
+        document.getElementById("info_panel").addEventListener("click", function(e) {
+          var summary = e.target.closest("summary");
+          if (!summary || summary.parentElement.parentElement !== this) { return; }
+          materializeLazyFoldedSection(summary.parentElement, true);
+        }, true);
+
         /* Initial render. */
         applyDefaultModuleFoldState();
         buildNodeLabels();
         refreshModuleFootprints();
         if (document.fonts && document.fonts.addEventListener) {
-          document.fonts.addEventListener("loadingdone", refreshModuleFootprints);
+          document.fonts.addEventListener("loadingdone", refreshModuleFootprintsAfterFontLoad);
         }
         buildConceptList("");
         buildModuleList();
         migrateUserNotesState();
         renderNotesOverview();
         renderStudyScorecard();
+        document.getElementById("kg_graph_completion_markers").checked =
+          graphCompletionMarkersEnabled;
         updateResponsiveControlLabels();
         updateGraphViewControls();
         updateDetailsViewControls();
@@ -9007,6 +9883,8 @@
         // Context computation and relationship details retain the complete
         // authored edge set; rendering applies the selected display policy.
         renderGraphFromViewerState();
+        initialGraphProjectionReady = true;
+        network.redraw();
 
         var initialModuleId = moduleIdFromHash(window.location.hash);
         var initialNodeId = conceptIdFromHash(window.location.hash);

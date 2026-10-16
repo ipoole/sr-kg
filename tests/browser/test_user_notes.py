@@ -16,19 +16,225 @@ def _hover_beta_node(page):
     page.wait_for_selector("#kg_node_tooltip", state="visible")
 
 
+def _place_note_at_anchor(anchor):
+    block = anchor.locator("xpath=ancestor::*[@data-note-block][1]")
+    atomic = block.evaluate(
+        "element => element.matches('.concept-figure, .study-questions')"
+    )
+    block.locator(
+        ":scope > summary .kg-note-block-action, "
+        ":scope > .kg-noteable-heading .kg-note-block-action"
+    ).click()
+    if not atomic and block.locator(".concept-line").count() > 0:
+        anchor.evaluate("element => element.click()")
+
+
 @pytest.mark.browser
-def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(browser_graph):
+def test_note_bubbles_replace_permanent_paragraph_controls(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    overview = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.overview"]'
+    )
+    bubble = overview.locator(":scope > summary .kg-note-block-action")
+    assert bubble.count() == 1
+    assert bubble.get_attribute("data-note-state") == "empty"
+    assert bubble.get_attribute("aria-label") == "Add a note to Module overview"
+    assert overview.locator(":scope > summary .kg-note-bubble-glyph").inner_text() == "+"
+    assert page.locator("#info_panel .kg-add-note-row:visible").count() == 0
+
+    repo_browser_graph.click_concept("math.manifold")
+    graphic = page.locator("#info_panel details.concept-figure")
+    assert graphic.locator(":scope > summary .kg-note-block-action").count() == 1
+    study = page.locator("#info_panel details.study-questions")
+    assert study.locator(":scope > summary .kg-note-block-action").count() == 1
+    assert page.locator("#kg_notes_edit_toggle").count() == 0
+
+
+@pytest.mark.browser
+def test_note_bubble_places_note_after_chosen_paragraph(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    explanation = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.terrain_setup"]'
+    )
+    if not explanation.evaluate("element => element.open"):
+        explanation.locator(":scope > summary").click()
+    bubble = explanation.locator(":scope > summary .kg-note-block-action")
+    bubble.click()
+
+    assert explanation.get_attribute("data-note-placement") == "active"
+    instruction = explanation.locator(
+        ":scope > summary .kg-note-placement-instruction"
+    )
+    assert instruction.is_visible()
+    assert "Choose paragraph ↓" in instruction.inner_text()
+    assert explanation.locator(".kg-add-note-row:visible").count() == 0
+    assert page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.overview"]'
+    ).get_attribute("data-note-placement") is None
+
+    explanation.locator(".concept-line").last.click()
+
+    explanation = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.terrain_setup"]'
+    )
+    assert explanation.get_attribute("data-note-placement") is None
+    assert explanation.locator("details.user-note").count() == 1
+    bubble = explanation.locator(":scope > summary .kg-note-block-action")
+    assert bubble.get_attribute("data-note-state") == "present"
+    assert bubble.get_attribute("aria-label") == (
+        "Notes present in The kame-and-kettle survey; add another note"
+    )
+    assert bubble.locator(".kg-note-bubble-glyph").inner_text() == "+"
+    assert bubble.locator(".kg-note-bubble-glyph").evaluate(
+        "element => getComputedStyle(element).backgroundColor"
+    ) == "rgb(138, 100, 0)"
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
+
+
+@pytest.mark.browser
+def test_note_placement_can_be_cancelled(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+    overview = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.overview"]'
+    )
+
+    overview.locator(":scope > summary .kg-note-block-action").click()
+    overview.locator(":scope > summary .kg-note-placement-cancel").click()
+
+    assert overview.get_attribute("data-note-placement") is None
+    assert page.locator("#info_panel details.user-note").count() == 0
+    assert page.locator("#info_panel .kg-add-note-row:visible").count() == 0
+    assert overview.locator(":scope > summary .kg-note-block-action").evaluate(
+        "element => document.activeElement === element"
+    )
+
+
+@pytest.mark.browser
+def test_note_placement_supports_keyboard_and_multiple_notes(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+    overview = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.overview"]'
+    )
+    bubble = overview.locator(":scope > summary .kg-note-block-action")
+
+    bubble.click()
+    first_paragraph = overview.locator(".concept-line").first
+    assert first_paragraph.get_attribute("tabindex") == "0"
+    assert first_paragraph.get_attribute("aria-label") == (
+        "Place note after this paragraph"
+    )
+    page.keyboard.press("Enter")
+    first_title = overview.locator(".user-note-title-input").first
+    assert first_title.evaluate("element => document.activeElement === element")
+    first_title.fill("First note")
+    overview.locator(".user-note-body-input").first.fill("First body")
+    overview.locator(".user-note-close").first.click()
+
+    bubble = overview.locator(":scope > summary .kg-note-block-action")
+    assert bubble.get_attribute("data-note-state") == "present"
+    bubble.click()
+    assert overview.get_attribute("data-note-placement") == "active"
+    overview.locator(".kg-add-note").last.evaluate("element => element.click()")
+    overview.locator(".user-note-title-input").last.fill("Second note")
+    overview.locator(".user-note-body-input").last.fill("Second body")
+
+    assert overview.locator("details.user-note").count() == 2
+    assert bubble.get_attribute("aria-label") == (
+        "Notes present in Module overview; add another note"
+    )
+
+
+@pytest.mark.browser
+def test_atomic_note_blocks_create_their_single_note_directly(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.click_concept("math.manifold")
+
+    graphic = page.locator("#info_panel details.concept-figure")
+    graphic.locator(":scope > summary .kg-note-block-action").click()
+    assert graphic.get_attribute("data-note-placement") is None
+    assert graphic.locator("details.user-note").count() == 1
+    graphic_title = graphic.locator(".user-note-title-input")
+    assert graphic_title.evaluate("element => document.activeElement === element")
+    graphic_title.fill("Graphic note")
+    graphic.locator(".user-note-body-input").fill("Review the manifold graphic.")
+    graphic.locator(".user-note-close").click()
+
+    study = page.locator("#info_panel details.study-questions")
+    study.locator(":scope > summary .kg-note-block-action").click()
+    assert study.get_attribute("data-note-placement") is None
+    assert study.locator("details.user-note").count() == 1
+    assert study.locator(".user-note-title-input").evaluate(
+        "element => document.activeElement === element"
+    )
+
+
+@pytest.mark.browser
+def test_touch_scroll_does_not_place_note(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+    overview = page.locator(
+        '#info_panel [data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.overview"]'
+    )
+    overview.locator(":scope > summary .kg-note-block-action").click()
+    first_paragraph = overview.locator(".concept-line").first
+    first_paragraph.evaluate(
+        """element => {
+          element.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true, clientX: 10, clientY: 10
+          }));
+          element.dispatchEvent(new PointerEvent('pointermove', {
+            bubbles: true, clientX: 10, clientY: 35
+          }));
+          element.dispatchEvent(new PointerEvent('pointerup', {
+            bubbles: true, clientX: 10, clientY: 35
+          }));
+          element.click();
+        }"""
+    )
+
+    assert overview.locator("details.user-note").count() == 0
+    assert overview.get_attribute("data-note-placement") == "active"
+
+
+@pytest.mark.browser
+def test_user_notes_are_persistent_and_always_editable(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.1")
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
 
-    page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
     assert page.locator("#info_panel .kg-add-note").count() > 0
-    assert page.locator("#info_panel .kg-add-note").first.is_visible()
+    assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
 
-    page.locator("#info_panel .kg-add-note").first.click()
+    _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
     note = page.locator("#info_panel details.user-note").first
     assert note.is_visible()
     assert note.get_attribute("open") is not None
@@ -52,6 +258,7 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
     tooltip_text = page.locator("#kg_node_tooltip").inner_text()
     assert "Check this derivation" in tooltip_text
     assert "This should become an optional detail later." not in tooltip_text
+    page.locator("#kg_notes_section summary").click()
     assert page.locator("#kg_notes_list .kg-note-list-item").count() == 1
     list_item = page.locator("#kg_notes_list .kg-note-list-item")
     assert list_item.get_attribute("data-target-type") == "concept"
@@ -63,17 +270,16 @@ def test_user_notes_are_toggleable_persistent_and_read_only_when_editing_off(bro
     assert note.get_attribute("open") is None
     assert note.locator("summary").inner_text() == "Check this derivation"
 
-    page.locator("#kg_notes_edit_toggle").uncheck()
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
-    assert page.locator("#info_panel .user-note-title-input").count() == 0
-    assert page.locator("#info_panel .user-note-body-input").count() == 0
+    assert page.locator("#info_panel .user-note-title-input").count() == 1
+    assert page.locator("#info_panel .user-note-body-input").count() == 1
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Check this derivation"
     )
     page.locator("#info_panel details.user-note summary").click()
-    assert "This should become an optional detail later." in page.locator(
-        "#info_panel details.user-note"
-    ).inner_text()
+    assert page.locator("#info_panel .user-note-body-input").input_value() == (
+        "This should become an optional detail later."
+    )
 
     page.reload(wait_until="domcontentloaded")
     page.wait_for_selector("#kg_controls", state="attached")
@@ -95,15 +301,13 @@ def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph
     page = browser_graph.page
 
     browser_graph.click_concept("2.1")
-    page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-    page.locator("#info_panel .kg-add-note").first.click()
+    _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
 
     assert page.locator("#info_panel details.user-note").count() == 1
     page.locator("#info_panel .user-note-close").click()
 
     assert page.locator("#info_panel details.user-note").count() == 0
-    assert page.locator("#info_panel .kg-add-note").first.is_visible()
+    assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
     assert page.locator("#kg_notes_list .kg-note-list-item").count() == 0
     assert page.locator("#kg_notes_list .kg-note-list-empty").count() == 1
     assert page.evaluate(
@@ -115,16 +319,15 @@ def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph
 def test_notes_panel_list_navigates_to_note_concept(browser_graph):
     page = browser_graph.page
 
-    browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-    page.locator("#info_panel .kg-add-note").first.click()
+    browser_graph.click_concept("2.1")
+    _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
     page.locator("#info_panel .user-note-title-input").fill("Beta note")
     page.locator("#info_panel .user-note-body-input").fill("Remember beta.")
     page.locator("#info_panel .user-note-close").click()
 
     browser_graph.click_concept("1.1")
-    page.locator("#info_panel .kg-add-note").first.click()
+    _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
     page.locator("#info_panel .user-note-title-input").fill("Alpha note")
     page.locator("#info_panel .user-note-body-input").fill("Remember alpha.")
     page.locator("#info_panel .user-note-close").click()
@@ -151,8 +354,7 @@ def test_user_notes_export_and_import_csv(browser_graph):
 
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-    page.locator("#info_panel .kg-add-note").first.click()
+    _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
     page.locator("#info_panel .user-note-title-input").fill("Exported title")
     page.locator("#info_panel .user-note-body-input").fill("Exported body")
 
@@ -204,12 +406,10 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
     page = browser_graph.page
 
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     browser_graph.click_concept("2.2")
     graphic = page.locator("#info_panel .concept-figure")
     assert graphic.locator(".kg-add-note").count() == 1
-    graphic.locator(".kg-add-note").click()
+    _place_note_at_anchor(graphic.locator(".kg-add-note"))
     graphic.locator(".user-note-title-input").fill("Review graphic")
     graphic.locator(".user-note-body-input").fill("Check the arrows.")
     graphic.locator(".user-note-close").click()
@@ -220,7 +420,7 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
     assert overview.locator(".kg-add-note").count() > 0
     if not overview.evaluate("el => el.open"):
         overview.locator(":scope > summary").click()
-    overview.locator(".kg-add-note").first.click()
+    _place_note_at_anchor(overview.locator(".kg-add-note").first)
     overview.locator(".user-note-title-input").fill("Review module overview")
     overview.locator(".user-note-body-input").fill("Tighten this introduction.")
     overview.locator(".user-note-close").click()
@@ -247,17 +447,86 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
 
 
 @pytest.mark.browser
+def test_module_example_note_stays_at_its_anchor(repo_browser_graph):
+    page = repo_browser_graph.page
+
+    page.locator("#kg_notes_section summary").click()
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    ).click()
+
+    example = page.locator(
+        '#info_panel .module-content-block[data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.terrain_setup"]'
+    )
+    if not example.evaluate("element => element.open"):
+        example.locator(":scope > summary").click()
+    add_note = example.locator(".kg-add-note").last
+    add_note.evaluate(
+        "element => element.setAttribute('data-anchor-context-before', 'corrupted')"
+    )
+    _place_note_at_anchor(add_note)
+
+    assert example.locator("details.user-note").count() == 1
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
+
+
+@pytest.mark.browser
+def test_legacy_module_note_with_corrupted_context_recovers_by_paragraph(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_control_section("kg_modules_section")
+    module_selector = (
+        '.kg-module-item[data-module-id="math.m01_manifolds_and_coordinates"]'
+    )
+    page.locator(module_selector).click()
+
+    example_selector = (
+        '#info_panel .module-content-block[data-content-block-id='
+        '"math.m01_manifolds_and_coordinates.terrain_setup"]'
+    )
+    example = page.locator(example_selector)
+    if not example.evaluate("element => element.open"):
+        example.locator(":scope > summary").click()
+    _place_note_at_anchor(example.locator(".kg-add-note").last)
+    example.locator(".user-note-title-input").fill("Recovered field note")
+    example.locator(".user-note-body-input").fill("Keep this beside the survey setup.")
+    example.locator(".user-note-close").click()
+
+    page.evaluate("""() => {
+      const legacy = JSON.parse(localStorage.getItem('srkg.userNotes.v1'));
+      const profile = JSON.parse(localStorage.getItem('srkg.personalData.v1'));
+      [legacy.notes[0], profile.notes.find(note => !note.deletedAt)].forEach(note => {
+        note.anchor.contextBefore = 'corrupted legacy context';
+        note.anchor.contextAfter = 'corrupted legacy context';
+      });
+      localStorage.setItem('srkg.userNotes.v1', JSON.stringify(legacy));
+      localStorage.setItem('srkg.personalData.v1', JSON.stringify(profile));
+    }""")
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_function(
+        "() => typeof network !== 'undefined' && typeof nodes !== 'undefined'"
+    )
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator(module_selector).click()
+
+    example = page.locator(example_selector)
+    assert example.locator("details.user-note summary").inner_text() == (
+        "Recovered field note"
+    )
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
+
+
+@pytest.mark.browser
 def test_study_questions_share_one_stable_note_anchor(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     study = page.locator("#info_panel details.study-questions")
     assert study.locator(".kg-add-note").count() == 1
     if not study.evaluate("element => element.open"):
         study.locator(":scope > summary").click()
-    study.locator(".kg-add-note").click()
+    _place_note_at_anchor(study.locator(".kg-add-note"))
     study.locator(".user-note-title-input").fill("Review the question set")
     study.locator(".user-note-body-input").fill("Return to these questions later.")
     study.locator(".user-note-close").click()
@@ -353,29 +622,30 @@ def test_note_hooks_follow_optional_details_and_display_equations(browser_graph)
 
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     section = page.locator('#info_panel .concept-section[data-section="Explanation"]')
     assert section.locator(".optional-detail").count() == 1
     page.wait_for_selector(
         '#info_panel .concept-section[data-section="Explanation"] mjx-container[display="true"]'
     )
 
-    assert section.locator(".kg-add-note:visible").count() >= 4
+    section.locator(
+        "xpath=ancestor::*[@data-note-block][1]"
+    ).locator(":scope > .kg-noteable-heading .kg-note-block-action").click()
+    assert section.locator('.concept-line[tabindex="0"]').count() >= 4
     assert section.evaluate(
         """section => {
           const optional = section.querySelector(".optional-detail");
           const line = optional && optional.closest(".concept-line");
-          const next = line && line.nextElementSibling;
-          return Boolean(next && next.querySelector(".kg-add-note"));
+          return Boolean(line && line.getAttribute("aria-label") ===
+            "Place note after this paragraph");
         }"""
     )
     assert section.evaluate(
         """section => {
           const equation = section.querySelector('mjx-container[display="true"]');
           const line = equation && equation.closest(".concept-line");
-          const next = line && line.nextElementSibling;
-          return Boolean(next && next.querySelector(".kg-add-note"));
+          return Boolean(line && line.getAttribute("aria-label") ===
+            "Place note after this paragraph");
         }"""
     )
 
@@ -385,10 +655,8 @@ def test_note_uses_stable_block_id_across_section_rename(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     definition = page.locator('#info_panel .concept-section[data-section="Definition"]')
-    definition.locator(".kg-add-note").first.click()
+    _place_note_at_anchor(definition.locator(".kg-add-note").first)
     definition.locator(".user-note-title-input").fill("Stable definition note")
     definition.locator(".user-note-body-input").fill("Keep this with the definition.")
     definition.locator(".user-note-close").click()
@@ -416,11 +684,9 @@ def test_note_context_survives_paragraph_insertion_and_splitting(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     explanation = page.locator('#info_panel .concept-section[data-section="Explanation"]')
     anchor = explanation.locator(".kg-add-note").last
-    anchor.click()
+    _place_note_at_anchor(anchor)
     explanation.locator(".user-note-title-input").fill("Context note")
     explanation.locator(".user-note-body-input").fill("Remain after the final passage.")
     explanation.locator(".user-note-close").click()
@@ -444,10 +710,8 @@ def test_unmatched_note_is_preserved_and_visibly_flagged(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    page.locator("#kg_notes_edit_toggle").check()
-
     explanation = page.locator('#info_panel .concept-section[data-section="Explanation"]')
-    explanation.locator(".kg-add-note").last.click()
+    _place_note_at_anchor(explanation.locator(".kg-add-note").last)
     explanation.locator(".user-note-title-input").fill("Orphaned passage note")
     explanation.locator(".user-note-body-input").fill("Do not lose this note.")
     explanation.locator(".user-note-close").click()

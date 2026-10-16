@@ -103,6 +103,16 @@ def test_module_header_tick_tracks_completion_of_its_own_blocks(browser_graph):
     assert checkbox.count() == 1
     assert indicator.is_hidden()
     checkbox.check()
+    assert indicator.is_hidden()
+    page.evaluate(
+        """() => {
+          moduleData['test.m01_foundations'].members.forEach(conceptId =>
+            conceptData[conceptId].content_blocks.forEach(block =>
+              kgContentReadProgress.setRead(block.block_id, true)
+            )
+          );
+        }"""
+    )
     assert indicator.is_visible()
     checkbox.uncheck()
     assert indicator.is_hidden()

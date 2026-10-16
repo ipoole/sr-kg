@@ -97,8 +97,9 @@ The principal treatments are:
 ### Layout
 
 Graph-object positions in graph coordinates. Distinguish **authored layout**,
-**personal layout**, and **temporary layout adjustment**. Dragging changes
-layout; panning and zooming do not.
+**personal layout**, and a **temporary Fit++ arrangement**. Ordinary dragging
+edits the personal layout; dragging after Fit++ adjusts only that temporary
+arrangement. Panning and zooming do not change layout.
 
 ### Camera
 
@@ -117,10 +118,13 @@ An explicit camera operation that chooses a centre and zoom to frame a named set
 of displayed objects, such as **Fit selection**, **Fit context**, or **Fit full
 graph**. Fit changes only the camera.
 
-After **Fit context** in an eligible Context-only view, **Fit++** is a distinct
-explicit presentation action: it temporarily contracts the visible context
-around its selected representation and then fits the camera. It changes no
-layout and is discarded when the user navigates away.
+After **Fit context** with an eligible selected representation, **Fit++** is a
+distinct explicit presentation action: it temporarily contracts the represented
+context breadth-first along its graph structure and then fits the camera. Each
+depth moves towards a newly placed parent at the preceding depth; the closest
+parent is used where several shortest routes exist. In Full graph, background
+nodes remain fixed. It changes no saved or manually edited layout and is
+discarded when the user navigates away.
 
 The distinctions are:
 

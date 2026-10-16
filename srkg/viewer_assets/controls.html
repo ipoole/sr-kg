@@ -44,14 +44,7 @@
         <summary>Layouts</summary>
         <label class="kg-layout-edit-toggle">
           <input id="kg_layout_edit_toggle" type="checkbox">
-          <span>Edit layout</span>
-        </label>
-        <label class="kg-layout-persistence" for="kg_layout_edit_persistence">
-          <span>Changes</span>
-          <select id="kg_layout_edit_persistence">
-            <option value="temporary" selected>Temporary</option>
-            <option value="personal">Personal</option>
-          </select>
+          <span>Edit personal layout</span>
         </label>
         <div id="kg_layout_edit_message" class="kg-layout-status">
           Node dragging is off.
@@ -69,6 +62,10 @@
       </details>
       <details id="kg_study_section" class="kg-fold">
         <summary>Study <span id="kg_study_badge" class="kg-study-badge"></span></summary>
+        <label class="kg-study-display-option">
+          <input id="kg_graph_completion_markers" type="checkbox" checked>
+          <span>Show completion ticks in graph</span>
+        </label>
         <div id="kg_study_summary" aria-live="polite"></div>
         <div id="kg_study_list"></div>
         <button id="kg_study_reset_all" type="button" hidden>Reset all study progress</button>
@@ -80,13 +77,16 @@
         <button id="kg_personal_data_import_button" type="button">Import personal data</button>
         <input id="kg_personal_data_import_input" type="file"
                accept=".zip,application/zip" hidden>
+        <div id="kg_cloud_sync" class="kg-cloud-sync">
+          <strong>Google Drive sync <span class="kg-muted-label">optional</span></strong>
+          <p id="kg_cloud_sync_status" aria-live="polite"></p>
+          <button id="kg_cloud_sync_connect" type="button">Connect Google Drive</button>
+          <button id="kg_cloud_sync_now" type="button" hidden>Sync now</button>
+          <button id="kg_cloud_sync_disconnect" type="button" hidden>Disconnect</button>
+        </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
         <summary>Notes</summary>
-        <label class="kg-notes-toggle">
-          <input id="kg_notes_edit_toggle" type="checkbox">
-          <span class="kg-notes-toggle-label">Note editing</span>
-        </label>
         <button id="kg_notes_export" type="button" onclick="kgExportNotes()">Export notes</button>
         <label>
           <button id="kg_notes_import_button" type="button">Import notes</button>
@@ -147,6 +147,15 @@
           </div>
         </div>
       </section>
+
+      <div id="kg_empty_graph_state" class="kg-empty-graph-state" role="status" hidden>
+        <strong>No context to display</strong>
+        <p>Select a concept or module using Search, or switch to the Full graph.</p>
+        <div class="kg-empty-graph-actions">
+          <button id="kg_empty_graph_search" type="button">Search</button>
+          <button id="kg_empty_graph_show_full" type="button">Show full graph</button>
+        </div>
+      </div>
 
       <details id="kg_search_section" class="kg-search-panel">
         <summary>Search concepts and modules</summary>
@@ -225,14 +234,15 @@
             <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>
+            <li>Use a block's speech-bubble +, then choose a paragraph, to add a note; a filled bubble means notes are present.</li>
           </ul>
         </section>
         <section>
           <h3>Personal layout</h3>
           <ul>
             <li>Node dragging is off during ordinary browsing.</li>
-            <li>Enable Tools → Layouts → Edit layout to move nodes.</li>
-            <li>Moves are temporary by default; choose Personal to save them locally.</li>
+            <li>Enable Tools → Layouts → Edit personal layout to save moved nodes locally.</li>
+            <li>After Fit++, drag context nodes for temporary adjustments; navigating away restores them.</li>
           </ul>
         </section>
         <section>
@@ -242,12 +252,22 @@
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
-            <li>Tools → Personal data exports or imports notes, layout, study and reading records together.<span class="kg-status-badge">NEW</span></li>
+            <li>Blue and green graph ticks summarise reading and question completion; one Study option hides both.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Personal data<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
+            <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
+            <li>Tools → Personal data can download or import a portable archive.</li>
+            <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
           </ul>
         </section>
         <section>
           <h3>Content status</h3>
           <p>Covers Special Relativity and General Relativity.</p>
+          <p>Manifolds and Coordinates exposition enhanced with motivating example.<span class="kg-status-badge">NEW</span></p>
         </section>
       </div>
       <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex.</p>

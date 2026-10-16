@@ -80,6 +80,7 @@ def _math_text(
     *,
     sub: str | None = None,
     sup: str | None = None,
+    suffix: str | None = None,
     **kwargs: object,
 ) -> str:
     """Draw a short math label with real SVG sub/superscript placement."""
@@ -88,6 +89,8 @@ def _math_text(
         parts.append(f'<tspan baseline-shift="sub" font-size="68%">{sub}</tspan>')
     if sup:
         parts.append(f'<tspan baseline-shift="super" font-size="68%">{sup}</tspan>')
+    if suffix:
+        parts.append(suffix)
     return f'<text x="{x:.1f}" y="{y:.1f}" {_attrs(**kwargs)}>{"".join(parts)}</text>'
 
 

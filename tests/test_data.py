@@ -154,10 +154,7 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
     ]
     assert concept_data["sr.inertial_frames"]["svg_icon"].startswith("<svg")
     assert concept_data["sr.inertial_frames"]["svg_detail"].startswith("<svg")
-    assert (
-        concept_data["sr.inertial_frames"]["svg_graphic"]
-        == concept_data["sr.inertial_frames"]["svg_detail"]
-    )
+    assert "svg_graphic" not in concept_data["sr.inertial_frames"]
     assert concept_data["sr.inertial_frames"]["svg_icon_caption"] == "Icon caption"
     assert concept_data["sr.inertial_frames"]["svg_detail_caption"] == "Icon caption"
     assert concept_data["sr.inertial_frames"]["study_questions"] == [
@@ -213,7 +210,7 @@ def test_build_concept_data_uses_empty_graphics_for_unknown_node_ids():
 
     assert concept_data["99.99"]["svg_icon"] == ""
     assert concept_data["99.99"]["svg_detail"] == ""
-    assert concept_data["99.99"]["svg_graphic"] == ""
+    assert "svg_graphic" not in concept_data["99.99"]
     assert concept_data["99.99"]["study_questions"] == []
     assert concept_data["99.99"]["references"] == []
 

@@ -55,6 +55,7 @@ Dependencies:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -64,6 +65,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from srkg.kb import resolve_knowledge_base_paths
 from srkg.branding import PRODUCT_TITLE
+from srkg.config import DEFAULT_GOOGLE_DRIVE_CLIENT_ID
 from srkg.pipeline import generate_viewer_from_root
 from srkg.dag import format_dag_reports, load_dag_reports
 from srkg.module_diagnostics import (
@@ -88,6 +90,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", default="PhysicsKG.html", help="Output HTML file")
     parser.add_argument("--height", default="100vh")
     parser.add_argument("--width", default="100%")
+    parser.add_argument(
+        "--google-drive-client-id",
+        default=os.environ.get(
+            "PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID",
+            DEFAULT_GOOGLE_DRIVE_CLIENT_ID,
+        ),
+        help=(
+            "Google OAuth web-client ID for optional personal-data sync. "
+            "PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID overrides the project default."
+        ),
+    )
     parser.add_argument(
         "--title",
         nargs="+",
@@ -225,6 +238,7 @@ def main(argv: list[str] | None = None) -> None:
             domains=args.domains,
             also_load_linked_concepts=args.also_load_linked_concepts,
             relations=args.relations,
+            google_drive_client_id=args.google_drive_client_id,
         )
     )
 

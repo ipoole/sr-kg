@@ -2317,20 +2317,18 @@ def create_m_1_5_tangent_space(variant: str = "icon") -> str:
                       font_style="italic", fill=RED))
 
     body.extend(_draw_tangent_plane(260, 184, 274, 108, fill="#fbfbfb"))
-    basis_body, basis_defs = _draw_tangent_basis(214, 192)
+    basis_body, basis_defs = _draw_tangent_basis(260, 184)
     body.extend(basis_body)
     defs.extend(basis_defs)
     body.append(_line(250, 300, 260, 236, stroke=GREY, stroke_width=3,
                       stroke_dasharray="6 7", opacity="0.68"))
 
     if variant == "detail":
-        body.append(_math_text(346, 148, "T", sub="p", font_size=35,
+        body.append(_math_text(346, 148, "T", sub="p", suffix="M", font_size=35,
                                font_family=FONT, font_style="italic",
                                fill=BLACK, text_anchor="middle"))
-        body.append(_text(376, 148, "M", font_size=34, font_family=FONT,
-                          font_style="italic", fill=BLACK))
     else:
-        body.append(_math_text(340, 150, "T", sub="p", font_size=36,
+        body.append(_math_text(340, 150, "T", sub="p", suffix="M", font_size=36,
                                font_family=FONT, font_style="italic",
                                fill=BLACK, text_anchor="middle"))
 

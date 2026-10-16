@@ -51,6 +51,32 @@ def test_runtime_footprint_uses_global_positions_independent_of_zoom(browser_gra
 
 
 @pytest.mark.browser
+def test_expanded_modules_show_faint_outlines_matching_folded_geometry(browser_graph):
+    page = browser_graph.page
+    outlines = page.evaluate("() => kgExpandedModuleOutlineSnapshot()")
+
+    assert {outline["moduleId"] for outline in outlines} == {
+        "test.m01_foundations",
+        "test.m02_applications",
+    }
+    for outline in outlines:
+        footprint = page.evaluate("id => kgModuleFootprint(id)", outline["moduleId"])
+        for key in ("left", "right", "top", "bottom", "width", "height"):
+            assert outline[key] == pytest.approx(footprint[key])
+        assert outline["radius"] == pytest.approx(
+            min(footprint["width"], footprint["height"]) * 0.18
+        )
+        assert outline["opacity"] == pytest.approx(0.3)
+        assert outline["lineWidth"] == pytest.approx(1.75)
+
+    fold_applications(browser_graph)
+    remaining = page.evaluate("() => kgExpandedModuleOutlineSnapshot()")
+    assert [outline["moduleId"] for outline in remaining] == [
+        "test.m01_foundations"
+    ]
+
+
+@pytest.mark.browser
 def test_folded_box_matches_footprint_and_scales_its_label(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
@@ -79,7 +105,6 @@ def test_box_drag_translates_anchor_and_members_without_expansion_jump(browser_g
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")
     browser_graph.open_control_section("kg_layouts_section")
-    page.locator("#kg_layout_edit_persistence").select_option("personal")
     page.locator("#kg_layout_edit_toggle").check()
     fold_applications(browser_graph)
     page.evaluate("""id => {
