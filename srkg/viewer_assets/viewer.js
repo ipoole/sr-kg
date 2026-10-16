@@ -217,6 +217,7 @@
         var suppressedTouchDoubleTapUntil = 0;
         var pendingContainedConceptModuleSelection = null;
         var svgImageCache = {};
+        var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
         var nodeLabelWidth = kgNodeLabelConfig.width;
@@ -8838,6 +8839,7 @@
           updateRenderedEdgeWidths();
         });
         network.on("afterDrawing", function(ctx) {
+          if (!initialGraphProjectionReady) { return; }
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           drawGraphCompletionMarkers(ctx);
@@ -9760,6 +9762,8 @@
         // Context computation and relationship details retain the complete
         // authored edge set; rendering applies the selected display policy.
         renderGraphFromViewerState();
+        initialGraphProjectionReady = true;
+        network.redraw();
 
         var initialModuleId = moduleIdFromHash(window.location.hash);
         var initialNodeId = conceptIdFromHash(window.location.hash);

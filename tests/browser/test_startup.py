@@ -53,6 +53,17 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
 
 
 @pytest.mark.browser
+def test_folded_startup_does_not_decode_hidden_concept_icons(repo_browser_graph):
+    page = repo_browser_graph.page
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+
+    # Every decoded SVG image owns a document. A folded startup should decode
+    # the handful of visible module graphics, not every hidden concept icon.
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
 def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph):
     page = shared_browser_graph.page
 
