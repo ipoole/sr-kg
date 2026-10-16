@@ -186,6 +186,33 @@ def test_fit_controls_are_explicit_camera_actions(browser_graph):
 
 
 @pytest.mark.browser
+def test_fit_skips_animation_on_low_capability_devices(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept("3.1")
+    page.locator("#kg_fit_select").select_option("context")
+    animation = page.evaluate("""() => {
+      Object.defineProperty(navigator, "hardwareConcurrency", {
+        configurable: true,
+        get: () => 2
+      });
+      const original = network.moveTo.bind(network);
+      let captured = null;
+      network.moveTo = options => {
+        captured = options.animation;
+        return original(options);
+      };
+      document.getElementById("kg_fit_apply").click();
+      network.moveTo = original;
+      return {
+        enabled: window.kgCameraAnimationEnabled(),
+        animation: captured
+      };
+    }""")
+
+    assert animation == {"enabled": False, "animation": False}
+
+
+@pytest.mark.browser
 def test_fit_is_disabled_exactly_when_its_frame_target_is_empty(browser_graph):
     page = browser_graph.page
     fit_select = page.locator("#kg_fit_select")

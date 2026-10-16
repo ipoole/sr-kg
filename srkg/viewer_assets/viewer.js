@@ -6629,6 +6629,25 @@
           return revealNodeIds(selectionRepresentationNodeIds(), options);
         }
 
+        function cameraAnimationEnabled() {
+          if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            return false;
+          }
+          var memory = Number(navigator.deviceMemory);
+          if (Number.isFinite(memory) && memory > 0 && memory <= 4) {
+            return false;
+          }
+          var processors = Number(navigator.hardwareConcurrency);
+          if (Number.isFinite(processors) && processors > 0 && processors <= 4) {
+            return false;
+          }
+          return true;
+        }
+        window.kgCameraAnimationEnabled = cameraAnimationEnabled;
+
         function updateFitApplyButton() {
           var button = document.getElementById("kg_fit_apply");
           if (!button) { return; }
@@ -7098,7 +7117,7 @@
           var selection = viewerSelectionSnapshot();
           var ids = [];
           if (target === "reveal") {
-            revealViewerSelection({animation: true});
+            revealViewerSelection({animation: cameraAnimationEnabled()});
             return;
           } else if (target === "selection") {
             ids = selectionRepresentationNodeIds(selection);
@@ -8365,16 +8384,19 @@
             x: bounds.x - ((available.centerX - containerCenter.x) / scale),
             y: bounds.y - ((available.centerY - containerCenter.y) / scale)
           };
+          var animate = options.animation === undefined
+            ? cameraAnimationEnabled()
+            : options.animation !== false;
 
           network.moveTo({
             position: targetPosition,
             scale: scale,
-            animation: options.animation === false ? false : {
+            animation: animate ? {
               duration: options.duration || 250,
               easingFunction: "easeInOutQuad"
-            }
+            } : false
           });
-          setTimeout(updateNodeLabelPositions, options.animation === false ? 0 : 260);
+          setTimeout(updateNodeLabelPositions, animate ? 260 : 0);
         }
 
         function scheduleViewportRefresh() {
@@ -9853,7 +9875,15 @@
         document.getElementById("info_panel").addEventListener("click", function(e) {
           var summary = e.target.closest("summary");
           if (!summary || summary.parentElement.parentElement !== this) { return; }
-          materializeLazyFoldedSection(summary.parentElement, true);
+          var section = summary.parentElement;
+          if (!section.hasAttribute("data-lazy-section")) { return; }
+          if (e.target.closest("button, input, textarea, select, label, a")) { return; }
+          // Mutating a closed <details> during its default click action can
+          // cancel that action in older Safari. Open explicitly after the
+          // body has been materialised so the first tap is sufficient.
+          e.preventDefault();
+          materializeLazyFoldedSection(section, true);
+          section.open = true;
         }, true);
 
         /* Initial render. */
