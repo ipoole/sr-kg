@@ -2136,8 +2136,10 @@ def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(br
     assert "warning" in _visible_content_block_kinds(page)
 
     definition = page.locator("#info_panel #kg-toc-2-2-definition")
+    assert definition.locator(":scope > .content-block-body").count() == 0
     definition.locator(":scope > summary").click()
     assert definition.evaluate("el => el.open")
+    assert definition.locator(":scope > .content-block-body").count() == 1
 
     page.locator(
         "#info_panel #kg-toc-2-2-definition .kg-note-block-action"

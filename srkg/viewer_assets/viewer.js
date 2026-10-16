@@ -2833,6 +2833,9 @@
         function replaceTypesetContent(element, html) {
           if (!element) { return; }
           clearMathTypesetting(element);
+          if (element.id === "info_panel") {
+            lazyFoldedSectionBodies = {};
+          }
           element.innerHTML = html;
         }
 
@@ -3746,6 +3749,8 @@
             questionTypes: null
           }
         });
+        var lazyFoldedSectionBodies = {};
+        var nextLazyFoldedSectionId = 1;
 
         function currentReadingModeDefinition() {
           return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
@@ -3789,6 +3794,44 @@
           panel.querySelectorAll(":scope > details").forEach(function(section) {
             section.open = Boolean(section.id && retained[section.id]);
           });
+        }
+
+        function prepareLazyFoldedSections(panel) {
+          lazyFoldedSectionBodies = {};
+          if (!panel || readingMode !== "folded") { return; }
+          panel.querySelectorAll(":scope > details:not([open])").forEach(function(section) {
+            var summary = section.querySelector(":scope > summary");
+            if (!summary || !summary.nextSibling) { return; }
+            var key = "lazy-section-" + nextLazyFoldedSectionId;
+            nextLazyFoldedSectionId += 1;
+            var html = "";
+            while (summary.nextSibling) {
+              var node = summary.nextSibling;
+              html += node.nodeType === Node.ELEMENT_NODE
+                ? node.outerHTML
+                : (node.nodeValue || "");
+              node.remove();
+            }
+            lazyFoldedSectionBodies[key] = html;
+            section.setAttribute("data-lazy-section", key);
+          });
+        }
+
+        function materializeLazyFoldedSection(section) {
+          if (!section || !section.open) { return false; }
+          var key = section.getAttribute("data-lazy-section");
+          if (!key || !Object.prototype.hasOwnProperty.call(lazyFoldedSectionBodies, key)) {
+            return false;
+          }
+          section.insertAdjacentHTML("beforeend", lazyFoldedSectionBodies[key]);
+          delete lazyFoldedSectionBodies[key];
+          section.removeAttribute("data-lazy-section");
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([section]).catch(function(err) {
+              console.warn("MathJax folded-section typesetting failed:", err);
+            }).then(schedulePanelContentRefit);
+          }
+          return true;
         }
 
         function contentBlockPolicyFor(kind) {
@@ -5314,6 +5357,7 @@
             panel,
             moduleChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -7976,6 +8020,7 @@
             panel,
             conceptChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -9734,6 +9779,7 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            materializeLazyFoldedSection(e.target);
             if (
               e.target.classList.contains("user-note") &&
               !e.target.open
