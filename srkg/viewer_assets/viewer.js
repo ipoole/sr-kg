@@ -206,9 +206,8 @@
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
+        var moduleFootprintCache = {};
         var graphCompletionStateCache = null;
-        var graphOverlayDrawingSuspended = false;
-        var graphOverlayResumeTimer = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -678,9 +677,7 @@
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) {
-              refreshFoldedModuleGeometry(moduleId);
-            }
+            refreshModuleFootprintGeometry(moduleId);
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -992,7 +989,6 @@
         }
 
         function drawGraphCompletionMarkers(ctx) {
-          if (graphOverlayDrawingSuspended) { return; }
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
               drawGraphCompletionTick(
@@ -1005,25 +1001,6 @@
               );
             });
           });
-        }
-
-        function suspendGraphOverlays() {
-          graphOverlayDrawingSuspended = true;
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-            graphOverlayResumeTimer = null;
-          }
-        }
-
-        function resumeGraphOverlaysSoon() {
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-          }
-          graphOverlayResumeTimer = setTimeout(function() {
-            graphOverlayResumeTimer = null;
-            graphOverlayDrawingSuspended = false;
-            if (network && network.redraw) { network.redraw(); }
-          }, 80);
         }
 
         function getSvgNodeImage(nodeId, svgText) {
@@ -4255,6 +4232,7 @@
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -4264,15 +4242,24 @@
           }
         }
 
+        function refreshModuleFootprintGeometry(moduleId) {
+          if (selectedModuleIsFolded(moduleId)) {
+            refreshFoldedModuleGeometry(moduleId);
+          } else {
+            moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
+          }
+        }
+
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId);
+          moduleIds().forEach(function(moduleId) {
+            refreshModuleFootprintGeometry(moduleId);
           });
         }
 
         function foldModule(moduleId) {
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (!globalModuleAnchor(moduleId)) {
             setGlobalModuleAnchor(moduleId, geometry.position);
@@ -4469,6 +4456,55 @@
         function moduleCornerRadius(width, height) {
           return Math.min(width, height) * 0.18;
         }
+
+        function expandedModuleOutlineSnapshot() {
+          return moduleIds().filter(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) { return false; }
+            return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
+              var node = nodes.get(conceptId);
+              return node && !node.hidden;
+            });
+          }).map(function(moduleId) {
+            var footprint = moduleFootprintCache[String(moduleId)] || moduleFootprint(moduleId);
+            moduleFootprintCache[String(moduleId)] = footprint;
+            return {
+              moduleId: moduleId,
+              left: footprint.left,
+              right: footprint.right,
+              top: footprint.top,
+              bottom: footprint.bottom,
+              width: footprint.width,
+              height: footprint.height,
+              radius: moduleCornerRadius(footprint.width, footprint.height),
+              colour: "#6b7280",
+              opacity: 0.3,
+              lineWidth: 1.75
+            };
+          });
+        }
+
+        function drawExpandedModuleOutlines(ctx) {
+          var scale = network && network.getScale ? Number(network.getScale()) : 1;
+          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            ctx.save();
+            ctx.globalAlpha = outline.opacity;
+            ctx.strokeStyle = outline.colour;
+            ctx.lineWidth = outline.lineWidth / scale;
+            roundedRectPath(
+              ctx,
+              outline.left,
+              outline.top,
+              outline.width,
+              outline.height,
+              outline.radius
+            );
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
         function moduleGraphicCornerRadius(width, height, layout) {
           layout = layout || moduleGraphicLayout(width, height);
@@ -8784,7 +8820,10 @@
           });
         }
 
-        network.on("beforeDrawing", updateRenderedEdgeWidths);
+        network.on("beforeDrawing", function(ctx) {
+          drawExpandedModuleOutlines(ctx);
+          updateRenderedEdgeWidths();
+        });
         network.on("afterDrawing", function(ctx) {
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
@@ -8811,18 +8850,6 @@
         var graphCanvas = network.canvas && network.canvas.frame
           ? network.canvas.frame.canvas
           : null;
-        var graphInteractionSurface = graphCanvas || graphContainer;
-        graphInteractionSurface.addEventListener("touchstart", function() {
-          suspendGraphOverlays();
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchend", function(e) {
-          if (!e.touches || e.touches.length === 0) {
-            resumeGraphOverlaysSoon();
-          }
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchcancel", function() {
-          resumeGraphOverlaysSoon();
-        }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         var touchTapStart = null;
