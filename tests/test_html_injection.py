@@ -71,6 +71,17 @@ def test_inject_controls_adds_google_drive_client_id_to_runtime_config():
     assert '"googleDriveClientId": "example.apps.googleusercontent.com"' in injected
 
 
+def test_inject_controls_removes_unused_bootstrap_javascript():
+    source = _base_pyvis_html().replace(
+        "</head>",
+        '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script></head>',
+    )
+
+    injected = inject_controls(source, {}, {}, "Title")
+
+    assert "bootstrap.bundle.min.js" not in injected
+
+
 def test_favicon_asset_is_compact_accessible_svg():
     from srkg.html_injection import ASSET_DIR
 

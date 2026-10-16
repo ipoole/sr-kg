@@ -3824,8 +3824,8 @@
           });
         }
 
-        function materializeLazyFoldedSection(section) {
-          if (!section || !section.open) { return false; }
+        function materializeLazyFoldedSection(section, beforeOpen) {
+          if (!section || (!section.open && beforeOpen !== true)) { return false; }
           var key = section.getAttribute("data-lazy-section");
           if (!key || !Object.prototype.hasOwnProperty.call(lazyFoldedSectionBodies, key)) {
             return false;
@@ -9848,6 +9848,12 @@
             }
             schedulePanelContentRefit();
           }
+        }, true);
+
+        document.getElementById("info_panel").addEventListener("click", function(e) {
+          var summary = e.target.closest("summary");
+          if (!summary || summary.parentElement.parentElement !== this) { return; }
+          materializeLazyFoldedSection(summary.parentElement, true);
         }, true);
 
         /* Initial render. */

@@ -245,7 +245,6 @@ class Concept:
             ],
             "svg_icon": self.svg_icon,
             "svg_detail": svg_detail,
-            "svg_graphic": svg_detail,
             "svg_icon_caption": self.svg_icon_caption,
             "svg_detail_caption": self.svg_detail_caption or self.svg_icon_caption,
             "study_questions": [
