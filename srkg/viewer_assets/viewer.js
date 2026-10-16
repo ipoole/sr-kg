@@ -220,6 +220,7 @@
         var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
+        var detailedConceptRenderMinRadiusPx = 12;
         var nodeLabelWidth = kgNodeLabelConfig.width;
         var nodeLabelFontSize = kgNodeLabelConfig.fontSize;
         var tooltipTypesetTimer = null;
@@ -905,7 +906,9 @@
             var fill = color.background || "#999999";
             var border = color.border || "#333333";
             var concept = getConcept(node.id) || {};
-            var svgIcon = concept.svg_icon || concept.svg_graphic || "";
+            var svgIcon = options.renderGraphic === false
+              ? ""
+              : (concept.svg_icon || concept.svg_graphic || "");
             var svgImage = svgIcon ? getSvgNodeImage(node.id, svgIcon) : null;
 
             ctx.save();
@@ -954,6 +957,7 @@
 
         function drawVisibleNodes(ctx) {
           var positions = network.getPositions();
+          var scale = network.getScale();
           nodes.get().forEach(function(node) {
             if (node.hidden) { return; }
             if (node.isModuleNode) { return; }
@@ -963,6 +967,10 @@
 
             drawConceptFace(ctx, node, pos, {
               active: node.id === activeNodeId,
+              renderGraphic: (
+                (Number(node.visualSize) || Number(node.size) || 18) *
+                (node.id === activeNodeId ? activeNodeRadiusScale : 1) * scale
+              ) >= detailedConceptRenderMinRadiusPx,
               transient: Boolean(
                 transientConceptHighlight &&
                 transientConceptHighlight.nodeId === String(node.id)
@@ -990,8 +998,10 @@
         }
 
         function drawGraphCompletionMarkers(ctx) {
+          var scale = network.getScale();
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
+              if (symbol.radius * scale < 2.5) { return; }
               drawGraphCompletionTick(
                 ctx,
                 symbol.x,

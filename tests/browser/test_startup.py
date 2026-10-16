@@ -64,6 +64,28 @@ def test_folded_startup_does_not_decode_hidden_concept_icons(repo_browser_graph)
 
 
 @pytest.mark.browser
+def test_tiny_all_concept_view_does_not_decode_every_icon(repo_browser_graph):
+    page = repo_browser_graph.page
+    module_ids = page.locator("#kg_module_list .kg-module-item").evaluate_all(
+        "items => items.map(item => item.getAttribute('data-module-id'))"
+    )
+    for module_id in module_ids:
+        page.locator(
+            f'#kg_module_list .kg-module-item[data-module-id="{module_id}"]'
+        ).evaluate("item => item.click()")
+        page.locator(
+            '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
+        ).click()
+    page.evaluate("network.fit({animation: false}); network.redraw();")
+    page.wait_for_timeout(500)
+
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+    assert page.evaluate("network.getScale()") < 0.25
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
 def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph):
     page = shared_browser_graph.page
 
