@@ -9157,7 +9157,8 @@ var kgModuleGeometry = (function() {
               height: footprint.height,
               radius: moduleCornerRadius(footprint.width, footprint.height),
               colour: "#6b7280",
-              opacity: 0.22
+              opacity: 0.3,
+              lineWidth: 1.75
             };
           });
         }
@@ -9169,7 +9170,7 @@ var kgModuleGeometry = (function() {
             ctx.save();
             ctx.globalAlpha = outline.opacity;
             ctx.strokeStyle = outline.colour;
-            ctx.lineWidth = 1.25 / scale;
+            ctx.lineWidth = outline.lineWidth / scale;
             roundedRectPath(
               ctx,
               outline.left,
