@@ -23,6 +23,31 @@ def test_repeated_folded_projection_reuses_module_label_measurements(repo_browse
 
 
 @pytest.mark.browser
+def test_stable_redraw_does_not_rescan_edges(repo_browser_graph):
+    page = repo_browser_graph.page
+    edge_reads = page.evaluate("""async () => {
+      const original = edges.get.bind(edges);
+      let calls = 0;
+      edges.get = function(...args) {
+        calls += 1;
+        return original(...args);
+      };
+      try {
+        network.redraw();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        calls = 0;
+        network.redraw();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        return calls;
+      } finally {
+        edges.get = original;
+      }
+    }""")
+
+    assert edge_reads == 0
+
+
+@pytest.mark.browser
 def test_tangent_space_graphic_caption_typesets_its_math(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
     shared_repo_browser_graph.click_concept("math.tangent_space")

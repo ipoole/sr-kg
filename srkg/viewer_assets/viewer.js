@@ -214,6 +214,9 @@
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
         var hoveredEdgeBeforeHover = null;
+        var renderedEdgeWidthsDirty = true;
+        var renderedEdgeWidthScale = null;
+        var renderedEdgeWidthHoverId = null;
         var lastGraphNodeClick = null;
         var suppressedNativeDoubleClick = null;
         var suppressedTouchDoubleTapUntil = 0;
@@ -8912,6 +8915,13 @@
         function updateRenderedEdgeWidths() {
           var scale = network.getScale();
           if (!isFinite(scale) || scale <= 0) { return; }
+          if (
+            !renderedEdgeWidthsDirty &&
+            renderedEdgeWidthScale === scale &&
+            renderedEdgeWidthHoverId === hoveredEdgeId
+          ) {
+            return;
+          }
           edges.get().forEach(function(edge) {
             var rendered = network.body.edges[edge.id];
             if (!rendered || edge.hidden) { return; }
@@ -8929,7 +8939,14 @@
               ? Math.max(width, minimumPixels / scale)
               : width;
           });
+          renderedEdgeWidthsDirty = false;
+          renderedEdgeWidthScale = scale;
+          renderedEdgeWidthHoverId = hoveredEdgeId;
         }
+
+        edges.on("*", function() {
+          renderedEdgeWidthsDirty = true;
+        });
 
         network.on("beforeDrawing", function(ctx) {
           drawExpandedModuleOutlines(ctx);
