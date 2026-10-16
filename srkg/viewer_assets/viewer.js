@@ -234,6 +234,8 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
+        var touchDebugEnabled = window.location.search.indexOf("touchDebug=1") !== -1;
+        var touchDebugEvents = [];
         var defaultStartupConceptId = null;
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
@@ -640,6 +642,26 @@
             contextNoticeTimer = null;
           }, duration || 2800);
         }
+
+        function recordTouchDebug(label, detail) {
+          if (!touchDebugEnabled) { return; }
+          touchDebugEvents.push(label + (detail ? ":" + detail : ""));
+          touchDebugEvents = touchDebugEvents.slice(-10);
+          var output = document.getElementById("kg_touch_debug");
+          if (!output) {
+            output = document.createElement("div");
+            output.id = "kg_touch_debug";
+            output.style.cssText = "position:fixed;left:6px;right:6px;bottom:6px;" +
+              "z-index:10000;padding:6px;background:rgba(255,255,210,.96);" +
+              "border:1px solid #8a7b32;font:12px/1.3 monospace;" +
+              "pointer-events:none;white-space:normal;";
+            document.body.appendChild(output);
+          }
+          output.textContent = "Touch: " + touchDebugEvents.join(" · ");
+        }
+        window.kgTouchDebugSnapshot = function() {
+          return touchDebugEvents.slice();
+        };
 
         function updateLayoutFromDrag(params) {
           if (!layoutDraggingEnabled()) { return; }
@@ -8876,6 +8898,7 @@
 
         /* Browser event wiring. */
         network.on("click", function(params) {
+            recordTouchDebug("click", (params.nodes || []).join(",") || "none");
             if (touchDoubleTapWindowIsActive()) { return; }
             cancelPendingContainedConceptModuleSelection();
             if (params.nodes.length === 0 && params.edges && params.edges.length > 0) {
@@ -8908,6 +8931,7 @@
         });
 
         network.on("doubleClick", function(params) {
+          recordTouchDebug("net-double", (params.nodes || []).join(",") || "none");
           if (touchDoubleTapWindowIsActive()) { return; }
           if (!params.nodes || params.nodes.length === 0) { return; }
           if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
@@ -9047,6 +9071,7 @@
             });
           }
           if (handled) {
+            recordTouchDebug("handled", nodeId || "outline");
             suppressedTouchDoubleTapUntil = Date.now() + 700;
             if (event && event.cancelable) { event.preventDefault(); }
           }
@@ -9082,6 +9107,7 @@
         });
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
           if (!pointerEventIsTouch(e)) { return; }
+          recordTouchDebug("pointer-down", String(e.pointerType));
           lastTouchPointerEventAt = Date.now();
           touchTapStart = {
             pointerId: e.pointerId,
@@ -9091,6 +9117,9 @@
           };
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointerup", function(e) {
+          if (pointerEventIsTouch(e)) {
+            recordTouchDebug("pointer-up", String(e.pointerType));
+          }
           if (!pointerEventIsTouch(e) || !touchTapStart ||
               touchTapStart.pointerId !== e.pointerId) {
             return;
@@ -9108,6 +9137,7 @@
           }
         }, true);
         (graphCanvas || graphContainer).addEventListener("touchstart", function(e) {
+          recordTouchDebug("touch-start", String((e.touches || []).length));
           if (!e.touches || e.touches.length !== 1) {
             legacyTouchTapStart = null;
             return;
@@ -9120,6 +9150,7 @@
           };
         }, {capture: true, passive: true});
         (graphCanvas || graphContainer).addEventListener("touchend", function(e) {
+          recordTouchDebug("touch-end", String((e.changedTouches || []).length));
           if (Date.now() - lastTouchPointerEventAt < 1000) {
             legacyTouchTapStart = null;
             return;
@@ -9141,6 +9172,7 @@
           lastTouchTap = null;
         }, {capture: true, passive: true});
         (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
+          recordTouchDebug("dom-double", "");
           if (viewerState.displayScope === DisplayScope.HIDDEN || !network.getNodeAt) { return; }
           var rect = (graphCanvas || graphContainer).getBoundingClientRect();
           var nodeId = network.getNodeAt({
