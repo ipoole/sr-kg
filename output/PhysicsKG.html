@@ -13680,11 +13680,52 @@ var kgModuleGeometry = (function() {
         var lockedLayoutNoticeShown = false;
         var touchTapStart = null;
         var lastTouchTap = null;
+        var legacyTouchTapStart = null;
+        var lastTouchPointerEventAt = 0;
+        function pointerEventIsTouch(e) {
+          return e.pointerType === "touch" || e.pointerType === 2;
+        }
         function graphNodeAtPointerEvent(e) {
           if (!network.getNodeAt || viewerState.displayScope === DisplayScope.HIDDEN) { return null; }
           var surface = graphCanvas || graphContainer;
           var rect = surface.getBoundingClientRect();
           return network.getNodeAt({x: e.clientX - rect.left, y: e.clientY - rect.top});
+        }
+        function completeGraphTouchTap(start, clientX, clientY, now, event) {
+          if (!start) { return false; }
+          var moved = Math.hypot(clientX - start.x, clientY - start.y);
+          var duration = now - start.time;
+          if (moved > 18 || duration > 650) {
+            lastTouchTap = null;
+            return false;
+          }
+          var isDoubleTap = Boolean(
+            lastTouchTap &&
+            now - lastTouchTap.time <= 700 &&
+            Math.hypot(clientX - lastTouchTap.x, clientY - lastTouchTap.y) <= 32
+          );
+          lastTouchTap = {x: clientX, y: clientY, time: now};
+          if (!isDoubleTap) { return false; }
+          lastTouchTap = null;
+          var surface = graphCanvas || graphContainer;
+          var rect = surface.getBoundingClientRect();
+          var point = {
+            clientX: clientX,
+            clientY: clientY
+          };
+          var nodeId = graphNodeAtPointerEvent(point);
+          var handled = nodeId ? handleGraphNodeDoubleClick(nodeId) : false;
+          if (!handled) {
+            handled = collapseExpandedModuleAtDomPoint({
+              x: clientX - rect.left,
+              y: clientY - rect.top
+            });
+          }
+          if (handled) {
+            suppressedTouchDoubleTapUntil = Date.now() + 700;
+            if (event && event.cancelable) { event.preventDefault(); }
+          }
+          return handled;
         }
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
           var nodeId = graphNodeAtPointerEvent(e);
@@ -13715,7 +13756,8 @@ var kgModuleGeometry = (function() {
           }, true);
         });
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
-          if (e.pointerType !== "touch") { return; }
+          if (!pointerEventIsTouch(e)) { return; }
+          lastTouchPointerEventAt = Date.now();
           touchTapStart = {
             pointerId: e.pointerId,
             x: e.clientX,
@@ -13724,47 +13766,55 @@ var kgModuleGeometry = (function() {
           };
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointerup", function(e) {
-          if (e.pointerType !== "touch" || !touchTapStart ||
+          if (!pointerEventIsTouch(e) || !touchTapStart ||
               touchTapStart.pointerId !== e.pointerId) {
             return;
           }
           var now = Date.now();
-          var moved = Math.hypot(e.clientX - touchTapStart.x, e.clientY - touchTapStart.y);
-          var duration = now - touchTapStart.time;
+          lastTouchPointerEventAt = now;
+          var start = touchTapStart;
           touchTapStart = null;
-          if (moved > 14 || duration > 400) {
-            lastTouchTap = null;
-            return;
-          }
-          var isDoubleTap = Boolean(
-            lastTouchTap &&
-            now - lastTouchTap.time <= 500 &&
-            Math.hypot(e.clientX - lastTouchTap.x, e.clientY - lastTouchTap.y) <= 28
-          );
-          lastTouchTap = {x: e.clientX, y: e.clientY, time: now};
-          if (!isDoubleTap) { return; }
-          lastTouchTap = null;
-          var surface = graphCanvas || graphContainer;
-          var rect = surface.getBoundingClientRect();
-          var nodeId = graphNodeAtPointerEvent(e);
-          var handled = nodeId ? handleGraphNodeDoubleClick(nodeId) : false;
-          if (!handled) {
-            handled = collapseExpandedModuleAtDomPoint({
-              x: e.clientX - rect.left,
-              y: e.clientY - rect.top
-            });
-          }
-          if (handled) {
-            suppressedTouchDoubleTapUntil = Date.now() + 500;
-            e.preventDefault();
-          }
+          completeGraphTouchTap(start, e.clientX, e.clientY, now, e);
         }, true);
         (graphCanvas || graphContainer).addEventListener("pointercancel", function(e) {
-          if (e.pointerType === "touch") {
+          if (pointerEventIsTouch(e)) {
             touchTapStart = null;
             lastTouchTap = null;
           }
         }, true);
+        (graphCanvas || graphContainer).addEventListener("touchstart", function(e) {
+          if (!e.touches || e.touches.length !== 1) {
+            legacyTouchTapStart = null;
+            return;
+          }
+          var touch = e.touches[0];
+          legacyTouchTapStart = {
+            x: touch.clientX,
+            y: touch.clientY,
+            time: Date.now()
+          };
+        }, {capture: true, passive: true});
+        (graphCanvas || graphContainer).addEventListener("touchend", function(e) {
+          if (Date.now() - lastTouchPointerEventAt < 1000) {
+            legacyTouchTapStart = null;
+            return;
+          }
+          var touch = e.changedTouches && e.changedTouches[0];
+          var start = legacyTouchTapStart;
+          legacyTouchTapStart = null;
+          if (!touch || !start) { return; }
+          completeGraphTouchTap(
+            start,
+            touch.clientX,
+            touch.clientY,
+            Date.now(),
+            e
+          );
+        }, {capture: true, passive: false});
+        (graphCanvas || graphContainer).addEventListener("touchcancel", function() {
+          legacyTouchTapStart = null;
+          lastTouchTap = null;
+        }, {capture: true, passive: true});
         (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
           if (viewerState.displayScope === DisplayScope.HIDDEN || !network.getNodeAt) { return; }
           var rect = (graphCanvas || graphContainer).getBoundingClientRect();
