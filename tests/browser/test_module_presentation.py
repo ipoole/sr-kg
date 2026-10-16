@@ -2,6 +2,27 @@ import pytest
 
 
 @pytest.mark.browser
+def test_repeated_folded_projection_reuses_module_label_measurements(repo_browser_graph):
+    page = repo_browser_graph.page
+    canvases_created = page.evaluate("""() => {
+      const original = document.createElement.bind(document);
+      let calls = 0;
+      document.createElement = function(tagName, options) {
+        if (String(tagName).toLowerCase() === "canvas") { calls += 1; }
+        return original(tagName, options);
+      };
+      try {
+        window.kgClearSelection();
+        return calls;
+      } finally {
+        document.createElement = original;
+      }
+    }""")
+
+    assert canvases_created == 0
+
+
+@pytest.mark.browser
 def test_tangent_space_graphic_caption_typesets_its_math(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
     shared_repo_browser_graph.click_concept("math.tangent_space")

@@ -207,6 +207,8 @@
         var foldedModules = {};
         var preferredFoldedModules = {};
         var moduleFootprintCache = {};
+        var conceptFootprintExtentsCache = {};
+        var fittedModuleLabelCache = {};
         var graphCompletionStateCache = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
@@ -744,6 +746,7 @@
         }
 
         function buildNodeLabels() {
+          conceptFootprintExtentsCache = {};
           nodeLabelLayer.innerHTML = "";
           Object.keys(conceptData).forEach(function(id) {
             var el = document.createElement("div");
@@ -765,6 +768,7 @@
             MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
               console.warn("MathJax label typesetting failed:", err);
             }).then(function() {
+              conceptFootprintExtentsCache = {};
               updateNodeLabelPositions();
               refreshModuleFootprints();
             });
@@ -4255,6 +4259,10 @@
         }
 
         function conceptFootprintExtents(conceptId) {
+          conceptId = String(conceptId);
+          if (conceptFootprintExtentsCache[conceptId]) {
+            return Object.assign({}, conceptFootprintExtentsCache[conceptId]);
+          }
           var node = originalNodes[String(conceptId)] || nodes.get(conceptId) || {};
           var radius = Number(node.visualSize) || Number(node.size) || 100;
           var labelHeight = nodeLabelFontSize * 3.2;
@@ -4273,12 +4281,14 @@
             labelWidth = Math.max(labelWidth, probe.scrollWidth);
             probe.remove();
           }
-          return {
+          var extents = {
             left: Math.max(radius, labelWidth / 2),
             right: Math.max(radius, labelWidth / 2),
             top: radius,
             bottom: radius + 4 + labelHeight
           };
+          conceptFootprintExtentsCache[conceptId] = extents;
+          return Object.assign({}, extents);
         }
 
         function moduleFootprint(moduleId) {
@@ -4318,6 +4328,11 @@
           moduleIds().forEach(function(moduleId) {
             refreshModuleFootprintGeometry(moduleId);
           });
+        }
+
+        function refreshModuleFootprintsAfterFontLoad() {
+          conceptFootprintExtentsCache = {};
+          refreshModuleFootprints();
         }
 
         function foldModule(moduleId) {
@@ -4407,6 +4422,18 @@
 
         function fittedModuleLabel(title, memberCount, width, height, options) {
           options = options || {};
+          var cacheKey = JSON.stringify([
+            String(title), Number(memberCount), Number(width), Number(height),
+            Number(options.countFontSize || 80),
+            Number(options.lineWidthFraction || 0.88),
+            Number(options.titleFontCap || 160),
+            Number(options.availableHeight || 0),
+            Number(options.lineHeightFactor || 1.25),
+            Number(options.verticalShift || 0)
+          ]);
+          if (fittedModuleLabelCache[cacheKey]) {
+            return Object.assign({}, fittedModuleLabelCache[cacheKey]);
+          }
           var context = document.createElement("canvas").getContext("2d");
           var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
           var countFontSize = options.countFontSize || 80;
@@ -4444,7 +4471,7 @@
           }
           var titleLines = linesAt(low);
           var verticalShift = Number(options.verticalShift) || 0;
-          return {
+          var result = {
             text: titleLines.map(function(line) {
               return "<b>" + escapeHtml(line) + "</b>";
             }).join("\n") + "\n" + countLabel,
@@ -4456,6 +4483,8 @@
             titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
             countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
           };
+          fittedModuleLabelCache[cacheKey] = result;
+          return Object.assign({}, result);
         }
 
         function moduleGraphicLayout(width, height) {
@@ -8747,6 +8776,9 @@
           var baseVisible = {};
           var hiddenMembers = {};
           var fitIds = [];
+          var moduleNodeAdds = [];
+          var moduleNodeUpdates = [];
+          var moduleNodeMoves = [];
           baseVisibleIds.forEach(function(id) {
             baseVisible[String(id)] = true;
           });
@@ -8773,16 +8805,26 @@
             if (represented) {
               var moduleNode = moduleGraphNode(moduleId);
               if (nodes.get(graphNodeId)) {
-                nodes.update(moduleNode);
+                moduleNodeUpdates.push(moduleNode);
               } else {
-                nodes.add(moduleNode);
+                moduleNodeAdds.push(moduleNode);
               }
-              // DataSet updates truncate x/y in vis-network; dragging does not.
-              network.moveNode(graphNodeId, moduleNode.x, moduleNode.y);
+              moduleNodeMoves.push(moduleNode);
               fitIds.push(graphNodeId);
             } else if (nodes.get(graphNodeId)) {
-              nodes.update({id: graphNodeId, hidden: true});
+              moduleNodeUpdates.push({id: graphNodeId, hidden: true});
             }
+          });
+
+          if (moduleNodeAdds.length > 0) {
+            nodes.add(moduleNodeAdds);
+          }
+          if (moduleNodeUpdates.length > 0) {
+            nodes.update(moduleNodeUpdates);
+          }
+          // DataSet updates truncate x/y in vis-network; dragging does not.
+          moduleNodeMoves.forEach(function(moduleNode) {
+            network.moveNode(moduleNode.id, moduleNode.x, moduleNode.y);
           });
 
           nodes.update(Object.keys(hiddenMembers).filter(function(id) {
@@ -9796,7 +9838,7 @@
         buildNodeLabels();
         refreshModuleFootprints();
         if (document.fonts && document.fonts.addEventListener) {
-          document.fonts.addEventListener("loadingdone", refreshModuleFootprints);
+          document.fonts.addEventListener("loadingdone", refreshModuleFootprintsAfterFontLoad);
         }
         buildConceptList("");
         buildModuleList();
