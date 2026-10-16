@@ -809,9 +809,9 @@
           if (!nodeTooltip || viewerState.displayScope === DisplayScope.HIDDEN) { return; }
           var moduleId = moduleIdFromGraphNodeId(nodeId);
           if (moduleId && getModule(moduleId)) {
-            nodeTooltip.innerHTML = moduleTooltipHtml(moduleId);
+            replaceTypesetContent(nodeTooltip, moduleTooltipHtml(moduleId));
           } else if (getConcept(nodeId)) {
-            nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+            replaceTypesetContent(nodeTooltip, conceptTooltipHtml(nodeId));
           } else {
             return;
           }
@@ -824,7 +824,7 @@
           var edge = edges.get(edgeId);
           if (!nodeTooltip || !edgeHoverableInCurrentView(edge)) { return; }
           hideConceptPreview(true);
-          nodeTooltip.innerHTML = edgeTooltipHtml(edge);
+          replaceTypesetContent(nodeTooltip, edgeTooltipHtml(edge));
           nodeTooltip.style.display = "block";
           positionNodeTooltip(pointer);
           scheduleTooltipTypeset();
@@ -837,7 +837,7 @@
           }
           if (nodeTooltip) {
             nodeTooltip.style.display = "none";
-            nodeTooltip.innerHTML = "";
+            replaceTypesetContent(nodeTooltip, "");
           }
         }
 
@@ -2813,14 +2813,23 @@
           return html;
         }
 
+        function clearMathTypesetting(element) {
+          if (element && window.MathJax && MathJax.typesetClear) {
+            MathJax.typesetClear([element]);
+          }
+        }
+
+        function replaceTypesetContent(element, html) {
+          if (!element) { return; }
+          clearMathTypesetting(element);
+          element.innerHTML = html;
+        }
+
         function typesetInfoPanel(options) {
           options = options || {};
           var panel = document.getElementById("info_panel");
           schedulePanelContentRefit();
           if (window.MathJax && MathJax.typesetPromise) {
-            if (MathJax.typesetClear) {
-              MathJax.typesetClear([panel]);
-            }
             MathJax.typesetPromise([panel]).catch(function(err) {
               console.warn("MathJax typesetting failed:", err);
             }).then(function() {
@@ -5289,7 +5298,7 @@
 
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             moduleChanged ? [] : retainedOpenSections
@@ -5774,7 +5783,7 @@
           conceptPreview.classList.remove("concept-preview-pinned");
           clearTransientConceptHighlight();
           conceptPreview.style.display = "none";
-          conceptPreview.innerHTML = "";
+          replaceTypesetContent(conceptPreview, "");
         }
 
         function scheduleConceptPreviewHide() {
@@ -5794,7 +5803,7 @@
           cancelConceptPreviewHide();
           conceptPreviewPinned = Boolean(options.pinned);
           conceptPreviewAnchor = link;
-          conceptPreview.innerHTML = conceptPreviewHtml(id);
+          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id));
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
           positionConceptPreview(link);
           applyTransientConceptHighlight(id);
@@ -7538,7 +7547,7 @@
           var dialog = document.getElementById("kg_inspection_dialog");
           var body = document.getElementById("kg_inspection_body");
           if (!dialog || !body) { return; }
-          body.innerHTML = html;
+          replaceTypesetContent(body, html);
           if (!dialog.open) { dialog.showModal(); }
           if (window.MathJax && MathJax.typesetPromise) {
             MathJax.typesetPromise([body]).catch(function(err) {
@@ -7750,7 +7759,10 @@
           }
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = automaticQuestionFeedbackHtml(question, progress);
+            replaceTypesetContent(
+              feedbackHost,
+              automaticQuestionFeedbackHtml(question, progress)
+            );
           }
           var button = card.querySelector(".study-check-answer");
           if (button) { button.disabled = true; }
@@ -7805,11 +7817,9 @@
         function renderSelfAssessedFeedback(card, question, progress, response, pending) {
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = selfAssessedQuestionFeedbackHtml(
-              question,
-              progress,
-              response,
-              pending
+            replaceTypesetContent(
+              feedbackHost,
+              selfAssessedQuestionFeedbackHtml(question, progress, response, pending)
             );
           }
           typesetStudyCard(card);
@@ -7877,9 +7887,9 @@
             currentConceptTocItems = [];
             setActiveConceptSection(null);
             var missingPanel = document.getElementById("info_panel");
-            missingPanel.innerHTML =
+            replaceTypesetContent(missingPanel,
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
-              "<p>No concept data was found for this node.</p>";
+              "<p>No concept data was found for this node.</p>");
             missingPanel.setAttribute("data-concept-id", String(nodeId));
             missingPanel.removeAttribute("data-module-id");
             missingPanel.scrollTop = 0;
@@ -7950,7 +7960,7 @@
           }
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             conceptChanged ? [] : retainedOpenSections
@@ -7986,7 +7996,7 @@
 
           if (relations.length === 0) {
             html += "<p>No edge key data was loaded.</p>";
-            document.getElementById("info_panel").innerHTML = html;
+            replaceTypesetContent(document.getElementById("info_panel"), html);
             schedulePanelContentRefit();
             return;
           }
@@ -8012,7 +8022,7 @@
           });
 
           html += "</tbody></table>";
-          document.getElementById("info_panel").innerHTML = html;
+          replaceTypesetContent(document.getElementById("info_panel"), html);
           schedulePanelContentRefit();
         };
 
@@ -8477,7 +8487,10 @@
         function renderInitialInfoPanel() {
           currentConceptTocItems = [];
           var panel = document.getElementById("info_panel");
-          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>";
+          replaceTypesetContent(
+            panel,
+            "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>"
+          );
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
           panel.scrollTop = 0;
