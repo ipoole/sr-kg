@@ -745,6 +745,56 @@
         z-index: 5;
       }
 
+      #kg_module_fold_controls {
+        bottom: 0;
+        left: 0;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 6;
+      }
+
+      .kg-module-corner-control {
+        align-items: center;
+        appearance: none;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: none;
+        height: 40px;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+        pointer-events: auto;
+        position: absolute;
+        touch-action: manipulation;
+        width: 40px;
+      }
+
+      .kg-module-corner-control > span {
+        align-items: center;
+        background: rgba(255,255,255,0.94);
+        border: 1.5px solid #315a72;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(15,23,42,0.22);
+        color: #23485f;
+        display: flex;
+        font: 700 18px/1 Arial, sans-serif;
+        height: 23px;
+        justify-content: center;
+        width: 23px;
+      }
+
+      .kg-module-corner-control:hover > span,
+      .kg-module-corner-control:focus-visible > span {
+        background: #eaf4fa;
+        border-color: #123e5a;
+        outline: 2px solid rgba(18,62,90,0.24);
+        outline-offset: 1px;
+      }
+
       .kg-node-label {
         box-sizing: border-box;
         color: #111;
@@ -2605,7 +2655,8 @@
     }
 
     body.kg-graph-hidden #mynetwork,
-    body.kg-graph-hidden #kg_node_labels {
+    body.kg-graph-hidden #kg_node_labels,
+    body.kg-graph-hidden #kg_module_fold_controls {
         opacity: 0;
         pointer-events: none;
     }
@@ -3468,7 +3519,7 @@
 
     <div id="info_panel">
       <h2>PhysicsKG - An Atlas of Physics Knowledge</h2>
-      <p>Select a concept or module, or double-click a module to expand it.</p>
+      <p>Select a concept or module; use a module's corner control to expand or collapse it.</p>
     </div>
     <dialog id="kg_inspection_dialog" class="kg-inspection" aria-labelledby="kg_inspection_title">
       <div class="kg-inspection-head">
@@ -4840,15 +4891,19 @@ var kgModuleGeometry = (function() {
         var allEdges = edges.get();
         var graphContainer = document.getElementById("mynetwork");
         var nodeLabelLayer = document.createElement("div");
+        var moduleFoldControlLayer = document.createElement("div");
         var nodeTooltip = document.createElement("div");
         var conceptPreview = document.createElement("div");
         var nodeLabelEls = {};
+        var moduleFoldControlEls = {};
         var defaultViewTitle = document.getElementById("kg_view_title")
           ? document.getElementById("kg_view_title").textContent
           : "";
 
         nodeLabelLayer.id = "kg_node_labels";
         graphContainer.appendChild(nodeLabelLayer);
+        moduleFoldControlLayer.id = "kg_module_fold_controls";
+        graphContainer.appendChild(moduleFoldControlLayer);
         buildWorkspaceShell();
         nodeTooltip.id = "kg_node_tooltip";
         nodeTooltip.setAttribute("role", "tooltip");
@@ -4892,10 +4947,6 @@ var kgModuleGeometry = (function() {
         var renderedEdgeWidthsDirty = true;
         var renderedEdgeWidthScale = null;
         var renderedEdgeWidthHoverId = null;
-        var lastGraphNodeClick = null;
-        var suppressedNativeDoubleClick = null;
-        var suppressedTouchDoubleTapUntil = 0;
-        var pendingContainedConceptModuleSelection = null;
         var svgImageCache = {};
         var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
@@ -4909,8 +4960,6 @@ var kgModuleGeometry = (function() {
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
-        var touchDebugEnabled = window.location.search.indexOf("touchDebug=1") !== -1;
-        var touchDebugEvents = [];
         var defaultStartupConceptId = null;
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
@@ -5318,26 +5367,6 @@ var kgModuleGeometry = (function() {
           }, duration || 2800);
         }
 
-        function recordTouchDebug(label, detail) {
-          if (!touchDebugEnabled) { return; }
-          touchDebugEvents.push(label + (detail ? ":" + detail : ""));
-          touchDebugEvents = touchDebugEvents.slice(-10);
-          var output = document.getElementById("kg_touch_debug");
-          if (!output) {
-            output = document.createElement("div");
-            output.id = "kg_touch_debug";
-            output.style.cssText = "position:fixed;left:6px;right:6px;bottom:6px;" +
-              "z-index:10000;padding:6px;background:rgba(255,255,210,.96);" +
-              "border:1px solid #8a7b32;font:12px/1.3 monospace;" +
-              "pointer-events:none;white-space:normal;";
-            document.body.appendChild(output);
-          }
-          output.textContent = "Touch: " + touchDebugEvents.join(" · ");
-        }
-        window.kgTouchDebugSnapshot = function() {
-          return touchDebugEvents.slice();
-        };
-
         function updateLayoutFromDrag(params) {
           if (!layoutDraggingEnabled()) { return; }
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
@@ -5458,6 +5487,67 @@ var kgModuleGeometry = (function() {
           });
           typesetNodeLabels();
           updateNodeLabelPositions();
+        }
+
+        function buildModuleFoldControls() {
+          moduleFoldControlLayer.innerHTML = "";
+          moduleFoldControlEls = {};
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "kg-module-corner-control";
+            button.setAttribute("data-module-id", moduleId);
+            button.innerHTML = '<span aria-hidden="true"></span>';
+            moduleFoldControlLayer.appendChild(button);
+            moduleFoldControlEls[String(moduleId)] = button;
+          });
+          updateModuleFoldControlPositions();
+        }
+
+        function updateModuleFoldControlPositions() {
+          if (!network || !moduleFoldControlLayer) { return; }
+          var canvasEl = network.canvas && network.canvas.frame
+            ? network.canvas.frame.canvas
+            : null;
+          if (!canvasEl) { return; }
+          var canvasRect = canvasEl.getBoundingClientRect();
+          var layerRect = moduleFoldControlLayer.getBoundingClientRect();
+          var expandedOutlines = {};
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            expandedOutlines[String(outline.moduleId)] = outline;
+          });
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var button = moduleFoldControlEls[String(moduleId)];
+            if (!button) { return; }
+            var folded = selectedModuleIsFolded(moduleId);
+            var corner = null;
+            if (folded) {
+              var nodeId = moduleGraphNodeId(moduleId);
+              var node = nodes.get(nodeId);
+              var rendered = network.body.nodes[nodeId];
+              var shape = rendered && rendered.shape;
+              if (node && !node.hidden && shape) {
+                corner = {x: shape.left + shape.width, y: shape.top};
+              }
+            } else {
+              var outline = expandedOutlines[String(moduleId)];
+              if (outline) {
+                corner = {x: outline.right, y: outline.top};
+              }
+            }
+            if (!corner || viewerState.displayScope === DisplayScope.HIDDEN) {
+              button.style.display = "none";
+              return;
+            }
+            var dom = network.canvasToDOM(corner);
+            var title = (getModule(moduleId) || {}).title || moduleId;
+            button.style.display = "block";
+            button.style.left = (canvasRect.left - layerRect.left + dom.x - 20) + "px";
+            button.style.top = (canvasRect.top - layerRect.top + dom.y - 20) + "px";
+            button.setAttribute("data-fold-state", folded ? "folded" : "expanded");
+            button.setAttribute("aria-label", (folded ? "Expand " : "Collapse ") + title + " module");
+            button.querySelector("span").textContent = folded ? "+" : "−";
+          });
         }
 
         function typesetNodeLabels() {
@@ -5595,6 +5685,7 @@ var kgModuleGeometry = (function() {
               transient
             );
           });
+          updateModuleFoldControlPositions();
         }
         window.kgUpdateNodeLabelPositions = updateNodeLabelPositions;
 
@@ -9659,122 +9750,6 @@ var kgModuleGeometry = (function() {
             " in the graph.";
         }
 
-        function toggleModuleFoldForGraphNode(nodeId) {
-          nodeId = String(nodeId || "");
-          var moduleId = moduleIdFromGraphNodeId(nodeId);
-          if (moduleId && selectedModuleIsFolded(moduleId)) {
-            setSelectedModuleFoldState(moduleId, false);
-            return true;
-          }
-          if (!getConcept(nodeId)) { return false; }
-          var owningModuleId = moduleIdForConcept(nodeId);
-          if (!owningModuleId || selectedModuleIsFolded(owningModuleId)) { return false; }
-          setSelectedModuleFoldState(owningModuleId, true);
-          return true;
-        }
-
-        function expandedModuleAtCanvasPoint(point) {
-          if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
-            return null;
-          }
-          var matches = moduleIdsWithMembers().filter(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) { return false; }
-            var hasVisibleMember = moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
-              var node = nodes.get(conceptId);
-              return node && !node.hidden;
-            });
-            if (!hasVisibleMember) { return false; }
-            var bounds = moduleFootprint(moduleId);
-            return point.x >= bounds.left && point.x <= bounds.right &&
-              point.y >= bounds.top && point.y <= bounds.bottom;
-          });
-          return matches.length === 1 ? matches[0] : null;
-        }
-
-        function collapseExpandedModuleAtDomPoint(point) {
-          if (!network.DOMtoCanvas) { return false; }
-          var moduleId = expandedModuleAtCanvasPoint(network.DOMtoCanvas(point));
-          if (!moduleId) { return false; }
-          setSelectedModuleFoldState(moduleId, true);
-          return true;
-        }
-
-        /*
-         * Real double-clicks can fire a normal click first. That click may refit
-         * the graph and move the target before the browser dblclick arrives, so
-         * keep a short-lived recent-node fallback alongside vis-network events.
-         */
-        function handleGraphNodeDoubleClick(nodeId) {
-          cancelPendingContainedConceptModuleSelection();
-          if (toggleModuleFoldForGraphNode(nodeId)) {
-            suppressedNativeDoubleClick = {
-              nodeId: String(nodeId || ""),
-              until: Date.now() + 500
-            };
-            return true;
-          }
-          return false;
-        }
-
-        function cancelPendingContainedConceptModuleSelection() {
-          if (!pendingContainedConceptModuleSelection) { return; }
-          clearTimeout(pendingContainedConceptModuleSelection.timerId);
-          pendingContainedConceptModuleSelection = null;
-        }
-
-        function deferModuleSelectionForContainedConcept(moduleId) {
-          moduleId = String(moduleId || "");
-          if (
-            !activeNodeId ||
-            moduleIdForConcept(activeNodeId) !== moduleId ||
-            !selectedModuleIsFolded(moduleId)
-          ) {
-            return false;
-          }
-          pendingContainedConceptModuleSelection = {
-            moduleId: moduleId,
-            timerId: setTimeout(function() {
-              pendingContainedConceptModuleSelection = null;
-              focusModule(moduleId, "Selected");
-            }, 500)
-          };
-          return true;
-        }
-
-        function graphNodeClickIsDoubleClick(nodeId) {
-          var now = Date.now();
-          nodeId = String(nodeId || "");
-          var isDouble = Boolean(
-            lastGraphNodeClick &&
-            lastGraphNodeClick.nodeId === nodeId &&
-            now - lastGraphNodeClick.time <= 420
-          );
-          lastGraphNodeClick = {
-            nodeId: nodeId,
-            time: now
-          };
-          return isDouble;
-        }
-
-        function nativeDoubleClickIsSuppressed(nodeId) {
-          return Boolean(
-            suppressedNativeDoubleClick &&
-            suppressedNativeDoubleClick.nodeId === String(nodeId || "") &&
-            Date.now() <= suppressedNativeDoubleClick.until
-          );
-        }
-
-        function touchDoubleTapWindowIsActive() {
-          return Date.now() <= suppressedTouchDoubleTapUntil;
-        }
-
-        function recentGraphClickNodeId(maxAgeMs) {
-          if (!lastGraphNodeClick || Date.now() - lastGraphNodeClick.time > maxAgeMs) {
-            return null;
-          }
-          return lastGraphNodeClick.nodeId;
-        }
-
         function renderModuleGraphFoldControl(moduleId) {
           var folded = selectedModuleIsFolded(moduleId);
           return '<div class="module-graph-fold-control" aria-label="Module graph display">' +
@@ -13296,7 +13271,8 @@ var kgModuleGeometry = (function() {
           var panel = document.getElementById("info_panel");
           replaceTypesetContent(
             panel,
-            "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>"
+            "<h2>" + escapeHtml(defaultViewTitle) +
+            "</h2><p>Select a concept or module; use a module's corner control to expand or collapse it.</p>"
           );
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
@@ -13573,44 +13549,21 @@ var kgModuleGeometry = (function() {
 
         /* Browser event wiring. */
         network.on("click", function(params) {
-            recordTouchDebug("click", (params.nodes || []).join(",") || "none");
-            if (touchDoubleTapWindowIsActive()) { return; }
-            cancelPendingContainedConceptModuleSelection();
             if (params.nodes.length === 0 && params.edges && params.edges.length > 0) {
                 showEdgeDetails(params.edges[0]);
                 return;
             }
 
-            if (params.nodes.length === 0) {
-                var recentNodeId = recentGraphClickNodeId(500);
-                if (recentNodeId && handleGraphNodeDoubleClick(recentNodeId)) {
-                  return;
-                }
-                return;
-            }
+            if (params.nodes.length === 0) { return; }
 
             const nodeId = params.nodes[0];
-            if (graphNodeClickIsDoubleClick(nodeId) && handleGraphNodeDoubleClick(nodeId)) {
-              return;
-            }
             const clickedModuleId = moduleIdFromGraphNodeId(nodeId);
             if (clickedModuleId && getModule(clickedModuleId)) {
-              if (deferModuleSelectionForContainedConcept(clickedModuleId)) {
-                return;
-              }
               focusModule(clickedModuleId, "Selected");
               return;
             }
 
             focusConcept(nodeId, "Selected");
-        });
-
-        network.on("doubleClick", function(params) {
-          recordTouchDebug("net-double", (params.nodes || []).join(",") || "none");
-          if (touchDoubleTapWindowIsActive()) { return; }
-          if (!params.nodes || params.nodes.length === 0) { return; }
-          if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
-          handleGraphNodeDoubleClick(params.nodes[0]);
         });
 
         network.on("hoverNode", function(params) {
@@ -13702,55 +13655,11 @@ var kgModuleGeometry = (function() {
           : null;
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
-        var touchTapStart = null;
-        var lastTouchTap = null;
-        var legacyTouchTapStart = null;
-        var lastTouchPointerEventAt = 0;
-        function pointerEventIsTouch(e) {
-          return e.pointerType === "touch" || e.pointerType === 2;
-        }
         function graphNodeAtPointerEvent(e) {
           if (!network.getNodeAt || viewerState.displayScope === DisplayScope.HIDDEN) { return null; }
           var surface = graphCanvas || graphContainer;
           var rect = surface.getBoundingClientRect();
           return network.getNodeAt({x: e.clientX - rect.left, y: e.clientY - rect.top});
-        }
-        function completeGraphTouchTap(start, clientX, clientY, now, event) {
-          if (!start) { return false; }
-          var moved = Math.hypot(clientX - start.x, clientY - start.y);
-          var duration = now - start.time;
-          if (moved > 18 || duration > 650) {
-            lastTouchTap = null;
-            return false;
-          }
-          var isDoubleTap = Boolean(
-            lastTouchTap &&
-            now - lastTouchTap.time <= 700 &&
-            Math.hypot(clientX - lastTouchTap.x, clientY - lastTouchTap.y) <= 32
-          );
-          lastTouchTap = {x: clientX, y: clientY, time: now};
-          if (!isDoubleTap) { return false; }
-          lastTouchTap = null;
-          var surface = graphCanvas || graphContainer;
-          var rect = surface.getBoundingClientRect();
-          var point = {
-            clientX: clientX,
-            clientY: clientY
-          };
-          var nodeId = graphNodeAtPointerEvent(point);
-          var handled = nodeId ? handleGraphNodeDoubleClick(nodeId) : false;
-          if (!handled) {
-            handled = collapseExpandedModuleAtDomPoint({
-              x: clientX - rect.left,
-              y: clientY - rect.top
-            });
-          }
-          if (handled) {
-            recordTouchDebug("handled", nodeId || "outline");
-            suppressedTouchDoubleTapUntil = Date.now() + 700;
-            if (event && event.cancelable) { event.preventDefault(); }
-          }
-          return handled;
         }
         (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
           var nodeId = graphNodeAtPointerEvent(e);
@@ -13780,101 +13689,15 @@ var kgModuleGeometry = (function() {
             lockedDragProbe = null;
           }, true);
         });
-        (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
-          if (!pointerEventIsTouch(e)) { return; }
-          recordTouchDebug("pointer-down", String(e.pointerType));
-          lastTouchPointerEventAt = Date.now();
-          touchTapStart = {
-            pointerId: e.pointerId,
-            x: e.clientX,
-            y: e.clientY,
-            time: Date.now()
-          };
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("pointerup", function(e) {
-          if (pointerEventIsTouch(e)) {
-            recordTouchDebug("pointer-up", String(e.pointerType));
-          }
-          if (!pointerEventIsTouch(e) || !touchTapStart ||
-              touchTapStart.pointerId !== e.pointerId) {
-            return;
-          }
-          var now = Date.now();
-          lastTouchPointerEventAt = now;
-          var start = touchTapStart;
-          touchTapStart = null;
-          completeGraphTouchTap(start, e.clientX, e.clientY, now, e);
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("pointercancel", function(e) {
-          if (pointerEventIsTouch(e)) {
-            touchTapStart = null;
-            lastTouchTap = null;
-          }
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("touchstart", function(e) {
-          recordTouchDebug("touch-start", String((e.touches || []).length));
-          if (!e.touches || e.touches.length !== 1) {
-            legacyTouchTapStart = null;
-            return;
-          }
-          var touch = e.touches[0];
-          legacyTouchTapStart = {
-            x: touch.clientX,
-            y: touch.clientY,
-            time: Date.now()
-          };
-        }, {capture: true, passive: true});
-        (graphCanvas || graphContainer).addEventListener("touchend", function(e) {
-          recordTouchDebug("touch-end", String((e.changedTouches || []).length));
-          if (Date.now() - lastTouchPointerEventAt < 1000) {
-            legacyTouchTapStart = null;
-            return;
-          }
-          var touch = e.changedTouches && e.changedTouches[0];
-          var start = legacyTouchTapStart;
-          legacyTouchTapStart = null;
-          if (!touch || !start) { return; }
-          completeGraphTouchTap(
-            start,
-            touch.clientX,
-            touch.clientY,
-            Date.now(),
-            e
-          );
-        }, {capture: true, passive: false});
-        (graphCanvas || graphContainer).addEventListener("touchcancel", function() {
-          legacyTouchTapStart = null;
-          lastTouchTap = null;
-        }, {capture: true, passive: true});
-        (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
-          recordTouchDebug("dom-double", "");
-          if (viewerState.displayScope === DisplayScope.HIDDEN || !network.getNodeAt) { return; }
-          var rect = (graphCanvas || graphContainer).getBoundingClientRect();
-          var nodeId = network.getNodeAt({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-          }) || recentGraphClickNodeId(800);
-          if (
-            touchDoubleTapWindowIsActive() ||
-            nativeDoubleClickIsSuppressed(nodeId)
-          ) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          if (toggleModuleFoldForGraphNode(nodeId)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          if (collapseExpandedModuleAtDomPoint({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-          })) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }, true);
+
+        moduleFoldControlLayer.addEventListener("click", function(e) {
+          var button = e.target.closest(".kg-module-corner-control");
+          if (!button) { return; }
+          e.preventDefault();
+          e.stopPropagation();
+          var moduleId = button.getAttribute("data-module-id");
+          setSelectedModuleFoldState(moduleId, !selectedModuleIsFolded(moduleId));
+        });
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
@@ -14645,6 +14468,7 @@ var kgModuleGeometry = (function() {
 
         /* Initial render. */
         applyDefaultModuleFoldState();
+        buildModuleFoldControls();
         buildNodeLabels();
         refreshModuleFootprints();
         if (document.fonts && document.fonts.addEventListener) {
