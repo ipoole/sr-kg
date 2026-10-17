@@ -53,6 +53,39 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
 
 
 @pytest.mark.browser
+def test_folded_startup_does_not_decode_hidden_concept_icons(repo_browser_graph):
+    page = repo_browser_graph.page
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+
+    # Every decoded SVG image owns a document. A folded startup should decode
+    # the handful of visible module graphics, not every hidden concept icon.
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
+def test_tiny_all_concept_view_does_not_decode_every_icon(repo_browser_graph):
+    page = repo_browser_graph.page
+    module_ids = page.locator("#kg_module_list .kg-module-item").evaluate_all(
+        "items => items.map(item => item.getAttribute('data-module-id'))"
+    )
+    for module_id in module_ids:
+        page.locator(
+            f'#kg_module_list .kg-module-item[data-module-id="{module_id}"]'
+        ).evaluate("item => item.click()")
+        page.locator(
+            '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
+        ).click()
+    page.evaluate("network.fit({animation: false}); network.redraw();")
+    page.wait_for_timeout(500)
+
+    session = page.context.new_cdp_session(page)
+    counters = session.send("Memory.getDOMCounters")
+    assert page.evaluate("network.getScale()") < 0.25
+    assert counters["documents"] < 50
+
+
+@pytest.mark.browser
 def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph):
     page = shared_browser_graph.page
 
@@ -678,7 +711,7 @@ def test_module_controls_are_disabled_when_graph_is_hidden(browser_graph):
 
 
 @pytest.mark.browser
-def test_double_clicking_folded_module_node_expands_it(browser_graph):
+def test_folded_module_corner_control_expands_it(browser_graph):
     page = browser_graph.page
     module_node_id = "module::test.m02_applications"
 
@@ -686,16 +719,13 @@ def test_double_clicking_folded_module_node_expands_it(browser_graph):
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
 
-    point = page.evaluate(
-        """moduleNodeId => {
-          const position = network.getPositions([moduleNodeId])[moduleNodeId];
-          const dom = network.canvasToDOM(position);
-          const rect = network.canvas.frame.canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }""",
-        module_node_id,
+    control = page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
     )
-    page.mouse.dblclick(point["x"], point["y"])
+    assert control.is_visible()
+    assert control.get_attribute("aria-label") == "Expand Applications module"
+    assert control.get_attribute("data-fold-state") == "folded"
+    control.click()
 
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
     assert page.evaluate(
@@ -711,32 +741,19 @@ def test_double_clicking_folded_module_node_expands_it(browser_graph):
 
 
 @pytest.mark.browser
-def test_expanding_folded_module_preserves_its_selected_concept(browser_graph):
+def test_module_corner_control_preserves_selected_concept(browser_graph):
     page = browser_graph.page
     module_node_id = "module::test.m02_applications"
 
     browser_graph.click_concept("2.1")
-    concept_point = page.evaluate(
-        """() => {
-          const position = network.getPositions(["2.1"])["2.1"];
-          const dom = network.canvasToDOM(position);
-          const rect = network.canvas.frame.canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }"""
-    )
-    page.mouse.dblclick(concept_point["x"], concept_point["y"])
+    page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
+    ).click()
     assert page.evaluate("id => nodes.get(id).hidden === false", module_node_id)
 
-    module_point = page.evaluate(
-        """moduleNodeId => {
-          const position = network.getPositions([moduleNodeId])[moduleNodeId];
-          const dom = network.canvasToDOM(position);
-          const rect = network.canvas.frame.canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }""",
-        module_node_id,
-    )
-    page.mouse.dblclick(module_point["x"], module_point["y"])
+    page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
+    ).click()
 
     assert page.evaluate("() => kgViewerStateSnapshot().selection") == {
         "type": "concept",
@@ -748,97 +765,18 @@ def test_expanding_folded_module_preserves_its_selected_concept(browser_graph):
 
 
 @pytest.mark.browser
-def test_double_clicking_concept_node_collapses_owning_module(browser_graph):
-    page = browser_graph.page
-    module_node_id = "module::test.m02_applications"
-
-    point = page.evaluate(
-        """() => {
-          const position = network.getPositions(["2.1"])["2.1"];
-          const dom = network.canvasToDOM(position);
-          const rect = network.canvas.frame.canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }"""
-    )
-    page.mouse.dblclick(point["x"], point["y"])
-
-    assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
-    assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId).hidden === false""", module_node_id)
-    assert page.evaluate("""() => nodes.get("2.1").hidden === true""")
-
-
-@pytest.mark.browser
-def test_double_tapping_concept_node_collapses_owning_module_on_phone(browser_graph):
-    page = browser_graph.page
-    page.set_viewport_size({"width": 390, "height": 800})
-    point = page.evaluate(
-        """() => {
-          const position = network.getPositions(["2.1"])["2.1"];
-          const dom = network.canvasToDOM(position);
-          const canvas = network.canvas.frame.canvas;
-          const rect = canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }"""
-    )
-
-    page.evaluate(
-        """async point => {
-          const canvas = network.canvas.frame.canvas;
-          const fire = type => canvas.dispatchEvent(new PointerEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            clientX: point.x,
-            clientY: point.y,
-            pointerId: 7,
-            pointerType: "touch",
-            isPrimary: true
-          }));
-          fire("pointerdown");
-          fire("pointerup");
-          await new Promise(resolve => setTimeout(resolve, 120));
-          fire("pointerdown");
-          fire("pointerup");
-        }""",
-        point,
-    )
-
-    assert page.evaluate(
-        "() => nodes.get('module::test.m02_applications').hidden === false"
-    )
-    assert page.evaluate("() => nodes.get('2.1').hidden === true")
-
-
-@pytest.mark.browser
-def test_double_clicking_empty_space_inside_expanded_module_collapses_it(browser_graph):
+def test_expanded_module_corner_control_collapses_it_without_selecting_module(browser_graph):
     page = browser_graph.page
     module_id = "test.m02_applications"
     module_node_id = "module::" + module_id
 
-    point = page.evaluate(
-        """moduleId => {
-          const bounds = kgModuleFootprint(moduleId);
-          const canvas = network.canvas.frame.canvas;
-          const rect = canvas.getBoundingClientRect();
-          const steps = 12;
-          for (let row = 1; row < steps; row += 1) {
-            for (let column = 1; column < steps; column += 1) {
-              const canvasPoint = {
-                x: bounds.left + bounds.width * column / steps,
-                y: bounds.top + bounds.height * row / steps
-              };
-              const dom = network.canvasToDOM(canvasPoint);
-              if (!network.getNodeAt(dom)) {
-                return {x: rect.left + dom.x, y: rect.top + dom.y};
-              }
-            }
-          }
-          return null;
-        }""",
-        module_id,
+    control = page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
     )
-    assert point is not None
-
-    page.mouse.dblclick(point["x"], point["y"])
+    assert control.is_visible()
+    assert control.get_attribute("aria-label") == "Collapse Applications module"
+    assert control.get_attribute("data-fold-state") == "expanded"
+    control.click()
 
     assert page.evaluate("id => nodes.get(id).hidden === false", module_node_id)
     assert page.evaluate("() => nodes.get('2.1').hidden === true")
@@ -1729,34 +1667,9 @@ def test_phone_context_status_and_representation_actions_share_one_row(browser_g
     page = browser_graph.page
     page.set_viewport_size({"width": 390, "height": 800})
     browser_graph.click_concept("2.1")
-    point = page.evaluate(
-        """() => {
-          const position = network.getPositions(["2.1"])["2.1"];
-          const dom = network.canvasToDOM(position);
-          const rect = network.canvas.frame.canvas.getBoundingClientRect();
-          return {x: rect.left + dom.x, y: rect.top + dom.y};
-        }"""
-    )
-    page.evaluate(
-        """async point => {
-          const canvas = network.canvas.frame.canvas;
-          const fire = type => canvas.dispatchEvent(new PointerEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            clientX: point.x,
-            clientY: point.y,
-            pointerId: 8,
-            pointerType: "touch",
-            isPrimary: true
-          }));
-          fire("pointerdown");
-          fire("pointerup");
-          await new Promise(resolve => setTimeout(resolve, 120));
-          fire("pointerdown");
-          fire("pointerup");
-        }""",
-        point,
-    )
+    page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
+    ).evaluate("element => element.click()")
 
     summary = page.locator("#kg_context_summary")
     selected_action = page.locator("#kg_expand_selected_module")
@@ -2103,8 +2016,10 @@ def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(br
     assert "warning" in _visible_content_block_kinds(page)
 
     definition = page.locator("#info_panel #kg-toc-2-2-definition")
+    assert definition.locator(":scope > .content-block-body").count() == 0
     definition.locator(":scope > summary").click()
     assert definition.evaluate("el => el.open")
+    assert definition.locator(":scope > .content-block-body").count() == 1
 
     page.locator(
         "#info_panel #kg-toc-2-2-definition .kg-note-block-action"
@@ -2766,9 +2681,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     )
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 8
     assert (
-        "The user model has been simplified and the UI space optimised for phones"
+        "The user model has been simplified, the UI space optimised for phones, "
+        "and rendering and interaction made faster on older or slower devices"
         in dialog.inner_text()
     )
+    assert "folded module's top-right corner" in dialog.inner_text()
     assert "Study" in dialog.inner_text()
     assert "Personal layouts, notes, study-question records" in dialog.inner_text()
     assert "synchronise through Google Drive" in dialog.inner_text()

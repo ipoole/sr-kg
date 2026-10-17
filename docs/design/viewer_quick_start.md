@@ -3,16 +3,17 @@
 **Modules** show the overall structure; **concepts** reveal detailed physics.
 See [Viewer behaviour](viewer.md) for the full model.
 
-**New:** The user model has been simplified and the UI space optimised for
-phones. Selection, context, display, module folding and camera now behave
-independently and predictably.
+**New:** The user model has been simplified, the UI space optimised for phones,
+and rendering and interaction made faster on older or slower devices. Selection,
+context, display, module folding and camera behave independently and predictably.
 
 ## Start with the map
 
 The viewer opens with modules folded.
 
 - Click a module to read its introduction.
-- Double-click a module to expand it and reveal its concepts.
+- Use the `+` in a folded module's top-right corner to reveal its concepts; use
+  the `−` on an expanded module's boundary to fold it again.
 - Use **Search** to find a concept or module.
 - **Clear selection** resumes browsing without rearranging the map.
 

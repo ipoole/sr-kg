@@ -8,6 +8,7 @@ in ``srkg/viewer_assets`` so CSS and JavaScript can be reviewed independently.
 
 import base64
 import json
+import re
 from pathlib import Path
 from html import escape as html_escape
 
@@ -59,6 +60,12 @@ MATHJAX_ASSET = """
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 """
 
+_BOOTSTRAP_JAVASCRIPT = re.compile(
+    r"\s*<script\b[^>]*\bsrc=[\"'][^\"']*bootstrap(?:\.bundle)?(?:\.min)?\.js"
+    r"[^\"']*[\"'][^>]*>\s*</script>",
+    re.IGNORECASE,
+)
+
 
 def require_html_marker(html_text: str, marker: str) -> None:
     """Fail clearly if PyVis output no longer contains an injection marker."""
@@ -78,6 +85,11 @@ def inject_controls(
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)
+
+    # PyVis includes Bootstrap JavaScript for its optional configuration UI.
+    # PhysicsKG does not instantiate those widgets, so parsing/executing it is
+    # pure startup cost. Keep the small CSS dependency used by PyVis markup.
+    html_text = _BOOTSTRAP_JAVASCRIPT.sub("", html_text)
 
     css = _style_tag(_render_template("viewer.css", _css_replacements()))
     controls = _render_template(

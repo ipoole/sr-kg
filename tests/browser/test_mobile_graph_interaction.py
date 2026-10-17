@@ -69,10 +69,6 @@ def test_phone_touch_can_select_pan_and_pinch_zoom_graph(mobile_repo_browser_gra
         target,
     )
     assert propagated_pointerups == 2
-    page.wait_for_function(
-        "nodeId => !nodes.get(nodeId) || nodes.get(nodeId).hidden",
-        arg=target["id"],
-    )
 
     gesture = page.evaluate(
         """() => {
@@ -148,4 +144,3 @@ def test_phone_touch_can_select_pan_and_pinch_zoom_graph(mobile_repo_browser_gra
     page.wait_for_timeout(150)
     after_scale = page.evaluate("() => network.getScale()")
     assert after_scale > before_scale
-

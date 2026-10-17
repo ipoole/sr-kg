@@ -37,15 +37,18 @@ Generated HTML is a build artifact; do not commit it unless explicitly requested
 
 ## Study with the viewer
 
-Select a module for an overview and concept list, or use the header **Search** button to
-find a concept. Follow links to explore related material and use browser Back
-to return. **Details** filters the reading material; **Practice** shows questions
+Select a module for an overview and concept list; use its visible corner control
+to expand or fold it, or use the header **Search** button to find a concept.
+Follow links to explore related material and use browser Back to return.
+**Details** filters the reading material; **Practice** shows questions
 that you answer or self-mark before seeing their model answers. Automatic
 questions include an “I don't know” choice; free-text questions ask you to
 compare with a model answer. Clear ticks and crosses show the latest result,
 and optional graph ticks summarise reading and question completion.
 Use **Context** and **Depth** to choose related material, and **Display** to show
 the full graph, only that context, or the details pane on its own.
+The responsive viewer is tuned for phones and reduces costly rendering,
+animation and eager content work on older or slower devices.
 
 See [Viewer behaviour](docs/design/viewer.md) for reading modes, navigation and
 personal notes. The **Study** tools keep attempt counts and latest results, with

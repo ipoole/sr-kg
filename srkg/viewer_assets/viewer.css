@@ -678,6 +678,56 @@
         z-index: 5;
       }
 
+      #kg_module_fold_controls {
+        bottom: 0;
+        left: 0;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 6;
+      }
+
+      .kg-module-corner-control {
+        align-items: center;
+        appearance: none;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        display: none;
+        height: 40px;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+        pointer-events: auto;
+        position: absolute;
+        touch-action: manipulation;
+        width: 40px;
+      }
+
+      .kg-module-corner-control > span {
+        align-items: center;
+        background: rgba(255,255,255,0.94);
+        border: 1.5px solid #315a72;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(15,23,42,0.22);
+        color: #23485f;
+        display: flex;
+        font: 700 18px/1 Arial, sans-serif;
+        height: 23px;
+        justify-content: center;
+        width: 23px;
+      }
+
+      .kg-module-corner-control:hover > span,
+      .kg-module-corner-control:focus-visible > span {
+        background: #eaf4fa;
+        border-color: #123e5a;
+        outline: 2px solid rgba(18,62,90,0.24);
+        outline-offset: 1px;
+      }
+
       .kg-node-label {
         box-sizing: border-box;
         color: #111;
@@ -2538,7 +2588,8 @@
     }
 
     body.kg-graph-hidden #mynetwork,
-    body.kg-graph-hidden #kg_node_labels {
+    body.kg-graph-hidden #kg_node_labels,
+    body.kg-graph-hidden #kg_module_fold_controls {
         opacity: 0;
         pointer-events: none;
     }

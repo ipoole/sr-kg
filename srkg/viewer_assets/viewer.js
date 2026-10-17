@@ -165,15 +165,19 @@
         var allEdges = edges.get();
         var graphContainer = document.getElementById("mynetwork");
         var nodeLabelLayer = document.createElement("div");
+        var moduleFoldControlLayer = document.createElement("div");
         var nodeTooltip = document.createElement("div");
         var conceptPreview = document.createElement("div");
         var nodeLabelEls = {};
+        var moduleFoldControlEls = {};
         var defaultViewTitle = document.getElementById("kg_view_title")
           ? document.getElementById("kg_view_title").textContent
           : "";
 
         nodeLabelLayer.id = "kg_node_labels";
         graphContainer.appendChild(nodeLabelLayer);
+        moduleFoldControlLayer.id = "kg_module_fold_controls";
+        graphContainer.appendChild(moduleFoldControlLayer);
         buildWorkspaceShell();
         nodeTooltip.id = "kg_node_tooltip";
         nodeTooltip.setAttribute("role", "tooltip");
@@ -206,20 +210,22 @@
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
+        var moduleFootprintCache = {};
+        var conceptFootprintExtentsCache = {};
+        var fittedModuleLabelCache = {};
         var graphCompletionStateCache = null;
-        var graphOverlayDrawingSuspended = false;
-        var graphOverlayResumeTimer = null;
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
         var hoveredEdgeBeforeHover = null;
-        var lastGraphNodeClick = null;
-        var suppressedNativeDoubleClick = null;
-        var suppressedTouchDoubleTapUntil = 0;
-        var pendingContainedConceptModuleSelection = null;
+        var renderedEdgeWidthsDirty = true;
+        var renderedEdgeWidthScale = null;
+        var renderedEdgeWidthHoverId = null;
         var svgImageCache = {};
+        var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
+        var detailedConceptRenderMinRadiusPx = 12;
         var nodeLabelWidth = kgNodeLabelConfig.width;
         var nodeLabelFontSize = kgNodeLabelConfig.fontSize;
         var tooltipTypesetTimer = null;
@@ -678,9 +684,7 @@
             }
           });
           Object.keys(affectedModules).forEach(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) {
-              refreshFoldedModuleGeometry(moduleId);
-            }
+            refreshModuleFootprintGeometry(moduleId);
           });
           showContextNotice(
             "Personal layout updated — saved in this browser.",
@@ -745,6 +749,7 @@
         }
 
         function buildNodeLabels() {
+          conceptFootprintExtentsCache = {};
           nodeLabelLayer.innerHTML = "";
           Object.keys(conceptData).forEach(function(id) {
             var el = document.createElement("div");
@@ -758,6 +763,67 @@
           updateNodeLabelPositions();
         }
 
+        function buildModuleFoldControls() {
+          moduleFoldControlLayer.innerHTML = "";
+          moduleFoldControlEls = {};
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "kg-module-corner-control";
+            button.setAttribute("data-module-id", moduleId);
+            button.innerHTML = '<span aria-hidden="true"></span>';
+            moduleFoldControlLayer.appendChild(button);
+            moduleFoldControlEls[String(moduleId)] = button;
+          });
+          updateModuleFoldControlPositions();
+        }
+
+        function updateModuleFoldControlPositions() {
+          if (!network || !moduleFoldControlLayer) { return; }
+          var canvasEl = network.canvas && network.canvas.frame
+            ? network.canvas.frame.canvas
+            : null;
+          if (!canvasEl) { return; }
+          var canvasRect = canvasEl.getBoundingClientRect();
+          var layerRect = moduleFoldControlLayer.getBoundingClientRect();
+          var expandedOutlines = {};
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            expandedOutlines[String(outline.moduleId)] = outline;
+          });
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var button = moduleFoldControlEls[String(moduleId)];
+            if (!button) { return; }
+            var folded = selectedModuleIsFolded(moduleId);
+            var corner = null;
+            if (folded) {
+              var nodeId = moduleGraphNodeId(moduleId);
+              var node = nodes.get(nodeId);
+              var rendered = network.body.nodes[nodeId];
+              var shape = rendered && rendered.shape;
+              if (node && !node.hidden && shape) {
+                corner = {x: shape.left + shape.width, y: shape.top};
+              }
+            } else {
+              var outline = expandedOutlines[String(moduleId)];
+              if (outline) {
+                corner = {x: outline.right, y: outline.top};
+              }
+            }
+            if (!corner || viewerState.displayScope === DisplayScope.HIDDEN) {
+              button.style.display = "none";
+              return;
+            }
+            var dom = network.canvasToDOM(corner);
+            var title = (getModule(moduleId) || {}).title || moduleId;
+            button.style.display = "block";
+            button.style.left = (canvasRect.left - layerRect.left + dom.x - 20) + "px";
+            button.style.top = (canvasRect.top - layerRect.top + dom.y - 20) + "px";
+            button.setAttribute("data-fold-state", folded ? "folded" : "expanded");
+            button.setAttribute("aria-label", (folded ? "Expand " : "Collapse ") + title + " module");
+            button.querySelector("span").textContent = folded ? "+" : "−";
+          });
+        }
+
         function typesetNodeLabels() {
           if (window.MathJax && MathJax.typesetPromise) {
             if (MathJax.typesetClear) {
@@ -766,6 +832,7 @@
             MathJax.typesetPromise([nodeLabelLayer]).catch(function(err) {
               console.warn("MathJax label typesetting failed:", err);
             }).then(function() {
+              conceptFootprintExtentsCache = {};
               updateNodeLabelPositions();
               refreshModuleFootprints();
             });
@@ -812,9 +879,9 @@
           if (!nodeTooltip || viewerState.displayScope === DisplayScope.HIDDEN) { return; }
           var moduleId = moduleIdFromGraphNodeId(nodeId);
           if (moduleId && getModule(moduleId)) {
-            nodeTooltip.innerHTML = moduleTooltipHtml(moduleId);
+            replaceTypesetContent(nodeTooltip, moduleTooltipHtml(moduleId));
           } else if (getConcept(nodeId)) {
-            nodeTooltip.innerHTML = conceptTooltipHtml(nodeId);
+            replaceTypesetContent(nodeTooltip, conceptTooltipHtml(nodeId));
           } else {
             return;
           }
@@ -827,7 +894,7 @@
           var edge = edges.get(edgeId);
           if (!nodeTooltip || !edgeHoverableInCurrentView(edge)) { return; }
           hideConceptPreview(true);
-          nodeTooltip.innerHTML = edgeTooltipHtml(edge);
+          replaceTypesetContent(nodeTooltip, edgeTooltipHtml(edge));
           nodeTooltip.style.display = "block";
           positionNodeTooltip(pointer);
           scheduleTooltipTypeset();
@@ -840,7 +907,7 @@
           }
           if (nodeTooltip) {
             nodeTooltip.style.display = "none";
-            nodeTooltip.innerHTML = "";
+            replaceTypesetContent(nodeTooltip, "");
           }
         }
 
@@ -892,6 +959,7 @@
               transient
             );
           });
+          updateModuleFoldControlPositions();
         }
         window.kgUpdateNodeLabelPositions = updateNodeLabelPositions;
 
@@ -907,7 +975,9 @@
             var fill = color.background || "#999999";
             var border = color.border || "#333333";
             var concept = getConcept(node.id) || {};
-            var svgIcon = concept.svg_icon || concept.svg_graphic || "";
+            var svgIcon = options.renderGraphic === false
+              ? ""
+              : (concept.svg_icon || concept.svg_graphic || "");
             var svgImage = svgIcon ? getSvgNodeImage(node.id, svgIcon) : null;
 
             ctx.save();
@@ -956,6 +1026,7 @@
 
         function drawVisibleNodes(ctx) {
           var positions = network.getPositions();
+          var scale = network.getScale();
           nodes.get().forEach(function(node) {
             if (node.hidden) { return; }
             if (node.isModuleNode) { return; }
@@ -965,6 +1036,10 @@
 
             drawConceptFace(ctx, node, pos, {
               active: node.id === activeNodeId,
+              renderGraphic: (
+                (Number(node.visualSize) || Number(node.size) || 18) *
+                (node.id === activeNodeId ? activeNodeRadiusScale : 1) * scale
+              ) >= detailedConceptRenderMinRadiusPx,
               transient: Boolean(
                 transientConceptHighlight &&
                 transientConceptHighlight.nodeId === String(node.id)
@@ -992,9 +1067,10 @@
         }
 
         function drawGraphCompletionMarkers(ctx) {
-          if (graphOverlayDrawingSuspended) { return; }
+          var scale = network.getScale();
           graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
             marker.symbols.forEach(function(symbol) {
+              if (symbol.radius * scale < 2.5) { return; }
               drawGraphCompletionTick(
                 ctx,
                 symbol.x,
@@ -1005,25 +1081,6 @@
               );
             });
           });
-        }
-
-        function suspendGraphOverlays() {
-          graphOverlayDrawingSuspended = true;
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-            graphOverlayResumeTimer = null;
-          }
-        }
-
-        function resumeGraphOverlaysSoon() {
-          if (graphOverlayResumeTimer) {
-            clearTimeout(graphOverlayResumeTimer);
-          }
-          graphOverlayResumeTimer = setTimeout(function() {
-            graphOverlayResumeTimer = null;
-            graphOverlayDrawingSuspended = false;
-            if (network && network.redraw) { network.redraw(); }
-          }, 80);
         }
 
         function getSvgNodeImage(nodeId, svgText) {
@@ -2836,14 +2893,26 @@
           return html;
         }
 
+        function clearMathTypesetting(element) {
+          if (element && window.MathJax && MathJax.typesetClear) {
+            MathJax.typesetClear([element]);
+          }
+        }
+
+        function replaceTypesetContent(element, html) {
+          if (!element) { return; }
+          clearMathTypesetting(element);
+          if (element.id === "info_panel") {
+            lazyFoldedSectionBodies = {};
+          }
+          element.innerHTML = html;
+        }
+
         function typesetInfoPanel(options) {
           options = options || {};
           var panel = document.getElementById("info_panel");
           schedulePanelContentRefit();
           if (window.MathJax && MathJax.typesetPromise) {
-            if (MathJax.typesetClear) {
-              MathJax.typesetClear([panel]);
-            }
             MathJax.typesetPromise([panel]).catch(function(err) {
               console.warn("MathJax typesetting failed:", err);
             }).then(function() {
@@ -3749,6 +3818,8 @@
             questionTypes: null
           }
         });
+        var lazyFoldedSectionBodies = {};
+        var nextLazyFoldedSectionId = 1;
 
         function currentReadingModeDefinition() {
           return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
@@ -3792,6 +3863,44 @@
           panel.querySelectorAll(":scope > details").forEach(function(section) {
             section.open = Boolean(section.id && retained[section.id]);
           });
+        }
+
+        function prepareLazyFoldedSections(panel) {
+          lazyFoldedSectionBodies = {};
+          if (!panel || readingMode !== "folded") { return; }
+          panel.querySelectorAll(":scope > details:not([open])").forEach(function(section) {
+            var summary = section.querySelector(":scope > summary");
+            if (!summary || !summary.nextSibling) { return; }
+            var key = "lazy-section-" + nextLazyFoldedSectionId;
+            nextLazyFoldedSectionId += 1;
+            var html = "";
+            while (summary.nextSibling) {
+              var node = summary.nextSibling;
+              html += node.nodeType === Node.ELEMENT_NODE
+                ? node.outerHTML
+                : (node.nodeValue || "");
+              node.remove();
+            }
+            lazyFoldedSectionBodies[key] = html;
+            section.setAttribute("data-lazy-section", key);
+          });
+        }
+
+        function materializeLazyFoldedSection(section, beforeOpen) {
+          if (!section || (!section.open && beforeOpen !== true)) { return false; }
+          var key = section.getAttribute("data-lazy-section");
+          if (!key || !Object.prototype.hasOwnProperty.call(lazyFoldedSectionBodies, key)) {
+            return false;
+          }
+          section.insertAdjacentHTML("beforeend", lazyFoldedSectionBodies[key]);
+          delete lazyFoldedSectionBodies[key];
+          section.removeAttribute("data-lazy-section");
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([section]).catch(function(err) {
+              console.warn("MathJax folded-section typesetting failed:", err);
+            }).then(schedulePanelContentRefit);
+          }
+          return true;
         }
 
         function contentBlockPolicyFor(kind) {
@@ -4215,6 +4324,10 @@
         }
 
         function conceptFootprintExtents(conceptId) {
+          conceptId = String(conceptId);
+          if (conceptFootprintExtentsCache[conceptId]) {
+            return Object.assign({}, conceptFootprintExtentsCache[conceptId]);
+          }
           var node = originalNodes[String(conceptId)] || nodes.get(conceptId) || {};
           var radius = Number(node.visualSize) || Number(node.size) || 100;
           var labelHeight = nodeLabelFontSize * 3.2;
@@ -4233,12 +4346,14 @@
             labelWidth = Math.max(labelWidth, probe.scrollWidth);
             probe.remove();
           }
-          return {
+          var extents = {
             left: Math.max(radius, labelWidth / 2),
             right: Math.max(radius, labelWidth / 2),
             top: radius,
             bottom: radius + 4 + labelHeight
           };
+          conceptFootprintExtentsCache[conceptId] = extents;
+          return Object.assign({}, extents);
         }
 
         function moduleFootprint(moduleId) {
@@ -4255,6 +4370,7 @@
           var nodeId = moduleGraphNodeId(moduleId);
           var oldNode = nodes.get(nodeId);
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (oldNode) {
             var node = moduleGraphNode(moduleId);
@@ -4264,15 +4380,29 @@
           }
         }
 
+        function refreshModuleFootprintGeometry(moduleId) {
+          if (selectedModuleIsFolded(moduleId)) {
+            refreshFoldedModuleGeometry(moduleId);
+          } else {
+            moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
+          }
+        }
+
         function refreshModuleFootprints() {
           // Geometry changes never move anchors, members or neighbouring modules.
-          foldedModuleIdList().forEach(function(moduleId) {
-            refreshFoldedModuleGeometry(moduleId);
+          moduleIds().forEach(function(moduleId) {
+            refreshModuleFootprintGeometry(moduleId);
           });
+        }
+
+        function refreshModuleFootprintsAfterFontLoad() {
+          conceptFootprintExtentsCache = {};
+          refreshModuleFootprints();
         }
 
         function foldModule(moduleId) {
           var geometry = moduleMemberGeometry(moduleId);
+          moduleFootprintCache[String(moduleId)] = geometry.footprint;
           foldedModules[String(moduleId)] = geometry;
           if (!globalModuleAnchor(moduleId)) {
             setGlobalModuleAnchor(moduleId, geometry.position);
@@ -4357,6 +4487,18 @@
 
         function fittedModuleLabel(title, memberCount, width, height, options) {
           options = options || {};
+          var cacheKey = JSON.stringify([
+            String(title), Number(memberCount), Number(width), Number(height),
+            Number(options.countFontSize || 80),
+            Number(options.lineWidthFraction || 0.88),
+            Number(options.titleFontCap || 160),
+            Number(options.availableHeight || 0),
+            Number(options.lineHeightFactor || 1.25),
+            Number(options.verticalShift || 0)
+          ]);
+          if (fittedModuleLabelCache[cacheKey]) {
+            return Object.assign({}, fittedModuleLabelCache[cacheKey]);
+          }
           var context = document.createElement("canvas").getContext("2d");
           var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
           var countFontSize = options.countFontSize || 80;
@@ -4394,7 +4536,7 @@
           }
           var titleLines = linesAt(low);
           var verticalShift = Number(options.verticalShift) || 0;
-          return {
+          var result = {
             text: titleLines.map(function(line) {
               return "<b>" + escapeHtml(line) + "</b>";
             }).join("\n") + "\n" + countLabel,
@@ -4406,6 +4548,8 @@
             titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
             countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
           };
+          fittedModuleLabelCache[cacheKey] = result;
+          return Object.assign({}, result);
         }
 
         function moduleGraphicLayout(width, height) {
@@ -4469,6 +4613,55 @@
         function moduleCornerRadius(width, height) {
           return Math.min(width, height) * 0.18;
         }
+
+        function expandedModuleOutlineSnapshot() {
+          return moduleIds().filter(function(moduleId) {
+            if (selectedModuleIsFolded(moduleId)) { return false; }
+            return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
+              var node = nodes.get(conceptId);
+              return node && !node.hidden;
+            });
+          }).map(function(moduleId) {
+            var footprint = moduleFootprintCache[String(moduleId)] || moduleFootprint(moduleId);
+            moduleFootprintCache[String(moduleId)] = footprint;
+            return {
+              moduleId: moduleId,
+              left: footprint.left,
+              right: footprint.right,
+              top: footprint.top,
+              bottom: footprint.bottom,
+              width: footprint.width,
+              height: footprint.height,
+              radius: moduleCornerRadius(footprint.width, footprint.height),
+              colour: "#6b7280",
+              opacity: 0.3,
+              lineWidth: 1.75
+            };
+          });
+        }
+
+        function drawExpandedModuleOutlines(ctx) {
+          var scale = network && network.getScale ? Number(network.getScale()) : 1;
+          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
+          expandedModuleOutlineSnapshot().forEach(function(outline) {
+            ctx.save();
+            ctx.globalAlpha = outline.opacity;
+            ctx.strokeStyle = outline.colour;
+            ctx.lineWidth = outline.lineWidth / scale;
+            roundedRectPath(
+              ctx,
+              outline.left,
+              outline.top,
+              outline.width,
+              outline.height,
+              outline.radius
+            );
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
         function moduleGraphicCornerRadius(width, height, layout) {
           layout = layout || moduleGraphicLayout(width, height);
@@ -4831,122 +5024,6 @@
             " in the graph.";
         }
 
-        function toggleModuleFoldForGraphNode(nodeId) {
-          nodeId = String(nodeId || "");
-          var moduleId = moduleIdFromGraphNodeId(nodeId);
-          if (moduleId && selectedModuleIsFolded(moduleId)) {
-            setSelectedModuleFoldState(moduleId, false);
-            return true;
-          }
-          if (!getConcept(nodeId)) { return false; }
-          var owningModuleId = moduleIdForConcept(nodeId);
-          if (!owningModuleId || selectedModuleIsFolded(owningModuleId)) { return false; }
-          setSelectedModuleFoldState(owningModuleId, true);
-          return true;
-        }
-
-        function expandedModuleAtCanvasPoint(point) {
-          if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
-            return null;
-          }
-          var matches = moduleIdsWithMembers().filter(function(moduleId) {
-            if (selectedModuleIsFolded(moduleId)) { return false; }
-            var hasVisibleMember = moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
-              var node = nodes.get(conceptId);
-              return node && !node.hidden;
-            });
-            if (!hasVisibleMember) { return false; }
-            var bounds = moduleFootprint(moduleId);
-            return point.x >= bounds.left && point.x <= bounds.right &&
-              point.y >= bounds.top && point.y <= bounds.bottom;
-          });
-          return matches.length === 1 ? matches[0] : null;
-        }
-
-        function collapseExpandedModuleAtDomPoint(point) {
-          if (!network.DOMtoCanvas) { return false; }
-          var moduleId = expandedModuleAtCanvasPoint(network.DOMtoCanvas(point));
-          if (!moduleId) { return false; }
-          setSelectedModuleFoldState(moduleId, true);
-          return true;
-        }
-
-        /*
-         * Real double-clicks can fire a normal click first. That click may refit
-         * the graph and move the target before the browser dblclick arrives, so
-         * keep a short-lived recent-node fallback alongside vis-network events.
-         */
-        function handleGraphNodeDoubleClick(nodeId) {
-          cancelPendingContainedConceptModuleSelection();
-          if (toggleModuleFoldForGraphNode(nodeId)) {
-            suppressedNativeDoubleClick = {
-              nodeId: String(nodeId || ""),
-              until: Date.now() + 500
-            };
-            return true;
-          }
-          return false;
-        }
-
-        function cancelPendingContainedConceptModuleSelection() {
-          if (!pendingContainedConceptModuleSelection) { return; }
-          clearTimeout(pendingContainedConceptModuleSelection.timerId);
-          pendingContainedConceptModuleSelection = null;
-        }
-
-        function deferModuleSelectionForContainedConcept(moduleId) {
-          moduleId = String(moduleId || "");
-          if (
-            !activeNodeId ||
-            moduleIdForConcept(activeNodeId) !== moduleId ||
-            !selectedModuleIsFolded(moduleId)
-          ) {
-            return false;
-          }
-          pendingContainedConceptModuleSelection = {
-            moduleId: moduleId,
-            timerId: setTimeout(function() {
-              pendingContainedConceptModuleSelection = null;
-              focusModule(moduleId, "Selected");
-            }, 500)
-          };
-          return true;
-        }
-
-        function graphNodeClickIsDoubleClick(nodeId) {
-          var now = Date.now();
-          nodeId = String(nodeId || "");
-          var isDouble = Boolean(
-            lastGraphNodeClick &&
-            lastGraphNodeClick.nodeId === nodeId &&
-            now - lastGraphNodeClick.time <= 420
-          );
-          lastGraphNodeClick = {
-            nodeId: nodeId,
-            time: now
-          };
-          return isDouble;
-        }
-
-        function nativeDoubleClickIsSuppressed(nodeId) {
-          return Boolean(
-            suppressedNativeDoubleClick &&
-            suppressedNativeDoubleClick.nodeId === String(nodeId || "") &&
-            Date.now() <= suppressedNativeDoubleClick.until
-          );
-        }
-
-        function touchDoubleTapWindowIsActive() {
-          return Date.now() <= suppressedTouchDoubleTapUntil;
-        }
-
-        function recentGraphClickNodeId(maxAgeMs) {
-          if (!lastGraphNodeClick || Date.now() - lastGraphNodeClick.time > maxAgeMs) {
-            return null;
-          }
-          return lastGraphNodeClick.nodeId;
-        }
-
         function renderModuleGraphFoldControl(moduleId) {
           var folded = selectedModuleIsFolded(moduleId);
           return '<div class="module-graph-fold-control" aria-label="Module graph display">' +
@@ -5253,11 +5330,12 @@
 
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             moduleChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -5738,7 +5816,7 @@
           conceptPreview.classList.remove("concept-preview-pinned");
           clearTransientConceptHighlight();
           conceptPreview.style.display = "none";
-          conceptPreview.innerHTML = "";
+          replaceTypesetContent(conceptPreview, "");
         }
 
         function scheduleConceptPreviewHide() {
@@ -5758,7 +5836,7 @@
           cancelConceptPreviewHide();
           conceptPreviewPinned = Boolean(options.pinned);
           conceptPreviewAnchor = link;
-          conceptPreview.innerHTML = conceptPreviewHtml(id);
+          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id));
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
           positionConceptPreview(link);
           applyTransientConceptHighlight(id);
@@ -6497,6 +6575,25 @@
           return revealNodeIds(selectionRepresentationNodeIds(), options);
         }
 
+        function cameraAnimationEnabled() {
+          if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            return false;
+          }
+          var memory = Number(navigator.deviceMemory);
+          if (Number.isFinite(memory) && memory > 0 && memory <= 4) {
+            return false;
+          }
+          var processors = Number(navigator.hardwareConcurrency);
+          if (Number.isFinite(processors) && processors > 0 && processors <= 4) {
+            return false;
+          }
+          return true;
+        }
+        window.kgCameraAnimationEnabled = cameraAnimationEnabled;
+
         function updateFitApplyButton() {
           var button = document.getElementById("kg_fit_apply");
           if (!button) { return; }
@@ -6966,7 +7063,7 @@
           var selection = viewerSelectionSnapshot();
           var ids = [];
           if (target === "reveal") {
-            revealViewerSelection({animation: true});
+            revealViewerSelection({animation: cameraAnimationEnabled()});
             return;
           } else if (target === "selection") {
             ids = selectionRepresentationNodeIds(selection);
@@ -7502,7 +7599,7 @@
           var dialog = document.getElementById("kg_inspection_dialog");
           var body = document.getElementById("kg_inspection_body");
           if (!dialog || !body) { return; }
-          body.innerHTML = html;
+          replaceTypesetContent(body, html);
           if (!dialog.open) { dialog.showModal(); }
           if (window.MathJax && MathJax.typesetPromise) {
             MathJax.typesetPromise([body]).catch(function(err) {
@@ -7714,7 +7811,10 @@
           }
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = automaticQuestionFeedbackHtml(question, progress);
+            replaceTypesetContent(
+              feedbackHost,
+              automaticQuestionFeedbackHtml(question, progress)
+            );
           }
           var button = card.querySelector(".study-check-answer");
           if (button) { button.disabled = true; }
@@ -7769,11 +7869,9 @@
         function renderSelfAssessedFeedback(card, question, progress, response, pending) {
           var feedbackHost = card.querySelector(".study-feedback-host");
           if (feedbackHost) {
-            feedbackHost.innerHTML = selfAssessedQuestionFeedbackHtml(
-              question,
-              progress,
-              response,
-              pending
+            replaceTypesetContent(
+              feedbackHost,
+              selfAssessedQuestionFeedbackHtml(question, progress, response, pending)
             );
           }
           typesetStudyCard(card);
@@ -7841,9 +7939,9 @@
             currentConceptTocItems = [];
             setActiveConceptSection(null);
             var missingPanel = document.getElementById("info_panel");
-            missingPanel.innerHTML =
+            replaceTypesetContent(missingPanel,
               "<h2>" + escapeHtml(conceptDisplayId(nodeId)) + "</h2>" +
-              "<p>No concept data was found for this node.</p>";
+              "<p>No concept data was found for this node.</p>");
             missingPanel.setAttribute("data-concept-id", String(nodeId));
             missingPanel.removeAttribute("data-module-id");
             missingPanel.scrollTop = 0;
@@ -7914,11 +8012,12 @@
           }
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
-          panel.innerHTML = html;
+          replaceTypesetContent(panel, html);
           applyReadingModeSectionState(
             panel,
             conceptChanged ? [] : retainedOpenSections
           );
+          prepareLazyFoldedSections(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -7950,7 +8049,7 @@
 
           if (relations.length === 0) {
             html += "<p>No edge key data was loaded.</p>";
-            document.getElementById("info_panel").innerHTML = html;
+            replaceTypesetContent(document.getElementById("info_panel"), html);
             schedulePanelContentRefit();
             return;
           }
@@ -7976,7 +8075,7 @@
           });
 
           html += "</tbody></table>";
-          document.getElementById("info_panel").innerHTML = html;
+          replaceTypesetContent(document.getElementById("info_panel"), html);
           schedulePanelContentRefit();
         };
 
@@ -8231,16 +8330,19 @@
             x: bounds.x - ((available.centerX - containerCenter.x) / scale),
             y: bounds.y - ((available.centerY - containerCenter.y) / scale)
           };
+          var animate = options.animation === undefined
+            ? cameraAnimationEnabled()
+            : options.animation !== false;
 
           network.moveTo({
             position: targetPosition,
             scale: scale,
-            animation: options.animation === false ? false : {
+            animation: animate ? {
               duration: options.duration || 250,
               easingFunction: "easeInOutQuad"
-            }
+            } : false
           });
-          setTimeout(updateNodeLabelPositions, options.animation === false ? 0 : 260);
+          setTimeout(updateNodeLabelPositions, animate ? 260 : 0);
         }
 
         function scheduleViewportRefresh() {
@@ -8441,7 +8543,11 @@
         function renderInitialInfoPanel() {
           currentConceptTocItems = [];
           var panel = document.getElementById("info_panel");
-          panel.innerHTML = "<h2>" + escapeHtml(defaultViewTitle) + "</h2><p>Select a concept or module, or double-click a module to expand it.</p>";
+          replaceTypesetContent(
+            panel,
+            "<h2>" + escapeHtml(defaultViewTitle) +
+            "</h2><p>Select a concept or module; use a module's corner control to expand or collapse it.</p>"
+          );
           panel.removeAttribute("data-concept-id");
           panel.removeAttribute("data-module-id");
           panel.scrollTop = 0;
@@ -8642,6 +8748,9 @@
           var baseVisible = {};
           var hiddenMembers = {};
           var fitIds = [];
+          var moduleNodeAdds = [];
+          var moduleNodeUpdates = [];
+          var moduleNodeMoves = [];
           baseVisibleIds.forEach(function(id) {
             baseVisible[String(id)] = true;
           });
@@ -8668,16 +8777,26 @@
             if (represented) {
               var moduleNode = moduleGraphNode(moduleId);
               if (nodes.get(graphNodeId)) {
-                nodes.update(moduleNode);
+                moduleNodeUpdates.push(moduleNode);
               } else {
-                nodes.add(moduleNode);
+                moduleNodeAdds.push(moduleNode);
               }
-              // DataSet updates truncate x/y in vis-network; dragging does not.
-              network.moveNode(graphNodeId, moduleNode.x, moduleNode.y);
+              moduleNodeMoves.push(moduleNode);
               fitIds.push(graphNodeId);
             } else if (nodes.get(graphNodeId)) {
-              nodes.update({id: graphNodeId, hidden: true});
+              moduleNodeUpdates.push({id: graphNodeId, hidden: true});
             }
+          });
+
+          if (moduleNodeAdds.length > 0) {
+            nodes.add(moduleNodeAdds);
+          }
+          if (moduleNodeUpdates.length > 0) {
+            nodes.update(moduleNodeUpdates);
+          }
+          // DataSet updates truncate x/y in vis-network; dragging does not.
+          moduleNodeMoves.forEach(function(moduleNode) {
+            network.moveNode(moduleNode.id, moduleNode.x, moduleNode.y);
           });
 
           nodes.update(Object.keys(hiddenMembers).filter(function(id) {
@@ -8704,42 +8823,21 @@
 
         /* Browser event wiring. */
         network.on("click", function(params) {
-            if (touchDoubleTapWindowIsActive()) { return; }
-            cancelPendingContainedConceptModuleSelection();
             if (params.nodes.length === 0 && params.edges && params.edges.length > 0) {
                 showEdgeDetails(params.edges[0]);
                 return;
             }
 
-            if (params.nodes.length === 0) {
-                var recentNodeId = recentGraphClickNodeId(500);
-                if (recentNodeId && handleGraphNodeDoubleClick(recentNodeId)) {
-                  return;
-                }
-                return;
-            }
+            if (params.nodes.length === 0) { return; }
 
             const nodeId = params.nodes[0];
-            if (graphNodeClickIsDoubleClick(nodeId) && handleGraphNodeDoubleClick(nodeId)) {
-              return;
-            }
             const clickedModuleId = moduleIdFromGraphNodeId(nodeId);
             if (clickedModuleId && getModule(clickedModuleId)) {
-              if (deferModuleSelectionForContainedConcept(clickedModuleId)) {
-                return;
-              }
               focusModule(clickedModuleId, "Selected");
               return;
             }
 
             focusConcept(nodeId, "Selected");
-        });
-
-        network.on("doubleClick", function(params) {
-          if (touchDoubleTapWindowIsActive()) { return; }
-          if (!params.nodes || params.nodes.length === 0) { return; }
-          if (nativeDoubleClickIsSuppressed(params.nodes[0])) { return; }
-          handleGraphNodeDoubleClick(params.nodes[0]);
         });
 
         network.on("hoverNode", function(params) {
@@ -8765,6 +8863,13 @@
         function updateRenderedEdgeWidths() {
           var scale = network.getScale();
           if (!isFinite(scale) || scale <= 0) { return; }
+          if (
+            !renderedEdgeWidthsDirty &&
+            renderedEdgeWidthScale === scale &&
+            renderedEdgeWidthHoverId === hoveredEdgeId
+          ) {
+            return;
+          }
           edges.get().forEach(function(edge) {
             var rendered = network.body.edges[edge.id];
             if (!rendered || edge.hidden) { return; }
@@ -8782,10 +8887,21 @@
               ? Math.max(width, minimumPixels / scale)
               : width;
           });
+          renderedEdgeWidthsDirty = false;
+          renderedEdgeWidthScale = scale;
+          renderedEdgeWidthHoverId = hoveredEdgeId;
         }
 
-        network.on("beforeDrawing", updateRenderedEdgeWidths);
+        edges.on("*", function() {
+          renderedEdgeWidthsDirty = true;
+        });
+
+        network.on("beforeDrawing", function(ctx) {
+          drawExpandedModuleOutlines(ctx);
+          updateRenderedEdgeWidths();
+        });
         network.on("afterDrawing", function(ctx) {
+          if (!initialGraphProjectionReady) { return; }
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           drawGraphCompletionMarkers(ctx);
@@ -8811,22 +8927,8 @@
         var graphCanvas = network.canvas && network.canvas.frame
           ? network.canvas.frame.canvas
           : null;
-        var graphInteractionSurface = graphCanvas || graphContainer;
-        graphInteractionSurface.addEventListener("touchstart", function() {
-          suspendGraphOverlays();
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchend", function(e) {
-          if (!e.touches || e.touches.length === 0) {
-            resumeGraphOverlaysSoon();
-          }
-        }, {capture: true, passive: true});
-        graphInteractionSurface.addEventListener("touchcancel", function() {
-          resumeGraphOverlaysSoon();
-        }, {capture: true, passive: true});
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
-        var touchTapStart = null;
-        var lastTouchTap = null;
         function graphNodeAtPointerEvent(e) {
           if (!network.getNodeAt || viewerState.displayScope === DisplayScope.HIDDEN) { return null; }
           var surface = graphCanvas || graphContainer;
@@ -8861,85 +8963,15 @@
             lockedDragProbe = null;
           }, true);
         });
-        (graphCanvas || graphContainer).addEventListener("pointerdown", function(e) {
-          if (e.pointerType !== "touch") { return; }
-          touchTapStart = {
-            pointerId: e.pointerId,
-            x: e.clientX,
-            y: e.clientY,
-            time: Date.now()
-          };
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("pointerup", function(e) {
-          if (e.pointerType !== "touch" || !touchTapStart ||
-              touchTapStart.pointerId !== e.pointerId) {
-            return;
-          }
-          var now = Date.now();
-          var moved = Math.hypot(e.clientX - touchTapStart.x, e.clientY - touchTapStart.y);
-          var duration = now - touchTapStart.time;
-          touchTapStart = null;
-          if (moved > 14 || duration > 400) {
-            lastTouchTap = null;
-            return;
-          }
-          var isDoubleTap = Boolean(
-            lastTouchTap &&
-            now - lastTouchTap.time <= 500 &&
-            Math.hypot(e.clientX - lastTouchTap.x, e.clientY - lastTouchTap.y) <= 28
-          );
-          lastTouchTap = {x: e.clientX, y: e.clientY, time: now};
-          if (!isDoubleTap) { return; }
-          lastTouchTap = null;
-          var surface = graphCanvas || graphContainer;
-          var rect = surface.getBoundingClientRect();
-          var nodeId = graphNodeAtPointerEvent(e);
-          var handled = nodeId ? handleGraphNodeDoubleClick(nodeId) : false;
-          if (!handled) {
-            handled = collapseExpandedModuleAtDomPoint({
-              x: e.clientX - rect.left,
-              y: e.clientY - rect.top
-            });
-          }
-          if (handled) {
-            suppressedTouchDoubleTapUntil = Date.now() + 500;
-            e.preventDefault();
-          }
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("pointercancel", function(e) {
-          if (e.pointerType === "touch") {
-            touchTapStart = null;
-            lastTouchTap = null;
-          }
-        }, true);
-        (graphCanvas || graphContainer).addEventListener("dblclick", function(e) {
-          if (viewerState.displayScope === DisplayScope.HIDDEN || !network.getNodeAt) { return; }
-          var rect = (graphCanvas || graphContainer).getBoundingClientRect();
-          var nodeId = network.getNodeAt({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-          }) || recentGraphClickNodeId(800);
-          if (
-            touchDoubleTapWindowIsActive() ||
-            nativeDoubleClickIsSuppressed(nodeId)
-          ) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          if (toggleModuleFoldForGraphNode(nodeId)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          if (collapseExpandedModuleAtDomPoint({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-          })) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }, true);
+
+        moduleFoldControlLayer.addEventListener("click", function(e) {
+          var button = e.target.closest(".kg-module-corner-control");
+          if (!button) { return; }
+          e.preventDefault();
+          e.stopPropagation();
+          var moduleId = button.getAttribute("data-module-id");
+          setSelectedModuleFoldState(moduleId, !selectedModuleIsFolded(moduleId));
+        });
 
         window.addEventListener("popstate", function(event) {
           var nodeId = event.state && event.state.nodeId;
@@ -9682,6 +9714,7 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            materializeLazyFoldedSection(e.target);
             if (
               e.target.classList.contains("user-note") &&
               !e.target.open
@@ -9693,12 +9726,27 @@
           }
         }, true);
 
+        document.getElementById("info_panel").addEventListener("click", function(e) {
+          var summary = e.target.closest("summary");
+          if (!summary || summary.parentElement.parentElement !== this) { return; }
+          var section = summary.parentElement;
+          if (!section.hasAttribute("data-lazy-section")) { return; }
+          if (e.target.closest("button, input, textarea, select, label, a")) { return; }
+          // Mutating a closed <details> during its default click action can
+          // cancel that action in older Safari. Open explicitly after the
+          // body has been materialised so the first tap is sufficient.
+          e.preventDefault();
+          materializeLazyFoldedSection(section, true);
+          section.open = true;
+        }, true);
+
         /* Initial render. */
         applyDefaultModuleFoldState();
+        buildModuleFoldControls();
         buildNodeLabels();
         refreshModuleFootprints();
         if (document.fonts && document.fonts.addEventListener) {
-          document.fonts.addEventListener("loadingdone", refreshModuleFootprints);
+          document.fonts.addEventListener("loadingdone", refreshModuleFootprintsAfterFontLoad);
         }
         buildConceptList("");
         buildModuleList();
@@ -9720,6 +9768,8 @@
         // Context computation and relationship details retain the complete
         // authored edge set; rendering applies the selected display policy.
         renderGraphFromViewerState();
+        initialGraphProjectionReady = true;
+        network.redraw();
 
         var initialModuleId = moduleIdFromHash(window.location.hash);
         var initialNodeId = conceptIdFromHash(window.location.hash);

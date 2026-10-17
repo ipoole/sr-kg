@@ -71,6 +71,17 @@ def test_inject_controls_adds_google_drive_client_id_to_runtime_config():
     assert '"googleDriveClientId": "example.apps.googleusercontent.com"' in injected
 
 
+def test_inject_controls_removes_unused_bootstrap_javascript():
+    source = _base_pyvis_html().replace(
+        "</head>",
+        '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script></head>',
+    )
+
+    injected = inject_controls(source, {}, {}, "Title")
+
+    assert "bootstrap.bundle.min.js" not in injected
+
+
 def test_favicon_asset_is_compact_accessible_svg():
     from srkg.html_injection import ASSET_DIR
 
@@ -98,7 +109,9 @@ def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
     assert "kg_info_toggle" not in injected
     assert "kgToggleInfoPanel" not in injected
     assert 'id="kg_details_view_select"' in injected
-    assert injected.count("Select a concept or module, or double-click a module to expand it.") == 2
+    assert injected.count(
+        "Select a concept or module; use a module's corner control to expand or collapse it."
+    ) == 2
     assert 'class="kg-splash-credit"' in injected
     assert 'href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a>' in injected
     assert "with AI assistance via OpenAI Codex." in injected

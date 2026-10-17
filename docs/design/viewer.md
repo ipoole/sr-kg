@@ -34,8 +34,9 @@ A selected concept inside a folded module is represented by its normal circular
 concept face and title inside the module box; the module title and concept count
 remain below it. Explicit module selection instead uses a strong outer module
 outline. The viewer offers actions to expand the selected concept's module or
-all context modules. Double-clicking and module-detail controls fold or expand
-modules without changing selection.
+all context modules. The `+` at a folded module's top-right corner expands it;
+the `−` at the corner of an expanded module boundary folds it. These native
+controls, and the module-detail controls, preserve selection.
 
 ## Context and display
 

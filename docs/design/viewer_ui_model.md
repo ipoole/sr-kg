@@ -89,9 +89,10 @@ current representation.
 
 ### Module representation
 
-Double-click and explicit module-detail controls fold or expand one module;
-Tools retains Fold all and Expand all. These actions do not change semantic
-context, selection, display scope, layout, or camera.
+A visible corner control and explicit module-detail controls fold or expand one
+module; Tools retains Fold all and Expand all. These actions do not change
+semantic context, selection, display scope, layout, or camera. The graph control
+is a native button with a discreet symbol and a larger touch target.
 
 Context is computed before folded modules are substituted. Projected context
 and background edges remain distinguishable. A selected concept inside a folded
