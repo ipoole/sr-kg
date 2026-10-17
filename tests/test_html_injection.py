@@ -109,7 +109,9 @@ def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
     assert "kg_info_toggle" not in injected
     assert "kgToggleInfoPanel" not in injected
     assert 'id="kg_details_view_select"' in injected
-    assert injected.count("Select a concept or module, or double-click a module to expand it.") == 2
+    assert injected.count(
+        "Select a concept or module; use a module's corner control to expand or collapse it."
+    ) == 2
     assert 'class="kg-splash-credit"' in injected
     assert 'href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a>' in injected
     assert "with AI assistance via OpenAI Codex." in injected

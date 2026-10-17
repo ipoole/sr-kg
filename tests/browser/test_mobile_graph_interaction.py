@@ -4,49 +4,6 @@ import pytest
 
 
 @pytest.mark.browser
-def test_legacy_touch_events_can_double_tap_a_folded_module(mobile_repo_browser_graph):
-    page = mobile_repo_browser_graph.page
-    target = page.evaluate("""() => {
-      const node = nodes.get().find(item => item.isModuleNode && !item.hidden);
-      const position = network.getPositions([node.id])[node.id];
-      const dom = network.canvasToDOM(position);
-      const rect = network.canvas.frame.canvas.getBoundingClientRect();
-      return {id: node.id, x: rect.left + dom.x, y: rect.top + dom.y};
-    }""")
-
-    page.evaluate(
-        """target => {
-          const canvas = network.canvas.frame.canvas;
-          function dispatch(name, touches, changedTouches) {
-            const event = new Event(name, {bubbles: true, cancelable: true});
-            Object.defineProperties(event, {
-              touches: {value: touches},
-              changedTouches: {value: changedTouches}
-            });
-            canvas.dispatchEvent(event);
-          }
-          function tap(identifier) {
-            const touch = {
-              identifier,
-              clientX: target.x,
-              clientY: target.y
-            };
-            dispatch("touchstart", [touch], [touch]);
-            dispatch("touchend", [], [touch]);
-          }
-          tap(1);
-          tap(2);
-        }""",
-        target,
-    )
-
-    page.wait_for_function(
-        "nodeId => !nodes.get(nodeId) || nodes.get(nodeId).hidden",
-        arg=target["id"],
-    )
-
-
-@pytest.mark.browser
 def test_phone_touch_can_select_pan_and_pinch_zoom_graph(mobile_repo_browser_graph):
     page = mobile_repo_browser_graph.page
 
@@ -112,10 +69,6 @@ def test_phone_touch_can_select_pan_and_pinch_zoom_graph(mobile_repo_browser_gra
         target,
     )
     assert propagated_pointerups == 2
-    page.wait_for_function(
-        "nodeId => !nodes.get(nodeId) || nodes.get(nodeId).hidden",
-        arg=target["id"],
-    )
 
     gesture = page.evaluate(
         """() => {
@@ -191,4 +144,3 @@ def test_phone_touch_can_select_pan_and_pinch_zoom_graph(mobile_repo_browser_gra
     page.wait_for_timeout(150)
     after_scale = page.evaluate("() => network.getScale()")
     assert after_scale > before_scale
-
