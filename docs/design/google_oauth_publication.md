@@ -12,6 +12,7 @@ and security model remains in [Personal data](personal_data.md).
 | App name | `PhysicsKG` |
 | App home page | `https://ipoole.github.io/sr-kg/` |
 | Privacy policy | `https://ipoole.github.io/sr-kg/privacy.html` |
+| Terms of service | `https://ipoole.github.io/sr-kg/terms.html` |
 | App entry point | `https://ipoole.github.io/sr-kg/output/PhysicsKG.html` |
 | Logo | `physicskg-logo-120.png` (120 by 120 pixels) |
 | Authorised domain | `ipoole.github.io` |
@@ -21,7 +22,6 @@ and security model remains in [Personal data](personal_data.md).
 
 Choose the project's real user-support and developer-contact email addresses in
 Google Cloud; they are account settings and are deliberately not stored here.
-A terms-of-service URL is not currently needed.
 
 ## Publish checklist
 

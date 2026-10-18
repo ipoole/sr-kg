@@ -17,6 +17,7 @@ def test_public_homepage_identifies_physicskg_and_links_required_pages():
     assert "Study physics through visually connected concepts" in homepage
     assert 'href="output/PhysicsKG.html"' in homepage
     assert 'href="privacy.html"' in homepage
+    assert 'href="terms.html"' in homepage
     assert "Google Drive" in homepage
     assert "drive.file" in homepage
 
@@ -39,6 +40,16 @@ def test_privacy_policy_discloses_personal_and_google_data_handling():
         "delete",
     ):
         assert disclosure in policy
+
+
+def test_public_terms_cover_educational_use_and_optional_drive_service():
+    terms = _page("terms.html")
+
+    assert "Terms of service" in terms
+    assert "educational" in terms
+    assert "as is" in terms
+    assert "Google Drive" in terms
+    assert 'href="privacy.html"' in terms
 
 
 def test_google_branding_logo_is_a_120_pixel_png():
