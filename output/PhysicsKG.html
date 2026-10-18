@@ -120,8 +120,33 @@
         font-size: 13px;
         padding: 5px 9px;
       }
+      .kg-shell-brand {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 7px;
+        color: #123e5a;
+        cursor: pointer;
+        display: inline-flex;
+        font: 700 13px/1 Arial, sans-serif;
+        gap: 7px;
+        left: 10px;
+        padding: 2px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+      .kg-brand-mark {
+        display: block;
+        height: 30px;
+        width: 30px;
+      }
+      .kg-brand-wordmark {
+        white-space: nowrap;
+      }
       .kg-shell-tools-button {
-        left: 12px;
+        left: 132px;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -129,6 +154,8 @@
       }
       .kg-shell-button:hover,
       .kg-shell-button:focus,
+      .kg-shell-brand:hover,
+      .kg-shell-brand:focus-visible,
       .kg-canvas-select:hover,
       .kg-canvas-select:focus {
         background: #eef3fd;
@@ -1813,6 +1840,11 @@
       margin: 0.25rem 0;
     }
 
+    .kg-cloud-sync .kg-privacy-link {
+      font-size: 0.82em;
+      margin-top: 0.55rem;
+    }
+
     .kg-muted-label {
       color: #607586;
       font-size: 0.8em;
@@ -2705,7 +2737,26 @@
 
     .kg-splash h2 {
         font-size: 1.2rem;
-        margin: 0 0 0.6rem;
+        margin: 0 0 0.15rem;
+    }
+
+    .kg-splash-brand {
+        align-items: center;
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .kg-splash-brand-mark {
+        border-radius: 12px;
+        display: block;
+        height: 54px;
+        width: 54px;
+    }
+
+    .kg-splash-brand span {
+        color: #526476;
+        font-size: 0.85rem;
     }
 
     .kg-splash h3 {
@@ -2993,6 +3044,18 @@
             transform: none;
         }
 
+        .kg-shell-brand {
+            flex: 0 0 auto;
+            left: auto;
+            position: static;
+            top: auto;
+            transform: none;
+        }
+
+        .kg-brand-wordmark {
+            display: none;
+        }
+
         #kg_clear_selection {
             flex: 0 0 auto;
         }
@@ -3141,6 +3204,17 @@
           line-height: 1.15;
           min-height: 27px;
           padding: 3px 4px;
+        }
+        #kg_app_header .kg-shell-brand {
+          box-sizing: border-box;
+          height: 30px;
+          justify-content: center;
+          min-width: 28px;
+          padding: 2px;
+        }
+        #kg_app_header .kg-brand-mark {
+          height: 25px;
+          width: 25px;
         }
         #kg_app_header .kg-canvas-select,
         .kg-graph-context-controls .kg-canvas-select {
@@ -3348,6 +3422,12 @@
 
     <body>
     <header id="kg_app_header" aria-label="Knowledge graph workspace controls">
+      <button id="kg_brand_home" class="kg-shell-brand" type="button"
+              aria-label="PhysicsKG — Quick Start" title="PhysicsKG — Quick Start"
+              onclick="kgShowSplash()">
+        <img class="kg-brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIj4KICA8dGl0bGUgaWQ9InRpdGxlIj5QaHlzaWNzS0c8L3RpdGxlPgogIDxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMTIzZTVhIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDllZGY3IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTcgMTMgMTggMzEgMTUgNTEiLz4KICAgIDxwYXRoIGQ9Ik0xOCAzMSA0OSAxNiIvPgogICAgPHBhdGggZD0iTTE4IDMxIDUwIDQ5Ii8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjE3IiBjeT0iMTMiIHI9IjUiIGZpbGw9IiM2ZmMzZGYiLz4KICA8Y2lyY2xlIGN4PSIxOCIgY3k9IjMxIiByPSI2IiBmaWxsPSIjZjJjOTRjIi8+CiAgPGNpcmNsZSBjeD0iMTUiIGN5PSI1MSIgcj0iNSIgZmlsbD0iIzZmYzNkZiIvPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTYiIHI9IjUiIGZpbGw9IiNlZThiMzUiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjQ5IiByPSI1IiBmaWxsPSIjZWU4YjM1Ii8+Cjwvc3ZnPgo=" alt="" aria-hidden="true">
+        <span class="kg-brand-wordmark">PhysicsKG</span>
+      </button>
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
       <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
       <div class="kg-shell-control kg-shell-graph-control">
@@ -3432,6 +3512,10 @@
           <button id="kg_cloud_sync_connect" type="button">Connect Google Drive</button>
           <button id="kg_cloud_sync_now" type="button" hidden>Sync now</button>
           <button id="kg_cloud_sync_disconnect" type="button" hidden>Disconnect</button>
+          <p class="kg-privacy-link">
+            <a href="https://ipoole.github.io/sr-kg/privacy.html"
+               target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a>
+          </p>
         </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
@@ -3545,7 +3629,13 @@
       </div>
     </dialog>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
-      <h2 id="kg_splash_title">PhysicsKG quick start</h2>
+      <div class="kg-splash-brand">
+        <img class="kg-splash-brand-mark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIj4KICA8dGl0bGUgaWQ9InRpdGxlIj5QaHlzaWNzS0c8L3RpdGxlPgogIDxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE0IiBmaWxsPSIjMTIzZTVhIi8+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDllZGY3IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTcgMTMgMTggMzEgMTUgNTEiLz4KICAgIDxwYXRoIGQ9Ik0xOCAzMSA0OSAxNiIvPgogICAgPHBhdGggZD0iTTE4IDMxIDUwIDQ5Ii8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjE3IiBjeT0iMTMiIHI9IjUiIGZpbGw9IiM2ZmMzZGYiLz4KICA8Y2lyY2xlIGN4PSIxOCIgY3k9IjMxIiByPSI2IiBmaWxsPSIjZjJjOTRjIi8+CiAgPGNpcmNsZSBjeD0iMTUiIGN5PSI1MSIgcj0iNSIgZmlsbD0iIzZmYzNkZiIvPgogIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTYiIHI9IjUiIGZpbGw9IiNlZThiMzUiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjQ5IiByPSI1IiBmaWxsPSIjZWU4YjM1Ii8+Cjwvc3ZnPgo=" alt="" aria-hidden="true">
+        <div>
+          <h2 id="kg_splash_title">PhysicsKG quick start</h2>
+          <span>An Atlas of Physics Knowledge</span>
+        </div>
+      </div>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
       <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.<span class="kg-status-badge">NEW</span></p>
       <div class="kg-splash-feature-grid">
@@ -3611,6 +3701,7 @@
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
             <li>Tools → Personal data can download or import a portable archive.</li>
             <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
+            <li><a href="https://ipoole.github.io/sr-kg/privacy.html" target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a> explains exactly what is stored and transferred.</li>
           </ul>
         </section>
         <section>
