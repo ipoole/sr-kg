@@ -64,5 +64,5 @@ def test_google_branding_logo_is_a_120_pixel_png():
 def test_viewer_offers_a_public_privacy_policy_link():
     controls = (ROOT / "srkg/viewer_assets/controls.html").read_text(encoding="utf-8")
 
-    assert 'href="https://ipoole.github.io/sr-kg/privacy.html"' in controls
+    assert 'href="https://physicskg.org/privacy.html"' in controls
     assert "Privacy and Google Drive data use" in controls

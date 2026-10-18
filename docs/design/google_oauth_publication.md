@@ -10,13 +10,13 @@ and security model remains in [Personal data](personal_data.md).
 | Google field | Value |
 | --- | --- |
 | App name | `PhysicsKG` |
-| App home page | `https://ipoole.github.io/sr-kg/` |
-| Privacy policy | `https://ipoole.github.io/sr-kg/privacy.html` |
-| Terms of service | `https://ipoole.github.io/sr-kg/terms.html` |
-| App entry point | `https://ipoole.github.io/sr-kg/output/PhysicsKG.html` |
+| App home page | `https://physicskg.org/` |
+| Privacy policy | `https://physicskg.org/privacy.html` |
+| Terms of service | `https://physicskg.org/terms.html` |
+| App entry point | `https://physicskg.org/output/PhysicsKG.html` |
 | Logo | `physicskg-logo-120.png` (120 by 120 pixels) |
-| Authorised domain | `ipoole.github.io` |
-| Authorised JavaScript origin | `https://ipoole.github.io` |
+| Authorised domain | `physicskg.org` |
+| Authorised JavaScript origin | `https://physicskg.org` |
 | OAuth scope | `https://www.googleapis.com/auth/drive.file` |
 | Web client ID | `45956259452-4sd6v6vmi653bqfs5vfdcsn2bab85ea8.apps.googleusercontent.com` |
 
@@ -27,11 +27,8 @@ Google Cloud; they are account settings and are deliberately not stored here.
 
 1. Merge and publish the home page, privacy policy and 120-pixel logo above, and
    check that each URL is public without signing in.
-2. In Google Search Console, verify ownership of the authorised domain. Because
-   PhysicsKG is a GitHub Pages project site, Google may require verification at
-   the `ipoole.github.io` user-site root rather than only under `/sr-kg/`. If so,
-   place Google's verification file or meta tag in the repository that publishes
-   that root, or use a verified custom domain.
+2. In Google Search Console, verify the `physicskg.org` Domain property through
+   its DNS TXT record. Keep that record in place after verification.
 3. In Google Auth Platform **Branding**, enter the public URLs, upload the logo,
    choose the support email and submit any requested branding verification.
 4. In **Audience**, keep the app external and choose **Publish app** when the

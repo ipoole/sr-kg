@@ -5,8 +5,8 @@ general relativity and supporting mathematics. It is primarily aimed at personal
 study around Theoretical Minimum level, with an ambition to support a wider
 range of backgrounds.
 
-The published [PhysicsKG home page](https://ipoole.github.io/sr-kg/) introduces
-the atlas and links to its [privacy policy](https://ipoole.github.io/sr-kg/privacy.html).
+The published [PhysicsKG home page](https://physicskg.org/) introduces the atlas
+and links to its [privacy policy](https://physicskg.org/privacy.html).
 
 The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
 nine supporting mathematics concepts.
@@ -68,7 +68,7 @@ An optional, explicitly invoked Google Drive connection synchronises the same vi
 `PhysicsKG personal data.zip` file between browsers. Local storage remains the
 working copy and the viewer remains usable without connecting. The project's
 public Google OAuth web-client ID is used by default and authorises the
-`https://ipoole.github.io` origin. A different deployment can override it at
+`https://physicskg.org` origin. A different deployment can override it at
 build time:
 
 ```bash
