@@ -92,6 +92,9 @@ def inject_controls(
     html_text = _BOOTSTRAP_JAVASCRIPT.sub("", html_text)
 
     css = _style_tag(_render_template("viewer.css", _css_replacements()))
+    product_logo_uri = "data:image/svg+xml;base64," + base64.b64encode(
+        _asset_text("favicon.svg").encode("utf-8")
+    ).decode("ascii")
     controls = _render_template(
         "controls.html",
         {
@@ -99,6 +102,7 @@ def inject_controls(
             "__VIEW_TITLE__": html_escape(view_title),
             "__PRODUCT_NAME__": html_escape(PRODUCT_NAME),
             "__PRODUCT_TAGLINE__": html_escape(PRODUCT_TAGLINE),
+            "__PRODUCT_LOGO_URI__": product_logo_uri,
         },
     )
     js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(

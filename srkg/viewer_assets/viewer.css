@@ -53,8 +53,33 @@
         font-size: 13px;
         padding: 5px 9px;
       }
+      .kg-shell-brand {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 7px;
+        color: #123e5a;
+        cursor: pointer;
+        display: inline-flex;
+        font: 700 13px/1 Arial, sans-serif;
+        gap: 7px;
+        left: 10px;
+        padding: 2px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+      .kg-brand-mark {
+        display: block;
+        height: 30px;
+        width: 30px;
+      }
+      .kg-brand-wordmark {
+        white-space: nowrap;
+      }
       .kg-shell-tools-button {
-        left: 12px;
+        left: 132px;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -62,6 +87,8 @@
       }
       .kg-shell-button:hover,
       .kg-shell-button:focus,
+      .kg-shell-brand:hover,
+      .kg-shell-brand:focus-visible,
       .kg-canvas-select:hover,
       .kg-canvas-select:focus {
         background: #eef3fd;
@@ -1746,6 +1773,11 @@
       margin: 0.25rem 0;
     }
 
+    .kg-cloud-sync .kg-privacy-link {
+      font-size: 0.82em;
+      margin-top: 0.55rem;
+    }
+
     .kg-muted-label {
       color: #607586;
       font-size: 0.8em;
@@ -2638,7 +2670,26 @@
 
     .kg-splash h2 {
         font-size: 1.2rem;
-        margin: 0 0 0.6rem;
+        margin: 0 0 0.15rem;
+    }
+
+    .kg-splash-brand {
+        align-items: center;
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .kg-splash-brand-mark {
+        border-radius: 12px;
+        display: block;
+        height: 54px;
+        width: 54px;
+    }
+
+    .kg-splash-brand span {
+        color: #526476;
+        font-size: 0.85rem;
     }
 
     .kg-splash h3 {
@@ -2926,6 +2977,18 @@
             transform: none;
         }
 
+        .kg-shell-brand {
+            flex: 0 0 auto;
+            left: auto;
+            position: static;
+            top: auto;
+            transform: none;
+        }
+
+        .kg-brand-wordmark {
+            display: none;
+        }
+
         #kg_clear_selection {
             flex: 0 0 auto;
         }
@@ -3074,6 +3137,17 @@
           line-height: 1.15;
           min-height: 27px;
           padding: 3px 4px;
+        }
+        #kg_app_header .kg-shell-brand {
+          box-sizing: border-box;
+          height: 30px;
+          justify-content: center;
+          min-width: 28px;
+          padding: 2px;
+        }
+        #kg_app_header .kg-brand-mark {
+          height: 25px;
+          width: 25px;
         }
         #kg_app_header .kg-canvas-select,
         .kg-graph-context-controls .kg-canvas-select {

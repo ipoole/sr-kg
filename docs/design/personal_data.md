@@ -135,3 +135,9 @@ origin must be registered for that client. The ID is public configuration, not
 a secret. Access tokens are kept only in memory and may expire, requiring the
 user to connect again. Fully unattended token refresh would require a backend
 and is deliberately outside the first implementation.
+
+The published [privacy policy](https://ipoole.github.io/sr-kg/privacy.html) is
+linked from the viewer's Personal data controls. It explains the browser-local
+record, portable archive, optional Drive transfer and deletion choices in
+user-facing language. Public OAuth configuration and release checks are recorded
+in [Google OAuth publication](google_oauth_publication.md).

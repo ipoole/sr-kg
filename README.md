@@ -5,6 +5,9 @@ general relativity and supporting mathematics. It is primarily aimed at personal
 study around Theoretical Minimum level, with an ambition to support a wider
 range of backgrounds.
 
+The published [PhysicsKG home page](https://ipoole.github.io/sr-kg/) introduces
+the atlas and links to its [privacy policy](https://ipoole.github.io/sr-kg/privacy.html).
+
 The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
 nine supporting mathematics concepts.
 
@@ -77,7 +80,8 @@ conda run -n sr-kg python tools/generate_pyvis.py \
 The `PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID` environment variable is the equivalent
 override. An empty override disables Google Drive controls for a build. See
 [Personal data](docs/design/personal_data.md) for the data and synchronisation
-model.
+model. The public privacy policy is linked from the Personal data controls in
+the viewer.
 
 ## Validate and test
 
@@ -100,6 +104,7 @@ conda run -n sr-kg pytest -q tests/browser
 - [Architecture](docs/design/architecture.md): generation, presentation and user state.
 - [Viewer behaviour](docs/design/viewer.md): current learner-facing controls and limitations.
 - [Personal data](docs/design/personal_data.md): local-first storage, portable archives and Google Drive synchronisation.
+- [Google OAuth publication](docs/design/google_oauth_publication.md): public branding, Console settings and release checklist.
 - [KB schema](docs/design/kb_schema.md): source-file contracts.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
 - [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.

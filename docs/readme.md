@@ -9,7 +9,9 @@
   [study-question design](design/study.md) defines marking, attempts, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable
-  export/import and optional Google Drive synchronisation.
+  export/import and optional Google Drive synchronisation. The
+  [Google OAuth publication checklist](design/google_oauth_publication.md)
+  records the public branding URLs and Console settings.
 - **Authoring** holds the [authoring guide](authoring/authoring_guide.md),
   notation conventions, working drafts, and outstanding editorial work.
 - **Discussion** holds speculative ideas, not instructions for current behaviour.

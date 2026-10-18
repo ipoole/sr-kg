@@ -1540,7 +1540,11 @@ def test_workspace_header_controls_are_centered_over_their_panes(browser_graph):
 
     assert abs(graph_control_center - graph_center) <= 6
     assert abs(details_control_center - details_center) <= 6
-    assert page.locator("#kg_controls_toggle").bounding_box()["x"] <= 16
+    assert page.locator("#kg_brand_home").bounding_box()["x"] <= 16
+    assert (
+        page.locator("#kg_controls_toggle").bounding_box()["x"]
+        > page.locator("#kg_brand_home").bounding_box()["x"]
+    )
 
 
 @pytest.mark.browser
@@ -1562,10 +1566,13 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Full"
     assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full"
     assert page.locator("#kg_clear_selection").inner_text() == "Clear"
+    assert page.locator("#kg_brand_home").is_visible()
+    assert page.locator("#kg_brand_home .kg-brand-wordmark").is_hidden()
 
     metrics = page.evaluate(
         """() => {
           const ids = [
+            "kg_brand_home",
             "kg_controls_toggle",
             "kg_search_toggle",
             "kg_display_scope_select",
@@ -2674,6 +2681,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
+    assert dialog.locator(".kg-splash-brand-mark").is_visible()
     assert dialog.locator(".kg-splash-feature-grid section").count() == 8
     assert dialog.locator(".kg-splash-feature-grid section h3").count() == 8
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
@@ -2714,3 +2722,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     page.locator("#kg_features_button").click()
     assert page.locator("#kg_splash_dialog[open]").count() == 1
     assert page.locator("#kg_features_button").inner_text() == "Quick start"
+
+    page.locator("#kg_splash_dismiss").click()
+    page.locator("#kg_brand_home").click()
+    assert page.locator("#kg_splash_dialog[open]").count() == 1

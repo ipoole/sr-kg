@@ -1,4 +1,10 @@
     <header id="kg_app_header" aria-label="Knowledge graph workspace controls">
+      <button id="kg_brand_home" class="kg-shell-brand" type="button"
+              aria-label="__PRODUCT_NAME__ — Quick Start" title="__PRODUCT_NAME__ — Quick Start"
+              onclick="kgShowSplash()">
+        <img class="kg-brand-mark" src="__PRODUCT_LOGO_URI__" alt="" aria-hidden="true">
+        <span class="kg-brand-wordmark">__PRODUCT_NAME__</span>
+      </button>
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
       <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
       <div class="kg-shell-control kg-shell-graph-control">
@@ -83,6 +89,10 @@
           <button id="kg_cloud_sync_connect" type="button">Connect Google Drive</button>
           <button id="kg_cloud_sync_now" type="button" hidden>Sync now</button>
           <button id="kg_cloud_sync_disconnect" type="button" hidden>Disconnect</button>
+          <p class="kg-privacy-link">
+            <a href="https://ipoole.github.io/sr-kg/privacy.html"
+               target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a>
+          </p>
         </div>
       </details>
       <details id="kg_notes_section" class="kg-fold">
@@ -196,7 +206,13 @@
       </div>
     </dialog>
     <dialog id="kg_splash_dialog" class="kg-splash" aria-labelledby="kg_splash_title">
-      <h2 id="kg_splash_title">__PRODUCT_NAME__ quick start</h2>
+      <div class="kg-splash-brand">
+        <img class="kg-splash-brand-mark" src="__PRODUCT_LOGO_URI__" alt="" aria-hidden="true">
+        <div>
+          <h2 id="kg_splash_title">__PRODUCT_NAME__ quick start</h2>
+          <span>__PRODUCT_TAGLINE__</span>
+        </div>
+      </div>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
       <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.<span class="kg-status-badge">NEW</span></p>
       <div class="kg-splash-feature-grid">
@@ -262,6 +278,7 @@
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
             <li>Tools → Personal data can download or import a portable archive.</li>
             <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
+            <li><a href="https://ipoole.github.io/sr-kg/privacy.html" target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a> explains exactly what is stored and transferred.</li>
           </ul>
         </section>
         <section>

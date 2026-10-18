@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How PhysicsKG handles browser-local study records and optional Google Drive synchronisation.">
+  <title>Privacy — PhysicsKG</title>
+  <link rel="icon" type="image/svg+xml" href="srkg/viewer_assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="srkg/viewer_assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="srkg/viewer_assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="site-header site-shell">
+    <a class="brand" href="index.html" aria-label="PhysicsKG home">
+      <img src="physicskg-logo-120.png" alt="">
+      <span>PhysicsKG</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="index.html">About</a>
+      <a class="button" href="output/PhysicsKG.html">Open the atlas</a>
+    </nav>
+  </header>
+
+  <main class="privacy-page site-shell">
+    <p class="eyebrow">Public information</p>
+    <h1>Privacy policy</h1>
+    <p class="effective-date">Effective 18 October 2026</p>
+
+    <p class="privacy-summary">
+      PhysicsKG is local-first. Your notes and study records stay in your browser
+      unless you explicitly export them or choose to synchronise them with your
+      own Google Drive. PhysicsKG does not operate an application server, and
+      personal data is not accessible to the developer through PhysicsKG.
+    </p>
+
+    <h2>What is stored</h2>
+    <p>PhysicsKG can store the following personal data:</p>
+    <ul>
+      <li>notes attached to teaching content;</li>
+      <li>personal graph-layout adjustments;</li>
+      <li>study-question attempts and latest results; and</li>
+      <li>reading-completion marks and related update timestamps.</li>
+    </ul>
+    <p>
+      It remains in your browser's local storage until you clear it. You can
+      export it as <strong>PhysicsKG personal data.zip</strong>, a transparent
+      archive of CSV files, and import that archive into another browser.
+    </p>
+
+    <h2>Optional Google Drive sync</h2>
+    <p>
+      If you choose <strong>Connect Google Drive</strong>, PhysicsKG uses Google
+      Identity Services and requests only the OAuth scope
+      <code>https://www.googleapis.com/auth/drive.file</code>. This narrowly
+      scoped permission covers files created by PhysicsKG or explicitly opened
+      with it; it does not provide general access to your Drive.
+    </p>
+    <p>
+      When you press <strong>Sync now</strong>, the app reads or updates one
+      visible file named <strong>PhysicsKG personal data.zip</strong>. Data moves
+      directly between your browser and Google Drive. The access token is kept
+      only in the page's memory and is not stored in your study record or archive.
+    </p>
+
+    <h2>Use and sharing</h2>
+    <p>
+      Personal data is used only to restore your work, display your progress,
+      import or export it, and optionally synchronise it with Google Drive. It is
+      not sold, used for advertising or profiling, or shared with other users.
+      Google processes Drive and authorisation data under your Google account and
+      its own terms and privacy policy.
+    </p>
+    <p>
+      PhysicsKG's use of information received from Google APIs adheres to the
+      Google API Services User Data Policy, including its Limited Use
+      requirements.
+    </p>
+
+    <h2>Your control</h2>
+    <ul>
+      <li>Use PhysicsKG without connecting Google Drive.</li>
+      <li>Export or import your data from <strong>Tools → Personal data</strong>.</li>
+      <li>Clear the site's browser storage to delete the local copy.</li>
+      <li>Delete <strong>PhysicsKG personal data.zip</strong> to remove the Drive copy.</li>
+      <li>Revoke PhysicsKG in your Google Account permissions.</li>
+    </ul>
+
+    <h2>Other network access</h2>
+    <p>
+      PhysicsKG loads graph-rendering and mathematical-typesetting libraries from
+      public content-delivery networks. Those providers receive ordinary request
+      information such as your IP address and browser details, but PhysicsKG does
+      not send them your personal study data or Drive archive.
+    </p>
+
+    <h2>Updates and contact</h2>
+    <p>
+      This policy will be updated if these practices materially change.
+      PhysicsKG is created by Ian Poole; questions can be sent through
+      <a href="https://www.linkedin.com/in/ipoole/">Ian Poole's LinkedIn profile</a>.
+    </p>
+  </main>
+
+  <footer class="site-footer site-shell">
+    <span>PhysicsKG — An Atlas of Physics Knowledge</span>
+    <span><a href="index.html">Home</a> · <a href="output/PhysicsKG.html">Open the atlas</a></span>
+  </footer>
+</body>
+</html>
