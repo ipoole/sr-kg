@@ -1071,12 +1071,6 @@
         margin: 0 0 0.75em;
     }
 
-    #info_panel .reading-mode-empty {
-        color: #666;
-        font-style: italic;
-        margin: 0.75em 0 1em;
-    }
-
     #info_panel .content-block {
         --block-accent: #6a7b8f;
         --block-accent-dark: #34495f;

@@ -54,10 +54,10 @@ not restrict the global edge set. Context only contains just the context
 subgraph. Hidden suppresses the graph while retaining selection, context and
 module state.
 
-The details selector controls presentation only: Full details, Folded, Core,
-Maths, Context, Practice, or Hide details. Scrolling and opening sections update
-only details navigation. Reading filters are content filters, not difficulty or
-mastery levels. Pinching or using Ctrl/Cmd-wheel over the details pane scales
+The details selector controls presentation only: Full details, Folded, or Hide
+details. Full and Folded contain the same material; Folded initially closes its
+top-level blocks. Scrolling and opening sections update only details navigation.
+Pinching or using Ctrl/Cmd-wheel over the details pane scales
 both its text and its concept or module graphics without changing the graph
 camera.
 

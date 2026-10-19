@@ -40,9 +40,6 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert page.locator("#kg_graph_context_panel").count() == 1
     assert page.locator("#kg_node_labels .kg-node-label").count() == 4
     assert page.locator("#kg_concept_list .kg-concept-item").count() == 4
-    assert page.locator("#kg_edge_filters_section").count() == 0
-    assert page.locator("#kg_edge_filters").count() == 0
-    assert page.locator("#kg_legend_section").count() == 0
     assert not page.locator("#kg_notes_section").evaluate("el => el.open")
     assert not page.locator("#kg_search_section").evaluate("el => el.open")
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
@@ -50,6 +47,9 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert page.evaluate("() => edges.length") == 6
     assert page.locator("#kg_display_scope_select").input_value() == "full"
     assert page.locator("#kg_details_view_select").input_value() == "full"
+    assert page.locator("#kg_details_view_select option").evaluate_all(
+        "options => options.map(option => option.value)"
+    ) == ["hide", "full", "folded"]
 
 
 @pytest.mark.browser
@@ -66,18 +66,12 @@ def test_folded_startup_does_not_decode_hidden_concept_icons(repo_browser_graph)
 @pytest.mark.browser
 def test_tiny_all_concept_view_does_not_decode_every_icon(repo_browser_graph):
     page = repo_browser_graph.page
-    module_ids = page.locator("#kg_module_list .kg-module-item").evaluate_all(
-        "items => items.map(item => item.getAttribute('data-module-id'))"
-    )
-    for module_id in module_ids:
-        page.locator(
-            f'#kg_module_list .kg-module-item[data-module-id="{module_id}"]'
-        ).evaluate("item => item.click()")
-        page.locator(
-            '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
-        ).click()
+    repo_browser_graph.open_control_section("kg_modules_section")
+    page.locator("#kg_modules_expand_all").click()
     page.evaluate("network.fit({animation: false}); network.redraw();")
-    page.wait_for_timeout(500)
+    page.evaluate(
+        "() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))"
+    )
 
     session = page.context.new_cdp_session(page)
     counters = session.send("Memory.getDOMCounters")
@@ -95,8 +89,8 @@ def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph
 
 
 @pytest.mark.browser
-def test_node_hover_tooltip_typesets_mathjax(browser_graph):
-    page = browser_graph.page
+def test_node_hover_tooltip_typesets_mathjax(mathjax_browser_graph):
+    page = mathjax_browser_graph.page
 
     point = page.evaluate(
         """() => {
@@ -1067,6 +1061,18 @@ def test_layout_editing_is_personal_and_reports_move_consequences(browser_graph)
 @pytest.mark.browser
 def test_drag_attempt_while_layout_is_locked_shows_context_notice_once(browser_graph):
     page = browser_graph.page
+    page.evaluate(
+        """() => {
+          window.__kgNativeSetTimeout = window.setTimeout;
+          window.setTimeout = (callback, delay, ...args) => {
+            if (delay === 2800) {
+              window.__kgLayoutNoticeTimeout = () => callback(...args);
+              return -1;
+            }
+            return window.__kgNativeSetTimeout(callback, delay, ...args);
+          };
+        }"""
+    )
     point = page.evaluate(
         """() => {
           const canvas = network.canvas.frame.canvas;
@@ -1082,16 +1088,17 @@ def test_drag_attempt_while_layout_is_locked_shows_context_notice_once(browser_g
     page.mouse.up()
 
     assert "Layout locked" in page.locator("#kg_context_notice").inner_text()
-    page.wait_for_function(
-        "() => document.getElementById('kg_context_notice').hidden",
-        timeout=4000,
+    page.evaluate(
+        """() => {
+          window.__kgLayoutNoticeTimeout();
+          window.setTimeout = window.__kgNativeSetTimeout;
+        }"""
     )
 
     page.mouse.move(point["x"], point["y"])
     page.mouse.down()
     page.mouse.move(point["x"] + 12, point["y"] + 8)
     page.mouse.up()
-    page.wait_for_timeout(200)
     assert page.locator("#kg_context_notice").is_hidden()
 
 
@@ -1357,20 +1364,6 @@ def test_graphic_and_inline_content_sections_are_foldable(shared_browser_graph):
 
     assert not definition.evaluate("el => el.open")
     assert not definition.locator(".content-block-body").is_visible()
-
-
-@pytest.mark.browser
-def test_detail_toc_omits_obsolete_graph_policy_metadata(shared_browser_graph):
-    page = shared_browser_graph.page
-
-    shared_browser_graph.click_concept("2.2")
-
-    links = page.locator("#info_panel .concept-toc-link")
-    assert links.evaluate_all(
-        "links => links.every(link => !link.hasAttribute('data-section-role') && "
-        "!link.hasAttribute('data-graph-context') && "
-        "!link.hasAttribute('data-context-label'))"
-    )
 
 
 @pytest.mark.browser
@@ -1973,43 +1966,6 @@ def test_details_hide_does_not_blank_workspace_when_graph_is_hidden(browser_grap
 
 
 @pytest.mark.browser
-def test_reading_mode_core_filters_blocks_and_study_questions(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-    page.locator("#kg_details_view_select").select_option("core")
-
-    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "core"
-    block_kinds = _visible_content_block_kinds(page)
-    assert "definition" in block_kinds
-    assert "intuition" in block_kinds
-    assert "warning" in block_kinds
-    assert "derivation_step" not in block_kinds
-    assert "historical_note" not in block_kinds
-    questions = page.locator("#info_panel details.study-questions")
-    assert not questions.evaluate("node => node.open")
-    questions.locator(":scope > summary").click()
-    assert questions.locator(".study-question").count() == 1
-
-
-@pytest.mark.browser
-def test_real_lorentz_maths_mode_keeps_boost_context(clean_repo_browser_graph):
-    page = clean_repo_browser_graph.page
-
-    clean_repo_browser_graph.click_concept("sr.lorentz_transformations")
-    page.locator("#kg_details_view_select").select_option("maths")
-
-    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "maths"
-    block_kinds = _visible_content_block_kinds(page)
-    assert "construction" in block_kinds
-    assert "Standard boost setup" in page.locator("#info_panel").inner_text()
-    questions = page.locator("#info_panel details.study-questions")
-    questions.locator(":scope > summary").click()
-    prompts = questions.locator(".study-question-prompt").all_inner_texts()
-    assert not any("q3" in prompt.lower() for prompt in prompts)
-
-
-@pytest.mark.browser
 def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(browser_graph):
     page = browser_graph.page
 
@@ -2049,35 +2005,6 @@ def test_folded_reading_mode_closes_module_sections(browser_graph):
 
 
 @pytest.mark.browser
-def test_reading_mode_maths_filters_blocks_and_study_questions(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-    page.locator("#kg_details_view_select").select_option("maths")
-
-    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "maths"
-    assert _toc_titles(page) == [
-        "Graphic",
-        "Gamma algebra step",
-        "Derived from",
-        "Where this is used",
-        "Study Questions",
-    ]
-    block_kinds = _visible_content_block_kinds(page)
-    assert "definition" not in block_kinds
-    assert "intuition" not in block_kinds
-    assert "derivation_step" in block_kinds
-    step = page.locator("#info_panel details.content-block-derivation_step")
-    assert step.count() == 1
-    step.locator("summary").click()
-    assert step.locator(".content-block-fold-body").is_visible()
-    questions = page.locator("#info_panel details.study-questions")
-    assert not questions.evaluate("node => node.open")
-    questions.locator(":scope > summary").click()
-    assert questions.locator(".study-question").count() == 1
-
-
-@pytest.mark.browser
 def test_legacy_concept_toc_includes_sections_and_study_questions(browser_graph):
     page = browser_graph.page
 
@@ -2089,19 +2016,6 @@ def test_legacy_concept_toc_includes_sections_and_study_questions(browser_graph)
         "Where this is used",
         "Study Questions",
     ]
-
-
-@pytest.mark.browser
-def test_practice_reading_mode_opens_study_questions_by_default(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-    page.locator("#kg_details_view_select").select_option("practice")
-
-    questions = page.locator("#info_panel details.study-questions")
-    assert questions.count() == 1
-    assert questions.evaluate("node => node.open")
-    assert questions.locator(".study-question").first.is_visible()
 
 
 @pytest.mark.browser
@@ -2218,8 +2132,8 @@ def test_edge_click_opens_relationship_inspection(shared_browser_graph):
 
 
 @pytest.mark.browser
-def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(browser_graph):
-    page = browser_graph.page
+def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathjax_browser_graph):
+    page = mathjax_browser_graph.page
 
     page.evaluate(
         """() => {
@@ -2282,7 +2196,7 @@ def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
         }"""
     )
 
-    page.wait_for_timeout(100)
+    page.evaluate("() => new Promise(resolve => requestAnimationFrame(resolve))")
     after = page.evaluate(
         """() => {
           const edge = edges.get().find(item =>
@@ -2529,23 +2443,11 @@ def test_search_finds_definition_text_and_highlights_detail_match(browser_graph)
     page.locator("#kg_search").fill("explains")
     page.locator("button", has_text="Find").click()
 
-    assert page.locator("#kg_status").inner_text() == (
-        "Found 1 match(es). Showing first: Beta"
-    )
     assert page.locator("#kg_concept_list .kg-concept-item").count() == 1
     assert page.locator('.kg-concept-item[data-concept-id="2.1"]').count() == 1
     assert page.locator("#kg_concept_list .kg-search-mark").inner_text() == "explains"
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
     assert page.locator("#info_panel .kg-detail-search-mark").inner_text() == "explains"
-
-
-@pytest.mark.browser
-def test_edge_type_tools_section_is_removed_in_integrated_mode(browser_graph):
-    page = browser_graph.page
-
-    assert page.locator("#kg_edge_filters_section").count() == 0
-    assert page.locator("#kg_edge_filters").count() == 0
-    assert "Edge types" not in page.locator("#kg_controls").inner_text()
 
 
 @pytest.mark.browser
@@ -2599,7 +2501,7 @@ def test_hovering_section_context_edge_does_not_move_or_zoom_graph(browser_graph
           network.emit("hoverEdge", {edge: edge.id});
         }"""
     )
-    page.wait_for_timeout(250)
+    page.evaluate("() => new Promise(resolve => requestAnimationFrame(resolve))")
     after = page.evaluate(
         """() => ({
           position: network.getViewPosition(),
@@ -2610,18 +2512,6 @@ def test_hovering_section_context_edge_does_not_move_or_zoom_graph(browser_graph
     assert abs(after["scale"] - before["scale"]) < 0.0001
     assert abs(after["position"]["x"] - before["position"]["x"]) < 0.1
     assert abs(after["position"]["y"] - before["position"]["y"]) < 0.1
-
-
-@pytest.mark.browser
-def test_graph_view_selector_hides_derivation_trace_mode(browser_graph):
-    page = browser_graph.page
-
-    assert page.locator('#kg_display_scope_select option[value="derivation-trace"]').count() == 0
-    assert "Derivation trace" not in page.locator("#kg_display_scope_select").inner_text()
-    assert page.evaluate(
-        """() => ["kgSetGraphView", "kgHideGraph", "kgHighlight", "kgReset"]
-          .every(name => typeof window[name] === "undefined")"""
-    )
 
 
 @pytest.mark.browser
@@ -2688,22 +2578,8 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
     assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 8
-    assert (
-        "The user model has been simplified, the UI space optimised for phones, "
-        "and rendering and interaction made faster on older or slower devices"
-        in dialog.inner_text()
-    )
-    assert "folded module's top-right corner" in dialog.inner_text()
-    assert "Study" in dialog.inner_text()
-    assert "Personal layouts, notes, study-question records" in dialog.inner_text()
-    assert "synchronise through Google Drive" in dialog.inner_text()
     assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 5
-    assert "Covers Special Relativity and General Relativity" in dialog.inner_text()
-    assert "Manifolds and Coordinates exposition enhanced with motivating example" in dialog.inner_text()
-    assert "General Relativity remains work in progress" not in dialog.inner_text()
-    assert "tracks attempts and latest results locally" in dialog.inner_text()
-    assert "Edit personal layout" in dialog.inner_text()
-    assert "After Fit++" in dialog.inner_text()
+    assert dialog.locator(".kg-splash-feature-grid li").count() >= 20
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"

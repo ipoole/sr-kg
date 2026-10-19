@@ -14,10 +14,21 @@ from srkg.data import createSvgGraphic as create_repo_svg_graphic
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BROWSER_TEST_ROOT = Path(__file__).resolve().parent
+FULL_BROWSER_FIXTURES = {
+    "clean_repo_browser_graph",
+    "mathjax_browser_graph",
+    "mobile_repo_browser_graph",
+    "repo_browser_graph",
+    "shared_repo_browser_graph",
+}
 
 
 def pytest_collection_modifyitems(config, items):
-    """Keep browser tests opt-in for whole-suite unit test runs."""
+    """Keep browser tests opt-in and identify the full integration tier."""
+    for item in items:
+        if FULL_BROWSER_FIXTURES.intersection(item.fixturenames):
+            item.add_marker(pytest.mark.browser_full)
+
     explicit_browser_run = any(
         (Path(arg).resolve() == BROWSER_TEST_ROOT or BROWSER_TEST_ROOT in Path(arg).resolve().parents)
         for arg in config.args
@@ -451,6 +462,18 @@ def _use_local_vis_assets(html_text: str) -> str:
     )
 
 
+def _use_stub_mathjax(html_text: str) -> str:
+    stub = """<script>
+  window.MathJax = Object.assign(window.MathJax || {}, {
+    typesetClear: function() {},
+    typesetPromise: function() { return Promise.resolve(); }
+  });
+</script>"""
+    return re.sub(
+        r'<script\s+defer\s+src="https://cdn\.jsdelivr\.net/npm/mathjax@3/es5/tex-svg\.js"></script>',
+        stub,
+        html_text,
+    )
 def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path:
     output_path = tmp_path / "viewer.html"
     generate_viewer_from_root(
@@ -481,14 +504,11 @@ def _create_fixture_svg_graphic(concept_id: str, variant: str = "icon") -> str |
 
 
 @contextmanager
-def _open_browser_graph(playwright_api, browser, output_path: Path, context_options=None):
+def _open_browser_graph_page(playwright_api, context, output_path: Path):
     page_errors: list[str] = []
     console_errors: list[str] = []
-    options = {"viewport": {"width": 1280, "height": 800}}
-    options.update(context_options or {})
-    context = browser.new_context(**options)
+    page = context.new_page()
     try:
-        page = context.new_page()
         page.set_default_timeout(10000)
         page.on("pageerror", lambda exc: page_errors.append(str(exc)))
         page.on(
@@ -508,6 +528,22 @@ def _open_browser_graph(playwright_api, browser, output_path: Path, context_opti
             page_errors=page_errors,
             console_errors=console_errors,
         )
+    finally:
+        try:
+            page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+        except playwright_api.Error:
+            pass
+        page.close()
+
+
+@contextmanager
+def _open_browser_graph(playwright_api, browser, output_path: Path, context_options=None):
+    options = {"viewport": {"width": 1280, "height": 800}}
+    options.update(context_options or {})
+    context = browser.new_context(**options)
+    try:
+        with _open_browser_graph_page(playwright_api, context, output_path) as graph:
+            yield graph
     finally:
         context.close()
 
@@ -559,6 +595,16 @@ def browser_fixture_output(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def fast_browser_fixture_output(browser_fixture_output):
+    output_path = browser_fixture_output.with_name("viewer-fast.html")
+    output_path.write_text(
+        _use_stub_mathjax(browser_fixture_output.read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
+    return output_path
+
+
+@pytest.fixture(scope="session")
 def constructed_browser_fixture_output(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("browser-constructed-fixture")
     _write_browser_fixture(tmp_path, include_constructed_from=True)
@@ -576,11 +622,42 @@ def repo_browser_output(tmp_path_factory):
     )
 
 
+@pytest.fixture(scope="session")
+def fast_repo_browser_output(repo_browser_output):
+    output_path = repo_browser_output.with_name("viewer-fast.html")
+    output_path.write_text(
+        _use_stub_mathjax(repo_browser_output.read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
+    return output_path
+
+
 @pytest.fixture
-def browser_graph(browser_fixture_output, playwright_browser):
-    playwright_api, browser = playwright_browser
-    with _open_browser_graph(playwright_api, browser, browser_fixture_output) as graph:
+def browser_graph(reusable_desktop_context, fast_browser_fixture_output, playwright_browser):
+    playwright_api, _browser = playwright_browser
+    with _open_browser_graph_page(
+        playwright_api, reusable_desktop_context, fast_browser_fixture_output
+    ) as graph:
         yield graph
+
+
+@pytest.fixture
+def mathjax_browser_graph(reusable_desktop_context, browser_fixture_output, playwright_browser):
+    playwright_api, _browser = playwright_browser
+    with _open_browser_graph_page(
+        playwright_api, reusable_desktop_context, browser_fixture_output
+    ) as graph:
+        yield graph
+
+
+@pytest.fixture(scope="session")
+def reusable_desktop_context(playwright_browser):
+    playwright_api, browser = playwright_browser
+    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    try:
+        yield context
+    finally:
+        context.close()
 
 
 @pytest.fixture
@@ -598,9 +675,11 @@ def shared_browser_graph(browser_fixture_output, playwright_browser):
 
 
 @pytest.fixture
-def repo_browser_graph(repo_browser_output, playwright_browser):
-    playwright_api, browser = playwright_browser
-    with _open_browser_graph(playwright_api, browser, repo_browser_output) as graph:
+def repo_browser_graph(reusable_desktop_context, fast_repo_browser_output, playwright_browser):
+    playwright_api, _browser = playwright_browser
+    with _open_browser_graph_page(
+        playwright_api, reusable_desktop_context, fast_repo_browser_output
+    ) as graph:
         yield graph
 
 

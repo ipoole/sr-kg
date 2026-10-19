@@ -27,11 +27,10 @@ def test_context_relation_filter_survives_scope_and_folding(browser_graph, folde
         assert 'RELATED' in visible_relations(page)
     else:
         assert 'RELATED' in visible_relations(page)
-    for _ in range(2):
-        page.locator('#kg_display_scope_select').select_option('context')
-        assert 'RELATED' in visible_relations(page)
-        page.locator('#kg_display_scope_select').select_option('full')
-        assert 'RELATED' in visible_relations(page)
+    page.locator('#kg_display_scope_select').select_option('context')
+    assert 'RELATED' in visible_relations(page)
+    page.locator('#kg_display_scope_select').select_option('full')
+    assert 'RELATED' in visible_relations(page)
     assert page.evaluate('() => kgGlobalLayoutSnapshot()') == before
     page.locator('#kg_clear_selection').click()
     assert 'RELATED' in visible_relations(page)

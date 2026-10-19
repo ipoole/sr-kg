@@ -69,8 +69,8 @@ changes authored graph content.
 
 ## Study — NEW
 
-Choose **Practice** to answer questions. Answers appear after an attempt or **I
-don't know**. Automatic questions mark your choice; for free text, compare the
+Open a concept's **Study Questions** block to answer questions. Answers appear
+after an attempt or **I don't know**. Automatic questions mark your choice; for free text, compare the
 model answer and mark yourself. Green ticks and red crosses record the latest
 result. **Tools → Study** lists attempts and links to each question. Progress is
 stored locally and is included in the Personal data archive. By default the

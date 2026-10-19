@@ -28,7 +28,14 @@ The unit test suite is fast; run it after every significant code change before
 handing work back.
 
 Browser integration tests live under `tests/browser` and require Playwright plus
-browser binaries in the `sr-kg` environment. Run them with:
+browser binaries in the `sr-kg` environment. For routine viewer development run
+the fast synthetic-data lane with:
+
+```bash
+conda run -n sr-kg pytest -q tests/browser -m "not browser_full"
+```
+
+Before completing viewer work, run the full lane with:
 
 ```bash
 conda run -n sr-kg pytest -q tests/browser

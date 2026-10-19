@@ -2187,7 +2187,7 @@
         function openScorecardQuestion(questionId) {
           var indexed = studyQuestionIndex[questionId];
           if (!indexed) { return; }
-          setDetailsView("practice");
+          setDetailsView("full");
           navigateToConcept(indexed.conceptId, "Selected");
           window.requestAnimationFrame(function() {
             var selector = '.study-question[data-question-id="' +
@@ -3750,72 +3750,10 @@
 
         var readingModeDefinitions = Object.freeze({
           full: {
-            label: "Full",
-            blockKinds: null,
-            questionTypes: null
+            label: "Full"
           },
           folded: {
-            label: "Folded",
-            blockKinds: null,
-            questionTypes: null
-          },
-          core: {
-            label: "Core",
-            blockKinds: {
-              overview: true,
-              definition: true,
-              intuition: true,
-              explanation: true,
-              construction: true,
-              result: true,
-              decomposition: true,
-              derivation: true,
-              example: true,
-              warning: true,
-              convention: true,
-              summary: true
-            },
-            questionTypes: {
-              short_answer: true
-            }
-          },
-          maths: {
-            label: "Maths",
-            blockKinds: {
-              construction: true,
-              derivation: true,
-              derivation_step: true,
-              result: true,
-              decomposition: true,
-              convention: true,
-              worked_example: true
-            },
-            questionTypes: {
-              calculation: true
-            }
-          },
-          context: {
-            label: "Context",
-            blockKinds: {
-              misconception: true,
-              warning: true,
-              historical_note: true,
-              convention: true
-            },
-            questionTypes: {
-              multiple_choice: true
-            }
-          },
-          practice: {
-            label: "Practice",
-            blockKinds: {
-              example: true,
-              worked_example: true,
-              derivation_step: true,
-              result: true,
-              summary: true
-            },
-            questionTypes: null
+            label: "Folded"
           }
         });
         var lazyFoldedSectionBodies = {};
@@ -3823,25 +3761,6 @@
 
         function currentReadingModeDefinition() {
           return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
-        }
-
-        function blockVisibleInReadingMode(block) {
-          var allowed = currentReadingModeDefinition().blockKinds;
-          return !allowed || allowed[block.kind] === true;
-        }
-
-        function questionVisibleInReadingMode(question) {
-          var allowed = currentReadingModeDefinition().questionTypes;
-          if (!allowed) { return true; }
-          return allowed[String((question && question.question_type) || "")] === true;
-        }
-
-        function filteredStudyQuestions(studyQuestions) {
-          return studyQuestions.filter(questionVisibleInReadingMode);
-        }
-
-        function filteredContentBlocks(concept) {
-          return conceptContentBlocks(concept).filter(blockVisibleInReadingMode);
         }
 
         function openTopLevelDetailIds(panel) {
@@ -4057,7 +3976,7 @@
             });
           }
           if (shouldRenderContentBlocks(concept)) {
-            filteredContentBlocks(concept).forEach(function(block) {
+            conceptContentBlocks(concept).forEach(function(block) {
               var title = block.title || contentBlockKindLabel(block.kind);
               items.push({
                 id: contentAnchorId(conceptId, title),
@@ -4159,13 +4078,6 @@
           return Array.isArray(module && module.content_blocks)
             ? module.content_blocks
             : [];
-        }
-
-        function filteredModuleContentBlocks(module) {
-          // Module orientation remains useful even when a concept filter is active.
-          return moduleContentBlocks(module).filter(function(block) {
-            return block.kind === "overview" || blockVisibleInReadingMode(block);
-          });
         }
 
         function moduleMemberIds(module) {
@@ -5174,7 +5086,7 @@
               title: "Module graphic"
             });
           }
-          filteredModuleContentBlocks(module).forEach(function(block) {
+          moduleContentBlocks(module).forEach(function(block) {
             var title = block.title || contentBlockKindLabel(block.kind);
             items.push({
               id: contentAnchorId(moduleId, title),
@@ -5319,7 +5231,7 @@
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
           html += renderModuleGraphic(moduleId, module);
-          filteredModuleContentBlocks(module).forEach(function(block) {
+          moduleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
           html += renderModuleMembers(moduleId, module);
@@ -5540,16 +5452,9 @@
 
         function renderConceptContent(conceptId, concept) {
           if (shouldRenderContentBlocks(concept)) {
-            var blocks = filteredContentBlocks(concept);
-            if (blocks.length === 0) {
-              return '<p class="reading-mode-empty">No content blocks match this reading mode.</p>';
-            }
-            return blocks.map(function(block) {
+            return conceptContentBlocks(concept).map(function(block) {
               return renderContentBlock(conceptId, block);
             }).join("");
-          }
-          if (readingMode !== "full" && readingMode !== "core") {
-            return '<p class="reading-mode-empty">Legacy content is available in Full and Core modes.</p>';
           }
           return conceptSections(concept).map(function(section) {
             var matchingBlocks = conceptContentBlocks(concept).filter(function(block) {
@@ -6337,11 +6242,7 @@
           setResponsiveOptionLabels("kg_details_view_select", {
             hide: ["Hide details", "Hide"],
             full: ["Full details", "Full"],
-            folded: ["Folded", "Folded"],
-            core: ["Core", "Core"],
-            maths: ["Maths", "Maths"],
-            context: ["Context", "Context"],
-            practice: ["Practice", "Practice"]
+            folded: ["Folded", "Folded"]
           }, compact);
           setResponsiveOptionLabels("kg_fit_select", {
             reveal: ["Reveal selection", "Reveal"],
@@ -7950,7 +7851,6 @@
           }
 
           var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
-          studyQuestions = filteredStudyQuestions(studyQuestions);
           var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
           var tocItems = conceptTocItems(
             nodeId,
@@ -7971,8 +7871,7 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions" data-note-block="true"' +
-              (readingMode === "practice" ? " open" : "") + ">";
+              '" class="study-questions" data-note-block="true">';
             html += "<summary>" + renderNoteableHeading(
               "concept", nodeId, "Study Questions", "study-questions"
             ) + "</summary>";

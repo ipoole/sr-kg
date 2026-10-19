@@ -20,7 +20,7 @@ is an artifact, not an alternative authoring source.
 ## Content and presentation
 
 The concept graph provides navigation; flat ordered blocks provide the teaching
-narrative. Block kinds express meaning. Folding, reading modes, visual treatment
+narrative. Block kinds express meaning. Folding, visual treatment
 and visibility are viewer policy; see [Viewer behaviour](viewer.md).
 The viewer keeps four concerns independent: selection, context rule, display
 scope and camera. A single renderer derives the selected context from a relation

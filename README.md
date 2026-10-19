@@ -43,8 +43,8 @@ Generated HTML is a build artifact; do not commit it unless explicitly requested
 Select a module for an overview and concept list; use its visible corner control
 to expand or fold it, or use the header **Search** button to find a concept.
 Follow links to explore related material and use browser Back to return.
-**Details** filters the reading material; **Practice** shows questions
-that you answer or self-mark before seeing their model answers. Automatic
+**Details** shows the complete material, folds its blocks, or hides the pane.
+Open **Study Questions** to answer or self-mark questions before seeing their model answers. Automatic
 questions include an “I don't know” choice; free-text questions ask you to
 compare with a model answer. Clear ticks and crosses show the latest result,
 and optional graph ticks summarise reading and question completion.
@@ -53,7 +53,7 @@ the full graph, only that context, or the details pane on its own.
 The responsive viewer is tuned for phones and reduces costly rendering,
 animation and eager content work on older or slower devices.
 
-See [Viewer behaviour](docs/design/viewer.md) for reading modes, navigation and
+See [Viewer behaviour](docs/design/viewer.md) for details presentation, navigation and
 personal notes. The **Study** tools keep attempt counts and latest results, with
 links back to each attempted question and controls to reset progress. Teaching
 blocks also have a persistent blue read tick. Notes, personal layout, study
@@ -91,10 +91,18 @@ conda run -n sr-kg pytest -q
 ```
 
 Validation errors fail the command; warnings are editorial review prompts.
-Browser integration tests are opt-in and require Chromium:
+Browser integration tests are opt-in and require Chromium. Run the fast
+synthetic-data lane during routine viewer work:
 
 ```bash
 conda run -n sr-kg python -m playwright install chromium
+conda run -n sr-kg pytest -q tests/browser -m "not browser_full"
+```
+
+Before merging viewer changes, run the full lane; it adds repository-data,
+mobile-emulation and real-MathJax coverage:
+
+```bash
 conda run -n sr-kg pytest -q tests/browser
 ```
 

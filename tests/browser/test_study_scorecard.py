@@ -37,7 +37,7 @@ def test_study_scorecard_starts_empty_and_summarises_attempted_questions(browser
 
 
 @pytest.mark.browser
-def test_study_scorecard_navigates_to_practice_question(browser_graph):
+def test_study_scorecard_navigates_to_question(browser_graph):
     page = browser_graph.page
     page.evaluate(
         "() => window.kgStudyProgress.recordAttempt('2.1.q1', 'correct')"
@@ -47,7 +47,7 @@ def test_study_scorecard_navigates_to_practice_question(browser_graph):
     scorecard.locator('.kg-study-question-link[data-question-id="2.1.q1"]').click()
 
     assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.1"
-    assert page.locator("#kg_details_view_select").input_value() == "practice"
+    assert page.locator("#kg_details_view_select").input_value() == "full"
     question = page.locator('.study-question[data-question-id="2.1.q1"]')
     assert question.evaluate("element => element.open")
     assert question.get_attribute("data-scorecard-target") == "true"

@@ -119,7 +119,7 @@ semantic IDs, rather than display IDs, remain the targets of all references.
 `content_blocks.csv` contains smaller authored teaching units attached to
 concepts. It is the canonical concept-prose source for manifest-backed KB
 roots. The viewer renders blocks directly and maps `kind` values to section
-labels, folded notes, reading modes, local contents entries, and graph-focus
+labels, folded notes, local contents entries, and graph-focus
 lenses. Those presentation choices remain viewer policy; the KB authors the
 semantic `kind`, not display instructions.
 
