@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from html import escape as html_escape
 
-from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE
+from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE, PRODUCT_VERSION
 
 from srkg.config import (
     CONTENT_READ_PROGRESS_STORAGE_KEY,
@@ -102,6 +102,7 @@ def inject_controls(
             "__VIEW_TITLE__": html_escape(view_title),
             "__PRODUCT_NAME__": html_escape(PRODUCT_NAME),
             "__PRODUCT_TAGLINE__": html_escape(PRODUCT_TAGLINE),
+            "__PRODUCT_VERSION__": html_escape(PRODUCT_VERSION),
             "__PRODUCT_LOGO_URI__": product_logo_uri,
         },
     )
@@ -152,6 +153,7 @@ def _product_head_html() -> str:
     touch_icon = base64.b64encode(_asset_bytes("apple-touch-icon.png")).decode("ascii")
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
+        f'<meta name="application-version" content="{html_escape(PRODUCT_VERSION)}">\n'
         '<link rel="icon" type="image/svg+xml" '
         f'href="data:image/svg+xml;base64,{favicon_svg}">\n'
         '<link rel="icon" type="image/png" sizes="32x32" '
@@ -212,6 +214,7 @@ def _css_replacements() -> dict[str, object]:
 def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
+        "applicationVersion": PRODUCT_VERSION,
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
         "nodeLabels": {
             "width": NODE_LABEL_WIDTH,

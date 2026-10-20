@@ -111,6 +111,46 @@ def test_concept_and_folded_module_markers_follow_read_and_question_completion(b
 
 
 @pytest.mark.browser
+def test_folded_module_completion_ticks_stay_inside_the_rounded_corner(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
+    page.locator(
+        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
+    ).click()
+    page.evaluate(
+        """() => {
+          moduleData['test.m01_foundations'].members.forEach(conceptId => {
+            conceptData[conceptId].content_blocks.forEach(block =>
+              kgContentReadProgress.setRead(block.block_id, true)
+            );
+            conceptData[conceptId].study_questions.forEach(question =>
+              kgStudyProgress.recordAttempt(question.question_id, 'correct')
+            );
+          });
+          kgContentReadProgress.setRead('test.m01_foundations.overview', true);
+        }"""
+    )
+    marker = page.evaluate(
+        """() => kgGraphCompletionMarkersSnapshot().markers.find(
+          item => item.nodeId === 'module::test.m01_foundations'
+        )"""
+    )
+    footprint = page.evaluate("() => kgModuleFootprint('test.m01_foundations')")
+    corner_radius = min(footprint["width"], footprint["height"]) * 0.18
+    corner_x = footprint["right"] - corner_radius
+    corner_y = footprint["bottom"] - corner_radius
+
+    for symbol in marker["symbols"]:
+        # Conservatively treat the tick as a circle: even its outermost point
+        # must remain inside the module's rounded bottom-right corner.
+        outer_x = symbol["x"] + symbol["radius"]
+        outer_y = symbol["y"] + symbol["radius"]
+        if outer_x > corner_x and outer_y > corner_y:
+            assert (outer_x - corner_x) ** 2 + (outer_y - corner_y) ** 2 <= corner_radius ** 2
+
+
+@pytest.mark.browser
 def test_completion_marker_snapshot_batches_graph_position_reads(browser_graph):
     page = browser_graph.page
     page.evaluate(

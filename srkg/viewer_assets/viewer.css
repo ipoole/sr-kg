@@ -94,6 +94,29 @@
         background: #eef3fd;
         outline: none;
       }
+      .kg-cloud-sync-attention {
+        background: #fff7df;
+        border: 1px solid #c78b13;
+        border-radius: 999px;
+        box-shadow: 0 2px 7px rgba(15, 23, 42, 0.16);
+        color: #704d08;
+        cursor: pointer;
+        font: 700 12px/1.2 Arial, sans-serif;
+        padding: 5px 10px;
+        position: fixed;
+        right: 10px;
+        top: calc(var(--kg-header-height) + 6px);
+        z-index: 9998;
+      }
+      .kg-cloud-sync-attention:hover,
+      .kg-cloud-sync-attention:focus-visible {
+        background: #ffefbd;
+        outline: 2px solid #9b6a09;
+        outline-offset: 1px;
+      }
+      .kg-cloud-sync-attention[hidden] {
+        display: none;
+      }
       #kg_controls {
         position: fixed;
         top: 64px;
@@ -125,6 +148,11 @@
       .kg-product-tagline {
         color: #526476;
         font-size: 0.9em;
+      }
+      .kg-product-version {
+        color: #718096;
+        font-size: 0.78em;
+        margin-left: auto;
       }
       #kg_display_scope_select {
         min-width: 132px;
@@ -887,7 +915,8 @@
         min-width: 0;
     }
 
-    #info_panel .content-read-complete-indicator {
+    #info_panel .content-read-complete-indicator,
+    #info_panel .study-question-complete-indicator {
         color: #1769aa;
         flex: 0 0 auto;
         font-size: 1.4em;
@@ -895,8 +924,38 @@
         line-height: 0.9;
     }
 
-    #info_panel .content-read-complete-indicator[hidden] {
+    #info_panel .study-question-complete-indicator {
+        color: #238636;
+    }
+
+    #info_panel .content-read-complete-indicator[hidden],
+    #info_panel .study-question-complete-indicator[hidden] {
         display: none;
+    }
+
+    #info_panel .concept-sequential-navigation {
+        display: flex;
+        justify-content: flex-end;
+        margin: 1.1em 0 0.4em;
+    }
+
+    #info_panel .concept-next-button {
+        background: #f3f7fc;
+        border: 1px solid #b8c9df;
+        border-radius: 999px;
+        color: #174ea6;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        max-width: 100%;
+        padding: 0.48em 0.85em;
+        text-align: right;
+    }
+
+    #info_panel .concept-next-button:hover,
+    #info_panel .concept-next-button:focus-visible {
+        background: #e7f0fb;
+        border-color: #7e9fc8;
     }
 
     #info_panel .module-domain-label {
@@ -2731,6 +2790,11 @@
     .kg-splash-actions {
         display: flex;
         justify-content: flex-end;
+    }
+
+    .kg-splash-version {
+        color: #687789;
+        white-space: nowrap;
     }
 
     .kg-layout-status {

@@ -110,8 +110,14 @@ Each authored teaching block has an unlabelled visual checkbox in its header.
 Its blue tick records that the block has been read and remains available when
 the block is folded. Read marks can be toggled and persist locally; they do not
 currently feed a score or summary. A larger, non-interactive blue tick appears
-beside a concept or module title when all content blocks directly owned by it
-are marked read.
+beside a concept title when all its blocks are marked read, or beside a module
+when its own and all member-concept blocks are read. A green title tick appears
+when all study questions on a concept—or across a module—are currently correct.
+
+At the foot of every concept, **Next** follows the authored module and member
+sequence through SR, MATHS and GR. The final GR concept offers an explicit
+**Start again** link to SR-1.1. This changes selection and URL in the normal
+way without changing Context, graph extent or module folding.
 
 The graph also shows discreet completion markers by default: blue when all
 content blocks on a concept have been read, or when a module's own blocks and
@@ -130,5 +136,9 @@ unresolved notes remain visible as needing placement rather than being moved
 speculatively. Notes, Personal layout, study-question attempts and content read
 marks belong to the unified personal profile. They remain local by default, can
 be downloaded or imported together, and can optionally be synchronised on
-demand through the visible `PhysicsKG personal data.zip` file in Google Drive.
+connection and automatically after changes through the visible
+`PhysicsKG personal data.zip` file in Google Drive.
+If Google authorization expires, local work continues safely and a persistent
+**Sync paused — reconnect** action opens the Personal data controls and starts
+reconnection.
 Quick start dismissal remains a browser-local preference and is not synchronised.

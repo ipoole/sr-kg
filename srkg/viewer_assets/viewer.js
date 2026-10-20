@@ -268,6 +268,11 @@
         var pendingPersonalDataImport = null;
         var googleDriveAuthorizer = null;
         var personalDataSyncEngine = null;
+        var cloudSyncAutoTimer = null;
+        var cloudSyncPeriodicTimer = null;
+        var cloudSyncLastSuccessfulAt = 0;
+        var cloudSyncAutoDelayMs = 15000;
+        var cloudSyncPeriodicDelayMs = 5 * 60 * 1000;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -446,6 +451,7 @@
           personalLayoutSaveTimer = setTimeout(function() {
             personalLayoutSaveTimer = null;
             writePersonalLayoutNow();
+            schedulePersonalDataAutoSync();
           }, 120);
         }
 
@@ -468,6 +474,7 @@
           if (!personalLayoutStatus().hasOverrides) { return; }
           personalLayoutState.published_revision = String(publishedLayout.revision);
           writePersonalLayoutNow();
+          schedulePersonalDataAutoSync();
           updateLayoutControls();
         }
 
@@ -497,6 +504,7 @@
           safeLocalStorageRemove(globalLayoutStorageKey);
           globalLayout = buildInitialGlobalLayout(false);
           applyGlobalLayoutPositions();
+          schedulePersonalDataAutoSync();
           updateLayoutControls();
         }
 
@@ -1051,18 +1059,14 @@
         function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
           ctx.save();
           ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.beginPath();
-          ctx.moveTo(x - radius * 0.72, y - radius * 0.02);
-          ctx.lineTo(x - radius * 0.18, y + radius * 0.55);
-          ctx.lineTo(x + radius * 0.78, y - radius * 0.62);
+          ctx.fillStyle = colour;
           ctx.strokeStyle = "rgba(255,255,255,0.78)";
-          ctx.lineWidth = Math.max(1.4, radius * 0.62);
-          ctx.stroke();
-          ctx.strokeStyle = colour;
-          ctx.lineWidth = Math.max(0.9, radius * 0.34);
-          ctx.stroke();
+          ctx.lineWidth = Math.max(0.8, radius * 0.09);
+          ctx.font = "bold " + String(radius * 2.5) + "px Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.strokeText("✓", x, y + radius * 0.08);
+          ctx.fillText("✓", x, y + radius * 0.08);
           ctx.restore();
         }
 
@@ -1383,6 +1387,15 @@
             (complete ? "" : " hidden") + ">✓</span>";
         }
 
+        function renderStudyQuestionCompletionIndicator(ownerType, ownerId) {
+          var complete = graphCompletionState(ownerType, ownerId).questions;
+          return '<span class="study-question-complete-indicator" role="img"' +
+            ' aria-label="All study questions complete" title="All study questions complete"' +
+            ' data-study-owner-type="' + escapeHtml(ownerType) + '"' +
+            ' data-study-owner-id="' + escapeHtml(ownerId) + '"' +
+            (complete ? "" : " hidden") + ">✓</span>";
+        }
+
         function updateContentReadCompletionIndicators() {
           document.querySelectorAll(".content-read-complete-indicator").forEach(
             function(indicator) {
@@ -1394,6 +1407,17 @@
           );
         }
 
+        function updateStudyQuestionCompletionIndicators() {
+          document.querySelectorAll(".study-question-complete-indicator").forEach(
+            function(indicator) {
+              indicator.hidden = !graphCompletionState(
+                indicator.getAttribute("data-study-owner-type"),
+                indicator.getAttribute("data-study-owner-id")
+              ).questions;
+            }
+          );
+        }
+
         function setContentBlockRead(blockId, isRead) {
           blockId = String(blockId || "");
           if (!contentBlockIndex[blockId]) { return false; }
@@ -1401,6 +1425,7 @@
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
+          schedulePersonalDataAutoSync();
           if (network && network.redraw) { network.redraw(); }
           return true;
         }
@@ -1436,6 +1461,7 @@
           } catch (err) {
             // Progress remains usable in older browsers without CustomEvent.
           }
+          updateStudyQuestionCompletionIndicators();
           if (network && network.redraw) { network.redraw(); }
         }
 
@@ -1452,6 +1478,7 @@
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
           var entry = studyProgressState.questions[questionId];
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange(questionId);
           return copyStudyProgress(entry);
         }
@@ -1464,6 +1491,7 @@
           personalDataStore.resetStudy(questionId);
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange(questionId);
           return true;
         }
@@ -1472,6 +1500,7 @@
           personalDataStore.resetStudy("");
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange("");
           return true;
         }
@@ -1556,10 +1585,13 @@
             var top = shape ? Number(shape.top) : position.y - height / 2;
             if (![width, height, left, top].every(Number.isFinite)) { return null; }
             var moduleRadius = Math.max(16, Math.min(42, Math.min(width, height) * 0.025));
+            var cornerRadius = moduleCornerRadius(width, height);
             return {
               kind: "module",
-              x: left + width - moduleRadius * 0.9,
-              y: top + height - moduleRadius * 0.9,
+              // Keep the glyph row just above the rounded-corner arc. This
+              // remains visibly bottom-right without clipping either tick.
+              x: left + width - moduleRadius * 1.5,
+              y: top + height - cornerRadius - moduleRadius * 1.4,
               radius: moduleRadius
             };
           }
@@ -1677,6 +1709,7 @@
         function saveUserNotes() {
           var saved = personalDataStore.replaceNotes(userNotesState.notes);
           safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
+          schedulePersonalDataAutoSync();
           setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
           refreshNodeTooltips();
           renderNotesOverview();
@@ -2720,14 +2753,61 @@
           document.getElementById("kg_cloud_sync_disconnect").hidden = !connected;
         }
 
+        function showCloudSyncAttention(show) {
+          document.getElementById("kg_cloud_sync_attention").hidden = !show;
+        }
+
+        function cloudSyncTimeText(timestamp) {
+          return new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        }
+
+        function clearCloudSyncTimers() {
+          if (cloudSyncAutoTimer !== null) {
+            clearTimeout(cloudSyncAutoTimer);
+            cloudSyncAutoTimer = null;
+          }
+          if (cloudSyncPeriodicTimer !== null) {
+            clearInterval(cloudSyncPeriodicTimer);
+            cloudSyncPeriodicTimer = null;
+          }
+        }
+
+        function startCloudSyncPeriodicChecks() {
+          if (cloudSyncPeriodicTimer !== null) { clearInterval(cloudSyncPeriodicTimer); }
+          cloudSyncPeriodicTimer = setInterval(function() {
+            if (document.visibilityState === "visible" && personalDataSyncEngine) {
+              syncPersonalDataNow();
+            }
+          }, cloudSyncPeriodicDelayMs);
+        }
+
+        function schedulePersonalDataAutoSync(delayMs) {
+          if (!personalDataSyncEngine) { return false; }
+          if (cloudSyncAutoTimer !== null) { clearTimeout(cloudSyncAutoTimer); }
+          var delay = Number.isFinite(Number(delayMs))
+            ? Math.max(0, Number(delayMs))
+            : cloudSyncAutoDelayMs;
+          cloudSyncAutoTimer = setTimeout(function() {
+            cloudSyncAutoTimer = null;
+            syncPersonalDataNow();
+          }, delay);
+          return true;
+        }
+
         function initialiseGoogleDriveSync() {
           var clientId = String(kgCloudSyncConfig.googleDriveClientId || "");
           var connect = document.getElementById("kg_cloud_sync_connect");
           if (!clientId) {
             connect.disabled = true;
+            showCloudSyncAttention(false);
             setCloudSyncStatus("Not configured in this copy of PhysicsKG.");
             return;
           }
+          connect.disabled = false;
+          showCloudSyncAttention(false);
           googleDriveAuthorizer = window.kgCreateGoogleDriveAuthorizer({clientId: clientId});
           setCloudSyncStatus("Not connected. Personal data remains in this browser.");
         }
@@ -2735,7 +2815,7 @@
         function connectGoogleDrive() {
           if (!googleDriveAuthorizer) { return; }
           setCloudSyncStatus("Connecting to Google Drive…");
-          googleDriveAuthorizer.connect().then(function() {
+          return googleDriveAuthorizer.connect().then(function() {
             var provider = window.kgCreateGoogleDrivePersonalDataProvider({
               token: googleDriveAuthorizer.token
             });
@@ -2746,18 +2826,24 @@
               onStatus: function(status) { setCloudSyncStatus(status.detail); }
             });
             showCloudSyncConnected(true);
-            setCloudSyncStatus(
-              "Connected. Sync uses “" + provider.fileName + "” in your Google Drive."
-            );
+            showCloudSyncAttention(false);
+            startCloudSyncPeriodicChecks();
+            setCloudSyncStatus("Connected — syncing personal data…");
+            return syncPersonalDataNow();
           }).catch(function(error) {
             setCloudSyncStatus(error && error.message || "Could not connect to Google Drive.");
           });
         }
 
         function syncPersonalDataNow() {
-          if (!personalDataSyncEngine) { return; }
+          if (!personalDataSyncEngine) { return Promise.resolve(false); }
+          if (cloudSyncAutoTimer !== null) {
+            clearTimeout(cloudSyncAutoTimer);
+            cloudSyncAutoTimer = null;
+          }
           writePersonalLayoutNow();
-          personalDataSyncEngine.synchronize().then(function() {
+          return personalDataSyncEngine.synchronize().then(function() {
+            cloudSyncLastSuccessfulAt = Date.now();
             personalLayoutState = loadPersonalLayoutState();
             globalLayout = buildInitialGlobalLayout();
             applyGlobalLayoutPositions();
@@ -2771,21 +2857,36 @@
             refreshActiveConcept();
             updateContentReadCompletionIndicators();
             if (network && network.redraw) { network.redraw(); }
+            setCloudSyncStatus(
+              "Personal data synced. Last synced at " +
+              cloudSyncTimeText(cloudSyncLastSuccessfulAt) + "."
+            );
+            showCloudSyncAttention(false);
+            return true;
           }).catch(function(error) {
             if (error && error.code === "auth_required") {
+              clearCloudSyncTimers();
               showCloudSyncConnected(false);
+              showCloudSyncAttention(true);
               personalDataSyncEngine = null;
               setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
             }
+            return false;
           });
         }
 
         function disconnectGoogleDrive() {
           if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
+          clearCloudSyncTimers();
           personalDataSyncEngine = null;
+          cloudSyncLastSuccessfulAt = 0;
           showCloudSyncConnected(false);
+          showCloudSyncAttention(false);
           setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
         }
+
+        window.kgInitialiseGoogleDriveSync = initialiseGoogleDriveSync;
+        window.kgSchedulePersonalDataAutoSync = schedulePersonalDataAutoSync;
 
         function personalDataSummaryText(summary) {
           return [
@@ -4049,6 +4150,7 @@
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
           html += renderContentReadCompletionIndicator("concept", nodeId);
+          html += renderStudyQuestionCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
           var owningModule = owningModuleId ? getModule(owningModuleId) : null;
           if (owningModule) {
@@ -5126,6 +5228,7 @@
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
           html += renderContentReadCompletionIndicator("module", moduleId);
+          html += renderStudyQuestionCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
@@ -7832,6 +7935,61 @@
           if (unknownButton) { unknownButton.disabled = true; }
         }
 
+        function sequentialConceptIds() {
+          var preferredDomains = ["sr", "math", "gr"];
+          var seen = {};
+          var result = [];
+          function domainRank(domain) {
+            var index = preferredDomains.indexOf(String(domain || ""));
+            return index === -1 ? preferredDomains.length : index;
+          }
+          moduleIds().slice().sort(function(leftId, rightId) {
+            var left = getModule(leftId) || {};
+            var right = getModule(rightId) || {};
+            var domainDifference = domainRank(left.domain) - domainRank(right.domain);
+            if (domainDifference) { return domainDifference; }
+            var domainNameDifference = String(left.domain || "").localeCompare(
+              String(right.domain || "")
+            );
+            if (domainNameDifference) { return domainNameDifference; }
+            var sequenceDifference = Number(left.sequence || 0) - Number(right.sequence || 0);
+            if (sequenceDifference) { return sequenceDifference; }
+            return String(leftId).localeCompare(String(rightId));
+          }).forEach(function(moduleId) {
+            moduleMemberIds(getModule(moduleId)).forEach(function(conceptId) {
+              conceptId = String(conceptId);
+              if (!seen[conceptId] && getConcept(conceptId)) {
+                seen[conceptId] = true;
+                result.push(conceptId);
+              }
+            });
+          });
+          Object.keys(conceptData || {}).filter(function(conceptId) {
+            return !seen[conceptId];
+          }).sort(function(leftId, rightId) {
+            return conceptDisplayId(leftId).localeCompare(
+              conceptDisplayId(rightId), undefined, {numeric: true}
+            );
+          }).forEach(function(conceptId) { result.push(conceptId); });
+          return result;
+        }
+
+        function renderSequentialConceptNavigation(conceptId) {
+          var order = sequentialConceptIds();
+          var index = order.indexOf(String(conceptId));
+          if (index === -1 || order.length < 2) { return ""; }
+          var wraps = index === order.length - 1;
+          var nextId = order[(index + 1) % order.length];
+          var next = getConcept(nextId) || {};
+          var label = conceptDisplayId(nextId) + " " + searchDisplayText(next.label || nextId);
+          return '<nav class="concept-sequential-navigation" aria-label="Sequential reading">' +
+            '<button type="button" class="concept-next-button" data-next-concept-id="' +
+            escapeHtml(nextId) + '">' + (wraps ? "Start again: " : "Next: ") +
+            escapeHtml(label) + "</button></nav>";
+        }
+
+        window.kgSequentialConceptIds = sequentialConceptIds;
+
         function showConcept(nodeId, options) {
           options = options || {};
           hideConceptPreview(true);
@@ -7909,6 +8067,7 @@
             html += "</ul>";
             html += "</details>";
           }
+          html += renderSequentialConceptNavigation(nodeId);
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           replaceTypesetContent(panel, html);
@@ -9094,6 +9253,24 @@
         document.getElementById("kg_cloud_sync_disconnect").addEventListener(
           "click", disconnectGoogleDrive
         );
+        document.getElementById("kg_cloud_sync_attention").addEventListener(
+          "click",
+          function() {
+            setControlsVisible(true);
+            document.getElementById("kg_personal_data_section").open = true;
+            connectGoogleDrive();
+          }
+        );
+        document.addEventListener("visibilitychange", function() {
+          if (
+            document.visibilityState === "visible" &&
+            personalDataSyncEngine &&
+            (!cloudSyncLastSuccessfulAt ||
+              Date.now() - cloudSyncLastSuccessfulAt >= cloudSyncPeriodicDelayMs)
+          ) {
+            syncPersonalDataNow();
+          }
+        });
 
         document.getElementById("kg_notes_list").addEventListener("click", function(e) {
           var item = e.target.closest(".kg-note-list-item");
@@ -9263,6 +9440,16 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var nextConceptButton = e.target.closest(".concept-next-button");
+          if (nextConceptButton) {
+            e.preventDefault();
+            navigateToConcept(
+              nextConceptButton.getAttribute("data-next-concept-id"),
+              "Selected"
+            );
+            return;
+          }
+
           var selfCheckButton = e.target.closest(".study-self-check-answer");
           if (selfCheckButton) {
             e.preventDefault();

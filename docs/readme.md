@@ -11,7 +11,8 @@
   defines local notes, layouts, study and reading records, plus portable
   export/import and optional Google Drive synchronisation. The
   [Google OAuth publication checklist](design/google_oauth_publication.md)
-  records the public branding URLs and Console settings.
+  records the public branding URLs and Console settings. [Release versioning](design/releases.md)
+  defines the product version independently of data schema versions.
 - **Authoring** holds the [authoring guide](authoring/authoring_guide.md),
   notation conventions, working drafts, and outstanding editorial work.
 - **Discussion** holds speculative ideas, not instructions for current behaviour.

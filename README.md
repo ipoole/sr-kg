@@ -64,9 +64,11 @@ Use the speech-bubble `+` in a block heading, then choose a paragraph, to add a
 note without leaving permanent insertion controls throughout the text. A filled
 bubble means that block already has notes.
 
-An optional, explicitly invoked Google Drive connection synchronises the same visible
-`PhysicsKG personal data.zip` file between browsers. Local storage remains the
-working copy and the viewer remains usable without connecting. The project's
+An optional Google Drive connection synchronises the same visible
+`PhysicsKG personal data.zip` file between browsers. It syncs immediately on
+connection and automatically after changes while connected, while retaining a
+manual **Sync now** action. Local storage remains the working copy and the viewer
+remains usable without connecting. The project's
 public Google OAuth web-client ID is used by default and authorises the
 `https://physicskg.org` origin. A different deployment can override it at
 build time:
@@ -113,6 +115,7 @@ conda run -n sr-kg pytest -q tests/browser
 - [Viewer behaviour](docs/design/viewer.md): current learner-facing controls and limitations.
 - [Personal data](docs/design/personal_data.md): local-first storage, portable archives and Google Drive synchronisation.
 - [Google OAuth publication](docs/design/google_oauth_publication.md): public branding, Console settings and release checklist.
+- [Release versioning](docs/design/releases.md): product release numbering and its single source of truth.
 - [KB schema](docs/design/kb_schema.md): source-file contracts.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
 - [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.

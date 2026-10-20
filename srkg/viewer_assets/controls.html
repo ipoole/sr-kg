@@ -26,10 +26,13 @@
         </select>
       </div>
     </header>
+    <button id="kg_cloud_sync_attention" class="kg-cloud-sync-attention" type="button"
+            aria-live="polite" hidden>Sync paused — reconnect</button>
     <div id="kg_controls">
       <div class="kg-product-brand">
         <b class="kg-product-name">__PRODUCT_NAME__</b>
         <span class="kg-product-tagline">__PRODUCT_TAGLINE__</span>
+        <span class="kg-product-version">v__PRODUCT_VERSION__</span>
       </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
@@ -246,6 +249,7 @@
             <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>
+            <li>Next at the foot of each concept follows the reading sequence through SR, MATHS and GR.</li>
             <li>Use a block's speech-bubble +, then choose a paragraph, to add a note; a filled bubble means notes are present.</li>
           </ul>
         </section>
@@ -273,7 +277,8 @@
             <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
             <li>Tools → Personal data can download or import a portable archive.</li>
-            <li>Optionally sign in with a Google account to synchronise through Google Drive across browsers and devices.</li>
+            <li>Optionally sign in with a Google account to synchronise automatically through Google Drive across browsers and devices.</li>
+            <li>If authorization expires, local work remains safe and a Sync paused action offers reconnection.</li>
             <li><a href="https://physicskg.org/privacy.html" target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a> explains exactly what is stored and transferred.</li>
           </ul>
         </section>
@@ -283,7 +288,7 @@
           <p>Manifolds and Coordinates exposition enhanced with motivating example.<span class="kg-status-badge">NEW</span></p>
         </section>
       </div>
-      <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex.</p>
+      <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex. <span class="kg-splash-version">Version __PRODUCT_VERSION__</span></p>
       <div class="kg-splash-actions">
         <button id="kg_splash_dismiss" type="button">Dismiss</button>
       </div>

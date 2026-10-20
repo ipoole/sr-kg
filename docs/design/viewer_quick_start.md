@@ -49,9 +49,11 @@ without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or
-module. Use a block's speech-bubble `+`, then choose a paragraph, to add a note;
-a filled bubble means notes are already present. **Show in graph** changes
-Context. Back and Forward retrace selections.
+module. A green title tick means that every study question is currently correct.
+Use a block's speech-bubble `+`, then choose a paragraph, to add a note; a filled
+bubble means notes are already present. **Next** at the foot of a concept follows
+the reading sequence through SR, MATHS and GR. **Show in graph** changes Context.
+Back and Forward retrace selections.
 
 Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
 layout** to save moved nodes in this browser. After Fit++, represented context
@@ -64,8 +66,14 @@ ticks are stored together in this browser. **Tools → Personal data** downloads
 them as one portable ZIP of readable CSV files. Import that archive in another
 browser and choose **Merge** to combine work or **Replace** to restore the
 exported snapshot. Optionally sign in with a Google account to synchronise this
-data through Google Drive across browsers and devices. None of these actions
-changes authored graph content.
+data through Google Drive across browsers and devices. Connection performs an
+immediate sync; subsequent changes sync automatically while connected, with the
+last successful time shown. Google may eventually require reconnection. None of
+these actions changes authored graph content.
+
+If Google authorization expires during an automatic sync, personal changes stay
+safe in this browser and a **Sync paused — reconnect** action remains visible
+below the top bar. Reconnecting merges those local changes with the Drive copy.
 
 ## Study — NEW
 
