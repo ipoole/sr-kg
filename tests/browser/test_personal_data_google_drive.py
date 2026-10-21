@@ -49,6 +49,104 @@ def test_connect_syncs_immediately_and_local_changes_schedule_another_sync(brows
 
 
 @pytest.mark.browser
+def test_completed_sync_does_not_rebuild_an_active_details_editor(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_personal_data_section")
+    page.evaluate(
+        """() => {
+          kgCloudSyncConfig.googleDriveClientId = 'test-client';
+          window.__finishSync = null;
+          window.kgCreateGoogleDriveAuthorizer = () => ({
+            connect: () => Promise.resolve(),
+            token: () => 'test-token',
+            disconnect: () => {}
+          });
+          window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+          window.kgCreatePersonalDataSyncEngine = () => ({
+            synchronize: () => new Promise(resolve => { window.__finishSync = resolve; }),
+            isSynchronizing: () => false
+          });
+          kgInitialiseGoogleDriveSync();
+        }"""
+    )
+    page.locator("#kg_cloud_sync_connect").click()
+    page.wait_for_function("() => typeof window.__finishSync === 'function'")
+
+    browser_graph.click_concept("2.1")
+    questions = page.locator("#info_panel details.study-questions")
+    questions.locator(":scope > summary").click()
+    response = page.locator(
+        '.study-question[data-question-id="2.1.q1"] textarea.study-self-response'
+    )
+    response.fill("An answer still being written")
+    editor_element = response.element_handle()
+    question = page.locator('.study-question[data-question-id="2.1.q1"]')
+    if question.evaluate("element => element.open"):
+        question.locator(":scope > summary").click()
+    question_element = question.element_handle()
+
+    page.evaluate("() => window.__finishSync({})")
+    page.wait_for_function(
+        "() => document.querySelector('#kg_cloud_sync_status').textContent.includes('Last synced')"
+    )
+
+    assert response.evaluate(
+        "(element, original) => element === original", editor_element
+    )
+    assert questions.evaluate("element => element.open")
+    assert response.input_value() == "An answer still being written"
+    assert question.evaluate(
+        "(element, original) => element === original", question_element
+    )
+    assert not question.evaluate("element => element.open")
+
+
+@pytest.mark.browser
+def test_completed_sync_leaves_an_open_note_untouched(browser_graph):
+    page = browser_graph.page
+    browser_graph.open_control_section("kg_personal_data_section")
+    page.evaluate(
+        """() => {
+          kgCloudSyncConfig.googleDriveClientId = 'test-client';
+          window.__finishSync = null;
+          window.kgCreateGoogleDriveAuthorizer = () => ({
+            connect: () => Promise.resolve(),
+            token: () => 'test-token',
+            disconnect: () => {}
+          });
+          window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+          window.kgCreatePersonalDataSyncEngine = () => ({
+            synchronize: () => new Promise(resolve => { window.__finishSync = resolve; }),
+            isSynchronizing: () => false
+          });
+          kgInitialiseGoogleDriveSync();
+        }"""
+    )
+    page.locator("#kg_cloud_sync_connect").click()
+    page.wait_for_function("() => typeof window.__finishSync === 'function'")
+
+    browser_graph.click_concept("2.1")
+    questions = page.locator("#info_panel details.study-questions")
+    questions.locator(":scope > summary").click()
+    questions.locator(":scope > summary .kg-note-block-action").click()
+    note = questions.locator("details.user-note")
+    body = note.locator(".user-note-body-input")
+    body.fill("A note still being written")
+    note_element = note.element_handle()
+    body_element = body.element_handle()
+
+    page.evaluate("() => window.__finishSync({})")
+    page.wait_for_function(
+        "() => document.querySelector('#kg_cloud_sync_status').textContent.includes('Last synced')"
+    )
+
+    assert note.evaluate("(element, original) => element === original", note_element)
+    assert body.evaluate("(element, original) => element === original", body_element)
+    assert note.evaluate("element => element.open")
+    assert body.input_value() == "A note still being written"
+
+
+@pytest.mark.browser
 def test_cloud_sync_status_reports_expired_sign_in(browser_graph):
     page = browser_graph.page
     browser_graph.open_control_section("kg_personal_data_section")

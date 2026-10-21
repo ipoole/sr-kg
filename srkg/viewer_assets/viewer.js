@@ -247,6 +247,7 @@
         var studyQuestionIndex = buildStudyQuestionIndex();
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
+        var contentOwnerBlockIdsCache = {};
         var contentReadProgressState = loadContentReadProgress();
         var graphCompletionMarkersEnabled =
           safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
@@ -795,7 +796,7 @@
           var canvasRect = canvasEl.getBoundingClientRect();
           var layerRect = moduleFoldControlLayer.getBoundingClientRect();
           var expandedOutlines = {};
-          expandedModuleOutlineSnapshot().forEach(function(outline) {
+          expandedModuleGeometrySnapshot().forEach(function(outline) {
             expandedOutlines[String(outline.moduleId)] = outline;
           });
           moduleIdsWithMembers().forEach(function(moduleId) {
@@ -1359,6 +1360,10 @@
         function contentOwnerBlockIds(ownerType, ownerId) {
           ownerType = String(ownerType || "");
           ownerId = String(ownerId || "");
+          var cacheKey = ownerType + "::" + ownerId;
+          if (contentOwnerBlockIdsCache[cacheKey]) {
+            return contentOwnerBlockIdsCache[cacheKey];
+          }
           var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
             var block = contentBlockIndex[blockId];
             return block.ownerType === ownerType && block.ownerId === ownerId;
@@ -1368,6 +1373,7 @@
               blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
             });
           }
+          contentOwnerBlockIdsCache[cacheKey] = blockIds;
           return blockIds;
         }
 
@@ -1425,6 +1431,7 @@
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
+          renderStudyScorecard();
           schedulePersonalDataAutoSync();
           if (network && network.redraw) { network.redraw(); }
           return true;
@@ -2178,18 +2185,18 @@
           var correctCount = entries.filter(function(entry) {
             return entry.progress.lastOutcome === "correct";
           }).length;
-          if (entries.length === 0) {
-            summary.textContent = "No questions attempted yet.";
-            list.innerHTML = "";
-            badge.textContent = "";
-            resetAll.hidden = true;
-            return;
-          }
-
-          summary.textContent = correctCount + " correct out of " +
-            entries.length + " attempted";
-          badge.textContent = correctCount + "/" + entries.length;
-          resetAll.hidden = false;
+          var totalQuestions = Object.keys(studyQuestionIndex).length;
+          var readableConceptIds = Object.keys(conceptData || {}).filter(function(conceptId) {
+            return contentOwnerBlockIds("concept", conceptId).length > 0;
+          });
+          var readConcepts = readableConceptIds.filter(function(conceptId) {
+            return contentOwnerReadComplete("concept", conceptId);
+          }).length;
+          summary.textContent = "Questions " + correctCount + "/" + totalQuestions +
+            " correct \u00b7 Concepts " + readConcepts + "/" + readableConceptIds.length +
+            " read";
+          badge.textContent = correctCount + "/" + totalQuestions;
+          resetAll.hidden = entries.length === 0;
           list.innerHTML = entries.map(function(entry) {
             var outcome = entry.progress.lastOutcome;
             var attempts = entry.progress.attemptCount;
@@ -2854,7 +2861,6 @@
             refreshNodeTooltips();
             renderNotesOverview();
             renderStudyScorecard();
-            refreshActiveConcept();
             updateContentReadCompletionIndicators();
             if (network && network.redraw) { network.redraw(); }
             setCloudSyncStatus(
@@ -4628,7 +4634,7 @@
           return Math.min(width, height) * 0.18;
         }
 
-        function expandedModuleOutlineSnapshot() {
+        function expandedModuleGeometrySnapshot() {
           return moduleIds().filter(function(moduleId) {
             if (selectedModuleIsFolded(moduleId)) { return false; }
             return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
@@ -4652,6 +4658,12 @@
               lineWidth: 1.75
             };
           });
+        }
+
+        function expandedModuleOutlineSnapshot() {
+          return viewerState.displayScope === DisplayScope.FULL
+            ? expandedModuleGeometrySnapshot()
+            : [];
         }
 
         function drawExpandedModuleOutlines(ctx) {

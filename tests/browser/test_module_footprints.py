@@ -77,6 +77,20 @@ def test_expanded_modules_show_faint_outlines_matching_folded_geometry(browser_g
 
 
 @pytest.mark.browser
+def test_context_only_scope_suppresses_expanded_module_outlines_but_keeps_controls(
+    browser_graph,
+):
+    page = browser_graph.page
+    browser_graph.click_concept("2.2")
+    page.locator("#kg_display_scope_select").select_option("context")
+
+    assert page.evaluate("() => kgExpandedModuleOutlineSnapshot()") == []
+    assert page.locator(
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
+    ).is_visible()
+
+
+@pytest.mark.browser
 def test_folded_box_matches_footprint_and_scales_its_label(browser_graph):
     page = browser_graph.page
     before = page.evaluate("() => kgGlobalLayoutSnapshot()")

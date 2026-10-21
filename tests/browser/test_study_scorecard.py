@@ -7,11 +7,14 @@ def _open_scorecard(browser_graph):
 
 
 @pytest.mark.browser
-def test_study_scorecard_starts_empty_and_summarises_attempted_questions(browser_graph):
+def test_study_scorecard_summarises_total_questions_and_read_concepts(browser_graph):
     page = browser_graph.page
     scorecard = _open_scorecard(browser_graph)
 
-    assert scorecard.locator("#kg_study_summary").inner_text() == "No questions attempted yet."
+    assert scorecard.locator("#kg_study_summary").inner_text() == (
+        "Questions 0/4 correct · Concepts 0/4 read"
+    )
+    assert scorecard.locator("#kg_study_badge").inner_text() == "0/4"
     assert scorecard.locator(".kg-study-row").count() == 0
 
     page.evaluate(
@@ -26,14 +29,24 @@ def test_study_scorecard_starts_empty_and_summarises_attempted_questions(browser
     )
 
     assert scorecard.locator("#kg_study_summary").inner_text() == (
-        "1 correct out of 2 attempted"
+        "Questions 1/4 correct · Concepts 0/4 read"
     )
+    assert scorecard.locator("#kg_study_badge").inner_text() == "1/4"
     rows = scorecard.locator(".kg-study-row")
     assert rows.count() == 2
     assert rows.nth(0).get_attribute("data-question-id") == "2.2.q3"
     assert "Correct" in rows.nth(0).inner_text()
     assert "Incorrect" in rows.nth(1).inner_text()
     assert "1 attempt" in rows.nth(1).inner_text()
+
+    page.evaluate(
+        """() => conceptData['2.2'].content_blocks.forEach(block =>
+          kgContentReadProgress.setRead(block.block_id, true)
+        )"""
+    )
+    assert scorecard.locator("#kg_study_summary").inner_text() == (
+        "Questions 1/4 correct · Concepts 1/4 read"
+    )
 
 
 @pytest.mark.browser
@@ -72,4 +85,6 @@ def test_study_scorecard_resets_one_question_or_all_progress(browser_graph):
     scorecard.locator("#kg_study_reset_all").click()
 
     assert scorecard.locator(".kg-study-row").count() == 0
-    assert scorecard.locator("#kg_study_summary").inner_text() == "No questions attempted yet."
+    assert scorecard.locator("#kg_study_summary").inner_text() == (
+        "Questions 0/4 correct · Concepts 0/4 read"
+    )
