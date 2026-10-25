@@ -20,6 +20,7 @@ def _write_manifest(root):
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "  graphic_designs: concept_graphic_designs.csv",
+            "  tutorials: tutorials.yaml",
             "  layout: layout.json",
             "",
         ]),
@@ -216,6 +217,35 @@ def test_load_knowledge_base_from_root_exposes_query_api(tmp_path):
         "concepts": {},
         "modules": {},
     }
+
+
+def test_load_knowledge_base_exposes_validated_tutorials(tmp_path):
+    _write_minimal_kb(tmp_path)
+    (tmp_path / "tutorials.yaml").write_text(
+        """
+schema_version: 1
+tutorials:
+  - tutorial_id: alpha-route
+    title: Meet Alpha
+    category: physics
+    summary: A minimal authored route.
+    sequence: 10
+    domains: [test]
+    steps:
+      - step_id: select-alpha
+        title: Select Alpha
+        commentary: Begin with Alpha.
+        action: {command: select, target: concept:test.alpha}
+        pointer: {target: graph:concept:test.alpha}
+""",
+        encoding="utf-8",
+    )
+
+    kb = load_knowledge_base(tmp_path)
+
+    assert kb.paths.tutorials == tmp_path / "tutorials.yaml"
+    assert [tutorial.tutorial_id for tutorial in kb.tutorials] == ["alpha-route"]
+    assert kb.tutorial_data()[0]["steps"][0]["action"]["command"] == "select"
 
 
 def test_load_knowledge_base_loads_partial_published_layout(tmp_path):

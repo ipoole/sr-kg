@@ -3,9 +3,19 @@
 **Modules** show the overall structure; **concepts** reveal detailed physics.
 See [Viewer behaviour](viewer.md) for the full model.
 
-**New:** The user model has been simplified, the UI space optimised for phones,
-and rendering and interaction made faster on older or slower devices. Selection,
+The user model has been simplified, the UI space optimised for phones, and
+rendering and interaction made faster on older or slower devices. Selection,
 context, display, module folding and camera behave independently and predictably.
+
+## Guided tutorials — NEW
+
+Choose **Start guided tutorial** here, or use **Tools → Tutorials** for an
+interface orientation or a short physics route. PhysicsKG operates the live
+viewer and points to each target; use **Back**, **Next step** and **Exit** rather
+than operating the normal controls during playback. **Explore from here**
+temporarily returns control to you; **Resume tutorial** restores the view at
+which you left the route while preserving any study activity. Tutorials can also be
+launched by a direct `?tutorial=<tutorial-id>` link.
 
 ## Start with the map
 
@@ -75,7 +85,7 @@ If Google authorization expires during an automatic sync, personal changes stay
 safe in this browser and a **Sync paused — reconnect** action remains visible
 below the top bar. Reconnecting merges those local changes with the Drive copy.
 
-## Study — NEW
+## Study
 
 Open a concept's **Study Questions** block to answer questions. Answers appear
 after an attempt or **I don't know**. Automatic questions mark your choice; for free text, compare the
@@ -89,7 +99,7 @@ on concepts and folded modules; one **Tools → Study** option hides both.
 
 Covers Special Relativity and General Relativity.
 
-**Manifolds and Coordinates exposition enhanced with motivating example — NEW.**
+**Manifolds and Coordinates exposition enhanced with motivating example.**
 
-**Enhanced historical context — NEW:** selected concepts now explain how key
+**Enhanced historical context:** selected concepts now explain how key
 ideas developed, who contributed, and how their physical meaning changed.

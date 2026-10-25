@@ -18,6 +18,8 @@ def test_public_homepage_identifies_physicskg_and_links_required_pages():
     assert "An Atlas of Physics Knowledge" in homepage
     assert "Study physics through visually connected concepts" in homepage
     assert 'href="output/PhysicsKG.html"' in homepage
+    assert 'href="output/PhysicsKG.html?tutorial=using-physicskg"' in homepage
+    assert "Launch guided tutorial" in homepage
     assert 'href="privacy.html"' in homepage
     assert 'href="terms.html"' in homepage
     assert "Google Drive" in homepage
@@ -70,6 +72,6 @@ def test_viewer_offers_a_public_privacy_policy_link():
     assert "Privacy and Google Drive data use" in controls
 
 
-def test_product_version_is_four_point_zero_point_one():
-    assert PRODUCT_VERSION == "4.0.1"
+def test_product_version_is_four_point_one_point_zero():
+    assert PRODUCT_VERSION == "4.1.0"
     assert all(part.isdigit() for part in PRODUCT_VERSION.split("."))

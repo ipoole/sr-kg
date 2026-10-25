@@ -21,6 +21,7 @@ def _write_manifest(root):
             "  references: references.csv",
             "  reference_links: reference_links.csv",
             "  graphic_designs: concept_graphic_designs.csv",
+            "  tutorials: tutorials.yaml",
             "",
         ]),
         encoding="utf-8",
@@ -203,6 +204,46 @@ def test_generate_viewer_from_root_runs_full_pipeline_and_injects_controls(tmp_p
     assert set(published_layout["concepts"]) == {"test.alpha", "test.beta"}
 
 
+def test_generate_viewer_injects_validated_tutorial_data(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+    (tmp_path / "tutorials.yaml").write_text(
+        """
+schema_version: 1
+tutorials:
+  - tutorial_id: alpha-route
+    title: Meet Alpha
+    category: physics
+    summary: A minimal route.
+    sequence: 10
+    domains: [test]
+    steps:
+      - step_id: select-alpha
+        title: Select Alpha
+        commentary: Avoid a literal </script> closer.
+        action: {command: select, target: concept:test.alpha}
+        pointer: {target: graph:concept:test.alpha}
+""",
+        encoding="utf-8",
+    )
+
+    generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="Tutorial",
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    match = re.search(r"var tutorialData = (\[.*\]);", html_text)
+    assert match is not None
+    tutorial_data = json.loads(match.group(1))
+    assert tutorial_data[0]["tutorial_id"] == "alpha-route"
+    assert tutorial_data[0]["steps"][0]["action"]["target"] == "concept:test.alpha"
+    assert "Avoid a literal <\\/script> closer." in html_text
+
+
 def test_generate_viewer_resolves_partial_published_layout(tmp_path):
     out_path = tmp_path / "viewer.html"
     _write_minimal_root(tmp_path)
@@ -251,6 +292,55 @@ def test_generate_viewer_from_root_filters_domains_by_id_prefix(tmp_path):
     assert '"test.alpha"' not in html_text
     assert '"test.beta"' not in html_text
     assert "Gamma links to alpha" not in html_text
+
+
+def test_generate_viewer_omits_tutorials_with_unavailable_domains(tmp_path):
+    out_path = tmp_path / "viewer.html"
+    _write_minimal_root(tmp_path)
+    _append_gr_concept(tmp_path)
+    (tmp_path / "tutorials.yaml").write_text(
+        """
+schema_version: 1
+tutorials:
+  - tutorial_id: test-route
+    title: Test route
+    category: physics
+    summary: Requires the test domain.
+    sequence: 10
+    domains: [test]
+    steps:
+      - step_id: alpha
+        title: Alpha
+        commentary: Select Alpha.
+        action: {command: select, target: concept:test.alpha}
+  - tutorial_id: gr-route
+    title: GR route
+    category: physics
+    summary: Requires the GR domain.
+    sequence: 20
+    domains: [gr]
+    steps:
+      - step_id: gamma
+        title: Gamma
+        commentary: Select Gamma.
+        action: {command: select, target: concept:gr.gamma}
+""",
+        encoding="utf-8",
+    )
+
+    generate_viewer_from_root(
+        data_root=str(tmp_path),
+        out_path=str(out_path),
+        height="420px",
+        width="640px",
+        title="GR",
+        domains=["gr"],
+    )
+
+    html_text = out_path.read_text(encoding="utf-8")
+    match = re.search(r"var tutorialData = (\[.*\]);", html_text)
+    tutorial_data = json.loads(match.group(1))
+    assert [tutorial["tutorial_id"] for tutorial in tutorial_data] == ["gr-route"]
 
 
 def test_generate_viewer_from_root_prefers_explicit_domain_column(tmp_path):

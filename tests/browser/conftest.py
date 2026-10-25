@@ -93,6 +93,7 @@ def _write_browser_fixture(
             "  module_members: module_members.csv",
             "  module_supports: module_supports.csv",
             "  module_content_blocks: module_content_blocks.csv",
+            "  tutorials: tutorials.yaml",
             "",
         ]),
         encoding="utf-8",
@@ -434,6 +435,75 @@ def _write_browser_fixture(
             "body": "Apply the foundation through Beta, Gamma, and Delta.",
         },
     ]).to_csv(tmp_path / "module_content_blocks.csv", index=False)
+    (tmp_path / "tutorials.yaml").write_text(
+        """schema_version: 1
+tutorials:
+  - tutorial_id: viewer-tour
+    title: Using PhysicsKG
+    category: interface
+    summary: Learn how selection, Context and the displayed graph work together.
+    sequence: 10
+    domains: [test]
+    steps:
+      - step_id: select-beta
+        title: Select a concept
+        commentary: Selection gives the viewer a subject without changing the Context rule.
+        action:
+          command: select
+          target: concept:2.1
+        pointer:
+          target: graph:concept:2.1
+      - step_id: follow-uses
+        title: Choose a Context
+        commentary: Uses follows links from the selection towards concepts which use it.
+        prepare:
+          - command: wait
+            milliseconds: 80
+        action:
+          command: set-context
+          preset: uses
+          depth: two-hops
+        pointer:
+          target: control:context
+      - step_id: show-context
+        title: Show only the Context
+        commentary: Context only removes background nodes from the displayed graph.
+        action:
+          command: set-display-scope
+          value: context
+        pointer:
+          target: control:display-scope
+      - step_id: search-alpha
+        title: Search for Alpha
+        commentary: Search can find concepts by name or content.
+        action:
+          command: search
+          query: Alpha
+        pointer:
+          target: control:search
+      - step_id: choose-alpha
+        title: Choose a result
+        commentary: A search result selects that concept.
+        action:
+          command: select
+          target: concept:1.1
+        pointer:
+          target: search:concept:1.1
+      - step_id: inspect-alpha
+        title: Inspect Details
+        commentary: Details is made from authored content blocks.
+        prepare:
+          - command: close-search
+          - command: set-details-mode
+            value: full
+        action:
+          command: open-details-block
+          target: block:1.1.definition
+        pointer:
+          target: details:block:1.1.definition
+""",
+        encoding="utf-8",
+    )
     return nodes_path, edges_path, edge_key_path
 
 

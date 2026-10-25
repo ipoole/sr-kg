@@ -37,6 +37,20 @@
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
       <div id="kg_status">Ready. Use Context to choose the graph relationships.</div>
+      <details id="kg_tutorials_section" class="kg-fold">
+        <summary>Tutorials</summary>
+        <div id="kg_tutorial_list" class="kg-tutorial-list"></div>
+        <section id="kg_tutorial_intro" class="kg-tutorial-intro" hidden>
+          <h3 id="kg_tutorial_intro_title"></h3>
+          <p id="kg_tutorial_intro_summary"></p>
+          <p id="kg_tutorial_guidance" class="kg-tutorial-guidance">
+            This is a guided tour. PhysicsKG will operate the viewer—press
+            Start, then Next step to continue.
+          </p>
+          <p id="kg_tutorial_intro_length" class="kg-tutorial-length"></p>
+          <button id="kg_tutorial_start" type="button">Start</button>
+        </section>
+      </details>
       <details id="kg_modules_section" class="kg-fold">
         <summary>Modules</summary>
         <div class="kg-module-actions" aria-label="Module graph actions">
@@ -166,6 +180,35 @@
         </div>
       </div>
 
+      <section id="kg_tutorial_narration" class="kg-tutorial-narration"
+               aria-live="polite" aria-atomic="true" hidden>
+        <div class="kg-tutorial-narration-meta">
+          <strong id="kg_tutorial_title"></strong>
+          <span id="kg_tutorial_progress"></span>
+        </div>
+        <h3 id="kg_tutorial_step_title"></h3>
+        <div id="kg_tutorial_commentary" class="kg-tutorial-commentary"></div>
+        <div id="kg_tutorial_explore_status" class="kg-tutorial-explore-status" hidden>
+          Explore freely. Resume returns the view to this tutorial step.
+        </div>
+        <span id="kg_tutorial_target_description" class="kg-visually-hidden"></span>
+        <div id="kg_tutorial_error" class="kg-tutorial-error" role="alert" hidden></div>
+        <div class="kg-tutorial-actions">
+          <button id="kg_tutorial_back" type="button">Back</button>
+          <button id="kg_tutorial_explore" type="button">Explore from here</button>
+          <button id="kg_tutorial_next" type="button">Next step</button>
+          <button id="kg_tutorial_exit" type="button">Exit</button>
+        </div>
+      </section>
+
+      <div id="kg_tutorial_halo" class="kg-tutorial-halo" aria-hidden="true" hidden></div>
+      <div id="kg_tutorial_pointer" class="kg-tutorial-pointer" aria-hidden="true" hidden>
+        <svg viewBox="0 0 28 34" focusable="false" aria-hidden="true">
+          <path d="M3 2 L3 27 L10 20 L15 32 L21 29 L16 18 L26 18 Z"></path>
+        </svg>
+        <span class="kg-tutorial-click-pulse"></span>
+      </div>
+
       <details id="kg_search_section" class="kg-search-panel">
         <summary>Search concepts and modules</summary>
         <div id="kg_search_block">
@@ -213,8 +256,16 @@
         </div>
       </div>
       <p>Explore at two levels: modules show the overall structure, while concepts reveal the detailed physics.</p>
-      <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.<span class="kg-status-badge">NEW</span></p>
+      <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.</p>
       <div class="kg-splash-feature-grid">
+        <section>
+          <h3>Guided tutorials<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>Choose Start guided tutorial below, or select a route under Tools → Tutorials.</li>
+            <li>PhysicsKG operates the live viewer and points out each step; use Back and Next step to follow along.</li>
+            <li>Explore from here lets you investigate freely; Resume tutorial restores the guided view.</li>
+          </ul>
+        </section>
         <section>
           <h3>Start with the map</h3>
           <ul>
@@ -245,7 +296,7 @@
           <h3>Move and read</h3>
           <ul>
             <li>Pan and zoom freely; selection only pans enough to reveal an off-screen item.</li>
-            <li>Fit a selected Context-only view, then use Fit++ to contract it temporarily.<span class="kg-status-badge">NEW</span></li>
+            <li>Fit a selected Context-only view, then use Fit++ to contract it temporarily.</li>
             <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>
@@ -262,7 +313,7 @@
           </ul>
         </section>
         <section>
-          <h3>Study<span class="kg-status-badge">NEW</span></h3>
+          <h3>Study</h3>
           <ul>
             <li>Practice questions reveal their answers only after an attempt or “I don't know”.</li>
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
@@ -272,7 +323,7 @@
           </ul>
         </section>
         <section>
-          <h3>Personal data<span class="kg-status-badge">NEW</span></h3>
+          <h3>Personal data</h3>
           <ul>
             <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
@@ -285,11 +336,14 @@
         <section>
           <h3>Content status</h3>
           <p>Covers Special Relativity and General Relativity.</p>
-          <p>Manifolds and Coordinates exposition enhanced with motivating example.<span class="kg-status-badge">NEW</span></p>
+          <p>Manifolds and Coordinates exposition enhanced with motivating example.</p>
         </section>
       </div>
       <p class="kg-splash-credit">Created by <a href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a> with AI assistance via OpenAI Codex. <span class="kg-splash-version">Version __PRODUCT_VERSION__</span></p>
       <div class="kg-splash-actions">
+        <button id="kg_splash_start_tutorial" class="kg-splash-primary" type="button">
+          Start guided tutorial
+        </button>
         <button id="kg_splash_dismiss" type="button">Dismiss</button>
       </div>
     </dialog>

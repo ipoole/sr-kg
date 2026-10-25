@@ -2572,13 +2572,16 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
     assert dialog.locator(".kg-splash-brand-mark").is_visible()
-    assert dialog.locator(".kg-splash-feature-grid section").count() == 8
-    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 8
+    assert dialog.locator(".kg-splash-feature-grid section").count() == 9
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 9
     assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 8
-    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 5
+    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 9
+    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 1
+    tutorial_heading = dialog.locator(".kg-splash-feature-grid section h3", has_text="Guided tutorials")
+    assert tutorial_heading.count() == 1
+    assert tutorial_heading.locator(".kg-status-badge", has_text="NEW").count() == 1
     assert dialog.locator(".kg-splash-feature-grid li").count() >= 20
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")

@@ -80,6 +80,7 @@ def inject_controls(
     view_title: str,
     module_data: dict[str, dict[str, object]] | None = None,
     published_layout: dict[str, object] | None = None,
+    tutorial_data: list[dict[str, object]] | None = None,
     google_drive_client_id: str = "",
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
@@ -126,6 +127,7 @@ def inject_controls(
                     "concepts": {},
                     "modules": {},
                 }),
+                "__TUTORIAL_DATA__": _json_for_script(tutorial_data or []),
                 "__EDGE_KEY__": _json_for_script(edge_key),
                 "__VIEWER_CONFIG__": _json_for_script(
                     _viewer_runtime_config(google_drive_client_id)

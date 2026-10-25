@@ -21,6 +21,7 @@ from srkg.layout_persistence import (
     load_published_layout,
 )
 from srkg.model import Concept, ConceptSection, ContentBlock, Module, ModuleContentBlock
+from srkg.tutorials import Tutorial, TutorialLoadError, load_tutorials
 
 DEFAULT_KB_FILES = {
     "nodes": "nodes.csv",
@@ -38,6 +39,7 @@ DEFAULT_KB_FILES = {
     "module_supports": "module_supports.csv",
     "module_content_blocks": "module_content_blocks.csv",
     "layout": "layout.json",
+    "tutorials": "tutorials.yaml",
 }
 
 CONTENT_BLOCK_COLUMNS = (
@@ -176,6 +178,7 @@ class KnowledgeBasePaths:
     module_supports: Path | None = None
     module_content_blocks: Path | None = None
     layout: Path | None = None
+    tutorials: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -189,6 +192,7 @@ class KnowledgeBase:
     concepts: tuple[Concept, ...]
     modules: tuple[Module, ...] = ()
     published_layout: PublishedLayout = field(default_factory=PublishedLayout)
+    tutorials: tuple[Tutorial, ...] = ()
 
     @property
     def concept_index(self) -> dict[str, Concept]:
@@ -242,6 +246,10 @@ class KnowledgeBase:
         """Return the JSON-compatible module mapping consumed by the viewer."""
         return {module.module_id: module.to_viewer_data() for module in self.modules}
 
+    def tutorial_data(self) -> list[dict[str, object]]:
+        """Return validated tutorial routes in their browser representation."""
+        return [tutorial.to_viewer_data() for tutorial in self.tutorials]
+
 
 def load_knowledge_base(data_root: str | Path) -> KnowledgeBase:
     """Load a knowledge base from a data-root directory containing a manifest."""
@@ -276,6 +284,7 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
         module_supports=_resolve_existing_optional_manifest_path(root, files.get("module_supports")),
         module_content_blocks=_resolve_existing_optional_manifest_path(root, files.get("module_content_blocks")),
         layout=_resolve_optional_manifest_path(root, files.get("layout")),
+        tutorials=_resolve_optional_manifest_path(root, files.get("tutorials")),
     )
 
 
@@ -350,6 +359,26 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         module_content_blocks_df,
         module_graphic_designs_df,
     ))
+    content_block_ids = set(content_blocks_df["block_id"].astype(str).str.strip())
+    if module_content_blocks_df is not None and "block_id" in module_content_blocks_df.columns:
+        content_block_ids.update(
+            module_content_blocks_df["block_id"].astype(str).str.strip()
+        )
+    known_domains = {
+        _concept_domain(row)
+        for _, row in nodes_df.iterrows()
+        if _concept_domain(row)
+    }
+    try:
+        tutorials = load_tutorials(
+            paths.tutorials,
+            concept_ids=nodes_df["id"].astype(str),
+            module_ids=(module.module_id for module in modules),
+            block_ids=content_block_ids,
+            domain_ids=known_domains,
+        )
+    except TutorialLoadError as exc:
+        raise KnowledgeBaseLoadError(str(exc)) from exc
     try:
         published_layout = load_published_layout(
             paths.layout,
@@ -366,7 +395,18 @@ def load_knowledge_base_from_paths(paths: KnowledgeBasePaths) -> KnowledgeBase:
         concepts=concepts,
         modules=modules,
         published_layout=published_layout,
+        tutorials=tutorials,
     )
+
+
+def _concept_domain(row: pd.Series) -> str:
+    """Return the explicit concept domain or its semantic-id prefix."""
+    if "domain" in row.index:
+        domain = str(row.get("domain", "") or "").strip()
+        if domain:
+            return domain
+    concept_id = str(row.get("id", "") or "").strip()
+    return concept_id.split(".", 1)[0] if "." in concept_id else ""
 
 
 def _read_csv(path: Path) -> pd.DataFrame:

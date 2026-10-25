@@ -26,6 +26,7 @@ from srkg.module_layout import (
 )
 from srkg.module_colours import build_module_visuals_by_concept
 from srkg.render_pyvis import write_pyvis_html
+from srkg.tutorials import tutorials_for_domains
 
 
 def generate_viewer_from_root(
@@ -162,6 +163,11 @@ def filter_knowledge_base_by_domains(
         if module.domain in requested_domains
         and any(concept_id in selected_ids for concept_id in module.members)
     )
+    available_domains = {
+        concept_domain(row)
+        for _, row in filtered_nodes.iterrows()
+        if concept_domain(row)
+    }
 
     return KnowledgeBase(
         paths=kb.paths,
@@ -171,6 +177,7 @@ def filter_knowledge_base_by_domains(
         concepts=filtered_concepts,
         modules=filtered_modules,
         published_layout=kb.published_layout,
+        tutorials=tutorials_for_domains(kb.tutorials, available_domains),
     )
 
 
@@ -243,6 +250,7 @@ def generate_viewer_from_kb(
         title,
         module_data=kb.module_data(),
         published_layout=published_layout.to_viewer_data(),
+        tutorial_data=kb.tutorial_data(),
         google_drive_client_id=google_drive_client_id,
     )
     output_file.write_text(html_text, encoding="utf-8")

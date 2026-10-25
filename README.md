@@ -14,7 +14,9 @@ nine supporting mathematics concepts.
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,
 relationship exploration and a unified personal-data profile for notes, layouts,
-study progress and reading marks.
+study progress and reading marks. Self-paced guided tutorials operate the live
+viewer with an animated semantic pointer; routes can also be launched directly
+with `?tutorial=<tutorial-id>`.
 
 ## Setup
 
@@ -37,6 +39,8 @@ Open `output/PhysicsKG.html` in a browser. The generated page references
 CDN-hosted vis-network assets and MathJax, as well as a relative
 `lib/bindings/utils.js` asset; it is not a self-contained offline file.
 Generated HTML is a build artifact; do not commit it unless explicitly requested.
+The published interface tour can be launched directly at
+`https://physicskg.org/output/PhysicsKG.html?tutorial=using-physicskg`.
 
 ## Study with the viewer
 
@@ -52,6 +56,13 @@ Use **Context** and **Depth** to choose related material, and **Display** to sho
 the full graph, only that context, or the details pane on its own.
 The responsive viewer is tuned for phones and reduces costly rendering,
 animation and eager content work on older or slower devices.
+
+Use **Quick start → Start guided tutorial** for an automatic orientation, or
+choose interface and physics routes under **Tools → Tutorials**. During a route,
+PhysicsKG performs the actions; use **Back**, **Next step** and **Exit** to
+control playback. **Explore from here** temporarily releases the viewer for
+free investigation; **Resume tutorial** restores the saved tutorial view
+without undoing notes or study progress.
 
 See [Viewer behaviour](docs/design/viewer.md) for details presentation, navigation and
 personal notes. The **Study** tools keep attempt counts and latest results, with
