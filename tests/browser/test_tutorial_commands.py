@@ -167,6 +167,18 @@ def test_semantic_command_previews_a_graph_concept_without_selecting(browser_gra
     assert page.evaluate("kgViewerStateSnapshot().selection") == selection_before
 
 
+def test_semantic_command_opens_questions_without_recording_attempts(browser_graph):
+    page = browser_graph.page
+    before = page.evaluate("kgStudyProgress.getState()")
+    page.evaluate("""async () => {
+      await kgExecuteViewerCommand({command: 'select', target: 'concept:2.2'});
+      await kgExecuteViewerCommand({command: 'open-study-questions'});
+    }""")
+    assert page.locator("#info_panel .study-questions").evaluate("el => el.open")
+    assert page.locator("#info_panel .study-answer-body").count() == 0
+    assert page.evaluate("kgStudyProgress.getState()") == before
+
+
 @pytest.mark.browser
 def test_semantic_command_previews_a_visible_graph_edge(browser_graph):
     page = browser_graph.page

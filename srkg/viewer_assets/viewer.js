@@ -8233,9 +8233,9 @@
 
         /* Viewport fitting around visible panels. */
         function visiblePanelRects() {
-          return ["kg_controls", "info_panel"].map(function(id) {
+          return ["kg_controls", "info_panel", "kg_tutorial_narration"].map(function(id) {
             var el = document.getElementById(id);
-            if (!el || el.classList.contains("kg-hidden")) { return null; }
+            if (!el || el.hidden || el.classList.contains("kg-hidden")) { return null; }
             return {
               id: id,
               rect: el.getBoundingClientRect()
@@ -8244,6 +8244,10 @@
         }
 
         function panelOcclusionEdge(panel, baseRect, overlap) {
+          if (panel.id === "kg_tutorial_narration") {
+            return (overlap.top + overlap.bottom) / 2 >= (baseRect.top + baseRect.bottom) / 2
+              ? "bottom" : "top";
+          }
           if (panel.id === "info_panel" && overlap.width >= baseRect.width * 0.60) {
             return ((overlap.top + overlap.bottom) / 2) >= ((baseRect.top + baseRect.bottom) / 2)
               ? "bottom"
@@ -8284,7 +8288,15 @@
           };
           var minWidth = Math.min(220, baseAbs.width * 0.65);
           var minHeight = Math.min(180, baseAbs.height * 0.65);
-          visiblePanelRects().forEach(function(panel) {
+          var panels = visiblePanelRects();
+          panels.forEach(function(panel) {
+            if (panel.id !== "kg_tutorial_narration") { return; }
+            var overlap = intersectRects(baseAbs, panel.rect);
+            if (overlap) {
+              minHeight = Math.min(minHeight, Math.max(24, baseAbs.height - overlap.height - margin * 3));
+            }
+          });
+          panels.forEach(function(panel) {
             var overlap = intersectRects(baseAbs, panel.rect);
             if (!overlap) { return; }
             var edge = panelOcclusionEdge(panel, baseAbs, overlap);
@@ -8528,6 +8540,20 @@
           scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
         }
 
+        function expandContextModules() {
+          resetContextFitInteraction();
+          var contextIds = lastGraphRender ? lastGraphRender.contextNodeIds : [];
+          var changed = false;
+          contextIds.forEach(function(conceptId) {
+            var moduleId = moduleIdForConcept(conceptId);
+            if (!moduleId || !selectedModuleIsFolded(moduleId)) { return; }
+            preferredFoldedModules[String(moduleId)] = false;
+            unfoldModule(moduleId);
+            changed = true;
+          });
+          if (changed) { refreshGraphAfterModuleFoldChange(); }
+        }
+
         var tutorialDetailsRelationships = {
           "derived-from": {
             sectionSelector: ".concept-derived-from",
@@ -8654,16 +8680,39 @@
               } else {
                 unfoldAllModules();
               }
+            } else if (name === "expand-context-modules") {
+              expandContextModules();
             } else if (name === "fit") {
               fitViewerTarget(commandEnumValue(
                 command, "value", ["reveal", "selection", "context", "displayed"]
               ));
             } else if (name === "open-details-block") {
               openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"));
+            } else if (name === "open-study-questions") {
+              var questions = document.querySelector("#info_panel .study-questions");
+              if (!questions) { throw new Error("Study Questions are unavailable"); }
+              if (!detailsAreVisible()) { setDetailsView("full"); }
+              questions.open = true;
+              scrollInfoPanelTargetBelowStickyToc(questions, {immediate: true});
+            } else if (name === "open-details-graphic") {
+              var graphic = document.querySelector("#info_panel .concept-figure");
+              if (!graphic) { throw new Error("Details graphic is unavailable"); }
+              if (!detailsAreVisible()) { setDetailsView("full"); }
+              graphic.open = true;
+              scrollInfoPanelTargetBelowStickyToc(graphic, {immediate: true});
             } else if (name === "open-details-relationship") {
               openTutorialDetailsRelationship(commandEnumValue(
                 command, "value", ["derived-from", "where-used"]
               ));
+            } else if (name === "set-relationship-full-tree") {
+              var sectionName = commandEnumValue(command, "value", ["derived-from", "where-used"]);
+              if (typeof command.full_tree !== "boolean") {
+                throw new Error("set-relationship-full-tree requires full_tree boolean");
+              }
+              if (sectionName === "derived-from") { derivedFromFullTreeEnabled = command.full_tree; }
+              else { backlinksFullTreeEnabled = command.full_tree; }
+              refreshActiveConcept();
+              openTutorialDetailsRelationship(sectionName);
             } else if (name === "show-relationship-in-graph") {
               var relationshipPreset = commandEnumValue(
                 command, "preset", Object.keys(ContextPreset).map(function(key) {
@@ -8744,6 +8793,8 @@
             mode: detailsAreVisible() ? readingMode : "hidden",
             activeTargetId: activeConceptSectionTargetId,
             blockId: active ? active.getAttribute("data-content-block-id") : null,
+            derivedFromFullTree: derivedFromFullTreeEnabled,
+            whereUsedFullTree: backlinksFullTreeEnabled,
             scrollTop: panel.scrollTop
           };
         }
@@ -8773,6 +8824,13 @@
             displayScope: viewerState.displayScope,
             moduleRepresentation: moduleRepresentation,
             details: tutorialDetailsSnapshot(),
+            contextFit: {
+              primedKey: contextFitPrimedKey,
+              contraction: contextContractionState ? Object.assign(
+                cloneSerializable(contextContractionState),
+                {finalPositions: network.getPositions(Object.keys(contextContractionState.finalPositions))}
+              ) : null
+            },
             search: tutorialSearchSnapshot(),
             workspaceSplitPercent: workspaceSplitPercent,
             tools: tutorialToolsSnapshot(),
@@ -8819,6 +8877,9 @@
             throw new Error("Unsupported tutorial presentation snapshot");
           }
           resetContextFitInteraction();
+          var details = snapshot.details || {};
+          derivedFromFullTreeEnabled = Boolean(details.derivedFromFullTree);
+          backlinksFullTreeEnabled = Boolean(details.whereUsedFullTree);
           viewerState.contextRule = createContextRule(
             snapshot.contextRule && snapshot.contextRule.preset,
             snapshot.contextRule && snapshot.contextRule.depth,
@@ -8851,7 +8912,6 @@
             );
           }
 
-          var details = snapshot.details || {};
           await executeViewerCommand({
             command: "set-details-mode",
             value: ["full", "folded", "hidden"].indexOf(details.mode) === -1
@@ -8895,6 +8955,21 @@
             );
           }
           cameraRestoreGeneration += 1;
+          var savedContextFit = snapshot.contextFit || {};
+          contextFitPrimedKey = savedContextFit.primedKey || null;
+          if (savedContextFit.contraction) {
+            contextContractionState = cloneSerializable(savedContextFit.contraction);
+            Object.keys(contextContractionState.finalPositions).forEach(function(id) {
+              var position = contextContractionState.finalPositions[id];
+              if (nodes.get(id) && validLayoutPosition(position)) {
+                network.moveNode(id, position.x, position.y);
+              }
+            });
+            showContextNotice(
+              "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
+              "context-contracted"
+            );
+          }
           if (snapshot.camera && snapshot.camera.position) {
             network.moveTo({
               position: snapshot.camera.position,
@@ -9118,7 +9193,8 @@
             search: ["kg_search_toggle", "Search"],
             "search-input": ["kg_search", "Search query"],
             tools: ["kg_controls_toggle", "Tools"],
-            "clear-selection": ["kg_clear_selection", "Clear selection"]
+            "clear-selection": ["kg_clear_selection", "Clear selection"],
+            "expand-context": ["kg_expand_context_modules", "Expand context modules"]
           };
           if (target === "narration") {
             return tutorialElementTarget(
@@ -9184,6 +9260,23 @@
           if (target === "details:contents") {
             return tutorialElementTarget(
               document.querySelector("#info_panel .concept-toc"), "Details contents"
+            );
+          }
+          if (target === "details:study-questions") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .study-questions"), "Study Questions"
+            );
+          }
+          if (target === "details:graphic") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .concept-figure"), "Details graphic"
+            );
+          }
+          if (target === "details:derived-from-full-tree" || target === "details:where-used-full-tree") {
+            var fullTreeSelector = target === "details:derived-from-full-tree"
+              ? ".concept-derived-from-full-tree" : ".concept-backlinks-full-tree";
+            return tutorialElementTarget(
+              document.querySelector("#info_panel " + fullTreeSelector), "Full tree"
             );
           }
           var relationship = tutorialDetailsRelationshipForTarget(target);
@@ -9407,9 +9500,18 @@
           var commands = [];
           (route.steps || []).slice(0, stepIndex + 1).forEach(function(step) {
             (step.prepare || []).forEach(function(command) { commands.push(command); });
-            commands.push(step.action);
+            tutorialStepActions(step).forEach(function(item) { commands.push(item.action); });
           });
           return commands;
+        }
+
+        function tutorialStepActions(step) {
+          return step.actions || [{action: step.action, pointer: step.pointer, pause_ms: 0}];
+        }
+
+        function tutorialFinalAction(step) {
+          var actions = tutorialStepActions(step);
+          return actions[actions.length - 1];
         }
 
         function renderTutorialList() {
@@ -9452,6 +9554,10 @@
             );
           });
           document.getElementById("kg_tutorial_intro_title").textContent = route.title;
+          var launchUrl = new URL(window.location.href);
+          launchUrl.hash = "";
+          launchUrl.searchParams.set("tutorial", route.tutorial_id);
+          document.getElementById("kg_tutorial_launch_link").href = launchUrl.href;
           document.getElementById("kg_tutorial_intro_summary").textContent = route.summary;
           document.getElementById("kg_tutorial_intro_length").textContent =
             String((route.steps || []).length) +
@@ -9473,6 +9579,8 @@
           if (!active) { return; }
           var steps = route.steps || [];
           var step = steps[tutorialPlayback.stepIndex];
+          document.getElementById("kg_tutorial_first_step_guidance").hidden =
+            tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
           document.getElementById("kg_tutorial_title").textContent = route.title;
           document.getElementById("kg_tutorial_progress").textContent =
             String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
@@ -9508,7 +9616,24 @@
 
         function positionTutorialNarration() {
           var card = document.getElementById("kg_tutorial_narration");
-          if (!card || card.hidden) { return; }
+          if (!card) { return; }
+          var docked = !card.hidden && window.matchMedia("(max-width: 850px)").matches;
+          document.body.classList.toggle("kg-tutorial-phone-docked", docked);
+          if (!docked) {
+            document.documentElement.style.removeProperty("--kg-tutorial-dock-height");
+          }
+          if (card.hidden) { return; }
+          if (docked) {
+            var viewport = visualViewportRect();
+            var bottomInset = Math.max(0, window.innerHeight - viewport.bottom) + 7;
+            card.style.top = "auto";
+            card.style.bottom = bottomInset + "px";
+            card.style.left = (viewport.left + viewport.width / 2) + "px";
+            document.documentElement.style.setProperty(
+              "--kg-tutorial-dock-height", (card.offsetHeight + bottomInset + 7) + "px"
+            );
+            return;
+          }
           var anchor = document.getElementById("kg_graph_pane");
           var rect = anchor ? anchor.getBoundingClientRect() : null;
           if (!rect || !rect.width || !rect.height) {
@@ -9550,8 +9675,9 @@
               setControlsVisible(false);
               tutorialPlayback.stepIndex = stepIndex;
               var replayStep = route.steps[stepIndex];
+              var replayAction = tutorialFinalAction(replayStep);
               await moveTutorialPointer(
-                replayStep.pointer ? replayStep.pointer.target : "narration"
+                replayAction.pointer ? replayAction.pointer.target : "narration"
               );
             } else {
               var step = route.steps[stepIndex];
@@ -9561,15 +9687,23 @@
               for (var index = 0; index < prepare.length; index += 1) {
                 await executeViewerCommand(prepare[index], {origin: "tutorial"});
               }
-              await moveTutorialPointer(step.pointer ? step.pointer.target : "narration");
-              await pulseTutorialPointer();
-              await executeViewerCommand(step.action, {origin: "tutorial"});
-              await nextAnimationFrames(2);
-              var stepPointerTarget = step.pointer ? step.pointer.target : "narration";
-              if (tutorialPointerIsTransientAction(stepPointerTarget)) {
-                hideTutorialPointer({preserveTarget: true});
-              } else {
-                refreshTutorialPointerPosition();
+              var actions = tutorialStepActions(step);
+              for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
+                var item = actions[actionIndex];
+                clearTutorialEmphasis();
+                var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
+                await moveTutorialPointer(stepPointerTarget);
+                await pulseTutorialPointer();
+                await executeViewerCommand(item.action, {origin: "tutorial"});
+                await nextAnimationFrames(2);
+                if (tutorialPointerIsTransientAction(stepPointerTarget)) {
+                  hideTutorialPointer({preserveTarget: true});
+                } else {
+                  refreshTutorialPointerPosition();
+                }
+                if (actionIndex < actions.length - 1 && item.pause_ms) {
+                  await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
+                }
               }
             }
             renderTutorialNarration();
@@ -9632,6 +9766,7 @@
             tutorialPlayback.exploring = false;
             tutorialPlayback.stepIndex = -1;
             document.getElementById("kg_tutorial_narration").hidden = true;
+            positionTutorialNarration();
           } finally {
             setGuidedTutorialActive(false);
             tutorialPlayback.transitioning = false;
@@ -9655,9 +9790,10 @@
             tutorialPlayback.exploring = false;
             setGuidedTutorialActive(true);
             var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
-            await moveTutorialPointer(step.pointer ? step.pointer.target : "narration");
-            if (tutorialActionIsHover(step.action)) {
-              await executeViewerCommand(step.action, {origin: "tutorial"});
+            var finalAction = tutorialFinalAction(step);
+            await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
+            if (tutorialActionIsHover(finalAction.action)) {
+              await executeViewerCommand(finalAction.action, {origin: "tutorial"});
             }
             renderTutorialNarration();
           } catch (error) {
@@ -10457,17 +10593,7 @@
           }
         });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
-          resetContextFitInteraction();
-          var contextIds = lastGraphRender ? lastGraphRender.contextNodeIds : [];
-          var changed = false;
-          contextIds.forEach(function(conceptId) {
-            var moduleId = moduleIdForConcept(conceptId);
-            if (!moduleId || !selectedModuleIsFolded(moduleId)) { return; }
-            preferredFoldedModules[String(moduleId)] = false;
-            unfoldModule(moduleId);
-            changed = true;
-          });
-          if (changed) { refreshGraphAfterModuleFoldChange(); }
+          executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
         document.getElementById("kg_inspection_close").addEventListener("click", closeInspection);
         document.getElementById("kg_inspection_dialog").addEventListener("click", function(e) {

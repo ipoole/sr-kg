@@ -26,7 +26,7 @@ sr.position_four_vector,sr.lorentz_transformations,REQUIRES,"Its components are 
 sr.velocity_four_vector,sr.proper_time,DERIVES_FROM,"Proper time supplies the invariant parameter used in the derivative along the world-line."
 sr.velocity_four_vector,sr.position_four_vector,DERIVES_FROM,"Differentiating position four-vector components with respect to proper time gives four-velocity."
 sr.momentum_four_vector,sr.velocity_four_vector,DERIVES_FROM,"For a massive particle, multiplying four-velocity by rest mass gives four-momentum."
-sr.mass_energy_equivalence,sr.momentum_four_vector,DERIVES_FROM,"The invariant norm of four-momentum contains the rest-energy term."
+sr.mass_energy_equivalence,sr.momentum_four_vector,DERIVES_FROM,"The physically identified and conserved four-momentum gives the energy–momentum invariant; setting total spatial momentum to zero yields rest energy. Geometry alone does not identify physical energy."
 sr.action_principle,sr.lorentz_transformations,RELATED,"Relativistic actions must respect Lorentz covariance, but the variational idea itself is more general."
 sr.action_principle,sr.lagrangian,REQUIRES,"The action is built from a Lagrangian before the stationarity condition can be imposed."
 sr.lagrangian,sr.spacetime_interval,REQUIRES,"Relativistic particle Lagrangians commonly use invariant interval or proper-time structure."

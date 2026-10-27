@@ -6,6 +6,9 @@
   [layout](design/layout.md). The [viewer state terminology](design/viewer_terminology.md)
   defines the vocabulary used by the accepted [revised viewer UI model](design/viewer_ui_model.md),
   with a user-facing [viewer quick start](design/viewer_quick_start.md). The
+  [guided tutorial design](design/tutorial_playback.md) describes semantic
+  routes, grouped actions, direct launch links and presentation restoration.
+  Current physics routes cover rest energy and time dilation. The
   [study-question design](design/study.md) defines marking, attempts, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable

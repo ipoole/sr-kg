@@ -58,8 +58,11 @@ The responsive viewer is tuned for phones and reduces costly rendering,
 animation and eager content work on older or slower devices.
 
 Use **Quick start → Start guided tutorial** for an automatic orientation, or
-choose interface and physics routes under **Tools → Tutorials**. During a route,
-PhysicsKG performs the actions; use **Back**, **Next step** and **Exit** to
+choose interface and physics routes under **Tools → Tutorials**.
+Physics routes include **Why mass has rest energy** and **Why moving clocks
+record less time**. Each introduction offers a direct launch link to bookmark
+or share; the time-dilation route uses `?tutorial=time-dilation`.
+During playback PhysicsKG performs the actions; use **Back**, **Next step** and **Exit** to
 control playback. **Explore from here** temporarily releases the viewer for
 free investigation; **Resume tutorial** restores the saved tutorial view
 without undoing notes or study progress.

@@ -3,9 +3,9 @@
 Generate a standalone SVG graphics review sheet.
 
 Examples:
-    python tools/show_graphics.py 7.6
-    python tools/show_graphics.py '7.*'
-    python tools/show_graphics.py '*.*'
+    python tools/show_graphics.py SR-1.9
+    python tools/show_graphics.py 'SR-1.*'
+    python tools/show_graphics.py 'sr.*'
 
 Quote wildcard arguments in the shell so they are passed to this script rather
 than expanded as filesystem globs.
@@ -80,8 +80,8 @@ def render_svg_cell(concept_id: str, variant: str) -> str:
 def render_html(concepts: list[Concept], patterns: list[str]) -> str:
     rows = []
     for concept in concepts:
-        icon_svg = render_svg_cell(concept.display_id, "icon")
-        detail_svg = render_svg_cell(concept.display_id, "detail")
+        icon_svg = render_svg_cell(concept.id, "icon")
+        detail_svg = render_svg_cell(concept.id, "detail")
         rows.append(
             f"""
             <section class="concept-card" id="concept-{escape(concept.id)}">

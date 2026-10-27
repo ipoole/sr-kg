@@ -249,9 +249,13 @@ Each tutorial has a stable `tutorial_id`, `title`, `category` (`interface` or
 `domains`, and a non-empty list of `steps`. Domain-filtered builds omit routes
 whose declared domains are unavailable.
 
-Each step has a stable route-local `step_id`, `title`, `commentary`, one
-principal semantic `action`, optional unanimated `prepare` commands and an
-optional semantic pointer `target`. Commands refer to concepts, modules and
+Each step has a stable route-local `step_id`, `title`, `commentary`, optional
+unanimated `prepare` commands, and either one `action` with an optional
+`pointer`, or an `actions` list. Each list entry has an `action`, optional
+`pointer` and `pause_ms` (default 500, range 0–2000). Sequences contain 1–20
+entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
+One card stays visible while its actions run; Next is enabled on completion.
+Commands refer to concepts, modules and
 content blocks by stable semantic IDs. Generation rejects unknown IDs,
 unsupported commands, invalid enum values and duplicate tutorial or step IDs.
 Raw screen coordinates and CSS selectors are not part of the authored format.
@@ -260,8 +264,9 @@ The initial command vocabulary is:
 
 - `select` and `clear-selection`;
 - `set-display-scope`, `set-context` and `set-details-mode`;
-- `set-module-representation`, `set-all-module-representations` and `fit`;
-- `open-details-block` and `show-tools-section`;
+- `set-module-representation`, `set-all-module-representations`, `expand-context-modules` and `fit`;
+- `open-details-relationship`, `set-relationship-full-tree` and `show-relationship-in-graph`;
+- `open-details-block`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
 - `search` and `close-search`;
 - a bounded settling `wait`.
 

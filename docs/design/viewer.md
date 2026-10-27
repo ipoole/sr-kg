@@ -20,6 +20,9 @@ context. Browser Back and Forward retrace selections, not complete viewer state.
 
 ## Starting and navigating
 
+On phone-sized touch screens in landscape, a full-screen notice asks the user
+to rotate to portrait. Returning to portrait restores the current view.
+
 The first visit opens the Quick start; dismissal is remembered locally and
 **Tools → Quick start** reopens it. Startup has no selection, Foundations at one
 hop, Full graph, authored module defaults, layout editing off, and one initial

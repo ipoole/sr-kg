@@ -6,7 +6,8 @@ snapshot/replay, the Tutorials picker, narration card, semantic pointer,
 target halo, block spotlight and temporary exploration are in place. Ordinary
 viewer controls are unavailable during guided playback; the learner controls
 it with Back, Next step, Explore from here and Exit. The viewer
-contains an interface orientation and a first physics route, both available in
+contains an interface orientation and physics routes on rest energy and time
+dilation, all available in
 Tools or through a `?tutorial=<tutorial-id>` URL.
 
 ## Purpose
@@ -59,24 +60,62 @@ opening the list changes no viewer state.
 The Quick Start dialog launches the default interface route. A stable URL such
 as `PhysicsKG.html?tutorial=using-physicskg` starts a named route directly,
 allowing the public home page or external material to link to guided playback.
+Each route introduction exposes its direct launch link for opening, bookmarking
+or copying. The link keeps the viewer's current deployment URL and removes the
+current concept/module fragment.
 
 ### Playback
 
 A compact narration card remains in a fixed position at the lower edge of the
-graph pane. It contains:
+graph pane.
+
+The card uses a lavender tint, purple commentary and a persistent Guided
+tutorial label to distinguish its instructions from teaching content. Every
+route's first card explains Next step, Explore, Resume and Exit, including
+when playback starts through a direct URL. A demonstrated hover tooltip can
+move the card to the upper edge to keep the preview readable.
+
+It contains:
 
 - tutorial title and `step / total`;
 - one short heading and commentary;
 - **Back**, **Next step**, **Explore from here** and **Exit**.
 
 The stable card is preferable to commentary which jumps between targets. The
-pointer supplies the spatial connection. On a narrow phone the card becomes a
-full-width overlay at the bottom of the graph pane and can collapse to its
-heading. Fit operations should treat the expanded card as an unavailable inset
-so the target is not hidden behind it. When the graph is hidden, the card is
-anchored to the workspace rather than the absent graph pane.
+pointer supplies the spatial connection. On a narrow phone the card occupies
+a dedicated strip at the bottom of the screen, below both panes. The workspace
+reserves its measured height, keeping the existing graph-row sizing and leaving
+the remaining area for Details. The strip remains available during
+Explore; Exit restores the normal workspace. Desktop narration remains an
+overlay, with Fit and Reveal accounting for its occupied space. The interface
+tutorial expands and fits its module within one card. When the graph is hidden,
+desktop narration is anchored to the workspace rather than the absent pane.
 
-On each step:
+The temporary Fit++ arrangement notice is suppressed during guided playback,
+when manual dragging is unavailable. It reappears during Explore.
+
+A card may contain a sequence of visible semantic actions. Each action has its
+own pointer target and a short pause before the next action (500 ms by default).
+The card's teaching point and commentary remain fixed throughout. Navigation
+and Explore stay unavailable until all its actions finish. Existing single-action
+cards retain their behaviour. Back replays the entire sequence without its
+authored pauses; Explore/Resume restores its completed checkpoint, including
+Full-tree choices and the temporary Fit++ coordinates.
+
+For example:
+
+```yaml
+actions:
+  - action: {command: expand-context-modules}
+    pointer: {target: 'control:expand-context'}
+    pause_ms: 500
+  - action: {command: fit, value: context}
+    pointer: {target: 'control:fit'}
+  - action: {command: fit, value: context}
+    pointer: {target: 'control:fit'}
+```
+
+For each visible action:
 
 1. the narration card updates;
 2. the target receives a visible halo and an accessible textual name;
@@ -197,9 +236,13 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | `set-details-mode` | `full`, `folded`, `hidden` | Details selector |
 | `set-module-representation` | module ID and `folded`/`expanded` | normal module representation transition |
 | `set-all-module-representations` | `folded`/`expanded` | fold or expand all non-empty modules |
+| `expand-context-modules` | none | expand only folded modules representing the current context |
 | `fit` | `reveal`, `selection`, `context`, `displayed` | existing Fit operation |
 | `open-details-block` | stable block ID | open and scroll to authored block |
+| `open-study-questions` | none | open and scroll to the selected concept's questions without attempting them |
+| `open-details-graphic` | none | open and scroll to the selected concept's graphic |
 | `open-details-relationship` | `derived-from` or `where-used` | open and frame a relationship section |
+| `set-relationship-full-tree` | relationship section and boolean `full_tree` | set the section's Full tree checkbox and refresh its contents |
 | `show-relationship-in-graph` | Context preset and full-tree flag | the section's normal Show in graph operation |
 | `show-graph-concept-hover` | concept ID | show the normal graph-hover preview without selecting |
 | `show-graph-edge-hover` | source, relation and target concept IDs | emphasise and preview one visible edge |
@@ -214,21 +257,20 @@ layout editing and Google Drive actions are also excluded: a tutorial may point
 at them and explain them, but must not perform personal-data or authentication
 actions.
 
-Later commands may show an edge inspection, concept preview, suggested context,
-or Search results once a real tutorial requires them.
-
 ## Target vocabulary
 
 Pointer targets must also be semantic:
 
 - `control:context`, `control:depth`, `control:fit`, `control:display-scope`;
 - `control:module-fold:<module-id>`;
+- `control:expand-context`;
 - `graph:concept:<concept-id>` or `graph:module:<module-id>`;
 - `graph:edge:<source-id>|<RELATION>|<target-id>`;
 - `search:concept:<concept-id>` or `search:module:<module-id>`;
 - `details:block:<block-id>`;
 - `details:derived-from-show-graph`, `details:where-used-show-graph`;
-- `details:heading`, `details:contents`;
+- `details:derived-from-full-tree`, `details:where-used-full-tree`;
+- `details:heading`, `details:contents`, `details:graphic`, `details:study-questions`;
 - `tools:section:<section-name>`;
 - `narration` for commentary-only steps.
 

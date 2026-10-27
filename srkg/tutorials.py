@@ -19,9 +19,13 @@ TUTORIAL_COMMANDS = frozenset({
     "set-details-mode",
     "set-module-representation",
     "set-all-module-representations",
+    "expand-context-modules",
     "fit",
     "open-details-block",
+    "open-study-questions",
+    "open-details-graphic",
     "open-details-relationship",
+    "set-relationship-full-tree",
     "show-relationship-in-graph",
     "show-graph-concept-hover",
     "show-graph-edge-hover",
@@ -70,6 +74,7 @@ CONTROL_TARGETS = frozenset({
     "search-input",
     "tools",
     "clear-selection",
+    "expand-context",
 })
 
 
@@ -84,17 +89,21 @@ class TutorialStep:
     step_id: str
     title: str
     commentary: str
-    action: dict[str, object]
+    action: dict[str, object] | None = None
     prepare: tuple[dict[str, object], ...] = ()
     pointer_target: str | None = None
+    actions: tuple[dict[str, object], ...] = ()
 
     def to_viewer_data(self) -> dict[str, object]:
         data: dict[str, object] = {
             "step_id": self.step_id,
             "title": self.title,
             "commentary": self.commentary,
-            "action": dict(self.action),
         }
+        if self.actions:
+            data["actions"] = [dict(item) for item in self.actions]
+        else:
+            data["action"] = dict(self.action or {})
         if self.prepare:
             data["prepare"] = [dict(command) for command in self.prepare]
         if self.pointer_target:
@@ -248,13 +257,43 @@ def _load_steps(
             )
             for command_index, command in enumerate(prepare_rows)
         )
-        action = _validate_command(
-            _mapping(mapping.get("action"), f"{step_context}.action"),
-            context=f"{step_context}.action",
-            concept_ids=concept_ids,
-            module_ids=module_ids,
-            block_ids=block_ids,
-        )
+        actions = []
+        if "actions" in mapping:
+            if "action" in mapping or "pointer" in mapping:
+                raise TutorialLoadError(f"{step_context}: use action/pointer or actions, not both")
+            action_rows = mapping["actions"]
+            if not isinstance(action_rows, list) or not 1 <= len(action_rows) <= 20:
+                raise TutorialLoadError(f"{step_context}.actions must contain 1 to 20 items")
+            for action_index, action_row in enumerate(action_rows):
+                action_context = f"{step_context}.actions[{action_index}]"
+                item = _mapping(action_row, action_context)
+                command = _validate_command(
+                    _mapping(item.get("action"), f"{action_context}.action"),
+                    context=action_context, concept_ids=concept_ids,
+                    module_ids=module_ids, block_ids=block_ids,
+                )
+                pause = _integer(item.get("pause_ms", 500), f"{action_context}.pause_ms")
+                if not 0 <= pause <= 2000:
+                    raise TutorialLoadError(f"{action_context}.pause_ms must be between 0 and 2000")
+                entry = {"action": command, "pause_ms": pause}
+                if "pointer" in item:
+                    pointer = _mapping(item["pointer"], f"{action_context}.pointer")
+                    target = _required_text(pointer, "target", action_context)
+                    _validate_pointer_target(
+                        target, context=action_context, concept_ids=concept_ids,
+                        module_ids=module_ids, block_ids=block_ids,
+                    )
+                    entry["pointer"] = {"target": target}
+                actions.append(entry)
+            action = None
+        else:
+            action = _validate_command(
+                _mapping(mapping.get("action"), f"{step_context}.action"),
+                context=f"{step_context}.action",
+                concept_ids=concept_ids,
+                module_ids=module_ids,
+                block_ids=block_ids,
+            )
         pointer_target = None
         if "pointer" in mapping:
             pointer = _mapping(mapping["pointer"], f"{step_context}.pointer")
@@ -273,6 +312,7 @@ def _load_steps(
             action=action,
             prepare=prepare,
             pointer_target=pointer_target,
+            actions=tuple(actions),
         ))
     return tuple(steps)
 
@@ -310,8 +350,10 @@ def _validate_command(
     elif name == "open-details-block":
         target = _required_text(command, "target", context)
         _validate_prefixed_known(target, "block:", block_ids, "block", context)
-    elif name == "open-details-relationship":
+    elif name in {"open-details-relationship", "set-relationship-full-tree"}:
         _enum(command, "value", DETAILS_RELATIONSHIP_SECTIONS, context)
+        if name == "set-relationship-full-tree" and not isinstance(command.get("full_tree"), bool):
+            raise TutorialLoadError(f"{context}.full_tree must be a boolean")
     elif name == "show-relationship-in-graph":
         _enum(command, "preset", CONTEXT_PRESETS, context)
         if not isinstance(command.get("full_tree"), bool):
@@ -348,8 +390,12 @@ def _validate_pointer_target(
     if target == "narration" or target in {
         "details:heading",
         "details:contents",
+        "details:study-questions",
+        "details:graphic",
         "details:derived-from-show-graph",
         "details:where-used-show-graph",
+        "details:derived-from-full-tree",
+        "details:where-used-full-tree",
     }:
         return
     if target.startswith("control:module-fold:"):

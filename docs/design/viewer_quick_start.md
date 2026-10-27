@@ -10,12 +10,17 @@ context, display, module folding and camera behave independently and predictably
 ## Guided tutorials — NEW
 
 Choose **Start guided tutorial** here, or use **Tools → Tutorials** for an
-interface orientation or a short physics route. PhysicsKG operates the live
-viewer and points to each target; use **Back**, **Next step** and **Exit** rather
+interface orientation or a short physics route. Physics routes cover
+**Why mass has rest energy** and **Why moving
+clocks record less time**, including a light-clock argument and worked examples.
+PhysicsKG operates the viewer and points to each target; use **Back**,
+**Next step** and **Exit** rather
 than operating the normal controls during playback. **Explore from here**
 temporarily returns control to you; **Resume tutorial** restores the view at
 which you left the route while preserving any study activity. Tutorials can also be
-launched by a direct `?tutorial=<tutorial-id>` link.
+launched by a direct `?tutorial=<tutorial-id>` link. Select a route under
+**Tools → Tutorials** to find its **Direct link to this tutorial**, which you
+can open, bookmark or copy to share.
 
 ## Start with the map
 
