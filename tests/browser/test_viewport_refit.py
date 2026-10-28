@@ -3,6 +3,26 @@ import math
 import pytest
 
 
+def _disable_camera_animation(page):
+    page.evaluate(
+        """() => Object.defineProperty(navigator, "hardwareConcurrency", {
+          configurable: true,
+          get: () => 2
+        })"""
+    )
+
+
+def _fit_then_contract(page):
+    _disable_camera_animation(page)
+    fit_button = page.locator("#kg_fit_apply")
+    fit_button.click()
+    assert fit_button.inner_text() == "Fit++"
+    fit_button.click()
+    page.wait_for_function(
+        "() => Boolean(window.kgContextContractionSnapshot().active)"
+    )
+
+
 def _view_state(page):
     return page.evaluate(
         """() => ({
@@ -80,7 +100,14 @@ def test_panel_visibility_preserves_camera_in_browsing_modes(
         }"""
     )
     graph_pane_expanded = page.locator("#kg_graph_pane").bounding_box()
-    page.wait_for_timeout(500)
+    page.wait_for_function(
+        """before => {
+          const position = network.getViewPosition();
+          return Math.abs(network.getScale() - before.scale) < 1e-6 &&
+            Math.hypot(position.x - before.position.x, position.y - before.position.y) < 0.1;
+        }""",
+        arg=panes_visible,
+    )
     details_hidden = _view_state(page)
 
     assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
@@ -122,7 +149,14 @@ def test_splitter_and_context_changes_preserve_camera(browser_graph):
 
     page.locator("#kg_context_depth_select").select_option("two-hops")
     page.locator("#kg_pane_splitter").press("End")
-    page.wait_for_timeout(500)
+    page.wait_for_function(
+        """before => {
+          const position = network.getViewPosition();
+          return Math.abs(network.getScale() - before.scale) < 1e-6 &&
+            Math.hypot(position.x - before.position.x, position.y - before.position.y) < 0.1;
+        }""",
+        arg=before,
+    )
     after = _view_state(page)
 
     assert math.isclose(after["scale"], before["scale"], abs_tol=1e-6)
@@ -177,8 +211,8 @@ def test_fit_controls_are_explicit_camera_actions(browser_graph):
     )
     before = _view_state(page)
     page.locator("#kg_fit_select").select_option("displayed")
+    _disable_camera_animation(page)
     page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
     after = _view_state(page)
 
     assert not math.isclose(after["scale"], before["scale"], abs_tol=1e-3)
@@ -289,14 +323,16 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
     before = page.evaluate("ids => network.getPositions(ids)", ids)
 
     fit_button = page.locator("#kg_fit_apply")
+    _disable_camera_animation(page)
     assert fit_button.inner_text() == "Fit"
     fit_button.click()
-    page.wait_for_timeout(300)
     assert fit_button.inner_text() == "Fit++"
     assert page.evaluate("ids => network.getPositions(ids)", ids) == before
 
     fit_button.click()
-    page.wait_for_timeout(300)
+    page.wait_for_function(
+        "() => Boolean(window.kgContextContractionSnapshot().active)"
+    )
     after = page.evaluate("ids => network.getPositions(ids)", ids)
     assert fit_button.inner_text() == "Fit"
     assert after["3.1"] == before["3.1"]
@@ -412,13 +448,7 @@ def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
     all_ids = ["1.1", *context_ids]
     before = page.evaluate("ids => network.getPositions(ids)", all_ids)
 
-    fit_button = page.locator("#kg_fit_apply")
-    fit_button.click()
-    page.wait_for_timeout(300)
-    assert fit_button.inner_text() == "Fit++"
-
-    fit_button.click()
-    page.wait_for_timeout(300)
+    _fit_then_contract(page)
     after = page.evaluate("ids => network.getPositions(ids)", all_ids)
 
     assert after["1.1"] == before["1.1"]
@@ -445,10 +475,7 @@ def test_fit_plus_unlocks_only_context_and_suspends_personal_editing(browser_gra
     browser_graph.click_concept("3.1")
     page.locator("#kg_context_depth_select").select_option("one-hop")
     _close_tools_overlay(page)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
+    _fit_then_contract(page)
 
     page.evaluate("() => kgToggleControls()")
     browser_graph.open_control_section("kg_layouts_section")
@@ -512,11 +539,7 @@ def test_context_contraction_uses_folded_module_as_selection_anchor(browser_grap
     )
 
     _close_tools_overlay(page)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
-    assert page.locator("#kg_fit_apply").inner_text() == "Fit++"
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
+    _fit_then_contract(page)
     after = page.evaluate(
         "ids => network.getPositions(ids)", [module_node_id, "1.1"]
     )
@@ -564,10 +587,7 @@ def test_real_graph_context_contraction_reduces_spread(repo_browser_graph):
     anchor_id = "gr.metric_tensor"
     before = page.evaluate("ids => network.getPositions(ids)", node_ids)
     _close_tools_overlay(page)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
+    _fit_then_contract(page)
     after = page.evaluate("ids => network.getPositions(ids)", node_ids)
 
     assert len(node_ids) >= 5
@@ -605,10 +625,7 @@ def test_context_contraction_keeps_nodes_out_of_visible_concept_labels(repo_brow
     page.locator("#kg_context_depth_select").select_option("transitive")
     page.locator("#kg_display_scope_select").select_option("context")
     _close_tools_overlay(page)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
-    page.locator("#kg_fit_apply").click()
-    page.wait_for_timeout(300)
+    _fit_then_contract(page)
 
     overlaps = page.evaluate(
         """() => {

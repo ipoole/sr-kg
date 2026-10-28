@@ -617,10 +617,10 @@ def test_legacy_local_storage_note_is_loaded_and_migrated(browser_graph):
 
 
 @pytest.mark.browser
-def test_note_hooks_follow_optional_details_and_display_equations(browser_graph):
-    page = browser_graph.page
+def test_note_hooks_follow_optional_details_and_display_equations(mathjax_browser_graph):
+    page = mathjax_browser_graph.page
 
-    browser_graph.click_concept("2.1")
+    mathjax_browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
     section = page.locator('#info_panel .concept-section[data-section="Explanation"]')
     assert section.locator(".optional-detail").count() == 1

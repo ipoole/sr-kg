@@ -72,6 +72,10 @@ Evidence: `matchingSearchIds`, `searchFieldsForConcept` and `kgSearch` in
 
 ### 2. Give reading modes a defensible learning purpose
 
+**Resolved:** The overlapping content filters were removed. Details now offers
+only Full, Folded and Hidden presentation, and study questions remain available
+inside the complete concept material.
+
 **Observed:** Core retains derivations but excludes warnings and conventions.
 Maths omits definitions and construction blocks. Context contains warnings and
 multiple-choice questions but omits intuition. These are type filters, not

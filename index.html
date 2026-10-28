@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PhysicsKG is an interactive atlas for exploring and studying the connected ideas of physics.">
+  <title>PhysicsKG — An Atlas of Physics Knowledge</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="site-header site-shell">
+    <a class="brand" href="index.html" aria-label="PhysicsKG home">
+      <img src="physicskg-logo-120.png" alt="">
+      <span>PhysicsKG</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="#about">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a class="button" href="output/PhysicsKG.html">Open the atlas</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero site-shell" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">Study physics through visually connected concepts</p>
+        <h1 id="hero-title">PhysicsKG</h1>
+        <p class="hero-tagline">An Atlas of Physics Knowledge</p>
+        <p class="hero-copy">
+          Explore the ideas of special and general relativity as a navigable
+          knowledge graph. See the broad structure through teaching modules,
+          then open individual concepts for equations, explanations, graphics,
+          historical context and study questions.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="output/PhysicsKG.html">Explore PhysicsKG</a>
+          <a class="button" href="output/PhysicsKG.html?tutorial=using-physicskg">Launch guided tutorial</a>
+          <a class="text-link" href="#about">How it works</a>
+        </div>
+      </div>
+
+      <figure class="atlas-figure" aria-label="A stylised network of connected physics concepts">
+        <svg viewBox="0 0 520 460" role="img" aria-labelledby="atlas-title atlas-description">
+          <title id="atlas-title">PhysicsKG knowledge map</title>
+          <desc id="atlas-description">Connected modules and concepts arranged as a branching knowledge graph.</desc>
+          <g fill="none" stroke-linecap="round">
+            <path d="M258 230 C205 195 169 148 120 96 M258 230 C337 187 383 134 432 83 M258 230 C345 240 397 287 445 345 M258 230 C207 281 159 330 97 377" stroke="#c4d3d9" stroke-width="8"/>
+            <path d="M120 96 C158 109 178 135 190 168 M432 83 C407 124 388 153 363 174 M445 345 C400 334 372 313 349 287 M97 377 C126 337 153 311 183 291" stroke="#d9e5e8" stroke-width="5"/>
+            <path d="M258 230 L190 168 L120 96" stroke="#247da2" stroke-width="3"/>
+            <path d="M258 230 L363 174 L432 83" stroke="#df7830" stroke-width="3"/>
+            <path d="M258 230 L349 287 L445 345" stroke="#3b9b64" stroke-width="3"/>
+            <path d="M258 230 L183 291 L97 377" stroke="#e0ae25" stroke-width="3"/>
+          </g>
+          <g stroke="#123e5a" stroke-width="4">
+            <rect x="205" y="186" width="106" height="88" rx="22" fill="#e8f2f6"/>
+            <rect x="76" y="60" width="88" height="72" rx="18" fill="#e7f2f7"/>
+            <rect x="388" y="47" width="88" height="72" rx="18" fill="#f8e8df"/>
+            <rect x="401" y="309" width="88" height="72" rx="18" fill="#e7f3e9"/>
+            <rect x="53" y="341" width="88" height="72" rx="18" fill="#fbf2d8"/>
+          </g>
+          <g fill="#123e5a" font-family="Arial, sans-serif" text-anchor="middle">
+            <text x="258" y="225" font-size="16" font-weight="700">SPACETIME</text>
+            <text x="258" y="247" font-size="13">AND GRAVITY</text>
+            <text x="120" y="91" font-size="13" font-weight="700">SYMMETRY</text>
+            <text x="120" y="111" font-size="12">11 concepts</text>
+            <text x="432" y="78" font-size="13" font-weight="700">CURVATURE</text>
+            <text x="432" y="98" font-size="12">7 concepts</text>
+            <text x="445" y="340" font-size="13" font-weight="700">FIELDS</text>
+            <text x="445" y="360" font-size="12">8 concepts</text>
+            <text x="97" y="372" font-size="13" font-weight="700">MANIFOLDS</text>
+            <text x="97" y="392" font-size="12">6 concepts</text>
+          </g>
+          <g fill="#ffffff" stroke="#123e5a" stroke-width="3">
+            <circle cx="190" cy="168" r="14"/>
+            <circle cx="363" cy="174" r="14"/>
+            <circle cx="349" cy="287" r="14"/>
+            <circle cx="183" cy="291" r="14"/>
+          </g>
+        </svg>
+      </figure>
+    </section>
+
+    <section id="about" class="content-band">
+      <div class="site-shell">
+        <div class="section-intro">
+          <h2>See the wood—and the trees</h2>
+          <div>
+            <p>
+              PhysicsKG organises a large subject without turning it into either
+              a rigid textbook sequence or an unreadable tangle of links.
+            </p>
+            <p>
+              Folded modules reveal the main intellectual landscape. Expand one
+              to work with its concepts, or follow carefully typed relationships
+              to see prerequisites, derivations and uses across the atlas.
+            </p>
+          </div>
+        </div>
+        <div class="feature-list">
+          <article class="feature">
+            <h3>Explore</h3>
+            <p>Search, select and follow context without losing the larger map.</p>
+          </article>
+          <article class="feature">
+            <h3>Understand</h3>
+            <p>Read mathematical exposition, view purpose-made graphics and connect equations to physical meaning.</p>
+          </article>
+          <article class="feature">
+            <h3>Study</h3>
+            <p>Answer questions, mark reading progress and keep notes alongside the relevant material.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-band">
+      <div class="site-shell">
+        <div class="data-panel">
+          <div>
+            <p class="eyebrow">Personal work remains personal</p>
+            <h2>Local first, portable by choice</h2>
+            <p>
+              Notes, layouts, reading ticks and study-question records stay in
+              your browser by default. You can download them as transparent CSV
+              files in a ZIP archive, or optionally synchronise the same archive
+              through your own Google Drive.
+            </p>
+            <p><a href="privacy.html">Read the PhysicsKG privacy policy</a></p>
+          </div>
+          <ul class="data-facts">
+            <li><strong>No PhysicsKG account</strong><br>No application server holds your study record.</li>
+            <li><strong>Narrow Drive access</strong><br>PhysicsKG requests only Google's <code>drive.file</code> scope.</li>
+            <li><strong>User initiated</strong><br>Connection and synchronisation happen only when you choose them.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer site-shell">
+    <span>Created by Ian Poole with AI assistance via OpenAI Codex.</span>
+    <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="https://www.linkedin.com/in/ipoole/">Contact</a></span>
+  </footer>
+</body>
+</html>

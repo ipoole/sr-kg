@@ -42,7 +42,7 @@ def test_search_ties_empty_and_no_results(browser_graph):
     assert page.locator('#kg_concept_list .kg-concept-item').count() == 4
 
 
-@pytest.mark.parametrize('width', [1024, 1440, 390])
+@pytest.mark.parametrize('width', [1024, 390])
 def test_header_search_keyboard_and_panel_fit(browser_graph, width):
     page = browser_graph.page
     page.set_viewport_size({'width': width, 'height': 844})

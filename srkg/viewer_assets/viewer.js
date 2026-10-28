@@ -2,6 +2,7 @@
       var conceptData = __CONCEPT_DATA__;
       var moduleData = __MODULE_DATA__;
       var publishedLayout = __PUBLISHED_LAYOUT__;
+      var tutorialData = __TUTORIAL_DATA__;
       var edgeKey = __EDGE_KEY__;
       var kgViewerConfig = __VIEWER_CONFIG__;
       var kgNodeLabelConfig = kgViewerConfig.nodeLabels || {};
@@ -247,6 +248,7 @@
         var studyQuestionIndex = buildStudyQuestionIndex();
         var studyProgressState = loadStudyProgress();
         var contentBlockIndex = buildContentBlockIndex();
+        var contentOwnerBlockIdsCache = {};
         var contentReadProgressState = loadContentReadProgress();
         var graphCompletionMarkersEnabled =
           safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
@@ -268,6 +270,11 @@
         var pendingPersonalDataImport = null;
         var googleDriveAuthorizer = null;
         var personalDataSyncEngine = null;
+        var cloudSyncAutoTimer = null;
+        var cloudSyncPeriodicTimer = null;
+        var cloudSyncLastSuccessfulAt = 0;
+        var cloudSyncAutoDelayMs = 15000;
+        var cloudSyncPeriodicDelayMs = 5 * 60 * 1000;
 
         function validLayoutPosition(position) {
           return Boolean(
@@ -446,6 +453,7 @@
           personalLayoutSaveTimer = setTimeout(function() {
             personalLayoutSaveTimer = null;
             writePersonalLayoutNow();
+            schedulePersonalDataAutoSync();
           }, 120);
         }
 
@@ -468,6 +476,7 @@
           if (!personalLayoutStatus().hasOverrides) { return; }
           personalLayoutState.published_revision = String(publishedLayout.revision);
           writePersonalLayoutNow();
+          schedulePersonalDataAutoSync();
           updateLayoutControls();
         }
 
@@ -497,6 +506,7 @@
           safeLocalStorageRemove(globalLayoutStorageKey);
           globalLayout = buildInitialGlobalLayout(false);
           applyGlobalLayoutPositions();
+          schedulePersonalDataAutoSync();
           updateLayoutControls();
         }
 
@@ -776,6 +786,9 @@
             moduleFoldControlEls[String(moduleId)] = button;
           });
           updateModuleFoldControlPositions();
+          if (typeof tutorialPointerState !== "undefined" && tutorialPointerState) {
+            refreshTutorialPointerPosition();
+          }
         }
 
         function updateModuleFoldControlPositions() {
@@ -787,7 +800,7 @@
           var canvasRect = canvasEl.getBoundingClientRect();
           var layerRect = moduleFoldControlLayer.getBoundingClientRect();
           var expandedOutlines = {};
-          expandedModuleOutlineSnapshot().forEach(function(outline) {
+          expandedModuleGeometrySnapshot().forEach(function(outline) {
             expandedOutlines[String(outline.moduleId)] = outline;
           });
           moduleIdsWithMembers().forEach(function(moduleId) {
@@ -1051,18 +1064,14 @@
         function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
           ctx.save();
           ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.beginPath();
-          ctx.moveTo(x - radius * 0.72, y - radius * 0.02);
-          ctx.lineTo(x - radius * 0.18, y + radius * 0.55);
-          ctx.lineTo(x + radius * 0.78, y - radius * 0.62);
+          ctx.fillStyle = colour;
           ctx.strokeStyle = "rgba(255,255,255,0.78)";
-          ctx.lineWidth = Math.max(1.4, radius * 0.62);
-          ctx.stroke();
-          ctx.strokeStyle = colour;
-          ctx.lineWidth = Math.max(0.9, radius * 0.34);
-          ctx.stroke();
+          ctx.lineWidth = Math.max(0.8, radius * 0.09);
+          ctx.font = "bold " + String(radius * 2.5) + "px Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.strokeText("✓", x, y + radius * 0.08);
+          ctx.fillText("✓", x, y + radius * 0.08);
           ctx.restore();
         }
 
@@ -1355,6 +1364,10 @@
         function contentOwnerBlockIds(ownerType, ownerId) {
           ownerType = String(ownerType || "");
           ownerId = String(ownerId || "");
+          var cacheKey = ownerType + "::" + ownerId;
+          if (contentOwnerBlockIdsCache[cacheKey]) {
+            return contentOwnerBlockIdsCache[cacheKey];
+          }
           var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
             var block = contentBlockIndex[blockId];
             return block.ownerType === ownerType && block.ownerId === ownerId;
@@ -1364,6 +1377,7 @@
               blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
             });
           }
+          contentOwnerBlockIdsCache[cacheKey] = blockIds;
           return blockIds;
         }
 
@@ -1383,6 +1397,15 @@
             (complete ? "" : " hidden") + ">✓</span>";
         }
 
+        function renderStudyQuestionCompletionIndicator(ownerType, ownerId) {
+          var complete = graphCompletionState(ownerType, ownerId).questions;
+          return '<span class="study-question-complete-indicator" role="img"' +
+            ' aria-label="All study questions complete" title="All study questions complete"' +
+            ' data-study-owner-type="' + escapeHtml(ownerType) + '"' +
+            ' data-study-owner-id="' + escapeHtml(ownerId) + '"' +
+            (complete ? "" : " hidden") + ">✓</span>";
+        }
+
         function updateContentReadCompletionIndicators() {
           document.querySelectorAll(".content-read-complete-indicator").forEach(
             function(indicator) {
@@ -1394,6 +1417,17 @@
           );
         }
 
+        function updateStudyQuestionCompletionIndicators() {
+          document.querySelectorAll(".study-question-complete-indicator").forEach(
+            function(indicator) {
+              indicator.hidden = !graphCompletionState(
+                indicator.getAttribute("data-study-owner-type"),
+                indicator.getAttribute("data-study-owner-id")
+              ).questions;
+            }
+          );
+        }
+
         function setContentBlockRead(blockId, isRead) {
           blockId = String(blockId || "");
           if (!contentBlockIndex[blockId]) { return false; }
@@ -1401,6 +1435,8 @@
           contentReadProgressState = loadContentReadProgress();
           saveContentReadProgress();
           updateContentReadCompletionIndicators();
+          renderStudyScorecard();
+          schedulePersonalDataAutoSync();
           if (network && network.redraw) { network.redraw(); }
           return true;
         }
@@ -1436,6 +1472,7 @@
           } catch (err) {
             // Progress remains usable in older browsers without CustomEvent.
           }
+          updateStudyQuestionCompletionIndicators();
           if (network && network.redraw) { network.redraw(); }
         }
 
@@ -1452,6 +1489,7 @@
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
           var entry = studyProgressState.questions[questionId];
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange(questionId);
           return copyStudyProgress(entry);
         }
@@ -1464,6 +1502,7 @@
           personalDataStore.resetStudy(questionId);
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange(questionId);
           return true;
         }
@@ -1472,6 +1511,7 @@
           personalDataStore.resetStudy("");
           studyProgressState = loadStudyProgress();
           saveStudyProgress();
+          schedulePersonalDataAutoSync();
           announceStudyProgressChange("");
           return true;
         }
@@ -1556,10 +1596,13 @@
             var top = shape ? Number(shape.top) : position.y - height / 2;
             if (![width, height, left, top].every(Number.isFinite)) { return null; }
             var moduleRadius = Math.max(16, Math.min(42, Math.min(width, height) * 0.025));
+            var cornerRadius = moduleCornerRadius(width, height);
             return {
               kind: "module",
-              x: left + width - moduleRadius * 0.9,
-              y: top + height - moduleRadius * 0.9,
+              // Keep the glyph row just above the rounded-corner arc. This
+              // remains visibly bottom-right without clipping either tick.
+              x: left + width - moduleRadius * 1.5,
+              y: top + height - cornerRadius - moduleRadius * 1.4,
               radius: moduleRadius
             };
           }
@@ -1677,6 +1720,7 @@
         function saveUserNotes() {
           var saved = personalDataStore.replaceNotes(userNotesState.notes);
           safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
+          schedulePersonalDataAutoSync();
           setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
           refreshNodeTooltips();
           renderNotesOverview();
@@ -2145,18 +2189,18 @@
           var correctCount = entries.filter(function(entry) {
             return entry.progress.lastOutcome === "correct";
           }).length;
-          if (entries.length === 0) {
-            summary.textContent = "No questions attempted yet.";
-            list.innerHTML = "";
-            badge.textContent = "";
-            resetAll.hidden = true;
-            return;
-          }
-
-          summary.textContent = correctCount + " correct out of " +
-            entries.length + " attempted";
-          badge.textContent = correctCount + "/" + entries.length;
-          resetAll.hidden = false;
+          var totalQuestions = Object.keys(studyQuestionIndex).length;
+          var readableConceptIds = Object.keys(conceptData || {}).filter(function(conceptId) {
+            return contentOwnerBlockIds("concept", conceptId).length > 0;
+          });
+          var readConcepts = readableConceptIds.filter(function(conceptId) {
+            return contentOwnerReadComplete("concept", conceptId);
+          }).length;
+          summary.textContent = "Questions " + correctCount + "/" + totalQuestions +
+            " correct \u00b7 Concepts " + readConcepts + "/" + readableConceptIds.length +
+            " read";
+          badge.textContent = correctCount + "/" + totalQuestions;
+          resetAll.hidden = entries.length === 0;
           list.innerHTML = entries.map(function(entry) {
             var outcome = entry.progress.lastOutcome;
             var attempts = entry.progress.attemptCount;
@@ -2187,7 +2231,7 @@
         function openScorecardQuestion(questionId) {
           var indexed = studyQuestionIndex[questionId];
           if (!indexed) { return; }
-          setDetailsView("practice");
+          setDetailsView("full");
           navigateToConcept(indexed.conceptId, "Selected");
           window.requestAnimationFrame(function() {
             var selector = '.study-question[data-question-id="' +
@@ -2720,14 +2764,61 @@
           document.getElementById("kg_cloud_sync_disconnect").hidden = !connected;
         }
 
+        function showCloudSyncAttention(show) {
+          document.getElementById("kg_cloud_sync_attention").hidden = !show;
+        }
+
+        function cloudSyncTimeText(timestamp) {
+          return new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        }
+
+        function clearCloudSyncTimers() {
+          if (cloudSyncAutoTimer !== null) {
+            clearTimeout(cloudSyncAutoTimer);
+            cloudSyncAutoTimer = null;
+          }
+          if (cloudSyncPeriodicTimer !== null) {
+            clearInterval(cloudSyncPeriodicTimer);
+            cloudSyncPeriodicTimer = null;
+          }
+        }
+
+        function startCloudSyncPeriodicChecks() {
+          if (cloudSyncPeriodicTimer !== null) { clearInterval(cloudSyncPeriodicTimer); }
+          cloudSyncPeriodicTimer = setInterval(function() {
+            if (document.visibilityState === "visible" && personalDataSyncEngine) {
+              syncPersonalDataNow();
+            }
+          }, cloudSyncPeriodicDelayMs);
+        }
+
+        function schedulePersonalDataAutoSync(delayMs) {
+          if (!personalDataSyncEngine) { return false; }
+          if (cloudSyncAutoTimer !== null) { clearTimeout(cloudSyncAutoTimer); }
+          var delay = Number.isFinite(Number(delayMs))
+            ? Math.max(0, Number(delayMs))
+            : cloudSyncAutoDelayMs;
+          cloudSyncAutoTimer = setTimeout(function() {
+            cloudSyncAutoTimer = null;
+            syncPersonalDataNow();
+          }, delay);
+          return true;
+        }
+
         function initialiseGoogleDriveSync() {
           var clientId = String(kgCloudSyncConfig.googleDriveClientId || "");
           var connect = document.getElementById("kg_cloud_sync_connect");
           if (!clientId) {
             connect.disabled = true;
+            showCloudSyncAttention(false);
             setCloudSyncStatus("Not configured in this copy of PhysicsKG.");
             return;
           }
+          connect.disabled = false;
+          showCloudSyncAttention(false);
           googleDriveAuthorizer = window.kgCreateGoogleDriveAuthorizer({clientId: clientId});
           setCloudSyncStatus("Not connected. Personal data remains in this browser.");
         }
@@ -2735,7 +2826,7 @@
         function connectGoogleDrive() {
           if (!googleDriveAuthorizer) { return; }
           setCloudSyncStatus("Connecting to Google Drive…");
-          googleDriveAuthorizer.connect().then(function() {
+          return googleDriveAuthorizer.connect().then(function() {
             var provider = window.kgCreateGoogleDrivePersonalDataProvider({
               token: googleDriveAuthorizer.token
             });
@@ -2746,18 +2837,24 @@
               onStatus: function(status) { setCloudSyncStatus(status.detail); }
             });
             showCloudSyncConnected(true);
-            setCloudSyncStatus(
-              "Connected. Sync uses “" + provider.fileName + "” in your Google Drive."
-            );
+            showCloudSyncAttention(false);
+            startCloudSyncPeriodicChecks();
+            setCloudSyncStatus("Connected — syncing personal data…");
+            return syncPersonalDataNow();
           }).catch(function(error) {
             setCloudSyncStatus(error && error.message || "Could not connect to Google Drive.");
           });
         }
 
         function syncPersonalDataNow() {
-          if (!personalDataSyncEngine) { return; }
+          if (!personalDataSyncEngine) { return Promise.resolve(false); }
+          if (cloudSyncAutoTimer !== null) {
+            clearTimeout(cloudSyncAutoTimer);
+            cloudSyncAutoTimer = null;
+          }
           writePersonalLayoutNow();
-          personalDataSyncEngine.synchronize().then(function() {
+          return personalDataSyncEngine.synchronize().then(function() {
+            cloudSyncLastSuccessfulAt = Date.now();
             personalLayoutState = loadPersonalLayoutState();
             globalLayout = buildInitialGlobalLayout();
             applyGlobalLayoutPositions();
@@ -2768,24 +2865,38 @@
             refreshNodeTooltips();
             renderNotesOverview();
             renderStudyScorecard();
-            refreshActiveConcept();
             updateContentReadCompletionIndicators();
             if (network && network.redraw) { network.redraw(); }
+            setCloudSyncStatus(
+              "Personal data synced. Last synced at " +
+              cloudSyncTimeText(cloudSyncLastSuccessfulAt) + "."
+            );
+            showCloudSyncAttention(false);
+            return true;
           }).catch(function(error) {
             if (error && error.code === "auth_required") {
+              clearCloudSyncTimers();
               showCloudSyncConnected(false);
+              showCloudSyncAttention(true);
               personalDataSyncEngine = null;
               setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
             }
+            return false;
           });
         }
 
         function disconnectGoogleDrive() {
           if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
+          clearCloudSyncTimers();
           personalDataSyncEngine = null;
+          cloudSyncLastSuccessfulAt = 0;
           showCloudSyncConnected(false);
+          showCloudSyncAttention(false);
           setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
         }
+
+        window.kgInitialiseGoogleDriveSync = initialiseGoogleDriveSync;
+        window.kgSchedulePersonalDataAutoSync = schedulePersonalDataAutoSync;
 
         function personalDataSummaryText(summary) {
           return [
@@ -2997,6 +3108,7 @@
           var panel = document.getElementById("info_panel");
           var contextPanel = document.getElementById("kg_graph_context_panel");
           var emptyGraphState = document.getElementById("kg_empty_graph_state");
+          var tutorialNarration = document.getElementById("kg_tutorial_narration");
           var originalGraphParent = graphContainer.parentElement;
           var shell = document.createElement("main");
           var graphPane = document.createElement("section");
@@ -3029,6 +3141,9 @@
           graphSurface.appendChild(graphContainer);
           if (emptyGraphState) {
             graphSurface.appendChild(emptyGraphState);
+          }
+          if (tutorialNarration) {
+            document.body.appendChild(tutorialNarration);
           }
           if (contextPanel) {
             graphPane.insertBefore(contextPanel, graphSurface);
@@ -3750,72 +3865,10 @@
 
         var readingModeDefinitions = Object.freeze({
           full: {
-            label: "Full",
-            blockKinds: null,
-            questionTypes: null
+            label: "Full"
           },
           folded: {
-            label: "Folded",
-            blockKinds: null,
-            questionTypes: null
-          },
-          core: {
-            label: "Core",
-            blockKinds: {
-              overview: true,
-              definition: true,
-              intuition: true,
-              explanation: true,
-              construction: true,
-              result: true,
-              decomposition: true,
-              derivation: true,
-              example: true,
-              warning: true,
-              convention: true,
-              summary: true
-            },
-            questionTypes: {
-              short_answer: true
-            }
-          },
-          maths: {
-            label: "Maths",
-            blockKinds: {
-              construction: true,
-              derivation: true,
-              derivation_step: true,
-              result: true,
-              decomposition: true,
-              convention: true,
-              worked_example: true
-            },
-            questionTypes: {
-              calculation: true
-            }
-          },
-          context: {
-            label: "Context",
-            blockKinds: {
-              misconception: true,
-              warning: true,
-              historical_note: true,
-              convention: true
-            },
-            questionTypes: {
-              multiple_choice: true
-            }
-          },
-          practice: {
-            label: "Practice",
-            blockKinds: {
-              example: true,
-              worked_example: true,
-              derivation_step: true,
-              result: true,
-              summary: true
-            },
-            questionTypes: null
+            label: "Folded"
           }
         });
         var lazyFoldedSectionBodies = {};
@@ -3823,25 +3876,6 @@
 
         function currentReadingModeDefinition() {
           return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
-        }
-
-        function blockVisibleInReadingMode(block) {
-          var allowed = currentReadingModeDefinition().blockKinds;
-          return !allowed || allowed[block.kind] === true;
-        }
-
-        function questionVisibleInReadingMode(question) {
-          var allowed = currentReadingModeDefinition().questionTypes;
-          if (!allowed) { return true; }
-          return allowed[String((question && question.question_type) || "")] === true;
-        }
-
-        function filteredStudyQuestions(studyQuestions) {
-          return studyQuestions.filter(questionVisibleInReadingMode);
-        }
-
-        function filteredContentBlocks(concept) {
-          return conceptContentBlocks(concept).filter(blockVisibleInReadingMode);
         }
 
         function openTopLevelDetailIds(panel) {
@@ -4057,7 +4091,7 @@
             });
           }
           if (shouldRenderContentBlocks(concept)) {
-            filteredContentBlocks(concept).forEach(function(block) {
+            conceptContentBlocks(concept).forEach(function(block) {
               var title = block.title || contentBlockKindLabel(block.kind);
               items.push({
                 id: contentAnchorId(conceptId, title),
@@ -4130,6 +4164,7 @@
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
           html += renderContentReadCompletionIndicator("concept", nodeId);
+          html += renderStudyQuestionCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
           var owningModule = owningModuleId ? getModule(owningModuleId) : null;
           if (owningModule) {
@@ -4159,13 +4194,6 @@
           return Array.isArray(module && module.content_blocks)
             ? module.content_blocks
             : [];
-        }
-
-        function filteredModuleContentBlocks(module) {
-          // Module orientation remains useful even when a concept filter is active.
-          return moduleContentBlocks(module).filter(function(block) {
-            return block.kind === "overview" || blockVisibleInReadingMode(block);
-          });
         }
 
         function moduleMemberIds(module) {
@@ -4614,7 +4642,7 @@
           return Math.min(width, height) * 0.18;
         }
 
-        function expandedModuleOutlineSnapshot() {
+        function expandedModuleGeometrySnapshot() {
           return moduleIds().filter(function(moduleId) {
             if (selectedModuleIsFolded(moduleId)) { return false; }
             return moduleMemberIds(getModule(moduleId)).some(function(conceptId) {
@@ -4638,6 +4666,12 @@
               lineWidth: 1.75
             };
           });
+        }
+
+        function expandedModuleOutlineSnapshot() {
+          return viewerState.displayScope === DisplayScope.FULL
+            ? expandedModuleGeometrySnapshot()
+            : [];
         }
 
         function drawExpandedModuleOutlines(ctx) {
@@ -5174,7 +5208,7 @@
               title: "Module graphic"
             });
           }
-          filteredModuleContentBlocks(module).forEach(function(block) {
+          moduleContentBlocks(module).forEach(function(block) {
             var title = block.title || contentBlockKindLabel(block.kind);
             items.push({
               id: contentAnchorId(moduleId, title),
@@ -5214,6 +5248,7 @@
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
           html += renderContentReadCompletionIndicator("module", moduleId);
+          html += renderStudyQuestionCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
@@ -5319,7 +5354,7 @@
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
           html += renderModuleGraphic(moduleId, module);
-          filteredModuleContentBlocks(module).forEach(function(block) {
+          moduleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
           html += renderModuleMembers(moduleId, module);
@@ -5429,7 +5464,8 @@
           }
         }
 
-        function scrollInfoPanelTargetBelowStickyToc(target) {
+        function scrollInfoPanelTargetBelowStickyToc(target, options) {
+          options = options || {};
           var panel = document.getElementById("info_panel");
           if (!panel || !target) { return; }
 
@@ -5447,7 +5483,7 @@
           var targetTop = targetRect.top - panelRect.top + panel.scrollTop;
           panel.scrollTo({
             top: Math.max(0, targetTop - stickyOffset),
-            behavior: "smooth"
+            behavior: options.immediate ? "auto" : "smooth"
           });
         }
 
@@ -5540,16 +5576,9 @@
 
         function renderConceptContent(conceptId, concept) {
           if (shouldRenderContentBlocks(concept)) {
-            var blocks = filteredContentBlocks(concept);
-            if (blocks.length === 0) {
-              return '<p class="reading-mode-empty">No content blocks match this reading mode.</p>';
-            }
-            return blocks.map(function(block) {
+            return conceptContentBlocks(concept).map(function(block) {
               return renderContentBlock(conceptId, block);
             }).join("");
-          }
-          if (readingMode !== "full" && readingMode !== "core") {
-            return '<p class="reading-mode-empty">Legacy content is available in Full and Core modes.</p>';
           }
           return conceptSections(concept).map(function(section) {
             var matchingBlocks = conceptContentBlocks(concept).filter(function(block) {
@@ -6337,11 +6366,7 @@
           setResponsiveOptionLabels("kg_details_view_select", {
             hide: ["Hide details", "Hide"],
             full: ["Full details", "Full"],
-            folded: ["Folded", "Folded"],
-            core: ["Core", "Core"],
-            maths: ["Maths", "Maths"],
-            context: ["Context", "Context"],
-            practice: ["Practice", "Practice"]
+            folded: ["Folded", "Folded"]
           }, compact);
           setResponsiveOptionLabels("kg_fit_select", {
             reveal: ["Reveal selection", "Reveal"],
@@ -7931,6 +7956,61 @@
           if (unknownButton) { unknownButton.disabled = true; }
         }
 
+        function sequentialConceptIds() {
+          var preferredDomains = ["sr", "math", "gr"];
+          var seen = {};
+          var result = [];
+          function domainRank(domain) {
+            var index = preferredDomains.indexOf(String(domain || ""));
+            return index === -1 ? preferredDomains.length : index;
+          }
+          moduleIds().slice().sort(function(leftId, rightId) {
+            var left = getModule(leftId) || {};
+            var right = getModule(rightId) || {};
+            var domainDifference = domainRank(left.domain) - domainRank(right.domain);
+            if (domainDifference) { return domainDifference; }
+            var domainNameDifference = String(left.domain || "").localeCompare(
+              String(right.domain || "")
+            );
+            if (domainNameDifference) { return domainNameDifference; }
+            var sequenceDifference = Number(left.sequence || 0) - Number(right.sequence || 0);
+            if (sequenceDifference) { return sequenceDifference; }
+            return String(leftId).localeCompare(String(rightId));
+          }).forEach(function(moduleId) {
+            moduleMemberIds(getModule(moduleId)).forEach(function(conceptId) {
+              conceptId = String(conceptId);
+              if (!seen[conceptId] && getConcept(conceptId)) {
+                seen[conceptId] = true;
+                result.push(conceptId);
+              }
+            });
+          });
+          Object.keys(conceptData || {}).filter(function(conceptId) {
+            return !seen[conceptId];
+          }).sort(function(leftId, rightId) {
+            return conceptDisplayId(leftId).localeCompare(
+              conceptDisplayId(rightId), undefined, {numeric: true}
+            );
+          }).forEach(function(conceptId) { result.push(conceptId); });
+          return result;
+        }
+
+        function renderSequentialConceptNavigation(conceptId) {
+          var order = sequentialConceptIds();
+          var index = order.indexOf(String(conceptId));
+          if (index === -1 || order.length < 2) { return ""; }
+          var wraps = index === order.length - 1;
+          var nextId = order[(index + 1) % order.length];
+          var next = getConcept(nextId) || {};
+          var label = conceptDisplayId(nextId) + " " + searchDisplayText(next.label || nextId);
+          return '<nav class="concept-sequential-navigation" aria-label="Sequential reading">' +
+            '<button type="button" class="concept-next-button" data-next-concept-id="' +
+            escapeHtml(nextId) + '">' + (wraps ? "Start again: " : "Next: ") +
+            escapeHtml(label) + "</button></nav>";
+        }
+
+        window.kgSequentialConceptIds = sequentialConceptIds;
+
         function showConcept(nodeId, options) {
           options = options || {};
           hideConceptPreview(true);
@@ -7950,7 +8030,6 @@
           }
 
           var studyQuestions = Array.isArray(concept.study_questions) ? concept.study_questions : [];
-          studyQuestions = filteredStudyQuestions(studyQuestions);
           var conceptReferences = Array.isArray(concept.references) ? concept.references : [];
           var tocItems = conceptTocItems(
             nodeId,
@@ -7971,8 +8050,7 @@
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
             html += '<details id="' + escapeHtml(contentAnchorId(nodeId, "Study Questions")) +
-              '" class="study-questions" data-note-block="true"' +
-              (readingMode === "practice" ? " open" : "") + ">";
+              '" class="study-questions" data-note-block="true">';
             html += "<summary>" + renderNoteableHeading(
               "concept", nodeId, "Study Questions", "study-questions"
             ) + "</summary>";
@@ -8010,6 +8088,7 @@
             html += "</ul>";
             html += "</details>";
           }
+          html += renderSequentialConceptNavigation(nodeId);
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           replaceTypesetContent(panel, html);
@@ -8154,9 +8233,9 @@
 
         /* Viewport fitting around visible panels. */
         function visiblePanelRects() {
-          return ["kg_controls", "info_panel"].map(function(id) {
+          return ["kg_controls", "info_panel", "kg_tutorial_narration"].map(function(id) {
             var el = document.getElementById(id);
-            if (!el || el.classList.contains("kg-hidden")) { return null; }
+            if (!el || el.hidden || el.classList.contains("kg-hidden")) { return null; }
             return {
               id: id,
               rect: el.getBoundingClientRect()
@@ -8165,6 +8244,10 @@
         }
 
         function panelOcclusionEdge(panel, baseRect, overlap) {
+          if (panel.id === "kg_tutorial_narration") {
+            return (overlap.top + overlap.bottom) / 2 >= (baseRect.top + baseRect.bottom) / 2
+              ? "bottom" : "top";
+          }
           if (panel.id === "info_panel" && overlap.width >= baseRect.width * 0.60) {
             return ((overlap.top + overlap.bottom) / 2) >= ((baseRect.top + baseRect.bottom) / 2)
               ? "bottom"
@@ -8205,7 +8288,15 @@
           };
           var minWidth = Math.min(220, baseAbs.width * 0.65);
           var minHeight = Math.min(180, baseAbs.height * 0.65);
-          visiblePanelRects().forEach(function(panel) {
+          var panels = visiblePanelRects();
+          panels.forEach(function(panel) {
+            if (panel.id !== "kg_tutorial_narration") { return; }
+            var overlap = intersectRects(baseAbs, panel.rect);
+            if (overlap) {
+              minHeight = Math.min(minHeight, Math.max(24, baseAbs.height - overlap.height - margin * 3));
+            }
+          });
+          panels.forEach(function(panel) {
             var overlap = intersectRects(baseAbs, panel.rect);
             if (!overlap) { return; }
             var edge = panelOcclusionEdge(panel, baseAbs, overlap);
@@ -8354,6 +8445,7 @@
           updateGraphContextControls();
           applyWorkspaceSplit();
           scheduleViewportRefresh();
+          positionTutorialNarration();
         }
 
         function schedulePanelContentRefresh() {
@@ -8417,8 +8509,1348 @@
           updateGraphContextControls();
         }
 
+        function commandTargetId(target, prefix, label) {
+          target = String(target || "");
+          if (target.indexOf(prefix) !== 0 || target.length === prefix.length) {
+            throw new Error("Expected " + label + " target beginning with " + prefix);
+          }
+          return target.slice(prefix.length);
+        }
+
+        function commandEnumValue(command, key, allowed) {
+          var value = String(command && command[key] || "");
+          if (allowed.indexOf(value) === -1) {
+            throw new Error(
+              "Unsupported " + key + " for " + String(command && command.command || "command") +
+              ": " + value
+            );
+          }
+          return value;
+        }
+
+        function openTutorialDetailsBlock(blockId) {
+          var panel = document.getElementById("info_panel");
+          var target = panel.querySelector(
+            '[data-content-block-id="' + cssAttributeValueEscape(blockId) + '"]'
+          );
+          if (!target) { throw new Error("Unknown or unavailable details block: " + blockId); }
+          if (!detailsAreVisible()) { setDetailsView("full"); }
+          openTargetForToc(target);
+          if (target.id) { setActiveConceptSection(target.id); }
+          scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
+        }
+
+        function expandContextModules() {
+          resetContextFitInteraction();
+          var contextIds = lastGraphRender ? lastGraphRender.contextNodeIds : [];
+          var changed = false;
+          contextIds.forEach(function(conceptId) {
+            var moduleId = moduleIdForConcept(conceptId);
+            if (!moduleId || !selectedModuleIsFolded(moduleId)) { return; }
+            preferredFoldedModules[String(moduleId)] = false;
+            unfoldModule(moduleId);
+            changed = true;
+          });
+          if (changed) { refreshGraphAfterModuleFoldChange(); }
+        }
+
+        var tutorialDetailsRelationships = {
+          "derived-from": {
+            sectionSelector: ".concept-derived-from",
+            showGraphTarget: "details:derived-from-show-graph",
+            showGraphSelector: ".concept-derived-from-show-graph",
+            label: "Derived from"
+          },
+          "where-used": {
+            sectionSelector: ".concept-backlinks",
+            showGraphTarget: "details:where-used-show-graph",
+            showGraphSelector: ".concept-backlinks-show-graph",
+            label: "Where this is used"
+          }
+        };
+
+        function tutorialDetailsRelationshipForTarget(target) {
+          return Object.keys(tutorialDetailsRelationships).map(function(key) {
+            return tutorialDetailsRelationships[key];
+          }).find(function(relationship) {
+            return relationship.showGraphTarget === target;
+          }) || null;
+        }
+
+        function openTutorialDetailsRelationship(sectionName) {
+          var relationship = tutorialDetailsRelationships[String(sectionName || "")];
+          var panel = document.getElementById("info_panel");
+          var target = relationship
+            ? panel.querySelector(relationship.sectionSelector)
+            : null;
+          if (!target) {
+            throw new Error("Unknown or unavailable Details relationship: " + sectionName);
+          }
+          if (!detailsAreVisible()) { setDetailsView("full"); }
+          target.open = true;
+          if (target.id) { setActiveConceptSection(target.id); }
+          scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
+        }
+
+        function showTutorialToolsSection(sectionName) {
+          var sectionIds = {
+            tutorials: "kg_tutorials_section",
+            modules: "kg_modules_section",
+            layouts: "kg_layouts_section",
+            study: "kg_study_section",
+            "personal-data": "kg_personal_data_section",
+            notes: "kg_notes_section"
+          };
+          var sectionId = sectionIds[sectionName];
+          var section = sectionId ? document.getElementById(sectionId) : null;
+          if (!section) { throw new Error("Unknown Tools section: " + sectionName); }
+          setControlsVisible(true);
+          section.open = true;
+        }
+
+        function showTutorialSearch(query) {
+          query = String(query || "");
+          var input = document.getElementById("kg_search");
+          input.value = query;
+          buildConceptList(query);
+          setSearchOpen(true);
+        }
+
+        function executeViewerCommand(command, options) {
+          options = options || {};
+          command = command || {};
+          var name = String(command.command || "");
+          try {
+            if (name === "select") {
+              var target = String(command.target || "");
+              var type;
+              var id;
+              if (target.indexOf("concept:") === 0) {
+                type = "concept";
+                id = commandTargetId(target, "concept:", "concept");
+                if (!getConcept(id)) { throw new Error("Unknown concept: " + id); }
+              } else if (target.indexOf("module:") === 0) {
+                type = "module";
+                id = commandTargetId(target, "module:", "module");
+                if (!getModule(id)) { throw new Error("Unknown module: " + id); }
+              } else {
+                throw new Error("Select requires a concept: or module: target");
+              }
+              var selectionOptions = Object.assign({}, options.selectionOptions || {});
+              if (options.origin === "tutorial") { selectionOptions.skipHistory = true; }
+              selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
+            } else if (name === "clear-selection") {
+              clearViewerSelection({
+                skipHistory: options.origin === "tutorial" || Boolean(options.skipHistory)
+              });
+            } else if (name === "set-display-scope") {
+              setViewerDisplayScope(commandEnumValue(
+                command, "value", [DisplayScope.FULL, DisplayScope.CONTEXT, DisplayScope.HIDDEN]
+              ));
+            } else if (name === "set-context") {
+              var preset = commandEnumValue(command, "preset", Object.keys(ContextPreset).map(function(key) {
+                return ContextPreset[key];
+              }));
+              var depth = commandEnumValue(command, "depth", Object.keys(ContextDepth).map(function(key) {
+                return ContextDepth[key];
+              }));
+              setViewerContextRule({
+                preset: preset,
+                depth: depth,
+                customTraversals: command.customTraversals || []
+              });
+            } else if (name === "set-details-mode") {
+              var detailsMode = commandEnumValue(
+                command, "value", ["full", "folded", "hidden"]
+              );
+              setDetailsView(detailsMode === "hidden" ? "hide" : detailsMode);
+            } else if (name === "set-module-representation") {
+              var moduleId = commandTargetId(command.target, "module:", "module");
+              if (!getModule(moduleId)) { throw new Error("Unknown module: " + moduleId); }
+              var representation = commandEnumValue(
+                command, "value", ["folded", "expanded"]
+              );
+              setSelectedModuleFoldState(moduleId, representation === "folded");
+            } else if (name === "set-all-module-representations") {
+              var allRepresentation = commandEnumValue(
+                command, "value", ["folded", "expanded"]
+              );
+              if (allRepresentation === "folded") {
+                foldAllModules();
+              } else {
+                unfoldAllModules();
+              }
+            } else if (name === "expand-context-modules") {
+              expandContextModules();
+            } else if (name === "fit") {
+              fitViewerTarget(commandEnumValue(
+                command, "value", ["reveal", "selection", "context", "displayed"]
+              ));
+            } else if (name === "open-details-block") {
+              openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"));
+            } else if (name === "open-study-questions") {
+              var questions = document.querySelector("#info_panel .study-questions");
+              if (!questions) { throw new Error("Study Questions are unavailable"); }
+              if (!detailsAreVisible()) { setDetailsView("full"); }
+              questions.open = true;
+              scrollInfoPanelTargetBelowStickyToc(questions, {immediate: true});
+            } else if (name === "open-details-graphic") {
+              var graphic = document.querySelector("#info_panel .concept-figure");
+              if (!graphic) { throw new Error("Details graphic is unavailable"); }
+              if (!detailsAreVisible()) { setDetailsView("full"); }
+              graphic.open = true;
+              scrollInfoPanelTargetBelowStickyToc(graphic, {immediate: true});
+            } else if (name === "open-details-relationship") {
+              openTutorialDetailsRelationship(commandEnumValue(
+                command, "value", ["derived-from", "where-used"]
+              ));
+            } else if (name === "set-relationship-full-tree") {
+              var sectionName = commandEnumValue(command, "value", ["derived-from", "where-used"]);
+              if (typeof command.full_tree !== "boolean") {
+                throw new Error("set-relationship-full-tree requires full_tree boolean");
+              }
+              if (sectionName === "derived-from") { derivedFromFullTreeEnabled = command.full_tree; }
+              else { backlinksFullTreeEnabled = command.full_tree; }
+              refreshActiveConcept();
+              openTutorialDetailsRelationship(sectionName);
+            } else if (name === "show-relationship-in-graph") {
+              var relationshipPreset = commandEnumValue(
+                command, "preset", Object.keys(ContextPreset).map(function(key) {
+                  return ContextPreset[key];
+                })
+              );
+              if (typeof command.full_tree !== "boolean") {
+                throw new Error("show-relationship-in-graph requires full_tree boolean");
+              }
+              showRelationshipSectionInGraph(relationshipPreset, command.full_tree);
+            } else if (name === "show-graph-concept-hover") {
+              showTutorialConceptHover(
+                commandTargetId(command.target, "concept:", "concept")
+              );
+            } else if (name === "show-graph-edge-hover") {
+              showTutorialEdgeHover(tutorialEdgeReference(command.target, "edge:"));
+            } else if (name === "show-tools-section") {
+              showTutorialToolsSection(String(command.value || ""));
+            } else if (name === "search") {
+              var searchQuery = String(command.query || "").trim();
+              if (!searchQuery || searchQuery.length > 200) {
+                throw new Error("Search query must contain between 1 and 200 characters");
+              }
+              showTutorialSearch(searchQuery);
+            } else if (name === "close-search") {
+              setSearchOpen(false);
+            } else if (name === "wait") {
+              var milliseconds = Number(command.milliseconds);
+              if (!Number.isFinite(milliseconds) || milliseconds < 0 || milliseconds > 5000) {
+                throw new Error("Wait milliseconds must be between 0 and 5000");
+              }
+              return new Promise(function(resolve) {
+                setTimeout(function() {
+                  resolve({ok: true, command: name, origin: options.origin || "user"});
+                }, milliseconds);
+              });
+            } else {
+              throw new Error("Unsupported viewer command: " + name);
+            }
+          } catch (error) {
+            return Promise.reject(error);
+          }
+          return Promise.resolve({ok: true, command: name, origin: options.origin || "user"});
+        }
+
+        window.kgExecuteViewerCommand = executeViewerCommand;
+
+        function cloneSerializable(value) {
+          if (value === undefined) { return null; }
+          return JSON.parse(JSON.stringify(value));
+        }
+
+        function tutorialToolsSnapshot() {
+          var controls = document.getElementById("kg_controls");
+          var sectionIds = [
+            "kg_tutorials_section",
+            "kg_modules_section",
+            "kg_layouts_section",
+            "kg_study_section",
+            "kg_personal_data_section",
+            "kg_notes_section"
+          ];
+          var sections = {};
+          sectionIds.forEach(function(id) {
+            var section = document.getElementById(id);
+            sections[id] = Boolean(section && section.open);
+          });
+          return {
+            visible: Boolean(controls && !controls.classList.contains("kg-hidden")),
+            sections: sections
+          };
+        }
+
+        function tutorialDetailsSnapshot() {
+          var panel = document.getElementById("info_panel");
+          var active = panel.querySelector(".kg-active-section[data-content-block-id]");
+          return {
+            mode: detailsAreVisible() ? readingMode : "hidden",
+            activeTargetId: activeConceptSectionTargetId,
+            blockId: active ? active.getAttribute("data-content-block-id") : null,
+            derivedFromFullTree: derivedFromFullTreeEnabled,
+            whereUsedFullTree: backlinksFullTreeEnabled,
+            scrollTop: panel.scrollTop
+          };
+        }
+
+        function tutorialSearchSnapshot() {
+          return {
+            open: Boolean(document.getElementById("kg_search_section").open),
+            query: document.getElementById("kg_search").value
+          };
+        }
+
+        function captureTutorialPresentation() {
+          var moduleRepresentation = {};
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            moduleRepresentation[String(moduleId)] = selectedModuleIsFolded(moduleId)
+              ? "folded"
+              : "expanded";
+          });
+          return {
+            schemaVersion: 1,
+            selection: viewerSelectionSnapshot(),
+            contextRule: createContextRule(
+              viewerState.contextRule.preset,
+              viewerState.contextRule.depth,
+              viewerState.contextRule.customTraversals
+            ),
+            displayScope: viewerState.displayScope,
+            moduleRepresentation: moduleRepresentation,
+            details: tutorialDetailsSnapshot(),
+            contextFit: {
+              primedKey: contextFitPrimedKey,
+              contraction: contextContractionState ? Object.assign(
+                cloneSerializable(contextContractionState),
+                {finalPositions: network.getPositions(Object.keys(contextContractionState.finalPositions))}
+              ) : null
+            },
+            search: tutorialSearchSnapshot(),
+            workspaceSplitPercent: workspaceSplitPercent,
+            tools: tutorialToolsSnapshot(),
+            camera: cameraSnapshot(),
+            url: window.location.href,
+            historyState: cloneSerializable(window.history.state)
+          };
+        }
+
+        function nextAnimationFrames(count) {
+          count = Math.max(1, Number(count) || 1);
+          return new Promise(function(resolve) {
+            function next() {
+              count -= 1;
+              if (count <= 0) {
+                resolve();
+              } else {
+                requestAnimationFrame(next);
+              }
+            }
+            requestAnimationFrame(next);
+          });
+        }
+
+        function restoreTutorialModuleRepresentations(representations) {
+          resetContextFitInteraction();
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            var folded = representations && representations[moduleId] === "folded";
+            preferredFoldedModules[String(moduleId)] = folded;
+            if (folded) {
+              if (selectedModuleIsFolded(moduleId)) {
+                syncFoldedModulePosition(moduleId);
+              } else {
+                foldModule(moduleId);
+              }
+            } else {
+              unfoldModule(moduleId);
+            }
+          });
+        }
+
+        async function restoreTutorialPresentation(snapshot) {
+          if (!snapshot || Number(snapshot.schemaVersion) !== 1) {
+            throw new Error("Unsupported tutorial presentation snapshot");
+          }
+          resetContextFitInteraction();
+          var details = snapshot.details || {};
+          derivedFromFullTreeEnabled = Boolean(details.derivedFromFullTree);
+          backlinksFullTreeEnabled = Boolean(details.whereUsedFullTree);
+          viewerState.contextRule = createContextRule(
+            snapshot.contextRule && snapshot.contextRule.preset,
+            snapshot.contextRule && snapshot.contextRule.depth,
+            snapshot.contextRule && snapshot.contextRule.customTraversals
+          );
+          viewerState.displayScope = [
+            DisplayScope.FULL,
+            DisplayScope.CONTEXT,
+            DisplayScope.HIDDEN
+          ].indexOf(snapshot.displayScope) === -1
+            ? DisplayScope.FULL
+            : snapshot.displayScope;
+          restoreTutorialModuleRepresentations(snapshot.moduleRepresentation || {});
+
+          var selection = snapshot.selection || {type: "none", id: null};
+          if (selection.type === "concept" && getConcept(selection.id)) {
+            await executeViewerCommand(
+              {command: "select", target: "concept:" + selection.id},
+              {origin: "tutorial"}
+            );
+          } else if (selection.type === "module" && getModule(selection.id)) {
+            await executeViewerCommand(
+              {command: "select", target: "module:" + selection.id},
+              {origin: "tutorial"}
+            );
+          } else {
+            await executeViewerCommand(
+              {command: "clear-selection"},
+              {origin: "tutorial", skipHistory: true}
+            );
+          }
+
+          await executeViewerCommand({
+            command: "set-details-mode",
+            value: ["full", "folded", "hidden"].indexOf(details.mode) === -1
+              ? "full"
+              : details.mode
+          }, {origin: "tutorial"});
+
+          var search = snapshot.search || {};
+          var searchInput = document.getElementById("kg_search");
+          searchInput.value = String(search.query || "");
+          buildConceptList(searchInput.value);
+          setSearchOpen(Boolean(search.open));
+
+          applyWorkspaceSplit(snapshot.workspaceSplitPercent);
+          var tools = snapshot.tools || {};
+          setControlsVisible(Boolean(tools.visible));
+          Object.keys(tools.sections || {}).forEach(function(id) {
+            var section = document.getElementById(id);
+            if (section) { section.open = Boolean(tools.sections[id]); }
+          });
+
+          await nextAnimationFrames(2);
+          if (details.blockId) {
+            var block = document.querySelector(
+              '#info_panel [data-content-block-id="' +
+              cssAttributeValueEscape(details.blockId) + '"]'
+            );
+            if (block) { openTargetForToc(block); }
+          }
+          activeConceptSectionTargetId = details.activeTargetId || null;
+          updateConceptTocActive(activeConceptSectionTargetId);
+          document.getElementById("info_panel").scrollTop = Math.max(
+            0, Number(details.scrollTop) || 0
+          );
+
+          if (snapshot.url) {
+            window.history.replaceState(
+              cloneSerializable(snapshot.historyState),
+              "",
+              snapshot.url
+            );
+          }
+          cameraRestoreGeneration += 1;
+          var savedContextFit = snapshot.contextFit || {};
+          contextFitPrimedKey = savedContextFit.primedKey || null;
+          if (savedContextFit.contraction) {
+            contextContractionState = cloneSerializable(savedContextFit.contraction);
+            Object.keys(contextContractionState.finalPositions).forEach(function(id) {
+              var position = contextContractionState.finalPositions[id];
+              if (nodes.get(id) && validLayoutPosition(position)) {
+                network.moveNode(id, position.x, position.y);
+              }
+            });
+            showContextNotice(
+              "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
+              "context-contracted"
+            );
+          }
+          if (snapshot.camera && snapshot.camera.position) {
+            network.moveTo({
+              position: snapshot.camera.position,
+              scale: snapshot.camera.scale,
+              animation: false
+            });
+            updateNodeLabelPositions();
+          }
+          updateGraphViewControls();
+          updateGraphContextControls();
+          return captureTutorialPresentation();
+        }
+
+        async function replayTutorialCommands(baseline, commands) {
+          await restoreTutorialPresentation(baseline);
+          for (var index = 0; index < (commands || []).length; index += 1) {
+            await executeViewerCommand(commands[index], {origin: "tutorial"});
+          }
+          return captureTutorialPresentation();
+        }
+
+        window.kgCaptureTutorialPresentation = captureTutorialPresentation;
+        window.kgRestoreTutorialPresentation = restoreTutorialPresentation;
+        window.kgReplayTutorialCommands = replayTutorialCommands;
+
+        var tutorialPlayback = {
+          selectedId: null,
+          activeRoute: null,
+          baseline: null,
+          exploreSnapshot: null,
+          exploring: false,
+          stepIndex: -1,
+          transitioning: false
+        };
+        var tutorialPointerState = {
+          target: null,
+          label: "",
+          rect: null,
+          visible: false
+        };
+
+        function tutorialElementTarget(element, label) {
+          if (!element) { return null; }
+          var rect = element.getBoundingClientRect();
+          if (!rect.width || !rect.height) { return null; }
+          return {
+            rect: {x: rect.left, y: rect.top, width: rect.width, height: rect.height},
+            label: label
+          };
+        }
+
+        function tutorialGraphBoundsTarget(bounds, label) {
+          if (!bounds || !network || !network.canvas || !network.canvas.frame) { return null; }
+          var canvasRect = network.canvas.frame.canvas.getBoundingClientRect();
+          var topLeft = network.canvasToDOM({x: bounds.left, y: bounds.top});
+          var bottomRight = network.canvasToDOM({x: bounds.right, y: bounds.bottom});
+          return {
+            rect: {
+              x: canvasRect.left + Math.min(topLeft.x, bottomRight.x),
+              y: canvasRect.top + Math.min(topLeft.y, bottomRight.y),
+              width: Math.max(1, Math.abs(bottomRight.x - topLeft.x)),
+              height: Math.max(1, Math.abs(bottomRight.y - topLeft.y))
+            },
+            label: label
+          };
+        }
+
+        function tutorialGraphNodeTarget(nodeId, label) {
+          nodeId = String(nodeId);
+          var node = nodes.get(nodeId);
+          var rendered = network && network.body && network.body.nodes[nodeId];
+          var shape = rendered && rendered.shape;
+          if (!node || node.hidden || !shape) { return null; }
+          return tutorialGraphBoundsTarget({
+            left: shape.left,
+            right: shape.left + shape.width,
+            top: shape.top,
+            bottom: shape.top + shape.height
+          }, label);
+        }
+
+        function tutorialEdgeReference(target, prefix) {
+          target = String(target || "");
+          if (target.indexOf(prefix) !== 0) {
+            throw new Error("Tutorial edge target must begin with " + prefix);
+          }
+          var parts = target.slice(prefix.length).split("|");
+          if (parts.length !== 3 || parts.some(function(part) { return !part; })) {
+            throw new Error("Tutorial edge target must identify source|RELATION|target");
+          }
+          return {from: parts[0], relation: parts[1], to: parts[2]};
+        }
+
+        function tutorialVisibleEdge(reference) {
+          return edges.get().find(function(edge) {
+            return String(edge.from) === reference.from &&
+              edgeRelation(edge) === reference.relation &&
+              String(edge.to) === reference.to &&
+              edgeHoverableInCurrentView(edge);
+          }) || null;
+        }
+
+        function tutorialGraphEdgeTarget(reference) {
+          var edge = tutorialVisibleEdge(reference);
+          if (!edge) { return null; }
+          var point = null;
+          var rendered = network && network.body && network.body.edges[edge.id];
+          try {
+            if (rendered && rendered.edgeType && rendered.edgeType.getPoint) {
+              point = rendered.edgeType.getPoint(0.5);
+            }
+          } catch (error) { point = null; }
+          if (!point) {
+            var from = graphPositionForNode(edge.from);
+            var to = graphPositionForNode(edge.to);
+            if (from && to) {
+              point = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
+            }
+          }
+          if (!point) { return null; }
+          var label = graphObjectDisplayText(edge.from) + " " +
+            relationshipPhrase(edge) + " " + graphObjectDisplayText(edge.to);
+          var target = tutorialGraphBoundsTarget({
+            left: point.x - 12,
+            right: point.x + 12,
+            top: point.y - 12,
+            bottom: point.y + 12
+          }, label);
+          if (target) { target.edgeId = edge.id; }
+          return target;
+        }
+
+        function tutorialConceptTarget(conceptId) {
+          conceptId = String(conceptId);
+          var concept = getConcept(conceptId);
+          if (!concept) { return null; }
+          var label = conceptDisplayId(conceptId) + " " + searchDisplayText(concept.label || "");
+          var node = nodes.get(conceptId);
+          var proxy = foldedModuleConceptProxyForConcept(conceptId);
+          if (proxy) {
+            return tutorialGraphBoundsTarget({
+              left: proxy.x - proxy.radius,
+              right: proxy.x + proxy.radius,
+              top: proxy.y - proxy.radius,
+              bottom: proxy.y + proxy.radius
+            }, label);
+          }
+          var position = graphPositionForNode(conceptId);
+          var direct = null;
+          if (node && !node.hidden && position) {
+            var radius = (Number(node.visualSize) || Number(node.size) || 18) *
+              (conceptId === String(activeNodeId || "") ? activeNodeRadiusScale : 1);
+            direct = tutorialGraphBoundsTarget({
+              left: position.x - radius,
+              right: position.x + radius,
+              top: position.y - radius,
+              bottom: position.y + radius
+            }, label);
+          }
+          if (direct) { return direct; }
+          var moduleId = moduleIdForConcept(conceptId);
+          if (!moduleId) { return null; }
+          return tutorialGraphNodeTarget(
+            moduleGraphNodeId(moduleId),
+            ((getModule(moduleId) || {}).title || moduleId) + " module containing " + label
+          );
+        }
+
+        function tutorialModuleTarget(moduleId) {
+          moduleId = String(moduleId);
+          var module = getModule(moduleId);
+          if (!module) { return null; }
+          var label = (module.title || moduleId) + " module";
+          var folded = tutorialGraphNodeTarget(moduleGraphNodeId(moduleId), label);
+          if (folded) { return folded; }
+          var outline = expandedModuleGeometrySnapshot().find(function(item) {
+            return String(item.moduleId) === moduleId;
+          });
+          return outline ? tutorialGraphBoundsTarget(outline, label) : null;
+        }
+
+        function tutorialTooltipPointer(resolved) {
+          if (!resolved || !graphContainer) { return null; }
+          var containerRect = graphContainer.getBoundingClientRect();
+          return {
+            DOM: {
+              x: resolved.rect.x + resolved.rect.width / 2 - containerRect.left,
+              y: resolved.rect.y + resolved.rect.height / 2 - containerRect.top
+            }
+          };
+        }
+
+        function showTutorialConceptHover(conceptId) {
+          conceptId = String(conceptId);
+          var resolved = tutorialConceptTarget(conceptId);
+          var pointer = tutorialTooltipPointer(resolved);
+          if (!getConcept(conceptId) || !resolved || !pointer) {
+            throw new Error("Tutorial concept hover is unavailable: " + conceptId);
+          }
+          showNodeTooltip(conceptId, pointer);
+        }
+
+        function showTutorialEdgeHover(reference) {
+          var resolved = tutorialGraphEdgeTarget(reference);
+          var pointer = tutorialTooltipPointer(resolved);
+          if (!resolved || !pointer || resolved.edgeId === undefined) {
+            throw new Error("Tutorial edge hover is unavailable");
+          }
+          highlightHoveredEdge(resolved.edgeId);
+          showEdgeTooltip(resolved.edgeId, pointer);
+        }
+
+        function resolveTutorialPointerTarget(target) {
+          target = String(target || "narration");
+          var controlTargets = {
+            context: ["kg_context_preset_select", "Context rule"],
+            depth: ["kg_context_depth_select", "Context depth"],
+            fit: ["kg_fit_apply", "Fit"],
+            "display-scope": ["kg_display_scope_select", "Graph display"],
+            "details-mode": ["kg_details_view_select", "Details view"],
+            search: ["kg_search_toggle", "Search"],
+            "search-input": ["kg_search", "Search query"],
+            tools: ["kg_controls_toggle", "Tools"],
+            "clear-selection": ["kg_clear_selection", "Clear selection"],
+            "expand-context": ["kg_expand_context_modules", "Expand context modules"]
+          };
+          if (target === "narration") {
+            return tutorialElementTarget(
+              document.getElementById("kg_tutorial_narration"), "Tutorial narration"
+            );
+          }
+          if (target.indexOf("control:module-fold:") === 0) {
+            var foldModuleId = target.slice("control:module-fold:".length);
+            var foldControl = moduleFoldControlEls[foldModuleId];
+            return tutorialElementTarget(
+              foldControl,
+              foldControl ? foldControl.getAttribute("aria-label") : "Module representation"
+            );
+          }
+          if (target.indexOf("control:") === 0) {
+            var control = controlTargets[target.slice("control:".length)];
+            return control
+              ? tutorialElementTarget(document.getElementById(control[0]), control[1])
+              : null;
+          }
+          if (target.indexOf("graph:concept:") === 0) {
+            return tutorialConceptTarget(target.slice("graph:concept:".length));
+          }
+          if (target.indexOf("graph:module:") === 0) {
+            return tutorialModuleTarget(target.slice("graph:module:".length));
+          }
+          if (target.indexOf("graph:edge:") === 0) {
+            return tutorialGraphEdgeTarget(tutorialEdgeReference(target, "graph:edge:"));
+          }
+          if (target.indexOf("search:concept:") === 0) {
+            var searchConceptId = target.slice("search:concept:".length);
+            return tutorialElementTarget(
+              document.querySelector(
+                '#kg_concept_list [data-concept-id="' +
+                cssAttributeValueEscape(searchConceptId) + '"]'
+              ),
+              "Search result " + conceptDisplayId(searchConceptId) + " " +
+                searchDisplayText((getConcept(searchConceptId) || {}).label || "")
+            );
+          }
+          if (target.indexOf("search:module:") === 0) {
+            var searchModuleId = target.slice("search:module:".length);
+            return tutorialElementTarget(
+              document.querySelector(
+                '#kg_concept_list [data-module-id="' +
+                cssAttributeValueEscape(searchModuleId) + '"]'
+              ),
+              "Search result " + ((getModule(searchModuleId) || {}).title || searchModuleId)
+            );
+          }
+          if (target.indexOf("details:block:") === 0) {
+            var blockId = target.slice("details:block:".length);
+            var block = document.querySelector(
+              '#info_panel [data-content-block-id="' + cssAttributeValueEscape(blockId) + '"]'
+            );
+            return tutorialElementTarget(block, "Details block " + blockId);
+          }
+          if (target === "details:heading") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .concept-title"), "Details heading"
+            );
+          }
+          if (target === "details:contents") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .concept-toc"), "Details contents"
+            );
+          }
+          if (target === "details:study-questions") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .study-questions"), "Study Questions"
+            );
+          }
+          if (target === "details:graphic") {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel .concept-figure"), "Details graphic"
+            );
+          }
+          if (target === "details:derived-from-full-tree" || target === "details:where-used-full-tree") {
+            var fullTreeSelector = target === "details:derived-from-full-tree"
+              ? ".concept-derived-from-full-tree" : ".concept-backlinks-full-tree";
+            return tutorialElementTarget(
+              document.querySelector("#info_panel " + fullTreeSelector), "Full tree"
+            );
+          }
+          var relationship = tutorialDetailsRelationshipForTarget(target);
+          if (relationship) {
+            return tutorialElementTarget(
+              document.querySelector("#info_panel " + relationship.showGraphSelector),
+              relationship.label + ": Show in graph"
+            );
+          }
+          if (target.indexOf("tools:section:") === 0) {
+            var toolsSectionName = target.slice("tools:section:".length);
+            var sectionIds = {
+              tutorials: "kg_tutorials_section",
+              modules: "kg_modules_section",
+              layouts: "kg_layouts_section",
+              study: "kg_study_section",
+              "personal-data": "kg_personal_data_section",
+              notes: "kg_notes_section"
+            };
+            return tutorialElementTarget(
+              document.getElementById(sectionIds[toolsSectionName]),
+              toolsSectionName + " Tools section"
+            );
+          }
+          return null;
+        }
+
+        function tutorialMotionDuration() {
+          return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? 0
+            : 360;
+        }
+
+        function positionTutorialPointer(resolved, target) {
+          var pointer = document.getElementById("kg_tutorial_pointer");
+          var halo = document.getElementById("kg_tutorial_halo");
+          if (!pointer || !halo || !resolved) { return; }
+          var rect = resolved.rect;
+          var padding = 6;
+          halo.hidden = false;
+          halo.style.left = (rect.x - padding) + "px";
+          halo.style.top = (rect.y - padding) + "px";
+          halo.style.width = (rect.width + padding * 2) + "px";
+          halo.style.height = (rect.height + padding * 2) + "px";
+          pointer.hidden = false;
+          pointer.style.transform = "translate3d(" +
+            (rect.x + rect.width / 2 - 3) + "px," +
+            (rect.y + rect.height / 2 - 2) + "px,0)";
+          tutorialPointerState = {
+            target: String(target || "narration"),
+            label: resolved.label,
+            rect: Object.assign({}, rect),
+            visible: true
+          };
+          document.getElementById("kg_tutorial_target_description").textContent =
+            "Target: " + resolved.label;
+        }
+
+        function refreshTutorialPointerPosition() {
+          if (!tutorialPointerState.visible || !tutorialPointerState.target) { return; }
+          var resolved = resolveTutorialPointerTarget(tutorialPointerState.target);
+          if (resolved) { positionTutorialPointer(resolved, tutorialPointerState.target); }
+        }
+
+        async function moveTutorialPointer(target) {
+          var resolved = resolveTutorialPointerTarget(target);
+          if (!resolved) { throw new Error("Tutorial target is not available: " + target); }
+          clearTutorialBlockSpotlight();
+          if (String(target).indexOf("details:block:") === 0) {
+            var spotlightBlockId = String(target).slice("details:block:".length);
+            var spotlightBlock = document.querySelector(
+              '#info_panel [data-content-block-id="' +
+              cssAttributeValueEscape(spotlightBlockId) + '"]'
+            );
+            if (spotlightBlock) {
+              spotlightBlock.classList.add("kg-tutorial-block-spotlight");
+            }
+          }
+          var pointer = document.getElementById("kg_tutorial_pointer");
+          var duration = tutorialMotionDuration();
+          if (pointer && !tutorialPointerState.visible && duration) {
+            var narration = document.getElementById("kg_tutorial_narration");
+            var start = narration ? narration.getBoundingClientRect() : null;
+            if (start && start.width && start.height) {
+              pointer.hidden = false;
+              pointer.style.transform = "translate3d(" +
+                (start.left + start.width / 2 - 3) + "px," +
+                (start.top + 8) + "px,0)";
+              void pointer.offsetWidth;
+            }
+          }
+          positionTutorialPointer(resolved, target);
+          if (duration) {
+            await new Promise(function(resolve) { setTimeout(resolve, duration); });
+          }
+        }
+
+        async function pulseTutorialPointer() {
+          var pointer = document.getElementById("kg_tutorial_pointer");
+          if (!pointer || pointer.hidden || tutorialMotionDuration() === 0) { return; }
+          pointer.classList.remove("kg-clicking");
+          void pointer.offsetWidth;
+          pointer.classList.add("kg-clicking");
+          await new Promise(function(resolve) { setTimeout(resolve, 240); });
+          pointer.classList.remove("kg-clicking");
+        }
+
+        function hideTutorialPointer(options) {
+          options = options || {};
+          var previousState = tutorialPointerState;
+          var pointer = document.getElementById("kg_tutorial_pointer");
+          var halo = document.getElementById("kg_tutorial_halo");
+          if (pointer) {
+            pointer.hidden = true;
+            pointer.classList.remove("kg-clicking");
+          }
+          if (halo) { halo.hidden = true; }
+          clearTutorialBlockSpotlight();
+          tutorialPointerState = options.preserveTarget
+            ? {
+                target: previousState.target,
+                label: previousState.label,
+                rect: previousState.rect,
+                visible: false
+              }
+            : {target: null, label: "", rect: null, visible: false};
+          document.getElementById("kg_tutorial_target_description").textContent = "";
+        }
+
+        function clearTutorialEmphasis(options) {
+          hideTutorialPointer(options);
+          hideNodeTooltip();
+          restoreHoveredEdge();
+        }
+
+        function tutorialActionIsHover(action) {
+          var command = String(action && action.command || "");
+          return command === "show-graph-concept-hover" ||
+            command === "show-graph-edge-hover";
+        }
+
+        function tutorialPointerIsTransientAction(target) {
+          target = String(target || "");
+          return target.indexOf("control:") === 0 ||
+            target === "details:derived-from-show-graph" ||
+            target === "details:where-used-show-graph";
+        }
+
+        function clearTutorialBlockSpotlight() {
+          document.querySelectorAll(".kg-tutorial-block-spotlight").forEach(function(block) {
+            block.classList.remove("kg-tutorial-block-spotlight");
+          });
+        }
+
+        function setGuidedTutorialActive(active) {
+          document.body.classList.toggle("kg-tutorial-active", Boolean(active));
+          [
+            "kg_app_header",
+            "kg_graph_context_panel",
+            "kg_controls",
+            "kg_search_section",
+            "info_panel",
+            "kg_pane_splitter"
+          ].forEach(function(id) {
+            var element = document.getElementById(id);
+            if (!element) { return; }
+            element.inert = Boolean(active);
+            if (active) { element.setAttribute("aria-disabled", "true"); }
+            else { element.removeAttribute("aria-disabled"); }
+          });
+        }
+
+        function blockInteractionDuringGuidedTutorial(event) {
+          if (!tutorialPlayback.activeRoute || tutorialPlayback.exploring) { return; }
+          var target = event.target && event.target.closest
+            ? event.target.closest(".kg-tutorial-narration")
+            : null;
+          if (target) { return; }
+          if (event.type === "keydown" && (event.metaKey || event.ctrlKey || event.altKey)) {
+            return;
+          }
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+
+        [
+          "click", "dblclick", "pointerdown", "pointerup", "touchstart",
+          "touchmove", "wheel", "keydown", "input", "change", "submit"
+        ].forEach(function(eventName) {
+          document.addEventListener(
+            eventName,
+            blockInteractionDuringGuidedTutorial,
+            {capture: true, passive: false}
+          );
+        });
+
+        function tutorialPointerSnapshot() {
+          return {
+            target: tutorialPointerState.target,
+            label: tutorialPointerState.label,
+            visible: tutorialPointerState.visible,
+            x: tutorialPointerState.rect
+              ? tutorialPointerState.rect.x + tutorialPointerState.rect.width / 2
+              : null,
+            y: tutorialPointerState.rect
+              ? tutorialPointerState.rect.y + tutorialPointerState.rect.height / 2
+              : null,
+            halo: tutorialPointerState.rect ? Object.assign({}, tutorialPointerState.rect) : null
+          };
+        }
+
+        window.kgTutorialPointerSnapshot = tutorialPointerSnapshot;
+
+        function tutorialRouteById(tutorialId) {
+          return (tutorialData || []).find(function(route) {
+            return String(route.tutorial_id) === String(tutorialId);
+          }) || null;
+        }
+
+        function tutorialCommandsThrough(route, stepIndex) {
+          var commands = [];
+          (route.steps || []).slice(0, stepIndex + 1).forEach(function(step) {
+            (step.prepare || []).forEach(function(command) { commands.push(command); });
+            tutorialStepActions(step).forEach(function(item) { commands.push(item.action); });
+          });
+          return commands;
+        }
+
+        function tutorialStepActions(step) {
+          return step.actions || [{action: step.action, pointer: step.pointer, pause_ms: 0}];
+        }
+
+        function tutorialFinalAction(step) {
+          var actions = tutorialStepActions(step);
+          return actions[actions.length - 1];
+        }
+
+        function renderTutorialList() {
+          var list = document.getElementById("kg_tutorial_list");
+          if (!list) { return; }
+          if (!tutorialData || !tutorialData.length) {
+            list.innerHTML = '<span class="kg-muted-label">No tutorials in this build.</span>';
+            return;
+          }
+          var categories = [
+            {id: "interface", title: "Using PhysicsKG"},
+            {id: "physics", title: "Physics routes"}
+          ];
+          list.innerHTML = categories.map(function(category) {
+            var routes = tutorialData.filter(function(route) {
+              return route.category === category.id;
+            });
+            if (!routes.length) { return ""; }
+            return '<div class="kg-tutorial-list-group">' + escapeHtml(category.title) + '</div>' +
+              routes.map(function(route) {
+                return '<button type="button" class="kg-tutorial-select" data-tutorial-id="' +
+                  escapeHtml(route.tutorial_id) + '" aria-current="false">' +
+                  '<span class="kg-tutorial-list-title">' + escapeHtml(route.title) + '</span>' +
+                  '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' +
+                  '</button>';
+              }).join("");
+          }).join("");
+        }
+
+        function selectTutorialIntroduction(tutorialId) {
+          var route = tutorialRouteById(tutorialId);
+          if (!route) { return; }
+          tutorialPlayback.selectedId = String(route.tutorial_id);
+          document.querySelectorAll(".kg-tutorial-select").forEach(function(button) {
+            button.setAttribute(
+              "aria-current",
+              String(button.getAttribute("data-tutorial-id")) === tutorialPlayback.selectedId
+                ? "true"
+                : "false"
+            );
+          });
+          document.getElementById("kg_tutorial_intro_title").textContent = route.title;
+          var launchUrl = new URL(window.location.href);
+          launchUrl.hash = "";
+          launchUrl.searchParams.set("tutorial", route.tutorial_id);
+          document.getElementById("kg_tutorial_launch_link").href = launchUrl.href;
+          document.getElementById("kg_tutorial_intro_summary").textContent = route.summary;
+          document.getElementById("kg_tutorial_intro_length").textContent =
+            String((route.steps || []).length) +
+            ((route.steps || []).length === 1 ? " step" : " steps");
+          document.getElementById("kg_tutorial_intro").hidden = false;
+        }
+
+        function setTutorialTransitioning(value) {
+          tutorialPlayback.transitioning = Boolean(value);
+          renderTutorialNarration();
+        }
+
+        function renderTutorialNarration(errorMessage) {
+          var card = document.getElementById("kg_tutorial_narration");
+          if (!card) { return; }
+          var route = tutorialPlayback.activeRoute;
+          var active = Boolean(route && tutorialPlayback.stepIndex >= 0);
+          card.hidden = !active;
+          if (!active) { return; }
+          var steps = route.steps || [];
+          var step = steps[tutorialPlayback.stepIndex];
+          document.getElementById("kg_tutorial_first_step_guidance").hidden =
+            tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
+          document.getElementById("kg_tutorial_title").textContent = route.title;
+          document.getElementById("kg_tutorial_progress").textContent =
+            String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
+          document.getElementById("kg_tutorial_step_title").textContent = step.title;
+          var commentary = document.getElementById("kg_tutorial_commentary");
+          replaceTypesetContent(commentary, renderConceptText(step.commentary || ""));
+          var error = document.getElementById("kg_tutorial_error");
+          error.hidden = !errorMessage;
+          error.textContent = errorMessage || "";
+          document.getElementById("kg_tutorial_back").disabled =
+            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
+            tutorialPlayback.stepIndex <= 0;
+          document.getElementById("kg_tutorial_next").disabled =
+            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
+            tutorialPlayback.stepIndex >= steps.length - 1;
+          document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
+          var exploreButton = document.getElementById("kg_tutorial_explore");
+          exploreButton.disabled = tutorialPlayback.transitioning;
+          exploreButton.textContent = tutorialPlayback.exploring
+            ? "Resume tutorial"
+            : "Explore from here";
+          document.getElementById("kg_tutorial_explore_status").hidden =
+            !tutorialPlayback.exploring;
+          positionTutorialNarration();
+          if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([commentary]).catch(function(err) {
+              console.warn("Tutorial MathJax typesetting failed:", err);
+            }).then(function() {
+              positionTutorialNarration();
+            });
+          }
+        }
+
+        function positionTutorialNarration() {
+          var card = document.getElementById("kg_tutorial_narration");
+          if (!card) { return; }
+          var docked = !card.hidden && window.matchMedia("(max-width: 850px)").matches;
+          document.body.classList.toggle("kg-tutorial-phone-docked", docked);
+          if (!docked) {
+            document.documentElement.style.removeProperty("--kg-tutorial-dock-height");
+          }
+          if (card.hidden) { return; }
+          if (docked) {
+            var viewport = visualViewportRect();
+            var bottomInset = Math.max(0, window.innerHeight - viewport.bottom) + 7;
+            card.style.top = "auto";
+            card.style.bottom = bottomInset + "px";
+            card.style.left = (viewport.left + viewport.width / 2) + "px";
+            document.documentElement.style.setProperty(
+              "--kg-tutorial-dock-height", (card.offsetHeight + bottomInset + 7) + "px"
+            );
+            return;
+          }
+          var anchor = document.getElementById("kg_graph_pane");
+          var rect = anchor ? anchor.getBoundingClientRect() : null;
+          if (!rect || !rect.width || !rect.height) {
+            anchor = document.getElementById("kg_workspace");
+            rect = anchor ? anchor.getBoundingClientRect() : null;
+          }
+          if (!rect || !rect.width || !rect.height) { return; }
+          var inset = window.matchMedia("(max-width: 850px)").matches ? 7 : 12;
+          card.style.bottom = "auto";
+          card.style.left = (rect.left + rect.width / 2) + "px";
+          card.style.top = Math.max(
+            rect.top + inset,
+            rect.bottom - card.offsetHeight - inset
+          ) + "px";
+          var tooltip = document.getElementById("kg_node_tooltip");
+          if (
+            tooltip && tooltip.style.display !== "none" &&
+            intersectRects(card.getBoundingClientRect(), tooltip.getBoundingClientRect())
+          ) {
+            card.style.top = (rect.top + inset) + "px";
+          }
+        }
+
+        async function runTutorialStep(stepIndex, replay) {
+          if (
+            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
+            !tutorialPlayback.activeRoute
+          ) { return; }
+          var route = tutorialPlayback.activeRoute;
+          if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
+          setTutorialTransitioning(true);
+          clearTutorialEmphasis();
+          try {
+            if (replay) {
+              await replayTutorialCommands(
+                tutorialPlayback.baseline,
+                tutorialCommandsThrough(route, stepIndex)
+              );
+              setControlsVisible(false);
+              tutorialPlayback.stepIndex = stepIndex;
+              var replayStep = route.steps[stepIndex];
+              var replayAction = tutorialFinalAction(replayStep);
+              await moveTutorialPointer(
+                replayAction.pointer ? replayAction.pointer.target : "narration"
+              );
+            } else {
+              var step = route.steps[stepIndex];
+              tutorialPlayback.stepIndex = stepIndex;
+              renderTutorialNarration();
+              var prepare = step.prepare || [];
+              for (var index = 0; index < prepare.length; index += 1) {
+                await executeViewerCommand(prepare[index], {origin: "tutorial"});
+              }
+              var actions = tutorialStepActions(step);
+              for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
+                var item = actions[actionIndex];
+                clearTutorialEmphasis();
+                var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
+                await moveTutorialPointer(stepPointerTarget);
+                await pulseTutorialPointer();
+                await executeViewerCommand(item.action, {origin: "tutorial"});
+                await nextAnimationFrames(2);
+                if (tutorialPointerIsTransientAction(stepPointerTarget)) {
+                  hideTutorialPointer({preserveTarget: true});
+                } else {
+                  refreshTutorialPointerPosition();
+                }
+                if (actionIndex < actions.length - 1 && item.pause_ms) {
+                  await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
+                }
+              }
+            }
+            renderTutorialNarration();
+          } catch (error) {
+            renderTutorialNarration("Tutorial stopped: " + String(error.message || error));
+          } finally {
+            setTutorialTransitioning(false);
+          }
+        }
+
+        async function startSelectedTutorial() {
+          if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
+          var route = tutorialRouteById(tutorialPlayback.selectedId);
+          if (!route || !route.steps || !route.steps.length) { return; }
+          tutorialPlayback.baseline = captureTutorialPresentation();
+          tutorialPlayback.activeRoute = route;
+          tutorialPlayback.exploreSnapshot = null;
+          tutorialPlayback.exploring = false;
+          tutorialPlayback.stepIndex = -1;
+          setControlsVisible(false);
+          setGuidedTutorialActive(true);
+          await runTutorialStep(0, false);
+        }
+
+        function defaultGuidedTutorial() {
+          return tutorialRouteById("using-physicskg") ||
+            (tutorialData || []).find(function(route) { return route.category === "interface"; }) ||
+            (tutorialData || [])[0] || null;
+        }
+
+        async function startTutorialById(tutorialId) {
+          if (tutorialPlayback.activeRoute || tutorialPlayback.transitioning) { return false; }
+          var route = tutorialRouteById(tutorialId);
+          if (!route) { return false; }
+          selectTutorialIntroduction(route.tutorial_id);
+          var dialog = document.getElementById("kg_splash_dialog");
+          if (dialog && dialog.open) { dismissSplash(); }
+          await startSelectedTutorial();
+          return Boolean(tutorialPlayback.activeRoute);
+        }
+
+        function requestedTutorialId() {
+          try {
+            return new URL(window.location.href).searchParams.get("tutorial");
+          } catch (error) {
+            return null;
+          }
+        }
+
+        async function exitTutorial() {
+          if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
+          setTutorialTransitioning(true);
+          var baseline = tutorialPlayback.baseline;
+          try {
+            clearTutorialEmphasis();
+            await restoreTutorialPresentation(baseline);
+            tutorialPlayback.activeRoute = null;
+            tutorialPlayback.baseline = null;
+            tutorialPlayback.exploreSnapshot = null;
+            tutorialPlayback.exploring = false;
+            tutorialPlayback.stepIndex = -1;
+            document.getElementById("kg_tutorial_narration").hidden = true;
+            positionTutorialNarration();
+          } finally {
+            setGuidedTutorialActive(false);
+            tutorialPlayback.transitioning = false;
+          }
+        }
+
+        async function toggleTutorialExploration() {
+          if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
+          if (!tutorialPlayback.exploring) {
+            tutorialPlayback.exploreSnapshot = captureTutorialPresentation();
+            tutorialPlayback.exploring = true;
+            clearTutorialEmphasis();
+            setGuidedTutorialActive(false);
+            renderTutorialNarration();
+            return;
+          }
+          setTutorialTransitioning(true);
+          try {
+            await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
+            tutorialPlayback.exploreSnapshot = null;
+            tutorialPlayback.exploring = false;
+            setGuidedTutorialActive(true);
+            var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
+            var finalAction = tutorialFinalAction(step);
+            await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
+            if (tutorialActionIsHover(finalAction.action)) {
+              await executeViewerCommand(finalAction.action, {origin: "tutorial"});
+            }
+            renderTutorialNarration();
+          } catch (error) {
+            renderTutorialNarration(
+              "Could not resume the tutorial: " + String(error.message || error)
+            );
+          } finally {
+            setTutorialTransitioning(false);
+          }
+        }
+
+        function tutorialPlaybackSnapshot() {
+          return {
+            active: Boolean(tutorialPlayback.activeRoute),
+            tutorialId: tutorialPlayback.activeRoute
+              ? tutorialPlayback.activeRoute.tutorial_id
+              : null,
+            selectedId: tutorialPlayback.selectedId,
+            stepIndex: tutorialPlayback.stepIndex,
+            exploring: tutorialPlayback.exploring,
+            transitioning: tutorialPlayback.transitioning
+          };
+        }
+
+        function initialiseTutorialPlayback() {
+          renderTutorialList();
+          var defaultRoute = defaultGuidedTutorial();
+          var splashStart = document.getElementById("kg_splash_start_tutorial");
+          splashStart.hidden = !defaultRoute;
+          document.getElementById("kg_tutorial_list").addEventListener("click", function(event) {
+            var button = event.target.closest(".kg-tutorial-select");
+            if (button) { selectTutorialIntroduction(button.getAttribute("data-tutorial-id")); }
+          });
+          document.getElementById("kg_tutorial_start").addEventListener("click", startSelectedTutorial);
+          document.getElementById("kg_tutorial_back").addEventListener("click", function() {
+            runTutorialStep(tutorialPlayback.stepIndex - 1, true);
+          });
+          document.getElementById("kg_tutorial_next").addEventListener("click", function() {
+            runTutorialStep(tutorialPlayback.stepIndex + 1, false);
+          });
+          document.getElementById("kg_tutorial_explore").addEventListener(
+            "click", toggleTutorialExploration
+          );
+          document.getElementById("kg_tutorial_exit").addEventListener("click", exitTutorial);
+          splashStart.addEventListener("click", function() {
+            if (defaultRoute) { startTutorialById(defaultRoute.tutorial_id); }
+          });
+        }
+
+        window.kgTutorialPlaybackSnapshot = tutorialPlaybackSnapshot;
+        window.kgStartTutorial = startTutorialById;
+
         function focusConcept(nodeId, statusPrefix, options) {
-          selectViewerObject("concept", nodeId, statusPrefix, options);
+          return executeViewerCommand(
+            {command: "select", target: "concept:" + String(nodeId)},
+            {origin: "user", statusPrefix: statusPrefix, selectionOptions: options}
+          );
         }
 
         function buildConceptList(filterText) {
@@ -8577,11 +10009,14 @@
         }
 
         window.kgClearSelection = function() {
-          clearViewerSelection();
+          return executeViewerCommand({command: "clear-selection"}, {origin: "user"});
         };
 
         function focusModule(moduleId, statusPrefix, options) {
-          selectViewerObject("module", moduleId, statusPrefix, options);
+          return executeViewerCommand(
+            {command: "select", target: "module:" + String(moduleId)},
+            {origin: "user", statusPrefix: statusPrefix, selectionOptions: options}
+          );
         }
 
         function navigateToConcept(nodeId, statusPrefix, options) {
@@ -8970,7 +10405,11 @@
           e.preventDefault();
           e.stopPropagation();
           var moduleId = button.getAttribute("data-module-id");
-          setSelectedModuleFoldState(moduleId, !selectedModuleIsFolded(moduleId));
+          executeViewerCommand({
+            command: "set-module-representation",
+            target: "module:" + moduleId,
+            value: selectedModuleIsFolded(moduleId) ? "expanded" : "folded"
+          }, {origin: "user"});
         });
 
         window.addEventListener("popstate", function(event) {
@@ -8988,7 +10427,10 @@
           } else if (nodeId && getConcept(nodeId)) {
             focusConcept(nodeId, null, {skipHistory: true});
           } else {
-            clearViewerSelection({skipHistory: true});
+            executeViewerCommand(
+              {command: "clear-selection"},
+              {origin: "history", skipHistory: true}
+            );
           }
         });
 
@@ -9010,7 +10452,10 @@
           setSearchOpen(true);
         });
         document.getElementById("kg_empty_graph_show_full").addEventListener("click", function() {
-          setViewerDisplayScope(DisplayScope.FULL);
+          executeViewerCommand(
+            {command: "set-display-scope", value: DisplayScope.FULL},
+            {origin: "user"}
+          );
         });
         document.getElementById("kg_search_section").addEventListener("toggle", function(e) {
           document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(e.target.open));
@@ -9032,7 +10477,10 @@
         });
 
         document.getElementById("kg_display_scope_select").addEventListener("change", function(e) {
-          setViewerDisplayScope(e.target.value);
+          executeViewerCommand(
+            {command: "set-display-scope", value: e.target.value},
+            {origin: "user"}
+          );
         });
 
         document.getElementById("kg_clear_selection").addEventListener("click", function(e) {
@@ -9041,7 +10489,13 @@
         });
 
         document.getElementById("kg_details_view_select").addEventListener("change", function(e) {
-          setDetailsView(e.target.value);
+          executeViewerCommand(
+            {
+              command: "set-details-mode",
+              value: e.target.value === "hide" ? "hidden" : e.target.value
+            },
+            {origin: "user"}
+          );
         });
 
         document.getElementById("kg_study_list").addEventListener("click", function(e) {
@@ -9080,20 +10534,28 @@
             return;
           }
           customPanel.hidden = true;
-          setViewerContextRule({preset: preset, depth: viewerState.contextRule.depth});
+          executeViewerCommand({
+            command: "set-context",
+            preset: preset,
+            depth: viewerState.contextRule.depth
+          }, {origin: "user"});
         });
         document.getElementById("kg_context_depth_select").addEventListener("change", function(e) {
-          setViewerContextRule({
+          executeViewerCommand({
+            command: "set-context",
             preset: viewerState.contextRule.preset,
             depth: e.target.value,
             customTraversals: viewerState.contextRule.customTraversals
-          });
+          }, {origin: "user"});
         });
         document.getElementById("kg_fit_select").addEventListener("change", function() {
           clearContextFitPriming();
         });
         document.getElementById("kg_fit_apply").addEventListener("click", function() {
-          fitViewerTarget(document.getElementById("kg_fit_select").value);
+          executeViewerCommand({
+            command: "fit",
+            value: document.getElementById("kg_fit_select").value
+          }, {origin: "user"});
         });
         document.getElementById("kg_custom_context_apply").addEventListener("click", function() {
           var traversals = Array.from(
@@ -9105,11 +10567,12 @@
             };
           });
           document.getElementById("kg_custom_context").hidden = true;
-          setViewerContextRule({
+          executeViewerCommand({
+            command: "set-context",
             preset: ContextPreset.CUSTOM,
             depth: document.getElementById("kg_context_depth_select").value,
             customTraversals: traversals
-          });
+          }, {origin: "user"});
         });
         document.getElementById("kg_custom_context_edit").addEventListener("click", function() {
           openCustomContextEditor();
@@ -9122,21 +10585,15 @@
           var actions = document.getElementById("kg_representation_actions");
           var moduleId = actions.getAttribute("data-selected-module-id");
           if (moduleId && getModule(moduleId)) {
-            setSelectedModuleFoldState(moduleId, false);
+            executeViewerCommand({
+              command: "set-module-representation",
+              target: "module:" + moduleId,
+              value: "expanded"
+            }, {origin: "user"});
           }
         });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
-          resetContextFitInteraction();
-          var contextIds = lastGraphRender ? lastGraphRender.contextNodeIds : [];
-          var changed = false;
-          contextIds.forEach(function(conceptId) {
-            var moduleId = moduleIdForConcept(conceptId);
-            if (!moduleId || !selectedModuleIsFolded(moduleId)) { return; }
-            preferredFoldedModules[String(moduleId)] = false;
-            unfoldModule(moduleId);
-            changed = true;
-          });
-          if (changed) { refreshGraphAfterModuleFoldChange(); }
+          executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
         document.getElementById("kg_inspection_close").addEventListener("click", closeInspection);
         document.getElementById("kg_inspection_dialog").addEventListener("click", function(e) {
@@ -9195,6 +10652,24 @@
         document.getElementById("kg_cloud_sync_disconnect").addEventListener(
           "click", disconnectGoogleDrive
         );
+        document.getElementById("kg_cloud_sync_attention").addEventListener(
+          "click",
+          function() {
+            setControlsVisible(true);
+            document.getElementById("kg_personal_data_section").open = true;
+            connectGoogleDrive();
+          }
+        );
+        document.addEventListener("visibilitychange", function() {
+          if (
+            document.visibilityState === "visible" &&
+            personalDataSyncEngine &&
+            (!cloudSyncLastSuccessfulAt ||
+              Date.now() - cloudSyncLastSuccessfulAt >= cloudSyncPeriodicDelayMs)
+          ) {
+            syncPersonalDataNow();
+          }
+        });
 
         document.getElementById("kg_notes_list").addEventListener("click", function(e) {
           var item = e.target.closest(".kg-note-list-item");
@@ -9364,6 +10839,16 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var nextConceptButton = e.target.closest(".concept-next-button");
+          if (nextConceptButton) {
+            e.preventDefault();
+            navigateToConcept(
+              nextConceptButton.getAttribute("data-next-concept-id"),
+              "Selected"
+            );
+            return;
+          }
+
           var selfCheckButton = e.target.closest(".study-self-check-answer");
           if (selfCheckButton) {
             e.preventDefault();
@@ -9533,7 +11018,11 @@
             var foldModuleId = moduleFoldButton.getAttribute("data-module-id");
             var foldState = moduleFoldButton.getAttribute("data-module-fold-state");
             if (!getModule(foldModuleId)) { return; }
-            setSelectedModuleFoldState(foldModuleId, foldState === "folded");
+            executeViewerCommand({
+              command: "set-module-representation",
+              target: "module:" + foldModuleId,
+              value: foldState === "folded" ? "folded" : "expanded"
+            }, {origin: "user"});
             return;
           }
 
@@ -9741,6 +11230,7 @@
         }, true);
 
         /* Initial render. */
+        initialiseTutorialPlayback();
         applyDefaultModuleFoldState();
         buildModuleFoldControls();
         buildNodeLabels();
@@ -9820,7 +11310,16 @@
             }
           });
         });
-        showSplashOnFirstLoad();
+        var directTutorialId = requestedTutorialId();
+        if (directTutorialId && tutorialRouteById(directTutorialId)) {
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              setTimeout(function() { startTutorialById(directTutorialId); }, 0);
+            });
+          });
+        } else {
+          showSplashOnFirstLoad();
+        }
       }
 
       // Wait until pyvis has created network/nodes/edges variables.

@@ -421,6 +421,48 @@ def create_sr_time_dilation(variant: str = "icon") -> str:
     clock_marker = f"{_sid(node_id)}_clock_arrow"
     defs.append(_arrow_marker(clock_marker, colour=GREEN, size=6))
 
+    if variant == "detail":
+        body = [
+            _text(256, 44, "One round trip: the same events A and B", font_size=20,
+                  font_family=FONT, fill=BLACK, text_anchor="middle"),
+            _text(110, 93, "Clock frame S′", font_size=22, font_family=FONT,
+                  fill=BLACK, text_anchor="middle"),
+            _text(360, 93, "Lab frame S", font_size=22, font_family=FONT,
+                  fill=BLACK, text_anchor="middle"),
+            _line(110, 150, 110, 330, stroke=GREEN, stroke_width=5),
+            _line(110, 235, 110, 205, stroke=GREEN, stroke_width=3,
+                  marker_end=f"url(#{clock_marker})"),
+            _line(110, 250, 110, 280, stroke=GREEN, stroke_width=3,
+                  marker_end=f"url(#{clock_marker})"),
+            _text(66, 247, "L", font_size=26, font_family=FONT, fill=BLUE),
+            _text(110, 365, "A, B", font_size=22, font_family=FONT,
+                  fill=RED, text_anchor="middle"),
+            _line(265, 330, 360, 150, stroke=GREEN, stroke_width=5),
+            _line(360, 150, 455, 330, stroke=GREEN, stroke_width=5,
+                  marker_end=f"url(#{clock_marker})"),
+            _line(265, 330, 455, 330, stroke=GREY, stroke_width=2,
+                  stroke_dasharray="6 6"),
+            _line(360, 150, 360, 330, stroke=BLUE, stroke_width=2,
+                  stroke_dasharray="6 6"),
+            _text(369, 250, "L", font_size=24, font_family=FONT, fill=BLUE),
+            _text(265, 365, "A", font_size=22, font_family=FONT,
+                  fill=RED, text_anchor="middle"),
+            _text(455, 365, "B", font_size=22, font_family=FONT,
+                  fill=RED, text_anchor="middle"),
+            _text(310, 355, "vΔt/2", font_size=17, font_family=FONT,
+                  fill=GREY, text_anchor="middle"),
+            _text(289, 224, "s", font_size=25, font_family=FONT, fill=GREEN),
+            _text(110, 405, "2L = cΔτ", font_size=24, font_family=FONT,
+                  fill=GREEN, text_anchor="middle"),
+            _text(360, 405, "2s = cΔt", font_size=24, font_family=FONT,
+                  fill=GREEN, text_anchor="middle"),
+            _text(256, 455, "Same light speed c; longer lab path", font_size=21,
+                  font_family=FONT, fill=GREY, text_anchor="middle"),
+        ]
+        for x, y in [(110, 150), (110, 330), (265, 330), (360, 150), (455, 330)]:
+            body.append(_line(x - 22, y, x + 22, y, stroke=BLACK, stroke_width=6))
+        return _svg(node_id, "Time dilation", body, defs)
+
     body: list[str] = []
     ox, oy = 92, 404
     y_start, y_end = 350, 132

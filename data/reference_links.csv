@@ -1,4 +1,18 @@
 source_type,source_id,reference_id,locator,note
+content_block,sr.time_dilation.measurement,openstax.university_physics_3,§5.3 Time Dilation,One moving clock versus inertial-frame coordinate time.
+content_block,sr.time_dilation.light_clock_setup,openstax.university_physics_3,§5.3 Time Dilation,Transverse light-clock setup.
+content_block,sr.time_dilation.light_clock_triangle,openstax.university_physics_3,§5.3 Time Dilation,Compare pulse paths inside the apparatus.
+content_block,sr.time_dilation.light_clock_derivation,openstax.university_physics_3,§5.3 Time Dilation,Right-triangle derivation.
+content_block,sr.time_dilation.worked_comparison,openstax.university_physics_3,§5.3 Time Dilation,Authored numerical example.
+content_block,sr.time_dilation.ideal_clocks,einstein.1905.relativity,§4,Clock comparison under inertial motion.
+content_block,sr.time_dilation.interval_derivation,penrose.rtr,§18.3 Lorentzian orthogonality; the clock paradox,Proper-time interpretation.
+content_block,sr.time_dilation.reciprocal,einstein.1905.relativity,§§1–4,Simultaneity and clock comparison in inertial frames.
+content_block,sr.momentum_four_vector.work_energy,openstax.college_physics_2e,§28.6 Relativistic Energy,Fixed-mass work–energy argument.
+content_block,sr.momentum_four_vector.kinetic_limit,openstax.college_physics_2e,§28.6 Relativistic Energy,Kinetic energy and Newtonian limit.
+content_block,sr.momentum_four_vector.energy_physical_input,penrose.rtr,§18.7 Relativistic energy and (angular) momentum,Energy–momentum interpretation; work alone fixes differences.
+content_block,sr.mass_energy_equivalence.three_energies,openstax.college_physics_2e,§28.6 Relativistic Energy,Rest versus kinetic and total energy.
+content_block,sr.mass_energy_equivalence.heated_box,openstax.college_physics_2e,§28.6 Relativistic Energy,Internal energy and system mass.
+content_block,sr.mass_energy_equivalence.heating_calculation,openstax.college_physics_2e,§28.6 Relativistic Energy,Authored worked example using the rest-energy relation.
 content_block,sr.lorentz_transformations.boost_formula,ttm.sr_cf,1.3 General Lorentz Transformation,
 content_block,sr.inertial_frames.definition,ttm.sr_cf,1.2 Inertial Reference Frames,
 content_block,sr.constancy_of_speed_of_light.definition,ttm.sr_cf,Introduction,

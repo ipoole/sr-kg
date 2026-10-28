@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from html import escape as html_escape
 
-from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE
+from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE, PRODUCT_VERSION
 
 from srkg.config import (
     CONTENT_READ_PROGRESS_STORAGE_KEY,
@@ -80,6 +80,7 @@ def inject_controls(
     view_title: str,
     module_data: dict[str, dict[str, object]] | None = None,
     published_layout: dict[str, object] | None = None,
+    tutorial_data: list[dict[str, object]] | None = None,
     google_drive_client_id: str = "",
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
@@ -92,6 +93,9 @@ def inject_controls(
     html_text = _BOOTSTRAP_JAVASCRIPT.sub("", html_text)
 
     css = _style_tag(_render_template("viewer.css", _css_replacements()))
+    product_logo_uri = "data:image/svg+xml;base64," + base64.b64encode(
+        _asset_text("favicon.svg").encode("utf-8")
+    ).decode("ascii")
     controls = _render_template(
         "controls.html",
         {
@@ -99,6 +103,8 @@ def inject_controls(
             "__VIEW_TITLE__": html_escape(view_title),
             "__PRODUCT_NAME__": html_escape(PRODUCT_NAME),
             "__PRODUCT_TAGLINE__": html_escape(PRODUCT_TAGLINE),
+            "__PRODUCT_VERSION__": html_escape(PRODUCT_VERSION),
+            "__PRODUCT_LOGO_URI__": product_logo_uri,
         },
     )
     js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(
@@ -121,6 +127,7 @@ def inject_controls(
                     "concepts": {},
                     "modules": {},
                 }),
+                "__TUTORIAL_DATA__": _json_for_script(tutorial_data or []),
                 "__EDGE_KEY__": _json_for_script(edge_key),
                 "__VIEWER_CONFIG__": _json_for_script(
                     _viewer_runtime_config(google_drive_client_id)
@@ -148,6 +155,7 @@ def _product_head_html() -> str:
     touch_icon = base64.b64encode(_asset_bytes("apple-touch-icon.png")).decode("ascii")
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
+        f'<meta name="application-version" content="{html_escape(PRODUCT_VERSION)}">\n'
         '<link rel="icon" type="image/svg+xml" '
         f'href="data:image/svg+xml;base64,{favicon_svg}">\n'
         '<link rel="icon" type="image/png" sizes="32x32" '
@@ -208,6 +216,7 @@ def _css_replacements() -> dict[str, object]:
 def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
+        "applicationVersion": PRODUCT_VERSION,
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
         "nodeLabels": {
             "width": NODE_LABEL_WIDTH,

@@ -123,15 +123,29 @@ adapters; they do not change the personal-data model or archive format.
 
 The first provider uses the narrow `drive.file` OAuth scope and creates the
 visible file `PhysicsKG personal data.zip` in the user's Drive. Each browser
-finds that app-created file by name. A user explicitly connects and presses
-**Sync now**; disconnecting removes authorization from the current page but
-does not delete either copy of the data.
+finds that app-created file by name. Connecting performs an immediate merge and
+sync. While connected, local changes schedule a short-delay sync; a visible page
+also checks every five minutes and when it becomes active after being away.
+**Sync now** remains available, and the status reports the last successful sync
+time. Disconnecting removes authorization from the current page but does not
+delete either copy of the data.
 
 The standalone viewer uses Google Identity Services' browser token flow. The
 repository's public OAuth web-client ID is the normal build default and
-authorises `https://ipoole.github.io`. Other deployments can override it with
+authorises `https://physicskg.org`. Other deployments can override it with
 `--google-drive-client-id` or `PHYSICSKG_GOOGLE_DRIVE_CLIENT_ID`; their hosting
 origin must be registered for that client. The ID is public configuration, not
 a secret. Access tokens are kept only in memory and may expire, requiring the
-user to connect again. Fully unattended token refresh would require a backend
-and is deliberately outside the first implementation.
+user to connect again; regular syncing does not extend the token lifetime.
+Fully unattended token refresh would require a backend and is deliberately
+outside this implementation.
+
+An authorization failure never discards the local working copy. The viewer
+stops automatic sync and shows a persistent **Sync paused — reconnect** action;
+reconnection performs the normal merge before writing either copy.
+
+The published [privacy policy](https://physicskg.org/privacy.html) is
+linked from the viewer's Personal data controls. It explains the browser-local
+record, portable archive, optional Drive transfer and deletion choices in
+user-facing language. Public OAuth configuration and release checks are recorded
+in [Google OAuth publication](google_oauth_publication.md).

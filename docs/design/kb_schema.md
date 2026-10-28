@@ -27,6 +27,7 @@ data/
   module_supports.csv
   module_content_blocks.csv
   layout.json
+  tutorials.yaml
 ```
 
 The default project root is `data/`.
@@ -58,6 +59,7 @@ the source file is required, not that its manifest entry must be written.
 | `files.module_supports` | No | Optional cross-module or cross-domain support links declared by modules. |
 | `files.module_content_blocks` | No | Ordered module-level content blocks. Required when `modules.csv` is present. |
 | `files.layout` | No | Versioned published concept positions and module anchors. Missing objects use deterministic generated positions. |
+| `files.tutorials` | No | Versioned semantic tutorial routes. Missing files mean that the viewer contains no tutorials. |
 
 Paths are resolved relative to the data root unless absolute paths are used.
 Optional files are ignored when absent. For manifest-backed KB roots,
@@ -119,7 +121,7 @@ semantic IDs, rather than display IDs, remain the targets of all references.
 `content_blocks.csv` contains smaller authored teaching units attached to
 concepts. It is the canonical concept-prose source for manifest-backed KB
 roots. The viewer renders blocks directly and maps `kind` values to section
-labels, folded notes, reading modes, local contents entries, and graph-focus
+labels, folded notes, local contents entries, and graph-focus
 lenses. Those presentation choices remain viewer policy; the KB authors the
 semantic `kind`, not display instructions.
 
@@ -235,6 +237,44 @@ instead of `concept_id`.
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
 
 Every module must currently have at least one module content block.
+
+## tutorials.yaml
+
+`tutorials.yaml` contains curated semantic routes through the live viewer. Its
+top-level `schema_version` is currently `1`; `tutorials` is an ordered source
+list whose visible order is determined by each route's numeric `sequence`.
+
+Each tutorial has a stable `tutorial_id`, `title`, `category` (`interface` or
+`physics`), short `summary`, numeric `sequence`, non-empty list of required
+`domains`, and a non-empty list of `steps`. Domain-filtered builds omit routes
+whose declared domains are unavailable.
+
+Each step has a stable route-local `step_id`, `title`, `commentary`, optional
+unanimated `prepare` commands, and either one `action` with an optional
+`pointer`, or an `actions` list. Each list entry has an `action`, optional
+`pointer` and `pause_ms` (default 500, range 0–2000). Sequences contain 1–20
+entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
+One card stays visible while its actions run; Next is enabled on completion.
+Commands refer to concepts, modules and
+content blocks by stable semantic IDs. Generation rejects unknown IDs,
+unsupported commands, invalid enum values and duplicate tutorial or step IDs.
+Raw screen coordinates and CSS selectors are not part of the authored format.
+
+The initial command vocabulary is:
+
+- `select` and `clear-selection`;
+- `set-display-scope`, `set-context` and `set-details-mode`;
+- `set-module-representation`, `set-all-module-representations`, `expand-context-modules` and `fit`;
+- `open-details-relationship`, `set-relationship-full-tree` and `show-relationship-in-graph`;
+- `open-details-block`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
+- `search` and `close-search`;
+- a bounded settling `wait`.
+
+A generated viewer may launch a route directly with
+`?tutorial=<tutorial-id>`. Unknown IDs leave the viewer at its normal start.
+
+The detailed playback and restoration model is specified in
+[Native tutorial playback](tutorial_playback.md).
 
 ## study_questions.csv
 

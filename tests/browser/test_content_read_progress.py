@@ -116,3 +116,37 @@ def test_module_header_tick_tracks_completion_of_its_own_blocks(browser_graph):
     assert indicator.is_visible()
     checkbox.uncheck()
     assert indicator.is_hidden()
+
+
+@pytest.mark.browser
+def test_details_headers_show_green_tick_when_all_questions_are_correct(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept("2.2")
+    concept_indicator = page.locator(
+        "#info_panel .concept-sticky-header .study-question-complete-indicator"
+    )
+
+    assert concept_indicator.is_hidden()
+    assert concept_indicator.get_attribute("aria-label") == "All study questions complete"
+    page.evaluate(
+        """() => conceptData['2.2'].study_questions.forEach(question =>
+          kgStudyProgress.recordAttempt(question.question_id, 'correct')
+        )"""
+    )
+    assert concept_indicator.is_visible()
+    assert concept_indicator.inner_text() == "✓"
+
+    browser_graph.open_control_section("kg_modules_section")
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    module_indicator = page.locator(
+        "#info_panel .module-sticky-header .study-question-complete-indicator"
+    )
+    assert module_indicator.is_hidden()
+    page.evaluate(
+        """() => moduleData['test.m02_applications'].members.forEach(conceptId =>
+          conceptData[conceptId].study_questions.forEach(question =>
+            kgStudyProgress.recordAttempt(question.question_id, 'correct')
+          )
+        )"""
+    )
+    assert module_indicator.is_visible()

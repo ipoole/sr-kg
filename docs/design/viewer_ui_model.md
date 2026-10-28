@@ -89,9 +89,10 @@ current representation.
 
 ### Module representation
 
-Double-click and explicit module-detail controls fold or expand one module;
-Tools retains Fold all and Expand all. These actions do not change semantic
-context, selection, display scope, layout, or camera.
+A visible corner control and explicit module-detail controls fold or expand one
+module; Tools retains Fold all and Expand all. These actions do not change
+semantic context, selection, display scope, layout, or camera. The graph control
+is a native button with a discreet symbol and a larger touch target.
 
 Context is computed before folded modules are substituted. Projected context
 and background edges remain distinguishable. A selected concept inside a folded
@@ -122,10 +123,11 @@ adjustment is never persisted and is discarded on navigation.
 
 ### Details and inspection
 
-The existing Details reading filters initially remain. They affect details
-presentation, not graph state. Scrolling or opening a section changes only the
-active section. Graph-aware sections may offer an explicit complete suggested
-context, such as Derivation at one hop.
+Details has only three presentation choices: Full, Folded and Hidden. Full and
+Folded expose the same authored material, while Folded initially closes its
+top-level blocks. Details presentation does not affect graph state. Scrolling or
+opening a section changes only the active section. Graph-aware sections may
+offer an explicit complete suggested context, such as Derivation at one hop.
 
 **Show in graph** in Derived from and Where this is used explicitly selects
 Derivation or Uses context; the section's Full-tree choice selects one-hop or

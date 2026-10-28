@@ -62,8 +62,8 @@ lists attempted questions, newest first, and summarises the number currently
 correct out of the number attempted. Study events are included in the unified
 [personal-data archive](personal_data.md).
 
-Following a scorecard entry selects its concept, opens Practice details, and
-brings the question into view. Progress can be reset per question or, with
+Following a scorecard entry selects its concept, opens Full details and the
+chosen question, and brings it into view. Progress can be reset per question or, with
 confirmation, in full.
 
 ## Authored data

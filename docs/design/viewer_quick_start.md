@@ -3,16 +3,32 @@
 **Modules** show the overall structure; **concepts** reveal detailed physics.
 See [Viewer behaviour](viewer.md) for the full model.
 
-**New:** The user model has been simplified and the UI space optimised for
-phones. Selection, context, display, module folding and camera now behave
-independently and predictably.
+The user model has been simplified, the UI space optimised for phones, and
+rendering and interaction made faster on older or slower devices. Selection,
+context, display, module folding and camera behave independently and predictably.
+
+## Guided tutorials — NEW
+
+Choose **Start guided tutorial** here, or use **Tools → Tutorials** for an
+interface orientation or a short physics route. Physics routes cover
+**Why mass has rest energy** and **Why moving
+clocks record less time**, including a light-clock argument and worked examples.
+PhysicsKG operates the viewer and points to each target; use **Back**,
+**Next step** and **Exit** rather
+than operating the normal controls during playback. **Explore from here**
+temporarily returns control to you; **Resume tutorial** restores the view at
+which you left the route while preserving any study activity. Tutorials can also be
+launched by a direct `?tutorial=<tutorial-id>` link. Select a route under
+**Tools → Tutorials** to find its **Direct link to this tutorial**, which you
+can open, bookmark or copy to share.
 
 ## Start with the map
 
 The viewer opens with modules folded.
 
 - Click a module to read its introduction.
-- Double-click a module to expand it and reveal its concepts.
+- Use the `+` in a folded module's top-right corner to reveal its concepts; use
+  the `−` on an expanded module's boundary to fold it again.
 - Use **Search** to find a concept or module.
 - **Clear selection** resumes browsing without rearranging the map.
 
@@ -48,9 +64,11 @@ without changing the graph camera.
 
 Details contain explanations, graphics, relationships and questions. A block's
 checkbox records a blue read tick; completing every block marks its concept or
-module. Use a block's speech-bubble `+`, then choose a paragraph, to add a note;
-a filled bubble means notes are already present. **Show in graph** changes
-Context. Back and Forward retrace selections.
+module. A green title tick means that every study question is currently correct.
+Use a block's speech-bubble `+`, then choose a paragraph, to add a note; a filled
+bubble means notes are already present. **Next** at the foot of a concept follows
+the reading sequence through SR, MATHS and GR. **Show in graph** changes Context.
+Back and Forward retrace selections.
 
 Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
 layout** to save moved nodes in this browser. After Fit++, represented context
@@ -63,13 +81,19 @@ ticks are stored together in this browser. **Tools → Personal data** downloads
 them as one portable ZIP of readable CSV files. Import that archive in another
 browser and choose **Merge** to combine work or **Replace** to restore the
 exported snapshot. Optionally sign in with a Google account to synchronise this
-data through Google Drive across browsers and devices. None of these actions
-changes authored graph content.
+data through Google Drive across browsers and devices. Connection performs an
+immediate sync; subsequent changes sync automatically while connected, with the
+last successful time shown. Google may eventually require reconnection. None of
+these actions changes authored graph content.
 
-## Study — NEW
+If Google authorization expires during an automatic sync, personal changes stay
+safe in this browser and a **Sync paused — reconnect** action remains visible
+below the top bar. Reconnecting merges those local changes with the Drive copy.
 
-Choose **Practice** to answer questions. Answers appear after an attempt or **I
-don't know**. Automatic questions mark your choice; for free text, compare the
+## Study
+
+Open a concept's **Study Questions** block to answer questions. Answers appear
+after an attempt or **I don't know**. Automatic questions mark your choice; for free text, compare the
 model answer and mark yourself. Green ticks and red crosses record the latest
 result. **Tools → Study** lists attempts and links to each question. Progress is
 stored locally and is included in the Personal data archive. By default the
@@ -80,7 +104,7 @@ on concepts and folded modules; one **Tools → Study** option hides both.
 
 Covers Special Relativity and General Relativity.
 
-**Manifolds and Coordinates exposition enhanced with motivating example — NEW.**
+**Manifolds and Coordinates exposition enhanced with motivating example.**
 
-**Enhanced historical context — NEW:** selected concepts now explain how key
+**Enhanced historical context:** selected concepts now explain how key
 ideas developed, who contributed, and how their physical meaning changed.

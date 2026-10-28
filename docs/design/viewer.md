@@ -20,6 +20,9 @@ context. Browser Back and Forward retrace selections, not complete viewer state.
 
 ## Starting and navigating
 
+On phone-sized touch screens in landscape, a full-screen notice asks the user
+to rotate to portrait. Returning to portrait restores the current view.
+
 The first visit opens the Quick start; dismissal is remembered locally and
 **Tools → Quick start** reopens it. Startup has no selection, Foundations at one
 hop, Full graph, authored module defaults, layout editing off, and one initial
@@ -34,8 +37,9 @@ A selected concept inside a folded module is represented by its normal circular
 concept face and title inside the module box; the module title and concept count
 remain below it. Explicit module selection instead uses a strong outer module
 outline. The viewer offers actions to expand the selected concept's module or
-all context modules. Double-clicking and module-detail controls fold or expand
-modules without changing selection.
+all context modules. The `+` at a folded module's top-right corner expands it;
+the `−` at the corner of an expanded module boundary folds it. These native
+controls, and the module-detail controls, preserve selection.
 
 ## Context and display
 
@@ -53,10 +57,10 @@ not restrict the global edge set. Context only contains just the context
 subgraph. Hidden suppresses the graph while retaining selection, context and
 module state.
 
-The details selector controls presentation only: Full details, Folded, Core,
-Maths, Context, Practice, or Hide details. Scrolling and opening sections update
-only details navigation. Reading filters are content filters, not difficulty or
-mastery levels. Pinching or using Ctrl/Cmd-wheel over the details pane scales
+The details selector controls presentation only: Full details, Folded, or Hide
+details. Full and Folded contain the same material; Folded initially closes its
+top-level blocks. Scrolling and opening sections update only details navigation.
+Pinching or using Ctrl/Cmd-wheel over the details pane scales
 both its text and its concept or module graphics without changing the graph
 camera.
 
@@ -109,8 +113,14 @@ Each authored teaching block has an unlabelled visual checkbox in its header.
 Its blue tick records that the block has been read and remains available when
 the block is folded. Read marks can be toggled and persist locally; they do not
 currently feed a score or summary. A larger, non-interactive blue tick appears
-beside a concept or module title when all content blocks directly owned by it
-are marked read.
+beside a concept title when all its blocks are marked read, or beside a module
+when its own and all member-concept blocks are read. A green title tick appears
+when all study questions on a concept—or across a module—are currently correct.
+
+At the foot of every concept, **Next** follows the authored module and member
+sequence through SR, MATHS and GR. The final GR concept offers an explicit
+**Start again** link to SR-1.1. This changes selection and URL in the normal
+way without changing Context, graph extent or module folding.
 
 The graph also shows discreet completion markers by default: blue when all
 content blocks on a concept have been read, or when a module's own blocks and
@@ -129,5 +139,9 @@ unresolved notes remain visible as needing placement rather than being moved
 speculatively. Notes, Personal layout, study-question attempts and content read
 marks belong to the unified personal profile. They remain local by default, can
 be downloaded or imported together, and can optionally be synchronised on
-demand through the visible `PhysicsKG personal data.zip` file in Google Drive.
+connection and automatically after changes through the visible
+`PhysicsKG personal data.zip` file in Google Drive.
+If Google authorization expires, local work continues safely and a persistent
+**Sync paused — reconnect** action opens the Personal data controls and starts
+reconnection.
 Quick start dismissal remains a browser-local preference and is not synchronised.

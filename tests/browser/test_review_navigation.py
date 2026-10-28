@@ -3,8 +3,8 @@ import pytest
 pytestmark = pytest.mark.browser
 
 
-@pytest.mark.parametrize('mode', ['full', 'folded', 'core', 'maths', 'context', 'practice'])
-def test_module_overview_survives_concept_filter(browser_graph, mode):
+@pytest.mark.parametrize('mode', ['full', 'folded'])
+def test_module_overview_survives_details_presentation_change(browser_graph, mode):
     page = browser_graph.page
     browser_graph.click_concept('2.2')
     page.locator('#kg_details_view_select').select_option(mode)
@@ -23,7 +23,7 @@ def test_module_overview_survives_concept_filter(browser_graph, mode):
     assert page.locator('#info_panel').get_attribute('data-reading-mode') == mode
 
 
-def test_module_overview_does_not_replace_other_filtered_blocks(browser_graph):
+def test_module_details_include_all_authored_blocks(browser_graph):
     page = browser_graph.page
     page.evaluate("""() => {
       moduleData['test.m02_applications'].content_blocks.push(
@@ -33,9 +33,8 @@ def test_module_overview_does_not_replace_other_filtered_blocks(browser_graph):
     }""")
     browser_graph.open_control_section('kg_modules_section')
     page.locator('#kg_module_list [data-module-id="test.m02_applications"]').click()
-    page.locator('#kg_details_view_select').select_option('maths')
-    assert page.locator('#info_panel .module-content-block').count() == 2
+    assert page.locator('#info_panel .module-content-block').count() == 3
     assert page.locator('#info_panel .module-content-block.content-block-result').count() == 1
-    assert page.locator('#info_panel .module-content-block.content-block-warning').count() == 0
+    assert page.locator('#info_panel .module-content-block.content-block-warning').count() == 1
     page.locator('#kg_details_view_select').select_option('hide')
     assert not page.locator('#info_panel').is_visible()

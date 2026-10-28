@@ -227,16 +227,20 @@ that prose alone hides.
 Keep these four pieces synchronized:
 
 1. creator in `srkg/svg_graphics/concepts.py`;
-2. display-ID registry entry in `srkg/svg_graphics/registry.py`;
+2. semantic-ID registry entry in `srkg/svg_graphics/registry.py`;
 3. semantic-ID design and captions in
    `data/concept_graphic_designs.csv`; and
 4. expected ID and accessible title in
    `tests/test_concept_svg_graphics.py`.
 
-Runtime SVG dispatch uses display IDs such as `GR-6.1`; captions attach to
-semantic IDs such as `gr.riemann_tensor`. Consequently renumbering currently
-requires registry changes; migration to semantic-ID dispatch is tracked in
-[open issues](../issues.md).
+Runtime SVG dispatch and captions use semantic IDs such as
+`gr.riemann_tensor`. Use display IDs only to select and label review sheets;
+renumbering must not change a concept's graphic identity.
+
+For physics tutorials, keep one teaching point per card and put the exposition
+in Details. Group visible actions to establish a useful graph view, then leave
+each reading target available until Next. Audit the argument's physical
+assumptions as well as its algebra; see [tutorial playback](../design/tutorial_playback.md).
 
 Provide deterministic 512-by-512 `icon` and `detail` SVGs with non-empty
 accessible titles. The icon needs a clear small-scale silhouette. The detail

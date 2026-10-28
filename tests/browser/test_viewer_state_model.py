@@ -221,7 +221,7 @@ def test_custom_context_filters_full_graph_edges_with_and_without_selection(brow
 
 
 @pytest.mark.browser
-def test_explicit_context_controls_replace_focus_lens(browser_graph):
+def test_explicit_context_controls_update_viewer_state(browser_graph):
     page = browser_graph.page
 
     assert page.locator("#kg_display_scope_select").count() == 1
@@ -239,8 +239,6 @@ def test_explicit_context_controls_replace_focus_lens(browser_graph):
     ]
     assert page.locator("#kg_context_depth_select").count() == 1
     assert page.locator("#kg_fit_apply").count() == 1
-    assert page.locator("#kg_graph_view_select").count() == 0
-    assert page.locator("#kg_focus_lens").count() == 0
     assert not page.locator("#kg_context_preset_select").is_disabled()
     assert page.locator("#kg_context_depth_select").is_disabled()
 

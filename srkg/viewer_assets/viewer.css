@@ -53,8 +53,33 @@
         font-size: 13px;
         padding: 5px 9px;
       }
+      .kg-shell-brand {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        border-radius: 7px;
+        color: #123e5a;
+        cursor: pointer;
+        display: inline-flex;
+        font: 700 13px/1 Arial, sans-serif;
+        gap: 7px;
+        left: 10px;
+        padding: 2px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+      .kg-brand-mark {
+        display: block;
+        height: 30px;
+        width: 30px;
+      }
+      .kg-brand-wordmark {
+        white-space: nowrap;
+      }
       .kg-shell-tools-button {
-        left: 12px;
+        left: 132px;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -62,10 +87,35 @@
       }
       .kg-shell-button:hover,
       .kg-shell-button:focus,
+      .kg-shell-brand:hover,
+      .kg-shell-brand:focus-visible,
       .kg-canvas-select:hover,
       .kg-canvas-select:focus {
         background: #eef3fd;
         outline: none;
+      }
+      .kg-cloud-sync-attention {
+        background: #fff7df;
+        border: 1px solid #c78b13;
+        border-radius: 999px;
+        box-shadow: 0 2px 7px rgba(15, 23, 42, 0.16);
+        color: #704d08;
+        cursor: pointer;
+        font: 700 12px/1.2 Arial, sans-serif;
+        padding: 5px 10px;
+        position: fixed;
+        right: 10px;
+        top: calc(var(--kg-header-height) + 6px);
+        z-index: 9998;
+      }
+      .kg-cloud-sync-attention:hover,
+      .kg-cloud-sync-attention:focus-visible {
+        background: #ffefbd;
+        outline: 2px solid #9b6a09;
+        outline-offset: 1px;
+      }
+      .kg-cloud-sync-attention[hidden] {
+        display: none;
       }
       #kg_controls {
         position: fixed;
@@ -98,6 +148,11 @@
       .kg-product-tagline {
         color: #526476;
         font-size: 0.9em;
+      }
+      .kg-product-version {
+        color: #718096;
+        font-size: 0.78em;
+        margin-left: auto;
       }
       #kg_display_scope_select {
         min-width: 132px;
@@ -160,6 +215,69 @@
         margin-top: 6px;
         font-size: 0.923em;
         color: #333;
+      }
+      .kg-tutorial-list {
+        display: grid;
+        gap: 5px;
+        margin-top: 6px;
+      }
+      .kg-tutorial-list-group {
+        color: #536b7a;
+        font-size: 0.82em;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin: 4px 0 0;
+        text-transform: uppercase;
+      }
+      .kg-tutorial-list button {
+        background: #f7fafc;
+        border: 1px solid #b8c7d4;
+        border-radius: 6px;
+        color: #123e5a;
+        cursor: pointer;
+        margin: 0 !important;
+        padding: 6px 7px !important;
+        text-align: left;
+      }
+      .kg-tutorial-list button:hover,
+      .kg-tutorial-list button:focus-visible,
+      .kg-tutorial-list button[aria-current="true"] {
+        background: #e8f2f8;
+        border-color: #477d9c;
+      }
+      .kg-tutorial-list-title {
+        display: block;
+        font-weight: 700;
+      }
+      .kg-tutorial-list-summary {
+        color: #526476;
+        display: block;
+        font-size: 0.9em;
+        line-height: 1.25;
+        margin-top: 2px;
+      }
+      .kg-tutorial-intro {
+        border-top: 1px solid #d8e0e7;
+        margin-top: 7px;
+        padding-top: 6px;
+      }
+      .kg-tutorial-intro[hidden] {
+        display: none;
+      }
+      .kg-tutorial-intro h3,
+      .kg-tutorial-intro p {
+        margin: 3px 0;
+      }
+      .kg-tutorial-length {
+        color: #64748b;
+        font-size: 0.9em;
+      }
+      .kg-tutorial-guidance {
+        background: #eef6fb;
+        border-left: 3px solid #2876a5;
+        color: #294b60;
+        line-height: 1.3;
+        padding: 5px 7px;
       }
       .kg-graph-context-panel {
         background: rgba(255, 255, 255, 0.96);
@@ -590,6 +708,193 @@
         touch-action: none;
         width: 100%;
       }
+      .kg-tutorial-narration {
+        background: rgba(247, 242, 255, 0.92);
+        border: 1px solid #9bb7c9;
+        border-left: 5px solid #2876a5;
+        border-radius: 9px;
+        bottom: 12px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.18);
+        box-sizing: border-box;
+        color: #243746;
+        font: 13px/1.38 Arial, sans-serif;
+        left: 50%;
+        max-width: min(520px, calc(100% - 24px));
+        padding: 9px 11px;
+        position: fixed;
+        transform: translateX(-50%);
+        width: max-content;
+        z-index: 10030;
+      }
+      .kg-tutorial-narration[hidden] {
+        display: none;
+      }
+      .kg-tutorial-narration-meta {
+        align-items: baseline;
+        color: #28536b;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+      }
+      #kg_tutorial_progress {
+        color: #64748b;
+        flex: 0 0 auto;
+        font-size: 0.9em;
+        font-variant-numeric: tabular-nums;
+      }
+      .kg-tutorial-narration h3 {
+        color: #123e5a;
+        font-size: 1.05em;
+        margin: 5px 0 2px;
+      }
+      .kg-tutorial-commentary {
+        color: #57367b;
+        margin: 0;
+      }
+      .kg-tutorial-label { color: #57367b; font-size: 0.85em; }
+      #kg_tutorial_first_step_guidance { font-size: 0.9em; margin: 6px 0; }
+      #kg_portrait_notice { display: none; }
+      @media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (pointer: coarse) {
+        #kg_portrait_notice {
+          display: grid; place-items: center; position: fixed; inset: 0;
+          z-index: 11000; background: #f7f2ff; color: #57367b;
+          padding: 24px; text-align: center; font: 18px/1.5 Arial, sans-serif;
+        }
+      }
+      .kg-tutorial-explore-status {
+        color: #28536b;
+        font-size: 0.92em;
+        font-style: italic;
+        margin-top: 5px;
+      }
+      .kg-tutorial-explore-status[hidden] {
+        display: none;
+      }
+      .kg-tutorial-error {
+        background: #fff0f0;
+        border-radius: 5px;
+        color: #8a2020;
+        margin-top: 6px;
+        padding: 5px 7px;
+      }
+      .kg-tutorial-error[hidden] {
+        display: none;
+      }
+      .kg-tutorial-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+        margin-top: 7px;
+      }
+      .kg-tutorial-actions button {
+        background: #f8fafc;
+        border: 1px solid #aeb9c7;
+        border-radius: 6px;
+        color: #243746;
+        cursor: pointer;
+        font: inherit;
+        padding: 4px 9px;
+      }
+      .kg-tutorial-actions button:disabled {
+        cursor: default;
+        opacity: 0.5;
+      }
+      .kg-tutorial-halo {
+        border: 3px solid rgba(29, 126, 181, 0.78);
+        border-radius: 10px;
+        box-shadow: 0 0 0 5px rgba(55, 157, 210, 0.16);
+        box-sizing: border-box;
+        pointer-events: none;
+        position: fixed;
+        transition: left 340ms ease, top 340ms ease, width 220ms ease, height 220ms ease;
+        z-index: 10020;
+      }
+      .kg-tutorial-halo[hidden],
+      .kg-tutorial-pointer[hidden] {
+        display: none;
+      }
+      .kg-tutorial-pointer {
+        height: 34px;
+        left: 0;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        transform: translate3d(0, 0, 0);
+        transition: transform 340ms cubic-bezier(0.2, 0.72, 0.25, 1);
+        width: 28px;
+        z-index: 10021;
+      }
+      .kg-tutorial-pointer svg {
+        display: block;
+        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.35));
+        height: 34px;
+        overflow: visible;
+        width: 28px;
+      }
+      .kg-tutorial-pointer path {
+        fill: #fff;
+        stroke: #17658f;
+        stroke-linejoin: round;
+        stroke-width: 2.4px;
+      }
+      .kg-tutorial-click-pulse {
+        border: 3px solid #e67e22;
+        border-radius: 50%;
+        height: 16px;
+        left: -5px;
+        opacity: 0;
+        position: absolute;
+        top: -6px;
+        transform: scale(0.25);
+        width: 16px;
+      }
+      .kg-tutorial-pointer.kg-clicking .kg-tutorial-click-pulse {
+        animation: kg-tutorial-pulse 240ms ease-out;
+      }
+      @keyframes kg-tutorial-pulse {
+        0% { opacity: 0.9; transform: scale(0.25); }
+        100% { opacity: 0; transform: scale(1.75); }
+      }
+      body.kg-tutorial-active #kg_app_header,
+      body.kg-tutorial-active #kg_graph_context_panel,
+      body.kg-tutorial-active #kg_controls {
+        filter: saturate(0.7);
+        opacity: 0.82;
+      }
+      body.kg-tutorial-active #mynetwork,
+      body.kg-tutorial-active #kg_module_fold_controls,
+      body.kg-tutorial-active #kg_pane_splitter {
+        pointer-events: none;
+      }
+      body.kg-tutorial-active,
+      body.kg-tutorial-active * {
+        cursor: not-allowed !important;
+      }
+      body.kg-tutorial-active .kg-tutorial-narration,
+      body.kg-tutorial-active .kg-tutorial-narration * {
+        cursor: auto !important;
+      }
+      body.kg-tutorial-active .kg-tutorial-narration button:not(:disabled) {
+        cursor: pointer !important;
+      }
+      body.kg-tutorial-active #kg_context_notice[data-kind="context-contracted"] {
+        display: none;
+      }
+      #info_panel .kg-tutorial-block-spotlight {
+        background: rgba(232, 245, 252, 0.48);
+        box-shadow: 0 0 0 3px rgba(40, 118, 165, 0.3);
+        transition: background-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .kg-tutorial-halo,
+        .kg-tutorial-pointer {
+          transition: none;
+        }
+        .kg-tutorial-pointer.kg-clicking .kg-tutorial-click-pulse {
+          animation: none;
+        }
+      }
       #mynetwork,
       #mynetwork canvas {
         overscroll-behavior: contain;
@@ -860,7 +1165,8 @@
         min-width: 0;
     }
 
-    #info_panel .content-read-complete-indicator {
+    #info_panel .content-read-complete-indicator,
+    #info_panel .study-question-complete-indicator {
         color: #1769aa;
         flex: 0 0 auto;
         font-size: 1.4em;
@@ -868,8 +1174,38 @@
         line-height: 0.9;
     }
 
-    #info_panel .content-read-complete-indicator[hidden] {
+    #info_panel .study-question-complete-indicator {
+        color: #238636;
+    }
+
+    #info_panel .content-read-complete-indicator[hidden],
+    #info_panel .study-question-complete-indicator[hidden] {
         display: none;
+    }
+
+    #info_panel .concept-sequential-navigation {
+        display: flex;
+        justify-content: flex-end;
+        margin: 1.1em 0 0.4em;
+    }
+
+    #info_panel .concept-next-button {
+        background: #f3f7fc;
+        border: 1px solid #b8c9df;
+        border-radius: 999px;
+        color: #174ea6;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        max-width: 100%;
+        padding: 0.48em 0.85em;
+        text-align: right;
+    }
+
+    #info_panel .concept-next-button:hover,
+    #info_panel .concept-next-button:focus-visible {
+        background: #e7f0fb;
+        border-color: #7e9fc8;
     }
 
     #info_panel .module-domain-label {
@@ -1042,12 +1378,6 @@
     #info_panel .concept-module-context {
         color: #555;
         margin: 0 0 0.75em;
-    }
-
-    #info_panel .reading-mode-empty {
-        color: #666;
-        font-style: italic;
-        margin: 0.75em 0 1em;
     }
 
     #info_panel .content-block {
@@ -1744,6 +2074,11 @@
     .kg-cloud-sync p {
       color: #425466;
       margin: 0.25rem 0;
+    }
+
+    .kg-cloud-sync .kg-privacy-link {
+      font-size: 0.82em;
+      margin-top: 0.55rem;
     }
 
     .kg-muted-label {
@@ -2638,7 +2973,26 @@
 
     .kg-splash h2 {
         font-size: 1.2rem;
-        margin: 0 0 0.6rem;
+        margin: 0 0 0.15rem;
+    }
+
+    .kg-splash-brand {
+        align-items: center;
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .kg-splash-brand-mark {
+        border-radius: 12px;
+        display: block;
+        height: 54px;
+        width: 54px;
+    }
+
+    .kg-splash-brand span {
+        color: #526476;
+        font-size: 0.85rem;
     }
 
     .kg-splash h3 {
@@ -2685,7 +3039,27 @@
 
     .kg-splash-actions {
         display: flex;
+        gap: 8px;
         justify-content: flex-end;
+    }
+
+    .kg-splash-actions .kg-splash-primary {
+        background: #123e5a;
+        border: 1px solid #123e5a;
+        border-radius: 6px;
+        color: white;
+        font-weight: 700;
+        padding: 7px 12px;
+    }
+
+    .kg-splash-actions .kg-splash-primary:hover,
+    .kg-splash-actions .kg-splash-primary:focus-visible {
+        background: #1b587d;
+    }
+
+    .kg-splash-version {
+        color: #687789;
+        white-space: nowrap;
     }
 
     .kg-layout-status {
@@ -2926,6 +3300,18 @@
             transform: none;
         }
 
+        .kg-shell-brand {
+            flex: 0 0 auto;
+            left: auto;
+            position: static;
+            top: auto;
+            transform: none;
+        }
+
+        .kg-brand-wordmark {
+            display: none;
+        }
+
         #kg_clear_selection {
             flex: 0 0 auto;
         }
@@ -2969,6 +3355,21 @@
         #kg_graph_pane {
             border-bottom: 1px solid #cfd6e0;
             border-right: 0;
+        }
+
+        .kg-tutorial-narration {
+            font-size: 12px;
+            max-width: calc(100% - 14px);
+            padding: 7px 9px;
+            width: calc(100% - 14px);
+        }
+
+        body.kg-tutorial-phone-docked #kg_workspace {
+            bottom: var(--kg-tutorial-dock-height, 0px);
+        }
+
+        body.kg-tutorial-phone-docked .kg-tutorial-narration {
+            padding-bottom: max(7px, env(safe-area-inset-bottom));
         }
 
         #kg_controls {
@@ -3074,6 +3475,17 @@
           line-height: 1.15;
           min-height: 27px;
           padding: 3px 4px;
+        }
+        #kg_app_header .kg-shell-brand {
+          box-sizing: border-box;
+          height: 30px;
+          justify-content: center;
+          min-width: 28px;
+          padding: 2px;
+        }
+        #kg_app_header .kg-brand-mark {
+          height: 25px;
+          width: 25px;
         }
         #kg_app_header .kg-canvas-select,
         .kg-graph-context-controls .kg-canvas-select {
