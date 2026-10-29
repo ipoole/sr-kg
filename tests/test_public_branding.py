@@ -1,10 +1,51 @@
 from pathlib import Path
 import struct
+from html.parser import HTMLParser
+from xml.etree import ElementTree
 
 from srkg.branding import PRODUCT_VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _canonical_urls(html):
+    class Links(HTMLParser):
+        urls = []
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "link" and attrs.get("rel") == "canonical":
+                self.urls.append(attrs.get("href"))
+
+    parser = Links()
+    parser.feed(html)
+    return parser.urls
+
+
+def test_public_pages_and_viewer_declare_preferred_https_urls():
+    from srkg.html_injection import inject_controls
+
+    for page, url in (
+        ("index.html", "https://physicskg.org/"),
+        ("privacy.html", "https://physicskg.org/privacy.html"),
+        ("terms.html", "https://physicskg.org/terms.html"),
+    ):
+        assert _canonical_urls(_page(page)) == [url]
+    viewer = inject_controls("<html><head></head><body></body></html>", {}, {}, "Title")
+    assert _canonical_urls(viewer) == ["https://physicskg.org/output/PhysicsKG.html"]
+
+
+def test_sitemap_lists_only_preferred_public_pages_and_is_discoverable():
+    sitemap = ElementTree.parse(ROOT / "sitemap.xml")
+    urls = [node.text for node in sitemap.findall("{*}url/{*}loc")]
+    assert sorted(urls) == sorted([
+        "https://physicskg.org/",
+        "https://physicskg.org/output/PhysicsKG.html",
+        "https://physicskg.org/privacy.html",
+        "https://physicskg.org/terms.html",
+    ])
+    assert "Sitemap: https://physicskg.org/sitemap.xml" in _page("robots.txt").splitlines()
 
 
 def _page(name: str) -> str:

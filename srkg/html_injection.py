@@ -168,6 +168,7 @@ def _product_head_html() -> str:
     })
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
+        '<link rel="canonical" href="https://physicskg.org/output/PhysicsKG.html">\n'
         f'<meta name="application-version" content="{html_escape(PRODUCT_VERSION)}">\n'
         '<link id="kg_favicon_png" rel="icon" type="image/png" sizes="32x32" '
         'href="/favicon-32.png?v=1">\n'

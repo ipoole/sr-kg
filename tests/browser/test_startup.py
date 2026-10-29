@@ -34,6 +34,7 @@ def test_icons_use_embedded_data_locally_and_fetchable_urls_when_hosted(browser_
     assert page.locator("head > link[rel=apple-touch-icon]").count() == 1
     assert page.locator("head > title").count() == 1
     assert page.evaluate("document.characterSet") == "UTF-8"
+    assert page.locator('head > link[rel="canonical"]').get_attribute("href") == "https://physicskg.org/output/PhysicsKG.html"
     assert page.locator("#kg_favicon_svg").get_attribute("href").startswith("data:image/svg+xml;")
     assert page.locator("#kg_touch_icon").get_attribute("href").startswith("data:image/png;")
     # Isolate icon metadata from the graph; no external network is needed.

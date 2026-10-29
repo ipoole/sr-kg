@@ -43,6 +43,10 @@ Hosted pages use the root icon files (`favicon.svg`, `favicon-32.png`,
 `favicon.ico`, `apple-touch-icon.png`); keep them in sync with the source icons
 in `srkg/viewer_assets`. Increment the icon URL version when replacing the artwork.
 Locally opened viewer HTML retains embedded icons.
+Public pages declare their preferred `https://physicskg.org/` addresses with
+canonical links. `sitemap.xml` lists the four public pages and is advertised in
+`robots.txt`; submit `https://physicskg.org/sitemap.xml` in Google Search Console
+after publishing it. Keep the sitemap aligned with changes to public page URLs.
 The published interface tour can be launched directly at
 `https://physicskg.org/output/PhysicsKG.html?tutorial=using-physicskg`.
 
