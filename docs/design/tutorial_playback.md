@@ -74,6 +74,8 @@ tutorial label to distinguish its instructions from teaching content. Every
 route's first card explains Next step, Explore, Resume and Exit, including
 when playback starts through a direct URL. A demonstrated hover tooltip can
 move the card to the upper edge to keep the preview readable.
+Physics routes begin with a quiet introductory card; their graph demonstrations
+start only after the user presses Next step.
 
 It contains:
 

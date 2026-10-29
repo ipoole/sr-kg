@@ -708,6 +708,36 @@
         touch-action: none;
         width: 100%;
       }
+      #kg_history_controls {
+        position: absolute;
+        left: max(10px, env(safe-area-inset-left));
+        bottom: max(10px, env(safe-area-inset-bottom));
+        display: flex;
+        gap: 2px;
+        padding: 2px;
+        border: 1px solid #c7d2df;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 1px 5px rgba(15, 23, 42, 0.12);
+        z-index: 35;
+        touch-action: manipulation;
+      }
+      #kg_history_controls[hidden],
+      body.kg-tutorial-active #kg_history_controls {
+        display: none;
+      }
+      #kg_history_controls button {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #294d68;
+        font: 28px/1 Arial, sans-serif;
+        cursor: pointer;
+      }
+      #kg_history_controls button:disabled { opacity: 0.3; cursor: default; }
+      #kg_history_controls button:focus-visible { outline: 2px solid #2876a5; }
       .kg-tutorial-narration {
         background: rgba(247, 242, 255, 0.92);
         border: 1px solid #9bb7c9;

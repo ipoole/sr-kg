@@ -177,6 +177,14 @@ tutorials:
     sequence: 20
     domains: [sr]
     steps:
+      - step_id: introduction
+        title: Why does mass have rest energy?
+        commentary: >-
+          We will investigate a heated box, then trace rest energy back through
+          momentum and spacetime to the foundations of special relativity.
+          Press Next to watch the guided actions and read the highlighted content.
+          Explore from here lets you take control; Resume returns to the tutorial.
+        action: {command: wait, milliseconds: 0}
       - step_id: begin-with-rest-energy
         title: Begin with rest energy
         commentary: >-
@@ -631,6 +639,14 @@ tutorials:
     sequence: 30
     domains: [sr]
     steps:
+      - step_id: introduction
+        title: Why do moving clocks record less time?
+        commentary: >-
+          We will follow a light pulse, compare two ticks of the same clock and
+          connect the result to Lorentz transformations and proper time.
+          Press Next to watch the guided actions and read the highlighted content.
+          Explore from here lets you take control; Resume returns to the tutorial.
+        action: {command: wait, milliseconds: 0}
       - step_id: begin-with-two-ticks
         title: One clock, two ticks
         commentary: >-

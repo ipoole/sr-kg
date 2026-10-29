@@ -3137,6 +3137,7 @@
           shell.appendChild(graphPane);
           shell.appendChild(splitter);
           shell.appendChild(detailsPane);
+          shell.appendChild(document.getElementById("kg_history_controls"));
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
           if (emptyGraphState) {
@@ -3597,6 +3598,58 @@
           }
         }
 
+        // Bound the in-app buttons to this document session. Native browser
+        // history still works normally, including selections made before reload.
+        var navigationSession = "";
+        var navigationIndex = 0;
+        var navigationEnd = 0;
+        var navigationMoving = false;
+
+        function navigationHistoryState(state) {
+          return Object.assign({}, state || {}, {kgNavigation: {
+            session: navigationSession, index: navigationIndex
+          }});
+        }
+
+        function presentationHistoryState() {
+          var state = cloneSerializable(window.history.state);
+          if (state) { delete state.kgNavigation; }
+          return state;
+        }
+
+        function updateHistoryControls() {
+          var back = document.getElementById("kg_history_back");
+          var forward = document.getElementById("kg_history_forward");
+          if (!back || !forward) { return; }
+          // Do not drop keyboard focus while waiting for popstate. The click
+          // handler guards repeated requests until navigation completes.
+          back.disabled = navigationIndex <= 0;
+          forward.disabled = navigationIndex >= navigationEnd;
+        }
+
+        function initialiseSelectionHistory() {
+          navigationSession = String(Date.now()) + ":" + String(Math.random());
+          navigationIndex = navigationEnd = 0;
+          navigationMoving = false;
+          window.history.replaceState(navigationHistoryState(window.history.state), "", window.location.href);
+          updateHistoryControls();
+        }
+
+        function pushSelectionHistory(state, url) {
+          navigationIndex += 1;
+          navigationEnd = navigationIndex;
+          window.history.pushState(navigationHistoryState(state), "", url);
+          updateHistoryControls();
+        }
+
+        function navigateSelectionHistory(direction) {
+          if (tutorialPlayback.activeRoute && !tutorialPlayback.exploring) { return; }
+          if (navigationMoving || (direction < 0 ? navigationIndex <= 0 : navigationIndex >= navigationEnd)) { return; }
+          navigationMoving = true;
+          updateHistoryControls();
+          window.history.go(direction);
+        }
+
         function pushConceptHistory(nodeId) {
           var hash = conceptHash(nodeId);
           var state = {
@@ -3610,7 +3663,7 @@
           ) {
             return;
           }
-          window.history.pushState(state, "", hash);
+          pushSelectionHistory(state, hash);
         }
 
         function pushModuleHistory(moduleId) {
@@ -3626,7 +3679,7 @@
           ) {
             return;
           }
-          window.history.pushState(state, "", hash);
+          pushSelectionHistory(state, hash);
         }
 
         function browserHistoryShortcutDirection(e) {
@@ -6651,8 +6704,9 @@
               ? "Nothing is displayed to fit"
               : "Select a concept or module to use this frame")
             : primed
-              ? "Temporarily contract this context around the selection"
-              : "";
+              ? "Temporarily compact the context around the selection, then fit it into view. Navigate away to restore the layout."
+              : "Adjust the camera to the chosen frame. Fitting the context enables Fit++.";
+          document.getElementById("kg_fit_help").textContent = button.title;
         }
 
         function clearContextFitPriming() {
@@ -8836,7 +8890,7 @@
             tools: tutorialToolsSnapshot(),
             camera: cameraSnapshot(),
             url: window.location.href,
-            historyState: cloneSerializable(window.history.state)
+            historyState: presentationHistoryState()
           };
         }
 
@@ -8949,7 +9003,7 @@
 
           if (snapshot.url) {
             window.history.replaceState(
-              cloneSerializable(snapshot.historyState),
+              navigationHistoryState(cloneSerializable(snapshot.historyState)),
               "",
               snapshot.url
             );
@@ -10002,7 +10056,7 @@
           renderGraphFromViewerState({fit: false});
           renderInitialInfoPanel();
           if (!options.skipHistory) {
-            window.history.pushState({}, "", window.location.href.split("#")[0]);
+            pushSelectionHistory({}, window.location.href.split("#")[0]);
           }
           document.getElementById("kg_status").innerText =
             "Selection cleared.";
@@ -10314,7 +10368,7 @@
             base = base > 0 ? base : width;
             // Keep a readable screen-space minimum while retaining hover emphasis.
             // Change only the native drawing options, never the authored DataSet.
-            var minimumPixels = edge.isModuleEdge ? 1.8 : 1.5;
+            var minimumPixels = edge.isModuleEdge ? 2.8 : 1.5;
             if (String(edge.id) === String(hoveredEdgeId)) {
               minimumPixels *= 2;
             }
@@ -10413,6 +10467,14 @@
         });
 
         window.addEventListener("popstate", function(event) {
+          var marker = event.state && event.state.kgNavigation;
+          if (marker && marker.session === navigationSession) {
+            navigationIndex = marker.index;
+            navigationMoving = false;
+          } else {
+            initialiseSelectionHistory();
+          }
+          updateHistoryControls();
           var nodeId = event.state && event.state.nodeId;
           var moduleId = event.state && event.state.moduleId;
           if (!nodeId) {
@@ -10435,6 +10497,12 @@
         });
 
         document.addEventListener("keydown", allowBrowserHistoryShortcut, true);
+        document.getElementById("kg_history_back").addEventListener("click", function() {
+          navigateSelectionHistory(-1);
+        });
+        document.getElementById("kg_history_forward").addEventListener("click", function() {
+          navigateSelectionHistory(1);
+        });
 
         function setSearchOpen(open) {
           document.getElementById("kg_search_section").open = open;
@@ -11300,6 +11368,7 @@
             window.history.replaceState({}, "", window.location.href);
           }
         }
+        initialiseSelectionHistory();
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
             if (lastGraphRender && lastGraphRender.fitIds.length > 0) {

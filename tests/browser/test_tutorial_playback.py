@@ -265,17 +265,19 @@ def test_tutorial_hides_the_previous_pointer_during_step_preparation(browser_gra
 def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph):
     page = _open_tutorial(repo_browser_graph, "rest-energy-to-sr-foundations")
     page.locator("#kg_tutorial_start").click()
+    page.wait_for_function("() => !kgTutorialPlaybackSnapshot().transitioning")
+    page.locator("#kg_tutorial_next").click()
     page.wait_for_function(
         "() => kgTutorialPointerSnapshot().target === 'control:expand-context'",
         timeout=30000,
     )
-    assert page.evaluate("kgTutorialPlaybackSnapshot().stepIndex") == 0
+    assert page.evaluate("kgTutorialPlaybackSnapshot().stepIndex") == 1
     assert page.locator("#kg_tutorial_next").is_disabled()
     page.wait_for_function(
-        "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 0",
+        "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 1",
         timeout=30000,
     )
-    for step_index in range(1, 6):
+    for step_index in range(2, 7):
         page.locator("#kg_tutorial_next").click()
         page.wait_for_function(
             "index => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -293,7 +295,7 @@ def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph)
     page.locator("#kg_tutorial_next").click()
     page.wait_for_function(
         "() => !kgTutorialPlaybackSnapshot().transitioning && "
-        "kgTutorialPlaybackSnapshot().stepIndex === 6"
+        "kgTutorialPlaybackSnapshot().stepIndex === 7"
     )
     pointer = page.evaluate("kgTutorialPointerSnapshot()")
     assert pointer["target"] == "graph:concept:sr.momentum_four_vector"
@@ -576,6 +578,7 @@ def test_authored_physics_tutorial_completes(request, graph_fixture, tutorial_id
             "details:block:sr.time_dilation.not_signal_delay",
             "details:study-questions",
         ]
+    expected_targets.insert(0, "narration")
     for index, expected_target in enumerate(expected_targets):
         page.wait_for_function(
             "index => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -586,6 +589,9 @@ def test_authored_physics_tutorial_completes(request, graph_fixture, tutorial_id
         assert page.locator("#kg_tutorial_error").is_hidden(), page.locator("#kg_tutorial_error").inner_text()
         assert page.evaluate("kgTutorialPointerSnapshot().target") == expected_target
         if index == 0:
+            assert page.evaluate("kgContextContractionSnapshot().active") is False
+            assert page.evaluate("kgTutorialPlaybackSnapshot().transitioning") is False
+        if index == 1:
             assert page.evaluate("kgContextContractionSnapshot().active") is True
             assert page.locator("#kg_expand_context_modules").is_hidden()
             assert page.locator(".concept-derived-from-full-tree").is_checked()
@@ -608,16 +614,16 @@ def test_authored_physics_tutorial_completes(request, graph_fixture, tutorial_id
             assert restored["contextFit"] == checkpoint["contextFit"]
             assert restored["contextRule"] == checkpoint["contextRule"]
             assert restored["moduleRepresentation"] == checkpoint["moduleRepresentation"]
-        if index == 1:
+        if index == 2:
             page.locator("#kg_tutorial_back").click()
             page.wait_for_function(
-                "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 0",
+                "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 1",
                 timeout=30000,
             )
             assert page.evaluate("kgContextContractionSnapshot().active") is True
             page.locator("#kg_tutorial_next").click()
             page.wait_for_function(
-                "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 1"
+                "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 2"
             )
         _assert_block_pointer_matches(page, expected_target, index)
         if index < len(expected_targets) - 1:

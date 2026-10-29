@@ -26,6 +26,10 @@
         </select>
       </div>
     </header>
+    <nav id="kg_history_controls" aria-label="Selection history">
+      <button id="kg_history_back" type="button" aria-label="Back to previous selection" title="Back to previous selection" disabled>‹</button>
+      <button id="kg_history_forward" type="button" aria-label="Forward to next selection" title="Forward to next selection" disabled>›</button>
+    </nav>
     <button id="kg_cloud_sync_attention" class="kg-cloud-sync-attention" type="button"
             aria-live="polite" hidden>Sync paused — reconnect</button>
     <div id="kg_controls">
@@ -127,7 +131,8 @@
         <div class="kg-graph-context-controls">
           <div class="kg-context-control-group" aria-label="Context rule">
             <label for="kg_context_preset_select" class="kg-group-label">Context</label>
-            <select id="kg_context_preset_select" class="kg-canvas-select">
+            <span id="kg_context_help" class="kg-visually-hidden">Choose the relationships used to find context around the selection. In Full graph, also filters which edges are shown.</span>
+            <select id="kg_context_preset_select" class="kg-canvas-select" aria-describedby="kg_context_help" title="Choose the relationships used to find context around the selection. In Full graph, also filters which edges are shown.">
               <option value="connections">Connections</option>
               <option value="prerequisites">Prerequisites</option>
               <option value="derivation">Derivation</option>
@@ -138,7 +143,8 @@
             </select>
             <button id="kg_custom_context_edit" class="kg-shell-button" type="button" hidden>Edit custom…</button>
             <label for="kg_context_depth_select">Depth</label>
-            <select id="kg_context_depth_select" class="kg-canvas-select">
+            <span id="kg_depth_help" class="kg-visually-hidden">How far to follow the context relationships: one hop, two hops, or transitively through the graph.</span>
+            <select id="kg_context_depth_select" class="kg-canvas-select" aria-describedby="kg_depth_help" title="How far to follow the context relationships: one hop, two hops, or transitively through the graph.">
               <option value="one-hop" selected>1 hop</option>
               <option value="two-hops">2 hops</option>
               <option value="transitive">Transitive</option>
@@ -146,13 +152,15 @@
           </div>
           <div class="kg-context-control-group" aria-label="Camera framing">
             <label for="kg_fit_select" class="kg-group-label">Frame</label>
-            <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target">
+            <span id="kg_frame_help" class="kg-visually-hidden">Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.</span>
+            <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target" aria-describedby="kg_frame_help" title="Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.">
               <option value="reveal">Reveal selection</option>
               <option value="selection">Fit selection</option>
               <option value="context" selected>Fit context</option>
               <option value="displayed">Fit displayed graph</option>
             </select>
-            <button id="kg_fit_apply" class="kg-shell-button" type="button">Fit</button>
+            <span id="kg_fit_help" class="kg-visually-hidden"></span>
+            <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit</button>
           </div>
         </div>
         <div class="kg-context-meta-row">

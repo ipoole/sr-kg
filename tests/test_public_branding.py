@@ -73,5 +73,5 @@ def test_viewer_offers_a_public_privacy_policy_link():
 
 
 def test_product_version_is_four_point_two_point_zero():
-    assert PRODUCT_VERSION == "4.2.0"
+    assert PRODUCT_VERSION == "4.2.1"
     assert all(part.isdigit() for part in PRODUCT_VERSION.split("."))
