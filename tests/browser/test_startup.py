@@ -26,6 +26,27 @@ def _statement_concept_ids(locator):
 
 
 @pytest.mark.browser
+def test_icons_use_embedded_data_locally_and_fetchable_urls_when_hosted(browser_graph):
+    from srkg.html_injection import _product_head_html
+
+    page = browser_graph.page
+    assert page.locator("head > link[rel=icon]").count() == 2
+    assert page.locator("head > link[rel=apple-touch-icon]").count() == 1
+    assert page.locator("head > title").count() == 1
+    assert page.evaluate("document.characterSet") == "UTF-8"
+    assert page.locator("#kg_favicon_svg").get_attribute("href").startswith("data:image/svg+xml;")
+    assert page.locator("#kg_touch_icon").get_attribute("href").startswith("data:image/png;")
+    # Isolate icon metadata from the graph; no external network is needed.
+    page.route("https://icons.example/**", lambda route: route.fulfill(
+        content_type="text/html", body="<html><head>" + _product_head_html() + "</head></html>",
+    ))
+    page.goto("https://icons.example/output/PhysicsKG.html")
+    assert page.locator("#kg_favicon_svg").get_attribute("href") == "/favicon.svg?v=1"
+    assert page.locator("#kg_touch_icon").get_attribute("href") == "/apple-touch-icon.png?v=1"
+    page.unroute("https://icons.example/**")
+
+
+@pytest.mark.browser
 def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph):
     page = shared_browser_graph.page
 

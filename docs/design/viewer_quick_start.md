@@ -31,6 +31,8 @@ The viewer opens with modules folded.
   the `−` on an expanded module's boundary to fold it again.
 - Use **Search** to find a concept or module.
 - **Clear selection** resumes browsing without rearranging the map.
+- The floating **‹ ›** buttons retrace concept/module selections, including Clear,
+  without changing the context rule or camera framing choice.
 
 ## Choose relationships and surroundings
 

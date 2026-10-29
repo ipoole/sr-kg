@@ -14,8 +14,6 @@
 
 
 ## 2 Tutorial related
-1. DONE — New users (e.g. my wife!) may not appreciate that the tutorial dialogue is not part of the normal content.  Try to
-   distinguish it perhaps with a different coloured font.
 2. DEFERRED to a later branch — Looking forward to the possibility of automatically generated tutorials - e.g. to explain the derivation tree of a
    given concept, we will need move away from authoring the tutorial prompts explicitly.  We could associate with
    every details block a short sentence summary, or learning outcome.  That could be used in a tutorial prompt and also
@@ -26,16 +24,6 @@
    There would also need to be a means of editing a tutorial, which needs careful thought; just editing the prompts is
    easy, but changing an interaction might move to an incompatible state. Ideally, record and edit should be the same
    thing, providing editing allows adding new steps, then record is just edit starting from and empty list.  Discuss.
-4. DONE — The Using PhysicsKG tutorial is likely to be launched into directly via a link, so the first card need to explain
-   something like "Press Next to step through the tutorial or "Explore from here" temporarily take control". Or
-   effectively the same text which usually appears when the tutorial is started via Tools->Tutorial
-5. DONE — I have a smart friend, Andrew, who broadly understands SR but has always found the mass=energy thing slippery.
-   So I'd like us to make our tutorial a clear and engaging as possible, working on the tutorial *and* content simultaneously,
-   editing, adding or splitting content blocks and adjusting edges as necessary.   Then I'll send it to Andrew for his
-   review :-).
-6. DONE — In a similar manner to 2.5 above, I'd like to add a tutorial and audit content with the goal of explaining time dilation.
-7. DONE — The introductory tutorial suffers on the phone because the expanded block (SR 1.1) falls under the tutorial dialogue.
-8. DONE — Need a way to directly launch a named tutorial. Each introduction now offers a direct launch link.
 
 ## 3 Ambitious ideas
 1. Create dynamic graphic models, user might adjust parameters.  E.g. free fall near a black hole given initial velocity.
@@ -44,4 +32,9 @@
    wherever they can usefully got a point across.
 
 ## 4. Misc. Issues
-1. DONE — The viewer is pretty much un-usable on the phone in landscape orientation; lets just not allow it.
+3. Support PhysicsKG as an installable web app. Home Screen launch already works on iPhone and the old iPad;
+   personal data survives closing and relaunching. Add app identity/installation guidance, reliable offline caching
+   of the viewer and all required libraries/assets, and controlled version updates without interrupting study.
+   Verify personal-data continuity, Google sign-in/sync and export/import in standalone mode; offline changes must
+   remain safe until sync is available. Test on both devices and retain ordinary browser use. Hosted icons and the
+   landing-page installation tip are already implemented.

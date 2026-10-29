@@ -39,6 +39,10 @@ Open `output/PhysicsKG.html` in a browser. The generated page references
 CDN-hosted vis-network assets and MathJax, as well as a relative
 `lib/bindings/utils.js` asset; it is not a self-contained offline file.
 Generated HTML is a build artifact; do not commit it unless explicitly requested.
+Hosted pages use the root icon files (`favicon.svg`, `favicon-32.png`,
+`favicon.ico`, `apple-touch-icon.png`); keep them in sync with the source icons
+in `srkg/viewer_assets`. Increment the icon URL version when replacing the artwork.
+Locally opened viewer HTML retains embedded icons.
 The published interface tour can be launched directly at
 `https://physicskg.org/output/PhysicsKG.html?tutorial=using-physicskg`.
 
@@ -46,7 +50,8 @@ The published interface tour can be launched directly at
 
 Select a module for an overview and concept list; use its visible corner control
 to expand or fold it, or use the header **Search** button to find a concept.
-Follow links to explore related material and use browser Back to return.
+Follow links to explore related material and use browser Back or the floating
+**‹ ›** selection-history controls to return.
 **Details** shows the complete material, folds its blocks, or hides the pane.
 Open **Study Questions** to answer or self-mark questions before seeing their model answers. Automatic
 questions include an “I don't know” choice; free-text questions ask you to

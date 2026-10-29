@@ -17,6 +17,12 @@ Four independent axes determine the graph:
 Selecting or clearing an object does not alter the other axes. Changing context
 does not fold modules or move the camera. Folding does not change semantic
 context. Browser Back and Forward retrace selections, not complete viewer state.
+Floating **‹ ›** controls expose the same history without consuming a toolbar row,
+including when the graph is hidden. They are bounded to selections made since this
+page load, so Back cannot leave the viewer; unavailable directions are disabled.
+Native browser history remains unchanged. Guided playback hides these controls;
+Explore makes them available again. Tutorial snapshot restoration preserves the
+current browser-entry marker independently of the restored selection.
 
 ## Starting and navigating
 

@@ -84,7 +84,7 @@ def inject_controls(
     google_drive_client_id: str = "",
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
-    for marker in ("</head>", "<body>", "</body>"):
+    for marker in ("<head>", "</head>", "<body>", "</body>"):
         require_html_marker(html_text, marker)
 
     # PyVis includes Bootstrap JavaScript for its optional configuration UI.
@@ -136,10 +136,18 @@ def inject_controls(
         )
     )
 
-    head_assets = _product_head_html() + "\n" + MATHJAX_ASSET + "\n" + css
+    identity = _product_head_html()
     if 'name="viewport"' not in html_text and "name='viewport'" not in html_text:
-        head_assets = VIEWPORT_META + "\n" + head_assets
+        identity = VIEWPORT_META + "\n" + identity
 
+    # PyVis emits body-only <center>/<h1> markup inside its nominal head.
+    # The HTML parser closes the head there, so identity links appended before
+    # </head> actually land in the body and browser chrome may ignore them.
+    # Keep encoding inside the browser's initial sniffing window, ahead of the
+    # embedded local-file icons (which are much larger than that window).
+    html_text = html_text.replace('<meta charset="utf-8">', "", 1)
+    html_text = html_text.replace("<head>", '<head>\n<meta charset="utf-8">\n' + identity, 1)
+    head_assets = MATHJAX_ASSET + "\n" + css
     html_text = html_text.replace("</head>", head_assets + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
     html_text = html_text.replace("</body>", js + "\n</body>")
@@ -153,15 +161,29 @@ def _product_head_html() -> str:
     ).decode("ascii")
     favicon_png = base64.b64encode(_asset_bytes("favicon-32.png")).decode("ascii")
     touch_icon = base64.b64encode(_asset_bytes("apple-touch-icon.png")).decode("ascii")
+    local_icons = _json_for_script({
+        "kg_favicon_svg": "data:image/svg+xml;base64," + favicon_svg,
+        "kg_favicon_png": "data:image/png;base64," + favicon_png,
+        "kg_touch_icon": "data:image/png;base64," + touch_icon,
+    })
     return (
         f"<title>{html_escape(PRODUCT_TITLE)}</title>\n"
         f'<meta name="application-version" content="{html_escape(PRODUCT_VERSION)}">\n'
-        '<link rel="icon" type="image/svg+xml" '
-        f'href="data:image/svg+xml;base64,{favicon_svg}">\n'
-        '<link rel="icon" type="image/png" sizes="32x32" '
-        f'href="data:image/png;base64,{favicon_png}">\n'
-        '<link rel="apple-touch-icon" sizes="180x180" '
-        f'href="data:image/png;base64,{touch_icon}">'
+        '<link id="kg_favicon_png" rel="icon" type="image/png" sizes="32x32" '
+        'href="/favicon-32.png?v=1">\n'
+        '<link id="kg_favicon_svg" rel="icon" type="image/svg+xml" sizes="any" '
+        'href="/favicon.svg?v=1">\n'
+        '<link id="kg_touch_icon" rel="apple-touch-icon" sizes="180x180" '
+        'href="/apple-touch-icon.png?v=1">\n'
+        # Hosted icons must be fetchable by browser UI outside the page context.
+        # Keep copied/local HTML usable without its neighbouring asset files.
+        '<script>\n'
+        'if (location.protocol === "file:") {\n'
+        f'  var kgLocalIcons = {local_icons};\n'
+        '  Object.keys(kgLocalIcons).forEach(function (id) {\n'
+        '    document.getElementById(id).href = kgLocalIcons[id];\n'
+        '  });\n'
+        '}\n</script>'
     )
 
 

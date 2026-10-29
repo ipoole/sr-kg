@@ -16,6 +16,14 @@ def test_require_html_marker_raises_clear_error_for_missing_marker():
     assert str(exc.value) == "Generated PyVis HTML is missing expected marker: </body>"
 
 
+def test_utf8_declaration_precedes_embedded_icon_data():
+    source = _base_pyvis_html().replace("<head>", '<head><meta charset="utf-8">')
+    injected = inject_controls(source, {}, {}, "Title")
+    assert injected.count('<meta charset="utf-8">') == 1
+    assert injected.index('<meta charset="utf-8">') < 1024
+    assert injected.index('<meta charset="utf-8">') < injected.index("data:image/")
+
+
 @pytest.mark.parametrize("html_text", [
     "<html><body></body></html>",
     "<html><head></head></html>",
@@ -36,13 +44,13 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
 
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in injected
     assert "<title>PhysicsKG - An Atlas of Physics Knowledge</title>" in injected
-    assert '<meta name="application-version" content="4.2.0">' in injected
-    assert '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' in injected
-    assert '<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,' in injected
-    assert '<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,' in injected
+    assert '<meta name="application-version" content="4.2.1">' in injected
+    assert 'href="/favicon.svg?v=1"' in injected
+    assert 'href="/favicon-32.png?v=1"' in injected
+    assert 'href="/apple-touch-icon.png?v=1"' in injected
     assert '<b class="kg-product-name">PhysicsKG</b>' in injected
     assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
-    assert '<span class="kg-product-version">v4.2.0</span>' in injected
+    assert '<span class="kg-product-version">v4.2.1</span>' in injected
     assert 'id="kg_brand_home"' in injected
     assert 'aria-label="PhysicsKG — Quick Start"' in injected
     assert 'class="kg-brand-mark" src="data:image/svg+xml;base64,' in injected
@@ -110,6 +118,22 @@ def test_favicon_png_fallbacks_have_expected_dimensions():
         assert struct.unpack(">II", image[16:24]) == expected_size
 
 
+def test_hosted_icons_have_root_fallbacks_and_local_html_retains_embedded_icons():
+    from pathlib import Path
+    from srkg.html_injection import ASSET_DIR
+
+    root = Path(__file__).resolve().parents[1]
+    for name in ("favicon.svg", "favicon-32.png", "apple-touch-icon.png"):
+        assert (root / name).read_bytes() == (ASSET_DIR / name).read_bytes()
+    ico = (root / "favicon.ico").read_bytes()
+    assert struct.unpack("<HHH", ico[:6]) == (0, 1, 1)
+    assert ico[22:] == (ASSET_DIR / "favicon-32.png").read_bytes()
+    injected = inject_controls(_base_pyvis_html(), {}, {}, "Title")
+    assert 'location.protocol === "file:"' in injected
+    assert 'data:image/svg+xml;base64,' in injected
+    assert 'data:image/png;base64,' in injected
+
+
 def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
     injected = inject_controls(_base_pyvis_html(), {}, {}, "Title")
 
@@ -120,7 +144,7 @@ def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
         "Select a concept or module; use a module's corner control to expand or collapse it."
     ) == 2
     assert 'class="kg-splash-credit"' in injected
-    assert 'class="kg-splash-version">Version 4.2.0</span>' in injected
+    assert 'class="kg-splash-version">Version 4.2.1</span>' in injected
     assert 'href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a>' in injected
     assert "with AI assistance via OpenAI Codex." in injected
     assert 'onclick="kgShowSplash()"' in injected
