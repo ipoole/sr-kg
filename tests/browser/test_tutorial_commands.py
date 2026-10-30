@@ -36,11 +36,11 @@ def test_semantic_commands_drive_existing_viewer_transitions_without_history(bro
 
     page.evaluate(
         """() => kgExecuteViewerCommand(
-          {command: "set-details-mode", value: "folded"},
+          {command: "set-view", value: "both"},
           {origin: "tutorial"}
         )"""
     )
-    assert page.locator("#kg_details_view_select").input_value() == "folded"
+    assert page.locator("#kg_view_select").input_value() == "both"
 
 
 @pytest.mark.browser
@@ -73,7 +73,7 @@ def test_semantic_commands_control_module_representation_and_details_blocks(brow
     )
     page.evaluate(
         """() => kgExecuteViewerCommand(
-          {command: "set-details-mode", value: "folded"},
+          {command: "set-view", value: "both"},
           {origin: "tutorial"}
         )"""
     )

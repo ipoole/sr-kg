@@ -494,8 +494,8 @@ tutorials:
         commentary: Details is made from authored content blocks.
         prepare:
           - command: close-search
-          - command: set-details-mode
-            value: full
+          - command: set-view
+            value: both
         action:
           command: open-details-block
           target: block:1.1.definition

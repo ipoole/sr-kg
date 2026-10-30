@@ -113,6 +113,6 @@ def test_viewer_offers_a_public_privacy_policy_link():
     assert "Privacy and Google Drive data use" in controls
 
 
-def test_product_version_is_four_point_two_point_zero():
-    assert PRODUCT_VERSION == "4.2.1"
+def test_product_version_matches_release():
+    assert PRODUCT_VERSION == "4.3.0"
     assert all(part.isdigit() for part in PRODUCT_VERSION.split("."))

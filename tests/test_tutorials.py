@@ -46,7 +46,7 @@ def test_load_visible_action_sequence(tmp_path):
     path = _write_tutorials(tmp_path / "tutorials.yaml", _sequence_route("""
           - action: {command: select, target: 'concept:sr.alpha'}
             pointer: {target: 'graph:concept:sr.alpha'}
-            pause_ms: 250
+            pause_ms: 3000
           - action: {command: expand-context-modules}
             pointer: {target: 'control:expand-context'}
           - action: {command: fit, value: context}
@@ -56,7 +56,7 @@ def test_load_visible_action_sequence(tmp_path):
                            module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0].to_viewer_data()
     actions = route["steps"][0]["actions"]
     assert len(actions) == 3
-    assert actions[0]["pause_ms"] == 250
+    assert actions[0]["pause_ms"] == 3000
     assert actions[1]["pause_ms"] == 500
     assert actions[1]["action"]["command"] == "expand-context-modules"
     assert "action" not in route["steps"][0]
@@ -64,11 +64,11 @@ def test_load_visible_action_sequence(tmp_path):
 
 @pytest.mark.parametrize("actions,extra", [
     ("[]", ""),
-    ("[{action: {command: clear-selection}, pause_ms: -1}]", ""),
-    ("[{action: {command: clear-selection}, pause_ms: 5001}]", ""),
-    ("[{action: {command: clear-selection}}]", "action: {command: clear-selection}"),
+    ("[{action: {command: select, target: concept:sr.alpha}, pause_ms: -1}]", ""),
+    ("[{action: {command: select, target: concept:sr.alpha}, pause_ms: 5001}]", ""),
+    ("[{action: {command: select, target: concept:sr.alpha}}]", "action: {command: select, target: concept:sr.alpha}"),
     ("[{action: {command: select, target: 'concept:missing'}}]", ""),
-    ("[{action: {command: clear-selection}, pointer: {target: 'control:missing'}}]", ""),
+    ("[{action: {command: select, target: concept:sr.alpha}, pointer: {target: 'control:missing'}}]", ""),
 ])
 def test_reject_invalid_visible_action_sequence(tmp_path, actions, extra):
     path = _write_tutorials(tmp_path / "tutorials.yaml", _sequence_route(actions, extra))
@@ -107,8 +107,8 @@ tutorials:
         title: Read its definition
         commentary: The details pane contains authored blocks.
         prepare:
-          - command: set-details-mode
-            value: full
+          - command: set-view
+            value: both
         action:
           command: open-details-block
           target: block:sr.alpha.definition
@@ -179,7 +179,7 @@ tutorials:
         "target": "concept:sr.alpha",
     }
     assert tutorials[1].to_viewer_data()["steps"][1]["prepare"] == [
-        {"command": "set-details-mode", "value": "full"},
+        {"command": "set-view", "value": "both"},
     ]
 
 
@@ -201,7 +201,7 @@ tutorials:
       - step_id: start
         title: Start
         commentary: Start here.
-        action: {command: clear-selection}
+        action: {command: select, target: concept:sr.alpha}
   - tutorial_id: duplicate
     title: Two
     category: interface
@@ -212,7 +212,7 @@ tutorials:
       - step_id: start
         title: Start
         commentary: Start here.
-        action: {command: clear-selection}
+        action: {command: select, target: concept:sr.alpha}
 """,
             "Duplicate tutorial id.*duplicate",
         ),
@@ -266,11 +266,11 @@ tutorials:
       - step_id: same
         title: First
         commentary: First step.
-        action: {command: clear-selection}
+        action: {command: select, target: concept:sr.alpha}
       - step_id: same
         title: Second
         commentary: Second step.
-        action: {command: clear-selection}
+        action: {command: select, target: concept:sr.alpha}
 """,
             "Duplicate step id.*same",
         ),
@@ -288,7 +288,7 @@ tutorials:
       - step_id: start
         title: Start
         commentary: Start here.
-        action: {command: clear-selection}
+        action: {command: select, target: concept:sr.alpha}
         pointer: {target: graph:concept:missing}
 """,
             "pointer target references unknown concept.*missing",

@@ -52,6 +52,11 @@ The published interface tour can be launched directly at
 
 ## Study with the viewer
 
+**View** chooses Graph, Details or Both. **Graph** chooses All equally, Context +
+background or Context only. Selection is always retained; startup selects SR-1.
+The Context rule remains available for fitting and expansion in every graph mode.
+Show in graph fits its context automatically without unfolding modules.
+
 Select a module for an overview and concept list; use its visible corner control
 to expand or fold it, or use the header **Search** button to find a concept.
 Follow links to explore related material and use browser Back or the floating

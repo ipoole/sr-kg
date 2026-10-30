@@ -3,24 +3,6 @@ import pytest
 pytestmark = pytest.mark.browser
 
 
-@pytest.mark.parametrize('mode', ['full', 'folded'])
-def test_module_overview_survives_details_presentation_change(browser_graph, mode):
-    page = browser_graph.page
-    browser_graph.click_concept('2.2')
-    page.locator('#kg_details_view_select').select_option(mode)
-    page.locator('#info_panel .concept-module-chip').click()
-    assert page.locator('#kg_details_view_select').input_value() == mode
-    overview = page.locator('#info_panel .module-content-block')
-    assert overview.count() == 1
-    if mode == 'folded':
-        assert not overview.evaluate('el => el.open')
-        overview.locator('summary').click()
-    assert overview.locator('.content-block-body, .content-block-fold-body').is_visible()
-    if mode == 'folded':
-        page.locator('#info_panel .module-members > summary').click()
-    page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.2"]').click()
-    assert page.locator('#kg_details_view_select').input_value() == mode
-    assert page.locator('#info_panel').get_attribute('data-reading-mode') == mode
 
 
 def test_module_details_include_all_authored_blocks(browser_graph):
@@ -36,5 +18,5 @@ def test_module_details_include_all_authored_blocks(browser_graph):
     assert page.locator('#info_panel .module-content-block').count() == 3
     assert page.locator('#info_panel .module-content-block.content-block-result').count() == 1
     assert page.locator('#info_panel .module-content-block.content-block-warning').count() == 1
-    page.locator('#kg_details_view_select').select_option('hide')
+    page.locator('#kg_view_select').select_option('graph')
     assert not page.locator('#info_panel').is_visible()

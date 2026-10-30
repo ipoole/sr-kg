@@ -97,7 +97,8 @@ The temporary Fit++ arrangement notice is suppressed during guided playback,
 when manual dragging is unavailable. It reappears during Explore.
 
 A card may contain a sequence of visible semantic actions. Each action has its
-own pointer target and a short pause before the next action (500 ms by default).
+own pointer target and a pause before the next action (500 ms by default,
+up to 5 seconds when the result needs longer inspection).
 The card's teaching point and commentary remain fixed throughout. Navigation
 and Explore stay unavailable until all its actions finish. Existing single-action
 cards retain their behaviour. Back replays the entire sequence without its
@@ -232,10 +233,9 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | Command | Parameters | Existing viewer operation |
 | --- | --- | --- |
 | `select` | concept or module semantic ID | normal selection transition, without history |
-| `clear-selection` | none | clear selection |
-| `set-display-scope` | `full`, `context`, `hidden` | Display scope control |
+| `set-display-scope` | `all`, `full`, `context` | All equally, Context + background, Context only |
 | `set-context` | preset and depth | Context rule controls |
-| `set-details-mode` | `full`, `folded`, `hidden` | Details selector |
+| `set-view` | `both`, `graph`, `details` | Workspace panes; preserves reading state |
 | `set-module-representation` | module ID and `folded`/`expanded` | normal module representation transition |
 | `set-all-module-representations` | `folded`/`expanded` | fold or expand all non-empty modules |
 | `expand-context-modules` | none | expand only folded modules representing the current context |
@@ -245,7 +245,7 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | `open-details-graphic` | none | open and scroll to the selected concept's graphic |
 | `open-details-relationship` | `derived-from` or `where-used` | open and frame a relationship section |
 | `set-relationship-full-tree` | relationship section and boolean `full_tree` | set the section's Full tree checkbox and refresh its contents |
-| `show-relationship-in-graph` | Context preset and full-tree flag | the section's normal Show in graph operation |
+| `show-relationship-in-graph` | Context preset and full-tree flag | sets context/depth, shows Both if necessary, selects Frame Context and fits after resizing; does not expand or contract |
 | `show-graph-concept-hover` | concept ID | show the normal graph-hover preview without selecting |
 | `show-graph-edge-hover` | source, relation and target concept IDs | emphasise and preview one visible edge |
 | `show-tools-section` | stable section name | open Tools and the named section |

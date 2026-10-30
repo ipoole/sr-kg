@@ -12,7 +12,7 @@ def test_repeated_folded_projection_reuses_module_label_measurements(repo_browse
         return original(tagName, options);
       };
       try {
-        window.kgClearSelection();
+        kgExecuteViewerCommand({command:'set-display-scope', value:'all'});
         return calls;
       } finally {
         document.createElement = original;
@@ -271,7 +271,7 @@ def test_folded_module_represents_selected_concept_with_normal_selected_face(bro
     assert drawn["lineWidth"] == 6
     assert drawn["strokeStyle"] == "#000000"
 
-    page.locator("#kg_clear_selection").click()
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'module:test.m01_foundations'})")
     assert page.evaluate(
         "() => nodes.get('module::test.m02_applications').selectedConceptProxyId"
     ) == ""
@@ -396,16 +396,6 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
     assert page.evaluate("() => nodes.get().filter(n => n.isModuleNode).map(n => n.font.size)") == before
 
 
-@pytest.mark.browser
-def test_initial_prompt_includes_modules_and_unnecessary_recenter_control_is_absent(browser_graph):
-    page = browser_graph.page
-    assert page.locator('#info_panel').get_attribute('data-concept-id') is None
-    assert page.locator('#info_panel').get_attribute('data-module-id') is None
-    assert page.locator('#kg_layout_recenter_module').count() == 0
-    browser_graph.click_concept('2.1')
-    page.locator('#kg_clear_selection').click()
-    assert page.locator('#info_panel').get_attribute('data-concept-id') is None
-    assert page.locator('#info_panel').get_attribute('data-module-id') is None
 
 
 @pytest.mark.browser

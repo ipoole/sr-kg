@@ -7,24 +7,23 @@
       </button>
       <button id="kg_controls_toggle" class="kg-shell-button kg-shell-tools-button" onclick="kgToggleControls()">Tools</button>
       <button id="kg_search_toggle" class="kg-shell-button" type="button" aria-controls="kg_search_section" aria-expanded="false">Search</button>
+      <div class="kg-shell-control kg-shell-view-control">
+        <label for="kg_view_select">View</label>
+        <select id="kg_view_select" class="kg-canvas-select" aria-label="Workspace view">
+          <option value="both" selected>Both</option>
+          <option value="graph">Graph</option>
+          <option value="details">Details</option>
+        </select>
+      </div>
       <div class="kg-shell-control kg-shell-graph-control">
         <label for="kg_display_scope_select">Graph</label>
         <select id="kg_display_scope_select" class="kg-canvas-select" aria-label="Graph display scope">
-          <option value="full" selected>Full graph</option>
+          <option value="all" selected>All equally</option>
+          <option value="full">Context + background</option>
           <option value="context">Context only</option>
-          <option value="hidden">Hidden</option>
         </select>
-        <button id="kg_clear_selection" class="kg-shell-button" type="button" title="Clear selection">Clear selection</button>
       </div>
       __TITLE_HTML__
-      <div class="kg-shell-control kg-shell-details-control">
-        <label for="kg_details_view_select">Details</label>
-        <select id="kg_details_view_select" class="kg-canvas-select" aria-label="Details view">
-          <option value="hide">Hide details</option>
-          <option value="full" selected>Full details</option>
-          <option value="folded">Folded</option>
-        </select>
-      </div>
     </header>
     <nav id="kg_history_controls" aria-label="Selection history">
       <button id="kg_history_back" type="button" aria-label="Back to previous selection" title="Back to previous selection" disabled>‹</button>
@@ -131,8 +130,8 @@
         <div class="kg-graph-context-controls">
           <div class="kg-context-control-group" aria-label="Context rule">
             <label for="kg_context_preset_select" class="kg-group-label">Context</label>
-            <span id="kg_context_help" class="kg-visually-hidden">Choose the relationships used to find context around the selection. In Full graph, also filters which edges are shown.</span>
-            <select id="kg_context_preset_select" class="kg-canvas-select" aria-describedby="kg_context_help" title="Choose the relationships used to find context around the selection. In Full graph, also filters which edges are shown.">
+            <span id="kg_context_help" class="kg-visually-hidden">Choose the relationships used to find context around the selection. In both whole-graph modes, also filters which edges are shown.</span>
+            <select id="kg_context_preset_select" class="kg-canvas-select" aria-describedby="kg_context_help" title="Choose the relationships used to find context around the selection. In both whole-graph modes, also filters which edges are shown.">
               <option value="connections">Connections</option>
               <option value="prerequisites">Prerequisites</option>
               <option value="derivation">Derivation</option>
@@ -156,8 +155,8 @@
             <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target" aria-describedby="kg_frame_help" title="Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.">
               <option value="reveal">Reveal selection</option>
               <option value="selection">Fit selection</option>
-              <option value="context" selected>Fit context</option>
-              <option value="displayed">Fit displayed graph</option>
+              <option value="context">Fit context</option>
+              <option value="displayed" selected>Fit displayed graph</option>
             </select>
             <span id="kg_fit_help" class="kg-visually-hidden"></span>
             <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit</button>
@@ -179,15 +178,6 @@
           </div>
         </div>
       </section>
-
-      <div id="kg_empty_graph_state" class="kg-empty-graph-state" role="status" hidden>
-        <strong>No context to display</strong>
-        <p>Select a concept or module using Search, or switch to the Full graph.</p>
-        <div class="kg-empty-graph-actions">
-          <button id="kg_empty_graph_search" type="button">Search</button>
-          <button id="kg_empty_graph_show_full" type="button">Show full graph</button>
-        </div>
-      </div>
 
       <div id="kg_portrait_notice" role="status">Please rotate your phone to portrait to use PhysicsKG.</div>
       <section id="kg_tutorial_narration" class="kg-tutorial-narration"
@@ -271,7 +261,17 @@
       <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.</p>
       <div class="kg-splash-feature-grid">
         <section>
-          <h3>Guided tutorials<span class="kg-status-badge">NEW</span></h3>
+          <h3>Simpler view controls<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>View chooses Graph, Details or Both, preserving your selection, zoom and opened sections.</li>
+            <li>Graph → All equally shows the whole map in foreground, with coloured relationships.</li>
+            <li>Context + background emphasises the selected context and subdues the rest.</li>
+            <li>Context only shows just the selection and its context.</li>
+            <li>Selecting an object never changes the Graph choice automatically.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Guided tutorials</h3>
           <ul>
             <li>Choose Start guided tutorial below, or select a route under Tools → Tutorials.</li>
             <li>Physics routes explore why mass has rest energy and why moving clocks record less time.</li>
@@ -283,34 +283,39 @@
         <section>
           <h3>Start with the map</h3>
           <ul>
+            <li>The viewer starts with SR-1 selected, modules folded and Graph set to All equally.</li>
             <li>Click a module to read its introduction and connections.</li>
             <li>Use the + in a folded module's top-right corner to reveal its concepts; use the − on an expanded module's boundary to fold it again.</li>
             <li>Use Search to go directly to a concept or module.</li>
-            <li>Clear selection without changing the map arrangement.</li>
+            <li>Clicking empty graph space keeps the current selection.</li>
           </ul>
         </section>
         <section>
           <h3>Choose the context</h3>
           <ul>
-            <li>Context filters Full graph edges and, with a selection, chooses the relationships around it.</li>
+            <li>Context chooses relationships around the selection and filters eligible edges across the whole map.</li>
             <li>Use named contexts such as Prerequisites, Derivation, Foundations, Uses, or Related.</li>
             <li>Choose one hop, two hops, or the complete transitive chain.</li>
             <li>Changing context does not move the graph or fold modules.</li>
+            <li>In Derived from or Where this is used, Show in graph applies that section's context and fits it automatically. Full tree follows the complete chain.</li>
+            <li>From Details-only, Show in graph opens Both without changing module folding.</li>
           </ul>
         </section>
         <section>
-          <h3>Control the surroundings</h3>
+          <h3>Reveal the concepts</h3>
           <ul>
-            <li>Full graph shows every edge type named by Context; a selection colours only its reached context.</li>
-            <li>Context only removes that background; Hidden gives details more room.</li>
             <li>A selected concept inside a folded module appears as a circular concept face within the module.</li>
+            <li>Expand context reveals any folded modules containing context concepts.</li>
+            <li>Context counts, expansion and fitting remain useful in every Graph mode.</li>
           </ul>
         </section>
         <section>
           <h3>Move and read</h3>
           <ul>
             <li>Pan and zoom freely; selection only pans enough to reveal an off-screen item.</li>
-            <li>Fit a selected Context-only view, then use Fit++ to contract it temporarily.</li>
+            <li>Frame chooses what Fit does: reveal the selection or frame the selection, context or whole displayed graph.</li>
+            <li>After Fit context, press Fit++ to bring context concepts closer temporarily, in any Graph mode.</li>
+            <li>Open or close individual details sections as you read.</li>
             <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>

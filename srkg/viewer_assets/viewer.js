@@ -12,9 +12,9 @@
       var edgeHoverWidth = kgViewerConfig.edgeHoverWidth;
 
       var DisplayScope = Object.freeze({
+        ALL: "all",
         FULL: "full",
-        CONTEXT: "context",
-        HIDDEN: "hidden"
+        CONTEXT: "context"
       });
       var ContextPreset = Object.freeze({
         CONNECTIONS: "connections",
@@ -203,7 +203,8 @@
         var activeModuleId = null;
         var viewerState = {
           contextRule: createContextRule(ContextPreset.FOUNDATIONS, ContextDepth.ONE_HOP),
-          displayScope: DisplayScope.FULL
+          displayScope: DisplayScope.ALL,
+          view: "both"
         };
         var layoutEditModeEnabled = false;
         var contextFitPrimedKey = null;
@@ -235,7 +236,6 @@
         var conceptPreviewHideTimer = null;
         var conceptPreviewPinned = false;
         var conceptPreviewAnchor = null;
-        var defaultStartupConceptId = null;
         var transientConceptHighlight = null;
         var transientEdgeSnapshots = {};
         var userNotesStorageKey = kgStorageKeys.userNotes;
@@ -257,7 +257,6 @@
         var notePlacementPointerStart = null;
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
-        var readingMode = "full";
         var activeConceptSectionTargetId = null;
         var currentConceptTocItems = [];
         var detailScrollSyncTimer = null;
@@ -578,7 +577,7 @@
                 "Fit++ is temporary; drag context nodes to adjust this arrangement.";
             } else if (!layoutEditModeEnabled) {
               message.textContent = "Node dragging is off.";
-            } else if (viewerState.displayScope === DisplayScope.HIDDEN) {
+            } else if (viewerState.view === "details") {
               message.textContent = "Personal editing is on. Show the graph to move nodes.";
             } else {
               message.textContent = "Moves are saved to your personal layout in this browser.";
@@ -592,17 +591,17 @@
 
         function persistentLayoutEditingEnabled() {
           return layoutEditModeEnabled && !contextContractionState &&
-            viewerState.displayScope !== DisplayScope.HIDDEN;
+            viewerState.view !== "details";
         }
 
         function layoutDraggingEnabled() {
-          return viewerState.displayScope !== DisplayScope.HIDDEN &&
+          return viewerState.view !== "details" &&
             (Boolean(contextContractionState) || persistentLayoutEditingEnabled());
         }
 
         function nodeDraggingEnabled(nodeId) {
           var node = nodes.get(String(nodeId));
-          if (!node || node.hidden || viewerState.displayScope === DisplayScope.HIDDEN) {
+          if (!node || node.hidden || viewerState.view === "details") {
             return false;
           }
           if (contextContractionState) {
@@ -822,7 +821,7 @@
                 corner = {x: outline.right, y: outline.top};
               }
             }
-            if (!corner || viewerState.displayScope === DisplayScope.HIDDEN) {
+            if (!corner || viewerState.view === "details") {
               button.style.display = "none";
               return;
             }
@@ -889,7 +888,7 @@
         }
 
         function showNodeTooltip(nodeId, pointer) {
-          if (!nodeTooltip || viewerState.displayScope === DisplayScope.HIDDEN) { return; }
+          if (!nodeTooltip || viewerState.view === "details") { return; }
           var moduleId = moduleIdFromGraphNodeId(nodeId);
           if (moduleId && getModule(moduleId)) {
             replaceTypesetContent(nodeTooltip, moduleTooltipHtml(moduleId));
@@ -2231,7 +2230,7 @@
         function openScorecardQuestion(questionId) {
           var indexed = studyQuestionIndex[questionId];
           if (!indexed) { return; }
-          setDetailsView("full");
+          setViewerView(viewerState.view === "graph" ? "both" : viewerState.view);
           navigateToConcept(indexed.conceptId, "Selected");
           window.requestAnimationFrame(function() {
             var selector = '.study-question[data-question-id="' +
@@ -3107,7 +3106,6 @@
           if (document.getElementById("kg_workspace")) { return; }
           var panel = document.getElementById("info_panel");
           var contextPanel = document.getElementById("kg_graph_context_panel");
-          var emptyGraphState = document.getElementById("kg_empty_graph_state");
           var tutorialNarration = document.getElementById("kg_tutorial_narration");
           var originalGraphParent = graphContainer.parentElement;
           var shell = document.createElement("main");
@@ -3140,9 +3138,6 @@
           shell.appendChild(document.getElementById("kg_history_controls"));
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
-          if (emptyGraphState) {
-            graphSurface.appendChild(emptyGraphState);
-          }
           if (tutorialNarration) {
             document.body.appendChild(tutorialNarration);
           }
@@ -3325,45 +3320,26 @@
           }, 250);
         }
 
-        function updateDetailsViewControls() {
-          var select = document.getElementById("kg_details_view_select");
-          if (!select) { return; }
-          select.value = detailsAreVisible() ? readingMode : "hide";
+        function updateWorkspaceViewControl() {
+          var select = document.getElementById("kg_view_select");
+          if (select) { select.value = viewerState.view; }
         }
 
-        function setDetailsView(value) {
-          value = String(value || "full");
-          if (value === "hide") {
-            setInfoPanelVisible(false);
-            return;
-          }
-
-          readingMode = readingModeDefinitions[value] ? value : "full";
-          setInfoPanelVisible(true);
-          if (activeNodeId && getConcept(activeNodeId)) {
-            showConcept(activeNodeId, {preserveSectionContext: true});
-          } else if (activeModuleId && getModule(activeModuleId)) {
-            showModule(activeModuleId, {preserveSectionContext: true});
-          }
-          updateDetailsViewControls();
-          document.getElementById("kg_status").innerText =
-            "Details mode: " + currentReadingModeDefinition().label + ".";
+        function setViewerView(value) {
+          if (["both", "graph", "details"].indexOf(value) === -1) { value = "both"; }
+          var camera = cameraSnapshot();
+          viewerState.view = value;
+          document.getElementById("info_panel").classList.toggle("kg-hidden", value === "graph");
+          document.body.classList.toggle("kg-details-hidden", value === "graph");
+          document.body.classList.toggle("kg-graph-hidden", value === "details");
+          updateWorkspaceViewControl();
+          updateGraphViewControls();
+          preserveCameraAfterLayout(camera);
+          updateGraphContextControls();
         }
 
         function setInfoPanelVisible(visible) {
-          var panel = document.getElementById("info_panel");
-          if (!visible && viewerState.displayScope === DisplayScope.HIDDEN) {
-            visible = true;
-            document.getElementById("kg_status").innerText =
-              "Details remain visible while the graph is hidden.";
-          }
-          var camera = cameraSnapshot();
-          panel.classList.toggle("kg-hidden", !visible);
-          document.body.classList.toggle("kg-details-hidden", !visible);
-          preserveCameraAfterLayout(camera);
-          updateDetailsViewControls();
-          updateGraphContextControls();
-          return visible;
+          setViewerView(visible ? (viewerState.view === "details" ? "details" : "both") : "graph");
         }
 
         function setControlsVisible(visible) {
@@ -3521,7 +3497,7 @@
 
         /* Display-scope controls and module actions. */
         function updateModuleActionControls() {
-          var disabled = viewerState.displayScope === DisplayScope.HIDDEN;
+          var disabled = viewerState.view === "details";
           ["kg_modules_collapse_all", "kg_modules_expand_all"].forEach(function(id) {
             var button = document.getElementById(id);
             if (!button) { return; }
@@ -3536,11 +3512,11 @@
           var select = document.getElementById("kg_display_scope_select");
           if (select) {
             select.value = viewerState.displayScope;
-            select.title = "Choose how much of the graph is displayed";
+            select.title = "All equally: the whole graph in foreground. Context + background: emphasise the selected context. Context only: omit the background.";
           }
           document.body.classList.toggle(
             "kg-graph-hidden",
-            viewerState.displayScope === DisplayScope.HIDDEN
+            viewerState.view === "details"
           );
           updateModuleActionControls();
           if (network && network.setOptions) {
@@ -3916,80 +3892,6 @@
           }
         });
 
-        var readingModeDefinitions = Object.freeze({
-          full: {
-            label: "Full"
-          },
-          folded: {
-            label: "Folded"
-          }
-        });
-        var lazyFoldedSectionBodies = {};
-        var nextLazyFoldedSectionId = 1;
-
-        function currentReadingModeDefinition() {
-          return readingModeDefinitions[readingMode] || readingModeDefinitions.full;
-        }
-
-        function openTopLevelDetailIds(panel) {
-          if (!panel || panel.getAttribute("data-reading-mode") !== "folded") {
-            return [];
-          }
-          return Array.prototype.map.call(
-            panel.querySelectorAll(":scope > details[open][id]"),
-            function(section) { return section.id; }
-          );
-        }
-
-        function applyReadingModeSectionState(panel, openIds) {
-          if (!panel) { return; }
-          panel.setAttribute("data-reading-mode", readingMode);
-          if (readingMode !== "folded") { return; }
-          var retained = {};
-          (openIds || []).forEach(function(id) { retained[id] = true; });
-          panel.querySelectorAll(":scope > details").forEach(function(section) {
-            section.open = Boolean(section.id && retained[section.id]);
-          });
-        }
-
-        function prepareLazyFoldedSections(panel) {
-          lazyFoldedSectionBodies = {};
-          if (!panel || readingMode !== "folded") { return; }
-          panel.querySelectorAll(":scope > details:not([open])").forEach(function(section) {
-            var summary = section.querySelector(":scope > summary");
-            if (!summary || !summary.nextSibling) { return; }
-            var key = "lazy-section-" + nextLazyFoldedSectionId;
-            nextLazyFoldedSectionId += 1;
-            var html = "";
-            while (summary.nextSibling) {
-              var node = summary.nextSibling;
-              html += node.nodeType === Node.ELEMENT_NODE
-                ? node.outerHTML
-                : (node.nodeValue || "");
-              node.remove();
-            }
-            lazyFoldedSectionBodies[key] = html;
-            section.setAttribute("data-lazy-section", key);
-          });
-        }
-
-        function materializeLazyFoldedSection(section, beforeOpen) {
-          if (!section || (!section.open && beforeOpen !== true)) { return false; }
-          var key = section.getAttribute("data-lazy-section");
-          if (!key || !Object.prototype.hasOwnProperty.call(lazyFoldedSectionBodies, key)) {
-            return false;
-          }
-          section.insertAdjacentHTML("beforeend", lazyFoldedSectionBodies[key]);
-          delete lazyFoldedSectionBodies[key];
-          section.removeAttribute("data-lazy-section");
-          if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise([section]).catch(function(err) {
-              console.warn("MathJax folded-section typesetting failed:", err);
-            }).then(schedulePanelContentRefit);
-          }
-          return true;
-        }
-
         function contentBlockPolicyFor(kind) {
           return contentBlockKindPolicy[kind] || {
             label: contentBlockKindLabel(kind),
@@ -4296,7 +4198,8 @@
               viewerState.contextRule.depth,
               viewerState.contextRule.customTraversals
             ),
-            displayScope: viewerState.displayScope
+            displayScope: viewerState.displayScope,
+            view: viewerState.view
           };
         };
 
@@ -4722,7 +4625,7 @@
         }
 
         function expandedModuleOutlineSnapshot() {
-          return viewerState.displayScope === DisplayScope.FULL
+          return viewerState.displayScope !== DisplayScope.CONTEXT
             ? expandedModuleGeometrySnapshot()
             : [];
         }
@@ -5401,7 +5304,6 @@
           var module = getModule(moduleId);
           if (!module) { return; }
           var panel = document.getElementById("info_panel");
-          var retainedOpenSections = openTopLevelDetailIds(panel);
           var tocItems = moduleTocItems(moduleId, module);
           currentConceptTocItems = tocItems.slice();
 
@@ -5419,11 +5321,6 @@
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
           replaceTypesetContent(panel, html);
-          applyReadingModeSectionState(
-            panel,
-            moduleChanged ? [] : retainedOpenSections
-          );
-          prepareLazyFoldedSections(panel);
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -5656,7 +5553,8 @@
         function noteTitlesForConcept(nodeId) {
           return userNotesState.notes
             .filter(function(note) {
-              return note.targetType === "concept" && note.targetId === String(nodeId);
+              return note.targetType === "concept" && note.targetId === String(nodeId) &&
+                !noteIsDefaultEmpty(note);
             })
             .map(function(note) { return note.title || "Untitled note"; })
             .filter(Boolean);
@@ -5679,7 +5577,12 @@
             html += '<div class="kg-tooltip-definition">' + renderTooltipText(definition) + "</div>";
           }
           html += tooltipListHtml("Optional details", optionalDetailTitlesForConcept(concept));
-          html += tooltipListHtml("Notes", noteTitlesForConcept(nodeId));
+          var noteTitles = noteTitlesForConcept(nodeId);
+          html += tooltipListHtml("Notes", noteTitles.slice(0, 3));
+          if (noteTitles.length > 3) {
+            html += '<div class="kg-tooltip-section-title">' +
+              (noteTitles.length - 3) + " more notes</div>";
+          }
           return html;
         }
 
@@ -6170,7 +6073,7 @@
           // In Full graph, the active context's relation set is a global edge
           // filter. Direction and depth only determine the coloured context
           // reached from a selection.
-          var fullGraph = viewerState.displayScope === DisplayScope.FULL;
+          var fullGraph = viewerState.displayScope !== DisplayScope.CONTEXT;
           hidden = hidden || (fullGraph &&
             !fullGraphRelationKeep(viewerState.contextRule)[edgeRelation(edge)]);
           edge.hidden = hidden;
@@ -6307,6 +6210,7 @@
         }
 
         function applyTransientConceptHighlight(nodeId) {
+          if (viewerState.view === "details") { return; }
           clearTransientConceptHighlight();
           nodeId = String(nodeId);
           if (!visibleGraphNode(nodeId)) {
@@ -6412,14 +6316,12 @@
         function updateResponsiveControlLabels() {
           var compact = phoneViewportActive();
           setResponsiveOptionLabels("kg_display_scope_select", {
-            full: ["Full graph", "Full"],
-            context: ["Context only", "Context"],
-            hidden: ["Hidden", "Hidden"]
+            all: ["All equally", "All equally"],
+            full: ["Context + background", "Context + bg"],
+            context: ["Context only", "Context"]
           }, compact);
-          setResponsiveOptionLabels("kg_details_view_select", {
-            hide: ["Hide details", "Hide"],
-            full: ["Full details", "Full"],
-            folded: ["Folded", "Folded"]
+          setResponsiveOptionLabels("kg_view_select", {
+            both: ["Both", "Both"], graph: ["Graph", "Graph"], details: ["Details", "Details"]
           }, compact);
           setResponsiveOptionLabels("kg_fit_select", {
             reveal: ["Reveal selection", "Reveal"],
@@ -6427,8 +6329,6 @@
             context: ["Fit context", "Context"],
             displayed: ["Fit displayed graph", "All"]
           }, compact);
-          var clearButton = document.getElementById("kg_clear_selection");
-          if (clearButton) { clearButton.textContent = compact ? "Clear" : "Clear selection"; }
           var expandSelected = document.getElementById("kg_expand_selected_module");
           if (expandSelected) {
             expandSelected.textContent = compact
@@ -6445,25 +6345,18 @@
           var summary = document.getElementById("kg_context_summary");
           var customEdit = document.getElementById("kg_custom_context_edit");
           var representationActions = document.getElementById("kg_representation_actions");
-          var noSelection = selection.type === "none";
           if (presetSelect) {
             presetSelect.value = viewerState.contextRule.preset;
             presetSelect.disabled = false;
           }
           if (depthSelect) {
             depthSelect.value = viewerState.contextRule.depth;
-            depthSelect.disabled = noSelection;
+            depthSelect.disabled = false;
           }
           if (customEdit) {
             customEdit.hidden = viewerState.contextRule.preset !== ContextPreset.CUSTOM;
           }
           updateFitApplyButton();
-          var emptyGraphState = document.getElementById("kg_empty_graph_state");
-          if (emptyGraphState) {
-            emptyGraphState.hidden = !(
-              viewerState.displayScope === DisplayScope.CONTEXT && noSelection
-            );
-          }
           var representedCount = 0;
           var representedModuleCount = 0;
           foldedModuleIdList().forEach(function(moduleId) {
@@ -6484,7 +6377,7 @@
             );
             var expandSelected = document.getElementById("kg_expand_selected_module");
             var expandContext = document.getElementById("kg_expand_context_modules");
-            var contextCanExpand = !noSelection && representedCount > 0;
+            var contextCanExpand = representedCount > 0;
             expandSelected.hidden = !selectedConceptIsFolded;
             expandContext.hidden = !contextCanExpand;
             expandContext.textContent = "Expand " + String(representedCount) + " folded";
@@ -6503,7 +6396,7 @@
           }
           if (!summary) { return; }
 
-          var selectionLabel = "No selection";
+          var selectionLabel = "";
           if (selection.type === "concept") {
             selectionLabel = conceptDisplayId(selection.id) + " " + (getConcept(selection.id).label || "");
           } else if (selection.type === "module") {
@@ -6511,7 +6404,7 @@
           }
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
-            : viewerState.displayScope === DisplayScope.HIDDEN ? "Graph hidden" : "Full graph";
+            : viewerState.displayScope === DisplayScope.ALL ? "All equally" : "Context + background";
           summary.setAttribute("data-selection-type", selection.type);
           summary.setAttribute("data-context-preset", viewerState.contextRule.preset);
           summary.setAttribute("data-context-depth", viewerState.contextRule.depth);
@@ -6541,29 +6434,27 @@
           updateGraphContextControls();
         }
 
-        function showRelationshipSectionInGraph(preset, fullTree) {
+        async function showRelationshipSectionInGraph(preset, fullTree) {
+          var selected = JSON.stringify(viewerSelectionSnapshot());
           resetContextFitInteraction();
           viewerState.contextRule = createContextRule(
             preset,
             fullTree ? ContextDepth.TRANSITIVE : ContextDepth.ONE_HOP
           );
-          if (viewerState.displayScope === DisplayScope.HIDDEN) {
-            viewerState.displayScope = DisplayScope.CONTEXT;
-            updateGraphViewControls();
-          }
+          if (viewerState.view === "details") { setViewerView("both"); }
           renderGraphFromViewerState({fit: false});
+          document.getElementById("kg_fit_select").value = "context";
           updateGraphContextControls();
+          await nextAnimationFrames(2);
+          if (selected !== JSON.stringify(viewerSelectionSnapshot()) ||
+              viewerState.contextRule.preset !== preset || viewerState.view === "details") { return; }
+          clearContextFitPriming();
+          fitViewerTarget("context");
         }
 
         function setViewerDisplayScope(scope) {
           resetContextFitInteraction();
-          scope = scope === DisplayScope.CONTEXT || scope === DisplayScope.HIDDEN
-            ? scope
-            : DisplayScope.FULL;
-          viewerState.displayScope = scope;
-          if (scope === DisplayScope.HIDDEN && !detailsAreVisible()) {
-            setInfoPanelVisible(true);
-          }
+          viewerState.displayScope = [DisplayScope.ALL, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.ALL;
           updateGraphViewControls();
           renderGraphFromViewerState({fit: false});
           updateGraphContextControls();
@@ -7139,6 +7030,8 @@
         }
 
         function fitViewerTarget(target) {
+          // An explicit fit supersedes any pending pane-resize restoration.
+          cameraRestoreGeneration += 1;
           var selection = viewerSelectionSnapshot();
           var ids = [];
           if (target === "reveal") {
@@ -8094,7 +7987,6 @@
           currentConceptTocItems = tocItems.slice();
 
           var panel = document.getElementById("info_panel");
-          var retainedOpenSections = openTopLevelDetailIds(panel);
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
           html += renderConceptGraphic(nodeId, concept);
@@ -8146,11 +8038,6 @@
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           replaceTypesetContent(panel, html);
-          applyReadingModeSectionState(
-            panel,
-            conceptChanged ? [] : retainedOpenSections
-          );
-          prepareLazyFoldedSections(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -8588,7 +8475,7 @@
             '[data-content-block-id="' + cssAttributeValueEscape(blockId) + '"]'
           );
           if (!target) { throw new Error("Unknown or unavailable details block: " + blockId); }
-          if (!detailsAreVisible()) { setDetailsView("full"); }
+          if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
           openTargetForToc(target);
           if (target.id) { setActiveConceptSection(target.id); }
           scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
@@ -8640,7 +8527,7 @@
           if (!target) {
             throw new Error("Unknown or unavailable Details relationship: " + sectionName);
           }
-          if (!detailsAreVisible()) { setDetailsView("full"); }
+          if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
           target.open = true;
           if (target.id) { setActiveConceptSection(target.id); }
           scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
@@ -8670,7 +8557,7 @@
           setSearchOpen(true);
         }
 
-        function executeViewerCommand(command, options) {
+        async function executeViewerCommand(command, options) {
           options = options || {};
           command = command || {};
           var name = String(command.command || "");
@@ -8693,13 +8580,9 @@
               var selectionOptions = Object.assign({}, options.selectionOptions || {});
               if (options.origin === "tutorial") { selectionOptions.skipHistory = true; }
               selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
-            } else if (name === "clear-selection") {
-              clearViewerSelection({
-                skipHistory: options.origin === "tutorial" || Boolean(options.skipHistory)
-              });
             } else if (name === "set-display-scope") {
               setViewerDisplayScope(commandEnumValue(
-                command, "value", [DisplayScope.FULL, DisplayScope.CONTEXT, DisplayScope.HIDDEN]
+                command, "value", [DisplayScope.ALL, DisplayScope.FULL, DisplayScope.CONTEXT]
               ));
             } else if (name === "set-context") {
               var preset = commandEnumValue(command, "preset", Object.keys(ContextPreset).map(function(key) {
@@ -8713,11 +8596,8 @@
                 depth: depth,
                 customTraversals: command.customTraversals || []
               });
-            } else if (name === "set-details-mode") {
-              var detailsMode = commandEnumValue(
-                command, "value", ["full", "folded", "hidden"]
-              );
-              setDetailsView(detailsMode === "hidden" ? "hide" : detailsMode);
+            } else if (name === "set-view") {
+              setViewerView(commandEnumValue(command, "value", ["both", "graph", "details"]));
             } else if (name === "set-module-representation") {
               var moduleId = commandTargetId(command.target, "module:", "module");
               if (!getModule(moduleId)) { throw new Error("Unknown module: " + moduleId); }
@@ -8745,13 +8625,13 @@
             } else if (name === "open-study-questions") {
               var questions = document.querySelector("#info_panel .study-questions");
               if (!questions) { throw new Error("Study Questions are unavailable"); }
-              if (!detailsAreVisible()) { setDetailsView("full"); }
+              if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
               questions.open = true;
               scrollInfoPanelTargetBelowStickyToc(questions, {immediate: true});
             } else if (name === "open-details-graphic") {
               var graphic = document.querySelector("#info_panel .concept-figure");
               if (!graphic) { throw new Error("Details graphic is unavailable"); }
-              if (!detailsAreVisible()) { setDetailsView("full"); }
+              if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
               graphic.open = true;
               scrollInfoPanelTargetBelowStickyToc(graphic, {immediate: true});
             } else if (name === "open-details-relationship") {
@@ -8776,7 +8656,7 @@
               if (typeof command.full_tree !== "boolean") {
                 throw new Error("show-relationship-in-graph requires full_tree boolean");
               }
-              showRelationshipSectionInGraph(relationshipPreset, command.full_tree);
+              await showRelationshipSectionInGraph(relationshipPreset, command.full_tree);
             } else if (name === "show-graph-concept-hover") {
               showTutorialConceptHover(
                 commandTargetId(command.target, "concept:", "concept")
@@ -8843,8 +8723,12 @@
         function tutorialDetailsSnapshot() {
           var panel = document.getElementById("info_panel");
           var active = panel.querySelector(".kg-active-section[data-content-block-id]");
+          var sections = {};
+          panel.querySelectorAll("details[id]").forEach(function(section) {
+            sections[section.id] = section.open;
+          });
           return {
-            mode: detailsAreVisible() ? readingMode : "hidden",
+            sections: sections,
             activeTargetId: activeConceptSectionTargetId,
             blockId: active ? active.getAttribute("data-content-block-id") : null,
             derivedFromFullTree: derivedFromFullTreeEnabled,
@@ -8876,6 +8760,7 @@
               viewerState.contextRule.customTraversals
             ),
             displayScope: viewerState.displayScope,
+            view: viewerState.view,
             moduleRepresentation: moduleRepresentation,
             details: tutorialDetailsSnapshot(),
             contextFit: {
@@ -8940,11 +8825,11 @@
             snapshot.contextRule && snapshot.contextRule.customTraversals
           );
           viewerState.displayScope = [
+            DisplayScope.ALL,
             DisplayScope.FULL,
-            DisplayScope.CONTEXT,
-            DisplayScope.HIDDEN
+            DisplayScope.CONTEXT
           ].indexOf(snapshot.displayScope) === -1
-            ? DisplayScope.FULL
+            ? DisplayScope.ALL
             : snapshot.displayScope;
           restoreTutorialModuleRepresentations(snapshot.moduleRepresentation || {});
 
@@ -8960,18 +8845,10 @@
               {origin: "tutorial"}
             );
           } else {
-            await executeViewerCommand(
-              {command: "clear-selection"},
-              {origin: "tutorial", skipHistory: true}
-            );
+            selectDefaultViewerObject();
           }
 
-          await executeViewerCommand({
-            command: "set-details-mode",
-            value: ["full", "folded", "hidden"].indexOf(details.mode) === -1
-              ? "full"
-              : details.mode
-          }, {origin: "tutorial"});
+          setViewerView(snapshot.view || "both");
 
           var search = snapshot.search || {};
           var searchInput = document.getElementById("kg_search");
@@ -8996,6 +8873,10 @@
             if (block) { openTargetForToc(block); }
           }
           activeConceptSectionTargetId = details.activeTargetId || null;
+          Object.keys(details.sections || {}).forEach(function(id) {
+            var section = document.getElementById(id);
+            if (section && section.tagName === "DETAILS") { section.open = details.sections[id]; }
+          });
           updateConceptTocActive(activeConceptSectionTargetId);
           document.getElementById("info_panel").scrollTop = Math.max(
             0, Number(details.scrollTop) || 0
@@ -9243,11 +9124,10 @@
             depth: ["kg_context_depth_select", "Context depth"],
             fit: ["kg_fit_apply", "Fit"],
             "display-scope": ["kg_display_scope_select", "Graph display"],
-            "details-mode": ["kg_details_view_select", "Details view"],
+            "view": ["kg_view_select", "Workspace view"],
             search: ["kg_search_toggle", "Search"],
             "search-input": ["kg_search", "Search query"],
             tools: ["kg_controls_toggle", "Tools"],
-            "clear-selection": ["kg_clear_selection", "Clear selection"],
             "expand-context": ["kg_expand_context_modules", "Expand context modules"]
           };
           if (target === "narration") {
@@ -10026,45 +9906,25 @@
           list.innerHTML = html;
         }
 
-        function renderInitialInfoPanel() {
-          currentConceptTocItems = [];
-          var panel = document.getElementById("info_panel");
-          replaceTypesetContent(
-            panel,
-            "<h2>" + escapeHtml(defaultViewTitle) +
-            "</h2><p>Select a concept or module; use a module's corner control to expand or collapse it.</p>"
-          );
-          panel.removeAttribute("data-concept-id");
-          panel.removeAttribute("data-module-id");
-          panel.scrollTop = 0;
+        function defaultViewerSelection() {
+          var moduleId = getModule("sr.spacetime_foundations")
+            ? "sr.spacetime_foundations" : Object.keys(moduleData).sort()[0];
+          if (moduleId) { return {type: "module", id: moduleId}; }
+          var conceptId = Object.keys(conceptData).sort(compareConceptIds)[0];
+          return conceptId ? {type: "concept", id: conceptId} : null;
         }
 
-        function clearViewerSelection(options) {
-          options = options || {};
-          resetContextFitInteraction();
-          closeInspection();
-          clearTransientConceptHighlight({skipEdgeRestore: true});
-          restoreHoveredEdge();
-          hideNodeTooltip();
-          activeNodeId = null;
-          activeModuleId = null;
-          activeConceptSectionTargetId = null;
-          updateSelectedConceptHeader(null);
-          setActiveConceptItem(null);
-          setActiveModuleItem(null);
-          network.unselectAll();
-          renderGraphFromViewerState({fit: false});
-          renderInitialInfoPanel();
-          if (!options.skipHistory) {
-            pushSelectionHistory({}, window.location.href.split("#")[0]);
-          }
-          document.getElementById("kg_status").innerText =
-            "Selection cleared.";
+        function selectDefaultViewerObject() {
+          var selection = defaultViewerSelection();
+          if (!selection) { return; }
+          selectViewerObject(selection.type, selection.id, null, {skipHistory: true});
+          var state = selection.type === "module"
+            ? {objectType: "module", moduleId: selection.id}
+            : {objectType: "concept", nodeId: selection.id};
+          window.history.replaceState(navigationHistoryState(state), "",
+            selection.type === "module" ? moduleHash(selection.id) : conceptHash(selection.id));
         }
 
-        window.kgClearSelection = function() {
-          return executeViewerCommand({command: "clear-selection"}, {origin: "user"});
-        };
 
         function focusModule(moduleId, statusPrefix, options) {
           return executeViewerCommand(
@@ -10117,7 +9977,7 @@
           var scope = viewerState.displayScope;
           var context = computeViewerContext(selection, viewerState.contextRule);
           var included = {};
-          if (scope === DisplayScope.FULL) {
+          if (scope !== DisplayScope.CONTEXT) {
             Object.keys(originalNodes).forEach(function(id) { included[String(id)] = true; });
           } else if (scope === DisplayScope.CONTEXT) {
             context.nodeIds.forEach(function(id) { included[String(id)] = true; });
@@ -10127,8 +9987,8 @@
             var rendered = baseNodeForRender(node.id);
             var id = String(node.id);
             var inContext = context.keep[id] === true;
-            var overview = scope === DisplayScope.FULL && selection.type === "none";
-            rendered.hidden = scope === DisplayScope.HIDDEN || !included[id];
+            var overview = scope === DisplayScope.ALL;
+            rendered.hidden = !included[id];
             rendered.opacity = inContext || overview ? 1.0 : 0.34;
             rendered.font = Object.assign({}, rendered.font || {}, {
               color: inContext || overview ? "#111111" : "#8a94a3"
@@ -10143,18 +10003,18 @@
             var rendered = Object.assign({}, originalEdges[edge.id]);
             var inContext = context.edgeKeep[String(edge.id)] === true;
             var endpointsIncluded = included[String(edge.from)] && included[String(edge.to)];
-            var overview = scope === DisplayScope.FULL && selection.type === "none";
-            rendered.kgContextEdge = inContext;
+            var overview = scope === DisplayScope.ALL;
+            rendered.kgContextEdge = inContext && !overview;
             rendered.kgOverviewEdge = overview;
-            if (scope === DisplayScope.HIDDEN || !endpointsIncluded) {
+            if (!endpointsIncluded) {
               return setEdgeHidden(rendered, true);
             }
-            if (inContext) {
+            if (inContext && !overview) {
               rendered.color = Object.assign({}, rendered.color || {}, {opacity: 0.95});
               rendered.width = Math.max(Number(rendered.width) || 0, 3.0);
               return setEdgeHidden(rendered, false);
             }
-            if (scope === DisplayScope.FULL) {
+            if (scope !== DisplayScope.CONTEXT) {
               if (overview) {
                 rendered.color = Object.assign({}, rendered.color || {}, {opacity: 0.78});
                 rendered.width = Math.max(Number(rendered.width) || 0, 1.5);
@@ -10174,16 +10034,9 @@
           }));
 
           var fitIds = [];
-          if (scope !== DisplayScope.HIDDEN) {
-            fitIds = applyFoldedModuleOverlay(Object.keys(included), {
-              compact: scope === DisplayScope.CONTEXT
-            });
-          } else {
-            foldedModuleIdList().forEach(function(moduleId) {
-              var moduleNodeId = moduleGraphNodeId(moduleId);
-              if (nodes.get(moduleNodeId)) { nodes.update({id: moduleNodeId, hidden: true}); }
-            });
-          }
+          fitIds = applyFoldedModuleOverlay(Object.keys(included), {
+            compact: scope === DisplayScope.CONTEXT
+          });
 
           network.unselectAll();
           if (selection.type === "concept" && visibleGraphNode(selection.id)) {
@@ -10419,7 +10272,7 @@
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         function graphNodeAtPointerEvent(e) {
-          if (!network.getNodeAt || viewerState.displayScope === DisplayScope.HIDDEN) { return null; }
+          if (!network.getNodeAt || viewerState.view === "details") { return null; }
           var surface = graphCanvas || graphContainer;
           var rect = surface.getBoundingClientRect();
           return network.getNodeAt({x: e.clientX - rect.left, y: e.clientY - rect.top});
@@ -10489,10 +10342,7 @@
           } else if (nodeId && getConcept(nodeId)) {
             focusConcept(nodeId, null, {skipHistory: true});
           } else {
-            executeViewerCommand(
-              {command: "clear-selection"},
-              {origin: "history", skipHistory: true}
-            );
+            selectDefaultViewerObject();
           }
         });
 
@@ -10515,15 +10365,6 @@
         });
         document.getElementById("kg_search_close").addEventListener("click", function() {
           setSearchOpen(false);
-        });
-        document.getElementById("kg_empty_graph_search").addEventListener("click", function() {
-          setSearchOpen(true);
-        });
-        document.getElementById("kg_empty_graph_show_full").addEventListener("click", function() {
-          executeViewerCommand(
-            {command: "set-display-scope", value: DisplayScope.FULL},
-            {origin: "user"}
-          );
         });
         document.getElementById("kg_search_section").addEventListener("toggle", function(e) {
           document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(e.target.open));
@@ -10551,19 +10392,8 @@
           );
         });
 
-        document.getElementById("kg_clear_selection").addEventListener("click", function(e) {
-          e.preventDefault();
-          kgClearSelection();
-        });
-
-        document.getElementById("kg_details_view_select").addEventListener("change", function(e) {
-          executeViewerCommand(
-            {
-              command: "set-details-mode",
-              value: e.target.value === "hide" ? "hidden" : e.target.value
-            },
-            {origin: "user"}
-          );
+        document.getElementById("kg_view_select").addEventListener("change", function(e) {
+          executeViewerCommand({command: "set-view", value: e.target.value}, {origin: "user"});
         });
 
         document.getElementById("kg_study_list").addEventListener("click", function(e) {
@@ -11271,7 +11101,6 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
-            materializeLazyFoldedSection(e.target);
             if (
               e.target.classList.contains("user-note") &&
               !e.target.open
@@ -11281,20 +11110,6 @@
             }
             schedulePanelContentRefit();
           }
-        }, true);
-
-        document.getElementById("info_panel").addEventListener("click", function(e) {
-          var summary = e.target.closest("summary");
-          if (!summary || summary.parentElement.parentElement !== this) { return; }
-          var section = summary.parentElement;
-          if (!section.hasAttribute("data-lazy-section")) { return; }
-          if (e.target.closest("button, input, textarea, select, label, a")) { return; }
-          // Mutating a closed <details> during its default click action can
-          // cancel that action in older Safari. Open explicitly after the
-          // body has been materialised so the first tap is sufficient.
-          e.preventDefault();
-          materializeLazyFoldedSection(section, true);
-          section.open = true;
         }, true);
 
         /* Initial render. */
@@ -11315,7 +11130,7 @@
           graphCompletionMarkersEnabled;
         updateResponsiveControlLabels();
         updateGraphViewControls();
-        updateDetailsViewControls();
+        updateWorkspaceViewControl();
         renderCustomContextRules();
         updateGraphContextControls();
         setControlsVisible(!shouldStartWithControlsHidden());
@@ -11352,21 +11167,7 @@
           );
           focusConcept(initialNodeId, "Selected", {skipHistory: true});
         } else {
-          var defaultNodeId = defaultStartupConceptId && getConcept(defaultStartupConceptId) ?
-            defaultStartupConceptId : null;
-          if (defaultNodeId) {
-            window.history.replaceState(
-              {
-                objectType: "concept",
-                nodeId: String(defaultNodeId)
-              },
-              "",
-              conceptHash(defaultNodeId)
-            );
-            focusConcept(defaultNodeId, "Selected", {skipHistory: true});
-          } else {
-            window.history.replaceState({}, "", window.location.href);
-          }
+          selectDefaultViewerObject();
         }
         initialiseSelectionHistory();
         requestAnimationFrame(function() {

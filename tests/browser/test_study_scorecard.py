@@ -60,7 +60,7 @@ def test_study_scorecard_navigates_to_question(browser_graph):
     scorecard.locator('.kg-study-question-link[data-question-id="2.1.q1"]').click()
 
     assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.1"
-    assert page.locator("#kg_details_view_select").input_value() == "full"
+    assert page.locator("#kg_view_select").input_value() == "both"
     question = page.locator('.study-question[data-question-id="2.1.q1"]')
     assert question.evaluate("element => element.open")
     assert question.get_attribute("data-scorecard-target") == "true"

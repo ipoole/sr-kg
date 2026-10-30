@@ -1,208 +1,110 @@
-# Revised viewer UI model
+# Viewer UI model
 
-Status: implemented.
+Status: implemented, including the [UI simplifications](ui_simplifications_plan.md).
+Terms are defined in [Viewer state terminology](viewer_terminology.md).
+The [Quick start](viewer_quick_start.md) introduces the controls;
+[Viewer behaviour](viewer.md) describes the running interface.
 
-This document specifies the simplified graph-viewer interaction model. Terms
-have their precise meanings from [Viewer state terminology](viewer_terminology.md).
-The [quick start](viewer_quick_start.md) is the user-facing introduction;
-[Viewer behaviour](viewer.md) describes the running interface in more detail.
+## Independent axes
 
-## Design principles
-
-The viewer must make a large graph navigable without drawing every concept and
-edge indiscriminately. Modules provide the high-level view: the wood rather than
-the trees. Context rules select a purposeful relation set across Full graph and
-expose the reachable subset around a selection.
-
-The primary state axes are independent:
-
-1. **Selection**: no selection, one concept, or one module.
-2. **Context rule**: relation set, direction, and depth.
-3. **Display scope**: Full graph, Context only, or Graph hidden.
+1. **Selection**: always one concept or module.
+2. **Context rule**: relations, directions and a shared depth.
+3. **Graph**: All equally, Context + background, or Context only.
 4. **Module representation**: each module folded or expanded.
+5. **View**: Both, Graph or Details.
 
-A control changes only the state named by that control. Any combined transition
-must be explicitly labelled. Layout, camera, viewport, details mode, active
-section, and inspection are supporting state, not aliases for the four axes.
+Selection never chooses a Graph mode or opens a module. Changing View preserves
+selection, context, camera, layout, splitter and reading state. Context and
+module-representation changes do not automatically fit. Explicit combined
+actions, such as Show in graph, are labelled as actions.
 
-## Exposed controls
+## Controls
 
-The global header contains **Tools**, **Search**, the selection title, the
-**Details** selector, and **Clear selection**.
+The header groups Tools and Search, View, and Graph. Graph-specific controls are
+hidden in Details-only. The graph toolbar groups Context/Depth and Frame/Fit.
+Its compact summary counts semantic context concepts; Expand context reveals
+folded modules representing those concepts.
 
-The graph pane has a persistent toolbar:
-
-```text
-Display: [Full graph | Context only | Hidden]
-Context: [Foundations v]   Depth: [1 hop v]   [Fit v]
-```
-
-Below it, a compact summary states the selection, complete context rule,
-semantic context counts, background state, and any folded modules representing
-context concepts. There is no control which merely hides an active context.
-
-### Context presets
-
-| Preset | Traversals |
+| Context | Traversals |
 | --- | --- |
 | Connections | Every relation, both directions where directed |
 | Prerequisites | Outgoing `REQUIRES` |
 | Derivation | Outgoing `DERIVES_FROM` and `CONSTRUCTED_FROM` |
-| Foundations | Outgoing `REQUIRES`, `DERIVES_FROM`, and `CONSTRUCTED_FROM` |
-| Uses | Incoming `REQUIRES`, `DERIVES_FROM`, and `CONSTRUCTED_FROM` |
+| Foundations | Outgoing `REQUIRES`, `DERIVES_FROM`, `CONSTRUCTED_FROM` |
+| Uses | Incoming `REQUIRES`, `DERIVES_FROM`, `CONSTRUCTED_FROM` |
 | Related | Undirected `RELATED` |
-| Custom | User-selected relation and direction combinations |
+| Custom | Explicit relation/direction choices |
 
-Depth is **1 hop**, **2 hops**, or **Transitive**. One depth applies to all
-traversals in the active rule. Traversal is cycle-safe. A concept is the sole
-seed for concept selection; every member concept is a seed for module selection.
-The selection and, for a module, all its members are always in the context.
+Depth is one hop, two hops or Transitive. Traversal is cycle-safe. A concept
+selection supplies one seed; a module selection supplies every member concept.
+The selection and a selected module's members are always in the context.
 
-Custom context exposes labelled relation/direction checkboxes plus the shared
-depth. It deliberately does not retain the old ability to assign a different
-depth to every relation and direction.
+In both whole-graph modes, the Context relation set filters eligible edges
+across the whole graph. Direction and depth determine the context, rather than
+restricting that global edge set. All equally puts all eligible objects in
+foreground, with coloured edges. Context + background emphasises the context
+and subdues the rest. Context only excludes the background. Context counts,
+expansion and Fit context remain meaningful in every mode.
 
-### Display scope and background
+## Selection and representation
 
-Full graph contains all concepts, subject to module representation, and every
-edge whose relation occurs in the active Context rule. With a selection, edges
-reached in the chosen direction and depth retain their relation colours while
-the other matching edges are light grey. With no selection, every matching
-edge is coloured; direction and depth have no global meaning. Context only
-contains the context subgraph. Graph hidden contains no graph objects but
-preserves the other state.
+Graph objects, search, details links and history share one selection transition.
+It updates details, context, URL/history and active section, clears inspection,
+and restores any temporary Fit++ arrangement. It preserves View, Graph, Context
+rule, folding, saved layout and camera zoom. If necessary, it minimally pans to
+reveal the selected object's representation. Empty-space clicks retain selection;
+there is no Clear action.
 
-With no selection the context is empty. Full graph still shows its background;
-Context only presents Search and Show full graph recovery actions rather than
-silently changing scope.
+Module corner buttons, module-detail controls and Tools fold or expand modules.
+Semantic context is computed before folded-module substitution. A selected
+concept inside a folded module keeps its circular concept face and title within
+the module; module selection instead thickens the module boundary. Expanded
+modules retain a faint selectable outline. Folding changes representation,
+without changing selection or semantic context.
 
-### Selection
+## Camera, details and layout
 
-Graph objects, search results, details links, module lists, and browser history
-all use one selection transition. It changes selection, main details, context
-result, active section, URL/history, and clears inspection. It preserves the
-context rule, display scope, module representation, layout, camera zoom, and
-details mode. If necessary it pans just enough to reveal the selected object's
-current representation.
+Frame offers Reveal selection, Selection, Context and All. Fit changes the
+camera, never the authored or Personal layout. Fit context arms Fit++ in any
+Graph mode. The second press contracts represented context nodes breadth-first,
+keeping the selection anchor fixed and leaving collision clearance. Where
+several shortest routes reach a node, the closest newly placed parent is used.
+Only those context nodes become temporarily draggable. Background nodes and
+saved layouts remain fixed; navigation discards the temporary arrangement.
 
-**Clear selection** changes only selection, main details, and inspection.
+Details use authored individual section folds. Opening or scrolling sections
+does not change the graph. A separate Folded reading mode is retired; global
+Collapse/Expand sections remains deferred.
 
-### Module representation
+Show in graph in Derived from or Where this is used explicitly sets Derivation
+or Uses and the section's one-hop/Full-tree depth. It changes Details-only to
+Both, sets Frame Context and fits after the panes resize. It preserves Graph
+mode, selection and module folding, and never invokes Fit++ automatically.
+Concept previews and edge inspection are temporary inspection, with explicit
+endpoint selection actions; they do not replace the main selection details.
 
-A visible corner control and explicit module-detail controls fold or expand one
-module; Tools retains Fold all and Expand all. These actions do not change
-semantic context, selection, display scope, layout, or camera. The graph control
-is a native button with a discreet symbol and a larger touch target.
+Ordinary browsing locks dragging. Tools → Layouts enables Personal editing,
+which saves browser-local positions. Fit++ suspends Personal editing while its
+context nodes are temporarily draggable, then restores the previous setting.
+View changes never initiate layout changes or automatic fitting.
 
-Context is computed before folded modules are substituted. Projected context
-and background edges remain distinguishable. A selected concept inside a folded
-module does not expand it automatically: its circular concept face and title
-replace the module artwork while the module footer remains. Explicit module
-selection retains the strong outer outline. Actions can expand the selected
-concept's module or all context modules. Expanded modules retain a faint
-selectable outline.
+## Startup and history
 
-### Camera and fit
+Startup selects SR-1, otherwise the first available module or concept. A valid
+deep link overrides that default; missing/invalid selections use the fallback.
+The initial controls are Both, All equally, Foundations/one hop and Frame All,
+with authored module defaults and layout editing off. Initial load fits once.
+Browser Back/Forward and the viewer history buttons retrace selections, leaving
+View, Graph, Context rule and module representation unchanged.
 
-Panning and zooming change only the camera. The Fit menu offers **Reveal
-selection**, **Fit selection**, **Fit context**, and **Fit displayed graph**.
-Initial load fits the displayed graph. Selection may minimally reveal an
-off-screen object. No other selection, context, scope, folding, details,
-viewport, or custom-rule change automatically pans, fits, or rezooms.
+Tutorials explicitly specify View and Graph. Explore/Resume and Exit restore
+presentation snapshots, including pane choice, reading state and camera.
+Personal data is independent of playback and graph presentation.
 
-Fit is disabled when its chosen frame has no target. Reveal, Selection and
-Context require a selection; All requires at least one displayed object.
+## Deliberate simplifications
 
-With one represented selection anchor in Full or Context-only display, using
-**Fit context** arms **Fit++**. A second press temporarily contracts represented
-context nodes breadth-first along their graph connections, starting at that
-anchor and leaving node-and-edge clearance, then fits them. Where several
-shortest routes reach a node, its closest newly placed parent is used.
-Background nodes in Full graph do not move. This explicit presentation
-adjustment is never persisted and is discarded on navigation.
-
-### Details and inspection
-
-Details has only three presentation choices: Full, Folded and Hidden. Full and
-Folded expose the same authored material, while Folded initially closes its
-top-level blocks. Details presentation does not affect graph state. Scrolling or
-opening a section changes only the active section. Graph-aware sections may
-offer an explicit complete suggested context, such as Derivation at one hop.
-
-**Show in graph** in Derived from and Where this is used explicitly selects
-Derivation or Uses context; the section's Full-tree choice selects one-hop or
-Transitive depth. If the graph is hidden, this action sets Context only so its
-result is visible. Concept previews and relationship inspection are temporary
-inspection. Edge inspection does not replace selection details; it offers
-explicit endpoint selection actions.
-
-### Layout editing
-
-Node dragging is disabled during ordinary browsing. Tools -> Layouts enables
-Personal editing, which writes browser-local overrides independently of display
-scope. Fit++ automatically makes only its represented context nodes draggable;
-these changes are temporary and navigation restores the underlying positions.
-The Personal control is suspended during Fit++ and resumes its prior setting
-afterward. A locked drag attempt and every completed move explain the active
-consequence in the context bar.
-
-## State transitions
-
-| Action | Changes | Preserves |
-| --- | --- | --- |
-| Select concept/module | Selection, details, context result, active section; minimal reveal if needed | Context rule, scope, representation, zoom, layout |
-| Clear selection | Selection, details, inspection | Context rule, scope, representation, camera, layout |
-| Choose context or depth | Context rule and result; Full-graph edge filter | Selection, scope, representation, camera, layout |
-| Choose display scope | Displayed-graph membership | Selection, context rule, representation, camera, layout |
-| Fold/expand module | Module representation and projected objects | Selection, semantic context, scope, camera, layout |
-| Fit or pan/zoom | Camera | All semantic state and layout |
-| Fit++ after Fit context with a selection | Temporary context presentation and camera; context nodes become draggable | Semantic state, background positions and every saved or edited layout |
-| Scroll details | Active section | Selection and graph state |
-| Change Details mode | Details presentation and viewport | Selection and graph state |
-| Preview or inspect edge | Inspection | Selection and graph state |
-| Personal layout drag | Personal layout | Selection, context rule, scope |
-| Fit++ context drag | Temporary Fit++ presentation | Selection, context rule, scope, saved layouts, background positions |
-| Browser Back/Forward | Selection | Context rule, scope, representation, camera |
-
-## Startup
-
-The initial state is no selection, Foundations at one hop, Full graph, authored
-module defaults (currently all folded), the coloured foundations overview, Full
-details, no inspection, and layout editing off. Initial load fits the displayed
-graph.
-
-## Accepted simplifications
-
-The following current functionality is deliberately removed in favour of a
-smaller and more predictable model:
-
-- automatic context changes while details are scrolled;
-- hidden but active Auto or Manual lens state;
-- mixed per-relation traversal depths;
-- automatic temporary module expansion;
-- automatic refitting after context, folding, details, or viewport changes;
-- implicit display-dependent temporary node adjustments;
-- separate Neighbourhood, Descendants, and Derivation-trace graph modes;
-- edge details replacing the selected object's main details;
-- Clear selection acting as a wider reset;
-- any complete-graph view which draws every authored edge.
-
-These decisions may be revisited after experience with the simpler model.
-
-## Implementation record
-
-1. Recorded this model and established state-observation test helpers.
-2. Introduced one viewer state and a pure context engine.
-3. Replaced specialised graph rendering with the context, scope/background,
-   module-representation and emphasis pipeline.
-4. Replaced graph/lens controls with Display, Context, Depth, Fit and a visible
-   state summary.
-5. Centralised selection and separated details, inspection and representation.
-6. Restricted automatic camera action to startup fit and selection reveal.
-7. Made personal layout editing explicit and independent of display scope.
-8. Removed legacy machinery, updated current documentation and replaced the
-   Features splash with the Quick start.
-
-Each stage was committed separately. Regression tests distinguish intentionally
-retired behaviour from accidental loss. The generated viewer is rebuilt for
-review but excluded from commits.
+There is no hidden graph scope, null selection, Clear action, separate reading
+mode, automatic lens or details-scroll context change, per-relation depth,
+automatic temporary expansion, or implicit refit on folding, pane or context
+changes. The graph edge filter always follows the Context relation set.
+These choices keep controls predictable while allowing explicit shortcuts.

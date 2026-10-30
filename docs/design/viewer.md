@@ -7,14 +7,15 @@ introduction is [Viewer quick start](viewer_quick_start.md).
 
 ## Core state
 
-Four independent axes determine the graph:
+Independent controls determine the workspace and graph:
 
-1. **Selection**: no selection, one concept, or one module.
+1. **Selection**: always one concept or module.
 2. **Context rule**: named or custom relationship traversals and a shared depth.
-3. **Display scope**: Full graph, Context only, or Hidden.
+3. **Graph**: All equally, Context + background, or Context only.
 4. **Module representation**: each module folded or expanded.
+5. **View**: Both, Graph, or Details; controls pane visibility only.
 
-Selecting or clearing an object does not alter the other axes. Changing context
+Selecting an object does not alter the other axes. Changing context
 does not fold modules or move the camera. Folding does not change semantic
 context. Browser Back and Forward retrace selections, not complete viewer state.
 Floating **‹ ›** controls expose the same history without consuming a toolbar row,
@@ -30,9 +31,11 @@ On phone-sized touch screens in landscape, a full-screen notice asks the user
 to rotate to portrait. Returning to portrait restores the current view.
 
 The first visit opens the Quick start; dismissal is remembered locally and
-**Tools → Quick start** reopens it. Startup has no selection, Foundations at one
-hop, Full graph, authored module defaults, layout editing off, and one initial
-fit of the displayed graph.
+**Tools → Quick start** reopens it. Startup selects SR-1 (or the first available
+module/concept), with Foundations/one hop, All equally, Both, Frame All, authored
+module defaults, layout editing off, and one initial fit. Valid URL selections
+override that default; missing/invalid URLs and history entries use the fallback.
+Empty-space clicks retain selection, and no Clear action is exposed.
 
 Click graph objects, module lists, search results, or details links to select.
 Search covers concept IDs, titles and prose plus module metadata and member
@@ -55,20 +58,20 @@ inputs. Custom context exposes clearly worded
 relation/direction checkboxes and can be reopened for editing.
 Depth is one hop, two hops or Transitive and applies uniformly to the rule.
 
-In Full graph, the Context relation set filters edges across the whole graph.
-With no selection, every matching edge has its relation colour. With a
-selection, matching edges reached in the chosen direction and depth retain
-their colours; all other matching edges are light grey. Direction and depth do
-not restrict the global edge set. Context only contains just the context
-subgraph. Hidden suppresses the graph while retaining selection, context and
-module state.
+In All equally and Context + background, the Context relation set filters edges
+across the whole graph. All equally shows every eligible edge in its relation
+colour and all nodes in foreground, while retaining a conspicuous selection.
+Context + background emphasises the selected context and subdues other nodes and
+edges. Direction and depth govern context traversal, not the global edge filter.
+Context only includes the context subgraph. Selection never changes Graph mode.
+Context counts, module expansion and Fit/Fit++ remain available in All equally.
 
-The details selector controls presentation only: Full details, Folded, or Hide
-details. Full and Folded contain the same material; Folded initially closes its
-top-level blocks. Scrolling and opening sections update only details navigation.
-Pinching or using Ctrl/Cmd-wheel over the details pane scales
-both its text and its concept or module graphics without changing the graph
-camera.
+View chooses Both, Graph or Details. Switching panes preserves camera, splitter,
+selection, section opening states and graph mode; it does not fit automatically.
+Graph-specific controls disappear in Details-only. Details use authored individual
+folding defaults, with no separate reading mode. Global Collapse/Expand sections
+is deferred. Pinching or Ctrl/Cmd-wheel over details scales text and graphics
+without changing the graph camera.
 
 ## Camera and layout
 
@@ -78,19 +81,16 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
-When the selected Frame target has no objects, Fit is disabled. In particular,
-Reveal, Selection and Context require a selection; All requires a non-empty
-displayed graph. Context-only display with no selection shows an empty-state
-message offering Search and Show full graph rather than an unexplained blank
-canvas.
+Frame offers Reveal selection, Selection, Context and All. The default is All.
+Selection and its context remain available in each graph mode; module folding
+changes their representation without changing the selected object.
 
-After **Fit context** frames a selected context in either Full or Context-only
-display, the button becomes **Fit++**. This explicit action contracts the
+After **Fit context** frames a selected context in any graph mode, the button becomes **Fit++**. This explicit action contracts the
 represented context breadth-first through its graph structure. One-hop nodes
 move towards the selection first; each later layer then moves towards a newly
 placed parent in the preceding layer. If several shortest routes reach a node,
 the closest candidate parent in its new position is used. Movement stops at
-another node's clearance zone before the result is fitted. In Full display,
+another node's clearance zone before the result is fitted. In either whole-graph mode,
 background nodes remain fixed. The represented context nodes may then be
 dragged to refine the temporary arrangement. The contraction remains
 presentation state only: saved and manually edited layouts are unchanged, and
@@ -99,8 +99,7 @@ underlying positions.
 
 Node dragging is disabled during ordinary browsing; a drag attempt explains how
 to unlock it. Enable **Tools → Layouts → Edit personal layout** to move nodes and
-save their positions locally. This is independent of display scope; Hidden
-cannot be dragged. During Fit++, Personal editing is suspended while represented
+save their positions locally. This is independent of Graph mode; the hidden graph cannot be dragged. During Fit++, Personal editing is suspended while represented
 context nodes are temporarily draggable. Layouts can be exported, reset to the
 published layout, or retained
 when a newer published revision is detected. Camera state is never persisted.
@@ -110,8 +109,8 @@ when a newer published revision is detected. Camera state is never persisted.
 Concept details contain teaching blocks, graphics, relationships, questions and
 references. **Show in graph** in Derived from and Where this is used explicitly
 selects Derivation or Uses context respectively; the section's Full-tree choice
-sets one-hop or Transitive depth. A hidden graph changes to Context only so the
-requested result is visible. Modules contain their overview, graphic, member
+sets one-hop or Transitive depth. Details-only changes to Both. Frame becomes Context and the camera fits after
+the pane resize; module folding is preserved and Fit++ is not invoked automatically. Modules contain their overview, graphic, member
 list, boundary links and declared supports. Mathematical text is rendered with
 MathJax.
 

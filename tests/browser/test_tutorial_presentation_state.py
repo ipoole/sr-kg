@@ -22,7 +22,7 @@ def test_tutorial_presentation_snapshot_restores_view_without_personal_data_chan
             value: "folded"
           }, {origin: "user"});
           await kgExecuteViewerCommand(
-            {command: "set-details-mode", value: "folded"}, {origin: "user"}
+            {command: "set-view", value: "graph"}, {origin: "user"}
           );
           await kgExecuteViewerCommand(
             {command: "show-tools-section", value: "study"}, {origin: "user"}
@@ -36,7 +36,7 @@ def test_tutorial_presentation_snapshot_restores_view_without_personal_data_chan
 
     page.evaluate(
         """async snapshot => {
-          await kgExecuteViewerCommand({command: "clear-selection"}, {origin: "tutorial"});
+          await kgExecuteViewerCommand({command: "select", target: "module:test.m01_foundations"}, {origin: "tutorial"});
           await kgExecuteViewerCommand(
             {command: "set-display-scope", value: "full"}, {origin: "tutorial"}
           );
@@ -46,7 +46,7 @@ def test_tutorial_presentation_snapshot_restores_view_without_personal_data_chan
             value: "expanded"
           }, {origin: "tutorial"});
           await kgExecuteViewerCommand(
-            {command: "set-details-mode", value: "full"}, {origin: "tutorial"}
+            {command: "set-view", value: "both"}, {origin: "tutorial"}
           );
           network.moveTo({position: {x: -500, y: 300}, scale: 1.2, animation: false});
           await kgRestoreTutorialPresentation(snapshot);
@@ -60,7 +60,7 @@ def test_tutorial_presentation_snapshot_restores_view_without_personal_data_chan
     assert restored["contextRule"] == baseline["contextRule"]
     assert restored["displayScope"] == baseline["displayScope"]
     assert restored["moduleRepresentation"] == baseline["moduleRepresentation"]
-    assert restored["details"]["mode"] == baseline["details"]["mode"]
+    assert restored["view"] == baseline["view"]
     assert restored["tools"] == baseline["tools"]
     assert restored["url"] == baseline["url"]
     assert restored["camera"]["scale"] == pytest.approx(baseline["camera"]["scale"])

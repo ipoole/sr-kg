@@ -44,13 +44,13 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
 
     assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in injected
     assert "<title>PhysicsKG - An Atlas of Physics Knowledge</title>" in injected
-    assert '<meta name="application-version" content="4.2.1">' in injected
+    assert '<meta name="application-version" content="4.3.0">' in injected
     assert 'href="/favicon.svg?v=1"' in injected
     assert 'href="/favicon-32.png?v=1"' in injected
     assert 'href="/apple-touch-icon.png?v=1"' in injected
     assert '<b class="kg-product-name">PhysicsKG</b>' in injected
     assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
-    assert '<span class="kg-product-version">v4.2.1</span>' in injected
+    assert '<span class="kg-product-version">v4.3.0</span>' in injected
     assert 'id="kg_brand_home"' in injected
     assert 'aria-label="PhysicsKG — Quick Start"' in injected
     assert 'class="kg-brand-mark" src="data:image/svg+xml;base64,' in injected
@@ -139,12 +139,12 @@ def test_viewer_omits_redundant_tools_details_toggle_and_includes_credit():
 
     assert "kg_info_toggle" not in injected
     assert "kgToggleInfoPanel" not in injected
-    assert 'id="kg_details_view_select"' in injected
+    assert 'id="kg_view_select"' in injected
     assert injected.count(
         "Select a concept or module; use a module's corner control to expand or collapse it."
-    ) == 2
+    ) == 1
     assert 'class="kg-splash-credit"' in injected
-    assert 'class="kg-splash-version">Version 4.2.1</span>' in injected
+    assert 'class="kg-splash-version">Version 4.3.0</span>' in injected
     assert 'href="https://www.linkedin.com/in/ipoole/" target="_blank" rel="noopener noreferrer">Ian Poole</a>' in injected
     assert "with AI assistance via OpenAI Codex." in injected
     assert 'onclick="kgShowSplash()"' in injected

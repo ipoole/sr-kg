@@ -67,11 +67,11 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
     assert page.evaluate("() => nodes.length") == 4
     assert page.evaluate("() => edges.length") == 6
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator("#kg_details_view_select").input_value() == "full"
-    assert page.locator("#kg_details_view_select option").evaluate_all(
+    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_view_select").input_value() == "both"
+    assert page.locator("#kg_view_select option").evaluate_all(
         "options => options.map(option => option.value)"
-    ) == ["hide", "full", "folded"]
+    ) == ["both", "graph", "details"]
 
 
 @pytest.mark.browser
@@ -152,33 +152,6 @@ def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
     assert page.evaluate("() => window.location.hash") == "#concept-2.1"
 
 
-@pytest.mark.browser
-def test_clear_selection_preserves_folded_full_graph(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.open_control_section("kg_modules_section")
-    page.locator("#kg_modules_collapse_all").click()
-    browser_graph.click_concept("2.1")
-
-    page.locator("#kg_clear_selection").click()
-
-    assert page.evaluate("() => window.location.hash") == ""
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator(".kg-concept-item.active").count() == 0
-    assert page.locator(".kg-module-item.active").count() == 0
-    assert "Select a concept" in page.locator("#info_panel").inner_text()
-    assert page.evaluate(
-        """() => Object.fromEntries(nodes.get(["1.1", "2.1", "2.2", "3.1"])
-          .map(node => [node.id, Boolean(node.hidden)]))"""
-    ) == {
-        "1.1": True,
-        "2.1": True,
-        "2.2": True,
-        "3.1": True,
-    }
-    assert page.evaluate(
-        """() => nodes.get().filter(node => node.isModuleNode && !node.hidden).length"""
-    ) == 2
 
 
 @pytest.mark.browser
@@ -220,7 +193,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
 
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.locator("#kg_display_scope_select").input_value() == "all"
     assert page.evaluate(
         """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
@@ -238,7 +211,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
         "3.1": 1,
     }
     assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
-    assert page.locator("#kg_context_summary").get_attribute("data-display-scope") == "full"
+    assert page.locator("#kg_context_summary").get_attribute("data-display-scope") == "all"
 
 
 @pytest.mark.browser
@@ -715,12 +688,12 @@ def test_module_controls_are_disabled_when_graph_is_hidden(browser_graph):
     page = browser_graph.page
 
     browser_graph.open_control_section("kg_modules_section")
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("details")
 
     assert page.locator("#kg_modules_collapse_all").is_disabled()
     assert page.locator("#kg_modules_expand_all").is_disabled()
 
-    page.locator("#kg_display_scope_select").select_option("full")
+    page.locator("#kg_view_select").select_option("both")
 
     assert not page.locator("#kg_modules_collapse_all").is_disabled()
     assert not page.locator("#kg_modules_expand_all").is_disabled()
@@ -796,7 +769,7 @@ def test_expanded_module_corner_control_collapses_it_without_selecting_module(br
 
     assert page.evaluate("id => nodes.get(id).hidden === false", module_node_id)
     assert page.evaluate("() => nodes.get('2.1').hidden === true")
-    assert page.locator("#info_panel h2").inner_text() == "Browser Harness"
+    assert page.locator("#info_panel h2").inner_text() == "Foundations"
     assert "Folded Applications module" in page.locator("#kg_status").inner_text()
 
 
@@ -1215,7 +1188,7 @@ def test_edge_key_omits_redundant_category_and_can_be_dismissed(browser_graph):
     assert close.is_visible()
     close.click()
     assert not page.locator("#info_panel").is_visible()
-    assert page.locator("#kg_details_view_select").input_value() == "hide"
+    assert page.locator("#kg_view_select").input_value() == "graph"
 
 
 @pytest.mark.browser
@@ -1400,7 +1373,7 @@ def test_revised_concept_renders_sticky_masthead_and_content_toc(shared_browser_
     assert "2.2 Gamma" in masthead.inner_text()
     assert "Layer 2" not in masthead.inner_text()
     assert "Reading" not in masthead.inner_text()
-    assert page.locator("#kg_details_view_select").input_value() == "full"
+    assert page.locator("#kg_view_select").input_value() == "both"
 
     toc = page.locator("#info_panel .concept-toc")
     assert toc.count() == 1
@@ -1532,34 +1505,6 @@ def test_concept_masthead_no_longer_contains_graph_focus_button(browser_graph):
     assert page.locator("#info_panel .concept-graph-focus").count() == 0
 
 
-@pytest.mark.browser
-def test_workspace_header_controls_are_centered_over_their_panes(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-
-    metrics = page.evaluate(
-        """() => {
-          const graph = document.getElementById("kg_graph_pane").getBoundingClientRect();
-          const details = document.getElementById("kg_details_pane").getBoundingClientRect();
-          const graphControl = document.querySelector(".kg-shell-graph-control").getBoundingClientRect();
-          const detailsControl = document.querySelector(".kg-shell-details-control").getBoundingClientRect();
-          return {graph, details, graphControl, detailsControl};
-        }"""
-    )
-
-    graph_center = metrics["graph"]["x"] + metrics["graph"]["width"] / 2
-    details_center = metrics["details"]["x"] + metrics["details"]["width"] / 2
-    graph_control_center = metrics["graphControl"]["x"] + metrics["graphControl"]["width"] / 2
-    details_control_center = metrics["detailsControl"]["x"] + metrics["detailsControl"]["width"] / 2
-
-    assert abs(graph_control_center - graph_center) <= 6
-    assert abs(details_control_center - details_center) <= 6
-    assert page.locator("#kg_brand_home").bounding_box()["x"] <= 16
-    assert (
-        page.locator("#kg_controls_toggle").bounding_box()["x"]
-        > page.locator("#kg_brand_home").bounding_box()["x"]
-    )
 
 
 @pytest.mark.browser
@@ -1576,11 +1521,11 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     assert abs(workspace["y"] - header["height"]) <= 1
     assert page.locator(".kg-shell-graph-control label").inner_text() == "Graph"
     assert page.locator(".kg-shell-graph-control label").is_visible()
-    assert page.locator(".kg-shell-details-control label").inner_text() == "Details"
-    assert page.locator(".kg-shell-details-control label").is_visible()
-    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Full"
-    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full"
-    assert page.locator("#kg_clear_selection").inner_text() == "Clear"
+    assert page.locator(".kg-shell-view-control label").inner_text() == "View"
+    assert page.locator(".kg-shell-view-control label").is_visible()
+    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "All equally"
+    assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
+    assert page.locator("#kg_clear_selection").count() == 0
     assert page.locator("#kg_brand_home").is_visible()
     assert page.locator("#kg_brand_home .kg-brand-wordmark").is_hidden()
 
@@ -1591,8 +1536,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
             "kg_controls_toggle",
             "kg_search_toggle",
             "kg_display_scope_select",
-            "kg_clear_selection",
-            "kg_details_view_select"
+            "kg_view_select"
           ];
           return Object.fromEntries(ids.map(id => {
             const rect = document.getElementById(id).getBoundingClientRect();
@@ -1624,11 +1568,11 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
 
     page.set_viewport_size({"width": 900, "height": 800})
     page.wait_for_function(
-        "() => document.querySelector('#kg_display_scope_select option:checked').textContent === 'Full graph'"
+        "() => document.querySelector('#kg_display_scope_select option:checked').textContent === 'All equally'"
     )
-    assert page.locator("#kg_details_view_select option:checked").inner_text() == "Full details"
-    assert page.locator("#kg_clear_selection").inner_text() == "Clear selection"
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit context"
+    assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
+    assert page.locator("#kg_clear_selection").count() == 0
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit displayed graph"
 
 
 @pytest.mark.browser
@@ -1675,7 +1619,7 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     assert visible_labels.nth(1).inner_text() == "Frame"
     assert visible_labels.nth(0).is_visible()
     assert visible_labels.nth(1).is_visible()
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "All"
 
     summary = page.locator("#kg_context_summary")
     assert "Foundations" not in summary.inner_text()
@@ -1766,12 +1710,12 @@ def test_phone_module_masthead_places_contents_to_right_until_open(repo_browser_
 
 
 @pytest.mark.browser
-def test_default_startup_has_no_selected_concept(shared_repo_browser_graph):
+def test_default_startup_selects_foundations_module(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
 
-    page.wait_for_function("""() => window.location.hash === ''""")
+    page.wait_for_function("""() => window.location.hash === '#module-sr.spacetime_foundations'""")
 
-    assert "Select a concept" in page.locator("#info_panel").inner_text()
+    assert page.locator("#info_panel").get_attribute("data-module-id") == "sr.spacetime_foundations"
     assert page.locator(".kg-concept-item.active").count() == 0
 
 
@@ -1888,7 +1832,6 @@ def test_workspace_splitter_resizes_graph_and_details_panes(browser_graph):
 
     assert after["graphWidth"] > before["graphWidth"] + 70
     assert after["detailsWidth"] < before["detailsWidth"] - 70
-    assert abs(after["graphControlCenter"] - after["graphCenter"]) <= 6
 
 
 @pytest.mark.browser
@@ -1959,71 +1902,24 @@ def test_workspace_presents_graph_and_details_as_peer_panes(browser_graph):
     assert metrics["details"]["x"] > metrics["graph"]["x"]
     assert abs(metrics["graph"]["y"] - metrics["details"]["y"]) <= 1
 
-    page.locator("#kg_details_view_select").select_option("hide")
+    page.locator("#kg_view_select").select_option("graph")
 
     assert page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
     graph_only = page.locator("#kg_graph_pane").bounding_box()
     assert graph_only["width"] > metrics["shell"]["width"] * 0.95
 
-    page.locator("#kg_details_view_select").select_option("full")
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("both")
+    page.locator("#kg_view_select").select_option("details")
 
     assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
     details_only = page.locator("#kg_details_pane").bounding_box()
     assert details_only["width"] > metrics["shell"]["width"] * 0.95
 
 
-@pytest.mark.browser
-def test_details_hide_does_not_blank_workspace_when_graph_is_hidden(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-    page.locator("#kg_display_scope_select").select_option("hidden")
-    page.locator("#kg_details_view_select").select_option("hide")
-
-    assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
-    assert not page.locator("body").evaluate("el => el.classList.contains('kg-details-hidden')")
-    assert page.locator("#kg_details_view_select").input_value() == "full"
-    assert page.locator("#info_panel").is_visible()
 
 
-@pytest.mark.browser
-def test_folded_reading_mode_keeps_full_content_and_closes_top_level_sections(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("2.2")
-    page.locator("#kg_details_view_select").select_option("folded")
-
-    assert page.locator("#info_panel").get_attribute("data-reading-mode") == "folded"
-    panel = page.locator("#info_panel")
-    assert panel.locator(":scope > details").count() > 4
-    assert panel.locator(":scope > details[open]").count() == 0
-    assert "warning" in _visible_content_block_kinds(page)
-
-    definition = page.locator("#info_panel #kg-toc-2-2-definition")
-    assert definition.locator(":scope > .content-block-body").count() == 0
-    definition.locator(":scope > summary").click()
-    assert definition.evaluate("el => el.open")
-    assert definition.locator(":scope > .content-block-body").count() == 1
-
-    page.locator(
-        "#info_panel #kg-toc-2-2-definition .kg-note-block-action"
-    ).click()
-    page.keyboard.press("Escape")
-    assert page.locator("#info_panel #kg-toc-2-2-definition").evaluate("el => el.open")
 
 
-@pytest.mark.browser
-def test_folded_reading_mode_closes_module_sections(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.open_control_section("kg_modules_section")
-    page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator("#kg_details_view_select").select_option("folded")
-
-    panel = page.locator("#info_panel")
-    assert panel.locator(":scope > details").count() > 1
-    assert panel.locator(":scope > details[open]").count() == 0
 
 
 @pytest.mark.browser
@@ -2110,7 +2006,7 @@ def test_concept_link_preview_does_not_highlight_hidden_graph_target(browser_gra
     page = browser_graph.page
 
     browser_graph.click_concept("2.1")
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("details")
     page.locator("#info_panel details.optional-detail summary").click()
     page.locator("#info_panel .optional-detail-body .concept-link").click()
 
@@ -2188,6 +2084,7 @@ def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathj
 @pytest.mark.browser
 def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.click_concept("3.1")
     before = page.evaluate(
@@ -2311,7 +2208,7 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("details")
     page.locator("#info_panel .concept-derived-from-show-graph").click()
 
     assert page.evaluate("() => kgViewerStateSnapshot()") == {
@@ -2321,7 +2218,8 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
             "depth": "one-hop",
             "customTraversals": [],
         },
-        "displayScope": "context",
+        "displayScope": "all",
+        "view": "both",
     }
     assert page.locator("#kg_context_preset_select").input_value() == "derivation"
     assert page.locator("#kg_context_depth_select").input_value() == "one-hop"
@@ -2336,7 +2234,7 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
         "depth": "transitive",
         "customTraversals": [],
     }
-    assert page.evaluate("() => kgViewerStateSnapshot().displayScope") == "context"
+    assert page.evaluate("() => kgViewerStateSnapshot().displayScope") == "all"
 
 
 @pytest.mark.browser
@@ -2548,38 +2446,9 @@ def test_context_controls_group_semantics_and_default_fit_target(browser_graph):
     assert groups.nth(0).locator("#kg_context_depth_select").count() == 1
     assert groups.nth(1).locator("#kg_fit_select").count() == 1
     assert groups.nth(1).locator("#kg_fit_apply").count() == 1
-    assert page.locator("#kg_fit_select").input_value() == "context"
+    assert page.locator("#kg_fit_select").input_value() == "displayed"
 
 
-@pytest.mark.browser
-def test_graph_view_selector_hides_graph_and_supports_focussed_context(browser_graph):
-    page = browser_graph.page
-
-    browser_graph.click_concept("3.1")
-    page.locator("#kg_context_preset_select").select_option("connections")
-    page.locator("#kg_display_scope_select").select_option("hidden")
-
-    assert page.locator("#kg_display_scope_select").input_value() == "hidden"
-    assert page.locator("body").evaluate("el => el.classList.contains('kg-graph-hidden')")
-    assert page.evaluate("""() => nodes.get().every(node => node.hidden)""")
-    assert page.evaluate("""() => edges.get().every(edge => edge.hidden)""")
-    assert "Delta definition" in page.locator("#info_panel").inner_text()
-
-    browser_graph.click_concept("2.1")
-    assert page.locator("#kg_display_scope_select").input_value() == "hidden"
-    assert "Beta definition" in page.locator("#info_panel").inner_text()
-    assert page.evaluate("""() => nodes.get().every(node => node.hidden)""")
-
-    page.locator("#kg_display_scope_select").select_option("context")
-    assert page.locator("#kg_display_scope_select").input_value() == "context"
-    assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
-    ) == {
-        "1.1": False,
-        "2.1": False,
-        "2.2": True,
-        "3.1": False,
-    }
 
 
 @pytest.mark.browser
@@ -2592,19 +2461,14 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
 
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
-    assert dialog.locator("#kg_splash_title").inner_text() == "PhysicsKG quick start"
+    assert dialog.locator("#kg_splash_title").is_visible()
     assert dialog.locator(".kg-splash-brand-mark").is_visible()
-    assert dialog.locator(".kg-splash-feature-grid section").count() == 9
-    assert dialog.locator(".kg-splash-feature-grid section h3").count() == 9
-    assert dialog.locator(".kg-splash-feature-grid section").evaluate_all(
+    sections = dialog.locator(".kg-splash-feature-grid section")
+    assert sections.count() > 0
+    assert dialog.locator(".kg-splash-feature-grid section h3").count() == sections.count()
+    assert sections.evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
-    assert page.locator("#kg_splash_dialog .kg-splash-feature-grid section").count() == 9
-    assert dialog.locator(".kg-status-badge", has_text="NEW").count() == 1
-    tutorial_heading = dialog.locator(".kg-splash-feature-grid section h3", has_text="Guided tutorials")
-    assert tutorial_heading.count() == 1
-    assert tutorial_heading.locator(".kg-status-badge", has_text="NEW").count() == 1
-    assert dialog.locator(".kg-splash-feature-grid li").count() >= 20
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"

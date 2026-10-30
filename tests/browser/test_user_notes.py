@@ -733,3 +733,31 @@ def test_unmatched_note_is_preserved_and_visibly_flagged(browser_graph):
         "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
     )
     assert stored["title"] == "Orphaned passage note"
+
+
+@pytest.mark.parametrize("width", [390, 1280])
+@pytest.mark.parametrize("saved_count", [0, 12])
+def test_tutorial_hover_keeps_notes_compact_and_ignores_empty_drafts(browser_graph, width, saved_count):
+    page = browser_graph.page
+    page.set_viewport_size({"width": width, "height": 844})
+    page.evaluate("""count => {
+      const notes = Array.from({length:count + 4}, (_, i) => ({
+        id:'hover-note-' + i, targetType:'concept', targetId:'2.1',
+        conceptId:'2.1', section:'Definition', anchor:{blockIndex:0},
+        title:'Note', body:i < count ? 'Saved reminder ' + i : '',
+        createdAt:'2026-01-01T00:00:00Z', updatedAt:'2026-01-01T00:00:00Z'
+      }));
+      kgPersonalData.replaceNotes(notes);
+    }""", saved_count)
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_function("typeof kgExecuteViewerCommand === 'function'")
+    before = page.evaluate("kgPersonalData.getSnapshot()")
+    page.evaluate("kgExecuteViewerCommand({command:'show-graph-concept-hover',target:'concept:2.1'}, {origin:'tutorial'})")
+    tooltip = page.locator("#kg_node_tooltip")
+    assert tooltip.is_visible()
+    if saved_count:
+        assert tooltip.locator("ul").last.locator("li").count() == 3
+        assert f"{saved_count - 3} more notes" in tooltip.inner_text()
+    else:
+        assert "Notes" not in tooltip.inner_text()
+    assert page.evaluate("kgPersonalData.getSnapshot()") == before

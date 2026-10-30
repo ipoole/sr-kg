@@ -13,10 +13,9 @@ TUTORIAL_SCHEMA_VERSION = 1
 TUTORIAL_CATEGORIES = frozenset({"interface", "physics"})
 TUTORIAL_COMMANDS = frozenset({
     "select",
-    "clear-selection",
     "set-display-scope",
     "set-context",
-    "set-details-mode",
+    "set-view",
     "set-module-representation",
     "set-all-module-representations",
     "expand-context-modules",
@@ -34,7 +33,7 @@ TUTORIAL_COMMANDS = frozenset({
     "close-search",
     "wait",
 })
-DISPLAY_SCOPES = frozenset({"full", "context", "hidden"})
+DISPLAY_SCOPES = frozenset({"all", "full", "context"})
 CONTEXT_PRESETS = frozenset({
     "connections",
     "prerequisites",
@@ -44,7 +43,7 @@ CONTEXT_PRESETS = frozenset({
     "related",
 })
 CONTEXT_DEPTHS = frozenset({"one-hop", "two-hops", "transitive"})
-DETAILS_MODES = frozenset({"full", "folded", "hidden"})
+VIEWS = frozenset({"both", "graph", "details"})
 MODULE_REPRESENTATIONS = frozenset({"folded", "expanded"})
 FIT_TARGETS = frozenset({"reveal", "selection", "context", "displayed"})
 TOOLS_SECTIONS = frozenset({
@@ -69,11 +68,10 @@ CONTROL_TARGETS = frozenset({
     "depth",
     "fit",
     "display-scope",
-    "details-mode",
+    "view",
     "search",
     "search-input",
     "tools",
-    "clear-selection",
     "expand-context",
 })
 
@@ -273,8 +271,8 @@ def _load_steps(
                     module_ids=module_ids, block_ids=block_ids,
                 )
                 pause = _integer(item.get("pause_ms", 500), f"{action_context}.pause_ms")
-                if not 0 <= pause <= 2000:
-                    raise TutorialLoadError(f"{action_context}.pause_ms must be between 0 and 2000")
+                if not 0 <= pause <= 5000:
+                    raise TutorialLoadError(f"{action_context}.pause_ms must be between 0 and 5000")
                 entry = {"action": command, "pause_ms": pause}
                 if "pointer" in item:
                     pointer = _mapping(item["pointer"], f"{action_context}.pointer")
@@ -337,8 +335,8 @@ def _validate_command(
     elif name == "set-context":
         _enum(command, "preset", CONTEXT_PRESETS, context)
         _enum(command, "depth", CONTEXT_DEPTHS, context)
-    elif name == "set-details-mode":
-        _enum(command, "value", DETAILS_MODES, context)
+    elif name == "set-view":
+        _enum(command, "value", VIEWS, context)
     elif name == "set-module-representation":
         target = _required_text(command, "target", context)
         _validate_prefixed_known(target, "module:", module_ids, "module", context)

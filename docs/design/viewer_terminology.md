@@ -13,10 +13,10 @@ must change several axes, the combined transition should be explicit.
 
 ### Selection
 
-The durable object being studied: one concept, one module, or nothing. Selection
+The durable object being studied: one concept or one module. Selection
 normally determines the main details content, the centre from which context is
 calculated, and the URL/history entry. Use **selected concept**, **selected
-module**, and **no selection**; do not use *focus* as a synonym.
+module**; do not use *focus* as a synonym. Empty-space clicks retain selection.
 
 ### Context rule
 
@@ -36,17 +36,22 @@ comprising **context nodes** and **context edges**. The selection is always part
 of its context. A module's normal context may contain its members and boundary
 relationships.
 
-### Display scope
+### Graph mode
 
-Which graph objects are included in the displayed graph, whether or not the
-camera currently places them on screen:
+Which graph objects are included and how their background is treated:
 
-- **Full graph** includes the context and a useful background.
+- **All equally** includes the whole graph in foreground.
+- **Context + background** includes the whole graph, with context emphasised.
 - **Context only** excludes the background.
-- **Graph hidden** includes no graph objects.
 
-Display scope replaces the spatially ambiguous term *map extent*. It does not
-set the camera or determine traversal depth.
+Both whole-graph modes filter edges using the Context relation set. Selection is
+retained and conspicuous in every mode; selecting never changes Graph mode.
+
+### View
+
+Which workspace panes occupy screen space: **Both**, **Graph**, or **Details**.
+Hiding a pane does not remove graph objects or discard reading state. View is
+independent of Graph mode, context, module folding, layout and camera.
 
 ### Module representation
 
@@ -61,25 +66,25 @@ this is still concept selection, not module selection.
 
 ## Background and visual state
 
-### Full-graph edge filter
+### Whole-graph edge filter
 
-In Full graph, the relation set in the Context rule selects eligible edges
+In both whole-graph modes, the relation set in the Context rule selects eligible edges
 across the whole graph. Direction and depth determine the context reached from
-a selection, but do not further restrict this global edge set. Full graph need
+a selection, but do not further restrict this global edge set. Whole graph need
 not mean that every authored edge is drawn.
 
 ### Background
 
-Eligible objects which are not in the context. With a selection, background
-edges are light grey and background nodes are subdued; with no selection, all
-eligible edges retain their relation colours. Background objects do not
+Eligible objects which are not in the context. In Context + background, background
+edges are light grey and background nodes subdued. In All equally, all eligible
+edges retain their relation colours and every object is in foreground. Background objects do not
 contribute to semantic context counts.
 If `C` is the context and `B` the background, the displayed graph is:
 
 ```text
-Full graph   = C ∪ B
-Context only = C
-Graph hidden = ∅
+All equally          = C ∪ B, uniform foreground
+Context + background = C ∪ B, context emphasised
+Context only         = C
 ```
 
 ### Emphasis
@@ -89,7 +94,7 @@ The principal treatments are:
 
 1. **Selected** — the primary object.
 2. **In context** — other context objects.
-3. **Background** — surrounding objects retained by Full graph.
+3. **Background** — surrounding objects retained by whole graph.
 4. **Inspected** — a temporary preview or hover target.
 
 ## Spatial terms
@@ -122,13 +127,13 @@ After **Fit context** with an eligible selected representation, **Fit++** is a
 distinct explicit presentation action: it temporarily contracts the represented
 context breadth-first along its graph structure and then fits the camera. Each
 depth moves towards a newly placed parent at the preceding depth; the closest
-parent is used where several shortest routes exist. In Full graph, background
+parent is used where several shortest routes exist. In both whole-graph modes, background
 nodes remain fixed. It changes no saved or manually edited layout and is
 discarded when the user navigates away.
 
 The distinctions are:
 
-- Display scope: **what is available to see?**
+- Graph mode: **what is available to see?**
 - Camera: **which spatial region are we looking at?**
 - Viewport: **how much screen space are we looking through?**
 
@@ -161,7 +166,7 @@ Knowledge graph
       |
       +-- selection + context rule --> context subgraph
       |
-      +-- display scope + context relation set --> displayed graph
+      +-- graph mode + context relation set --> displayed graph
       |
       +-- module representation --> display objects
       |
@@ -174,7 +179,7 @@ An object may therefore be:
 
 - in the context but represented by a folded module;
 - included in the displayed graph but off-screen;
-- excluded by display scope despite having a stored layout position.
+- excluded by graph mode despite having a stored layout position.
 
 Use **included/excluded** for displayed-graph membership, **on-screen/off-screen**
 for camera results, and **represented by a folded module** where applicable.
@@ -187,8 +192,8 @@ Avoid using *visible* to mean all three.
   context**.
 - Use **selected**, **in context**, **background**, or **inspected** instead of
   the ambiguous **highlighted**.
-- Replace **current view** with the specific state meant: display scope, camera,
+- Replace **current view** with the specific state meant: graph mode, camera,
   details, or displayed graph.
 - Use **transitive** rather than **tree** unless the result is genuinely a tree.
-- Reserve **Clear selection** for changing selection only. Reserve **Reset** for
-  an explicitly defined wider restoration.
+- Selection is permanent; do not expose a Clear selection action. Reserve **Reset**
+  for an explicitly defined wider restoration.

@@ -21,13 +21,14 @@ def test_viewer_state_snapshot_adapts_existing_selection_and_scope(browser_graph
     page = browser_graph.page
 
     assert page.evaluate("() => kgViewerStateSnapshot()") == {
-        "selection": {"type": "none", "id": None},
+        "selection": {"type": "module", "id": "test.m01_foundations"},
         "contextRule": {
             "preset": "foundations",
             "depth": "one-hop",
             "customTraversals": [],
         },
-        "displayScope": "full",
+        "displayScope": "all",
+        "view": "both",
     }
 
     browser_graph.click_concept("2.1")
@@ -140,7 +141,7 @@ def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     page = browser_graph.page
 
     initial = page.evaluate("() => kgDisplayedGraphSnapshot()")
-    assert initial["contextNodeIds"] == []
+    assert "1.1" in initial["contextNodeIds"]
     assert initial["includedNodeIds"] == ["1.1", "2.1", "2.2", "3.1"]
     assert page.evaluate(
         "() => edges.get().filter(edge => !edge.hidden).map(edge => edge.relation).sort()"
@@ -162,6 +163,7 @@ def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     )
 
     browser_graph.click_concept("3.1")
+    page.locator("#kg_display_scope_select").select_option("full")
     full = page.evaluate("() => kgDisplayedGraphSnapshot()")
     assert full["scope"] == "full"
     assert full["contextNodeIds"] == ["2.1", "2.2", "3.1"]
@@ -184,14 +186,14 @@ def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     assert context_only["scope"] == "context"
     assert context_only["includedNodeIds"] == ["2.1", "2.2", "3.1"]
 
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("details")
     hidden = page.evaluate("() => kgDisplayedGraphSnapshot()")
-    assert hidden["scope"] == "hidden"
-    assert hidden["includedNodeIds"] == []
+    assert hidden["scope"] == "context"
+    assert hidden["includedNodeIds"] == ["2.1", "2.2", "3.1"]
 
 
 @pytest.mark.browser
-def test_custom_context_filters_full_graph_edges_with_and_without_selection(browser_graph):
+def test_custom_context_filter_survives_graph_emphasis_change(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("1.1")
     page.locator("#kg_context_preset_select").select_option("custom")
@@ -211,7 +213,7 @@ def test_custom_context_filters_full_graph_edges_with_and_without_selection(brow
         "() => edges.get().find(edge => !edge.hidden).color.color !== '#aeb5bf'"
     )
 
-    page.locator("#kg_clear_selection").click()
+    page.locator("#kg_display_scope_select").select_option("full")
     assert page.evaluate(
         "() => edges.get().filter(edge => !edge.hidden).map(edge => edge.relation)"
     ) == ["RELATED"]
@@ -240,7 +242,7 @@ def test_explicit_context_controls_update_viewer_state(browser_graph):
     assert page.locator("#kg_context_depth_select").count() == 1
     assert page.locator("#kg_fit_apply").count() == 1
     assert not page.locator("#kg_context_preset_select").is_disabled()
-    assert page.locator("#kg_context_depth_select").is_disabled()
+    assert page.locator("#kg_context_depth_select").is_enabled()
 
     browser_graph.click_concept("3.1")
     page.locator("#kg_context_preset_select").select_option("prerequisites")
@@ -347,23 +349,6 @@ def test_selecting_concept_preserves_folded_representation_and_view_axes(browser
     assert page.locator("#kg_expand_selected_module").is_visible()
 
 
-@pytest.mark.browser
-def test_clear_selection_preserves_context_scope_and_representation(browser_graph):
-    page = browser_graph.page
-    browser_graph.open_control_section("kg_modules_section")
-    page.locator("#kg_modules_collapse_all").click()
-    browser_graph.click_concept("2.1")
-    page.locator("#kg_context_preset_select").select_option("uses")
-    page.locator("#kg_context_depth_select").select_option("transitive")
-    page.locator("#kg_display_scope_select").select_option("context")
-    page.locator("#kg_clear_selection").click()
-
-    state = page.evaluate("() => kgViewerStateSnapshot()")
-    assert state["selection"] == {"type": "none", "id": None}
-    assert state["displayScope"] == "context"
-    assert state["contextRule"]["preset"] == "uses"
-    assert state["contextRule"]["depth"] == "transitive"
-    assert page.evaluate("() => nodes.get('module::test.m02_applications') !== null")
 
 
 @pytest.mark.browser

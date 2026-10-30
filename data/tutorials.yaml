@@ -13,11 +13,14 @@ tutorials:
           PhysicsKG begins as a map of subject modules. Folded modules let you
           see the wood before the trees; Fit frames the displayed graph.
         prepare:
-          - command: clear-selection
+          - command: select
+            target: module:sr.spacetime_foundations
           - command: set-all-module-representations
             value: folded
           - command: set-display-scope
-            value: full
+            value: all
+          - command: set-view
+            value: both
           - command: set-context
             preset: foundations
             depth: one-hop
@@ -30,12 +33,39 @@ tutorials:
         title: Select a module
         commentary: >-
           Modules organise the landscape into coherent subjects. Selecting
-          SR-1 makes it the subject in both the graph and Details.
+          SR-2 makes it the subject in both the graph and Details.
         action:
           command: select
-          target: module:sr.spacetime_foundations
+          target: module:sr.relativistic_mechanics
         pointer:
-          target: graph:module:sr.spacetime_foundations
+          target: graph:module:sr.relativistic_mechanics
+      - step_id: choose-the-pane
+        title: Choose what occupies the screen
+        commentary: >-
+          View chooses Graph, Details or Both. These actions demonstrate each;
+          changing panes preserves the selection, graph mode and reading state.
+        actions:
+          - action: {command: set-view, value: details}
+            pointer: {target: 'control:view'}
+            pause_ms: 3000
+          - action: {command: set-view, value: graph}
+            pointer: {target: 'control:view'}
+            pause_ms: 3000
+          - action: {command: set-view, value: both}
+            pointer: {target: 'control:view'}
+      - step_id: choose-graph-emphasis
+        title: Choose how the graph is treated
+        commentary: >-
+          All equally shows the whole map in foreground. Context + background
+          emphasises the selected context; Context only omits the background.
+          Selecting something never changes this choice automatically.
+        actions:
+          - action: {command: set-display-scope, value: all}
+            pointer: {target: 'control:display-scope'}
+          - action: {command: set-display-scope, value: context}
+            pointer: {target: 'control:display-scope'}
+          - action: {command: set-display-scope, value: full}
+            pointer: {target: 'control:display-scope'}
       - step_id: reveal-the-concepts
         title: Reveal its concepts
         commentary: >-
@@ -45,35 +75,35 @@ tutorials:
         actions:
           - action:
               command: set-module-representation
-              target: module:sr.spacetime_foundations
+              target: module:sr.relativistic_mechanics
               value: expanded
             pointer:
-              target: control:module-fold:sr.spacetime_foundations
+              target: control:module-fold:sr.relativistic_mechanics
           - action:
               command: fit
               value: selection
             pointer:
               target: control:fit
-      - step_id: preview-an-event
+      - step_id: preview-a-concept
         title: Preview without selecting
         commentary: >-
           On a pointer device, hovering over a concept previews it without
           changing Selection. PhysicsKG demonstrates that preview here.
         action:
           command: show-graph-concept-hover
-          target: concept:sr.spacetime_event
+          target: concept:sr.momentum_four_vector
         pointer:
-          target: graph:concept:sr.spacetime_event
-      - step_id: select-an-event
+          target: graph:concept:sr.momentum_four_vector
+      - step_id: select-a-concept
         title: Select a concept
         commentary: >-
-          Selection gives the viewer a subject. Here, a spacetime event becomes
+          Selection gives the viewer a subject. Here, momentum four-vector becomes
           the subject shown in the graph and Details.
         action:
           command: select
-          target: concept:sr.spacetime_event
+          target: concept:sr.momentum_four_vector
         pointer:
-          target: graph:concept:sr.spacetime_event
+          target: graph:concept:sr.momentum_four_vector
       - step_id: choose-connections
         title: Choose a Context
         commentary: >-
@@ -112,13 +142,13 @@ tutorials:
           the relationship. On touch devices, tapping an edge opens its details.
         action:
           command: show-graph-edge-hover
-          target: edge:sr.spacetime_event|REQUIRES|sr.inertial_frames
+          target: edge:sr.momentum_four_vector|DERIVES_FROM|sr.velocity_four_vector
         pointer:
-          target: graph:edge:sr.spacetime_event|REQUIRES|sr.inertial_frames
+          target: graph:edge:sr.momentum_four_vector|DERIVES_FROM|sr.velocity_four_vector
       - step_id: return-to-the-map
         title: Return to the full map
         commentary: >-
-          Full graph restores the wider map. The same Selection and Context
+          Context + background restores the wider map. The same Selection and Context
           remain active, so changing this axis does not silently change them.
         action:
           command: set-display-scope
@@ -152,13 +182,74 @@ tutorials:
           and folded headings help you move through a longer explanation.
         prepare:
           - command: close-search
-          - command: set-details-mode
-            value: full
+          - command: set-view
+            value: both
         action:
           command: open-details-block
           target: block:sr.lorentz_transformations.overview
         pointer:
           target: details:block:sr.lorentz_transformations.overview
+      - step_id: inspect-a-derivation-tree
+        title: Follow an idea back to its foundations
+        commentary: >-
+          Open Mass-energy equivalence and its Derived from section. Full tree
+          includes earlier foundations as well as the immediate inputs. Read
+          the explanations beside the links to see why each connection matters.
+        actions:
+          - action:
+              command: select
+              target: concept:sr.mass_energy_equivalence
+            pointer:
+              target: graph:concept:sr.mass_energy_equivalence
+          - action:
+              command: open-details-relationship
+              value: derived-from
+            pointer:
+              target: details:heading
+          - action:
+              command: set-relationship-full-tree
+              value: derived-from
+              full_tree: true
+            pointer:
+              target: details:derived-from-full-tree
+      - step_id: show-the-derivation-in-graph
+        title: Turn the reading into a graph
+        commentary: >-
+          Choose Context only, then Show in graph. This shortcut sets Derivation
+          and Transitive depth and fits the context automatically. Expand the
+          folded context modules, then fit again to frame their concepts.
+        actions:
+          - action:
+              command: set-display-scope
+              value: context
+            pointer:
+              target: control:display-scope
+          - action:
+              command: show-relationship-in-graph
+              preset: derivation
+              full_tree: true
+            pointer:
+              target: details:derived-from-show-graph
+          - action:
+              command: expand-context-modules
+            pointer:
+              target: control:expand-context
+          - action:
+              command: fit
+              value: context
+            pointer:
+              target: control:fit
+      - step_id: show-a-derivation-tree
+        title: Bring the tree together with Fit++
+        commentary: >-
+          After Fit context, the button becomes Fit++. Press it to bring the
+          context concepts closer together. You can adjust these positions
+          while exploring; navigating away restores the saved layout.
+        action:
+          command: fit
+          value: context
+        pointer:
+          target: control:fit
       - step_id: continue-your-study
         title: Continue your study
         commentary: >-
@@ -192,13 +283,14 @@ tutorials:
           its rest energy mean? Read this opening puzzle; we will investigate
           a concrete example before tracing the argument.
         prepare:
-          - command: clear-selection
+          - command: select
+            target: module:sr.spacetime_foundations
           - command: set-all-module-representations
             value: folded
           - command: set-display-scope
             value: full
-          - command: set-details-mode
-            value: full
+          - command: set-view
+            value: both
         actions:
           - action:
               command: select
@@ -222,11 +314,6 @@ tutorials:
               full_tree: true
             pointer:
               target: details:derived-from-show-graph
-          - action:
-              command: fit
-              value: context
-            pointer:
-              target: control:fit
           - action:
               command: expand-context-modules
             pointer:
@@ -654,13 +741,14 @@ tutorials:
           this clock comparison; keep the same two tick events in mind
           throughout the explanation.
         prepare:
-          - command: clear-selection
+          - command: select
+            target: module:sr.spacetime_foundations
           - command: set-all-module-representations
             value: folded
           - command: set-display-scope
-            value: full
-          - command: set-details-mode
-            value: full
+            value: context
+          - command: set-view
+            value: both
         actions:
           - action: {command: select, target: 'concept:sr.time_dilation'}
             pointer: {target: 'graph:module:sr.spacetime_foundations'}

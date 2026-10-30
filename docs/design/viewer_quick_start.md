@@ -5,9 +5,24 @@ See [Viewer behaviour](viewer.md) for the full model.
 
 The user model has been simplified, the UI space optimised for phones, and
 rendering and interaction made faster on older or slower devices. Selection,
-context, display, module folding and camera behave independently and predictably.
+context, graph emphasis, module folding and camera behave independently and predictably.
 
-## Guided tutorials — NEW
+## Simpler view controls — NEW
+
+**View** chooses **Graph**, **Details** or **Both**, preserving your selection,
+zoom and opened sections.
+
+**Graph** chooses how the map is presented:
+
+- **All equally** — the whole map in foreground, with coloured relationships.
+- **Context + background** — the selected context stands out; the rest is subdued.
+- **Context only** — just the selection and its context.
+
+Selecting an object never changes Graph mode automatically. Context filters the
+eligible relationships in either whole-map mode; its depth still determines
+the context used for fitting and expansion.
+
+## Guided tutorials
 
 Choose **Start guided tutorial** here, or use **Tools → Tutorials** for an
 interface orientation or a short physics route. Physics routes cover
@@ -24,19 +39,19 @@ can open, bookmark or copy to share.
 
 ## Start with the map
 
-The viewer opens with modules folded.
+The viewer opens with modules folded, SR-1 selected, and the whole map in foreground.
 
 - Click a module to read its introduction.
 - Use the `+` in a folded module's top-right corner to reveal its concepts; use
   the `−` on an expanded module's boundary to fold it again.
 - Use **Search** to find a concept or module.
-- **Clear selection** resumes browsing without rearranging the map.
-- The floating **‹ ›** buttons retrace concept/module selections, including Clear,
+- Selection is always retained, even when you click empty graph space.
+- The floating **‹ ›** buttons retrace concept/module selections,
   without changing the context rule or camera framing choice.
 
 ## Choose relationships and surroundings
 
-**Context** filters Full graph relationships and, with a selection, chooses
+**Context** filters whole-graph relationships and chooses
 which relationships are followed:
 
 - **Connections** — every immediate relationship.
@@ -47,30 +62,30 @@ which relationships are followed:
 
 Choose one hop, two hops or the complete transitive chain.
 
-**Full graph** retains the background; **Context only** removes it; **Hidden**
-gives details more room. With a selection, reached edges are coloured and other
-matching edges are grey. Without one, all matching edges are coloured.
-
 A selected concept inside a folded module appears within the module. Use the
-offered actions to expand its module or any folded part of its context.
+offered actions to expand its module or any folded part of its context. Context
+counts, expansion and fitting remain useful in every Graph mode.
 
 ## Move, read and edit
 
 Pan and zoom freely; selection pans only enough to reveal an off-screen item.
-Use **Fit** to frame the selection, context or displayed graph. In Full or
-Context-only display, fitting a selected context changes the button to
+**Show in graph** in Derived from or Where this is used sets its context and
+depth, switches Details-only to Both, and fits the context without expanding
+modules. **Full tree** follows the complete chain.
+**Frame** chooses what **Fit** does: reveal the selection or frame the selection,
+context or whole displayed graph. In any Graph mode, fitting a selected context changes the button to
 **Fit++**; press it to draw the visible context nodes closer along their graph
 connections without changing a saved layout. Navigating away restores their
 positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics
 without changing the graph camera.
 
-Details contain explanations, graphics, relationships and questions. A block's
+Details contain explanations, graphics, relationships and questions. Open or close
+individual sections as you read. A block's
 checkbox records a blue read tick; completing every block marks its concept or
 module. A green title tick means that every study question is currently correct.
 Use a block's speech-bubble `+`, then choose a paragraph, to add a note; a filled
 bubble means notes are already present. **Next** at the foot of a concept follows
-the reading sequence through SR, MATHS and GR. **Show in graph** changes Context.
-Back and Forward retrace selections.
+the reading sequence through SR, MATHS and GR. Back and Forward retrace selections.
 
 Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
 layout** to save moved nodes in this browser. After Fit++, represented context

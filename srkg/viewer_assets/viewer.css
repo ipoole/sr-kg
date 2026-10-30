@@ -1,4 +1,5 @@
       :root { --kg-header-height: 52px; }
+      /* Workspace controls form one stable row, independently of pane widths. */
       html,
       body {
         height: 100%;
@@ -39,7 +40,7 @@
         justify-content: center;
         padding-left: 0;
       }
-      .kg-shell-details-control {
+      .kg-shell-view-control {
         grid-column: 3;
         justify-content: center;
       }
@@ -157,7 +158,7 @@
       #kg_display_scope_select {
         min-width: 132px;
       }
-      #kg_details_view_select {
+      #kg_view_select {
         min-width: 132px;
       }
       .kg-canvas-select {
@@ -929,53 +930,6 @@
       #mynetwork canvas {
         overscroll-behavior: contain;
         touch-action: none;
-      }
-      .kg-empty-graph-state {
-        background: rgba(255, 255, 255, 0.96);
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        box-shadow: 0 3px 14px rgba(15, 23, 42, 0.12);
-        box-sizing: border-box;
-        color: #334155;
-        font: 14px/1.4 Arial, sans-serif;
-        left: 50%;
-        max-width: min(360px, calc(100% - 32px));
-        padding: 16px 18px;
-        position: absolute;
-        text-align: center;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: max-content;
-        z-index: 20;
-      }
-      .kg-empty-graph-state[hidden] {
-        display: none;
-      }
-      .kg-empty-graph-state strong {
-        color: #123e5a;
-        font-size: 1.08em;
-      }
-      .kg-empty-graph-state p {
-        margin: 6px 0 10px;
-      }
-      .kg-empty-graph-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-      }
-      .kg-empty-graph-actions button {
-        background: #f8fafc;
-        border: 1px solid #aeb9c7;
-        border-radius: 6px;
-        color: #243746;
-        cursor: pointer;
-        font: inherit;
-        padding: 5px 9px;
-      }
-      .kg-empty-graph-actions button:hover,
-      .kg-empty-graph-actions button:focus {
-        background: #eaf2f8;
       }
       #kg_workspace #mynetwork {
         border: 0 !important;
@@ -3307,7 +3261,7 @@
             padding-left: 0;
         }
 
-        .kg-shell-details-control {
+        .kg-shell-view-control {
             flex: 0 1 auto;
             justify-content: flex-end;
         }
@@ -3347,7 +3301,7 @@
         }
 
         #kg_display_scope_select,
-        #kg_details_view_select {
+        #kg_view_select {
             min-width: 0;
         }
 
@@ -3355,7 +3309,7 @@
             width: min(86px, 27vw);
         }
 
-        #kg_details_view_select {
+        #kg_view_select {
             width: min(96px, 30vw);
         }
 
@@ -3534,7 +3488,7 @@
           padding-right: 16px;
         }
         .kg-shell-graph-control,
-        .kg-shell-details-control {
+        .kg-shell-view-control {
           background: #f8fafc;
           border: 1px solid #d7e0ea;
           border-radius: 7px;
@@ -3550,9 +3504,8 @@
           line-height: 1.15;
           white-space: nowrap;
         }
-        #kg_display_scope_select { width: 68px; }
-        #kg_details_view_select { width: 56px; }
-        #kg_clear_selection { white-space: nowrap; }
+        #kg_display_scope_select { width: 108px; }
+        #kg_view_select { width: 56px; }
         #kg_controls { top: calc(var(--kg-header-height) + 8px); }
 
         .kg-graph-context-panel {
@@ -3716,4 +3669,30 @@
         input:not([type]) {
           font-size: 16px !important;
         }
+      }
+
+      #kg_app_header { display:flex; gap:8px; padding:7px 10px; }
+      #kg_app_header .kg-shell-brand,
+      #kg_app_header .kg-shell-tools-button,
+      #kg_app_header #kg_search_toggle { position:static; transform:none; flex:0 0 auto; }
+      #kg_app_header .kg-shell-control { flex:0 0 auto; padding-left:0; }
+      #kg_app_header #kg_view_title { flex:1 1 auto; min-width:0; text-align:right; }
+      body.kg-graph-hidden .kg-shell-graph-control { display:none; }
+      @media (max-width:550px) {
+        #kg_app_header { gap:3px; padding:5px 4px; }
+      }
+      @media (max-width:370px) {
+        #kg_app_header { gap:2px; padding:5px 2px; }
+        #kg_app_header .kg-canvas-select,
+        #kg_app_header .kg-shell-button,
+        #kg_app_header .kg-shell-control label,
+        .kg-graph-context-controls .kg-canvas-select,
+        .kg-graph-context-controls button,
+        .kg-graph-context-controls label { font-size:10px; }
+        #kg_app_header .kg-shell-control { gap:2px; padding:2px; }
+        #kg_app_header .kg-shell-button { padding-left:2px; padding-right:2px; }
+        #kg_app_header .kg-shell-brand { min-width:24px; }
+        #kg_app_header .kg-brand-mark { width:22px; height:22px; }
+        #kg_display_scope_select { width:78px; }
+        #kg_view_select { width:47px; }
       }

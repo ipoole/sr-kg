@@ -24,7 +24,7 @@ def test_selection_history_buttons_follow_native_history_and_branching(browser_g
     assert forward.is_disabled()
     browser_graph.click_concept("1.1")
     browser_graph.click_concept("2.2")
-    page.locator("#kg_clear_selection").click()
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'module:test.m01_foundations'})")
     back.click()
     page.wait_for_function("location.hash === '#concept-2.2'")
     assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.2"
@@ -45,7 +45,7 @@ def test_selection_history_buttons_follow_native_history_and_branching(browser_g
     back.click()
     page.wait_for_function("location.hash === '#concept-1.1'")
     back.click()
-    page.wait_for_function("location.hash === ''")
+    page.wait_for_function("location.hash === '#module-test.m01_foundations'")
     assert back.is_disabled()
     assert forward.is_enabled()
 
@@ -60,14 +60,14 @@ def test_history_controls_take_no_layout_space_and_work_with_graph_hidden(browse
     controls.evaluate("el => { el.hidden = true; }")
     assert page.locator("#kg_workspace").bounding_box() == before
     controls.evaluate("el => { el.hidden = false; }")
-    page.locator("#kg_display_scope_select").select_option("hidden")
+    page.locator("#kg_view_select").select_option("details")
     assert controls.is_visible()
     box = controls.bounding_box()
     assert box["x"] >= 0 and box["x"] + box["width"] <= width
     assert box["y"] + box["height"] <= 844
     page.locator("#kg_history_back").click()
-    page.wait_for_function("location.hash === ''")
-    assert page.locator("#kg_display_scope_select").input_value() == "hidden"
+    page.wait_for_function("location.hash === '#module-test.m01_foundations'")
+    assert page.locator("#kg_view_select").input_value() == "details"
 
 
 def test_history_boundary_resets_on_reload_and_survives_tutorial_exploration(browser_graph):
