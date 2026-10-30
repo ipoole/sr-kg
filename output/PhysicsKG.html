@@ -10787,7 +10787,8 @@ var kgModuleGeometry = (function() {
         function noteTitlesForConcept(nodeId) {
           return userNotesState.notes
             .filter(function(note) {
-              return note.targetType === "concept" && note.targetId === String(nodeId);
+              return note.targetType === "concept" && note.targetId === String(nodeId) &&
+                !noteIsDefaultEmpty(note);
             })
             .map(function(note) { return note.title || "Untitled note"; })
             .filter(Boolean);
@@ -10810,7 +10811,12 @@ var kgModuleGeometry = (function() {
             html += '<div class="kg-tooltip-definition">' + renderTooltipText(definition) + "</div>";
           }
           html += tooltipListHtml("Optional details", optionalDetailTitlesForConcept(concept));
-          html += tooltipListHtml("Notes", noteTitlesForConcept(nodeId));
+          var noteTitles = noteTitlesForConcept(nodeId);
+          html += tooltipListHtml("Notes", noteTitles.slice(0, 3));
+          if (noteTitles.length > 3) {
+            html += '<div class="kg-tooltip-section-title">' +
+              (noteTitles.length - 3) + " more notes</div>";
+          }
           return html;
         }
 
