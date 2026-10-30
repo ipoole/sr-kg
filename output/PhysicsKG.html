@@ -4042,7 +4042,17 @@ if (location.protocol === "file:") {
       <p>The user model has been simplified, the UI space optimised for phones, and rendering and interaction made faster on older or slower devices.</p>
       <div class="kg-splash-feature-grid">
         <section>
-          <h3>Guided tutorials<span class="kg-status-badge">NEW</span></h3>
+          <h3>Simpler view controls<span class="kg-status-badge">NEW</span></h3>
+          <ul>
+            <li>View chooses Graph, Details or Both, preserving your selection, zoom and opened sections.</li>
+            <li>Graph → All equally shows the whole map in foreground, with coloured relationships.</li>
+            <li>Context + background emphasises the selected context and subdues the rest.</li>
+            <li>Context only shows just the selection and its context.</li>
+            <li>Selecting an object never changes the Graph choice automatically.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Guided tutorials</h3>
           <ul>
             <li>Choose Start guided tutorial below, or select a route under Tools → Tutorials.</li>
             <li>Physics routes explore why mass has rest energy and why moving clocks record less time.</li>
@@ -4054,34 +4064,39 @@ if (location.protocol === "file:") {
         <section>
           <h3>Start with the map</h3>
           <ul>
+            <li>The viewer starts with SR-1 selected, modules folded and Graph set to All equally.</li>
             <li>Click a module to read its introduction and connections.</li>
             <li>Use the + in a folded module's top-right corner to reveal its concepts; use the − on an expanded module's boundary to fold it again.</li>
             <li>Use Search to go directly to a concept or module.</li>
-            <li>Clear selection without changing the map arrangement.</li>
+            <li>Clicking empty graph space keeps the current selection.</li>
           </ul>
         </section>
         <section>
           <h3>Choose the context</h3>
           <ul>
-            <li>Context filters Full graph edges and, with a selection, chooses the relationships around it.</li>
+            <li>Context chooses relationships around the selection and filters eligible edges across the whole map.</li>
             <li>Use named contexts such as Prerequisites, Derivation, Foundations, Uses, or Related.</li>
             <li>Choose one hop, two hops, or the complete transitive chain.</li>
             <li>Changing context does not move the graph or fold modules.</li>
+            <li>In Derived from or Where this is used, Show in graph applies that section's context and fits it automatically. Full tree follows the complete chain.</li>
+            <li>From Details-only, Show in graph opens Both without changing module folding.</li>
           </ul>
         </section>
         <section>
-          <h3>Control the surroundings</h3>
+          <h3>Reveal the concepts</h3>
           <ul>
-            <li>Full graph shows every edge type named by Context; a selection colours only its reached context.</li>
-            <li>Context only removes that background; Hidden gives details more room.</li>
             <li>A selected concept inside a folded module appears as a circular concept face within the module.</li>
+            <li>Expand context reveals any folded modules containing context concepts.</li>
+            <li>Context counts, expansion and fitting remain useful in every Graph mode.</li>
           </ul>
         </section>
         <section>
           <h3>Move and read</h3>
           <ul>
             <li>Pan and zoom freely; selection only pans enough to reveal an off-screen item.</li>
-            <li>Fit a selected Context-only view, then use Fit++ to contract it temporarily.</li>
+            <li>Frame chooses what Fit does: reveal the selection or frame the selection, context or whole displayed graph.</li>
+            <li>After Fit context, press Fit++ to bring context concepts closer temporarily, in any Graph mode.</li>
+            <li>Open or close individual details sections as you read.</li>
             <li>Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics without changing the map.</li>
             <li>Preview links and inspect edges without losing the current details.</li>
             <li>Browser Back and Forward retrace selected concepts and modules.</li>
