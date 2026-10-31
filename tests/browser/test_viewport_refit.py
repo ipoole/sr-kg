@@ -60,6 +60,7 @@ def _close_tools_overlay(page):
 
 def _enter_browsing_mode(browser_graph, mode):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
     browser_graph.click_concept("3.1")
 
     if mode == "full":
@@ -383,7 +384,7 @@ def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
     page = browser_graph.page
     _close_tools_overlay(page)
     browser_graph.click_concept("3.1")
-    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
     page.locator("#kg_context_depth_select").select_option("one-hop")
     page.evaluate(
         """() => {

@@ -67,7 +67,7 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
     assert page.evaluate("() => nodes.length") == 4
     assert page.evaluate("() => edges.length") == 6
-    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
     assert page.locator("#kg_view_select").input_value() == "both"
     assert page.locator("#kg_view_select option").evaluate_all(
         "options => options.map(option => option.value)"
@@ -157,6 +157,7 @@ def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
 @pytest.mark.browser
 def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
@@ -189,6 +190,7 @@ def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
 @pytest.mark.browser
 def test_module_all_mode_highlights_members_and_keeps_background_visible(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("all")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
@@ -217,6 +219,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
 @pytest.mark.browser
 def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
@@ -822,6 +825,7 @@ def test_selecting_concept_preserves_all_folded_modules(browser_graph):
 @pytest.mark.browser
 def test_folded_module_hides_in_unrelated_focussed_context(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
     foundations_node_id = "module::test.m01_foundations"
 
     browser_graph.open_control_section("kg_modules_section")
@@ -1523,7 +1527,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     assert page.locator(".kg-shell-graph-control label").is_visible()
     assert page.locator(".kg-shell-view-control label").inner_text() == "View"
     assert page.locator(".kg-shell-view-control label").is_visible()
-    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "All equally"
+    assert page.locator("#kg_display_scope_select option:checked").inner_text() == "Context + bg"
     assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
     assert page.locator("#kg_clear_selection").count() == 0
     assert page.locator("#kg_brand_home").is_visible()
@@ -1568,7 +1572,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
 
     page.set_viewport_size({"width": 900, "height": 800})
     page.wait_for_function(
-        "() => document.querySelector('#kg_display_scope_select option:checked').textContent === 'All equally'"
+        "() => document.querySelector('#kg_display_scope_select option:checked').textContent === 'Context + background'"
     )
     assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
     assert page.locator("#kg_clear_selection").count() == 0
@@ -1710,12 +1714,17 @@ def test_phone_module_masthead_places_contents_to_right_until_open(repo_browser_
 
 
 @pytest.mark.browser
-def test_default_startup_selects_foundations_module(shared_repo_browser_graph):
+def test_default_startup_selects_field_dynamics_with_transitive_foundations(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
 
-    page.wait_for_function("""() => window.location.hash === '#module-sr.spacetime_foundations'""")
-
-    assert page.locator("#info_panel").get_attribute("data-module-id") == "sr.spacetime_foundations"
+    module_id = "sr.field_dynamics_conservation_and_radiation"
+    assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": module_id}
+    assert page.locator("#info_panel").get_attribute("data-module-id") == module_id
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.locator("#kg_context_preset_select").input_value() == "foundations"
+    assert page.locator("#kg_context_depth_select").input_value() == "transitive"
+    assert page.locator("#kg_view_select").input_value() == "both"
+    assert page.locator("#kg_fit_select").input_value() == "displayed"
     assert page.locator(".kg-concept-item.active").count() == 0
 
 
@@ -2052,6 +2061,7 @@ def test_edge_click_opens_relationship_inspection(shared_browser_graph):
 @pytest.mark.browser
 def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathjax_browser_graph):
     page = mathjax_browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("all")
 
     page.evaluate(
         """() => {
@@ -2084,6 +2094,7 @@ def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathj
 @pytest.mark.browser
 def test_edge_hover_ignores_dimmed_background_edges(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
     page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.click_concept("3.1")
@@ -2218,7 +2229,7 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
             "depth": "one-hop",
             "customTraversals": [],
         },
-        "displayScope": "all",
+        "displayScope": "full",
         "view": "both",
     }
     assert page.locator("#kg_context_preset_select").input_value() == "derivation"
@@ -2234,7 +2245,7 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
         "depth": "transitive",
         "customTraversals": [],
     }
-    assert page.evaluate("() => kgViewerStateSnapshot().displayScope") == "all"
+    assert page.evaluate("() => kgViewerStateSnapshot().displayScope") == "full"
 
 
 @pytest.mark.browser
@@ -2373,6 +2384,7 @@ def test_search_finds_definition_text_and_highlights_detail_match(browser_graph)
 @pytest.mark.browser
 def test_focussed_mode_hides_non_neighbourhood_context(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_depth_select").select_option("one-hop")
 
     browser_graph.click_concept("2.1")
     page.locator("#kg_context_preset_select").select_option("connections")

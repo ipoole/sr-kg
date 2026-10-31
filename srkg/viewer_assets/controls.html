@@ -18,8 +18,8 @@
       <div class="kg-shell-control kg-shell-graph-control">
         <label for="kg_display_scope_select">Graph</label>
         <select id="kg_display_scope_select" class="kg-canvas-select" aria-label="Graph display scope">
-          <option value="all" selected>All equally</option>
-          <option value="full">Context + background</option>
+          <option value="all">All equally</option>
+          <option value="full" selected>Context + background</option>
           <option value="context">Context only</option>
         </select>
       </div>
@@ -30,7 +30,7 @@
       <button id="kg_history_forward" type="button" aria-label="Forward to next selection" title="Forward to next selection" disabled>›</button>
     </nav>
     <button id="kg_cloud_sync_attention" class="kg-cloud-sync-attention" type="button"
-            aria-live="polite" hidden>Sync paused — reconnect</button>
+            aria-live="polite" title="Open Personal data to reconnect or disconnect" hidden>Sync paused</button>
     <div id="kg_controls">
       <div class="kg-product-brand">
         <b class="kg-product-name">__PRODUCT_NAME__</b>
@@ -144,9 +144,9 @@
             <label for="kg_context_depth_select">Depth</label>
             <span id="kg_depth_help" class="kg-visually-hidden">How far to follow the context relationships: one hop, two hops, or transitively through the graph.</span>
             <select id="kg_context_depth_select" class="kg-canvas-select" aria-describedby="kg_depth_help" title="How far to follow the context relationships: one hop, two hops, or transitively through the graph.">
-              <option value="one-hop" selected>1 hop</option>
+              <option value="one-hop">1 hop</option>
               <option value="two-hops">2 hops</option>
-              <option value="transitive">Transitive</option>
+              <option value="transitive" selected>Transitive</option>
             </select>
           </div>
           <div class="kg-context-control-group" aria-label="Camera framing">
@@ -283,7 +283,7 @@
         <section>
           <h3>Start with the map</h3>
           <ul>
-            <li>The viewer starts with SR-1 selected, modules folded and Graph set to All equally.</li>
+            <li>The viewer starts with SR-5 Field Dynamics and Radiation selected, modules folded, Context + background and transitive Foundations.</li>
             <li>Click a module to read its introduction and connections.</li>
             <li>Use the + in a folded module's top-right corner to reveal its concepts; use the − on an expanded module's boundary to fold it again.</li>
             <li>Use Search to go directly to a concept or module.</li>
@@ -348,7 +348,7 @@
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
             <li>Tools → Personal data can download or import a portable archive.</li>
             <li>Optionally sign in with a Google account to synchronise automatically through Google Drive across browsers and devices.</li>
-            <li>If authorization expires, local work remains safe and a Sync paused action offers reconnection.</li>
+            <li>If authorization expires, Sync paused opens Personal data. Reconnect, or Disconnect to dismiss the notice and work offline; local changes stay safe.</li>
             <li><a href="https://physicskg.org/privacy.html" target="_blank" rel="noopener noreferrer">Privacy and Google Drive data use</a> explains exactly what is stored and transferred.</li>
           </ul>
         </section>

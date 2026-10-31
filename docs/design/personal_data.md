@@ -141,8 +141,11 @@ Fully unattended token refresh would require a backend and is deliberately
 outside this implementation.
 
 An authorization failure never discards the local working copy. The viewer
-stops automatic sync and shows a persistent **Sync paused — reconnect** action;
-reconnection performs the normal merge before writing either copy.
+stops automatic sync and shows a persistent **Sync paused** action. This opens
+Personal data without requesting sign-in, offering **Reconnect** and **Disconnect**.
+Disconnect works offline, dismisses the notice and stops automatic attempts
+without deleting either copy. Reconnection performs the normal merge before
+writing either copy.
 
 The published [privacy policy](https://physicskg.org/privacy.html) is
 linked from the viewer's Personal data controls. It explains the browser-local

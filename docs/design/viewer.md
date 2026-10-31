@@ -31,8 +31,8 @@ On phone-sized touch screens in landscape, a full-screen notice asks the user
 to rotate to portrait. Returning to portrait restores the current view.
 
 The first visit opens the Quick start; dismissal is remembered locally and
-**Tools → Quick start** reopens it. Startup selects SR-1 (or the first available
-module/concept), with Foundations/one hop, All equally, Both, Frame All, authored
+**Tools → Quick start** reopens it. Startup selects SR-5 Field Dynamics and Radiation (or the first available
+module/concept), with transitive Foundations, Context + background, Both, Frame All, authored
 module defaults, layout editing off, and one initial fit. Valid URL selections
 override that default; missing/invalid URLs and history entries use the fallback.
 Empty-space clicks retain selection, and no Clear action is exposed.
@@ -147,6 +147,8 @@ be downloaded or imported together, and can optionally be synchronised on
 connection and automatically after changes through the visible
 `PhysicsKG personal data.zip` file in Google Drive.
 If Google authorization expires, local work continues safely and a persistent
-**Sync paused — reconnect** action opens the Personal data controls and starts
-reconnection.
+**Sync paused** action opens the Personal data controls without starting sign-in.
+Choose **Reconnect**, or **Disconnect** to dismiss the notice and stop automatic
+attempts while working offline. Both copies remain intact; reconnecting later
+merges local changes with Drive.
 Quick start dismissal remains a browser-local preference and is not synchronised.

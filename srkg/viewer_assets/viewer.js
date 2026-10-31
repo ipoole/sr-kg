@@ -202,8 +202,8 @@
         var activeNodeId = null;
         var activeModuleId = null;
         var viewerState = {
-          contextRule: createContextRule(ContextPreset.FOUNDATIONS, ContextDepth.ONE_HOP),
-          displayScope: DisplayScope.ALL,
+          contextRule: createContextRule(ContextPreset.FOUNDATIONS, ContextDepth.TRANSITIVE),
+          displayScope: DisplayScope.FULL,
           view: "both"
         };
         var layoutEditModeEnabled = false;
@@ -2757,10 +2757,12 @@
           if (status) { status.textContent = String(message || ""); }
         }
 
-        function showCloudSyncConnected(connected) {
-          document.getElementById("kg_cloud_sync_connect").hidden = connected;
+        function showCloudSyncConnected(connected, paused) {
+          var connect = document.getElementById("kg_cloud_sync_connect");
+          connect.hidden = connected;
+          connect.textContent = paused ? "Reconnect" : "Connect Google Drive";
           document.getElementById("kg_cloud_sync_now").hidden = !connected;
-          document.getElementById("kg_cloud_sync_disconnect").hidden = !connected;
+          document.getElementById("kg_cloud_sync_disconnect").hidden = !connected && !paused;
         }
 
         function showCloudSyncAttention(show) {
@@ -2875,7 +2877,7 @@
           }).catch(function(error) {
             if (error && error.code === "auth_required") {
               clearCloudSyncTimers();
-              showCloudSyncConnected(false);
+              showCloudSyncConnected(false, true);
               showCloudSyncAttention(true);
               personalDataSyncEngine = null;
               setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
@@ -2885,13 +2887,13 @@
         }
 
         function disconnectGoogleDrive() {
-          if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
           clearCloudSyncTimers();
           personalDataSyncEngine = null;
           cloudSyncLastSuccessfulAt = 0;
           showCloudSyncConnected(false);
           showCloudSyncAttention(false);
           setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
+          if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
         }
 
         window.kgInitialiseGoogleDriveSync = initialiseGoogleDriveSync;
@@ -9907,8 +9909,8 @@
         }
 
         function defaultViewerSelection() {
-          var moduleId = getModule("sr.spacetime_foundations")
-            ? "sr.spacetime_foundations" : Object.keys(moduleData).sort()[0];
+          var moduleId = getModule("sr.field_dynamics_conservation_and_radiation")
+            ? "sr.field_dynamics_conservation_and_radiation" : Object.keys(moduleData).sort()[0];
           if (moduleId) { return {type: "module", id: moduleId}; }
           var conceptId = Object.keys(conceptData).sort(compareConceptIds)[0];
           return conceptId ? {type: "concept", id: conceptId} : null;
@@ -10555,7 +10557,6 @@
           function() {
             setControlsVisible(true);
             document.getElementById("kg_personal_data_section").open = true;
-            connectGoogleDrive();
           }
         );
         document.addEventListener("visibilitychange", function() {

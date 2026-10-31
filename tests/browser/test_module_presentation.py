@@ -402,6 +402,7 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
 @pytest.mark.parametrize('folded', [False, True])
 def test_edges_remain_visible_at_low_zoom_without_changing_authored_styles(browser_graph, folded):
     page = browser_graph.page
+    page.locator('#kg_display_scope_select').select_option('all')
     if folded:
         browser_graph.open_control_section('kg_modules_section')
         page.locator('#kg_modules_collapse_all').click()
@@ -425,6 +426,7 @@ def test_edges_remain_visible_at_low_zoom_without_changing_authored_styles(brows
 @pytest.mark.browser
 @pytest.mark.parametrize('folded', [False, True])
 def test_zoomed_out_edge_hover_still_emphasises_and_restores(browser_graph, folded):
+    browser_graph.page.locator('#kg_display_scope_select').select_option('all')
     if folded:
         browser_graph.open_control_section('kg_modules_section')
         browser_graph.page.locator('#kg_modules_collapse_all').click()

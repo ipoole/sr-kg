@@ -41,6 +41,7 @@ def test_real_full_graph_filters_internal_and_projected_edges(shared_repo_browse
     page = shared_repo_browser_graph.page
     assert visible_relations(page) == KEY_RELATIONS
     page.locator('#kg_context_preset_select').select_option('prerequisites')
+    page.locator('#kg_context_depth_select').select_option('one-hop')
     assert visible_relations(page) == {'REQUIRES'}
     shared_repo_browser_graph.open_control_section('kg_modules_section')
     page.locator('#kg_modules_expand_all').click()

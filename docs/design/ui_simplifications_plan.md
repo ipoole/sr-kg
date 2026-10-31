@@ -4,9 +4,9 @@
 
 - View: Both, Graph, Details. This controls panes, independently of Graph.
 - Graph: All equally, Context + background, Context only. Selection never changes it.
-- Selection always identifies an existing concept or module. Prefer SR-1 as the
+- Selection always identifies an existing concept or module. Prefer SR-5 Field Dynamics and Radiation as the
   startup/fallback module; a valid URL overrides it. Empty-space clicks retain it.
-- Startup: Both, All equally, Foundations/one hop, Frame All, authored module defaults.
+- Startup: Both, Context + background, transitive Foundations, Frame All, authored module defaults.
 - Context remains meaningful for counts, expansion and Fit/Fit++ in every Graph mode.
 - View changes preserve camera, splitter and reading state; they never automatically fit.
 - Show in graph sets Derivation/Uses and the section's depth, makes Both available

@@ -24,10 +24,10 @@ def test_viewer_state_snapshot_adapts_existing_selection_and_scope(browser_graph
         "selection": {"type": "module", "id": "test.m01_foundations"},
         "contextRule": {
             "preset": "foundations",
-            "depth": "one-hop",
+            "depth": "transitive",
             "customTraversals": [],
         },
-        "displayScope": "all",
+        "displayScope": "full",
         "view": "both",
     }
 
@@ -139,6 +139,8 @@ def test_module_context_starts_from_every_member(browser_graph):
 @pytest.mark.browser
 def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_context_depth_select").select_option("one-hop")
 
     initial = page.evaluate("() => kgDisplayedGraphSnapshot()")
     assert "1.1" in initial["contextNodeIds"]

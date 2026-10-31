@@ -147,56 +147,78 @@ def test_completed_sync_leaves_an_open_note_untouched(browser_graph):
 
 
 @pytest.mark.browser
-def test_cloud_sync_status_reports_expired_sign_in(browser_graph):
+@pytest.mark.parametrize("action", ["reconnect", "disconnect"])
+def test_paused_sync_opens_choices_without_reconnecting(browser_graph, action):
     page = browser_graph.page
     browser_graph.open_control_section("kg_personal_data_section")
-    page.evaluate(
-        """() => {
-          kgCloudSyncConfig.googleDriveClientId = 'test-client';
-          window.kgCreateGoogleDriveAuthorizer = () => ({
-            connect: () => Promise.resolve(),
-            token: () => 'test-token',
-            disconnect: () => {}
-          });
-          window.kgCreateGoogleDrivePersonalDataProvider = () => ({
-            fileName: 'PhysicsKG personal data.zip'
-          });
-          window.kgCreatePersonalDataSyncEngine = () => ({
-            synchronize: () => Promise.reject(Object.assign(
-              new Error('Google sign-in is required'), {code: 'auth_required'}
-            )),
-            isSynchronizing: () => false
-          });
-          kgInitialiseGoogleDriveSync();
-        }"""
-    )
-
+    page.evaluate("""() => {
+      window.__connectCalls = 0;
+      window.__disconnectCalls = 0;
+      window.__syncFails = true;
+      kgCloudSyncConfig.googleDriveClientId = 'test-client';
+      window.kgCreateGoogleDriveAuthorizer = () => ({
+        connect: () => { window.__connectCalls++; return Promise.resolve(); },
+        token: () => 'test-token',
+        disconnect: () => { window.__disconnectCalls++; }
+      });
+      window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+      window.kgCreatePersonalDataSyncEngine = () => ({
+        synchronize: () => window.__syncFails
+          ? Promise.reject(Object.assign(new Error('Sign-in expired'), {code:'auth_required'}))
+          : Promise.resolve({}),
+        isSynchronizing: () => false
+      });
+      kgInitialiseGoogleDriveSync();
+    }""")
     page.locator("#kg_cloud_sync_connect").click()
-    page.wait_for_function(
-        "() => document.querySelector('#kg_cloud_sync_status').textContent.includes('expired')"
-    )
-    assert page.locator("#kg_cloud_sync_connect").is_visible()
     attention = page.locator("#kg_cloud_sync_attention")
-    assert attention.is_visible()
-    assert "Sync paused" in attention.inner_text()
-
-    page.evaluate(
-        """() => {
-          document.querySelector('#kg_controls').classList.add('kg-hidden');
-          document.querySelector('#kg_personal_data_section').open = false;
-          window.kgCreatePersonalDataSyncEngine = options => ({
-            synchronize: () => {
-              options.onStatus({state: 'synced', detail: 'Personal data synced.'});
-              return Promise.resolve({});
-            },
-            isSynchronizing: () => false
-          });
-        }"""
-    )
+    attention.wait_for(state="visible")
+    page.evaluate("""() => {
+      document.querySelector('#kg_controls').classList.add('kg-hidden');
+      document.querySelector('#kg_personal_data_section').open = false;
+    }""")
     attention.click()
-    page.wait_for_function("() => document.querySelector('#kg_cloud_sync_attention').hidden")
-    assert not page.locator("#kg_controls").evaluate("element => element.classList.contains('kg-hidden')")
-    assert page.locator("#kg_personal_data_section").evaluate("element => element.open")
+    assert page.locator("#kg_personal_data_section").evaluate("el => el.open")
+    assert page.locator("#kg_controls").is_visible()
+    assert page.evaluate("window.__connectCalls") == 1
+    assert page.locator("#kg_cloud_sync_disconnect").is_visible()
+    assert page.locator("#kg_cloud_sync_connect").is_visible()
+    assert page.locator("#kg_cloud_sync_now").is_hidden()
+    if action == "disconnect":
+        before = page.evaluate("kgPersonalData.getSnapshot()")
+        page.context.set_offline(True)
+        page.locator("#kg_cloud_sync_disconnect").click()
+        assert attention.is_hidden()
+        assert page.locator("#kg_cloud_sync_disconnect").is_hidden()
+        assert page.locator("#kg_cloud_sync_connect").is_visible()
+        assert page.evaluate("window.__connectCalls") == 1
+        assert page.evaluate("window.__disconnectCalls") == 1
+        assert page.evaluate("kgSchedulePersonalDataAutoSync(0)") is False
+        assert page.evaluate("kgPersonalData.getSnapshot()") == before
+    else:
+        page.evaluate("window.__syncFails = false")
+        page.locator("#kg_cloud_sync_connect").click()
+        attention.wait_for(state="hidden")
+        assert page.evaluate("window.__connectCalls") == 2
+        assert page.locator("#kg_cloud_sync_now").is_visible()
+
+
+@pytest.mark.browser
+def test_authorizer_disconnect_clears_local_token_when_revoke_fails(browser_graph):
+    result = browser_graph.page.evaluate("""async () => {
+      window.google = {accounts:{oauth2:{
+        initTokenClient: options => ({requestAccessToken: () => options.callback({
+          access_token:'test-token', expires_in:3600
+        })}),
+        revoke: () => { throw new Error('Offline'); }
+      }}};
+      const authorizer = kgCreateGoogleDriveAuthorizer({clientId:'test-client'});
+      await authorizer.connect();
+      authorizer.disconnect();
+      try { authorizer.token(); return 'still-connected'; }
+      catch (error) { return error.code; }
+    }""")
+    assert result == "auth_required"
 
 
 @pytest.mark.browser

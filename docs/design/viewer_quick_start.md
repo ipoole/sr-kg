@@ -39,7 +39,8 @@ can open, bookmark or copy to share.
 
 ## Start with the map
 
-The viewer opens with modules folded, SR-1 selected, and the whole map in foreground.
+The viewer opens with modules folded and SR-5 Field Dynamics and Radiation selected.
+Context + background emphasises its transitive Foundations across the wider map.
 
 - Click a module to read its introduction.
 - Use the `+` in a folded module's top-right corner to reveal its concepts; use
@@ -104,8 +105,9 @@ last successful time shown. Google may eventually require reconnection. None of
 these actions changes authored graph content.
 
 If Google authorization expires during an automatic sync, personal changes stay
-safe in this browser and a **Sync paused — reconnect** action remains visible
-below the top bar. Reconnecting merges those local changes with the Drive copy.
+safe in this browser. **Sync paused** opens Personal data, where you can choose
+**Reconnect** or **Disconnect**. Disconnect dismisses the notice and stops sync
+attempts, including offline. Reconnecting later merges local changes with Drive.
 
 ## Study
 

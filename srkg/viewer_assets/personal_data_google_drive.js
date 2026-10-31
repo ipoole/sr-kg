@@ -81,11 +81,14 @@
     }
 
     function disconnect() {
-      if (accessToken && global.google && global.google.accounts && global.google.accounts.oauth2) {
-        global.google.accounts.oauth2.revoke(accessToken, function() {});
-      }
+      var tokenToRevoke = accessToken;
       accessToken = "";
       expiresAt = 0;
+      if (tokenToRevoke && global.google && global.google.accounts && global.google.accounts.oauth2) {
+        // Remote revocation is best effort; local disconnect must work offline.
+        try { global.google.accounts.oauth2.revoke(tokenToRevoke, function() {}); }
+        catch (error) { /* Local credentials have already been cleared. */ }
+      }
     }
 
     return {connect: connect, token: token, disconnect: disconnect};

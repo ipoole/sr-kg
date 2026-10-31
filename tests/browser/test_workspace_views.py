@@ -24,11 +24,11 @@ def test_pane_choice_is_independent_of_graph_scope(browser_graph, view, scope):
 def test_selection_is_permanent_and_does_not_choose_graph_mode(browser_graph):
     page = browser_graph.page
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": "test.m01_foundations"}
-    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
     assert page.locator("#kg_fit_select").input_value() == "displayed"
     assert page.locator("#kg_clear_selection").count() == 0
     browser_graph.click_concept("2.2")
-    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
     page.evaluate("network.emit('click', {nodes:[], edges:[], pointer:{DOM:{x:1,y:1}}})")
     assert page.evaluate("kgViewerStateSnapshot().selection.id") == "2.2"
     page.goto(page.url.split("#")[0] + "#concept-missing")
