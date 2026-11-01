@@ -1,24 +1,5 @@
 # Open Issues
 
-## 6. Build artifacts, publishing and repository size
-Deferred until back at the laptop. Implement and verify publishing before rewriting history.
-
-1. Publish the exact locally built and tested website as an untracked GitHub Pages deployment artifact,
-   rather than rebuilding on GitHub or committing `output/PhysicsKG.html`. Keep local generation unchanged,
-   ignore the generated viewer in Git, and retain the public URL and the small legacy redirect page.
-   Provide a publish command using the GitHub CLI and an Actions deployment workflow; record the source
-   commit and artifact checksum for traceability.
-2. Provide a separately updatable hosted preview artifact, e.g. `https://physicskg.org/preview/PhysicsKG.html`,
-   replacing the GitHack/phone-preview branch workflow. Publish the exact local test build without changing
-   the public release; deployments must preserve both release and preview. Same-origin previews share browser
-   personal data and Google authorization, so document that testing can affect that data.
-3. After artifact deployment is proven, back up the repository and remove historical generated viewer files
-   (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
-   so they do not retain the old objects; preserve the current small legacy redirect. Coordinate the history rewrite
-   and force-push explicitly, then reclaim local storage and verify a fresh clone. Commit IDs will change,
-   other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
-   depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
-   (about 71% of reachable blob content); actual compressed savings need measurement.
 
 ## 1. Content
 1. It is surprising that the Schwarzschild metric has no derivation edges. Other GR concepts may need review.
@@ -66,9 +47,37 @@ Deferred until back at the laptop. Implement and verify publishing before rewrit
 4. When I get a question wrong, pressing the “x Incorrect” badge should reset the question so I can try again without the correct answer showing. 
 5. Avoid questions with free text answers if possible; they are tedious and not particularly instructive. 
 
-## Notes enhancement and unification 
+## 5. Notes enhancement and unification 
 1. Could we allow notes to be placed at the top level of a concept or module?  This could be powerfull as it makes the details exposition user extensible - the notes have similar status to other bocks. 
 2. Can users include MathJax formula notes which then get properly rendered?
 3. SR 2.5, Why this quantity measures energy transfer, need help with d gamma / dt.  
-4. Interestingly, that extra clarification could be via a pre-placed note.  This is leading in the direction of extensibility. 
+4. Interestingly, that extra clarification could be via a pre-placed within block note, default folded, unobtrusive.  This is leading in the direction of extensibility. 
 5. When we changed ui model for note adding (was a check box in tools), notes now always open in edit mode.  They shoud normally open in reading mode with a minimal dicrete "Edit" button at the bottom.
+6. Taken together these enhancements allow for inline explanations - authored or use provided, and user provided additional blocks.  
+
+## 6. Build artifacts, publishing and repository size
+Deferred until back at the laptop. Implement and verify publishing before rewriting history.
+
+1. Publish the exact locally built and tested website as an untracked GitHub Pages deployment artifact,
+   rather than rebuilding on GitHub or committing `output/PhysicsKG.html`. Keep local generation unchanged,
+   ignore the generated viewer in Git, and retain the public URL and the small legacy redirect page.
+   Provide a publish command using the GitHub CLI and an Actions deployment workflow; record the source
+   commit and artifact checksum for traceability.
+2. Provide a separately updatable hosted preview artifact, e.g. `https://physicskg.org/preview/PhysicsKG.html`,
+   replacing the GitHack/phone-preview branch workflow. Publish the exact local test build without changing
+   the public release; deployments must preserve both release and preview. Same-origin previews share browser
+   personal data and Google authorization, so document that testing can affect that data.
+3. After artifact deployment is proven, back up the repository and remove historical generated viewer files
+   (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
+   so they do not retain the old objects; preserve the current small legacy redirect. Coordinate the history rewrite
+   and force-push explicitly, then reclaim local storage and verify a fresh clone. Commit IDs will change,
+   other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
+   depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
+   (about 71% of reachable blob content); actual compressed savings need measurement.
+
+## 7. Refactoring 
+I feel we have acrued refactoring dept. Kets get the codebase back in good shape. 
+1. Update the architecture document to reflect the crrent codebase. What design patterns are used?
+2. Review the codebase to identify refactoring opportunities for improvement.  Some modules have become *very* large.  Dead code?  Unnecessary conditionality? Better use of design patterns?  Anything else?
+3. Look at issue 3.5.  In preparation each domain should be in its own files or directories.  Graphic svg generation should also be separated.  
+4. Update the architecture document.  
