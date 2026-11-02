@@ -30,11 +30,12 @@
 2. Add a history of science view, were nodes are physicists and edges are influences.
 3. Graphics (static or dynamic) should not be restricted to one per concept, but be inserted in (or between) content blocks
    wherever they can usefully got a point across.
-4. Community!  Tutorials, layouts, notes coukd be shared.
+4. Community!  Tutorials, layouts, notes could be shared.
 5. Apply to an entirely new domain - molecular biology!  
    I have a collaborator in mind. Author new domain MolBio,MolBioKB.  
-   Motivates clean separation of data by domain. 
-
+   Motivates clean separation of data by domain (done). 
+6. When recursively foldable content is in place it will be possible to show the derivation of a concept by building a tree of explanation content traversing the deriving concepts.
+ 
 ## 4. Misc. Issues
 1. Support PhysicsKG as an installable web app. Home Screen launch already works on iPhone and the old iPad;
    personal data survives closing and relaunching. Add app identity/installation guidance, reliable offline caching
@@ -50,14 +51,15 @@
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
-
+7. Nice to have version history in the viewer, giving version number, publishing date and a very brief user facing summary of what changed. Populate retrospectively at least as far as 4.0.0, possibly earlier by date. 
+ 
 ## 5. Notes enhancement and unification 
 1. Could we allow notes to be placed at the top level of a concept or module?  This could be powerfull as it makes the details exposition user extensible - the notes have similar status to other bocks. 
 2. Can users include MathJax formula notes which then get properly rendered?
 3. SR 2.5, Why this quantity measures energy transfer, need help with d gamma / dt.  
 4. Interestingly, that extra clarification could be via a pre-placed within block note, default folded, unobtrusive.  This is leading in the direction of extensibility. 
 5. When we changed ui model for note adding (was a check box in tools), notes now always open in edit mode.  They shoud normally open in reading mode with a minimal dicrete "Edit" button at the bottom.
-6. Taken together these enhancements allow for inline explanations - authored or use provided, and user provided additional blocks.  
+6. Taken together these enhancements allow for inline folded explanations/derivation details - authored or user provided, and user provided additional blocks.  Recursive content would be naturally emergent, whether or not we choose to allow it.  See 3.6 above.  
 
 ## 6. Build artifacts, publishing and repository size
 Deferred until back at the laptop. Implement and verify publishing before rewriting history.
@@ -71,7 +73,8 @@ Deferred until back at the laptop. Implement and verify publishing before rewrit
    replacing the GitHack/phone-preview branch workflow. Publish the exact local test build without changing
    the public release; deployments must preserve both release and preview. Same-origin previews share browser
    personal data and Google authorization, so document that testing can affect that data.
-3. After artifact deployment is proven, back up the repository and remove historical generated viewer files
+3. Before the following repository editing, extract all published viewers (.html) and save locally to an untracked directory with a filename which includes the version number, or date before v4.0.0.  Would be interesting to see how the project has developed over time.  
+4. After artifact deployment is proven, back up the repository and remove historical generated viewer files
    (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
    so they do not retain the old objects; preserve the current small legacy redirect. Coordinate the history rewrite
    and force-push explicitly, then reclaim local storage and verify a fresh clone. Commit IDs will change,
