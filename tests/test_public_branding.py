@@ -114,5 +114,5 @@ def test_viewer_offers_a_public_privacy_policy_link():
 
 
 def test_product_version_matches_release():
-    assert PRODUCT_VERSION == "4.3.1"
+    assert PRODUCT_VERSION == "4.3.2"
     assert all(part.isdigit() for part in PRODUCT_VERSION.split("."))

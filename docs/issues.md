@@ -78,16 +78,7 @@ Deferred until back at the laptop. Implement and verify publishing before rewrit
    other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
    depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
    (about 71% of reachable blob content); actual compressed savings need measurement.
-
-## 7. Refactoring 
-I feel we have acrued refactoring dept. Kets get the codebase back in good shape. 
-1. DONE — Updated [architecture](design/architecture.md) for v4.3.1, including current responsibilities,
-   data flows, implemented design patterns and coupling that remains before refactoring.
-2. DONE — Responsibility refactor: shared rendering/CSV helpers, graph model and vis adapter,
-   feature-owned browser controllers, Python table contracts and optional graphic enrichment.
-   See [refactoring progress](design/refactoring_progress.md) for scope, verification, timings and source counts.
-3. DONE — Domain-owned tables, graphics/registries/assets, palettes, layouts, tutorials,
-   editorial tests and drafts now live under `domains/<id>/`. Generic discovery and
-   strict selected-domain reference checks support future subjects without shared lists.
-   See [domain packages](design/domain_packages.md).
-4. DONE — Updated [architecture](design/architecture.md) after responsibility refactoring and the domain split.
+4. Consolidate homepage/site sources and branding assets under `website/` as part of artifact publishing,
+   reducing repository-root clutter. Assemble these at the deployed website root, preserving the homepage,
+   privacy/terms, viewer, favicon/icon, robots/sitemap and custom-domain URLs. Update generator asset paths,
+   tests and documentation; retain browser favicon fallback and Google branding/OAuth links.
