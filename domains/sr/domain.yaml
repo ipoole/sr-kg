@@ -1,0 +1,23 @@
+id: sr
+title: Special Relativity and Classical Fields
+display_name: SR
+sequence: 10
+initial_selection: module:sr.field_dynamics_conservation_and_radiation
+module_palette: module_palette.json
+graphics: graphics.registry
+files:
+  nodes: data/nodes.csv
+  edges: data/edges.csv
+  content_blocks: data/content_blocks.csv
+  study_questions: data/study_questions.csv
+  study_question_options: data/study_question_options.csv
+  references: data/references.csv
+  reference_links: data/reference_links.csv
+  graphic_designs: data/concept_graphic_designs.csv
+  module_graphic_designs: data/module_graphic_designs.csv
+  modules: data/modules.csv
+  module_members: data/module_members.csv
+  module_supports: data/module_supports.csv
+  module_content_blocks: data/module_content_blocks.csv
+  layout: layout.json
+  tutorials: tutorials.yaml

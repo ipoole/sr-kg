@@ -1,0 +1,3 @@
+module_id,domain,title,sequence,default_collapsed
+math.m01_manifolds_and_coordinates,math,MATHS-1 Manifolds and Coordinates,10,true
+math.m02_tensor_calculus,math,MATHS-2 Tensor Calculus,20,true

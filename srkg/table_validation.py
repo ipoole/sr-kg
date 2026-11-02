@@ -599,11 +599,8 @@ def validate_module_members(
         )
 
 
-def validate_module_supports(
-    nodes_df: pd.DataFrame,
-    modules_df: pd.DataFrame,
-    module_supports_df: pd.DataFrame | None,
-) -> None:
+def validate_module_support_rows(module_supports_df) -> None:
+    """Validate row structure even when external targets will be omitted."""
     if module_supports_df is None:
         return
 
@@ -634,6 +631,17 @@ def validate_module_supports(
             "module_supports.csv has invalid target_type value(s): "
             + ", ".join(invalid_target_types)
         )
+
+
+
+def validate_module_supports(
+    nodes_df: pd.DataFrame,
+    modules_df: pd.DataFrame,
+    module_supports_df: pd.DataFrame | None,
+) -> None:
+    validate_module_support_rows(module_supports_df)
+    if module_supports_df is None or module_supports_df.empty:
+        return
 
     module_ids = set(modules_df["module_id"].astype(str).str.strip())
     concept_ids = set(nodes_df["id"].astype(str).str.strip())

@@ -1,0 +1,16 @@
+source,target,relation,note
+math.coordinate_chart,math.manifold,CONSTRUCTED_FROM,Coordinate charts are local maps used to describe regions of a manifold.
+math.coordinate_transformation,math.manifold,RELATED,Smooth transition maps between charts are part of the manifold atlas structure.
+math.coordinate_transformation,math.coordinate_chart,CONSTRUCTED_FROM,Coordinate transformations are transition rules between overlapping coordinate charts.
+math.worldline,sr.spacetime_event,RELATED,A worldline can be understood as a curve passing through ordered spacetime events.
+math.worldline,math.manifold,CONSTRUCTED_FROM,A worldline is a curve lying in the spacetime manifold.
+math.tangent_space,math.worldline,RELATED,Worldline tangents are examples of tangent vectors at events.
+math.tangent_space,math.manifold,CONSTRUCTED_FROM,The tangent space is attached to a point of a manifold and supplies the local vector space.
+math.cotangent_space,math.tangent_space,CONSTRUCTED_FROM,The cotangent space is the dual vector space of linear maps on tangent vectors.
+math.tensor_field,math.tangent_space,CONSTRUCTED_FROM,Tensor fields are built from tangent and cotangent spaces assigned point by point.
+math.tensor_field,math.cotangent_space,CONSTRUCTED_FROM,Tensor fields are built from tangent and cotangent spaces assigned point by point.
+math.tensor_field,math.coordinate_transformation,RELATED,Tensor-field components change under coordinate transformations while the underlying geometric object remains the same.
+math.index_notation,math.tensor_field,REQUIRES,"Index notation records tensor type, component slots, and contractions."
+math.tensor_transformation_law,math.coordinate_transformation,CONSTRUCTED_FROM,The transformation law is built from the Jacobian factors of coordinate transformations.
+math.tensor_transformation_law,math.index_notation,REQUIRES,The law is stated compactly using upper and lower indices.
+math.tensor_transformation_law,math.tensor_field,REQUIRES,Tensor fields are recognised by the way their components transform.

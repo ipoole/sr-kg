@@ -14,6 +14,7 @@ from typing import Iterable, Literal
 
 import pandas as pd
 
+from srkg.text_macros import MacroCall, parse_two_arg_macro_calls
 from srkg.config import EDGE_COLUMNS
 from srkg.dag import build_dag_reports
 from srkg.data import normalise_edges
@@ -49,15 +50,6 @@ class ValidationIssue:
     location: str = ""
 
 
-@dataclass(frozen=True)
-class MacroCall:
-    """A parsed two-argument macro call."""
-
-    name: str
-    args: tuple[str, str]
-    start: int
-    end: int
-
 
 def load_validation_issues_from_root(data_root: str | Path) -> list[ValidationIssue]:
     """Load and validate a directory-backed knowledge base."""
@@ -68,14 +60,19 @@ def load_validation_issues_from_root(data_root: str | Path) -> list[ValidationIs
     except Exception as exc:
         return [_issue("error", "kb-load", f"Could not load KB data root: {exc}", str(data_root))]
 
+    return validate_knowledge_base(kb)
+
+
+def validate_knowledge_base(kb: KnowledgeBase) -> list[ValidationIssue]:
+    """Editorial diagnostics for an already selected/resolved KB."""
     issues = validate_graph_data(
         kb.nodes_df,
         kb.edges_df,
         kb.edge_key,
         check_cref_edge_consistency=False,
     )
-    issues.extend(_validate_content_block_text(kb.concepts, kb.nodes_df, kb.edges_df))
-    issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df))
+    issues.extend(_validate_content_block_text(kb.concepts, kb.nodes_df, kb.edges_df, external_domains=kb.missing_domains))
+    issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df, external_domains=kb.missing_domains))
     if kb.modules:
         issues.extend(_validate_module_structure(kb))
     return issues
@@ -311,62 +308,9 @@ def _validate_custom_macro_typos(text: str, location: str) -> list[ValidationIss
     return issues
 
 
-def _parse_two_arg_macro_calls(
-    text: str,
-    name: str,
-    location: str,
-) -> tuple[list[MacroCall], list[ValidationIssue]]:
-    calls: list[MacroCall] = []
-    issues: list[ValidationIssue] = []
-    macro = "\\" + name
-    pos = 0
-    while True:
-        start = text.find(macro, pos)
-        if start == -1:
-            break
-        after = start + len(macro)
-        if after < len(text) and (text[after].isalnum() or text[after] == "_"):
-            pos = after
-            continue
-        try:
-            first_start = _skip_whitespace(text, after)
-            arg1, first_end = _parse_braced_arg(text, first_start)
-            second_start = _skip_whitespace(text, first_end)
-            arg2, second_end = _parse_braced_arg(text, second_start)
-        except ValueError as exc:
-            issues.append(_issue("error", f"{name}-syntax", str(exc), location))
-            pos = after
-            continue
-        calls.append(MacroCall(name=name, args=(arg1, arg2), start=start, end=second_end))
-        pos = second_end
-    return calls, issues
-
-
-def _parse_braced_arg(text: str, index: int) -> tuple[str, int]:
-    if index >= len(text) or text[index] != "{":
-        raise ValueError("Expected braced macro argument")
-    depth = 0
-    arg_start = index + 1
-    pos = index
-    while pos < len(text):
-        char = text[pos]
-        if char == "\\" and pos + 1 < len(text) and text[pos + 1] in "{}\\":
-            pos += 2
-            continue
-        if char == "{":
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0:
-                return text[arg_start:pos], pos + 1
-        pos += 1
-    raise ValueError("Unclosed braced macro argument")
-
-
-def _skip_whitespace(text: str, index: int) -> int:
-    while index < len(text) and text[index].isspace():
-        index += 1
-    return index
+def _parse_two_arg_macro_calls(text, name, location):
+    calls, errors = parse_two_arg_macro_calls(text, name)
+    return calls, [_issue("error", f"{name}-syntax", message, location) for message in errors]
 
 
 def _validate_cref_edge_consistency(
@@ -518,6 +462,7 @@ def _validate_content_block_text(
     concepts,
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
+    *, external_domains=(),
 ) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     node_ids = set(nodes_df["id"].astype(str).str.strip())
@@ -545,7 +490,7 @@ def _validate_content_block_text(
             issues.extend(optional_errors)
 
     for source, target in sorted(cref_pairs):
-        if target not in node_ids:
+        if target not in node_ids and target.partition(".")[0] not in external_domains:
             issues.append(
                 _issue(
                     "error",
@@ -558,7 +503,10 @@ def _validate_content_block_text(
     if any(issue.severity == "error" for issue in issues):
         return issues
 
-    issues.extend(_validate_cref_edge_consistency(nodes_df, edges_df, cref_pairs, cref_targets_by_node))
+    issues.extend(_validate_cref_edge_consistency(nodes_df, edges_df,
+        {(source, target) for source, target in cref_pairs if target in node_ids},
+        {source: {target for target in targets if target in node_ids}
+         for source, targets in cref_targets_by_node.items()}))
     return issues
 
 
@@ -566,6 +514,7 @@ def _validate_study_question_text(
     concepts,
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
+    *, external_domains=(),
 ) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     node_ids = set(nodes_df["id"].astype(str).str.strip())
@@ -611,7 +560,7 @@ def _validate_study_question_text(
                 )
 
     for source, target in sorted(cref_pairs):
-        if target not in node_ids:
+        if target not in node_ids and target.partition(".")[0] not in external_domains:
             issues.append(
                 _issue(
                     "error",

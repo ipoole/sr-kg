@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
+import re
 from typing import Any
 
 import pandas as pd
@@ -38,6 +39,7 @@ from srkg.table_validation import (
     validate_module_graphic_designs,
     validate_modules,
 )
+from srkg.domain_references import BuildWarning
 from srkg.data import (
     build_concepts,
     concept_domain,
@@ -95,6 +97,8 @@ class KnowledgeBasePaths:
     module_content_blocks: Path | None = None
     layout: Path | None = None
     tutorials: Path | None = None
+    domains_root: Path | None = None
+    layout_revision: str = ""
 
 
 @dataclass(frozen=True)
@@ -109,6 +113,29 @@ class KnowledgeBase:
     modules: tuple[Module, ...] = ()
     published_layout: PublishedLayout = field(default_factory=PublishedLayout)
     tutorials: tuple[Tutorial, ...] = ()
+    domain_packages: tuple = ()
+    build_warnings: tuple[BuildWarning, ...] = ()
+
+    @property
+    def missing_domains(self) -> tuple[str, ...]:
+        return tuple(sorted({warning.domain for warning in self.build_warnings if warning.domain}))
+
+    def domain_data(self) -> list[dict[str, object]]:
+        """Runtime preferences come from content metadata, not subject switches."""
+        if self.domain_packages:
+            return [{"id": package.id, "title": package.title, "label": package.display_name,
+                     "sequence": package.sequence, "initialSelection": package.initial_selection}
+                    for package in self.domain_packages]
+        # Legacy fixtures infer order from records and labels from module codes.
+        domains = list(dict.fromkeys(concept.domain for concept in self.concepts))
+        result = []
+        for index, domain in enumerate(domains):
+            first_module = next((module for module in self.modules if module.domain == domain), None)
+            code = first_module.title.split(" ", 1)[0] if first_module else ""
+            match = re.fullmatch(r"([A-Za-z][A-Za-z0-9_]*)-\d+", code)
+            label = match.group(1) if match else domain.upper()
+            result.append({"id": domain, "label": label, "sequence": index, "initialSelection": ""})
+        return result
 
     @property
     def concept_index(self) -> dict[str, Concept]:
@@ -169,10 +196,11 @@ class KnowledgeBase:
 
 def load_knowledge_base(
     data_root: str | Path, *, include_graphics: bool = True,
+    domains: list[str] | tuple[str, ...] | None = None,
 ) -> KnowledgeBase:
     """Load a data root; text/diagnostic callers can skip generated SVGs."""
     return load_knowledge_base_from_paths(
-        resolve_knowledge_base_paths(data_root), include_graphics=include_graphics,
+        resolve_knowledge_base_paths(data_root), include_graphics=include_graphics, domains=domains,
     )
 
 
@@ -184,11 +212,17 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
         raise KnowledgeBaseLoadError(f"Knowledge-base manifest not found: {manifest_path}")
 
     manifest = _read_manifest(manifest_path)
+    return _paths_from_manifest(root, manifest)
+
+
+def _paths_from_manifest(root: Path, manifest: dict) -> KnowledgeBasePaths:
     files = dict(DEFAULT_KB_FILES)
     files.update(manifest.get("files", {}))
 
     return KnowledgeBasePaths(
         root=root,
+        domains_root=_resolve_optional_manifest_path(root, manifest.get("domains_root")),
+        layout_revision=str(manifest.get("layout_revision", "")),
         nodes=_resolve_manifest_path(root, files["nodes"]),
         edges=_resolve_manifest_path(root, files["edges"]),
         edge_key=_resolve_existing_optional_manifest_path(root, files.get("edge_key")),
@@ -210,8 +244,14 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
 
 def load_knowledge_base_from_paths(
     paths: KnowledgeBasePaths, *, include_graphics: bool = True,
+    domains: list[str] | tuple[str, ...] | None = None,
 ) -> KnowledgeBase:
-    """Load a knowledge base from resolved KB paths."""
+    """Load a knowledge base from resolved legacy or collection paths."""
+    if paths.domains_root is not None:
+        from srkg.domain_sources import load_collection
+        return load_collection(paths, domains=domains, include_graphics=include_graphics)
+    if domains:
+        raise KnowledgeBaseLoadError("Loader domain selection requires a collection manifest")
     _require_file(paths.nodes, "nodes")
     _require_file(paths.edges, "edges")
     _require_file(paths.content_blocks, "content_blocks")
@@ -220,19 +260,37 @@ def load_knowledge_base_from_paths(
     _require_file(paths.references, "references")
     _require_file(paths.reference_links, "reference_links")
 
-    nodes_df = _read_csv(paths.nodes)
-    edges_df = normalise_edges(_read_csv(paths.edges))
-    content_blocks_df = _read_optional_csv(paths.content_blocks)
-    study_questions_df = _read_optional_csv(paths.study_questions)
-    study_question_options_df = _read_optional_csv(paths.study_question_options)
-    references_df = _read_optional_csv(paths.references)
-    reference_links_df = _read_optional_csv(paths.reference_links)
-    graphic_designs_df = _read_optional_csv(paths.graphic_designs)
-    module_graphic_designs_df = _read_optional_csv(paths.module_graphic_designs)
-    modules_df = _read_optional_csv(paths.modules)
-    module_members_df = _read_optional_csv(paths.module_members)
-    module_supports_df = _read_optional_csv(paths.module_supports)
-    module_content_blocks_df = _read_optional_csv(paths.module_content_blocks)
+    tables = read_source_tables(paths)
+    return _assemble_knowledge_base(paths, tables, include_graphics=include_graphics)
+
+
+def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | None]:
+    """Read one source package; also used by authoring/review tools."""
+    return {
+        role: _read_optional_csv(getattr(paths, role))
+        for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials"}
+    }
+
+
+def _assemble_knowledge_base(
+    paths, tables, *, include_graphics=True, reference_scopes=None,
+    tutorial_paths=None, published_layout=None, domain_packages=(), reference_warnings=None,
+):
+    """Apply common table contracts and construct one runtime model."""
+    nodes_df = tables.get("nodes")
+    edges_df = tables.get("edges")
+    content_blocks_df = tables.get("content_blocks")
+    study_questions_df = tables.get("study_questions")
+    study_question_options_df = tables.get("study_question_options")
+    references_df = tables.get("references")
+    reference_links_df = tables.get("reference_links")
+    graphic_designs_df = tables.get("graphic_designs")
+    module_graphic_designs_df = tables.get("module_graphic_designs")
+    modules_df = tables.get("modules")
+    module_members_df = tables.get("module_members")
+    module_supports_df = tables.get("module_supports")
+    module_content_blocks_df = tables.get("module_content_blocks")
+    edges_df = normalise_edges(edges_df)
     edge_key = load_edge_key(paths.edge_key)
 
     validate_unique_concept_ids(nodes_df)
@@ -248,14 +306,10 @@ def load_knowledge_base_from_paths(
     validate_edge_endpoints(nodes_df, edges_df)
     validate_content_blocks(nodes_df, content_blocks_df)
     validate_study_questions(nodes_df, study_questions_df, study_question_options_df)
-    validate_references(references_df)
-    validate_reference_links(
-        nodes_df,
-        content_blocks_df,
-        study_questions_df,
-        references_df,
-        reference_links_df,
-    )
+    scopes = reference_scopes if reference_scopes is not None else [(references_df, reference_links_df)]
+    for refs, links in scopes:
+        validate_references(refs)
+        validate_reference_links(nodes_df, content_blocks_df, study_questions_df, refs, links)
     validate_modules(
         nodes_df,
         modules_df,
@@ -275,6 +329,16 @@ def load_knowledge_base_from_paths(
         study_question_options_df,
         include_graphics=include_graphics,
     ))
+    if reference_scopes is not None:
+        from srkg.data import build_concept_references_from_dfs
+        references_by_concept = {}
+        blocks = [block for concept in concepts for block in concept.content_blocks]
+        questions = [question for concept in concepts for question in concept.study_questions]
+        for refs, links in reference_scopes:
+            for concept_id, reference in build_concept_references_from_dfs(refs, links, blocks, questions):
+                references_by_concept.setdefault(concept_id, []).append(reference)
+        concepts = tuple(replace(concept, references=references_by_concept.get(concept.id, []))
+                         for concept in concepts)
     modules = tuple(build_modules_from_dfs(
         modules_df,
         module_members_df,
@@ -294,17 +358,25 @@ def load_knowledge_base_from_paths(
         if concept_domain(row)
     }
     try:
-        tutorials = load_tutorials(
-            paths.tutorials,
-            concept_ids=nodes_df["id"].astype(str),
-            module_ids=(module.module_id for module in modules),
-            block_ids=content_block_ids,
-            domain_ids=known_domains,
-        )
+        tutorials = []
+        for source in tutorial_paths if tutorial_paths is not None else [paths.tutorials]:
+            tutorial_path, optional = source if isinstance(source, tuple) else (source, False)
+            tutorials.extend(load_tutorials(
+                tutorial_path,
+                concept_ids=nodes_df["id"].astype(str),
+                module_ids=(module.module_id for module in modules),
+                block_ids=content_block_ids,
+                domain_ids=known_domains,
+                skip_unavailable_domains=optional,
+                build_warnings=reference_warnings,
+            ))
+        if len({route.tutorial_id for route in tutorials}) != len(tutorials):
+            raise TutorialLoadError("Duplicate tutorial id across source packages")
+        tutorials = tuple(sorted(tutorials, key=lambda route: (route.sequence, route.tutorial_id)))
     except TutorialLoadError as exc:
         raise KnowledgeBaseLoadError(str(exc)) from exc
     try:
-        published_layout = load_published_layout(
+        published_layout = published_layout if published_layout is not None else load_published_layout(
             paths.layout,
             concept_ids=nodes_df["id"].astype(str),
             module_ids=(module.module_id for module in modules),
@@ -313,6 +385,7 @@ def load_knowledge_base_from_paths(
         raise KnowledgeBaseLoadError(str(exc)) from exc
     return KnowledgeBase(
         paths=paths,
+        domain_packages=tuple(domain_packages),
         nodes_df=nodes_df,
         edges_df=edges_df,
         edge_key=edge_key,

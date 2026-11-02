@@ -46,6 +46,10 @@
 3. Helpful to give name of selected concept or module when view is graph only if space can be found on phone.
 4. When I get a question wrong, pressing the “x Incorrect” badge should reset the question so I can try again without the correct answer showing. 
 5. Avoid questions with free text answers if possible; they are tedious and not particularly instructive. 
+6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,
+   reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
+   resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
+   Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 
 ## 5. Notes enhancement and unification 
 1. Could we allow notes to be placed at the top level of a concept or module?  This could be powerfull as it makes the details exposition user extensible - the notes have similar status to other bocks. 
@@ -82,5 +86,8 @@ I feel we have acrued refactoring dept. Kets get the codebase back in good shape
 2. DONE — Responsibility refactor: shared rendering/CSV helpers, graph model and vis adapter,
    feature-owned browser controllers, Python table contracts and optional graphic enrichment.
    See [refactoring progress](design/refactoring_progress.md) for scope, verification, timings and source counts.
-3. Look at issue 3.5.  In preparation each domain should be in its own files or directories.  Graphic svg generation should also be separated.  
-4. Updated [architecture](design/architecture.md) after 7.2. Refresh again when the domain split in 7.3 is implemented.
+3. DONE — Domain-owned tables, graphics/registries/assets, palettes, layouts, tutorials,
+   editorial tests and drafts now live under `domains/<id>/`. Generic discovery and
+   strict selected-domain reference checks support future subjects without shared lists.
+   See [domain packages](design/domain_packages.md).
+4. DONE — Updated [architecture](design/architecture.md) after responsibility refactoring and the domain split.

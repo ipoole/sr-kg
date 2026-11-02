@@ -66,7 +66,7 @@ def load_dag_reports(
     validate_edge_endpoints(nodes_df, edges_df)
 
     edge_key = load_edge_key(Path(edge_key_path) if edge_key_path else None)
-    selected = tuple(relations) if relations is not None else _directed_relations(
+    selected = tuple(relations) if relations is not None else directed_relations(
         edges_df, edge_key
     )
     if not selected:
@@ -209,7 +209,7 @@ def format_dag_reports(
     return "\n".join(lines)
 
 
-def _directed_relations(edges_df, edge_key) -> tuple[str, ...]:
+def directed_relations(edges_df, edge_key) -> tuple[str, ...]:
     edge_relations = list(dict.fromkeys(edges_df["relation"].astype(str)))
     return tuple(
         relation for relation in edge_relations

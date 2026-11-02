@@ -1,0 +1,9 @@
+module_id,target_type,target_id,role,note
+sr.relativistic_mechanics,module,sr.spacetime_foundations,prerequisite,Relativistic particle quantities use invariant spacetime geometry and Lorentz transformations.
+sr.variational_and_field_theory,module,sr.spacetime_foundations,prerequisite,Relativistic actions and fields are formulated on Minkowski spacetime.
+sr.variational_and_field_theory,module,sr.relativistic_mechanics,prerequisite,Particle and vector examples supply the first relativistic variables used by the variational formalism.
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.spacetime_foundations,prerequisite,"Covariant electromagnetic structures use events, the metric, and Lorentz transformations."
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.relativistic_mechanics,prerequisite,The Lorentz force couples the field to four-velocity and four-momentum.
+sr.electromagnetic_structure_gauge_and_stress_energy,module,sr.variational_and_field_theory,prerequisite,Minimal coupling and the Lorentz force use the action formulation.
+sr.field_dynamics_conservation_and_radiation,module,sr.variational_and_field_theory,prerequisite,Noether and Euler-Lagrange machinery underpin conservation laws and Maxwell dynamics.
+sr.field_dynamics_conservation_and_radiation,module,sr.electromagnetic_structure_gauge_and_stress_energy,prerequisite,Maxwell equations waves and radiation use the electromagnetic field structures and interaction law.

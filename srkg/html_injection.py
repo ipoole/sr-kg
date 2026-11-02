@@ -82,6 +82,7 @@ def inject_controls(
     published_layout: dict[str, object] | None = None,
     tutorial_data: list[dict[str, object]] | None = None,
     google_drive_client_id: str = "",
+    domain_data: list[dict[str, object]] | None = None,
 ) -> str:
     """Inject the viewer shell, assets, and serialized data into PyVis HTML."""
     for marker in ("<head>", "</head>", "<body>", "</body>"):
@@ -143,7 +144,7 @@ def inject_controls(
                 "__TUTORIAL_DATA__": _json_for_script(tutorial_data or []),
                 "__EDGE_KEY__": _json_for_script(edge_key),
                 "__VIEWER_CONFIG__": _json_for_script(
-                    _viewer_runtime_config(google_drive_client_id)
+                    _viewer_runtime_config(google_drive_client_id, domain_data=domain_data)
                 ),
             },
         )
@@ -249,10 +250,11 @@ def _css_replacements() -> dict[str, object]:
     }
 
 
-def _viewer_runtime_config(google_drive_client_id: str = "") -> dict[str, object]:
+def _viewer_runtime_config(google_drive_client_id: str = "", *, domain_data=None) -> dict[str, object]:
     """Return browser-side constants that are injected with generated data."""
     return {
         "applicationVersion": PRODUCT_VERSION,
+        "domains": domain_data or [],
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
         "nodeLabels": {
             "width": NODE_LABEL_WIDTH,

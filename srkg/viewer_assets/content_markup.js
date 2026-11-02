@@ -17,19 +17,38 @@ function kgCreateContentMarkup(options) {
   }
 
   function renderSimpleConceptText(s) {
-    return escapeHtml(s).replace(
-      /\\cref\{([^{}]*)\}\{([^{}]*)\}/g,
-      function(match, label, targetId) {
-        if (!getConcept(targetId)) {
-          return "<strong>" + label + "</strong>";
-        }
-        return '<a href="' + escapeHtml(conceptHash(targetId)) +
-          '" class="concept-link" data-concept-id="' +
-          escapeHtml(targetId) +
-          '" aria-haspopup="dialog" aria-controls="kg_concept_preview' +
-          '"><strong>' + label + "</strong></a>";
+    var text = String(s || ""), html = "", cursor = 0;
+    var macro = "\\cref";
+    while (cursor < text.length) {
+      var start = text.indexOf(macro, cursor);
+      if (start === -1) { return html + escapeHtml(text.slice(cursor)); }
+      html += escapeHtml(text.slice(cursor, start));
+      var after = start + macro.length;
+      if (/[A-Za-z0-9_]/.test(text.charAt(after))) {
+        html += escapeHtml(macro);
+        cursor = after;
+        continue;
       }
-    );
+      var label = parseBracedArgument(text, skipOptionalDetailWhitespace(text, after));
+      var target = label && parseBracedArgument(text, skipOptionalDetailWhitespace(text, label.end));
+      if (!target) {
+        html += escapeHtml(macro);
+        cursor = after;
+        continue;
+      }
+      var targetId = target.value.trim();
+      var labelHtml = escapeHtml(label.value);
+      if (!getConcept(targetId)) {
+        html += labelHtml;
+      } else {
+        html += '<a href="' + escapeHtml(conceptHash(targetId)) +
+          '" class="concept-link" data-concept-id="' + escapeHtml(targetId) +
+          '" aria-haspopup="dialog" aria-controls="kg_concept_preview"><strong>' +
+          labelHtml + "</strong></a>";
+      }
+      cursor = target.end;
+    }
+    return html;
   }
 
   function skipOptionalDetailWhitespace(text, index) {

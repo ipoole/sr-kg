@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from srkg.kb import KnowledgeBase, load_knowledge_base
+from srkg.kb import KnowledgeBase, load_knowledge_base, resolve_knowledge_base_paths
 from srkg.data import concept_domain
 from srkg.edges import build_edge_colour_map, enrich_edge_key_with_colours
 from srkg.html_injection import inject_controls
@@ -41,15 +41,11 @@ def generate_viewer_from_root(
     also_load_linked_concepts: bool = False,
     relations: list[str] | tuple[str, ...] | None = None,
     google_drive_client_id: str = "",
+    warning_handler=None,
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a knowledge-base data root."""
-    kb = load_knowledge_base(data_root)
-    kb = filter_knowledge_base_by_domains(
-        kb,
-        domains=domains,
-        also_load_linked_concepts=also_load_linked_concepts,
-    )
-    kb = filter_knowledge_base_by_relations(kb, relations=relations)
+    kb = load_viewer_knowledge_base(data_root, domains=domains,
+        also_load_linked_concepts=also_load_linked_concepts, relations=relations)
     return generate_viewer_from_kb(
         kb=kb,
         out_path=out_path,
@@ -57,7 +53,22 @@ def generate_viewer_from_root(
         width=width,
         title=title,
         google_drive_client_id=google_drive_client_id,
+        warning_handler=warning_handler,
     )
+
+
+def load_viewer_knowledge_base(data_root, *, domains=None, also_load_linked_concepts=False,
+                             relations=None, include_graphics=True):
+    """Apply the same source selection to generation and diagnostic CLI modes."""
+    collection = resolve_knowledge_base_paths(data_root).domains_root is not None
+    kb = load_knowledge_base(data_root, domains=domains if collection else None, include_graphics=include_graphics)
+    kb = filter_knowledge_base_by_domains(
+        kb,
+        domains=domains,
+        also_load_linked_concepts=also_load_linked_concepts,
+    )
+    kb = filter_knowledge_base_by_relations(kb, relations=relations)
+    return kb
 
 
 def filter_knowledge_base_by_relations(
@@ -99,6 +110,12 @@ def filter_knowledge_base_by_domains(
     also_load_linked_concepts: bool = False,
 ) -> KnowledgeBase:
     """Return a view of the KB containing only selected domains and links."""
+    if kb.paths.domains_root is not None and domains:
+        if also_load_linked_concepts:
+            raise ValueError("Domain collections retain only explicit domains; automatic linked-concept inclusion is not supported")
+        if set(domains) != {package.id for package in kb.domain_packages}:
+            return load_knowledge_base(kb.paths.root, domains=list(domains))
+        return kb
     requested_domains = {str(domain).strip() for domain in domains or [] if str(domain).strip()}
     if not requested_domains:
         return kb
@@ -177,8 +194,11 @@ def generate_viewer_from_kb(
     width: str,
     title: str,
     google_drive_client_id: str = "",
+    warning_handler=None,
 ) -> tuple[Path, int, int, Path | None, int]:
     """Generate the standalone HTML viewer from a loaded knowledge base."""
+    if warning_handler is not None and kb.build_warnings:
+        warning_handler(kb.build_warnings)
     edge_colour_map = build_edge_colour_map(kb.edge_key)
 
     if kb.modules:
@@ -224,7 +244,7 @@ def generate_viewer_from_kb(
         edge_colour_map=edge_colour_map,
         hierarchy_levels=hierarchy_levels,
         hierarchy_positions=hierarchy_positions,
-        module_visuals_by_concept=build_module_visuals_by_concept(kb.modules),
+        module_visuals_by_concept=build_module_visuals_by_concept(kb.modules, palettes={package.id: package.palette for package in kb.domain_packages}),
         out_path=output_file,
         height=height,
         width=width,
@@ -239,6 +259,7 @@ def generate_viewer_from_kb(
         module_data=kb.module_data(),
         published_layout=published_layout.to_viewer_data(),
         tutorial_data=kb.tutorial_data(),
+        domain_data=kb.domain_data(),
         google_drive_client_id=google_drive_client_id,
     )
     output_file.write_text(html_text, encoding="utf-8")

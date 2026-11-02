@@ -1,0 +1,10 @@
+id,display_id,label,domain,domain_title
+math.manifold,MATHS-1.1,Manifold,math,Mathematics
+math.coordinate_chart,MATHS-1.2,Coordinate chart,math,Mathematics
+math.coordinate_transformation,MATHS-1.3,Coordinate transformation,math,Mathematics
+math.worldline,MATHS-1.4,Worldline,math,Mathematics
+math.tangent_space,MATHS-1.5,Tangent space,math,Mathematics
+math.cotangent_space,MATHS-1.6,Cotangent space,math,Mathematics
+math.tensor_field,MATHS-2.1,Tensor field,math,Mathematics
+math.index_notation,MATHS-2.2,Abstract and component indices,math,Mathematics
+math.tensor_transformation_law,MATHS-2.3,Tensor transformation law,math,Mathematics

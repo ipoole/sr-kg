@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "revision": "7",
+  "concepts": {
+    "math.coordinate_chart": {
+      "x": 6008.484645,
+      "y": 9207.869841
+    },
+    "math.coordinate_transformation": {
+      "x": 6183.484645,
+      "y": 8907.869841
+    },
+    "math.cotangent_space": {
+      "x": 6533.484645,
+      "y": 8907.869841
+    },
+    "math.index_notation": {
+      "x": 7390.676174,
+      "y": 8785.915313
+    },
+    "math.manifold": {
+      "x": 6358.484645,
+      "y": 9507.869841
+    },
+    "math.tangent_space": {
+      "x": 6708.484645,
+      "y": 9207.869841
+    },
+    "math.tensor_field": {
+      "x": 7703.103825,
+      "y": 8981.772762
+    },
+    "math.tensor_transformation_law": {
+      "x": 7605.882872,
+      "y": 8539.324308
+    },
+    "math.worldline": {
+      "x": 6358.484645,
+      "y": 9207.869841
+    }
+  },
+  "modules": {
+    "math.m01_manifolds_and_coordinates": {
+      "anchor": {
+        "x": 3227.484645,
+        "y": 8235.397705
+      }
+    },
+    "math.m02_tensor_calculus": {
+      "anchor": {
+        "x": 6966.681978,
+        "y": 7677.974773
+      }
+    }
+  }
+}

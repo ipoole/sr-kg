@@ -1,0 +1,57 @@
+id,display_id,label,domain,domain_title
+gr.gravity_as_geometry,GR-1.5,Gravity as geometry,gr,General Relativity
+gr.equivalence_principle,GR-1.1,Equivalence principle,gr,General Relativity
+gr.local_inertial_frame,GR-1.2,Local inertial frame,gr,General Relativity
+gr.freely_falling_observer,GR-1.3,Freely falling observer,gr,General Relativity
+gr.tidal_gravity,GR-1.4,Tidal gravity,gr,General Relativity
+gr.metric_tensor,GR-1.6,Spacetime metric,gr,General Relativity
+gr.inverse_metric,GR-1.7,Inverse metric,gr,General Relativity
+gr.volume_element,GR-1.8,Volume element,gr,General Relativity
+gr.line_element,GR-1.9,Line element,gr,General Relativity
+gr.proper_time,GR-1.10,Proper time in curved spacetime,gr,General Relativity
+gr.null_curve,GR-1.11,Null curve,gr,General Relativity
+gr.causal_structure,GR-1.12,Causal structure,gr,General Relativity
+gr.local_flatness,GR-1.13,Local flatness,gr,General Relativity
+gr.metric_signature,GR-1.14,Metric signature convention,gr,General Relativity
+gr.connection,GR-2.1,Connection,gr,General Relativity
+gr.christoffel_symbols,GR-2.2,Christoffel symbols,gr,General Relativity
+gr.covariant_derivative,GR-2.3,Covariant derivative,gr,General Relativity
+gr.metric_compatibility,GR-2.4,Metric compatibility,gr,General Relativity
+gr.torsion_free_connection,GR-2.5,Torsion-free connection,gr,General Relativity
+gr.parallel_transport,GR-2.6,Parallel transport,gr,General Relativity
+gr.geodesic,GR-2.7,Geodesic,gr,General Relativity
+gr.geodesic_equation,GR-2.8,Geodesic equation,gr,General Relativity
+gr.geodesic_action,GR-2.9,Geodesic action,gr,General Relativity
+gr.four_velocity,GR-2.10,Four-velocity in curved spacetime,gr,General Relativity
+gr.four_acceleration,GR-2.11,Four-acceleration,gr,General Relativity
+gr.geodesic_deviation,GR-2.12,Geodesic deviation,gr,General Relativity
+gr.riemann_tensor,GR-3.1,Riemann curvature tensor,gr,General Relativity
+gr.ricci_tensor,GR-3.2,Ricci tensor,gr,General Relativity
+gr.ricci_scalar,GR-3.3,Ricci scalar,gr,General Relativity
+gr.einstein_tensor,GR-3.4,Einstein tensor,gr,General Relativity
+gr.bianchi_identity,GR-3.5,Bianchi identity,gr,General Relativity
+gr.curvature_invariants,GR-3.6,Curvature invariants,gr,General Relativity
+gr.stress_energy_tensor,GR-4.1,Stress-energy tensor in GR,gr,General Relativity
+gr.perfect_fluid,GR-4.2,Perfect fluid,gr,General Relativity
+gr.energy_conditions,GR-4.3,Energy conditions,gr,General Relativity
+gr.covariant_conservation,GR-4.4,Covariant conservation,gr,General Relativity
+gr.equation_of_state,GR-4.5,Equation of state,gr,General Relativity
+gr.einstein_field_equations,GR-4.6,Einstein field equations,gr,General Relativity
+gr.cosmological_constant,GR-4.7,Cosmological constant,gr,General Relativity
+gr.einstein_hilbert_action,GR-3.7,Einstein-Hilbert action,gr,General Relativity
+gr.stress_energy_variation,GR-4.8,Stress-energy from action variation,gr,General Relativity
+gr.trace_reversed_equations,GR-4.9,Trace-reversed equations,gr,General Relativity
+gr.vacuum_field_equations,GR-4.10,Vacuum field equations,gr,General Relativity
+gr.weak_field_metric,GR-5.1,Weak-field metric,gr,General Relativity
+gr.newtonian_limit,GR-5.2,Newtonian limit,gr,General Relativity
+gr.gravitational_redshift,GR-5.3,Gravitational redshift,gr,General Relativity
+gr.light_deflection,GR-5.4,Light deflection,gr,General Relativity
+gr.perihelion_precession,GR-5.5,Perihelion precession,gr,General Relativity
+gr.post_newtonian_approximation,GR-5.6,Post-Newtonian approximation,gr,General Relativity
+gr.gravitational_waves,GR-5.7,Gravitational waves,gr,General Relativity
+gr.schwarzschild_metric,GR-6.1,Schwarzschild metric,gr,General Relativity
+gr.schwarzschild_radius,GR-6.2,Schwarzschild radius,gr,General Relativity
+gr.event_horizon,GR-6.3,Event horizon,gr,General Relativity
+gr.coordinate_singularity,GR-6.4,Coordinate singularity,gr,General Relativity
+gr.black_hole_singularity,GR-6.5,Black hole singularity,gr,General Relativity
+gr.effective_potential_orbits,GR-6.6,Effective potential for orbits,gr,General Relativity

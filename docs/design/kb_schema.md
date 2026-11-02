@@ -3,41 +3,51 @@
 This document describes the current text-file schema loaded by `srkg.kb`.
 The schema is intentionally file-based and Git-friendly. The Python loader may
 construct richer internal objects, but the authored source of truth remains the
-files under the KB data root.
+domain-owned files discovered from the KB collection root.
 
 ## Data Root
 
-A KB data root is a directory containing `manifest.yaml`.
+The default collection root is `data/`, containing shared metadata and a
+manifest which discovers independently owned domain packages:
 
 ```text
 data/
-  manifest.yaml
-  nodes.csv
-  edges.csv
+  manifest.yaml           # domains_root: ../domains
   edges_key.csv
-  content_blocks.csv
-  study_questions.csv
-  study_question_options.csv
-  references.csv
-  reference_links.csv
-  concept_graphic_designs.csv
-  module_graphic_designs.csv
-  modules.csv
-  module_members.csv
-  module_supports.csv
-  module_content_blocks.csv
+  tutorials.yaml          # general interface routes
+
+domains/<domain-id>/
+  domain.yaml
+  data/*.csv              # all table roles listed below, except shared edge key
+  graphics/               # creators, registry and optional module assets
   layout.json
-  tutorials.yaml
+  tutorials.yaml          # subject routes
+  docs/
+  tests/
 ```
 
-The default project root is `data/`.
+The collection manifest declares `domains_root`, shared `files.edge_key`,
+optional shared `files.tutorials` and a migration `layout_revision`. Each
+`domain.yaml` declares stable `id`, `title`, integer `sequence`, optional
+`display_name` (default: uppercase ID), optional owned `initial_selection`
+(`concept:<id>` or `module:<id>`), optional `module_palette` (an owned JSON
+file of non-empty `[background, border]` hex-colour pairs), and optional `graphics` (a relative dotted Python module such as `graphics.registry`) and
+`files` paths. Domain files must stay inside their package directory. Discovery
+is ordered by `(sequence, id)` and has no fixed list of domain names. No shared
+registration file changes when adding a package. See [domain packages](domain_packages.md).
+
+Single-root `manifest.yaml` datasets remain supported for tests/library callers.
+The table contracts below apply to both forms; collection tables are composed
+in memory, never written back to a combined source CSV. The domain directory
+name, manifest ID and first dotted component of owned semantic IDs must agree.
+Explicit selection reads only those packages; see [selected-domain builds](missing_domain_builds.md).
 
 For drafting, notation and source-review workflows, see the
 [authoring guide](../authoring/authoring_guide.md).
 
 ## manifest.yaml
 
-The manifest names the source files within the data root. File entries may be
+A domain manifest (or legacy single-root manifest) names its source files. File entries may be
 omitted to use default filenames. For `files.*` rows below, “Required” means
 the source file is required, not that its manifest entry must be written.
 
@@ -61,7 +71,8 @@ the source file is required, not that its manifest entry must be written.
 | `files.layout` | No | Versioned published concept positions and module anchors. Missing objects use deterministic generated positions. |
 | `files.tutorials` | No | Versioned semantic tutorial routes. Missing files mean that the viewer contains no tutorials. |
 
-Paths are resolved relative to the data root unless absolute paths are used.
+Domain paths are resolved relative to the owning package and cannot escape it.
+Legacy single-root paths retain their existing relative/absolute resolution.
 Optional files are ignored when absent. For manifest-backed KB roots,
 `content_blocks.csv`, `study_questions.csv`, `references.csv`, and
 `reference_links.csv` are required even though the manifest may omit the
@@ -217,7 +228,7 @@ changing ownership. It is optional and may be header-only.
 | --- | --- | --- |
 | `module_id` | Yes | Module declaring the support. Must exist in `modules.csv`. |
 | `target_type` | Yes | Supported target type. Allowed values are `concept` and `module`. |
-| `target_id` | Yes | Target concept or module ID. Must exist in the corresponding source file. |
+| `target_id` | Yes | Namespaced concept/module ID. Must exist within a loaded namespace; an unloaded target produces a warning and the support is omitted. |
 | `role` | Yes | Short role label, such as `prerequisite`, `motivation`, or `application`. |
 | `note` | No | Author-facing or viewer-facing explanatory note. The column must exist, but values may be blank. |
 
@@ -280,7 +291,7 @@ The detailed playback and restoration model is specified in
 
 `study_questions.csv` contains ordered question/answer material attached to
 concepts. Questions are rendered in the concept details panel after the prose
-sections. Reading-mode filtering and answer disclosure are described in
+sections. Question marking and answer disclosure are described in
 [Viewer behaviour](viewer.md#reading-and-practice).
 
 | Column | Required | Meaning |
@@ -326,7 +337,7 @@ blocks, or study questions.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
-| `reference_id` | Yes | Stable reference identifier, such as `ttm.sr_cf`. |
+| `reference_id` | Yes | Stable domain-local reference identifier, such as `ttm.sr_cf`. The same key may be used independently by another domain. |
 | `reference_type` | Yes | Broad source type, such as `book`, `paper`, `website`, or `lecture`. |
 | `citation` | Yes | Short human-readable source label rendered in the viewer, such as `TTM II` or `TRR`. Put full bibliographic detail in the structured fields and/or `note`. |
 | `authors` | No | Author/editor names. The column must exist, but values may be blank. |
@@ -343,18 +354,24 @@ blocks, or study questions.
 | --- | --- | --- |
 | `source_type` | Yes | Linked item type. Allowed values are `concept`, `content_block`, and `study_question`. |
 | `source_id` | Yes | ID of the linked item. Must exist in the corresponding source file. |
-| `reference_id` | Yes | Source reference. Must exist in `references.csv`. |
+| `reference_id` | Yes | Source reference. Must exist in the owning domain’s `references.csv`. |
 | `locator` | No | Page, section, theorem, lecture timestamp, or other local locator, such as `1.3 General Lorentz Transformation`. Rendered after the short citation. |
 | `note` | No | Link-specific note rendered with the reference. |
 
 ## edges.csv
 
-`edges.csv` contains concept-to-concept relations.
+`edges.csv` contains concept-to-concept relations and belongs to the recorded
+source concept's domain, including for undirected relations. Cross-domain targets
+in unloaded namespaces generate warnings. Their edges/support links are omitted;
+prose references retain their labels without hyperlinks. Unknown targets within
+loaded namespaces remain errors. Targets are never imported implicitly. Semantic concept/module/block/question/
+option IDs remain global.
+Duplicate undirected edges are checked irrespective of endpoint orientation.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
 | `source` | Yes | Source concept ID. Must exist in `nodes.csv`. |
-| `target` | Yes | Target concept ID. Must exist in `nodes.csv`. |
+| `target` | Yes | Namespaced concept ID. Must exist when its namespace is loaded; otherwise the edge is omitted with a warning. |
 | `relation` | Yes | Relation type. Blank values are normalised to `REFERENCE`. |
 | `note` | No | Edge note shown in the hover tooltip. |
 
@@ -400,7 +417,11 @@ The graphics themselves are still generated by Python code.
 
 ## layout.json
 
-`layout.json` contains the repository-published global graph layout. It stores
+Each domain's `layout.json` contains its owned portion of the published global
+graph layout. Coordinates remain global. The loader combines them into one
+viewer snapshot. The initial split retains revision `7`; subsequent changes to a
+domain revision produce a deterministic combined revision, without a shared
+layout file to edit. It stores
 stable graph-space coordinates, not screen pixels, camera position, zoom,
 visibility, selection, browser-local overrides, or temporary layout adjustments.
 
@@ -439,17 +460,19 @@ Text fields may contain:
 | --- | --- |
 | `\( ... \)` | Inline MathJax. |
 | `\[ ... \]` | Display MathJax. |
-| `\cref{label}{concept_id}` | Clickable concept reference. |
+| `\cref{label}{concept_id}` | Concept link when loaded; plain authored label otherwise. |
 | `\optional_details{title}{body}` | Fold-down optional detail inside a section. |
 
 Validation checks balanced braces, MathJax delimiters, supported custom macro
-syntax, and whether `\cref` targets exist.
+syntax, and whether `\cref` targets exist within their loaded namespaces.
+Unloaded-namespace references are generator diagnostics rather than text errors.
 
 ## Loader Guarantees
 
 The loader rejects missing required files or columns, duplicate identifiers,
 invalid required values and ordering keys, unknown kinds or question types,
-and unresolved references. Concepts need content; modules need content and
+and unresolved references within loaded namespaces. External namespaces produce
+build warnings and safe omissions. Concepts need content; modules need content and
 exactly one same-domain membership for each concept. Optional files may be
 absent, but supplied files must satisfy their contracts above.
 
@@ -459,6 +482,5 @@ judgement rather than automatic deletion. See the [authoring guide](../authoring
 
 ## Future plans
 
-A shared graphics registry and hierarchical modules remain possible extensions,
-not current source contracts. Add either only when authoring and presentation
+Hierarchical modules remain a possible extension, not a current source contract. Add either only when authoring and presentation
 needs justify the migration.

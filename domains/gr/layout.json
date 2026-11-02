@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "revision": "7",
+  "concepts": {
+    "gr.bianchi_identity": {
+      "x": 5984.261211,
+      "y": 5792.78113
+    },
+    "gr.black_hole_singularity": {
+      "x": 5992.874063,
+      "y": 3064.755623
+    },
+    "gr.causal_structure": {
+      "x": 6781.863183,
+      "y": 6849.112015
+    },
+    "gr.christoffel_symbols": {
+      "x": 7483.298543,
+      "y": 6247.776766
+    },
+    "gr.connection": {
+      "x": 7833.298543,
+      "y": 6547.776766
+    },
+    "gr.coordinate_singularity": {
+      "x": 5880.093566,
+      "y": 3598.175442
+    },
+    "gr.cosmological_constant": {
+      "x": 8856.149438,
+      "y": 4594.049492
+    },
+    "gr.covariant_conservation": {
+      "x": 8331.149438,
+      "y": 4294.049492
+    },
+    "gr.covariant_derivative": {
+      "x": 7833.298543,
+      "y": 6247.776766
+    },
+    "gr.curvature_invariants": {
+      "x": 6123.785464,
+      "y": 5403.485608
+    },
+    "gr.effective_potential_orbits": {
+      "x": 6172.187132,
+      "y": 3271.356729
+    },
+    "gr.einstein_field_equations": {
+      "x": 8506.149438,
+      "y": 3994.049492
+    },
+    "gr.einstein_hilbert_action": {
+      "x": 5872.641808,
+      "y": 5104.371282
+    },
+    "gr.einstein_tensor": {
+      "x": 5522.641808,
+      "y": 5104.371282
+    },
+    "gr.energy_conditions": {
+      "x": 7981.149438,
+      "y": 4294.049492
+    },
+    "gr.equation_of_state": {
+      "x": 8681.149438,
+      "y": 4294.049492
+    },
+    "gr.equivalence_principle": {
+      "x": 6108.69465,
+      "y": 8391.108731
+    },
+    "gr.event_horizon": {
+      "x": 5688.426687,
+      "y": 3065.867467
+    },
+    "gr.four_acceleration": {
+      "x": 8358.298543,
+      "y": 5947.776766
+    },
+    "gr.four_velocity": {
+      "x": 8183.298543,
+      "y": 6547.776766
+    },
+    "gr.freely_falling_observer": {
+      "x": 6081.5429,
+      "y": 7835.959944
+    },
+    "gr.geodesic": {
+      "x": 8008.298543,
+      "y": 5947.776766
+    },
+    "gr.geodesic_action": {
+      "x": 8008.298543,
+      "y": 5347.776766
+    },
+    "gr.geodesic_deviation": {
+      "x": 8183.298543,
+      "y": 5647.776766
+    },
+    "gr.geodesic_equation": {
+      "x": 7833.298543,
+      "y": 5647.776766
+    },
+    "gr.gravitational_redshift": {
+      "x": 7084.34596,
+      "y": 3340.263209
+    },
+    "gr.gravitational_waves": {
+      "x": 7527.541766,
+      "y": 2978.480429
+    },
+    "gr.gravity_as_geometry": {
+      "x": 5780.328562,
+      "y": 7167.134447
+    },
+    "gr.inverse_metric": {
+      "x": 6162.708206,
+      "y": 7541.972189
+    },
+    "gr.light_deflection": {
+      "x": 7320.67298,
+      "y": 3720.375874
+    },
+    "gr.line_element": {
+      "x": 6793.554059,
+      "y": 7615.490118
+    },
+    "gr.local_flatness": {
+      "x": 6923.151073,
+      "y": 7193.84252
+    },
+    "gr.local_inertial_frame": {
+      "x": 6301.5737,
+      "y": 8100.557876
+    },
+    "gr.metric_compatibility": {
+      "x": 7658.298543,
+      "y": 5947.776766
+    },
+    "gr.metric_signature": {
+      "x": 6620.730168,
+      "y": 8360.68481
+    },
+    "gr.metric_tensor": {
+      "x": 6519.513925,
+      "y": 7828.162306
+    },
+    "gr.newtonian_limit": {
+      "x": 6757.902292,
+      "y": 3346.624126
+    },
+    "gr.null_curve": {
+      "x": 6480.328562,
+      "y": 7167.134447
+    },
+    "gr.parallel_transport": {
+      "x": 8533.298543,
+      "y": 6247.776766
+    },
+    "gr.perfect_fluid": {
+      "x": 8506.149438,
+      "y": 4594.049492
+    },
+    "gr.perihelion_precession": {
+      "x": 7490.853438,
+      "y": 3348.082751
+    },
+    "gr.post_newtonian_approximation": {
+      "x": 7115.153078,
+      "y": 3005.694163
+    },
+    "gr.proper_time": {
+      "x": 6130.328562,
+      "y": 7167.134447
+    },
+    "gr.ricci_scalar": {
+      "x": 5260.336212,
+      "y": 5420.228519
+    },
+    "gr.ricci_tensor": {
+      "x": 5450.089196,
+      "y": 5764.87628
+    },
+    "gr.riemann_tensor": {
+      "x": 5697.641808,
+      "y": 6004.371282
+    },
+    "gr.schwarzschild_metric": {
+      "x": 5573,
+      "y": 3705.994155
+    },
+    "gr.schwarzschild_radius": {
+      "x": 5431.356729,
+      "y": 3240.631581
+    },
+    "gr.stress_energy_tensor": {
+      "x": 8156.149438,
+      "y": 4594.049492
+    },
+    "gr.stress_energy_variation": {
+      "x": 9031.149438,
+      "y": 4294.049492
+    },
+    "gr.tidal_gravity": {
+      "x": 5734.549022,
+      "y": 7544.978312
+    },
+    "gr.torsion_free_connection": {
+      "x": 8183.298543,
+      "y": 6247.776766
+    },
+    "gr.trace_reversed_equations": {
+      "x": 8331.149438,
+      "y": 3694.049492
+    },
+    "gr.vacuum_field_equations": {
+      "x": 8681.149438,
+      "y": 3694.049492
+    },
+    "gr.volume_element": {
+      "x": 6480.328562,
+      "y": 7467.134447
+    },
+    "gr.weak_field_metric": {
+      "x": 6980.973997,
+      "y": 3727.462406
+    }
+  },
+  "modules": {
+    "gr.connections_transport_and_motion": {
+      "anchor": {
+        "x": 6710.298543,
+        "y": 4956.490868
+      }
+    },
+    "gr.curvature_and_gravitational_action": {
+      "anchor": {
+        "x": 4501.641808,
+        "y": 4917.985608
+      }
+    },
+    "gr.foundations_and_spacetime_geometry": {
+      "anchor": {
+        "x": 5044.328562,
+        "y": 5626.234223
+      }
+    },
+    "gr.matter_and_einstein_equations": {
+      "anchor": {
+        "x": 7194.149438,
+        "y": 3557.049492
+      }
+    },
+    "gr.schwarzschild_geometry_and_black_holes": {
+      "anchor": {
+        "x": 4770.368113,
+        "y": 3322.383836
+      }
+    },
+    "gr.weak_field_and_classical_tests": {
+      "anchor": {
+        "x": 6871.44908,
+        "y": 2811.338383
+      }
+    }
+  }
+}

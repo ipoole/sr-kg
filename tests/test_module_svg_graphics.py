@@ -22,9 +22,12 @@ def test_module_graphics_are_accessible_landscape_svgs(module_id, variant):
 
 
 def test_module_graphics_are_optional_and_use_stable_semantic_ids():
-    assert createModuleSvgGraphic("math.m01_manifolds_and_coordinates") is None
-    assert createModuleSvgGraphic(" sr.spacetime_foundations ") == createModuleSvgGraphic(
-        "sr.spacetime_foundations"
+    from srkg.kb import load_knowledge_base
+    kb = load_knowledge_base("data", include_graphics=False)
+    assert all(createModuleSvgGraphic(module_id) is None for module_id in kb.module_index.keys() - set(IMPLEMENTED_MODULE_IDS))
+    assert createModuleSvgGraphic("missing.module") is None
+    assert createModuleSvgGraphic(" " + IMPLEMENTED_MODULE_IDS[0] + " ") == createModuleSvgGraphic(
+        IMPLEMENTED_MODULE_IDS[0]
     )
 
 

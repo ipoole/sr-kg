@@ -26,7 +26,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from srkg.concept_svg_graphics import createSvgGraphic
 from srkg.layout import concept_sort_key
 
 
@@ -70,18 +69,21 @@ def select_concepts(concepts: list[Concept], patterns: list[str]) -> list[Concep
     return selected
 
 
-def render_svg_cell(concept_id: str, variant: str) -> str:
-    svg = createSvgGraphic(concept_id, variant=variant)
+def render_svg_cell(concept_id: str, variant: str, graphic=None) -> str:
+    if graphic is None:
+        from srkg.concept_svg_graphics import createSvgGraphic
+        graphic = createSvgGraphic
+    svg = graphic(concept_id, variant=variant)
     if svg is None:
         return '<div class="missing">No SVG</div>'
     return svg
 
 
-def render_html(concepts: list[Concept], patterns: list[str]) -> str:
+def render_html(concepts: list[Concept], patterns: list[str], *, graphic=None) -> str:
     rows = []
     for concept in concepts:
-        icon_svg = render_svg_cell(concept.id, "icon")
-        detail_svg = render_svg_cell(concept.id, "detail")
+        icon_svg = render_svg_cell(concept.id, "icon", graphic)
+        detail_svg = render_svg_cell(concept.id, "detail", graphic)
         rows.append(
             f"""
             <section class="concept-card" id="concept-{escape(concept.id)}">
@@ -270,7 +272,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--designs",
-        default="data/concept_graphic_designs.csv",
+        default=None,
         help="CSV containing concept IDs, display IDs, and labels.",
     )
     parser.add_argument(
@@ -278,13 +280,24 @@ def main() -> None:
         default=str(Path(tempfile.gettempdir()) / "srkg-graphics-review.html"),
         help="Output HTML path.",
     )
+    parser.add_argument("--data-root", default="data")
+    parser.add_argument("--domain", help="Review graphics owned by one domain")
     args = parser.parse_args()
 
-    designs_path = Path(args.designs)
-    if not designs_path.is_absolute():
-        designs_path = PROJECT_ROOT / designs_path
-
-    concepts = load_concepts(designs_path)
+    graphic = None
+    if args.designs:
+        designs_path = Path(args.designs)
+        if not designs_path.is_absolute():
+            designs_path = PROJECT_ROOT / designs_path
+        concepts = load_concepts(designs_path)
+    else:
+        from srkg.kb import load_knowledge_base
+        kb = load_knowledge_base(args.data_root)
+        concepts = [Concept(c.id, c.display_id, c.label, c.svg_icon_caption, c.svg_detail_caption)
+                    for c in kb.concepts if not args.domain or c.domain == args.domain]
+        def graphic(concept_id, variant="icon"):
+            record = kb.concept(concept_id)
+            return record.svg_detail if variant == "detail" else record.svg_icon
     selected = select_concepts(concepts, args.patterns)
     if not selected:
         available = ", ".join(c.id for c in concepts)
@@ -296,7 +309,7 @@ def main() -> None:
     if not out_path.is_absolute():
         out_path = PROJECT_ROOT / out_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(render_html(selected, args.patterns), encoding="utf-8")
+    out_path.write_text(render_html(selected, args.patterns, graphic=graphic), encoding="utf-8")
 
     print(f"Wrote {out_path}")
     print(f"Concepts: {len(selected)}")

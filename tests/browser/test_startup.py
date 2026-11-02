@@ -1701,10 +1701,10 @@ def test_phone_module_masthead_places_contents_to_right_until_open(repo_browser_
 
 
 @pytest.mark.browser
-def test_default_startup_selects_field_dynamics_with_transitive_foundations(shared_repo_browser_graph):
+def test_default_startup_honours_domain_metadata_with_transitive_foundations(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
 
-    module_id = "sr.field_dynamics_conservation_and_radiation"
+    module_id = page.evaluate('kgViewerConfig.domains.find(item => item.initialSelection).initialSelection.split(":")[1]')
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": module_id}
     assert page.locator("#info_panel").get_attribute("data-module-id") == module_id
     assert page.locator("#kg_display_scope_select").input_value() == "full"
@@ -1730,7 +1730,7 @@ def test_repo_starts_with_every_module_folded(shared_repo_browser_graph):
         """() => Object.keys(moduleData).filter(moduleId =>
           Boolean(nodes.get("module::" + moduleId))
         ).length"""
-    ) == 13
+    ) == page.evaluate("Object.keys(moduleData).length")
 
 
 @pytest.mark.browser

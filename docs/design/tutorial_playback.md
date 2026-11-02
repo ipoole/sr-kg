@@ -16,6 +16,12 @@ targets. The application supplies semantic command execution and a presentation
 capture/restore bridge; camera and temporary Fit++ state remain with their own
 controllers. See [Architecture](architecture.md) for those boundaries.
 
+For selected-domain builds, subject routes requiring unloaded domains or graph/
+block targets are omitted with generator diagnostics. Targets in loaded namespaces
+and route syntax are still validated, even when a route is otherwise unavailable.
+Common interface routes excluded by declared availability do not add missing
+subject dependencies. See [selected-domain builds](missing_domain_builds.md).
+
 ## Purpose
 
 PhysicsKG should support curated routes through the live viewer. A route may

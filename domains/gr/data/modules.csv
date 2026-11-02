@@ -1,0 +1,7 @@
+module_id,domain,title,sequence,default_collapsed
+gr.foundations_and_spacetime_geometry,gr,GR-1 Foundations of Curved Spacetime,10,true
+gr.connections_transport_and_motion,gr,GR-2 Connections and Geodesics,20,true
+gr.curvature_and_gravitational_action,gr,GR-3 Curvature and Gravitational Action,30,true
+gr.matter_and_einstein_equations,gr,GR-4 Matter and Einstein Equations,40,true
+gr.weak_field_and_classical_tests,gr,GR-5 Weak-Field Gravity,50,true
+gr.schwarzschild_geometry_and_black_holes,gr,GR-6 Schwarzschild Black Holes,60,true

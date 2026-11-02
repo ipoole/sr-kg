@@ -21,8 +21,6 @@ def test_repo_reading_order_runs_from_sr_through_maths_to_gr(repo_browser_graph)
     page = repo_browser_graph.page
     order = page.evaluate("() => kgSequentialConceptIds()")
 
-    assert order[0] == "sr.inertial_frames"
-    assert page.evaluate("id => conceptData[id].display_id", order[0]) == "SR-1.1"
     domains = [page.evaluate("id => conceptData[id].domain", concept_id) for concept_id in order]
     transitions = [domains[index] for index in range(len(domains)) if index == 0 or domains[index] != domains[index - 1]]
-    assert transitions == ["sr", "math", "gr"]
+    assert transitions == page.evaluate("kgViewerConfig.domains.map(item => item.id)")

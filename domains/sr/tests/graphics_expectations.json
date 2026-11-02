@@ -1,0 +1,11 @@
+{
+  "titles": {
+    "sr.inertial_frames": "Inertial frames",
+    "sr.maxwells_equations": "Maxwell's equations",
+    "sr.lorenz_gauge": "Lorenz gauge",
+    "sr.gauge_fixing": "Gauge fixing"
+  },
+  "same_variants": [
+    "sr.principle_of_locality"
+  ]
+}

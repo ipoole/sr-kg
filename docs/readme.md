@@ -16,8 +16,9 @@
   [Google OAuth publication checklist](design/google_oauth_publication.md)
   records the public branding URLs and Console settings. [Release versioning](design/releases.md)
   defines the product version independently of data schema versions.
-- **Authoring** holds the [authoring guide](authoring/authoring_guide.md),
-  notation conventions, working drafts, and outstanding editorial work.
+- **Authoring** holds the shared [authoring guide](authoring/authoring_guide.md)
+  and notation conventions. Subject drafts, source worklists, fixtures and graphics
+  belong in `domains/<id>/`; see [domain packages](design/domain_packages.md).
 - **Discussion** holds speculative ideas, not instructions for current behaviour.
   The [user experience review](discussion/user_experience_review.md) records
   observed usability issues and proposed improvements.

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import yaml
+from srkg.domain_references import BuildWarning, domain_namespace
 
 
 TUTORIAL_SCHEMA_VERSION = 1
@@ -140,6 +141,8 @@ def load_tutorials(
     module_ids: Iterable[str],
     block_ids: Iterable[str],
     domain_ids: Iterable[str] | None = None,
+    skip_unavailable_domains: bool = False,
+    build_warnings: list[BuildWarning] | None = None,
 ) -> tuple[Tutorial, ...]:
     """Load and validate tutorials from one YAML source file."""
     if path is None or not path.exists():
@@ -184,12 +187,27 @@ def load_tutorials(
         domains = _text_list(mapping.get("domains"), f"{context}.domains")
         if not domains:
             raise TutorialLoadError(f"{context}.domains must not be empty")
+        if skip_unavailable_domains and not set(domains).issubset(known_domains):
+            continue
         unknown_domains = sorted(set(domains) - known_domains) if known_domains else []
-        if unknown_domains:
+        if unknown_domains and build_warnings is None:
             raise TutorialLoadError(
                 f"{context}.domains references unknown domain(s): "
                 + ", ".join(unknown_domains)
             )
+        external = []
+        for missing_domain in unknown_domains if build_warnings is not None else []:
+            domain_namespace(missing_domain + ".dependency", str(path))
+            external.append(BuildWarning("tutorial", missing_domain, "domain:" + missing_domain,
+                                         f"{path}: {context}.domains", tutorial_id))
+        def allow_external(identifier, kind, target_context):
+            namespace = domain_namespace(identifier, f"{path}: {target_context}")
+            if namespace in known_domains:
+                return False
+            external.append(BuildWarning("tutorial", namespace, identifier,
+                                         f"{path}: {target_context}", tutorial_id))
+            return True
+        references = allow_external if build_warnings is not None else None
         step_rows = mapping.get("steps")
         if not isinstance(step_rows, list) or not step_rows:
             raise TutorialLoadError(f"{context}.steps must be a non-empty list")
@@ -199,8 +217,9 @@ def load_tutorials(
             concept_ids=known_concepts,
             module_ids=known_modules,
             block_ids=known_blocks,
+            references=references,
         )
-        tutorials.append(Tutorial(
+        route = Tutorial(
             tutorial_id=tutorial_id,
             title=_required_text(mapping, "title", context),
             category=category,
@@ -208,7 +227,11 @@ def load_tutorials(
             sequence=sequence,
             domains=tuple(domains),
             steps=steps,
-        ))
+        )
+        if external:
+            build_warnings.extend(external)
+        else:
+            tutorials.append(route)
     return tuple(sorted(tutorials, key=lambda item: (item.sequence, item.tutorial_id)))
 
 
@@ -225,284 +248,184 @@ def tutorials_for_domains(
     )
 
 
-def _load_steps(
-    rows: list[object],
-    *,
-    context: str,
-    concept_ids: set[str],
-    module_ids: set[str],
-    block_ids: set[str],
-) -> tuple[TutorialStep, ...]:
+def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], module_ids: set[str], block_ids: set[str], references=None) -> tuple[TutorialStep, ...]:
     steps: list[TutorialStep] = []
     step_ids: set[str] = set()
     for index, row in enumerate(rows):
-        step_context = f"{context}.steps[{index}]"
+        step_context = f'{context}.steps[{index}]'
         mapping = _mapping(row, step_context)
-        step_id = _required_text(mapping, "step_id", step_context)
+        step_id = _required_text(mapping, 'step_id', step_context)
         if step_id in step_ids:
-            raise TutorialLoadError(f"Duplicate step id in {context}: {step_id}")
+            raise TutorialLoadError(f'Duplicate step id in {context}: {step_id}')
         step_ids.add(step_id)
-        prepare_rows = mapping.get("prepare", [])
+        prepare_rows = mapping.get('prepare', [])
         if not isinstance(prepare_rows, list):
-            raise TutorialLoadError(f"{step_context}.prepare must be a list")
-        prepare = tuple(
-            _validate_command(
-                _mapping(command, f"{step_context}.prepare[{command_index}]"),
-                context=f"{step_context}.prepare[{command_index}]",
-                concept_ids=concept_ids,
-                module_ids=module_ids,
-                block_ids=block_ids,
-            )
-            for command_index, command in enumerate(prepare_rows)
-        )
+            raise TutorialLoadError(f'{step_context}.prepare must be a list')
+        prepare = tuple((_validate_command(_mapping(command, f'{step_context}.prepare[{command_index}]'), context=f'{step_context}.prepare[{command_index}]', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references) for command_index, command in enumerate(prepare_rows)))
         actions = []
-        if "actions" in mapping:
-            if "action" in mapping or "pointer" in mapping:
-                raise TutorialLoadError(f"{step_context}: use action/pointer or actions, not both")
-            action_rows = mapping["actions"]
+        if 'actions' in mapping:
+            if 'action' in mapping or 'pointer' in mapping:
+                raise TutorialLoadError(f'{step_context}: use action/pointer or actions, not both')
+            action_rows = mapping['actions']
             if not isinstance(action_rows, list) or not 1 <= len(action_rows) <= 20:
-                raise TutorialLoadError(f"{step_context}.actions must contain 1 to 20 items")
+                raise TutorialLoadError(f'{step_context}.actions must contain 1 to 20 items')
             for action_index, action_row in enumerate(action_rows):
-                action_context = f"{step_context}.actions[{action_index}]"
+                action_context = f'{step_context}.actions[{action_index}]'
                 item = _mapping(action_row, action_context)
-                command = _validate_command(
-                    _mapping(item.get("action"), f"{action_context}.action"),
-                    context=action_context, concept_ids=concept_ids,
-                    module_ids=module_ids, block_ids=block_ids,
-                )
-                pause = _integer(item.get("pause_ms", 500), f"{action_context}.pause_ms")
+                command = _validate_command(_mapping(item.get('action'), f'{action_context}.action'), context=action_context, concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
+                pause = _integer(item.get('pause_ms', 500), f'{action_context}.pause_ms')
                 if not 0 <= pause <= 5000:
-                    raise TutorialLoadError(f"{action_context}.pause_ms must be between 0 and 5000")
-                entry = {"action": command, "pause_ms": pause}
-                if "pointer" in item:
-                    pointer = _mapping(item["pointer"], f"{action_context}.pointer")
-                    target = _required_text(pointer, "target", action_context)
-                    _validate_pointer_target(
-                        target, context=action_context, concept_ids=concept_ids,
-                        module_ids=module_ids, block_ids=block_ids,
-                    )
-                    entry["pointer"] = {"target": target}
+                    raise TutorialLoadError(f'{action_context}.pause_ms must be between 0 and 5000')
+                entry = {'action': command, 'pause_ms': pause}
+                if 'pointer' in item:
+                    pointer = _mapping(item['pointer'], f'{action_context}.pointer')
+                    target = _required_text(pointer, 'target', action_context)
+                    _validate_pointer_target(target, context=action_context, concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
+                    entry['pointer'] = {'target': target}
                 actions.append(entry)
             action = None
         else:
-            action = _validate_command(
-                _mapping(mapping.get("action"), f"{step_context}.action"),
-                context=f"{step_context}.action",
-                concept_ids=concept_ids,
-                module_ids=module_ids,
-                block_ids=block_ids,
-            )
+            action = _validate_command(_mapping(mapping.get('action'), f'{step_context}.action'), context=f'{step_context}.action', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
         pointer_target = None
-        if "pointer" in mapping:
-            pointer = _mapping(mapping["pointer"], f"{step_context}.pointer")
-            pointer_target = _required_text(pointer, "target", f"{step_context}.pointer")
-            _validate_pointer_target(
-                pointer_target,
-                context=f"{step_context}.pointer target",
-                concept_ids=concept_ids,
-                module_ids=module_ids,
-                block_ids=block_ids,
-            )
-        steps.append(TutorialStep(
-            step_id=step_id,
-            title=_required_text(mapping, "title", step_context),
-            commentary=_required_text(mapping, "commentary", step_context),
-            action=action,
-            prepare=prepare,
-            pointer_target=pointer_target,
-            actions=tuple(actions),
-        ))
+        if 'pointer' in mapping:
+            pointer = _mapping(mapping['pointer'], f'{step_context}.pointer')
+            pointer_target = _required_text(pointer, 'target', f'{step_context}.pointer')
+            _validate_pointer_target(pointer_target, context=f'{step_context}.pointer target', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
+        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_required_text(mapping, 'commentary', step_context), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions)))
     return tuple(steps)
 
 
-def _validate_command(
-    command: dict[str, object],
-    *,
-    context: str,
-    concept_ids: set[str],
-    module_ids: set[str],
-    block_ids: set[str],
-) -> dict[str, object]:
-    name = _required_text(command, "command", context)
+def _validate_command(command: dict[str, object], *, context: str, concept_ids: set[str], module_ids: set[str], block_ids: set[str], references=None) -> dict[str, object]:
+    name = _required_text(command, 'command', context)
     if name not in TUTORIAL_COMMANDS:
-        raise TutorialLoadError(f"{context} has unsupported command: {name}")
-
-    if name == "select":
-        target = _required_text(command, "target", context)
-        _validate_object_target(target, context, concept_ids, module_ids)
-    elif name == "set-display-scope":
-        _enum(command, "value", DISPLAY_SCOPES, context)
-    elif name == "set-context":
-        _enum(command, "preset", CONTEXT_PRESETS, context)
-        _enum(command, "depth", CONTEXT_DEPTHS, context)
-    elif name == "set-view":
-        _enum(command, "value", VIEWS, context)
-    elif name == "set-module-representation":
-        target = _required_text(command, "target", context)
-        _validate_prefixed_known(target, "module:", module_ids, "module", context)
-        _enum(command, "value", MODULE_REPRESENTATIONS, context)
-    elif name == "set-all-module-representations":
-        _enum(command, "value", MODULE_REPRESENTATIONS, context)
-    elif name == "fit":
-        _enum(command, "value", FIT_TARGETS, context)
-    elif name == "open-details-block":
-        target = _required_text(command, "target", context)
-        _validate_prefixed_known(target, "block:", block_ids, "block", context)
-    elif name in {"open-details-relationship", "set-relationship-full-tree"}:
-        _enum(command, "value", DETAILS_RELATIONSHIP_SECTIONS, context)
-        if name == "set-relationship-full-tree" and not isinstance(command.get("full_tree"), bool):
-            raise TutorialLoadError(f"{context}.full_tree must be a boolean")
-    elif name == "show-relationship-in-graph":
-        _enum(command, "preset", CONTEXT_PRESETS, context)
-        if not isinstance(command.get("full_tree"), bool):
-            raise TutorialLoadError(f"{context}.full_tree must be a boolean")
-    elif name == "show-graph-concept-hover":
-        target = _required_text(command, "target", context)
-        _validate_prefixed_known(target, "concept:", concept_ids, "concept", context)
-    elif name == "show-graph-edge-hover":
-        target = _required_text(command, "target", context)
-        _validate_edge_target(target, "edge:", context, concept_ids)
-    elif name == "show-tools-section":
-        _enum(command, "value", TOOLS_SECTIONS, context)
-    elif name == "search":
-        query = _required_text(command, "query", context)
+        raise TutorialLoadError(f'{context} has unsupported command: {name}')
+    if name == 'select':
+        target = _required_text(command, 'target', context)
+        _validate_object_target(target, context, concept_ids, module_ids, references=references)
+    elif name == 'set-display-scope':
+        _enum(command, 'value', DISPLAY_SCOPES, context)
+    elif name == 'set-context':
+        _enum(command, 'preset', CONTEXT_PRESETS, context)
+        _enum(command, 'depth', CONTEXT_DEPTHS, context)
+    elif name == 'set-view':
+        _enum(command, 'value', VIEWS, context)
+    elif name == 'set-module-representation':
+        target = _required_text(command, 'target', context)
+        _validate_prefixed_known(target, 'module:', module_ids, 'module', context, references=references)
+        _enum(command, 'value', MODULE_REPRESENTATIONS, context)
+    elif name == 'set-all-module-representations':
+        _enum(command, 'value', MODULE_REPRESENTATIONS, context)
+    elif name == 'fit':
+        _enum(command, 'value', FIT_TARGETS, context)
+    elif name == 'open-details-block':
+        target = _required_text(command, 'target', context)
+        _validate_prefixed_known(target, 'block:', block_ids, 'block', context, references=references)
+    elif name in {'open-details-relationship', 'set-relationship-full-tree'}:
+        _enum(command, 'value', DETAILS_RELATIONSHIP_SECTIONS, context)
+        if name == 'set-relationship-full-tree' and (not isinstance(command.get('full_tree'), bool)):
+            raise TutorialLoadError(f'{context}.full_tree must be a boolean')
+    elif name == 'show-relationship-in-graph':
+        _enum(command, 'preset', CONTEXT_PRESETS, context)
+        if not isinstance(command.get('full_tree'), bool):
+            raise TutorialLoadError(f'{context}.full_tree must be a boolean')
+    elif name == 'show-graph-concept-hover':
+        target = _required_text(command, 'target', context)
+        _validate_prefixed_known(target, 'concept:', concept_ids, 'concept', context, references=references)
+    elif name == 'show-graph-edge-hover':
+        target = _required_text(command, 'target', context)
+        _validate_edge_target(target, 'edge:', context, concept_ids, references=references)
+    elif name == 'show-tools-section':
+        _enum(command, 'value', TOOLS_SECTIONS, context)
+    elif name == 'search':
+        query = _required_text(command, 'query', context)
         if len(query) > 200:
-            raise TutorialLoadError(f"{context}.query must be at most 200 characters")
-    elif name == "wait":
-        milliseconds = _integer(command.get("milliseconds"), f"{context}.milliseconds")
+            raise TutorialLoadError(f'{context}.query must be at most 200 characters')
+    elif name == 'wait':
+        milliseconds = _integer(command.get('milliseconds'), f'{context}.milliseconds')
         if not 0 <= milliseconds <= 5000:
-            raise TutorialLoadError(
-                f"{context}.milliseconds must be between 0 and 5000"
-            )
+            raise TutorialLoadError(f'{context}.milliseconds must be between 0 and 5000')
     return {str(key): value for key, value in command.items()}
 
 
-def _validate_pointer_target(
-    target: str,
-    *,
-    context: str,
-    concept_ids: set[str],
-    module_ids: set[str],
-    block_ids: set[str],
-) -> None:
-    if target == "narration" or target in {
-        "details:heading",
-        "details:contents",
-        "details:study-questions",
-        "details:graphic",
-        "details:derived-from-show-graph",
-        "details:where-used-show-graph",
-        "details:derived-from-full-tree",
-        "details:where-used-full-tree",
-    }:
+def _validate_pointer_target(target: str, *, context: str, concept_ids: set[str], module_ids: set[str], block_ids: set[str], references=None) -> None:
+    if target == 'narration' or target in {'details:heading', 'details:contents', 'details:study-questions', 'details:graphic', 'details:derived-from-show-graph', 'details:where-used-show-graph', 'details:derived-from-full-tree', 'details:where-used-full-tree'}:
         return
-    if target.startswith("control:module-fold:"):
-        module_id = target.removeprefix("control:module-fold:")
-        if module_id not in module_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown module: {module_id}"
-            )
+    if target.startswith('control:module-fold:'):
+        module_id = target.removeprefix('control:module-fold:')
+        _require_target(module_id, module_ids, 'module', context, references)
         return
-    if target.startswith("control:"):
-        control = target.removeprefix("control:")
+    if target.startswith('control:'):
+        control = target.removeprefix('control:')
         if control not in CONTROL_TARGETS:
-            raise TutorialLoadError(f"{context} has unknown control: {control}")
+            raise TutorialLoadError(f'{context} has unknown control: {control}')
         return
-    if target.startswith("graph:concept:"):
-        concept_id = target.removeprefix("graph:concept:")
-        if concept_id not in concept_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown concept: {concept_id}"
-            )
+    if target.startswith('graph:concept:'):
+        concept_id = target.removeprefix('graph:concept:')
+        _require_target(concept_id, concept_ids, 'concept', context, references)
         return
-    if target.startswith("graph:module:"):
-        module_id = target.removeprefix("graph:module:")
-        if module_id not in module_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown module: {module_id}"
-            )
+    if target.startswith('graph:module:'):
+        module_id = target.removeprefix('graph:module:')
+        _require_target(module_id, module_ids, 'module', context, references)
         return
-    if target.startswith("graph:edge:"):
-        _validate_edge_target(target, "graph:edge:", context, concept_ids)
+    if target.startswith('graph:edge:'):
+        _validate_edge_target(target, 'graph:edge:', context, concept_ids, references=references)
         return
-    if target.startswith("search:concept:"):
-        concept_id = target.removeprefix("search:concept:")
-        if concept_id not in concept_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown concept: {concept_id}"
-            )
+    if target.startswith('search:concept:'):
+        concept_id = target.removeprefix('search:concept:')
+        _require_target(concept_id, concept_ids, 'concept', context, references)
         return
-    if target.startswith("search:module:"):
-        module_id = target.removeprefix("search:module:")
-        if module_id not in module_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown module: {module_id}"
-            )
+    if target.startswith('search:module:'):
+        module_id = target.removeprefix('search:module:')
+        _require_target(module_id, module_ids, 'module', context, references)
         return
-    if target.startswith("details:block:"):
-        block_id = target.removeprefix("details:block:")
-        if block_id not in block_ids:
-            raise TutorialLoadError(
-                f"{context} references unknown block: {block_id}"
-            )
+    if target.startswith('details:block:'):
+        block_id = target.removeprefix('details:block:')
+        _require_target(block_id, block_ids, 'block', context, references)
         return
-    if target.startswith("tools:section:"):
-        section = target.removeprefix("tools:section:")
+    if target.startswith('tools:section:'):
+        section = target.removeprefix('tools:section:')
         if section not in TOOLS_SECTIONS:
-            raise TutorialLoadError(f"{context} has unknown Tools section: {section}")
+            raise TutorialLoadError(f'{context} has unknown Tools section: {section}')
         return
-    raise TutorialLoadError(f"{context} is unsupported: {target}")
+    raise TutorialLoadError(f'{context} is unsupported: {target}')
 
 
-def _validate_object_target(
-    target: str,
-    context: str,
-    concept_ids: set[str],
-    module_ids: set[str],
-) -> None:
-    if target.startswith("concept:"):
-        _validate_prefixed_known(target, "concept:", concept_ids, "concept", context)
+def _validate_object_target(target: str, context: str, concept_ids: set[str], module_ids: set[str], *, references=None) -> None:
+    if target.startswith('concept:'):
+        _validate_prefixed_known(target, 'concept:', concept_ids, 'concept', context, references=references)
         return
-    if target.startswith("module:"):
-        _validate_prefixed_known(target, "module:", module_ids, "module", context)
+    if target.startswith('module:'):
+        _validate_prefixed_known(target, 'module:', module_ids, 'module', context, references=references)
         return
-    raise TutorialLoadError(f"{context}.target must identify a concept or module")
+    raise TutorialLoadError(f'{context}.target must identify a concept or module')
 
 
-def _validate_edge_target(
-    target: str,
-    prefix: str,
-    context: str,
-    concept_ids: set[str],
-) -> None:
+def _validate_edge_target(target: str, prefix: str, context: str, concept_ids: set[str], *, references=None) -> None:
     if not target.startswith(prefix):
-        raise TutorialLoadError(f"{context}.target must start with {prefix}")
-    parts = target.removeprefix(prefix).split("|")
-    if len(parts) != 3 or any(not part for part in parts):
-        raise TutorialLoadError(
-            f"{context}.target must identify source|RELATION|target"
-        )
+        raise TutorialLoadError(f'{context}.target must start with {prefix}')
+    parts = target.removeprefix(prefix).split('|')
+    if len(parts) != 3 or any((not part for part in parts)):
+        raise TutorialLoadError(f'{context}.target must identify source|RELATION|target')
     source_id, relation, target_id = parts
-    if source_id not in concept_ids:
-        raise TutorialLoadError(f"{context} references unknown concept: {source_id}")
-    if target_id not in concept_ids:
-        raise TutorialLoadError(f"{context} references unknown concept: {target_id}")
+    _require_target(source_id, concept_ids, 'concept', context, references)
+    _require_target(target_id, concept_ids, 'concept', context, references)
     if relation not in TUTORIAL_EDGE_RELATIONS:
-        raise TutorialLoadError(f"{context} references unknown relation: {relation}")
+        raise TutorialLoadError(f'{context} references unknown relation: {relation}')
 
 
-def _validate_prefixed_known(
-    target: str,
-    prefix: str,
-    known: set[str],
-    kind: str,
-    context: str,
-) -> None:
+def _require_target(identifier, known, kind, context, references=None):
+    if identifier in known:
+        return
+    if references is not None and references(identifier, kind, context):
+        return
+    raise TutorialLoadError(f"{context} references unknown {kind}: {identifier}")
+
+
+def _validate_prefixed_known(target: str, prefix: str, known: set[str], kind: str, context: str, *, references=None) -> None:
     if not target.startswith(prefix):
-        raise TutorialLoadError(f"{context}.target must start with {prefix}")
+        raise TutorialLoadError(f'{context}.target must start with {prefix}')
     identifier = target.removeprefix(prefix)
-    if identifier not in known:
-        raise TutorialLoadError(f"{context} references unknown {kind}: {identifier}")
+    _require_target(identifier, known, kind, context, references)
 
 
 def _mapping(value: object, context: str) -> dict[str, object]:

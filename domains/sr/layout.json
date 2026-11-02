@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "revision": "7",
+  "concepts": {
+    "sr.action_principle": {
+      "x": 3086.885864,
+      "y": 6313.643993
+    },
+    "sr.canonical_momentum": {
+      "x": 3436.885864,
+      "y": 6313.643993
+    },
+    "sr.charge_conservation": {
+      "x": 4173.510851,
+      "y": 3278.209309
+    },
+    "sr.constancy_of_speed_of_light": {
+      "x": 3199.413929,
+      "y": 9232.392344
+    },
+    "sr.electric_field": {
+      "x": 3207.253851,
+      "y": 4828.301838
+    },
+    "sr.electromagnetic_field": {
+      "x": 2393.046458,
+      "y": 4347.737534
+    },
+    "sr.electromagnetic_waves": {
+      "x": 4291.553595,
+      "y": 3016.787153
+    },
+    "sr.em_energy_density": {
+      "x": 3508.035203,
+      "y": 4185.933673
+    },
+    "sr.em_stress_energy": {
+      "x": 3158.081824,
+      "y": 4303.036569
+    },
+    "sr.energy_momentum_tensor": {
+      "x": 4749.686263,
+      "y": 3580.572509
+    },
+    "sr.euler_lagrange_equations": {
+      "x": 2856.228986,
+      "y": 6027.586083
+    },
+    "sr.field_equations": {
+      "x": 3261.285994,
+      "y": 5668.858607
+    },
+    "sr.field_lagrangian": {
+      "x": 3611.885864,
+      "y": 6013.643993
+    },
+    "sr.field_tensor": {
+      "x": 2920.16221,
+      "y": 4840.576762
+    },
+    "sr.four_current": {
+      "x": 4523.510851,
+      "y": 3878.209309
+    },
+    "sr.four_vectors": {
+      "x": 4103.793036,
+      "y": 6875.831376
+    },
+    "sr.gauge_fixing": {
+      "x": 3316.702166,
+      "y": 3770.301907
+    },
+    "sr.gauge_invariance": {
+      "x": 2441.644527,
+      "y": 3956.496376
+    },
+    "sr.hamiltonian_formalism": {
+      "x": 3261.885864,
+      "y": 6013.643993
+    },
+    "sr.inertial_frames": {
+      "x": 3374.413929,
+      "y": 9532.392344
+    },
+    "sr.lagrangian": {
+      "x": 2911.885864,
+      "y": 6613.643993
+    },
+    "sr.length_contraction": {
+      "x": 3810.684197,
+      "y": 8259.408742
+    },
+    "sr.light_cone": {
+      "x": 3837.069419,
+      "y": 8578.144491
+    },
+    "sr.lorentz_force_law": {
+      "x": 3122.829411,
+      "y": 3328.737534
+    },
+    "sr.lorentz_invariance": {
+      "x": 3207.403894,
+      "y": 8280.815288
+    },
+    "sr.lorentz_transformations": {
+      "x": 3410.019942,
+      "y": 8634.566549
+    },
+    "sr.lorenz_gauge": {
+      "x": 2889.746345,
+      "y": 3669.56832
+    },
+    "sr.magnetic_field": {
+      "x": 3475.023948,
+      "y": 4820.266472
+    },
+    "sr.mass_energy_equivalence": {
+      "x": 4299.421061,
+      "y": 5986.920658
+    },
+    "sr.maxwells_equations": {
+      "x": 4014.494145,
+      "y": 3623.371633
+    },
+    "sr.metric_tensor": {
+      "x": 3724.413929,
+      "y": 9532.392344
+    },
+    "sr.minimal_coupling": {
+      "x": 2608.322982,
+      "y": 3607.197341
+    },
+    "sr.minkowski_diagram": {
+      "x": 2946.117202,
+      "y": 8958.834101
+    },
+    "sr.momentum_four_vector": {
+      "x": 4089.618257,
+      "y": 6191.363522
+    },
+    "sr.noether_theorem": {
+      "x": 4173.510851,
+      "y": 3878.209309
+    },
+    "sr.position_four_vector": {
+      "x": 4399.798617,
+      "y": 6772.41317
+    },
+    "sr.poynting_vector": {
+      "x": 2887.317889,
+      "y": 4027.851274
+    },
+    "sr.principle_of_locality": {
+      "x": 3045.126348,
+      "y": 8641.232516
+    },
+    "sr.principle_of_relativity": {
+      "x": 3549.413929,
+      "y": 9232.392344
+    },
+    "sr.proper_time": {
+      "x": 4174.646192,
+      "y": 6499.255163
+    },
+    "sr.radiation_reaction": {
+      "x": 4348.510851,
+      "y": 2678.209309
+    },
+    "sr.scalar_field": {
+      "x": 3261.885864,
+      "y": 6613.643993
+    },
+    "sr.spacetime_event": {
+      "x": 2645.806247,
+      "y": 9192.098334
+    },
+    "sr.spacetime_interval": {
+      "x": 3591.08683,
+      "y": 8879.964558
+    },
+    "sr.time_dilation": {
+      "x": 2875.20269,
+      "y": 8260.810759
+    },
+    "sr.vector_field": {
+      "x": 3611.885864,
+      "y": 6613.643993
+    },
+    "sr.vector_potential": {
+      "x": 2661.169167,
+      "y": 4806.428453
+    },
+    "sr.velocity_four_vector": {
+      "x": 4500.654961,
+      "y": 6321.435656
+    },
+    "sr.wave_equation": {
+      "x": 4673.964735,
+      "y": 3227.896664
+    }
+  },
+  "modules": {
+    "sr.electromagnetic_structure_gauge_and_stress_energy": {
+      "anchor": {
+        "x": 2204.456146,
+        "y": 3792.569125
+      }
+    },
+    "sr.field_dynamics_conservation_and_radiation": {
+      "anchor": {
+        "x": 3319.510851,
+        "y": 2166.459309
+      }
+    },
+    "sr.relativistic_mechanics": {
+      "anchor": {
+        "x": 2949.607116,
+        "y": 5354.601433
+      }
+    },
+    "sr.spacetime_foundations": {
+      "anchor": {
+        "x": 3503.413929,
+        "y": 8861.392344
+      }
+    },
+    "sr.variational_and_field_theory": {
+      "anchor": {
+        "x": 3261.885864,
+        "y": 6246.977326
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+module_id,target_type,target_id,role,note
+gr.connections_transport_and_motion,module,gr.foundations_and_spacetime_geometry,prerequisite,"Connections, geodesic actions, and tidal motion use the metric, proper time, and foundational free-fall concepts."
+gr.curvature_and_gravitational_action,module,gr.foundations_and_spacetime_geometry,prerequisite,Curvature contractions and the gravitational action use the metric and its invariant volume structure.
+gr.curvature_and_gravitational_action,module,gr.connections_transport_and_motion,prerequisite,Riemann curvature is defined through connections and covariant differentiation.
+gr.matter_and_einstein_equations,module,gr.foundations_and_spacetime_geometry,prerequisite,The cosmological term is constructed from the spacetime metric.
+gr.matter_and_einstein_equations,module,gr.connections_transport_and_motion,prerequisite,Matter motion and covariant conservation use four-velocity and covariant differentiation.
+gr.matter_and_einstein_equations,module,gr.curvature_and_gravitational_action,prerequisite,Einstein and Ricci curvature supply the geometric side and special forms of the field equations.
+gr.weak_field_and_classical_tests,module,gr.foundations_and_spacetime_geometry,prerequisite,"Weak metrics, clock rates, and light propagation use metric and causal geometry."
+gr.weak_field_and_classical_tests,module,gr.connections_transport_and_motion,prerequisite,Classical trajectories and light bending follow from the geodesic equation.
+gr.weak_field_and_classical_tests,module,gr.matter_and_einstein_equations,prerequisite,Newtonian and post-Newtonian approximations derive from Einstein's field equations.
+gr.schwarzschild_geometry_and_black_holes,module,gr.foundations_and_spacetime_geometry,prerequisite,The Schwarzschild line element and horizon use metric conventions and causal structure.
+gr.schwarzschild_geometry_and_black_holes,module,gr.connections_transport_and_motion,prerequisite,Effective orbital dynamics derives from the geodesic equation.
+gr.schwarzschild_geometry_and_black_holes,module,gr.curvature_and_gravitational_action,prerequisite,Curvature invariants distinguish coordinate pathologies from physical singularities.

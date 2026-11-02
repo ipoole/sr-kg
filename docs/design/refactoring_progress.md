@@ -1,5 +1,9 @@
 # Refactoring progress — issue 7.2
 
+Historical record before the subsequent [domain split](domain_packages.md).
+After that move, comparable production-code counts must include Python graphics
+under `domains/`, not just the remaining files under `srkg/`.
+
 Scope: preserve current behaviour while reducing coupling. Domain data/graphics
 separation (7.3), publishing changes (6), new UI features and changes to personal
 data formats are deferred. Current responsibilities are documented in

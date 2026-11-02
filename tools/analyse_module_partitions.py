@@ -13,7 +13,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from srkg.kb import resolve_knowledge_base_paths
+from srkg.kb import load_knowledge_base
+from srkg.domain_sources import read_authored_table
 from srkg.module_partitioning import (
     DEFAULT_RELATIONS,
     PartitionSearchConfig,
@@ -70,9 +71,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    paths = resolve_knowledge_base_paths(args.data_root)
-    nodes_df = pd.read_csv(paths.nodes).fillna("")
-    edges_df = pd.read_csv(paths.edges).fillna("")
+    kb = load_knowledge_base(args.data_root, include_graphics=False)
+    nodes_df, edges_df = kb.nodes_df, kb.edges_df
     weights = _parse_relation_weights(args.relation_weight)
     graph = build_domain_graph(
         nodes_df,
@@ -102,8 +102,8 @@ def main(argv: list[str] | None = None) -> None:
         seeds.append(proposed)
     elif args.evaluate_only:
         raise ValueError("--evaluate-only requires --evaluate-members")
-    if not args.ignore_authored_seed and paths.module_members:
-        members_df = pd.read_csv(paths.module_members).fillna("")
+    members_df = read_authored_table(args.data_root, "module_members")
+    if not args.ignore_authored_seed and members_df is not None:
         domain_ids = set(graph.concept_ids)
         selected = members_df[members_df["concept_id"].astype(str).isin(domain_ids)]
         authored = dict(zip(

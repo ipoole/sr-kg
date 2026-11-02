@@ -1,0 +1,50 @@
+id,display_id,label,domain,domain_title
+sr.principle_of_relativity,SR-1.3,Principle of relativity,sr,Special Relativity and Classical Fields
+sr.constancy_of_speed_of_light,SR-1.2,Constancy of the speed of light,sr,Special Relativity and Classical Fields
+sr.inertial_frames,SR-1.1,Inertial frames,sr,Special Relativity and Classical Fields
+sr.spacetime_event,SR-1.4,Spacetime event,sr,Special Relativity and Classical Fields
+sr.principle_of_locality,SR-1.5,Principle of locality,sr,Special Relativity and Classical Fields
+sr.lorentz_transformations,SR-1.8,Lorentz transformations,sr,Special Relativity and Classical Fields
+sr.spacetime_interval,SR-1.7,Spacetime interval,sr,Special Relativity and Classical Fields
+sr.metric_tensor,SR-1.6,Metric tensor,sr,Special Relativity and Classical Fields
+sr.light_cone,SR-1.11,Light cone,sr,Special Relativity and Classical Fields
+sr.minkowski_diagram,SR-1.12,Minkowski diagram,sr,Special Relativity and Classical Fields
+sr.time_dilation,SR-1.9,Time dilation,sr,Special Relativity and Classical Fields
+sr.length_contraction,SR-1.10,Length contraction,sr,Special Relativity and Classical Fields
+sr.proper_time,SR-2.1,Proper time,sr,Special Relativity and Classical Fields
+sr.four_vectors,SR-2.2,Four-vectors,sr,Special Relativity and Classical Fields
+sr.position_four_vector,SR-2.3,Position four-vector,sr,Special Relativity and Classical Fields
+sr.velocity_four_vector,SR-2.4,Velocity four-vector,sr,Special Relativity and Classical Fields
+sr.momentum_four_vector,SR-2.5,Momentum four-vector,sr,Special Relativity and Classical Fields
+sr.mass_energy_equivalence,SR-2.6,Mass-energy equivalence,sr,Special Relativity and Classical Fields
+sr.action_principle,SR-3.2,Action principle,sr,Special Relativity and Classical Fields
+sr.lagrangian,SR-3.1,Lagrangian,sr,Special Relativity and Classical Fields
+sr.euler_lagrange_equations,SR-3.3,Euler–Lagrange equations,sr,Special Relativity and Classical Fields
+sr.hamiltonian_formalism,SR-3.5,Hamiltonian formalism,sr,Special Relativity and Classical Fields
+sr.canonical_momentum,SR-3.4,Canonical momentum,sr,Special Relativity and Classical Fields
+sr.noether_theorem,SR-5.1,Noether's theorem,sr,Special Relativity and Classical Fields
+sr.scalar_field,SR-3.6,Scalar field,sr,Special Relativity and Classical Fields
+sr.vector_field,SR-3.7,Vector field,sr,Special Relativity and Classical Fields
+sr.field_lagrangian,SR-3.8,Field Lagrangian,sr,Special Relativity and Classical Fields
+sr.field_equations,SR-3.9,Field equations,sr,Special Relativity and Classical Fields
+sr.vector_potential,SR-4.1,Vector potential \(A_\mu\),sr,Special Relativity and Classical Fields
+sr.field_tensor,SR-4.2,Field tensor \(F_{\mu\nu}\),sr,Special Relativity and Classical Fields
+sr.electric_field,SR-4.3,Electric field,sr,Special Relativity and Classical Fields
+sr.magnetic_field,SR-4.4,Magnetic field,sr,Special Relativity and Classical Fields
+sr.electromagnetic_field,SR-4.5,Electromagnetic field,sr,Special Relativity and Classical Fields
+sr.maxwells_equations,SR-5.3,Maxwell's equations,sr,Special Relativity and Classical Fields
+sr.lorenz_gauge,SR-4.9,Lorenz gauge,sr,Special Relativity and Classical Fields
+sr.gauge_invariance,SR-4.6,Gauge invariance,sr,Special Relativity and Classical Fields
+sr.four_current,SR-5.2,Four-current,sr,Special Relativity and Classical Fields
+sr.minimal_coupling,SR-4.7,Minimal coupling,sr,Special Relativity and Classical Fields
+sr.lorentz_force_law,SR-4.8,Lorentz force law,sr,Special Relativity and Classical Fields
+sr.charge_conservation,SR-5.4,Charge conservation,sr,Special Relativity and Classical Fields
+sr.em_energy_density,SR-4.12,Energy density of EM field,sr,Special Relativity and Classical Fields
+sr.poynting_vector,SR-4.10,Momentum density (Poynting vector),sr,Special Relativity and Classical Fields
+sr.em_stress_energy,SR-4.11,Stress–energy of EM field,sr,Special Relativity and Classical Fields
+sr.energy_momentum_tensor,SR-5.5,Energy--momentum tensor,sr,Special Relativity and Classical Fields
+sr.electromagnetic_waves,SR-5.7,Electromagnetic waves,sr,Special Relativity and Classical Fields
+sr.wave_equation,SR-5.6,Wave equation,sr,Special Relativity and Classical Fields
+sr.radiation_reaction,SR-5.8,Radiation reaction,sr,Special Relativity and Classical Fields
+sr.lorentz_invariance,SR-1.13,Lorentz invariance,sr,Special Relativity and Classical Fields
+sr.gauge_fixing,SR-4.13,Gauge fixing,sr,Special Relativity and Classical Fields

@@ -18,6 +18,24 @@ interpretation. Avoid marketing language, unexplained symbol changes,
 unnecessary digressions, and words such as "obviously" when a learner may need
 the missing step.
 
+## Domain ownership
+
+Work inside `domains/<domain-id>/`: tables in `data/`, graphics and local registry
+in `graphics/`, layouts/tutorials alongside them, drafts/source work in `docs/`,
+and domain-specific expectations in `tests/`. Do not edit another domain or a
+shared ID list to add a concept or graphic. Shared conventions and drawing
+primitives remain common. See [domain packages](../design/domain_packages.md).
+
+Edges belong to the source concept's domain, including cross-domain edges.
+Citations resolve against that domain's bibliography. The directory, manifest ID
+and semantic-ID prefix must agree. A selected-domain build reads only its chosen
+packages. External namespaces produce generator warnings: their edges/supports
+are omitted and prose labels remain readable without links. A missing target
+inside a loaded namespace is an error; external typos are only detected when
+that namespace is included. Review the warning summary or use the full build
+when checking cross-domain dependencies.
+Semantic IDs and existing `math.` prefixes remain stable.
+
 ## Before Drafting
 
 1. Read the concept's node, edges, blocks, questions, references, and graphic
@@ -29,7 +47,7 @@ the missing step.
 4. Check `equality_annotation_style.md` for derivations with meaningful
    equality steps.
 5. Identify useful registered sources. Record uncertain locators in
-   `source_review_worklist.md` rather than inventing precision.
+   the owning domain’s `docs/source_review_worklist.md` rather than inventing precision.
 
 After each concept, check its block structure, questions, references,
 cross-references, edges, notation, and graphic before continuing.
@@ -176,8 +194,7 @@ Example filtered build:
 conda run -n sr-kg python tools/generate_pyvis.py \
   --data-root data \
   --out output/PhysicsKG.html \
-  --domains gr \
-  --also-load-linked-concepts
+  --domains gr
 ```
 
 ## References
@@ -226,12 +243,19 @@ that prose alone hides.
 
 Keep these four pieces synchronized:
 
-1. creator in `srkg/svg_graphics/concepts.py`;
-2. semantic-ID registry entry in `srkg/svg_graphics/registry.py`;
-3. semantic-ID design and captions in
-   `data/concept_graphic_designs.csv`; and
-4. expected ID and accessible title in
-   `tests/test_concept_svg_graphics.py`.
+1. creator in the domain's `graphics/concepts.py`;
+2. semantic-ID entry in its `graphics/registry.py`;
+3. design/captions in its `data/concept_graphic_designs.csv`; and
+4. any specific expectations in its `tests/graphics_expectations.json` or tests.
+
+Generic tests discover registered IDs automatically. Module motifs/assets and
+accessible titles also belong to the owning `graphics/` directory. Shared
+`srkg/svg_graphics/` contains reusable primitives, motifs and framing only.
+
+Review with `tools/show_graphics.py --domain <id>`. Numbering proposals may be
+computed over the collection; applying them requires `--domain <id>`. Install an
+exported layout with `tools/install_layout.py --domain <id> --layout <file> --revision <new-revision>`; it updates only that domain's coordinates. Run these
+Python tools through the project conda environment.
 
 Runtime SVG dispatch and captions use semantic IDs such as
 `gr.riemann_tensor`. Use display IDs only to select and label review sheets;

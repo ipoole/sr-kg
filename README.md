@@ -145,9 +145,12 @@ conda run -n sr-kg pytest -q tests/browser
 - [Google OAuth publication](docs/design/google_oauth_publication.md): public branding, Console settings and release checklist.
 - [Release versioning](docs/design/releases.md): product release numbering and its single source of truth.
 - [KB schema](docs/design/kb_schema.md): source-file contracts.
+- [Domain packages](docs/design/domain_packages.md): ownership, discovery and authoring.
+- [Selected-domain builds](docs/design/missing_domain_builds.md): isolated loading, missing-domain warnings and omitted relationships.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
 - [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.
 - [Open viewer requests](docs/issues.md).
 
-Source content lives in `data/`, implementation in `srkg/`, command-line tools
+Source content and graphics live in `domains/<domain-id>/`; `data/` holds shared
+collection metadata. Shared implementation lives in `srkg/`, command-line tools
 in `tools/`, and tests in `tests/`. Run a tool with `--help` for its full options.

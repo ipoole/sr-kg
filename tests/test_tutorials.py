@@ -11,17 +11,16 @@ BLOCK_IDS = {"sr.alpha.definition", "gr.beta.explanation"}
 
 
 def test_physics_routes_start_with_quiet_introduction():
-    import yaml
-
-    routes = yaml.safe_load((Path(__file__).parents[1] / "data/tutorials.yaml").read_text())["tutorials"]
-    for route in routes:
-        if route["category"] != "physics":
-            continue
-        intro = route["steps"][0]
-        assert intro["action"] == {"command": "wait", "milliseconds": 0}
-        assert not intro.get("actions")
-        assert not intro.get("prepare")
-        assert not intro.get("pointer")
+    from srkg.kb import load_knowledge_base
+    routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
+    physics = [route for route in routes if route.category == "physics"]
+    assert physics
+    for route in physics:
+        intro = route.steps[0]
+        assert intro.action == {"command": "wait", "milliseconds": 0}
+        assert not intro.actions
+        assert not intro.prepare
+        assert not intro.pointer_target
 
 
 def _sequence_route(actions, extra=""):

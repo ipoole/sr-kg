@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from srkg.kb import load_knowledge_base
+from srkg.domain_sources import owning_source_paths
 from srkg.module_layout import propose_module_concept_numbering
 
 
@@ -23,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Propose module-prefixed display IDs without changing runtime data.",
     )
     parser.add_argument("--data-root", default="data")
+    parser.add_argument("--domain", help="Limit proposals; required with --apply for a domain collection")
     parser.add_argument("--out", required=True)
     parser.add_argument(
         "--apply",
@@ -34,12 +36,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    kb = load_knowledge_base(args.data_root)
+    paths = owning_source_paths(args.data_root, args.domain) if args.apply else None
+    kb = load_knowledge_base(args.data_root, include_graphics=False)
     proposals = propose_module_concept_numbering(
         kb.nodes_df,
         kb.edges_df,
         kb.modules,
     )
+    if args.domain:
+        own_ids = {concept.id for concept in kb.concepts if concept.domain == args.domain}
+        if not own_ids:
+            raise ValueError(f"Unknown/empty domain: {args.domain}")
+        proposals = [proposal for proposal in proposals if proposal.concept_id in own_ids]
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="") as handle:
@@ -71,24 +79,25 @@ def main(argv: list[str] | None = None) -> None:
             )
     print(f"Wrote {len(proposals)} proposed concept IDs to {output}")
     if args.apply:
-        _apply_proposals(kb, proposals)
+        _apply_proposals(kb, proposals, paths=paths)
         print("Applied proposed display IDs and member sequences to runtime data")
 
 
-def _apply_proposals(kb, proposals) -> None:
+def _apply_proposals(kb, proposals, *, paths=None) -> None:
+    paths = paths or owning_source_paths(kb.paths.root)
     proposal_by_id = {proposal.concept_id: proposal for proposal in proposals}
 
-    nodes = pd.read_csv(kb.paths.nodes, dtype=str, keep_default_na=False)
+    nodes = pd.read_csv(paths.nodes, dtype=str, keep_default_na=False)
     nodes["display_id"] = nodes["id"].astype(str).map(
-        lambda concept_id: proposal_by_id[concept_id].new_display_id
-    )
+        {key: proposal.new_display_id for key, proposal in proposal_by_id.items()}
+    ).fillna(nodes["display_id"])
     nodes = nodes.drop(columns=["layer", "layer_title"], errors="ignore")
-    nodes.to_csv(kb.paths.nodes, index=False)
+    nodes.to_csv(paths.nodes, index=False)
 
-    members = pd.read_csv(kb.paths.module_members, dtype=str, keep_default_na=False)
+    members = pd.read_csv(paths.module_members, dtype=str, keep_default_na=False)
     members["sequence"] = members["concept_id"].astype(str).map(
-        lambda concept_id: proposal_by_id[concept_id].member_sequence
-    )
+        {key: str(proposal.member_sequence) for key, proposal in proposal_by_id.items()}
+    ).fillna(members["sequence"])
     module_order = {
         module.module_id: index for index, module in enumerate(kb.modules)
     }
@@ -97,15 +106,15 @@ def _apply_proposals(kb, proposals) -> None:
     members = members.sort_values(
         ["_module_order", "_sequence_order", "concept_id"], kind="stable"
     ).drop(columns=["_module_order", "_sequence_order"])
-    members.to_csv(kb.paths.module_members, index=False)
+    members.to_csv(paths.module_members, index=False)
 
-    if kb.paths.graphic_designs is not None:
-        designs = pd.read_csv(kb.paths.graphic_designs, dtype=str, keep_default_na=False)
+    if paths.graphic_designs is not None:
+        designs = pd.read_csv(paths.graphic_designs, dtype=str, keep_default_na=False)
         designs["display_id"] = designs["id"].astype(str).map(
-            lambda concept_id: proposal_by_id[concept_id].new_display_id
-        )
+            {key: proposal.new_display_id for key, proposal in proposal_by_id.items()}
+        ).fillna(designs["display_id"])
         designs = designs.drop(columns=["layer"], errors="ignore")
-        designs.to_csv(kb.paths.graphic_designs, index=False)
+        designs.to_csv(paths.graphic_designs, index=False)
 
 
 if __name__ == "__main__":

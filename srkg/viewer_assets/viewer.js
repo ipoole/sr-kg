@@ -1535,7 +1535,8 @@
 
         function moduleDomainLabel(domain) {
           var value = String(domain || "module").toLowerCase();
-          return value === "math" ? "MATHS" : value.toUpperCase();
+          var metadata = (kgViewerConfig.domains || []).find(function(item) { return item.id === value; });
+          return metadata && metadata.label ? metadata.label : value.toUpperCase();
         }
 
         function moduleIds() {
@@ -4381,7 +4382,7 @@
         }
 
         function sequentialConceptIds() {
-          var preferredDomains = ["sr", "math", "gr"];
+          var preferredDomains = (kgViewerConfig.domains || []).map(function(item) { return item.id; });
           var seen = {};
           var result = [];
           function domainRank(domain) {
@@ -5319,8 +5320,13 @@
         }
 
         function defaultViewerSelection() {
-          var moduleId = getModule("sr.field_dynamics_conservation_and_radiation")
-            ? "sr.field_dynamics_conservation_and_radiation" : Object.keys(moduleData).sort()[0];
+          var preferences = kgViewerConfig.domains || [];
+          for (var index = 0; index < preferences.length; index += 1) {
+            var target = String(preferences[index].initialSelection || "").split(":");
+            if (target[0] === "module" && getModule(target[1])) { return {type: "module", id: target[1]}; }
+            if (target[0] === "concept" && getConcept(target[1])) { return {type: "concept", id: target[1]}; }
+          }
+          var moduleId = Object.keys(moduleData).sort()[0];
           if (moduleId) { return {type: "module", id: moduleId}; }
           var conceptId = Object.keys(conceptData).sort(compareConceptIds)[0];
           return conceptId ? {type: "concept", id: conceptId} : null;

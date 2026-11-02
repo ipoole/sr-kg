@@ -20,6 +20,7 @@ FULL_BROWSER_FIXTURES = {
     "mobile_repo_browser_graph",
     "repo_browser_graph",
     "shared_repo_browser_graph",
+    "gr_repo_browser_graph",
 }
 
 
@@ -544,7 +545,7 @@ def _use_stub_mathjax(html_text: str) -> str:
         stub,
         html_text,
     )
-def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path:
+def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str, *, domains=None) -> Path:
     output_path = tmp_path / "viewer.html"
     generate_viewer_from_root(
         data_root=str(data_root),
@@ -552,6 +553,7 @@ def _prepare_browser_output(tmp_path: Path, data_root: Path, title: str) -> Path
         height="100vh",
         width="100vw",
         title=title,
+        domains=domains,
     )
     _copy_local_browser_assets(tmp_path)
     output_path.write_text(
@@ -788,3 +790,60 @@ def clean_repo_browser_graph(shared_repo_browser_graph, playwright_browser):
     )
     _wait_for_browser_graph_ready(playwright_api, shared_repo_browser_graph.page)
     yield shared_repo_browser_graph
+
+
+@pytest.fixture(scope="session")
+def future_domain_output(tmp_path_factory):
+    """A collection unrelated to the production subjects; no central registration."""
+    from srkg.schema import (
+        CONTENT_BLOCK_COLUMNS, STUDY_QUESTION_COLUMNS, STUDY_QUESTION_OPTION_COLUMNS,
+        REFERENCE_COLUMNS, REFERENCE_LINK_COLUMNS, MODULE_COLUMNS, MODULE_MEMBER_COLUMNS,
+        MODULE_CONTENT_BLOCK_COLUMNS,
+    )
+    root=tmp_path_factory.mktemp("future-domain")
+    directory=root/"domains/molbio"
+    directory.mkdir(parents=True)
+    (root/"manifest.yaml").write_text("domains_root: domains\n")
+    (directory/"domain.yaml").write_text("id: molbio\ntitle: Molecular biology\ndisplay_name: BIO\nsequence: 1\ninitial_selection: module:molbio.m1\n")
+    rows={
+        "nodes": (["id", "display_id", "label", "domain", "domain_title"], [
+            ["molbio.one", "BIO-1.1", "First", "molbio", "Molecular biology"],
+            ["molbio.two", "BIO-1.2", "Second", "molbio", "Molecular biology"]]),
+        "edges": (["source", "target", "relation", "note"], [["molbio.one", "molbio.two", "REQUIRES", "A prerequisite"]]),
+        "content_blocks": (CONTENT_BLOCK_COLUMNS, [["molbio.one.definition", "molbio.one", 10, "definition", "Definition", "First definition."], ["molbio.two.definition", "molbio.two", 10, "definition", "Definition", "Second definition."]]),
+        "study_questions": (STUDY_QUESTION_COLUMNS, []),
+        "study_question_options": (STUDY_QUESTION_OPTION_COLUMNS, []),
+        "references": (REFERENCE_COLUMNS, []), "reference_links": (REFERENCE_LINK_COLUMNS, []),
+        "modules": (MODULE_COLUMNS, [["molbio.m1", "molbio", "BIO-1 Foundations", 10, "true"]]),
+        "module_members": (MODULE_MEMBER_COLUMNS, [["molbio.m1", "molbio.one", 10], ["molbio.m1", "molbio.two", 20]]),
+        "module_content_blocks": (MODULE_CONTENT_BLOCK_COLUMNS, [["molbio.m1.overview", "molbio.m1", 10, "overview", "Overview", "A module."]]),
+    }
+    for role,(columns,values) in rows.items():
+        pd.DataFrame(values,columns=columns).to_csv(directory/(role+".csv"),index=False)
+    output=_prepare_browser_output(root,root,"Future domain")
+    output.write_text(_use_stub_mathjax(output.read_text(encoding="utf-8")),encoding="utf-8")
+    return output
+
+
+@pytest.fixture
+def future_domain_graph(request, future_domain_output, playwright_browser):
+    playwright_api,browser=playwright_browser
+    options={"viewport": {"width": 430, "height": 932}, "has_touch": True, "is_mobile": True} if request.param else None
+    with _open_browser_graph(playwright_api,browser,future_domain_output,context_options=options) as graph:
+        yield graph
+
+
+@pytest.fixture(scope="session")
+def gr_repo_browser_output(tmp_path_factory):
+    directory=tmp_path_factory.mktemp("gr-only-viewer")
+    output=_prepare_browser_output(directory,REPO_ROOT/"data","GR only",domains=["gr"])
+    output.write_text(_use_stub_mathjax(output.read_text(encoding="utf-8")),encoding="utf-8")
+    return output
+
+
+@pytest.fixture
+def gr_repo_browser_graph(request, gr_repo_browser_output, playwright_browser):
+    api,browser=playwright_browser
+    options={"viewport":{"width":430,"height":932},"is_mobile":True,"has_touch":True} if request.param else None
+    with _open_browser_graph(api,browser,gr_repo_browser_output,context_options=options) as graph:
+        yield graph

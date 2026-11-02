@@ -1,18 +1,6 @@
 name: sr-kg
+domains_root: ../domains
+layout_revision: "7"
 files:
-  nodes: nodes.csv
-  edges: edges.csv
   edge_key: edges_key.csv
-  content_blocks: content_blocks.csv
-  study_questions: study_questions.csv
-  study_question_options: study_question_options.csv
-  references: references.csv
-  reference_links: reference_links.csv
-  graphic_designs: concept_graphic_designs.csv
-  module_graphic_designs: module_graphic_designs.csv
-  modules: modules.csv
-  module_members: module_members.csv
-  module_supports: module_supports.csv
-  module_content_blocks: module_content_blocks.csv
-  layout: layout.json
   tutorials: tutorials.yaml

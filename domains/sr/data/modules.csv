@@ -1,0 +1,6 @@
+module_id,domain,title,sequence,default_collapsed
+sr.spacetime_foundations,sr,SR-1 Spacetime and Lorentz Symmetry,10,true
+sr.relativistic_mechanics,sr,SR-2 Relativistic Particle Mechanics,20,true
+sr.variational_and_field_theory,sr,SR-3 Action and Field Theory,30,true
+sr.electromagnetic_structure_gauge_and_stress_energy,sr,SR-4 Covariant Electromagnetism,40,true
+sr.field_dynamics_conservation_and_radiation,sr,SR-5 Field Dynamics and Radiation,50,true

@@ -1,0 +1,14 @@
+{
+  "titles": {
+    "math.manifold": "Manifold",
+    "math.coordinate_chart": "Coordinate chart",
+    "math.coordinate_transformation": "Coordinate transformation",
+    "math.worldline": "Worldline",
+    "math.tangent_space": "Tangent space",
+    "math.cotangent_space": "Cotangent space",
+    "math.tensor_field": "Tensor field",
+    "math.index_notation": "Abstract and component indices",
+    "math.tensor_transformation_law": "Tensor transformation law"
+  },
+  "same_variants": []
+}

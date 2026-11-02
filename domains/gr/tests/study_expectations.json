@@ -1,0 +1,39 @@
+{
+  "automatic_calculations": [
+    "gr.black_hole_singularity.q3",
+    "gr.curvature_invariants.q4",
+    "gr.equation_of_state.q3",
+    "gr.four_velocity.q3",
+    "gr.four_velocity.q4",
+    "gr.gravitational_redshift.q3",
+    "gr.inverse_metric.q3",
+    "gr.light_deflection.q3",
+    "gr.line_element.q3",
+    "gr.metric_signature.q3",
+    "gr.metric_tensor.q3",
+    "gr.perihelion_precession.q3",
+    "gr.perihelion_precession.q4",
+    "gr.post_newtonian_approximation.q4",
+    "gr.proper_time.q3",
+    "gr.proper_time.q4",
+    "gr.ricci_scalar.q3",
+    "gr.schwarzschild_radius.q3",
+    "gr.schwarzschild_radius.q4",
+    "gr.tidal_gravity.q4",
+    "gr.torsion_free_connection.q3",
+    "gr.volume_element.q3",
+    "gr.weak_field_metric.q3"
+  ],
+  "automatic_concepts": [
+    "gr.bianchi_identity.q2",
+    "gr.connection.q2",
+    "gr.energy_conditions.q2",
+    "gr.event_horizon.q3",
+    "gr.geodesic.q2",
+    "gr.geodesic_equation.q2",
+    "gr.parallel_transport.q2",
+    "gr.ricci_tensor.q2",
+    "gr.torsion_free_connection.q2",
+    "gr.trace_reversed_equations.q2"
+  ]
+}

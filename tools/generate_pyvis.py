@@ -63,19 +63,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from srkg.kb import resolve_knowledge_base_paths
 from srkg.branding import PRODUCT_TITLE
 from srkg.config import DEFAULT_GOOGLE_DRIVE_CLIENT_ID
-from srkg.pipeline import generate_viewer_from_root
-from srkg.dag import format_dag_reports, load_dag_reports
+from srkg.pipeline import generate_viewer_from_root, load_viewer_knowledge_base
+from srkg.domain_references import format_build_warnings
+from srkg.dag import format_dag_reports, build_dag_reports, directed_relations
 from srkg.module_diagnostics import (
     format_module_diagnostics,
-    load_module_diagnostics,
+    build_module_diagnostics,
 )
 from srkg.validation import (
     format_validation_issues,
     has_validation_errors,
-    load_validation_issues_from_root,
+    validate_knowledge_base,
 )
 
 
@@ -187,7 +187,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--also-load-linked-concepts",
         action="store_true",
-        help="When --domains is used, also render one-hop concepts linked to the selected domain concepts.",
+        help="Legacy single-root option; collection builds retain only the explicitly selected domains.",
     )
     return parser
 
@@ -195,25 +195,34 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    kb_paths = resolve_knowledge_base_paths(args.data_root)
-    nodes_path = str(kb_paths.nodes)
-    edges_path = str(kb_paths.edges)
-    edge_key_path = str(kb_paths.edge_key) if kb_paths.edge_key else None
+
+    reports_seen = set()
+    missing_domains = set()
+    def report_warnings(warnings):
+        missing_domains.update(warning.domain for warning in warnings)
+        report = format_build_warnings(warnings)
+        if report and report not in reports_seen:
+            print(report, file=sys.stderr)
+            reports_seen.add(report)
+
+    if any((args.dag_report, args.dag_report_only, args.module_report, args.module_report_only,
+            args.validate, args.validate_only)):
+        kb = load_viewer_knowledge_base(args.data_root, domains=args.domains,
+            also_load_linked_concepts=args.also_load_linked_concepts, include_graphics=False)
+        report_warnings(kb.build_warnings)
 
     if args.dag_report or args.dag_report_only:
-        reports = load_dag_reports(
-            nodes_path=nodes_path,
-            edges_path=edges_path,
-            edge_key_path=edge_key_path,
-            relations=args.dag_relations,
-        )
+        relations = args.dag_relations if args.dag_relations is not None else directed_relations(kb.edges_df, kb.edge_key)
+        if not relations:
+            raise ValueError("No directed relations found for DAG diagnostics")
+        reports = build_dag_reports(kb.nodes_df, kb.edges_df, relations)
         print(format_dag_reports(reports))
         if args.dag_report_only:
             return
 
     if args.module_report or args.module_report_only:
-        diagnostics = load_module_diagnostics(
-            args.data_root,
+        diagnostics = build_module_diagnostics(
+            kb,
             relations=args.module_relations,
         )
         print(format_module_diagnostics(diagnostics))
@@ -221,7 +230,7 @@ def main(argv: list[str] | None = None) -> None:
             return
 
     if args.validate or args.validate_only:
-        issues = load_validation_issues_from_root(args.data_root)
+        issues = validate_knowledge_base(kb)
         print(format_validation_issues(issues))
         if has_validation_errors(issues, strict=args.validation_strict):
             raise SystemExit(1)
@@ -239,6 +248,7 @@ def main(argv: list[str] | None = None) -> None:
             also_load_linked_concepts=args.also_load_linked_concepts,
             relations=args.relations,
             google_drive_client_id=args.google_drive_client_id,
+            warning_handler=report_warnings,
         )
     )
 
@@ -247,6 +257,8 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Edges: {edge_count}")
     if edge_key_path:
         print(f"Edge key: {edge_key_path} ({edge_key_count} relation types)")
+    if missing_domains:
+        print("Missing domains: " + ", ".join(sorted(missing_domains)))
 
 
 if __name__ == "__main__":
