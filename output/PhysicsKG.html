@@ -2036,8 +2036,11 @@ if (location.protocol === "file:") {
     }
 
     #info_panel .user-note {
+        background: #fbf5ee;
+        border: 1px solid #ead9c3;
+        border-radius: 6px;
         margin: 0.75em 0;
-        padding: 0;
+        padding: 0.35em 0.5em;
     }
 
     #info_panel .user-note > summary {
@@ -14745,7 +14748,7 @@ var kgModuleGeometry = (function() {
           if (sourceEdges.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
-            '" class="concept-derived-from" open>';
+            '" class="concept-derived-from">';
           html += "<summary>Derived from</summary>";
           html += fullTreeToggleHtml(
             "concept-derived-from-full-tree",
@@ -14783,7 +14786,7 @@ var kgModuleGeometry = (function() {
           if (groups.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
-            '" class="concept-backlinks" open>';
+            '" class="concept-backlinks">';
           html += "<summary>Where this is used</summary>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
@@ -16932,6 +16935,8 @@ var kgModuleGeometry = (function() {
             var derivedSectionId = derivedSection ? derivedSection.id : null;
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
             refreshActiveConcept();
+            var refreshedDerivedSection = document.getElementById(derivedSectionId);
+            if (refreshedDerivedSection) { refreshedDerivedSection.open = true; }
             detailsView.suppressScrollSync(1000);
             setActiveConceptSection(derivedSectionId);
             return;
@@ -16943,6 +16948,8 @@ var kgModuleGeometry = (function() {
             var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
             backlinksFullTreeEnabled = backlinksFullTree.checked;
             refreshActiveConcept();
+            var refreshedBacklinksSection = document.getElementById(backlinksSectionId);
+            if (refreshedBacklinksSection) { refreshedBacklinksSection.open = true; }
             detailsView.suppressScrollSync(1000);
             setActiveConceptSection(backlinksSectionId);
           }
