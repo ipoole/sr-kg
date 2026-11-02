@@ -370,7 +370,7 @@ def test_user_notes_export_and_import_csv(browser_graph):
     assert rows[0]["title"] == "Exported title"
     assert rows[0]["body"] == "Exported body"
     assert rows[0]["anchor_block_id"] == "2.1.definition"
-    assert rows[0]["anchor_section_key"] == "legacy:definition"
+    assert rows[0]["anchor_section_key"] == ""
     assert "anchor_context_before" in rows[0]
     assert "anchor_context_after" in rows[0]
 
@@ -622,15 +622,13 @@ def test_note_hooks_follow_optional_details_and_display_equations(mathjax_browse
 
     mathjax_browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    section = page.locator('#info_panel .concept-section[data-section="Explanation"]')
+    section = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     assert section.locator(".optional-detail").count() == 1
     page.wait_for_selector(
-        '#info_panel .concept-section[data-section="Explanation"] mjx-container[display="true"]'
+        '#info_panel [data-content-block-id="2.1.explanation"] mjx-container[display="true"]'
     )
 
-    section.locator(
-        "xpath=ancestor::*[@data-note-block][1]"
-    ).locator(":scope > .kg-noteable-heading .kg-note-block-action").click()
+    section.locator(":scope > summary .kg-note-block-action").click()
     assert section.locator('.concept-line[tabindex="0"]').count() >= 4
     assert section.evaluate(
         """section => {
@@ -655,7 +653,7 @@ def test_note_uses_stable_block_id_across_section_rename(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    definition = page.locator('#info_panel .concept-section[data-section="Definition"]')
+    definition = page.locator('#info_panel [data-content-block-id="2.1.definition"]')
     _place_note_at_anchor(definition.locator(".kg-add-note").first)
     definition.locator(".user-note-title-input").fill("Stable definition note")
     definition.locator(".user-note-body-input").fill("Keep this with the definition.")
@@ -667,14 +665,14 @@ def test_note_uses_stable_block_id_across_section_rename(browser_graph):
     assert stored["anchor"]["blockId"] == "2.1.definition"
 
     page.evaluate("""() => {
-      conceptData['2.1'].sections.find(section => section.key === 'definition').title =
+      conceptData['2.1'].content_blocks.find(block => block.kind === 'definition').title =
         'Renamed definition';
     }""")
     browser_graph.click_concept("1.1")
     browser_graph.click_concept("2.1")
 
-    renamed = page.locator('#info_panel .concept-section[data-section="Renamed definition"]')
-    assert page.locator("#info_panel h3").filter(has_text="Renamed definition").count() == 1
+    renamed = page.locator('#info_panel [data-content-block-id="2.1.definition"]')
+    assert renamed.locator(":scope > summary .content-block-title-text").filter(has_text="Renamed definition").count() == 1
     assert renamed.locator("details.user-note summary").inner_text() == "Stable definition note"
     assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
 
@@ -684,7 +682,7 @@ def test_note_context_survives_paragraph_insertion_and_splitting(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    explanation = page.locator('#info_panel .concept-section[data-section="Explanation"]')
+    explanation = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     anchor = explanation.locator(".kg-add-note").last
     _place_note_at_anchor(anchor)
     explanation.locator(".user-note-title-input").fill("Context note")
@@ -692,14 +690,14 @@ def test_note_context_survives_paragraph_insertion_and_splitting(browser_graph):
     explanation.locator(".user-note-close").click()
 
     page.evaluate("""() => {
-      const section = conceptData['2.1'].sections.find(item => item.key === 'explanation');
-      section.text = 'An inserted opening paragraph.\\n' +
-        section.text.replace('After the display equation.', 'After the display\\n equation.');
+      const section = conceptData['2.1'].content_blocks.find(item => item.kind === 'explanation');
+      section.body = 'An inserted opening paragraph.\\n' +
+        section.body.replace('After the display equation.', 'After the display\\n equation.');
     }""")
     browser_graph.click_concept("1.1")
     browser_graph.click_concept("2.1")
 
-    explanation = page.locator('#info_panel .concept-section[data-section="Explanation"]')
+    explanation = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     note = explanation.locator("details.user-note")
     assert note.locator("summary").inner_text() == "Context note"
     assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
@@ -710,16 +708,16 @@ def test_unmatched_note_is_preserved_and_visibly_flagged(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
     page.locator("#kg_notes_section summary").click()
-    explanation = page.locator('#info_panel .concept-section[data-section="Explanation"]')
+    explanation = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     _place_note_at_anchor(explanation.locator(".kg-add-note").last)
     explanation.locator(".user-note-title-input").fill("Orphaned passage note")
     explanation.locator(".user-note-body-input").fill("Do not lose this note.")
     explanation.locator(".user-note-close").click()
 
     page.evaluate("""() => {
-      conceptData['2.1'].sections.find(
-        item => item.key === 'explanation'
-      ).text = 'Completely replacement prose with no original anchor context.';
+      conceptData['2.1'].content_blocks.find(
+        item => item.kind === 'explanation'
+      ).body = 'Completely replacement prose with no original anchor context.';
     }""")
     browser_graph.click_concept("1.1")
     browser_graph.click_concept("2.1")
@@ -761,3 +759,25 @@ def test_tutorial_hover_keeps_notes_compact_and_ignores_empty_drafts(browser_gra
     else:
         assert "Notes" not in tooltip.inner_text()
     assert page.evaluate("kgPersonalData.getSnapshot()") == before
+
+
+@pytest.mark.browser
+def test_legacy_section_note_migrates_to_the_canonical_block(browser_graph):
+    page = browser_graph.page
+    page.evaluate("""() => {
+      const profile = kgPersonalData.getSnapshot();
+      profile.notes.push({id:'legacy-section-key',targetType:'concept',targetId:'2.1',
+        conceptId:'2.1',section:'Definition',title:'A legacy section note',body:'Keep this note.',
+        anchor:{blockId:'',sectionKey:'legacy:definition',blockIndex:0,afterText:'',
+          contextBefore:'',contextAfter:''},
+        createdAt:'2026-10-01T12:00:00Z',updatedAt:'2026-10-01T12:00:00Z',deletedAt:''});
+      kgPersonalData.replaceSnapshot(profile);
+    }""")
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function("() => typeof kgViewerStateSnapshot === 'function'")
+    browser_graph.click_concept('2.1')
+    assert page.locator('#info_panel details.user-note summary').inner_text() == 'A legacy section note'
+    anchor = page.evaluate("kgPersonalData.getSnapshot().notes.find(n => n.id === 'legacy-section-key').anchor")
+    assert anchor['blockId'] == '2.1.definition'
+    assert anchor['sectionKey'] == ''
+    assert page.locator('#info_panel .kg-unmatched-notes').count() == 0

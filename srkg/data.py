@@ -6,8 +6,8 @@ viewer. It deliberately does not know about PyVis, HTML generation, physics, or
 layout. Callers are responsible for reading the primary CSV files and passing
 ``pandas`` data frames in.
 
-Dependencies should stay limited to ``srkg.config`` and general-purpose parsing
-libraries.
+Graphic enrichment is optional and imported lazily after record construction;
+text-only callers do not load the SVG generators. Captions remain authored data.
 """
 
 from pathlib import Path
@@ -15,8 +15,6 @@ from pathlib import Path
 import pandas as pd
 
 from srkg.config import EDGE_COLUMNS, EDGE_KEY_COLUMNS
-from srkg.concept_svg_graphics import createSvgGraphic
-from srkg.module_svg_graphics import createModuleSvgGraphic
 from srkg.model import (
     Concept,
     ConceptReference,
@@ -36,6 +34,19 @@ CONTENT_SECTION_COLUMNS = (
 )
 
 
+def concept_domain(row: pd.Series) -> str:
+    """Return a concept domain from an explicit column or semantic id prefix."""
+    if "domain" in row.index:
+        domain = str(row.get("domain", "") or "").strip()
+        if domain:
+            return domain
+
+    concept_id = str(row.get("id", "") or "").strip()
+    if "." in concept_id:
+        return concept_id.split(".", 1)[0]
+    return ""
+
+
 def build_concept_data(
     nodes_df: pd.DataFrame,
     graphic_designs_df: pd.DataFrame | None = None,
@@ -44,6 +55,8 @@ def build_concept_data(
     references_df: pd.DataFrame | None = None,
     reference_links_df: pd.DataFrame | None = None,
     study_question_options_df: pd.DataFrame | None = None,
+    *,
+    include_graphics: bool = True,
 ) -> dict[str, dict[str, object]]:
     """Build panel data directly from nodes.csv, independent of PyVis metadata."""
     return {
@@ -56,6 +69,7 @@ def build_concept_data(
             references_df,
             reference_links_df,
             study_question_options_df,
+            include_graphics=include_graphics,
         )
     }
 
@@ -68,6 +82,8 @@ def build_concepts(
     references_df: pd.DataFrame | None = None,
     reference_links_df: pd.DataFrame | None = None,
     study_question_options_df: pd.DataFrame | None = None,
+    *,
+    include_graphics: bool = True,
 ) -> list[Concept]:
     """Build internal concept models from source CSV data."""
     concepts = []
@@ -98,8 +114,6 @@ def build_concepts(
         if not cid:
             continue
         display_id = str(row.get("display_id", "")).strip() or cid
-        svg_icon = createSvgGraphic(cid, variant="icon")
-        svg_detail = createSvgGraphic(cid, variant="detail")
         captions = graphic_captions.get(cid, {})
         concepts.append(Concept(
             id=cid,
@@ -109,13 +123,14 @@ def build_concepts(
             domain_title=str(row.get("domain_title", "")).strip(),
             sections=_sections_from_content_blocks(blocks_by_concept.get(cid, [])),
             content_blocks=blocks_by_concept.get(cid, []),
-            svg_icon=svg_icon or "",
-            svg_detail=svg_detail or "",
             svg_icon_caption=captions.get("icon_caption", ""),
             svg_detail_caption=captions.get("detail_caption", ""),
             study_questions=questions_by_concept.get(cid, []),
             references=references_by_concept.get(cid, []),
         ))
+    if include_graphics:
+        from srkg.graphic_enrichment import enrich_concepts
+        return enrich_concepts(concepts)
     return concepts
 
 
@@ -202,6 +217,8 @@ def build_modules_from_dfs(
     module_supports_df: pd.DataFrame | None,
     module_content_blocks_df: pd.DataFrame | None,
     module_graphic_designs_df: pd.DataFrame | None = None,
+    *,
+    include_graphics: bool = True,
 ) -> list[Module]:
     """Build flat authored modules from optional module source data frames."""
     if modules_df is None or module_members_df is None or module_content_blocks_df is None:
@@ -249,12 +266,14 @@ def build_modules_from_dfs(
             members=members,
             supports=supports_by_module.get(module_id, []),
             content_blocks=blocks_by_module.get(module_id, []),
-            svg_icon=createModuleSvgGraphic(module_id, "icon") or "",
-            svg_detail=createModuleSvgGraphic(module_id, "detail") or "",
             svg_icon_caption=graphic_captions.get(module_id, {}).get("icon_caption", ""),
             svg_detail_caption=graphic_captions.get(module_id, {}).get("detail_caption", ""),
         ))
-    return sorted(modules, key=lambda module: (module.domain, module.sequence, module.module_id))
+    modules.sort(key=lambda module: (module.domain, module.sequence, module.module_id))
+    if include_graphics:
+        from srkg.graphic_enrichment import enrich_modules
+        return enrich_modules(modules)
+    return modules
 
 
 def build_study_question_options_from_df(

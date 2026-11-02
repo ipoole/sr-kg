@@ -62,7 +62,7 @@ class MacroCall:
 def load_validation_issues_from_root(data_root: str | Path) -> list[ValidationIssue]:
     """Load and validate a directory-backed knowledge base."""
     try:
-        kb = load_knowledge_base(data_root)
+        kb = load_knowledge_base(data_root, include_graphics=False)
     except KnowledgeBaseLoadError as exc:
         return [_issue("error", "kb-load", str(exc), str(data_root))]
     except Exception as exc:

@@ -107,15 +107,28 @@ def inject_controls(
             "__PRODUCT_LOGO_URI__": product_logo_uri,
         },
     )
-    js = _script_tag(_asset_text("module_geometry.js")) + _script_tag(
-        _asset_text("personal_data.js")
-    ) + _script_tag(
-        _asset_text("personal_data_archive.js")
-    ) + _script_tag(
-        _asset_text("personal_data_sync.js")
-    ) + _script_tag(
-        _asset_text("personal_data_google_drive.js")
-    ) + _script_tag(
+    js = "".join(_script_tag(_asset_text(name)) for name in (
+        "layout_geometry.js",
+        "global_layout.js",
+        "graph_camera.js",
+        "graph_presentation.js",
+        "content_markup.js",
+        "details_view.js",
+        "study_controller.js",
+        "notes_controller.js",
+        "personal_data_controller.js",
+        "tutorial_targets.js",
+        "guided_tutorial.js",
+        "context_layout.js",
+        "graph_model.js",
+        "vis_network_adapter.js",
+        "csv.js",
+        "module_geometry.js",
+        "personal_data.js",
+        "personal_data_archive.js",
+        "personal_data_sync.js",
+        "personal_data_google_drive.js",
+    )) + _script_tag(
         _render_template(
             "viewer.js",
             {

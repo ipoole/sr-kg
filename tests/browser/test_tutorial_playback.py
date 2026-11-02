@@ -463,6 +463,7 @@ def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, 
             assert block.locator("mjx-merror, [data-mjx-error]").count() == 0
 
 
+@pytest.mark.browser_full  # Dynamic fixture lookup bypasses automatic fixture classification.
 @pytest.mark.parametrize("graph_fixture", ["repo_browser_graph", "mobile_repo_browser_graph"])
 @pytest.mark.parametrize("tutorial_id", ["using-physicskg", "rest-energy-to-sr-foundations", "time-dilation"])
 def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):

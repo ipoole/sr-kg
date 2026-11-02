@@ -139,7 +139,7 @@ conda run -n sr-kg pytest -q tests/browser
 ## Documentation
 
 - [Documentation index](docs/readme.md): where guidance, drafts and discussion live.
-- [Architecture](docs/design/architecture.md): generation, presentation and user state.
+- [Architecture](docs/design/architecture.md): generation stages, browser controller ownership and personal-data boundaries.
 - [Viewer behaviour](docs/design/viewer.md): current learner-facing controls and limitations.
 - [Personal data](docs/design/personal_data.md): local-first storage, portable archives and Google Drive synchronisation.
 - [Google OAuth publication](docs/design/google_oauth_publication.md): public branding, Console settings and release checklist.

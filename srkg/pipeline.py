@@ -16,6 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 from srkg.kb import KnowledgeBase, load_knowledge_base
+from srkg.data import concept_domain
 from srkg.edges import build_edge_colour_map, enrich_edge_key_with_colours
 from srkg.html_injection import inject_controls
 from srkg.layout import build_flat_positions
@@ -89,19 +90,6 @@ def filter_knowledge_base_by_relations(
             if relation in selected
         },
     )
-
-
-def concept_domain(row: pd.Series) -> str:
-    """Return a concept domain from an explicit column or semantic id prefix."""
-    if "domain" in row.index:
-        domain = str(row.get("domain", "") or "").strip()
-        if domain:
-            return domain
-
-    concept_id = str(row.get("id", "") or "").strip()
-    if "." in concept_id:
-        return concept_id.split(".", 1)[0]
-    return ""
 
 
 def filter_knowledge_base_by_domains(

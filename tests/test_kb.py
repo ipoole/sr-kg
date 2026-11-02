@@ -917,3 +917,33 @@ def test_load_knowledge_base_rejects_unknown_module_support_target(tmp_path):
     assert str(exc.value) == (
         "module_supports.csv references unknown target id(s): module:test.missing"
     )
+
+
+@pytest.mark.parametrize("repository_data", [False, True])
+def test_loading_without_graphics_preserves_content_and_skips_rendering(
+    tmp_path, monkeypatch, repository_data,
+):
+    from dataclasses import replace
+    from pathlib import Path
+    from srkg import graphic_enrichment
+
+    _write_minimal_kb(tmp_path)
+    source = Path(__file__).resolve().parents[1] / "data" if repository_data else tmp_path
+    rendered = load_knowledge_base(source)
+
+    def unexpected_graphics(*args, **kwargs):
+        raise AssertionError("Text-only loading must not generate SVGs")
+
+    monkeypatch.setattr(graphic_enrichment, "enrich_concepts", unexpected_graphics)
+    monkeypatch.setattr(graphic_enrichment, "enrich_modules", unexpected_graphics)
+    plain = load_knowledge_base(source, include_graphics=False)
+    assert plain.nodes_df.equals(rendered.nodes_df)
+    assert plain.edges_df.equals(rendered.edges_df)
+    assert plain.concepts == tuple(
+        replace(concept, svg_icon="", svg_detail="") for concept in rendered.concepts
+    )
+    assert plain.modules == tuple(
+        replace(module, svg_icon="", svg_detail="") for module in rendered.modules
+    )
+    assert plain.tutorials == rendered.tutorials
+    assert plain.published_layout == rendered.published_layout

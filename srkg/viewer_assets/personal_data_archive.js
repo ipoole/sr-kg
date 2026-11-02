@@ -6,37 +6,8 @@
     "study_resets.csv", "reading_progress.csv"
   ];
 
-  function csvEscape(value) {
-    var text = String(value === undefined || value === null ? "" : value);
-    return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
-  }
-
-  function csv(rows) {
-    return rows.map(function(row) { return row.map(csvEscape).join(","); }).join("\r\n") + "\r\n";
-  }
-
-  function parseCsv(text) {
-    var rows = [], row = [], field = "", quoted = false;
-    for (var i = 0; i < text.length; i += 1) {
-      var ch = text.charAt(i);
-      if (quoted) {
-        if (ch === '"' && text.charAt(i + 1) === '"') { field += '"'; i += 1; }
-        else if (ch === '"') { quoted = false; }
-        else { field += ch; }
-      } else if (ch === '"') { quoted = true; }
-      else if (ch === ",") { row.push(field); field = ""; }
-      else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-      else if (ch !== "\r") { field += ch; }
-    }
-    if (quoted) { throw new Error("CSV has an unterminated quoted field"); }
-    if (field || row.length) { row.push(field); rows.push(row); }
-    return rows.filter(function(item) {
-      return item.some(function(value) { return value !== ""; });
-    });
-  }
-
   function records(text, requiredHeaders) {
-    var rows = parseCsv(text);
+    var rows = kgCsv.parse(text);
     if (!rows.length) { throw new Error("CSV is missing its header row"); }
     var header = {};
     rows[0].forEach(function(name, index) { header[String(name)] = index; });
@@ -104,12 +75,12 @@
       reading.push([blockId, item.isRead ? "true" : "false", item.updatedAt, item.deviceId]);
     });
     return {
-      "manifest.csv": csv(manifest),
-      "notes.csv": csv(notes),
-      "layout.csv": csv(layout),
-      "study_attempts.csv": csv(attempts),
-      "study_resets.csv": csv(resets),
-      "reading_progress.csv": csv(reading)
+      "manifest.csv": kgCsv.encode(manifest),
+      "notes.csv": kgCsv.encode(notes),
+      "layout.csv": kgCsv.encode(layout),
+      "study_attempts.csv": kgCsv.encode(attempts),
+      "study_resets.csv": kgCsv.encode(resets),
+      "reading_progress.csv": kgCsv.encode(reading)
     };
   }
 

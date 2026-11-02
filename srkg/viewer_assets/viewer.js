@@ -16,152 +16,15 @@
         FULL: "full",
         CONTEXT: "context"
       });
-      var ContextPreset = Object.freeze({
-        CONNECTIONS: "connections",
-        PREREQUISITES: "prerequisites",
-        DERIVATION: "derivation",
-        FOUNDATIONS: "foundations",
-        USES: "uses",
-        RELATED: "related",
-        CUSTOM: "custom"
-      });
-      var ContextDepth = Object.freeze({
-        ONE_HOP: "one-hop",
-        TWO_HOPS: "two-hops",
-        TRANSITIVE: "transitive"
-      });
-
-      function normaliseContextDepth(depth) {
-        if (depth === ContextDepth.TWO_HOPS || depth === ContextDepth.TRANSITIVE) {
-          return depth;
-        }
-        return ContextDepth.ONE_HOP;
-      }
-
-      function createContextRule(preset, depth, customTraversals) {
-        var knownPresets = Object.keys(ContextPreset).map(function(key) {
-          return ContextPreset[key];
-        });
-        return {
-          preset: knownPresets.indexOf(preset) === -1 ? ContextPreset.CONNECTIONS : preset,
-          depth: normaliseContextDepth(depth),
-          customTraversals: Array.isArray(customTraversals)
-            ? customTraversals.map(function(item) {
-              return {
-                relation: String(item.relation || ""),
-                direction: String(item.direction || "")
-              };
-            }).filter(function(item) {
-              return item.relation && ["incoming", "outgoing", "undirected"].indexOf(item.direction) !== -1;
-            })
-            : []
-        };
-      }
-
-      function contextPresetTraversals(rule, relationDefinitions) {
-        rule = createContextRule(rule && rule.preset, rule && rule.depth, rule && rule.customTraversals);
-        relationDefinitions = relationDefinitions || {};
-        if (rule.preset === ContextPreset.CUSTOM) {
-          return rule.customTraversals.slice();
-        }
-
-        var specs = [];
-        function add(relation, direction) {
-          if (!relationDefinitions[relation]) { return; }
-          specs.push({relation: relation, direction: direction});
-        }
-        function addDirectedBoth(relation) {
-          add(relation, "incoming");
-          add(relation, "outgoing");
-        }
-
-        if (rule.preset === ContextPreset.CONNECTIONS) {
-          Object.keys(relationDefinitions).sort().forEach(function(relation) {
-            if (relationDefinitions[relation].directed === true) {
-              addDirectedBoth(relation);
-            } else {
-              add(relation, "undirected");
-            }
-          });
-        } else if (rule.preset === ContextPreset.PREREQUISITES) {
-          add("REQUIRES", "outgoing");
-        } else if (rule.preset === ContextPreset.DERIVATION) {
-          add("DERIVES_FROM", "outgoing");
-          add("CONSTRUCTED_FROM", "outgoing");
-        } else if (rule.preset === ContextPreset.FOUNDATIONS) {
-          ["DERIVES_FROM", "CONSTRUCTED_FROM", "REQUIRES"].forEach(function(relation) {
-            add(relation, "outgoing");
-          });
-        } else if (rule.preset === ContextPreset.USES) {
-          ["REQUIRES", "DERIVES_FROM", "CONSTRUCTED_FROM"].forEach(function(relation) {
-            add(relation, "incoming");
-          });
-        } else if (rule.preset === ContextPreset.RELATED) {
-          add("RELATED", "undirected");
-        }
-        return specs;
-      }
-
-      function contextDepthLimit(depth) {
-        if (depth === ContextDepth.TWO_HOPS) { return 2; }
-        if (depth === ContextDepth.TRANSITIVE) { return Infinity; }
-        return 1;
-      }
-
-      function computeContextSubgraph(seedIds, rule, graphEdges, relationDefinitions, validConceptIds) {
-        var keep = {};
-        var edgeKeep = {};
-        var valid = validConceptIds || {};
-        var traversals = contextPresetTraversals(rule, relationDefinitions);
-        var traversalKeys = {};
-        traversals.forEach(function(item) {
-          traversalKeys[item.relation + "::" + item.direction] = true;
-        });
-        var queue = [];
-        (seedIds || []).forEach(function(id) {
-          id = String(id);
-          if (Object.keys(valid).length > 0 && !valid[id]) { return; }
-          if (!keep[id]) {
-            keep[id] = true;
-            queue.push({id: id, depth: 0});
-          }
-        });
-
-        var limit = contextDepthLimit(rule && rule.depth);
-        while (queue.length > 0) {
-          var current = queue.shift();
-          if (current.depth >= limit) { continue; }
-          (graphEdges || []).forEach(function(edge) {
-            var relation = String(edge.relation || "");
-            var from = String(edge.from);
-            var to = String(edge.to);
-            var next = null;
-            if (traversalKeys[relation + "::outgoing"] && from === current.id) {
-              next = to;
-            } else if (traversalKeys[relation + "::incoming"] && to === current.id) {
-              next = from;
-            } else if (traversalKeys[relation + "::undirected"]) {
-              if (from === current.id) { next = to; }
-              else if (to === current.id) { next = from; }
-            }
-            if (!next || (Object.keys(valid).length > 0 && !valid[next])) { return; }
-            edgeKeep[String(edge.id)] = true;
-            if (!keep[next]) {
-              keep[next] = true;
-              queue.push({id: next, depth: current.depth + 1});
-            }
-          });
-        }
-
-        return {
-          nodeIds: Object.keys(keep).sort(),
-          edgeIds: Object.keys(edgeKeep).sort(),
-          keep: keep,
-          edgeKeep: edgeKeep
-        };
-      }
+      var ContextPreset = kgGraphModel.ContextPreset;
+      var ContextDepth = kgGraphModel.ContextDepth;
+      var createContextRule = kgGraphModel.createContextRule;
+      var contextPresetTraversals = kgGraphModel.contextPresetTraversals;
+      var computeContextSubgraph = kgGraphModel.computeContextSubgraph;
+      var contractionGraphPlan = kgGraphModel.contractionGraphPlan;
 
       function kgAfterReady() {
+        var visAdapter = kgCreateVisNetworkAdapter(network);
         var allNodes = nodes.get();
         var allEdges = edges.get();
         var graphContainer = document.getElementById("mynetwork");
@@ -196,9 +59,7 @@
           storageKeys: kgStorageKeys
         });
         window.kgPersonalData = personalDataStore;
-        var personalLayoutState = loadPersonalLayoutState();
-        var globalLayout = buildInitialGlobalLayout();
-        var personalLayoutSaveTimer = null;
+
         var activeNodeId = null;
         var activeModuleId = null;
         var viewerState = {
@@ -207,15 +68,13 @@
           view: "both"
         };
         var layoutEditModeEnabled = false;
-        var contextFitPrimedKey = null;
-        var contextContractionState = null;
+
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
         var foldedModules = {};
         var preferredFoldedModules = {};
         var moduleFootprintCache = {};
         var conceptFootprintExtentsCache = {};
-        var fittedModuleLabelCache = {};
-        var graphCompletionStateCache = null;
+
         var projectedModuleEdgePrefix = "module-edge::";
         var moduleIdByConceptId = null;
         var hoveredEdgeId = null;
@@ -223,7 +82,7 @@
         var renderedEdgeWidthsDirty = true;
         var renderedEdgeWidthScale = null;
         var renderedEdgeWidthHoverId = null;
-        var svgImageCache = {};
+
         var initialGraphProjectionReady = false;
         var activeNodeRadiusScale = 1.4;
         var activeNodeBorderWidth = 6;
@@ -244,127 +103,205 @@
         var contentReadProgressStorageKey = kgStorageKeys.contentReadProgress ||
           "srkg.contentReadProgress.v1";
         var graphCompletionMarkersStorageKey = "srkg.graphCompletionMarkers.v1";
-        var userNotesState = loadUserNotes();
-        var studyQuestionIndex = buildStudyQuestionIndex();
-        var studyProgressState = loadStudyProgress();
-        var contentBlockIndex = buildContentBlockIndex();
-        var contentOwnerBlockIdsCache = {};
-        var contentReadProgressState = loadContentReadProgress();
+
         var graphCompletionMarkersEnabled =
           safeLocalStorageGet(graphCompletionMarkersStorageKey) !== "false";
-        var openUserNoteId = null;
+
         var notePlacementSuppressClickUntil = 0;
         var notePlacementPointerStart = null;
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
-        var activeConceptSectionTargetId = null;
-        var currentConceptTocItems = [];
-        var detailScrollSyncTimer = null;
-        var detailScrollSyncSuppressedUntil = 0;
+
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
         var workspaceSplitPercent = 50;
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
-        var pendingPersonalDataImport = null;
-        var googleDriveAuthorizer = null;
-        var personalDataSyncEngine = null;
-        var cloudSyncAutoTimer = null;
-        var cloudSyncPeriodicTimer = null;
-        var cloudSyncLastSuccessfulAt = 0;
-        var cloudSyncAutoDelayMs = 15000;
-        var cloudSyncPeriodicDelayMs = 5 * 60 * 1000;
 
-        function validLayoutPosition(position) {
-          return Boolean(
-            position &&
-            Number.isFinite(Number(position.x)) &&
-            Number.isFinite(Number(position.y))
-          );
-        }
-
-        function copyLayoutPosition(position) {
-          return {x: Number(position.x), y: Number(position.y)};
-        }
-
-        function buildInitialGlobalLayout(includePersonal) {
-          includePersonal = includePersonal !== false;
-          var publishedConcepts = publishedLayout && publishedLayout.concepts
-            ? publishedLayout.concepts
-            : {};
-          var publishedModules = publishedLayout && publishedLayout.modules
-            ? publishedLayout.modules
-            : {};
-          var layout = {
-            schema_version: Number(publishedLayout && publishedLayout.schema_version) || 1,
-            revision: String(publishedLayout && publishedLayout.revision || "unpublished"),
-            concepts: {},
-            modules: {}
-          };
-          allNodes.forEach(function(node) {
-            var position = publishedConcepts[String(node.id)];
-            if (!validLayoutPosition(position)) {
-              position = node;
-            }
-            if (validLayoutPosition(position)) {
-              layout.concepts[String(node.id)] = copyLayoutPosition(position);
-            }
-          });
-          Object.keys(publishedModules).forEach(function(moduleId) {
-            var entry = publishedModules[moduleId] || {};
-            if (validLayoutPosition(entry.anchor)) {
-              layout.modules[String(moduleId)] = {
-                anchor: copyLayoutPosition(entry.anchor)
-              };
-            }
-          });
-          if (includePersonal && personalLayoutState) {
-            Object.keys(personalLayoutState.concepts || {}).forEach(function(conceptId) {
-              var position = personalLayoutState.concepts[conceptId];
-              if (layout.concepts[conceptId] && validLayoutPosition(position)) {
-                layout.concepts[conceptId] = copyLayoutPosition(position);
-              }
-            });
-            Object.keys(personalLayoutState.modules || {}).forEach(function(moduleId) {
-              var entry = personalLayoutState.modules[moduleId] || {};
-              if (layout.modules[moduleId] && validLayoutPosition(entry.anchor)) {
-                layout.modules[moduleId] = {anchor: copyLayoutPosition(entry.anchor)};
-              }
-            });
+        var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash});
+        var escapeHtml = contentMarkup.escapeHtml;
+        var cssAttributeValueEscape = contentMarkup.cssAttributeValueEscape;
+        var skipOptionalDetailWhitespace = contentMarkup.skipOptionalDetailWhitespace;
+        var parseBracedArgument = contentMarkup.parseBracedArgument;
+        var renderFoldDown = contentMarkup.renderFoldDown;
+        var renderConceptText = contentMarkup.renderConceptText;
+        var findNextOptionalDetailBlock = contentMarkup.findNextOptionalDetailBlock;
+        var renderCaptionText = contentMarkup.renderCaptionText;
+        var contentModel = {
+          getConcept: getConcept,
+          getModule: getModule,
+          conceptDisplayId: conceptDisplayId,
+          conceptGraphicSvg: conceptGraphicSvg,
+          conceptContentBlocks: conceptContentBlocks,
+          moduleContentBlocks: moduleContentBlocks,
+          conceptSections: conceptSections,
+          contentBlockKindLabel: contentBlockKindLabel,
+          compareConceptIds: compareConceptIds,
+          compareModules: compareModules,
+          searchDisplayText: searchDisplayText,
+          moduleMemberIds: moduleMemberIds
+        };
+        var detailsView = kgCreateDetailsView({
+          markup: contentMarkup, content: contentModel, onContentChange: schedulePanelContentRefit
+        });
+        var replaceTypesetContent = detailsView.replaceTypesetContent;
+        var typesetInfoPanel = detailsView.typesetInfoPanel;
+        var openTargetForToc = detailsView.openTargetForToc;
+        var scrollInfoPanelTargetBelowStickyToc = detailsView.scrollInfoPanelTargetBelowStickyToc;
+        var updateConceptTocActive = detailsView.updateConceptTocActive;
+        var setActiveConceptSection = detailsView.setActiveConceptSection;
+        var initialTocItem = detailsView.initialTocItem;
+        var scheduleDetailScrollSync = detailsView.scheduleDetailScrollSync;
+        var studyController = kgCreateStudyController({
+          store: personalDataStore, concepts: conceptData, modules: moduleData,
+          content: contentModel, markup: contentMarkup,
+          storageKeys: {study: studyProgressStorageKey, read: contentReadProgressStorageKey},
+          writeStorage: safeLocalStorageSet, network: network, replaceContent: replaceTypesetContent,
+          onSave: function() { schedulePersonalDataAutoSync(); }
+        });
+        var renderContentReadCompletionIndicator = studyController.renderContentReadCompletionIndicator;
+        var renderStudyQuestionCompletionIndicator = studyController.renderStudyQuestionCompletionIndicator;
+        var updateContentReadCompletionIndicators = studyController.updateContentReadCompletionIndicators;
+        var setContentBlockRead = studyController.setContentBlockRead;
+        var recordStudyAttempt = studyController.recordStudyAttempt;
+        var resetStudyQuestion = studyController.resetStudyQuestion;
+        var resetAllStudyProgress = studyController.resetAllStudyProgress;
+        var graphCompletionState = studyController.graphCompletionState;
+        var renderStudyScorecard = studyController.renderStudyScorecard;
+        var renderAutomaticStudyQuestion = studyController.renderAutomaticStudyQuestion;
+        var renderSelfAssessedStudyQuestion = studyController.renderSelfAssessedStudyQuestion;
+        var submitAutomaticStudyQuestion = studyController.submitAutomaticStudyQuestion;
+        var renderSelfAssessedFeedback = studyController.renderSelfAssessedFeedback;
+        var submitSelfAssessedQuestion = studyController.submitSelfAssessedQuestion;
+        var markSelfAssessedQuestion = studyController.markSelfAssessedQuestion;
+        var submitUnknownSelfAssessedQuestion = studyController.submitUnknownSelfAssessedQuestion;
+        var renderContentBlockReadToggle = studyController.renderContentBlockReadToggle;
+        var notesController = kgCreateNotesController({
+          store: personalDataStore, storageKey: userNotesStorageKey,
+          content: contentModel, markup: contentMarkup, writeStorage: safeLocalStorageSet,
+          onSave: function() { schedulePersonalDataAutoSync(); },
+          onContentChange: refreshActiveConcept, onSummariesChange: refreshNodeTooltips
+        });
+        var setNotesStatus = notesController.setNotesStatus;
+        var noteAnchorSpecs = notesController.noteAnchorSpecs;
+        var canonicalNoteAnchor = notesController.canonicalNoteAnchor;
+        var unresolvedNoteCount = notesController.unresolvedNoteCount;
+        var migrateUserNotesState = notesController.migrateUserNotesState;
+        var renderNoteBlockAction = notesController.renderNoteBlockAction;
+        var findUserNote = notesController.findUserNote;
+        var renderNotesOverview = notesController.renderNotesOverview;
+        var renderNotesAtAnchor = notesController.renderNotesAtAnchor;
+        var renderNoteAnchoredBody = notesController.renderNoteAnchoredBody;
+        var renderUnmatchedNotes = notesController.renderUnmatchedNotes;
+        var createUserNote = notesController.createUserNote;
+        var deleteUserNote = notesController.deleteUserNote;
+        var updateUserNote = notesController.updateUserNote;
+        var noteEditorField = notesController.noteEditorField;
+        var closeUserNote = notesController.closeUserNote;
+        var importNotesCsv = notesController.importNotesCsv;
+        var noteTitlesForConcept = notesController.noteTitlesForConcept;
+        var exportNotes = notesController.exportNotes;
+        var personalDataController = kgCreatePersonalDataController({
+          store: personalDataStore, clientId: function() { return kgCloudSyncConfig.googleDriveClientId; },
+          flushLayout: function() { writePersonalLayoutNow(); },
+          onMerged: function() {
+            globalLayoutStore.reload(); applyGlobalLayoutPositions(); updateLayoutControls();
+            notesController.reload(); studyController.reload(); refreshNodeTooltips();
+            renderNotesOverview(); renderStudyScorecard(); updateContentReadCompletionIndicators();
+            if (network && network.redraw) { network.redraw(); }
           }
-          return layout;
-        }
+        });
+        var setPersonalDataStatus = personalDataController.setPersonalDataStatus;
+        var schedulePersonalDataAutoSync = personalDataController.schedulePersonalDataAutoSync;
+        var initialiseGoogleDriveSync = personalDataController.initialiseGoogleDriveSync;
+        var connectGoogleDrive = personalDataController.connectGoogleDrive;
+        var syncPersonalDataNow = personalDataController.syncPersonalDataNow;
+        var disconnectGoogleDrive = personalDataController.disconnectGoogleDrive;
+        var exportPersonalData = personalDataController.exportPersonalData;
+        var showPersonalDataImport = personalDataController.showPersonalDataImport;
+        var closePersonalDataImport = personalDataController.closePersonalDataImport;
+        var applyPersonalDataImport = personalDataController.applyPersonalDataImport;
 
-        function globalConceptPosition(conceptId) {
-          return globalLayout.concepts[String(conceptId)] || null;
-        }
+        var globalLayoutStore = kgCreateGlobalLayout({
+          publishedLayout: publishedLayout, nodes: nodes, store: personalDataStore,
+          storageKey: globalLayoutStorageKey, getNodes: function() { return allNodes; },
+          storage: {set: safeLocalStorageSet, remove: safeLocalStorageRemove},
+          onStatusChange: updateLayoutControls,
+          onSave: function() { schedulePersonalDataAutoSync(); },
+          beforeReset: function(options) { resetContextFitInteraction(options); },
+          onPositionsApplied: function() { refreshModuleFootprints(); updateNodeLabelPositions(); }
+        });
+        var effectiveConceptPosition = globalLayoutStore.effectiveConceptPosition;
+        var setGlobalConceptPosition = globalLayoutStore.setGlobalConceptPosition;
+        var setGlobalModuleAnchor = globalLayoutStore.setGlobalModuleAnchor;
+        var globalModuleAnchor = globalLayoutStore.globalModuleAnchor;
+        var effectiveModuleAnchor = globalLayoutStore.effectiveModuleAnchor;
+        var globalLayoutSnapshot = globalLayoutStore.globalLayoutSnapshot;
+        var writePersonalLayoutNow = globalLayoutStore.writePersonalLayoutNow;
+        var personalLayoutStatus = globalLayoutStore.personalLayoutStatus;
+        var keepPersonalLayout = globalLayoutStore.keepPersonalLayout;
+        var applyGlobalLayoutPositions = globalLayoutStore.applyGlobalLayoutPositions;
+        var resetToPublishedLayout = globalLayoutStore.resetToPublishedLayout;
+        var exportedGlobalLayout = globalLayoutStore.exportedGlobalLayout;
+        var exportGlobalLayout = globalLayoutStore.exportGlobalLayout;
+        var graphCamera = kgCreateGraphCamera({
+          network: network, nodes: nodes, container: graphContainer,
+          labels: {width: nodeLabelWidth, fontSize: nodeLabelFontSize, activeRadiusScale: activeNodeRadiusScale},
+          selectedConceptId: function() { return activeNodeId; }, onChange: updateNodeLabelPositions
+        });
+        var cameraSnapshot = graphCamera.cameraSnapshot;
+        var preserveCameraAfterLayout = graphCamera.preserveCameraAfterLayout;
+        var currentGraphView = graphCamera.currentGraphView;
+        var preserveGraphView = graphCamera.preserveGraphView;
+        var fitNodesToAvailableRect = graphCamera.fitNodesToAvailableRect;
+        var revealNodeIds = graphCamera.revealNodeIds;
+        var cameraAnimationEnabled = graphCamera.cameraAnimationEnabled;
+        var contextLayout = kgCreateContextLayout({
+          network: network, nodes: nodes, edges: edges, originalEdges: originalEdges, camera: graphCamera,
+          renderedGraph: function() { return lastGraphRender; },
+          contextRule: function() { return viewerState.contextRule; },
+          selectedConceptId: function() { return activeNodeId; }, readLabels: function() { return nodeLabelEls; },
+          labels: {activeRadiusScale: activeNodeRadiusScale, fontSize: nodeLabelFontSize, hideBelowPx: kgNodeLabelConfig.hideBelowPx},
+          revealSelection: revealViewerSelection, onControlsChange: updateGraphViewControls,
+          onPositionsChange: updateNodeLabelPositions, notice: showContextNotice,
+          graph: {
+            viewerSelectionSnapshot: viewerSelectionSnapshot,
+            representedNodeIds: representedNodeIds,
+            selectionRepresentationNodeIds: selectionRepresentationNodeIds,
+            visibleGraphNode: visibleGraphNode,
+            graphPositionForNode: graphPositionForNode,
+            moduleIdFromGraphNodeId: moduleIdFromGraphNodeId,
+            selectedModuleIsFolded: selectedModuleIsFolded,
+            moduleGraphNodePosition: moduleGraphNodePosition,
+            getConcept: getConcept,
+            effectiveConceptPosition: effectiveConceptPosition,
+            conceptFootprintExtents: conceptFootprintExtents
+          }
+        });
+        var updateFitApplyButton = contextLayout.updateFitApplyButton;
+        var clearContextFitPriming = contextLayout.clearContextFitPriming;
+        var resetContextFitInteraction = contextLayout.resetContextFitInteraction;
+        var fitViewerTarget = contextLayout.fitViewerTarget;
 
-        function effectiveConceptPosition(conceptId) {
-          return globalConceptPosition(conceptId);
-        }
-
-        function setGlobalConceptPosition(conceptId, position) {
-          if (!validLayoutPosition(position)) { return; }
-          globalLayout.concepts[String(conceptId)] = copyLayoutPosition(position);
-          schedulePersonalLayoutSave();
-        }
-
-        function setGlobalModuleAnchor(moduleId, position) {
-          if (!validLayoutPosition(position)) { return; }
-          globalLayout.modules[String(moduleId)] = {
-            anchor: copyLayoutPosition(position)
-          };
-          schedulePersonalLayoutSave();
-        }
-
-        function globalModuleAnchor(moduleId) {
-          var entry = globalLayout.modules[String(moduleId)] || {};
-          return validLayoutPosition(entry.anchor) ? entry.anchor : null;
-        }
-
-        function effectiveModuleAnchor(moduleId) {
-          return globalModuleAnchor(moduleId);
-        }
+        var graphPresentation = kgCreateGraphPresentation({
+          network: network, nodes: nodes, adapter: visAdapter, concept: getConcept, module: getModule,
+          completionMarkers: graphCompletionMarkersSnapshot, expandedOutlines: expandedModuleOutlineSnapshot,
+          foldedModuleIds: foldedModuleIdList, moduleNodeId: moduleGraphNodeId,
+          selectedConceptProxy: foldedModuleConceptProxy, escapeHtml: escapeHtml,
+          selectedConceptId: function() { return activeNodeId; },
+          transientHighlight: function() { return transientConceptHighlight; },
+          activeRadiusScale: activeNodeRadiusScale, activeBorderWidth: activeNodeBorderWidth,
+          detailThreshold: detailedConceptRenderMinRadiusPx
+        });
+        var drawVisibleNodes = graphPresentation.drawVisibleNodes;
+        var drawGraphCompletionMarkers = graphPresentation.drawGraphCompletionMarkers;
+        var fittedModuleLabel = graphPresentation.fittedModuleLabel;
+        var moduleGraphicLayout = graphPresentation.moduleGraphicLayout;
+        var moduleCornerRadius = graphPresentation.moduleCornerRadius;
+        var drawExpandedModuleOutlines = graphPresentation.drawExpandedModuleOutlines;
+        var moduleGraphicCornerRadius = graphPresentation.moduleGraphicCornerRadius;
+        var moduleGraphicImage = graphPresentation.moduleGraphicImage;
+        var drawFoldedModuleGraphics = graphPresentation.drawFoldedModuleGraphics;
 
         function nodeWithGlobalPosition(node) {
           var result = Object.assign({}, node || {});
@@ -380,177 +317,6 @@
           return nodeWithGlobalPosition(originalNodes[String(nodeId)] || nodes.get(nodeId) || {});
         }
 
-        function globalLayoutSnapshot() {
-          return JSON.parse(JSON.stringify(globalLayout));
-        }
-
-        function positionsEqual(a, b) {
-          return validLayoutPosition(a) && validLayoutPosition(b) &&
-            Math.abs(Number(a.x) - Number(b.x)) < 0.000001 &&
-            Math.abs(Number(a.y) - Number(b.y)) < 0.000001;
-        }
-
-        function loadPersonalLayoutState() {
-          var parsed = personalDataStore.getLayoutState();
-          if (!parsed || Object.keys(parsed.concepts).length === 0 &&
-              Object.keys(parsed.modules).length === 0) { return null; }
-          return parsed;
-        }
-
-        function personalLayoutOverrides() {
-          var concepts = {};
-          var modules = {};
-          Object.keys(globalLayout.concepts).forEach(function(conceptId) {
-            var current = globalLayout.concepts[conceptId];
-            var published = publishedLayout.concepts && publishedLayout.concepts[conceptId];
-            if (!positionsEqual(current, published)) {
-              concepts[conceptId] = copyLayoutPosition(current);
-            }
-          });
-          Object.keys(globalLayout.modules).forEach(function(moduleId) {
-            var current = globalLayout.modules[moduleId].anchor;
-            var publishedEntry = publishedLayout.modules && publishedLayout.modules[moduleId] || {};
-            if (!positionsEqual(current, publishedEntry.anchor)) {
-              modules[moduleId] = {anchor: copyLayoutPosition(current)};
-            }
-          });
-          return {concepts: concepts, modules: modules};
-        }
-
-        function writePersonalLayoutNow() {
-          if (!globalLayoutStorageKey) { return; }
-          var overrides = personalLayoutOverrides();
-          if (Object.keys(overrides.concepts).length === 0 && Object.keys(overrides.modules).length === 0) {
-            personalLayoutState = null;
-            personalDataStore.replaceLayout({
-              schema_version: 1,
-              published_revision: String(publishedLayout.revision),
-              concepts: {}, modules: {}
-            });
-            safeLocalStorageRemove(globalLayoutStorageKey);
-            updateLayoutControls();
-            return;
-          }
-          personalLayoutState = {
-            schema_version: 1,
-            published_revision: personalLayoutState && personalLayoutState.published_revision
-              ? String(personalLayoutState.published_revision)
-              : String(publishedLayout.revision),
-            concepts: overrides.concepts,
-            modules: overrides.modules
-          };
-          personalDataStore.replaceLayout(personalLayoutState);
-          safeLocalStorageSet(globalLayoutStorageKey, JSON.stringify(personalLayoutState));
-          updateLayoutControls();
-        }
-
-        function schedulePersonalLayoutSave() {
-          if (!globalLayout || !globalLayoutStorageKey) { return; }
-          if (personalLayoutSaveTimer !== null) {
-            clearTimeout(personalLayoutSaveTimer);
-          }
-          personalLayoutSaveTimer = setTimeout(function() {
-            personalLayoutSaveTimer = null;
-            writePersonalLayoutNow();
-            schedulePersonalDataAutoSync();
-          }, 120);
-        }
-
-        function personalLayoutStatus() {
-          var overrides = personalLayoutOverrides();
-          var hasOverrides = Object.keys(overrides.concepts).length > 0 ||
-            Object.keys(overrides.modules).length > 0;
-          var savedRevision = personalLayoutState && personalLayoutState.published_revision
-            ? String(personalLayoutState.published_revision)
-            : String(publishedLayout.revision);
-          return {
-            hasOverrides: hasOverrides,
-            publishedRevision: String(publishedLayout.revision),
-            savedRevision: savedRevision,
-            revisionMismatch: hasOverrides && savedRevision !== String(publishedLayout.revision)
-          };
-        }
-
-        function keepPersonalLayout() {
-          if (!personalLayoutStatus().hasOverrides) { return; }
-          personalLayoutState.published_revision = String(publishedLayout.revision);
-          writePersonalLayoutNow();
-          schedulePersonalDataAutoSync();
-          updateLayoutControls();
-        }
-
-        function applyGlobalLayoutPositions() {
-          nodes.update(Object.keys(globalLayout.concepts).filter(function(id) {
-            return Boolean(nodes.get(id));
-          }).map(function(id) {
-            var position = globalLayout.concepts[id];
-            return {id: id, x: position.x, y: position.y};
-          }));
-          refreshModuleFootprints();
-          updateNodeLabelPositions();
-        }
-
-        function resetToPublishedLayout() {
-          resetContextFitInteraction({restore: false});
-          if (personalLayoutSaveTimer !== null) {
-            clearTimeout(personalLayoutSaveTimer);
-            personalLayoutSaveTimer = null;
-          }
-          personalLayoutState = null;
-          personalDataStore.replaceLayout({
-            schema_version: 1,
-            published_revision: String(publishedLayout.revision),
-            concepts: {}, modules: {}
-          });
-          safeLocalStorageRemove(globalLayoutStorageKey);
-          globalLayout = buildInitialGlobalLayout(false);
-          applyGlobalLayoutPositions();
-          schedulePersonalDataAutoSync();
-          updateLayoutControls();
-        }
-
-        function normalizedExportCoordinate(value) {
-          return Number(Number(value).toFixed(6));
-        }
-
-        function exportedGlobalLayout() {
-          var concepts = {};
-          var modules = {};
-          Object.keys(globalLayout.concepts).sort().forEach(function(conceptId) {
-            var position = globalLayout.concepts[conceptId];
-            concepts[conceptId] = {
-              x: normalizedExportCoordinate(position.x),
-              y: normalizedExportCoordinate(position.y)
-            };
-          });
-          Object.keys(globalLayout.modules).sort().forEach(function(moduleId) {
-            var anchor = globalLayout.modules[moduleId].anchor;
-            modules[moduleId] = {anchor: {
-              x: normalizedExportCoordinate(anchor.x),
-              y: normalizedExportCoordinate(anchor.y)
-            }};
-          });
-          return {
-            schema_version: Number(publishedLayout.schema_version) || 1,
-            revision: String(publishedLayout.revision),
-            concepts: concepts,
-            modules: modules
-          };
-        }
-
-        function exportGlobalLayout() {
-          var text = JSON.stringify(exportedGlobalLayout(), null, 2) + "\n";
-          var blob = new Blob([text], {type: "application/json;charset=utf-8"});
-          var url = URL.createObjectURL(blob);
-          var link = document.createElement("a");
-          link.href = url;
-          link.download = "layout.json";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(url);
-        }
-
         function updateLayoutControls() {
           var statusElement = document.getElementById("kg_layout_status");
           if (!statusElement) { return; }
@@ -563,16 +329,16 @@
           var message = document.getElementById("kg_layout_edit_message");
           if (toggle) {
             toggle.checked = layoutEditModeEnabled;
-            toggle.disabled = Boolean(contextContractionState);
-            toggle.title = contextContractionState
+            toggle.disabled = Boolean(contextLayout.isActive());
+            toggle.title = contextLayout.isActive()
               ? "Personal layout editing resumes when the Fit++ arrangement ends"
               : "";
           }
           if (message) {
-            if (contextContractionState && layoutEditModeEnabled) {
+            if (contextLayout.isActive() && layoutEditModeEnabled) {
               message.textContent =
                 "Personal editing is suspended during this temporary Fit++ arrangement.";
-            } else if (contextContractionState) {
+            } else if (contextLayout.isActive()) {
               message.textContent =
                 "Fit++ is temporary; drag context nodes to adjust this arrangement.";
             } else if (!layoutEditModeEnabled) {
@@ -590,13 +356,13 @@
         }
 
         function persistentLayoutEditingEnabled() {
-          return layoutEditModeEnabled && !contextContractionState &&
+          return layoutEditModeEnabled && !contextLayout.isActive() &&
             viewerState.view !== "details";
         }
 
         function layoutDraggingEnabled() {
           return viewerState.view !== "details" &&
-            (Boolean(contextContractionState) || persistentLayoutEditingEnabled());
+            (Boolean(contextLayout.isActive()) || persistentLayoutEditingEnabled());
         }
 
         function nodeDraggingEnabled(nodeId) {
@@ -604,11 +370,8 @@
           if (!node || node.hidden || viewerState.view === "details") {
             return false;
           }
-          if (contextContractionState) {
-            return Object.prototype.hasOwnProperty.call(
-              contextContractionState.finalPositions,
-              String(nodeId)
-            );
+          if (contextLayout.isActive()) {
+            return contextLayout.canMove(nodeId);
           }
           return persistentLayoutEditingEnabled();
         }
@@ -654,19 +417,9 @@
           if (!layoutDraggingEnabled()) { return; }
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
           if (draggedIds.length === 0) { return; }
-          if (contextContractionState) {
+          if (contextLayout.isActive()) {
             draggedIds.forEach(function(nodeId) {
-              var position = graphPositionForNode(nodeId);
-              if (
-                position &&
-                Object.prototype.hasOwnProperty.call(
-                  contextContractionState.finalPositions,
-                  String(nodeId)
-                )
-              ) {
-                contextContractionState.finalPositions[String(nodeId)] =
-                  copyLayoutPosition(position);
-              }
+              contextLayout.recordDrag(nodeId, graphPositionForNode(nodeId));
             });
             showContextNotice(
               "Temporary context arrangement adjusted — navigating away restores the layout.",
@@ -785,16 +538,14 @@
             moduleFoldControlEls[String(moduleId)] = button;
           });
           updateModuleFoldControlPositions();
-          if (typeof tutorialPointerState !== "undefined" && tutorialPointerState) {
+          if (guidedTutorial) {
             refreshTutorialPointerPosition();
           }
         }
 
         function updateModuleFoldControlPositions() {
           if (!network || !moduleFoldControlLayer) { return; }
-          var canvasEl = network.canvas && network.canvas.frame
-            ? network.canvas.frame.canvas
-            : null;
+          var canvasEl = visAdapter.canvasElement();
           if (!canvasEl) { return; }
           var canvasRect = canvasEl.getBoundingClientRect();
           var layerRect = moduleFoldControlLayer.getBoundingClientRect();
@@ -810,8 +561,7 @@
             if (folded) {
               var nodeId = moduleGraphNodeId(moduleId);
               var node = nodes.get(nodeId);
-              var rendered = network.body.nodes[nodeId];
-              var shape = rendered && rendered.shape;
+              var shape = visAdapter.nodeGeometry(nodeId);
               if (node && !node.hidden && shape) {
                 corner = {x: shape.left + shape.width, y: shape.top};
               }
@@ -954,7 +704,7 @@
               : (id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius);
             var radiusEdge = network.canvasToDOM({x: pos.x + radius, y: pos.y});
             var radiusPx = Math.abs(radiusEdge.x - dom.x);
-            var canvasEl = network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
+            var canvasEl = visAdapter.canvasElement();
             var canvasRect = canvasEl ? canvasEl.getBoundingClientRect() : graphContainer.getBoundingClientRect();
             var layerRect = nodeLabelLayer.getBoundingClientRect();
             var labelCenterX = canvasRect.left - layerRect.left + dom.x;
@@ -975,161 +725,6 @@
         }
         window.kgUpdateNodeLabelPositions = updateNodeLabelPositions;
 
-        function drawConceptFace(ctx, node, pos, options) {
-            options = options || {};
-            var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
-            var isActive = options.active === true;
-            var radius = options.radius ||
-              (isActive ? baseRadius * activeNodeRadiusScale : baseRadius);
-            var isTransient = options.transient === true;
-            var opacity = node.opacity === undefined ? 1 : Number(node.opacity);
-            var color = node.visualColor || {};
-            var fill = color.background || "#999999";
-            var border = color.border || "#333333";
-            var concept = getConcept(node.id) || {};
-            var svgIcon = options.renderGraphic === false
-              ? ""
-              : (concept.svg_icon || concept.svg_graphic || "");
-            var svgImage = svgIcon ? getSvgNodeImage(node.id, svgIcon) : null;
-
-            ctx.save();
-            ctx.globalAlpha = Number.isFinite(opacity) ? opacity : 1;
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = svgImage ? tintHexColour(fill, 0.86) : fill;
-            ctx.fill();
-
-            if (svgImage && svgImage.complete && svgImage.naturalWidth > 0) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(pos.x, pos.y, Math.max(1, radius - 3), 0, 2 * Math.PI, false);
-              ctx.clip();
-              var imagePadding = radius * 0.08;
-              var imageSize = Math.max(1, (radius * 2) - (imagePadding * 2));
-              var sourceCrop = 36;
-              var sourceSize = Math.max(1, 512 - (sourceCrop * 2));
-              ctx.drawImage(
-                svgImage,
-                sourceCrop,
-                sourceCrop,
-                sourceSize,
-                sourceSize,
-                pos.x - imageSize / 2,
-                pos.y - imageSize / 2,
-                imageSize,
-                imageSize
-              );
-              ctx.restore();
-            }
-
-            ctx.lineWidth = isActive ? activeNodeBorderWidth : (svgImage ? 4 : 1.5);
-            ctx.strokeStyle = isActive ? "#000000" : (svgImage ? fill : border);
-            ctx.stroke();
-
-            if (isTransient) {
-              ctx.beginPath();
-              ctx.arc(pos.x, pos.y, radius + 6, 0, 2 * Math.PI, false);
-              ctx.lineWidth = 4;
-              ctx.strokeStyle = "#174ea6";
-              ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        function drawVisibleNodes(ctx) {
-          var positions = network.getPositions();
-          var scale = network.getScale();
-          nodes.get().forEach(function(node) {
-            if (node.hidden) { return; }
-            if (node.isModuleNode) { return; }
-
-            var pos = positions[node.id];
-            if (!pos) { return; }
-
-            drawConceptFace(ctx, node, pos, {
-              active: node.id === activeNodeId,
-              renderGraphic: (
-                (Number(node.visualSize) || Number(node.size) || 18) *
-                (node.id === activeNodeId ? activeNodeRadiusScale : 1) * scale
-              ) >= detailedConceptRenderMinRadiusPx,
-              transient: Boolean(
-                transientConceptHighlight &&
-                transientConceptHighlight.nodeId === String(node.id)
-              )
-            });
-          });
-        }
-
-        function drawGraphCompletionTick(ctx, x, y, radius, colour, opacity) {
-          ctx.save();
-          ctx.globalAlpha = (Number.isFinite(opacity) ? opacity : 1) * 0.94;
-          ctx.fillStyle = colour;
-          ctx.strokeStyle = "rgba(255,255,255,0.78)";
-          ctx.lineWidth = Math.max(0.8, radius * 0.09);
-          ctx.font = "bold " + String(radius * 2.5) + "px Arial, sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.strokeText("✓", x, y + radius * 0.08);
-          ctx.fillText("✓", x, y + radius * 0.08);
-          ctx.restore();
-        }
-
-        function drawGraphCompletionMarkers(ctx) {
-          var scale = network.getScale();
-          graphCompletionMarkersSnapshot().markers.forEach(function(marker) {
-            marker.symbols.forEach(function(symbol) {
-              if (symbol.radius * scale < 2.5) { return; }
-              drawGraphCompletionTick(
-                ctx,
-                symbol.x,
-                symbol.y,
-                symbol.radius,
-                symbol.colour,
-                marker.opacity
-              );
-            });
-          });
-        }
-
-        function getSvgNodeImage(nodeId, svgText) {
-          var cached = svgImageCache[nodeId];
-          if (cached === null) {
-            return null;
-          }
-          if (cached) {
-            return cached;
-          }
-
-          var image = new Image();
-          image.onload = function() {
-            if (network && network.redraw) {
-              network.redraw();
-            }
-          };
-          image.onerror = function() {
-            svgImageCache[nodeId] = null;
-          };
-          svgImageCache[nodeId] = image;
-          image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
-          return image;
-        }
-
-        function tintHexColour(hexColour, amount) {
-          var match = String(hexColour || "").trim().match(/^#([0-9a-fA-F]{6})$/);
-          if (!match) {
-            return "#ffffff";
-          }
-          var hex = match[1];
-          var r = parseInt(hex.slice(0, 2), 16);
-          var g = parseInt(hex.slice(2, 4), 16);
-          var b = parseInt(hex.slice(4, 6), 16);
-          var mix = Math.max(0, Math.min(1, Number(amount)));
-          r = Math.round(r + (255 - r) * mix);
-          g = Math.round(g + (255 - g) * mix);
-          b = Math.round(b + (255 - b) * mix);
-          return "rgb(" + r + "," + g + "," + b + ")";
-        }
-
         nodes.update(allNodes.map(function(node) {
           return applyCollisionNodeStyle(nodeWithGlobalPosition(node));
         }));
@@ -1142,143 +737,6 @@
         allEdges.forEach(function(e) { originalEdges[e.id] = Object.assign({}, e); });
         refreshNodeTooltips();
         /* Text parsing and concept markup. */
-        function escapeHtml(s) {
-          return String(s || "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
-
-        function cssAttributeValueEscape(s) {
-          return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-        }
-
-        function renderSimpleConceptText(s) {
-          return escapeHtml(s).replace(
-            /\\cref\{([^{}]*)\}\{([^{}]*)\}/g,
-            function(match, label, targetId) {
-              if (!getConcept(targetId)) {
-                return "<strong>" + label + "</strong>";
-              }
-              return '<a href="' + escapeHtml(conceptHash(targetId)) +
-                '" class="concept-link" data-concept-id="' +
-                escapeHtml(targetId) +
-                '" aria-haspopup="dialog" aria-controls="kg_concept_preview' +
-                '"><strong>' + label + "</strong></a>";
-            }
-          );
-        }
-
-        function skipOptionalDetailWhitespace(text, index) {
-          while (index < text.length && /\s/.test(text.charAt(index))) {
-            index += 1;
-          }
-          return index;
-        }
-
-        function parseBracedArgument(text, openIndex) {
-          if (text.charAt(openIndex) !== "{") { return null; }
-
-          var depth = 1;
-          var index = openIndex + 1;
-          var start = index;
-          while (index < text.length) {
-            var ch = text.charAt(index);
-            if (ch === "\\") {
-              index += 2;
-              continue;
-            }
-            if (ch === "{") {
-              depth += 1;
-            } else if (ch === "}") {
-              depth -= 1;
-              if (depth === 0) {
-                return {
-                  value: text.slice(start, index),
-                  end: index + 1
-                };
-              }
-            }
-            index += 1;
-          }
-          return null;
-        }
-
-        function renderFoldDown(options) {
-          var attrs = "";
-          if (options.anchorId) {
-            attrs += ' id="' + escapeHtml(options.anchorId) + '"';
-          }
-          if (options.id) {
-            attrs += ' data-note-id="' + escapeHtml(options.id) + '"';
-          }
-          if (options.contentBlockId) {
-            attrs += ' data-content-block-id="' + escapeHtml(options.contentBlockId) + '"';
-          }
-          if (options.noteBlock) {
-            attrs += ' data-note-block="true"';
-          }
-          if (options.open) {
-            attrs += " open";
-          }
-          var summaryHtml = options.summaryHtml !== undefined
-            ? options.summaryHtml
-            : renderConceptText(options.title || "");
-          var bodyTag = options.bodyTag || "div";
-          return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
-            "<summary>" + summaryHtml + "</summary>" +
-            "<" + bodyTag + ' class="' + escapeHtml(options.bodyClass || "") + '">' +
-            (options.bodyHtml || "") +
-            "</" + bodyTag + "></details>";
-        }
-
-        function renderOptionalDetail(summary, body) {
-          return renderFoldDown({
-            className: "optional-detail",
-            title: summary,
-            bodyClass: "concept-body optional-detail-body",
-            bodyHtml: renderConceptText(body)
-          });
-        }
-
-        function renderConceptText(s) {
-          var text = String(s || "");
-          var macro = "\\optional_details";
-          var html = "";
-          var cursor = 0;
-
-          while (cursor < text.length) {
-            var macroIndex = text.indexOf(macro, cursor);
-            if (macroIndex === -1) {
-              html += renderSimpleConceptText(text.slice(cursor));
-              break;
-            }
-
-            html += renderSimpleConceptText(text.slice(cursor, macroIndex));
-            var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
-            var summary = parseBracedArgument(text, summaryStart);
-            if (!summary) {
-              html += renderSimpleConceptText(macro);
-              cursor = macroIndex + macro.length;
-              continue;
-            }
-
-            var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
-            var body = parseBracedArgument(text, bodyStart);
-            if (!body) {
-              html += renderSimpleConceptText(text.slice(macroIndex, summary.end));
-              cursor = summary.end;
-              continue;
-            }
-
-            html += renderOptionalDetail(summary.value, body.value);
-            cursor = body.end;
-          }
-
-          return html;
-        }
 
         /* User notes and local persistence. */
         function safeLocalStorageGet(key) {
@@ -1308,287 +766,22 @@
           }
         }
 
-        function buildStudyQuestionIndex() {
-          var index = {};
-          Object.keys(conceptData || {}).forEach(function(conceptId) {
-            var concept = conceptData[conceptId] || {};
-            var questions = Array.isArray(concept.study_questions)
-              ? concept.study_questions
-              : [];
-            questions.forEach(function(question) {
-              var questionId = String(question && question.question_id || "");
-              if (!questionId) { return; }
-              index[questionId] = {
-                conceptId: String(conceptId),
-                question: question
-              };
-            });
-          });
-          return index;
-        }
-
-        function buildContentBlockIndex() {
-          var index = {};
-          function addBlocks(ownerType, ownerId, blocks) {
-            (Array.isArray(blocks) ? blocks : []).forEach(function(block) {
-              var blockId = String(block && block.block_id || "");
-              if (!blockId) { return; }
-              index[blockId] = {
-                ownerType: ownerType,
-                ownerId: String(ownerId),
-                title: String(block.title || "")
-              };
-            });
-          }
-          Object.keys(conceptData || {}).forEach(function(conceptId) {
-            addBlocks("concept", conceptId, conceptData[conceptId].content_blocks);
-          });
-          Object.keys(moduleData || {}).forEach(function(moduleId) {
-            addBlocks("module", moduleId, moduleData[moduleId].content_blocks);
-          });
-          return index;
-        }
-
-        function loadContentReadProgress() {
-          return personalDataStore.getReadingState(contentBlockIndex);
-        }
-
-        function saveContentReadProgress() {
-          return safeLocalStorageSet(
-            contentReadProgressStorageKey,
-            JSON.stringify(contentReadProgressState)
-          );
-        }
-
-        function contentOwnerBlockIds(ownerType, ownerId) {
-          ownerType = String(ownerType || "");
-          ownerId = String(ownerId || "");
-          var cacheKey = ownerType + "::" + ownerId;
-          if (contentOwnerBlockIdsCache[cacheKey]) {
-            return contentOwnerBlockIdsCache[cacheKey];
-          }
-          var blockIds = Object.keys(contentBlockIndex).filter(function(blockId) {
-            var block = contentBlockIndex[blockId];
-            return block.ownerType === ownerType && block.ownerId === ownerId;
-          });
-          if (ownerType === "module") {
-            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
-              blockIds = blockIds.concat(contentOwnerBlockIds("concept", conceptId));
-            });
-          }
-          contentOwnerBlockIdsCache[cacheKey] = blockIds;
-          return blockIds;
-        }
-
-        function contentOwnerReadComplete(ownerType, ownerId) {
-          var blockIds = contentOwnerBlockIds(ownerType, ownerId);
-          return blockIds.length > 0 && blockIds.every(function(blockId) {
-            return contentReadProgressState.blocks[blockId] === true;
-          });
-        }
-
-        function renderContentReadCompletionIndicator(ownerType, ownerId) {
-          var complete = contentOwnerReadComplete(ownerType, ownerId);
-          return '<span class="content-read-complete-indicator" role="img"' +
-            ' aria-label="All content blocks read" title="All content blocks read"' +
-            ' data-content-owner-type="' + escapeHtml(ownerType) + '"' +
-            ' data-content-owner-id="' + escapeHtml(ownerId) + '"' +
-            (complete ? "" : " hidden") + ">✓</span>";
-        }
-
-        function renderStudyQuestionCompletionIndicator(ownerType, ownerId) {
-          var complete = graphCompletionState(ownerType, ownerId).questions;
-          return '<span class="study-question-complete-indicator" role="img"' +
-            ' aria-label="All study questions complete" title="All study questions complete"' +
-            ' data-study-owner-type="' + escapeHtml(ownerType) + '"' +
-            ' data-study-owner-id="' + escapeHtml(ownerId) + '"' +
-            (complete ? "" : " hidden") + ">✓</span>";
-        }
-
-        function updateContentReadCompletionIndicators() {
-          document.querySelectorAll(".content-read-complete-indicator").forEach(
-            function(indicator) {
-              indicator.hidden = !contentOwnerReadComplete(
-                indicator.getAttribute("data-content-owner-type"),
-                indicator.getAttribute("data-content-owner-id")
-              );
-            }
-          );
-        }
-
-        function updateStudyQuestionCompletionIndicators() {
-          document.querySelectorAll(".study-question-complete-indicator").forEach(
-            function(indicator) {
-              indicator.hidden = !graphCompletionState(
-                indicator.getAttribute("data-study-owner-type"),
-                indicator.getAttribute("data-study-owner-id")
-              ).questions;
-            }
-          );
-        }
-
-        function setContentBlockRead(blockId, isRead) {
-          blockId = String(blockId || "");
-          if (!contentBlockIndex[blockId]) { return false; }
-          personalDataStore.setRead(blockId, isRead);
-          contentReadProgressState = loadContentReadProgress();
-          saveContentReadProgress();
-          updateContentReadCompletionIndicators();
-          renderStudyScorecard();
-          schedulePersonalDataAutoSync();
-          if (network && network.redraw) { network.redraw(); }
-          return true;
-        }
-
         window.kgContentReadProgress = {
-          storageKey: contentReadProgressStorageKey,
-          isRead: function(blockId) {
-            return contentReadProgressState.blocks[String(blockId || "")] === true;
-          },
-          setRead: setContentBlockRead
+          storageKey: contentReadProgressStorageKey, isRead: studyController.isRead, setRead: setContentBlockRead
         };
-
-        function loadStudyProgress() {
-          return personalDataStore.getStudyState(studyQuestionIndex);
-        }
-
-        function copyStudyProgress(value) {
-          return JSON.parse(JSON.stringify(value));
-        }
-
-        function saveStudyProgress() {
-          return safeLocalStorageSet(
-            studyProgressStorageKey,
-            JSON.stringify(studyProgressState)
-          );
-        }
-
-        function announceStudyProgressChange(questionId) {
-          try {
-            window.dispatchEvent(new CustomEvent("kg:study-progress-changed", {
-              detail: {questionId: questionId || ""}
-            }));
-          } catch (err) {
-            // Progress remains usable in older browsers without CustomEvent.
-          }
-          updateStudyQuestionCompletionIndicators();
-          if (network && network.redraw) { network.redraw(); }
-        }
-
-        function recordStudyAttempt(questionId, outcome, attemptedAt) {
-          questionId = String(questionId || "");
-          outcome = String(outcome || "");
-          if (!studyQuestionIndex[questionId] ||
-              ["correct", "incorrect", "unknown"].indexOf(outcome) === -1) {
-            return null;
-          }
-          var date = attemptedAt ? new Date(attemptedAt) : new Date();
-          if (Number.isNaN(date.getTime())) { date = new Date(); }
-          personalDataStore.addStudyAttempt(questionId, outcome, date.toISOString());
-          studyProgressState = loadStudyProgress();
-          saveStudyProgress();
-          var entry = studyProgressState.questions[questionId];
-          schedulePersonalDataAutoSync();
-          announceStudyProgressChange(questionId);
-          return copyStudyProgress(entry);
-        }
-
-        function resetStudyQuestion(questionId) {
-          questionId = String(questionId || "");
-          if (!Object.prototype.hasOwnProperty.call(studyProgressState.questions, questionId)) {
-            return false;
-          }
-          personalDataStore.resetStudy(questionId);
-          studyProgressState = loadStudyProgress();
-          saveStudyProgress();
-          schedulePersonalDataAutoSync();
-          announceStudyProgressChange(questionId);
-          return true;
-        }
-
-        function resetAllStudyProgress() {
-          personalDataStore.resetStudy("");
-          studyProgressState = loadStudyProgress();
-          saveStudyProgress();
-          schedulePersonalDataAutoSync();
-          announceStudyProgressChange("");
-          return true;
-        }
 
         window.kgStudyProgress = {
-          storageKey: studyProgressStorageKey,
-          getState: function() {
-            return copyStudyProgress(studyProgressState);
-          },
-          getQuestion: function(questionId) {
-            var entry = studyProgressState.questions[String(questionId || "")];
-            return entry ? copyStudyProgress(entry) : null;
-          },
-          recordAttempt: recordStudyAttempt,
-          resetQuestion: resetStudyQuestion,
-          resetAll: resetAllStudyProgress
+          storageKey: studyProgressStorageKey, getState: studyController.getState,
+          getQuestion: studyController.getQuestion, recordAttempt: recordStudyAttempt,
+          resetQuestion: resetStudyQuestion, resetAll: resetAllStudyProgress
         };
-
-        function conceptQuestionIds(conceptId) {
-          var concept = getConcept(conceptId) || {};
-          return (Array.isArray(concept.study_questions) ? concept.study_questions : [])
-            .map(function(question) {
-              return String(question && question.question_id || "");
-            })
-            .filter(Boolean);
-        }
-
-        function questionsComplete(questionIds) {
-          questionIds = (questionIds || []).filter(function(questionId, index, ids) {
-            return questionId && ids.indexOf(questionId) === index;
-          });
-          return questionIds.length > 0 && questionIds.every(function(questionId) {
-            var progress = studyProgressState.questions[questionId];
-            return progress && progress.lastOutcome === "correct";
-          });
-        }
-
-        function graphCompletionState(ownerType, ownerId) {
-          ownerType = String(ownerType || "");
-          ownerId = String(ownerId || "");
-          if (
-            !graphCompletionStateCache ||
-            graphCompletionStateCache.readState !== contentReadProgressState ||
-            graphCompletionStateCache.studyState !== studyProgressState
-          ) {
-            graphCompletionStateCache = {
-              readState: contentReadProgressState,
-              studyState: studyProgressState,
-              values: {}
-            };
-          }
-          var cacheKey = ownerType + "::" + ownerId;
-          if (graphCompletionStateCache.values[cacheKey]) {
-            return graphCompletionStateCache.values[cacheKey];
-          }
-          var questionIds = [];
-          if (ownerType === "concept") {
-            questionIds = conceptQuestionIds(ownerId);
-          } else if (ownerType === "module") {
-            moduleMemberIds(getModule(ownerId)).forEach(function(conceptId) {
-              questionIds = questionIds.concat(conceptQuestionIds(conceptId));
-            });
-          }
-          var state = {
-            read: contentOwnerReadComplete(ownerType, ownerId),
-            questions: questionsComplete(questionIds)
-          };
-          graphCompletionStateCache.values[cacheKey] = state;
-          return state;
-        }
 
         function graphCompletionMarkerAnchor(node, positions) {
           var nodeId = String(node.id);
           var position = positions[nodeId];
           if (!position) { return null; }
           if (node.isModuleNode) {
-            var rendered = network.body.nodes[nodeId];
-            var shape = rendered && rendered.shape;
+            var shape = visAdapter.nodeGeometry(nodeId);
             var width = shape ? Number(shape.width) : Number(node.moduleFootprintWidth);
             var height = shape ? Number(shape.height) : Number(node.moduleFootprintHeight);
             var left = shape ? Number(shape.left) : position.x - width / 2;
@@ -1709,23 +902,6 @@
         window.kgGraphCompletionMarkersSnapshot = graphCompletionMarkersSnapshot;
         window.kgSetGraphCompletionMarkersEnabled = setGraphCompletionMarkersEnabled;
 
-        function loadUserNotes() {
-          return {
-            version: 2,
-            notes: personalDataStore.getNotes().map(normalizeUserNote).filter(Boolean)
-          };
-        }
-
-        function saveUserNotes() {
-          var saved = personalDataStore.replaceNotes(userNotesState.notes);
-          safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
-          schedulePersonalDataAutoSync();
-          setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
-          refreshNodeTooltips();
-          renderNotesOverview();
-          return saved;
-        }
-
         function splashDismissed() {
           return safeLocalStorageGet(splashDismissedStorageKey) === "true";
         }
@@ -1757,478 +933,8 @@
           }
         }
 
-        function setNotesStatus(message) {
-          var el = document.getElementById("kg_notes_status");
-          if (el) { el.innerText = message || ""; }
-        }
-
-        function noteIsDefaultEmpty(note) {
-          return note &&
-            String(note.title || "").trim() === "Note" &&
-            String(note.body || "").trim() === "";
-        }
-
-        function normalizeUserNote(note) {
-          if (!note || !note.section) { return null; }
-          var targetType = String(note.targetType || (note.moduleId ? "module" : "concept"));
-          var targetId = String(note.targetId || note.moduleId || note.conceptId || "");
-          if ((targetType !== "concept" && targetType !== "module") || !targetId) {
-            return null;
-          }
-          var anchor = note.anchor || {};
-          var blockIndex = Number(anchor.blockIndex);
-          if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
-          return {
-            id: String(note.id || makeNoteId()),
-            targetType: targetType,
-            targetId: targetId,
-            conceptId: targetType === "concept" ? targetId : "",
-            section: String(note.section),
-            anchor: {
-              blockIndex: Math.floor(blockIndex),
-              afterText: String(anchor.afterText || ""),
-              blockId: String(anchor.blockId || ""),
-              sectionKey: String(anchor.sectionKey || ""),
-              contextBefore: String(anchor.contextBefore || ""),
-              contextAfter: String(anchor.contextAfter || "")
-            },
-            title: String(note.title || "Untitled note"),
-            body: String(note.body || ""),
-            createdAt: String(note.createdAt || new Date().toISOString()),
-            updatedAt: String(note.updatedAt || note.createdAt || new Date().toISOString())
-          };
-        }
-
-        function makeNoteId() {
-          return "note-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
-        }
-
-        function normalizeNoteAnchorContext(value) {
-          return String(value || "").replace(/\s+/g, " ").trim();
-        }
-
-        function noteContextBefore(value) {
-          var normalized = normalizeNoteAnchorContext(value);
-          return normalized.slice(Math.max(0, normalized.length - 160));
-        }
-
-        function noteContextAfter(value) {
-          return normalizeNoteAnchorContext(value).slice(0, 160);
-        }
-
-        function noteAnchorSpecs(blockId, sectionKey, sectionName, text) {
-          var blocks = splitConceptBlocks(String(text || ""));
-          var specs = [];
-          for (var index = 0; index <= blocks.length; index += 1) {
-            var before = blocks.slice(0, index).map(function(block) {
-              return block.text || "";
-            }).join(" ");
-            var after = blocks.slice(index).map(function(block) {
-              return block.text || "";
-            }).join(" ");
-            specs.push({
-              blockId: String(blockId || ""),
-              sectionKey: String(sectionKey || ""),
-              section: String(sectionName || ""),
-              blockIndex: index,
-              contextBefore: index === 0 ? "" : noteContextBefore(before),
-              contextAfter: index === blocks.length ? "" : noteContextAfter(after),
-              legacyAfter: index === 0 ? "" : String(blocks[index - 1].text || "").slice(0, 160)
-            });
-          }
-          return specs;
-        }
-
-        function noteAnchorCandidates(targetType, targetId) {
-          var candidates = [];
-          if (targetType === "concept") {
-            var concept = getConcept(targetId);
-            if (!concept) { return candidates; }
-            if (conceptGraphicSvg(concept)) {
-              candidates = candidates.concat(noteAnchorSpecs("", "graphic", "Graphic", ""));
-            }
-            if (shouldRenderContentBlocks(concept)) {
-              conceptContentBlocks(concept).forEach(function(block) {
-                candidates = candidates.concat(noteAnchorSpecs(
-                  block.block_id, "", block.title || contentBlockKindLabel(block.kind), block.body
-                ));
-              });
-            } else {
-              conceptSections(concept).forEach(function(section) {
-                var matchingBlocks = conceptContentBlocks(concept).filter(function(block) {
-                  return block.kind === section.key;
-                });
-                candidates = candidates.concat(noteAnchorSpecs(
-                  matchingBlocks.length === 1 ? matchingBlocks[0].block_id : "",
-                  "legacy:" + section.key, section.title, section.text
-                ));
-              });
-            }
-            if (Array.isArray(concept.study_questions) && concept.study_questions.length > 0) {
-              candidates = candidates.concat(
-                noteAnchorSpecs("", "study-questions", "Study Questions", "")
-              );
-            }
-          } else if (targetType === "module") {
-            var module = getModule(targetId);
-            if (!module) { return candidates; }
-            if (module.svg_detail || module.svg_icon) {
-              candidates = candidates.concat(noteAnchorSpecs("", "graphic", "Graphic", ""));
-            }
-            moduleContentBlocks(module).forEach(function(block) {
-              candidates = candidates.concat(noteAnchorSpecs(
-                block.block_id, "", block.title || contentBlockKindLabel(block.kind), block.body
-              ));
-            });
-          }
-          return candidates;
-        }
-
-        function canonicalNoteAnchor(targetType, targetId, blockId, sectionKey, blockIndex) {
-          blockId = String(blockId || "");
-          sectionKey = String(sectionKey || "");
-          blockIndex = Number(blockIndex) || 0;
-          if (!blockId && !sectionKey) { return null; }
-          var matches = noteAnchorCandidates(targetType, targetId).filter(function(candidate) {
-            var sameScope = blockId
-              ? candidate.blockId === blockId
-              : candidate.sectionKey === sectionKey;
-            return sameScope && candidate.blockIndex === blockIndex;
-          });
-          return matches.length === 1 ? matches[0] : null;
-        }
-
-        function uniqueBestNoteAnchor(candidates, anchor) {
-          var before = normalizeNoteAnchorContext(anchor.contextBefore);
-          var after = normalizeNoteAnchorContext(anchor.contextAfter);
-          if (!before && !after) {
-            var byIndex = candidates.filter(function(candidate) {
-              return candidate.blockIndex === Number(anchor.blockIndex || 0);
-            });
-            return byIndex.length === 1 ? byIndex[0] : null;
-          }
-          var scored = candidates.map(function(candidate) {
-            var score = 0;
-            if (before && candidate.contextBefore === before) { score += 2; }
-            if (after && candidate.contextAfter === after) { score += 1; }
-            return {candidate: candidate, score: score};
-          });
-          var best = Math.max.apply(null, scored.map(function(item) { return item.score; }));
-          if (best <= 0) { return null; }
-          var matches = scored.filter(function(item) { return item.score === best; });
-          return matches.length === 1 ? matches[0].candidate : null;
-        }
-
-        function adoptResolvedNoteAnchor(note, candidate) {
-          if (!candidate) { return null; }
-          var anchor = note.anchor || (note.anchor = {});
-          if (!anchor.blockId && !anchor.sectionKey) {
-            anchor.blockId = candidate.blockId;
-            anchor.sectionKey = candidate.sectionKey;
-            anchor.blockIndex = candidate.blockIndex;
-            anchor.contextBefore = candidate.contextBefore;
-            anchor.contextAfter = candidate.contextAfter;
-          }
-          return candidate;
-        }
-
-        function repairResolvedNoteAnchor(note, candidate) {
-          if (!candidate) { return null; }
-          var anchor = note.anchor || (note.anchor = {});
-          anchor.blockId = candidate.blockId;
-          anchor.sectionKey = candidate.sectionKey;
-          anchor.blockIndex = candidate.blockIndex;
-          anchor.contextBefore = candidate.contextBefore;
-          anchor.contextAfter = candidate.contextAfter;
-          note.updatedAt = new Date().toISOString();
-          return candidate;
-        }
-
-        function resolveNoteAnchor(note) {
-          var candidates = noteAnchorCandidates(note.targetType, note.targetId);
-          var anchor = note.anchor || {};
-          var scoped = [];
-          if (anchor.blockId) {
-            scoped = candidates.filter(function(candidate) {
-              return candidate.blockId === String(anchor.blockId);
-            });
-          } else if (anchor.sectionKey) {
-            scoped = candidates.filter(function(candidate) {
-              return candidate.sectionKey === String(anchor.sectionKey);
-            });
-          }
-          if (scoped.length > 0) {
-            var resolved = uniqueBestNoteAnchor(scoped, anchor);
-            if (resolved) { return resolved; }
-
-            // Early module-note builds could retain a valid stable block and
-            // preceding paragraph while recording stale context fields. Use
-            // that authored paragraph identity as a constrained repair path.
-            var legacyAfter = normalizeNoteAnchorContext(anchor.afterText);
-            var paragraphMatches = scoped.filter(function(candidate) {
-              return legacyAfter &&
-                normalizeNoteAnchorContext(candidate.legacyAfter) === legacyAfter;
-            });
-            if (paragraphMatches.length === 1) {
-              return repairResolvedNoteAnchor(note, paragraphMatches[0]);
-            }
-            if (!legacyAfter && Number(anchor.blockIndex || 0) === 0) {
-              var leadingMatches = scoped.filter(function(candidate) {
-                return candidate.blockIndex === 0;
-              });
-              if (leadingMatches.length === 1) {
-                return repairResolvedNoteAnchor(note, leadingMatches[0]);
-              }
-            }
-            return null;
-          }
-          if (anchor.blockId || anchor.sectionKey) { return null; }
-
-          // Version-1 notes and CSV rows used a visible title plus local index.
-          var legacy = candidates.filter(function(candidate) {
-            return candidate.section === String(note.section || "");
-          });
-          if (anchor.afterText) {
-            var afterMatches = legacy.filter(function(candidate) {
-              return normalizeNoteAnchorContext(candidate.legacyAfter) ===
-                normalizeNoteAnchorContext(anchor.afterText);
-            });
-            if (afterMatches.length === 1) {
-              return adoptResolvedNoteAnchor(note, afterMatches[0]);
-            }
-            return null;
-          }
-          var indexMatches = legacy.filter(function(candidate) {
-            return candidate.blockIndex === Number(anchor.blockIndex || 0);
-          });
-          return indexMatches.length === 1
-            ? adoptResolvedNoteAnchor(note, indexMatches[0])
-            : null;
-        }
-
-        function noteAnchorStatus(note) {
-          var targetExists = note.targetType === "concept"
-            ? Boolean(getConcept(note.targetId))
-            : Boolean(getModule(note.targetId));
-          if (!targetExists) { return "missing-target"; }
-          return resolveNoteAnchor(note) ? "resolved" : "unmatched";
-        }
-
-        function unresolvedNoteCount() {
-          return userNotesState.notes.filter(function(note) {
-            return noteAnchorStatus(note) !== "resolved";
-          }).length;
-        }
-
-        function migrateUserNotesState() {
-          if (!userNotesState || !Array.isArray(userNotesState.notes)) { return; }
-          var before = JSON.stringify(userNotesState.notes);
-          userNotesState.version = 2;
-          userNotesState.notes.forEach(function(note) { resolveNoteAnchor(note); });
-          if (JSON.stringify(userNotesState.notes) !== before) {
-            personalDataStore.replaceNotes(userNotesState.notes);
-          }
-          safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
-        }
-
-        function sameNoteAnchor(left, right) {
-          return left && right &&
-            left.blockId === right.blockId &&
-            left.sectionKey === right.sectionKey &&
-            left.blockIndex === right.blockIndex &&
-            left.contextBefore === right.contextBefore &&
-            left.contextAfter === right.contextAfter;
-        }
-
-        function notesForAnchor(targetType, targetId, anchorSpec) {
-          return userNotesState.notes.filter(function(note) {
-            return note.targetType === String(targetType) &&
-              note.targetId === String(targetId) &&
-              sameNoteAnchor(resolveNoteAnchor(note), anchorSpec);
-          }).sort(function(a, b) {
-            return String(a.createdAt).localeCompare(String(b.createdAt));
-          });
-        }
-
-        function noteCountForBlock(targetType, targetId, blockId, sectionKey) {
-          blockId = String(blockId || "");
-          sectionKey = String(sectionKey || "");
-          return userNotesState.notes.filter(function(note) {
-            if (note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
-              return false;
-            }
-            var resolved = resolveNoteAnchor(note);
-            if (!resolved) { return false; }
-            return blockId
-              ? resolved.blockId === blockId
-              : resolved.sectionKey === sectionKey;
-          }).length;
-        }
-
-        function renderNoteBlockAction(targetType, targetId, sectionName, blockId, sectionKey, withReadToggle) {
-          var count = noteCountForBlock(targetType, targetId, blockId, sectionKey);
-          var hasNotes = count > 0;
-          var label = hasNotes
-            ? "Notes present in " + sectionName + "; add another note"
-            : "Add a note to " + sectionName;
-          return '<span class="kg-note-heading-actions' +
-            (withReadToggle ? " kg-note-heading-actions-with-read" : "") + '">' +
-            '<span class="kg-note-placement-instruction" role="status" aria-live="polite">' +
-            'Choose paragraph ↓<span class="kg-visually-hidden">. The note will appear ' +
-            'below it. Press Escape to cancel.</span>' +
-            "</span>" +
-            '<button type="button" class="kg-note-placement-cancel">Cancel</button>' +
-            '<button type="button" class="kg-note-block-action' +
-            (withReadToggle ? " kg-note-block-action-with-read" : "") +
-            '" data-note-state="' + (hasNotes ? "present" : "empty") +
-            '" data-target-type="' + escapeHtml(targetType) +
-            '" data-target-id="' + escapeHtml(targetId) +
-            '" data-section="' + escapeHtml(sectionName) +
-            '" data-anchor-block-id="' + escapeHtml(blockId || "") +
-            '" data-anchor-section-key="' + escapeHtml(sectionKey || "") +
-            '" aria-label="' + escapeHtml(label) + '" aria-pressed="false" title="' +
-            escapeHtml(label) + '">' +
-            '<span class="kg-note-bubble-glyph" aria-hidden="true">' +
-            "+</span></button></span>";
-        }
-
-        function findUserNote(noteId) {
-          return userNotesState.notes.find(function(note) {
-            return note.id === noteId;
-          }) || null;
-        }
-
-        function noteTargetLabel(note) {
-          if (note.targetType === "module") {
-            var module = getModule(note.targetId) || {};
-            return "Module " + (module.title || note.targetId);
-          }
-          var concept = getConcept(note.targetId) || {};
-          return conceptDisplayId(note.targetId) +
-            (concept.label ? " " + searchDisplayText(concept.label) : "");
-        }
-
-        function sortedUserNotes() {
-          return userNotesState.notes.slice().sort(function(a, b) {
-            var typeOrder = String(a.targetType).localeCompare(String(b.targetType));
-            if (typeOrder !== 0) { return typeOrder; }
-            var targetOrder = a.targetType === "concept"
-              ? compareConceptIds(a.targetId, b.targetId)
-              : compareModules(a.targetId, b.targetId);
-            if (targetOrder !== 0) { return targetOrder; }
-            return String(a.createdAt).localeCompare(String(b.createdAt));
-          });
-        }
-
-        function renderNotesOverview() {
-          var countEl = document.getElementById("kg_notes_count");
-          var listEl = document.getElementById("kg_notes_list");
-          if (!countEl || !listEl) { return; }
-
-          var count = userNotesState.notes.length;
-          countEl.innerText = count + " note" + (count === 1 ? "" : "s");
-          if (count === 0) {
-            listEl.innerHTML = '<div class="kg-note-list-empty">No notes yet.</div>';
-            return;
-          }
-
-          listEl.innerHTML = sortedUserNotes().map(function(note) {
-            var status = noteAnchorStatus(note);
-            var warning = status === "resolved" ? "" :
-              '<span class="kg-note-list-warning">' +
-              (status === "missing-target" ? "Missing target" : "Needs placement") +
-              "</span>";
-            return '<button type="button" class="kg-note-list-item" data-note-id="' +
-              escapeHtml(note.id) + '" data-target-type="' + escapeHtml(note.targetType) +
-              '" data-target-id="' + escapeHtml(note.targetId) + '">' +
-              '<span class="kg-note-list-concept">' + escapeHtml(noteTargetLabel(note)) + "</span>" +
-              '<span class="kg-note-list-title">' + escapeHtml(note.title || "Untitled note") + "</span>" +
-              warning +
-              "</button>";
-          }).join("");
-        }
-
-        function attemptedStudyQuestions() {
-          return Object.keys(studyProgressState.questions).map(function(questionId) {
-            var indexed = studyQuestionIndex[questionId];
-            if (!indexed) { return null; }
-            var concept = getConcept(indexed.conceptId) || {};
-            var questions = Array.isArray(concept.study_questions)
-              ? concept.study_questions
-              : [];
-            return {
-              questionId: questionId,
-              conceptId: indexed.conceptId,
-              concept: concept,
-              question: indexed.question,
-              questionNumber: questions.indexOf(indexed.question) + 1,
-              progress: studyProgressState.questions[questionId]
-            };
-          }).filter(Boolean).sort(function(a, b) {
-            return String(b.progress.lastAttemptAt).localeCompare(
-              String(a.progress.lastAttemptAt)
-            );
-          });
-        }
-
-        function studyQuestionPrompt(question) {
-          return searchDisplayText(
-            question && (question.prompt || question.question) || "Question"
-          );
-        }
-
-        function renderStudyScorecard() {
-          var summary = document.getElementById("kg_study_summary");
-          var list = document.getElementById("kg_study_list");
-          var badge = document.getElementById("kg_study_badge");
-          var resetAll = document.getElementById("kg_study_reset_all");
-          if (!summary || !list || !badge || !resetAll) { return; }
-
-          var entries = attemptedStudyQuestions();
-          var correctCount = entries.filter(function(entry) {
-            return entry.progress.lastOutcome === "correct";
-          }).length;
-          var totalQuestions = Object.keys(studyQuestionIndex).length;
-          var readableConceptIds = Object.keys(conceptData || {}).filter(function(conceptId) {
-            return contentOwnerBlockIds("concept", conceptId).length > 0;
-          });
-          var readConcepts = readableConceptIds.filter(function(conceptId) {
-            return contentOwnerReadComplete("concept", conceptId);
-          }).length;
-          summary.textContent = "Questions " + correctCount + "/" + totalQuestions +
-            " correct \u00b7 Concepts " + readConcepts + "/" + readableConceptIds.length +
-            " read";
-          badge.textContent = correctCount + "/" + totalQuestions;
-          resetAll.hidden = entries.length === 0;
-          list.innerHTML = entries.map(function(entry) {
-            var outcome = entry.progress.lastOutcome;
-            var attempts = entry.progress.attemptCount;
-            var conceptLabel = conceptDisplayId(entry.conceptId) +
-              (entry.concept.label ? " " + searchDisplayText(entry.concept.label) : "");
-            var questionLabel = entry.questionNumber > 0
-              ? "Question " + entry.questionNumber + ": "
-              : "";
-            return '<div class="kg-study-row" data-question-id="' +
-              escapeHtml(entry.questionId) + '">' +
-              '<button type="button" class="kg-study-question-link" data-question-id="' +
-              escapeHtml(entry.questionId) + '">' +
-              '<span class="kg-study-question-concept">' + escapeHtml(conceptLabel) + "</span>" +
-              '<span class="kg-study-question-prompt">' + escapeHtml(
-                questionLabel + studyQuestionPrompt(entry.question)
-              ) + "</span>" +
-              '<span class="kg-study-question-meta" data-outcome="' +
-              escapeHtml(outcome) + '"><span aria-hidden="true">' +
-              studyOutcomeIcon(outcome) + "</span> " +
-              escapeHtml(studyOutcomeText(outcome)) + " · " + attempts + " attempt" +
-              (attempts === 1 ? "" : "s") + "</span></button>" +
-              '<button type="button" class="kg-study-reset-question" data-question-id="' +
-              escapeHtml(entry.questionId) + '" aria-label="Reset progress for ' +
-              escapeHtml(conceptLabel) + '">Reset</button></div>';
-          }).join("");
-        }
-
         function openScorecardQuestion(questionId) {
-          var indexed = studyQuestionIndex[questionId];
+          var indexed = studyController.indexedQuestion(questionId);
           if (!indexed) { return; }
           setViewerView(viewerState.view === "graph" ? "both" : viewerState.view);
           navigateToConcept(indexed.conceptId, "Selected");
@@ -2248,331 +954,12 @@
           });
         }
 
-        function renderUserNote(note) {
-          var shouldOpen = note.id === openUserNoteId;
-          var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
-            (shouldOpen ? " open" : "") + ">";
-          html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
-          html += '<div class="user-note-editor">';
-          html += '<label>Title<input class="user-note-title-input" data-note-id="' +
-            escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
-          html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
-            escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
-          html += '<div class="user-note-actions">';
-          html += '<button type="button" class="user-note-close" data-note-id="' +
-            escapeHtml(note.id) + '">Close</button>';
-          html += '<button type="button" class="user-note-delete" data-note-id="' +
-            escapeHtml(note.id) + '">Delete</button>';
-          html += '<span class="user-note-saved">Saved locally</span>';
-          html += "</div></div>";
-          html += "</details>";
-          return html;
-        }
-
-        function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec) {
-          anchorSpec = anchorSpec || {
-            blockId: "", sectionKey: "", section: String(sectionName),
-            blockIndex: Number(anchorIndex), contextBefore: "", contextAfter: ""
-          };
-          var html = "";
-          notesForAnchor(targetType, targetId, anchorSpec).forEach(function(note) {
-            html += renderUserNote(note);
-          });
-          html += '<div class="kg-add-note-row">';
-          html += '<button type="button" class="kg-add-note" data-section="' +
-            escapeHtml(sectionName) + '" data-anchor-index="' + String(anchorIndex) +
-            '" data-anchor-after="' + escapeHtml(afterText || "") +
-            '" data-anchor-block-id="' + escapeHtml(anchorSpec.blockId || "") +
-            '" data-anchor-section-key="' + escapeHtml(anchorSpec.sectionKey || "") +
-            '" data-anchor-context-before="' + escapeHtml(anchorSpec.contextBefore || "") +
-            '" data-anchor-context-after="' + escapeHtml(anchorSpec.contextAfter || "") +
-            '" data-target-type="' + escapeHtml(targetType) +
-            '" data-target-id="' + escapeHtml(targetId) + '">+ note</button>';
-          html += "</div>";
-          return html;
-        }
-
-        function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text) {
-          var blocks = splitConceptBlocks(String(text || ""));
-          var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
-          var html = renderNotesAtAnchor(
-            targetType, targetId, sectionName, 0, "", specs[0]
-          );
-          blocks.forEach(function(textBlock, index) {
-            html += '<div class="concept-line">' +
-              (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
-              "</div>";
-            html += renderNotesAtAnchor(
-              targetType,
-              targetId,
-              sectionName,
-              index + 1,
-              String(textBlock.text || "").slice(0, 160),
-              specs[index + 1]
-            );
-          });
-          return html;
-        }
-
-        function renderUnmatchedNotes(targetType, targetId) {
-          var notes = userNotesState.notes.filter(function(note) {
-            return note.targetType === String(targetType) &&
-              note.targetId === String(targetId) && noteAnchorStatus(note) === "unmatched";
-          });
-          if (notes.length === 0) { return ""; }
-          var html = '<details class="kg-unmatched-notes" open>' +
-            '<summary>Notes needing placement (' + notes.length + ")</summary>" +
-            '<p>The original content changed, so these notes were not moved automatically.</p>';
-          notes.forEach(function(note) {
-            html += '<div class="kg-unmatched-note"><div class="kg-unmatched-note-location">Former section: ' +
-              escapeHtml(note.section || "Unknown") + "</div>" + renderUserNote(note) + "</div>";
-          });
-          return html + "</details>";
-        }
-
-        function findNextOptionalDetailBlock(text, cursor) {
-          var macro = "\\optional_details";
-          var search = cursor;
-          while (search < text.length) {
-            var macroIndex = text.indexOf(macro, search);
-            if (macroIndex === -1) { return null; }
-
-            var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
-            var summary = parseBracedArgument(text, summaryStart);
-            if (!summary) {
-              search = macroIndex + macro.length;
-              continue;
-            }
-
-            var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
-            var body = parseBracedArgument(text, bodyStart);
-            if (!body) {
-              search = summary.end;
-              continue;
-            }
-
-            return {
-              kind: "optional",
-              start: macroIndex,
-              end: body.end
-            };
-          }
-          return null;
-        }
-
         function contentAnchorId(conceptId, title) {
           var slug = String(conceptId || "") + "-" + String(title || "");
           slug = slug.toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "");
           return "kg-toc-" + (slug || "section");
-        }
-
-        function findNextDisplayMathBlock(text, cursor) {
-          var open = "\\[";
-          var close = "\\]";
-          var start = text.indexOf(open, cursor);
-          if (start === -1) { return null; }
-          var end = text.indexOf(close, start + open.length);
-          if (end === -1) { return null; }
-          return {
-            kind: "display-math",
-            start: start,
-            end: end + close.length
-          };
-        }
-
-        function findNextLineBreakBlock(text, cursor) {
-          var lf = text.indexOf("\n", cursor);
-          var cr = text.indexOf("\r", cursor);
-          if (lf === -1 && cr === -1) { return null; }
-          if (cr !== -1 && (lf === -1 || cr < lf)) {
-            return {
-              kind: "newline",
-              start: cr,
-              end: text.charAt(cr + 1) === "\n" ? cr + 2 : cr + 1
-            };
-          }
-          return {
-            kind: "newline",
-            start: lf,
-            end: lf + 1
-          };
-        }
-
-        function splitConceptBlocks(text) {
-          var blocks = [];
-          var raw = String(text || "");
-          var cursor = 0;
-
-          function pushText(value) {
-            if (!String(value || "").trim()) { return; }
-            blocks.push({kind: "text", text: value});
-          }
-
-          while (cursor < raw.length) {
-            var newlineBlock = findNextLineBreakBlock(raw, cursor);
-            var optionalBlock = findNextOptionalDetailBlock(raw, cursor);
-            var displayBlock = findNextDisplayMathBlock(raw, cursor);
-            var candidates = [];
-            if (newlineBlock) { candidates.push(newlineBlock); }
-            if (optionalBlock) { candidates.push(optionalBlock); }
-            if (displayBlock) { candidates.push(displayBlock); }
-
-            if (candidates.length === 0) {
-              pushText(raw.slice(cursor));
-              break;
-            }
-
-            candidates.sort(function(a, b) {
-              return a.start - b.start || a.end - b.end;
-            });
-            var next = candidates[0];
-            if (next.start > cursor) {
-              pushText(raw.slice(cursor, next.start));
-            } else if (next.kind === "newline") {
-              blocks.push({kind: "text", text: ""});
-            }
-
-            if (next.kind !== "newline") {
-              blocks.push({
-                kind: next.kind,
-                text: raw.slice(next.start, next.end)
-              });
-            }
-            cursor = next.end;
-          }
-
-          if (raw.length === 0) {
-            return [];
-          }
-          return blocks;
-        }
-
-        function renderConceptSection(conceptId, blockId, sectionKey, title, text) {
-          var raw = String(text || "");
-          if (!raw) { return ""; }
-          var blocks = splitConceptBlocks(raw);
-          var specs = noteAnchorSpecs(blockId, "legacy:" + sectionKey, title, raw);
-          var html = '<section class="legacy-content-block" data-note-block="true"' +
-            (blockId ? ' data-content-block-id="' + escapeHtml(blockId) + '"' : "") + ">";
-          html += '<h3 class="kg-noteable-heading" id="' +
-            escapeHtml(contentAnchorId(conceptId, title)) + '">' +
-            '<span class="kg-noteable-title">' + escapeHtml(title) + "</span>" +
-            renderNoteBlockAction(
-              "concept", conceptId, title, blockId, "legacy:" + sectionKey, false
-            ) + "</h3>";
-          html += '<div class="concept-body concept-section" data-section="' + escapeHtml(title) + '">';
-          html += renderNotesAtAnchor("concept", conceptId, title, 0, "", specs[0]);
-          blocks.forEach(function(block, index) {
-            html += '<div class="concept-line">' + (block.text ? renderConceptText(block.text) : "&nbsp;") + "</div>";
-            html += renderNotesAtAnchor(
-              "concept", conceptId, title, index + 1, block.text.slice(0, 160), specs[index + 1]
-            );
-          });
-          html += "</div></section>";
-          return html;
-        }
-
-        function normalizeStudyText(text) {
-          return String(text || "")
-            .replace(/\\n\\n/g, "\n")
-            .replace(/\\n(?=(?:[A-Z]|[0-9]+)[.)]\s)/g, "\n");
-        }
-
-        function renderBodyLines(text, className) {
-          var blocks = splitConceptBlocks(text);
-          var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
-          blocks.forEach(function(block) {
-            html += '<div class="concept-line">' +
-              (block.text ? renderConceptText(block.text) : "&nbsp;") +
-              "</div>";
-          });
-          html += "</div>";
-          return html;
-        }
-
-        function renderStudyText(text, className) {
-          return renderBodyLines(normalizeStudyText(text), className);
-        }
-
-        function createUserNote(targetType, targetId, sectionName, anchorIndex, afterText, stableAnchor) {
-          stableAnchor = stableAnchor || {};
-          var now = new Date().toISOString();
-          var note = {
-            id: makeNoteId(),
-            targetType: String(targetType),
-            targetId: String(targetId),
-            conceptId: targetType === "concept" ? String(targetId) : "",
-            section: String(sectionName),
-            anchor: {
-              blockIndex: Number(anchorIndex) || 0,
-              afterText: String(afterText || ""),
-              blockId: String(stableAnchor.blockId || ""),
-              sectionKey: String(stableAnchor.sectionKey || ""),
-              contextBefore: String(stableAnchor.contextBefore || ""),
-              contextAfter: String(stableAnchor.contextAfter || "")
-            },
-            title: "Note",
-            body: "",
-            createdAt: now,
-            updatedAt: now
-          };
-          userNotesState.notes.push(note);
-          openUserNoteId = note.id;
-          saveUserNotes();
-          return note;
-        }
-
-        function deleteUserNote(noteId) {
-          userNotesState.notes = userNotesState.notes.filter(function(note) {
-            return note.id !== noteId;
-          });
-          if (openUserNoteId === noteId) { openUserNoteId = null; }
-          saveUserNotes();
-        }
-
-        function updateUserNote(noteId, fields) {
-          var note = findUserNote(noteId);
-          if (!note) { return; }
-          Object.keys(fields).forEach(function(key) {
-            note[key] = String(fields[key]);
-          });
-          note.updatedAt = new Date().toISOString();
-          saveUserNotes();
-        }
-
-        function noteEditorField(noteId, selector) {
-          var fields = document.querySelectorAll(selector);
-          for (var i = 0; i < fields.length; i++) {
-            if (fields[i].getAttribute("data-note-id") === noteId) {
-              return fields[i];
-            }
-          }
-          return null;
-        }
-
-        function syncUserNoteFromEditor(noteId) {
-          var note = findUserNote(noteId);
-          if (!note) { return null; }
-          var titleInput = noteEditorField(noteId, ".user-note-title-input");
-          var bodyInput = noteEditorField(noteId, ".user-note-body-input");
-          if (titleInput) { note.title = String(titleInput.value || ""); }
-          if (bodyInput) { note.body = String(bodyInput.value || ""); }
-          note.updatedAt = new Date().toISOString();
-          saveUserNotes();
-          return note;
-        }
-
-        function closeUserNote(noteId) {
-          var note = syncUserNoteFromEditor(noteId);
-          if (!note) { return; }
-          if (noteIsDefaultEmpty(note)) {
-            deleteUserNote(noteId);
-          } else {
-            openUserNoteId = null;
-          }
-          refreshActiveConcept();
         }
 
         function refreshActiveConcept() {
@@ -2583,526 +970,14 @@
           }
         }
 
-        function csvEscape(value) {
-          var text = String(value || "");
-          if (/[",\r\n]/.test(text)) {
-            return '"' + text.replace(/"/g, '""') + '"';
-          }
-          return text;
-        }
-
-        function notesToCsv() {
-          var rows = [[
-            "note_id",
-            "target_type",
-            "target_id",
-            "target_label",
-            "concept_id",
-            "concept_label",
-            "section",
-            "anchor_index",
-            "anchor_after",
-            "anchor_block_id",
-            "anchor_section_key",
-            "anchor_context_before",
-            "anchor_context_after",
-            "title",
-            "body",
-            "created_at",
-            "updated_at"
-          ]];
-          userNotesState.notes.forEach(function(note) {
-            var concept = note.targetType === "concept" ? (getConcept(note.targetId) || {}) : {};
-            rows.push([
-              note.id,
-              note.targetType,
-              note.targetId,
-              noteTargetLabel(note),
-              note.targetType === "concept" ? note.targetId : "",
-              concept.label || "",
-              note.section,
-              String((note.anchor && note.anchor.blockIndex) || 0),
-              (note.anchor && note.anchor.afterText) || "",
-              (note.anchor && note.anchor.blockId) || "",
-              (note.anchor && note.anchor.sectionKey) || "",
-              (note.anchor && note.anchor.contextBefore) || "",
-              (note.anchor && note.anchor.contextAfter) || "",
-              note.title || "",
-              note.body || "",
-              note.createdAt || "",
-              note.updatedAt || ""
-            ]);
-          });
-          return rows.map(function(row) {
-            return row.map(csvEscape).join(",");
-          }).join("\n") + "\n";
-        }
-
-        window.kgExportNotes = function() {
-          var csv = notesToCsv();
-          var blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
-          var url = URL.createObjectURL(blob);
-          var link = document.createElement("a");
-          link.href = url;
-          link.download = "srkg-notes.csv";
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          setNotesStatus("Exported " + userNotesState.notes.length + " note(s).");
-        };
-
-        function parseCsv(text) {
-          var rows = [];
-          var row = [];
-          var field = "";
-          var inQuotes = false;
-          for (var index = 0; index < text.length; index += 1) {
-            var ch = text.charAt(index);
-            if (inQuotes) {
-              if (ch === '"') {
-                if (text.charAt(index + 1) === '"') {
-                  field += '"';
-                  index += 1;
-                } else {
-                  inQuotes = false;
-                }
-              } else {
-                field += ch;
-              }
-            } else if (ch === '"') {
-              inQuotes = true;
-            } else if (ch === ",") {
-              row.push(field);
-              field = "";
-            } else if (ch === "\n") {
-              row.push(field);
-              rows.push(row);
-              row = [];
-              field = "";
-            } else if (ch !== "\r") {
-              field += ch;
-            }
-          }
-          if (field || row.length > 0) {
-            row.push(field);
-            rows.push(row);
-          }
-          return rows;
-        }
-
-        function importNotesCsv(text) {
-          var rows = parseCsv(text).filter(function(row) {
-            return row.some(function(value) { return String(value || "").trim(); });
-          });
-          if (rows.length < 2) { return 0; }
-          var headers = {};
-          rows[0].forEach(function(name, index) {
-            headers[String(name).trim()] = index;
-          });
-          function value(row, name) {
-            var index = headers[name];
-            return index === undefined ? "" : String(row[index] || "");
-          }
-
-          var imported = 0;
-          rows.slice(1).forEach(function(row) {
-            var conceptId = value(row, "concept_id").trim();
-            var targetType = value(row, "target_type").trim() || "concept";
-            var targetId = value(row, "target_id").trim() || conceptId;
-            var section = value(row, "section").trim();
-            if (!targetId || !section || (targetType !== "concept" && targetType !== "module")) { return; }
-            var noteId = value(row, "note_id").trim() || makeNoteId();
-            var blockIndex = Number(value(row, "anchor_index"));
-            if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
-            var note = findUserNote(noteId);
-            var payload = {
-              id: noteId,
-              targetType: targetType,
-              targetId: targetId,
-              conceptId: targetType === "concept" ? targetId : "",
-              section: section,
-              anchor: {
-                blockIndex: Math.floor(blockIndex),
-                afterText: value(row, "anchor_after"),
-                blockId: value(row, "anchor_block_id"),
-                sectionKey: value(row, "anchor_section_key"),
-                contextBefore: value(row, "anchor_context_before"),
-                contextAfter: value(row, "anchor_context_after")
-              },
-              title: value(row, "title") || "Imported note",
-              body: value(row, "body"),
-              createdAt: value(row, "created_at") || new Date().toISOString(),
-              updatedAt: value(row, "updated_at") || new Date().toISOString()
-            };
-            resolveNoteAnchor(payload);
-            if (note) {
-              Object.assign(note, payload);
-            } else {
-              userNotesState.notes.push(payload);
-            }
-            imported += 1;
-          });
-          saveUserNotes();
-          return imported;
-        }
-
-        function setPersonalDataStatus(message) {
-          var status = document.getElementById("kg_personal_data_status");
-          if (status) { status.textContent = String(message || ""); }
-        }
-
-        function setCloudSyncStatus(message) {
-          var status = document.getElementById("kg_cloud_sync_status");
-          if (status) { status.textContent = String(message || ""); }
-        }
-
-        function showCloudSyncConnected(connected, paused) {
-          var connect = document.getElementById("kg_cloud_sync_connect");
-          connect.hidden = connected;
-          connect.textContent = paused ? "Reconnect" : "Connect Google Drive";
-          document.getElementById("kg_cloud_sync_now").hidden = !connected;
-          document.getElementById("kg_cloud_sync_disconnect").hidden = !connected && !paused;
-        }
-
-        function showCloudSyncAttention(show) {
-          document.getElementById("kg_cloud_sync_attention").hidden = !show;
-        }
-
-        function cloudSyncTimeText(timestamp) {
-          return new Date(timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          });
-        }
-
-        function clearCloudSyncTimers() {
-          if (cloudSyncAutoTimer !== null) {
-            clearTimeout(cloudSyncAutoTimer);
-            cloudSyncAutoTimer = null;
-          }
-          if (cloudSyncPeriodicTimer !== null) {
-            clearInterval(cloudSyncPeriodicTimer);
-            cloudSyncPeriodicTimer = null;
-          }
-        }
-
-        function startCloudSyncPeriodicChecks() {
-          if (cloudSyncPeriodicTimer !== null) { clearInterval(cloudSyncPeriodicTimer); }
-          cloudSyncPeriodicTimer = setInterval(function() {
-            if (document.visibilityState === "visible" && personalDataSyncEngine) {
-              syncPersonalDataNow();
-            }
-          }, cloudSyncPeriodicDelayMs);
-        }
-
-        function schedulePersonalDataAutoSync(delayMs) {
-          if (!personalDataSyncEngine) { return false; }
-          if (cloudSyncAutoTimer !== null) { clearTimeout(cloudSyncAutoTimer); }
-          var delay = Number.isFinite(Number(delayMs))
-            ? Math.max(0, Number(delayMs))
-            : cloudSyncAutoDelayMs;
-          cloudSyncAutoTimer = setTimeout(function() {
-            cloudSyncAutoTimer = null;
-            syncPersonalDataNow();
-          }, delay);
-          return true;
-        }
-
-        function initialiseGoogleDriveSync() {
-          var clientId = String(kgCloudSyncConfig.googleDriveClientId || "");
-          var connect = document.getElementById("kg_cloud_sync_connect");
-          if (!clientId) {
-            connect.disabled = true;
-            showCloudSyncAttention(false);
-            setCloudSyncStatus("Not configured in this copy of PhysicsKG.");
-            return;
-          }
-          connect.disabled = false;
-          showCloudSyncAttention(false);
-          googleDriveAuthorizer = window.kgCreateGoogleDriveAuthorizer({clientId: clientId});
-          setCloudSyncStatus("Not connected. Personal data remains in this browser.");
-        }
-
-        function connectGoogleDrive() {
-          if (!googleDriveAuthorizer) { return; }
-          setCloudSyncStatus("Connecting to Google Drive…");
-          return googleDriveAuthorizer.connect().then(function() {
-            var provider = window.kgCreateGoogleDrivePersonalDataProvider({
-              token: googleDriveAuthorizer.token
-            });
-            personalDataSyncEngine = window.kgCreatePersonalDataSyncEngine({
-              store: personalDataStore,
-              archive: window.kgPersonalDataArchive,
-              provider: provider,
-              onStatus: function(status) { setCloudSyncStatus(status.detail); }
-            });
-            showCloudSyncConnected(true);
-            showCloudSyncAttention(false);
-            startCloudSyncPeriodicChecks();
-            setCloudSyncStatus("Connected — syncing personal data…");
-            return syncPersonalDataNow();
-          }).catch(function(error) {
-            setCloudSyncStatus(error && error.message || "Could not connect to Google Drive.");
-          });
-        }
-
-        function syncPersonalDataNow() {
-          if (!personalDataSyncEngine) { return Promise.resolve(false); }
-          if (cloudSyncAutoTimer !== null) {
-            clearTimeout(cloudSyncAutoTimer);
-            cloudSyncAutoTimer = null;
-          }
-          writePersonalLayoutNow();
-          return personalDataSyncEngine.synchronize().then(function() {
-            cloudSyncLastSuccessfulAt = Date.now();
-            personalLayoutState = loadPersonalLayoutState();
-            globalLayout = buildInitialGlobalLayout();
-            applyGlobalLayoutPositions();
-            updateLayoutControls();
-            userNotesState = loadUserNotes();
-            studyProgressState = loadStudyProgress();
-            contentReadProgressState = loadContentReadProgress();
-            refreshNodeTooltips();
-            renderNotesOverview();
-            renderStudyScorecard();
-            updateContentReadCompletionIndicators();
-            if (network && network.redraw) { network.redraw(); }
-            setCloudSyncStatus(
-              "Personal data synced. Last synced at " +
-              cloudSyncTimeText(cloudSyncLastSuccessfulAt) + "."
-            );
-            showCloudSyncAttention(false);
-            return true;
-          }).catch(function(error) {
-            if (error && error.code === "auth_required") {
-              clearCloudSyncTimers();
-              showCloudSyncConnected(false, true);
-              showCloudSyncAttention(true);
-              personalDataSyncEngine = null;
-              setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
-            }
-            return false;
-          });
-        }
-
-        function disconnectGoogleDrive() {
-          clearCloudSyncTimers();
-          personalDataSyncEngine = null;
-          cloudSyncLastSuccessfulAt = 0;
-          showCloudSyncConnected(false);
-          showCloudSyncAttention(false);
-          setCloudSyncStatus("Disconnected. Personal data remains in this browser and Google Drive.");
-          if (googleDriveAuthorizer) { googleDriveAuthorizer.disconnect(); }
-        }
+        window.kgExportNotes = exportNotes;
 
         window.kgInitialiseGoogleDriveSync = initialiseGoogleDriveSync;
         window.kgSchedulePersonalDataAutoSync = schedulePersonalDataAutoSync;
 
-        function personalDataSummaryText(summary) {
-          return [
-            summary.notes + " note" + (summary.notes === 1 ? "" : "s"),
-            summary.layout + " personal layout position" + (summary.layout === 1 ? "" : "s"),
-            summary.study + " study attempt record" + (summary.study === 1 ? "" : "s"),
-            summary.reading + " read mark" + (summary.reading === 1 ? "" : "s")
-          ].join(", ");
-        }
-
-        function exportPersonalData() {
-          writePersonalLayoutNow();
-          var bytes = window.kgPersonalDataArchive.exportBytes(personalDataStore.getSnapshot());
-          var blob = new Blob([bytes], {type: "application/zip"});
-          var url = URL.createObjectURL(blob);
-          var link = document.createElement("a");
-          link.href = url;
-          link.download = "srkg-personal-data.zip";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(url);
-          setPersonalDataStatus("Personal data exported.");
-        }
-
-        function showPersonalDataImport(profile) {
-          pendingPersonalDataImport = profile;
-          var summary = window.kgPersonalDataArchive.summarize(profile);
-          document.getElementById("kg_personal_data_import_summary").textContent =
-            "This archive contains " + personalDataSummaryText(summary) + ".";
-          var merge = document.querySelector(
-            'input[name="kg_personal_import_mode"][value="merge"]'
-          );
-          if (merge) { merge.checked = true; }
-          var dialog = document.getElementById("kg_personal_data_import_dialog");
-          if (dialog.showModal) { dialog.showModal(); }
-          else { dialog.setAttribute("open", ""); }
-        }
-
-        function closePersonalDataImport() {
-          pendingPersonalDataImport = null;
-          var dialog = document.getElementById("kg_personal_data_import_dialog");
-          if (dialog.close) { dialog.close(); }
-          else { dialog.removeAttribute("open"); }
-        }
-
-        function applyPersonalDataImport() {
-          if (!pendingPersonalDataImport) { return; }
-          var selected = document.querySelector(
-            'input[name="kg_personal_import_mode"]:checked'
-          );
-          var mode = selected ? selected.value : "merge";
-          if (mode === "replace" && !window.confirm(
-            "Replace all personal data currently stored in this browser?"
-          )) { return; }
-          var succeeded = mode === "replace"
-            ? personalDataStore.replaceSnapshot(pendingPersonalDataImport)
-            : personalDataStore.mergeSnapshot(pendingPersonalDataImport);
-          if (!succeeded) {
-            setPersonalDataStatus("Could not save the imported personal data.");
-            return;
-          }
-          try {
-            window.sessionStorage.setItem(
-              "srkg.personalData.importStatus",
-              "Personal data " + (mode === "replace" ? "replaced" : "merged") + "."
-            );
-          } catch (err) { /* reload still applies the import */ }
-          window.location.reload();
-        }
-
         window.kgExportPersonalData = exportPersonalData;
 
         /* Concept details panel rendering and MathJax refresh. */
-        function renderCaptionText(s) {
-          var html = renderConceptText(s);
-          [
-            [/partial_mu A\^mu = 0/g, "\\(\\partial_\\mu A^\\mu = 0\\)"],
-            [/A_mu \+ partial_mu Lambda/g, "\\(A_\\mu + \\partial_\\mu \\Lambda\\)"],
-            [/p_mu - e A_mu/g, "\\(p_\\mu - e A_\\mu\\)"],
-            [/delta S = 0/g, "\\(\\delta S = 0\\)"],
-            [/u\^mu = dx\^mu\/dtau/g, "\\(u^\\mu = dx^\\mu/d\\tau\\)"],
-            [/p\^mu = m u\^mu/g, "\\(p^\\mu = m u^\\mu\\)"],
-            [/F_mu_nu/g, "\\(F_{\\mu\\nu}\\)"],
-            [/phi\(x\)/g, "\\(\\phi(x)\\)"],
-            [/A_mu\(x\)/g, "\\(A_\\mu(x)\\)"],
-            [/A_mu/g, "\\(A_\\mu\\)"],
-            [/A\^mu/g, "\\(A^\\mu\\)"],
-            [/J\^mu/g, "\\(J^\\mu\\)"],
-            [/dp\^mu\/dtau/g, "\\(dp^\\mu/d\\tau\\)"],
-            [/p\^mu/g, "\\(p^\\mu\\)"],
-            [/x\^mu/g, "\\(x^\\mu\\)"],
-            [/u\^mu/g, "\\(u^\\mu\\)"],
-            [/dx\^mu\/dtau/g, "\\(dx^\\mu/d\\tau\\)"],
-            [/p_mu/g, "\\(p_\\mu\\)"],
-            [/s\^2/g, "\\(s^2\\)"],
-            [/d\^4x/g, "\\(d^4x\\)"],
-            [/E=mc\^2/g, "\\(E=mc^2\\)"],
-            [/T_EM/g, "\\(T_{EM}\\)"],
-            [/T\^munu/g, "\\(T^{\\mu\\nu}\\)"]
-          ].forEach(function(replacement) {
-            html = html.replace(replacement[0], replacement[1]);
-          });
-          html = html.replace(/(^|[^\\A-Za-z])tau\b/g, "$1\\(\\tau\\)");
-          return html;
-        }
-
-        function clearMathTypesetting(element) {
-          if (element && window.MathJax && MathJax.typesetClear) {
-            MathJax.typesetClear([element]);
-          }
-        }
-
-        function replaceTypesetContent(element, html) {
-          if (!element) { return; }
-          clearMathTypesetting(element);
-          if (element.id === "info_panel") {
-            lazyFoldedSectionBodies = {};
-          }
-          element.innerHTML = html;
-        }
-
-        function typesetInfoPanel(options) {
-          options = options || {};
-          var panel = document.getElementById("info_panel");
-          schedulePanelContentRefit();
-          if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise([panel]).catch(function(err) {
-              console.warn("MathJax typesetting failed:", err);
-            }).then(function() {
-              applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
-              schedulePanelContentRefit();
-            });
-          } else if (options.searchQuery) {
-            setTimeout(function() {
-              applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
-              schedulePanelContentRefit();
-            }, 250);
-          }
-        }
-
-        function shouldSkipSearchHighlightNode(node) {
-          var el = node.parentElement;
-          if (!el) { return true; }
-          return Boolean(el.closest(
-            "mark, .study-questions, .concept-references, svg, mjx-container, script, style"
-          ));
-        }
-
-        function applyInfoPanelSearchHighlight(query, scrollToMatch) {
-          var normalizedQuery = searchDisplayText(query).toLowerCase();
-          if (!normalizedQuery) { return; }
-
-          var panel = document.getElementById("info_panel");
-          var walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT, {
-            acceptNode: function(node) {
-              if (shouldSkipSearchHighlightNode(node)) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              if (node.nodeValue.toLowerCase().indexOf(normalizedQuery) === -1) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              return NodeFilter.FILTER_ACCEPT;
-            }
-          });
-
-          var matches = [];
-          var node;
-          while ((node = walker.nextNode())) {
-            matches.push(node);
-          }
-
-          var firstMark = null;
-          matches.forEach(function(textNode) {
-            var value = textNode.nodeValue;
-            var lower = value.toLowerCase();
-            var fragment = document.createDocumentFragment();
-            var cursor = 0;
-            var index = lower.indexOf(normalizedQuery);
-
-            while (index !== -1) {
-              if (index > cursor) {
-                fragment.appendChild(document.createTextNode(value.slice(cursor, index)));
-              }
-
-              var mark = document.createElement("mark");
-              mark.className = "kg-search-mark kg-detail-search-mark";
-              mark.textContent = value.slice(index, index + normalizedQuery.length);
-              fragment.appendChild(mark);
-              if (!firstMark) { firstMark = mark; }
-
-              cursor = index + normalizedQuery.length;
-              index = lower.indexOf(normalizedQuery, cursor);
-            }
-
-            if (cursor < value.length) {
-              fragment.appendChild(document.createTextNode(value.slice(cursor)));
-            }
-            textNode.parentNode.replaceChild(fragment, textNode);
-          });
-
-          if (scrollToMatch && firstMark) {
-            firstMark.scrollIntoView({block: "center", inline: "nearest"});
-          }
-        }
 
         function buildWorkspaceShell() {
           if (document.getElementById("kg_workspace")) { return; }
@@ -3163,33 +1038,6 @@
           var numeric = Number(value);
           if (!Number.isFinite(numeric)) { return 50; }
           return Math.max(28, Math.min(72, numeric));
-        }
-
-        function cameraSnapshot() {
-          return {
-            position: network.getViewPosition(),
-            scale: network.getScale()
-          };
-        }
-
-        var cameraRestoreGeneration = 0;
-        function preserveCameraAfterLayout(snapshot) {
-          if (!snapshot) { return; }
-          cameraRestoreGeneration += 1;
-          var generation = cameraRestoreGeneration;
-          function restore() {
-            if (generation !== cameraRestoreGeneration) { return; }
-            network.moveTo({
-              position: snapshot.position,
-              scale: snapshot.scale,
-              animation: false
-            });
-            updateNodeLabelPositions();
-          }
-          requestAnimationFrame(function() {
-            requestAnimationFrame(restore);
-          });
-          setTimeout(restore, 180);
         }
 
         function applyWorkspaceSplit(value) {
@@ -3369,39 +1217,6 @@
             currentSize = 13;
           }
           return currentSize;
-        }
-
-        function currentGraphView() {
-          if (!network || !network.getScale || !network.getViewPosition) {
-            return null;
-          }
-          var position = network.getViewPosition();
-          return {
-            scale: network.getScale(),
-            position: {
-              x: position.x,
-              y: position.y
-            }
-          };
-        }
-
-        function restoreGraphView(view) {
-          if (!view || !network || !network.moveTo) { return; }
-          network.moveTo({
-            position: view.position,
-            scale: view.scale,
-            animation: false
-          });
-          updateNodeLabelPositions();
-        }
-
-        function preserveGraphView(view) {
-          requestAnimationFrame(function() {
-            restoreGraphView(view);
-          });
-          setTimeout(function() {
-            restoreGraphView(view);
-          }, 80);
         }
 
         function setInfoPanelFontSize(sizePx) {
@@ -3621,7 +1436,7 @@
         }
 
         function navigateSelectionHistory(direction) {
-          if (tutorialPlayback.activeRoute && !tutorialPlayback.exploring) { return; }
+          if (guidedTutorial && guidedTutorial.isGuiding()) { return; }
           if (navigationMoving || (direction < 0 ? navigationIndex <= 0 : navigationIndex >= navigationEnd)) { return; }
           navigationMoving = true;
           updateHistoryControls();
@@ -3792,17 +1607,17 @@
           return titles;
         }
 
+        // Summary views are derived from canonical blocks; no duplicate section payload.
         function conceptSections(concept) {
-          if (concept && Array.isArray(concept.sections) && concept.sections.length > 0) {
-            return concept.sections.map(function(section) {
-              return {
-                key: String(section.key || ""),
-                title: String(section.title || ""),
-                text: String(section.text || "")
-              };
-            });
-          }
-          return [];
+          if (!concept) { return []; }
+          var blocks = conceptContentBlocks(concept);
+          return ["definition", "derivation", "explanation"].map(function(kind) {
+            return {
+              key: kind, title: kind.charAt(0).toUpperCase() + kind.slice(1),
+              text: blocks.filter(function(block) { return block.kind === kind; })
+                .map(function(block) { return block.body; }).join("\n\n")
+            };
+          });
         }
 
         function conceptSectionText(concept, key) {
@@ -3811,12 +1626,6 @@
           });
           return section ? section.text : "";
         }
-
-        var legacyContentBlockKinds = {
-          definition: true,
-          derivation: true,
-          explanation: true
-        };
 
         /*
          * Viewer policy tables.
@@ -3946,22 +1755,6 @@
             });
         }
 
-        function isLegacyContentBlock(block, seenKinds) {
-          if (!legacyContentBlockKinds[block.kind]) { return false; }
-          if (seenKinds[block.kind]) { return false; }
-          seenKinds[block.kind] = true;
-          return block.block_id === block.concept_id + "." + block.kind;
-        }
-
-        function shouldRenderContentBlocks(concept) {
-          var blocks = conceptContentBlocks(concept);
-          if (blocks.length === 0) { return false; }
-          var seenKinds = {};
-          return blocks.some(function(block) {
-            return !isLegacyContentBlock(block, seenKinds);
-          });
-        }
-
         function contentBlockKindLabel(kind) {
           return String(kind || "")
             .replace(/_/g, " ")
@@ -3995,22 +1788,13 @@
             renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
         }
 
-        function renderContentBlockReadToggle(blockId, title) {
-          var checked = contentReadProgressState.blocks[String(blockId || "")] === true;
-          return '<input type="checkbox" class="content-block-read-toggle"' +
-            ' aria-label="Mark ' + escapeHtml(title) + ' as read"' +
-            ' title="Mark as read"' +
-            (checked ? " checked" : "") +
-            ">";
-        }
-
-        function renderContentBlock(conceptId, block) {
+        function renderOwnerContentBlock(ownerType, ownerId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
-          var anchorId = contentAnchorId(conceptId, title);
+          var anchorId = contentAnchorId(ownerId, title);
           var bodyClass = "concept-body content-block-body";
           var bodyHtml = renderNoteAnchoredBody(
-            "concept", conceptId, title, block.block_id, "", block.body
+            ownerType, ownerId, title, block.block_id, "", block.body
           );
           if (policy.mode === "folded") {
             bodyClass = "concept-body content-block-fold-body";
@@ -4021,8 +1805,8 @@
               anchorId: anchorId,
               contentBlockId: block.block_id,
               noteBlock: true,
-              className: contentBlockClassName(block, policy),
-              summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
+              className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
+              summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
               bodyClass: bodyClass,
               bodyHtml: bodyHtml
             });
@@ -4031,12 +1815,16 @@
             anchorId: anchorId,
             contentBlockId: block.block_id,
             noteBlock: true,
-            className: contentBlockClassName(block, policy),
+            className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
             open: true,
-            summaryHtml: renderContentBlockHeading("concept", conceptId, block, title),
+            summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
             bodyClass: bodyClass,
             bodyHtml: bodyHtml
           });
+        }
+
+        function renderContentBlock(conceptId, block) {
+          return renderOwnerContentBlock("concept", conceptId, block);
         }
 
         function conceptTocItems(conceptId, concept, studyQuestions, conceptReferences) {
@@ -4047,24 +1835,10 @@
               title: "Graphic"
             });
           }
-          if (shouldRenderContentBlocks(concept)) {
-            conceptContentBlocks(concept).forEach(function(block) {
-              var title = block.title || contentBlockKindLabel(block.kind);
-              items.push({
-                id: contentAnchorId(conceptId, title),
-                title: title,
-                kind: block.kind
-              });
-            });
-          } else {
-            conceptSections(concept).forEach(function(section) {
-              if (!section.text) { return; }
-              items.push({
-                id: contentAnchorId(conceptId, section.title),
-                title: section.title
-              });
-            });
-          }
+          conceptContentBlocks(concept).forEach(function(block) {
+            var title = block.title || contentBlockKindLabel(block.kind);
+            items.push({id: contentAnchorId(conceptId, title), title: title, kind: block.kind});
+          });
 
           if (derivedFromEdgesFor(conceptId).length > 0) {
             items.push({
@@ -4262,15 +2036,9 @@
 
         function graphPositionForNode(nodeId) {
           var id = String(nodeId);
-          // getPositions rounds coordinates; retain subpixel offsets during folding.
-          var liveNode = network && network.body && network.body.nodes[id];
-          if (liveNode && validLayoutPosition(liveNode)) {
-            return copyLayoutPosition(liveNode);
-          }
-          var positions = network && network.getPositions
-            ? network.getPositions([id])
-            : {};
-          var pos = positions[id] || nodes.get(id) || originalNodes[id];
+          var precisePosition = visAdapter.precisePosition(id);
+          if (precisePosition) { return precisePosition; }
+          var pos = nodes.get(id) || originalNodes[id];
           if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y))) {
             return null;
           }
@@ -4471,93 +2239,6 @@
           };
         }
 
-        function fittedModuleLabel(title, memberCount, width, height, options) {
-          options = options || {};
-          var cacheKey = JSON.stringify([
-            String(title), Number(memberCount), Number(width), Number(height),
-            Number(options.countFontSize || 80),
-            Number(options.lineWidthFraction || 0.88),
-            Number(options.titleFontCap || 160),
-            Number(options.availableHeight || 0),
-            Number(options.lineHeightFactor || 1.25),
-            Number(options.verticalShift || 0)
-          ]);
-          if (fittedModuleLabelCache[cacheKey]) {
-            return Object.assign({}, fittedModuleLabelCache[cacheKey]);
-          }
-          var context = document.createElement("canvas").getContext("2d");
-          var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
-          var countFontSize = options.countFontSize || 80;
-          var lineWidth = width * (options.lineWidthFraction || 0.88);
-          function linesAt(size) {
-            context.font = "bold " + size + "px Arial";
-            var lines = [], line = "";
-            String(title).split(/\s+/).forEach(function(word) {
-              var candidate = line ? line + " " + word : word;
-              if (context.measureText(candidate).width <= lineWidth) {
-                line = candidate;
-              } else {
-                if (line) { lines.push(line); }
-                line = word;
-              }
-            });
-            if (line) { lines.push(line); }
-            return lines;
-          }
-          // Cap titles in graph-space units: extra box area need not enlarge text.
-          var low = 1, high = Math.min(options.titleFontCap || 160, Math.min(width, height) * 0.3);
-          for (var i = 0; i < 16; i += 1) {
-            var size = (low + high) / 2;
-            var lines = linesAt(size);
-            var titleFits = lines.every(function(line) {
-              return context.measureText(line).width <= lineWidth;
-            });
-            context.font = countFontSize + "px Arial";
-            var labelHeight = options.availableHeight || height * 0.84;
-            var lineHeightFactor = options.lineHeightFactor || 1.25;
-            if ((lines.length * size + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
-                context.measureText(countLabel).width <= width * 0.88) {
-              low = size;
-            } else { high = size; }
-          }
-          var titleLines = linesAt(low);
-          var verticalShift = Number(options.verticalShift) || 0;
-          var result = {
-            text: titleLines.map(function(line) {
-              return "<b>" + escapeHtml(line) + "</b>";
-            }).join("\n") + "\n" + countLabel,
-            size: low,
-            countSize: countFontSize,
-            // vis centres the first baseline using the base (count) font size,
-            // even for larger bold title lines. Correct each style's baseline
-            // so the combined title/count block is centred inside its box.
-            titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
-            countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
-          };
-          fittedModuleLabelCache[cacheKey] = result;
-          return Object.assign({}, result);
-        }
-
-        function moduleGraphicLayout(width, height) {
-          var pad = Math.max(18, Math.min(width, height) * 0.055);
-          var availableWidth = Math.max(1, width - 2 * pad);
-          var availableHeight = Math.max(1, height * 0.62 - 2 * pad);
-          var graphicWidth = Math.min(availableWidth, availableHeight * 1.6);
-          var graphicHeight = graphicWidth / 1.6;
-          var graphicX = (width - graphicWidth) / 2;
-          var graphicY = pad;
-          var labelTop = graphicY + graphicHeight + pad * 0.55;
-          var labelBottom = height - pad * 0.6;
-          return {
-            graphic: {x: graphicX, y: graphicY, width: graphicWidth, height: graphicHeight},
-            labelArea: {
-              top: labelTop - height / 2,
-              bottom: labelBottom - height / 2,
-              height: Math.max(1, labelBottom - labelTop)
-            },
-            labelCenter: (labelTop + labelBottom) / 2 - height / 2
-          };
-        }
         window.kgModuleGraphicLayout = moduleGraphicLayout;
 
         function foldedModuleConceptProxy(moduleId) {
@@ -4565,12 +2246,11 @@
           var conceptId = selectedConceptInFoldedModule(moduleId);
           var graphNodeId = moduleGraphNodeId(moduleId);
           var graphNode = nodes.get(graphNodeId);
-          var rendered = network && network.body && network.body.nodes[graphNodeId];
+          var shape = visAdapter.nodeGeometry(graphNodeId);
           var conceptNode = conceptId ? nodes.get(conceptId) : null;
-          if (!conceptId || !graphNode || graphNode.hidden || !rendered || !conceptNode) {
+          if (!conceptId || !graphNode || graphNode.hidden || !shape || !conceptNode) {
             return null;
           }
-          var shape = rendered.shape;
           if (!shape) { return null; }
           var layout = moduleGraphicLayout(shape.width, shape.height);
           var baseRadius = Number(conceptNode.visualSize) || Number(conceptNode.size) || 18;
@@ -4595,10 +2275,6 @@
         }
 
         window.kgFoldedModuleConceptProxy = foldedModuleConceptProxy;
-
-        function moduleCornerRadius(width, height) {
-          return Math.min(width, height) * 0.18;
-        }
 
         function expandedModuleGeometrySnapshot() {
           return moduleIds().filter(function(moduleId) {
@@ -4632,45 +2308,8 @@
             : [];
         }
 
-        function drawExpandedModuleOutlines(ctx) {
-          var scale = network && network.getScale ? Number(network.getScale()) : 1;
-          if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
-          expandedModuleOutlineSnapshot().forEach(function(outline) {
-            ctx.save();
-            ctx.globalAlpha = outline.opacity;
-            ctx.strokeStyle = outline.colour;
-            ctx.lineWidth = outline.lineWidth / scale;
-            roundedRectPath(
-              ctx,
-              outline.left,
-              outline.top,
-              outline.width,
-              outline.height,
-              outline.radius
-            );
-            ctx.stroke();
-            ctx.restore();
-          });
-        }
-
         window.kgExpandedModuleOutlineSnapshot = expandedModuleOutlineSnapshot;
 
-        function moduleGraphicCornerRadius(width, height, layout) {
-          layout = layout || moduleGraphicLayout(width, height);
-          var outerRadius = moduleCornerRadius(width, height);
-          // Inset a rounded module boundary rather than introducing an
-          // unrelated second curve. Averaging the unequal landscape insets
-          // keeps the two corner arcs visually close to concentric.
-          var inset = (layout.graphic.x + layout.graphic.y) / 2;
-          return Math.max(
-            0,
-            Math.min(
-              outerRadius - inset,
-              layout.graphic.width / 2,
-              layout.graphic.height / 2
-            )
-          );
-        }
         window.kgModuleGraphicCornerRadius = moduleGraphicCornerRadius;
 
         function moduleGraphNode(moduleId) {
@@ -4761,69 +2400,7 @@
           };
         }
 
-        function moduleGraphicImage(moduleId) {
-          var module = getModule(moduleId) || {};
-          return module.svg_icon
-            ? getSvgNodeImage(moduleGraphNodeId(moduleId) + "::graphic", module.svg_icon)
-            : null;
-        }
         window.kgModuleGraphicImage = moduleGraphicImage;
-
-        function roundedRectPath(ctx, x, y, width, height, radius) {
-          radius = Math.min(radius, width / 2, height / 2);
-          ctx.beginPath();
-          ctx.moveTo(x + radius, y);
-          ctx.lineTo(x + width - radius, y);
-          ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-          ctx.lineTo(x + width, y + height - radius);
-          ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-          ctx.lineTo(x + radius, y + height);
-          ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-          ctx.lineTo(x, y + radius);
-          ctx.quadraticCurveTo(x, y, x + radius, y);
-          ctx.closePath();
-        }
-
-        function drawFoldedModuleGraphics(ctx) {
-          foldedModuleIdList().forEach(function(moduleId) {
-            var nodeId = moduleGraphNodeId(moduleId);
-            var node = nodes.get(nodeId);
-            var rendered = network.body.nodes[nodeId];
-            var proxy = foldedModuleConceptProxy(moduleId);
-            if (proxy) {
-              drawConceptFace(
-                ctx,
-                nodes.get(proxy.conceptId),
-                {x: proxy.x, y: proxy.y},
-                {active: true, radius: proxy.radius}
-              );
-              return;
-            }
-            var image = moduleGraphicImage(moduleId);
-            if (!node || node.hidden || !node.hasModuleGraphic || !rendered ||
-                !image || !image.complete || image.naturalWidth <= 0) { return; }
-            var shape = rendered.shape;
-            var layout = moduleGraphicLayout(shape.width, shape.height);
-            var width = layout.graphic.width;
-            var height = layout.graphic.height;
-            var x = shape.left + layout.graphic.x;
-            var y = shape.top + layout.graphic.y;
-            var radius = moduleGraphicCornerRadius(shape.width, shape.height, layout);
-            ctx.save();
-            roundedRectPath(ctx, x, y, width, height, radius);
-            ctx.clip();
-            ctx.fillStyle = "#fbfcff";
-            ctx.fillRect(x, y, width, height);
-            ctx.drawImage(image, x, y, width, height);
-            ctx.restore();
-            ctx.save();
-            roundedRectPath(ctx, x, y, width, height, radius);
-            ctx.lineWidth = Math.max(2, Math.min(shape.width, shape.height) * 0.006);
-            ctx.strokeStyle = (node.color || {}).border || "#64748b";
-            ctx.stroke();
-            ctx.restore();
-          });
-        }
 
         /* Projected boundary edges shown when module members are folded away. */
         function projectedModuleEndpointForConcept(conceptId, hiddenMembers) {
@@ -4901,39 +2478,23 @@
         }
 
         function projectedModuleEdges(hiddenMembers) {
-          var groups = {};
-          // These edges summarize visible graph boundaries only; allEdges remains the authored KB.
-          allEdges.forEach(function(edge) {
+          var representedByConcept = {};
+          var renderedEdges = {};
+          var boundaryEdges = allEdges.filter(function(edge) {
             var current = edges.get(edge.id) || originalEdges[edge.id] || edge;
-            if (!current || current.hidden) { return; }
-            if (!hiddenMembers[String(edge.from)] && !hiddenMembers[String(edge.to)]) { return; }
-
-            var from = projectedModuleEndpointForConcept(edge.from, hiddenMembers);
-            var to = projectedModuleEndpointForConcept(edge.to, hiddenMembers);
-            if (!from || !to || from === to) { return; }
-
-            var id = projectedModuleEdgePrefix + from + "::" + to;
-            if (!groups[id]) {
-              groups[id] = {
-                id: id,
-                from: from,
-                to: to,
-                relationCounts: {},
-                edgeIds: [],
-                contextEdge: false,
-                overviewEdge: false
-              };
-            }
-            var relation = edgeRelation(edge);
-            groups[id].relationCounts[relation] = (groups[id].relationCounts[relation] || 0) + 1;
-            groups[id].edgeIds.push(edge.id);
-            groups[id].contextEdge = groups[id].contextEdge || current.kgContextEdge === true;
-            groups[id].overviewEdge = groups[id].overviewEdge || current.kgOverviewEdge === true;
+            if (!current || current.hidden ||
+                (!hiddenMembers[String(edge.from)] && !hiddenMembers[String(edge.to)])) { return false; }
+            renderedEdges[edge.id] = current;
+            [edge.from, edge.to].forEach(function(id) {
+              if (!Object.prototype.hasOwnProperty.call(representedByConcept, id)) {
+                representedByConcept[id] = projectedModuleEndpointForConcept(id, hiddenMembers);
+              }
+            });
+            return true;
           });
-          return Object.keys(groups).sort().map(function(id) {
-            groups[id].edgeIds.sort();
-            return projectedModuleEdgeFromGroup(groups[id]);
-          });
+          return kgGraphModel.groupBoundaryEdges(
+            boundaryEdges, renderedEdges, representedByConcept, hiddenMembers, projectedModuleEdgePrefix
+          ).map(projectedModuleEdgeFromGroup);
         }
 
         /* Module fold actions. */
@@ -4948,7 +2509,7 @@
             unfoldModule(moduleId);
           }
 
-          renderGraphFromViewerState({fit: false});
+          renderGraphFromViewerState();
           if (activeModuleId === moduleId) {
             showModule(moduleId, {preserveSectionContext: true});
           }
@@ -4976,8 +2537,7 @@
         }
 
         function refreshGraphAfterModuleFoldChange() {
-          renderGraphFromViewerState({fit: false});
-          updateGraphContextControls();
+          renderGraphFromViewerState();
         }
 
         function foldAllModules() {
@@ -5123,39 +2683,7 @@
         }
 
         function renderModuleContentBlock(moduleId, block) {
-          var title = block.title || contentBlockKindLabel(block.kind);
-          var policy = contentBlockPolicyFor(block.kind);
-          var anchorId = contentAnchorId(moduleId, title);
-          var bodyClass = "concept-body content-block-body";
-          var bodyHtml = renderNoteAnchoredBody(
-            "module", moduleId, title, block.block_id, "", block.body
-          );
-          if (policy.mode === "folded") {
-            bodyClass = "concept-body content-block-fold-body";
-            if (policy.note) {
-              bodyClass += " content-block-note-body";
-            }
-            return renderFoldDown({
-              anchorId: anchorId,
-              contentBlockId: block.block_id,
-              noteBlock: true,
-              className: contentBlockClassName(block, policy) + " module-content-block",
-              summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
-              bodyClass: bodyClass,
-              bodyHtml: bodyHtml
-            });
-          }
-
-          return renderFoldDown({
-            anchorId: anchorId,
-            contentBlockId: block.block_id,
-            noteBlock: true,
-            className: contentBlockClassName(block, policy) + " module-content-block",
-            open: true,
-            summaryHtml: renderContentBlockHeading("module", moduleId, block, title),
-            bodyClass: bodyClass,
-            bodyHtml: bodyHtml
-          });
+          return renderOwnerContentBlock("module", moduleId, block);
         }
 
         function moduleTocItems(moduleId, module) {
@@ -5307,7 +2835,7 @@
           if (!module) { return; }
           var panel = document.getElementById("info_panel");
           var tocItems = moduleTocItems(moduleId, module);
-          currentConceptTocItems = tocItems.slice();
+          detailsView.setItems(tocItems);
 
           var html = renderModuleMasthead(moduleId, module, tocItems);
           html += renderModuleGraphic(moduleId, module);
@@ -5328,9 +2856,9 @@
           if (moduleChanged) {
             panel.scrollTop = 0;
           }
-          detailScrollSyncSuppressedUntil = Date.now() + 350;
+          detailsView.suppressScrollSync(350);
           renderNotesOverview();
-          openUserNoteId = null;
+          notesController.closeEditor();
           var initialItem = initialTocItem(tocItems);
           setActiveConceptSection(initialItem ? initialItem.id : null);
           updateGraphContextControls();
@@ -5404,145 +2932,9 @@
           }
         }
 
-        function openTargetForToc(target) {
-          if (!target) { return; }
-          if (target.tagName === "DETAILS") {
-            target.open = true;
-            return;
-          }
-          var closedDetails = target.closest && target.closest("details:not([open])");
-          if (closedDetails) {
-            closedDetails.open = true;
-          }
-        }
-
-        function scrollInfoPanelTargetBelowStickyToc(target, options) {
-          options = options || {};
-          var panel = document.getElementById("info_panel");
-          if (!panel || !target) { return; }
-
-          var panelRect = panel.getBoundingClientRect();
-          var targetRect = target.getBoundingClientRect();
-          var stickyHeader = panel.querySelector(".concept-sticky-header");
-          var toc = panel.querySelector(".concept-toc");
-          var stickyOffset = 0;
-          if (stickyHeader) {
-            stickyOffset = stickyHeader.getBoundingClientRect().bottom - panelRect.top + 8;
-          } else if (toc) {
-            stickyOffset = toc.getBoundingClientRect().bottom - panelRect.top + 8;
-          }
-
-          var targetTop = targetRect.top - panelRect.top + panel.scrollTop;
-          panel.scrollTo({
-            top: Math.max(0, targetTop - stickyOffset),
-            behavior: options.immediate ? "auto" : "smooth"
-          });
-        }
-
-        function updateConceptTocActive(targetId) {
-          var panel = document.getElementById("info_panel");
-          if (!panel) { return; }
-          panel.querySelectorAll(".concept-toc-link.active").forEach(function(link) {
-            link.classList.remove("active");
-            link.removeAttribute("aria-current");
-          });
-          panel.querySelectorAll(".kg-active-section").forEach(function(section) {
-            section.classList.remove("kg-active-section");
-          });
-          if (!targetId) { return; }
-          var link = panel.querySelector(
-            '.concept-toc-link[data-toc-target="' + cssAttributeValueEscape(targetId) + '"]'
-          );
-          if (!link) { return; }
-          link.classList.add("active");
-          link.setAttribute("aria-current", "true");
-          var target = document.getElementById(targetId);
-          if (target) { target.classList.add("kg-active-section"); }
-        }
-
-        function setActiveConceptSection(targetId) {
-          var nextTargetId = targetId ? String(targetId) : null;
-          var targetChanged = activeConceptSectionTargetId !== nextTargetId;
-          activeConceptSectionTargetId = nextTargetId;
-          if (targetChanged) { updateConceptTocActive(nextTargetId); }
-        }
-
-        function initialTocItem(tocItems) {
-          if (!Array.isArray(tocItems) || tocItems.length === 0) { return null; }
-          if (activeConceptSectionTargetId) {
-            var previous = tocItems.find(function(item) {
-              return item.id === activeConceptSectionTargetId;
-            });
-            if (previous) { return previous; }
-          }
-          return tocItems[0];
-        }
-
-        function activeTocItemFromScroll() {
-          var panel = document.getElementById("info_panel");
-          if (!panel || currentConceptTocItems.length === 0) { return null; }
-          var panelRect = panel.getBoundingClientRect();
-          var stickyHeader = panel.querySelector(".concept-sticky-header");
-          var stickyBottom = stickyHeader
-            ? stickyHeader.getBoundingClientRect().bottom
-            : panelRect.top;
-          var cursorY = stickyBottom + 12;
-          var best = null;
-          var bestTop = -Infinity;
-          var firstVisible = null;
-
-          currentConceptTocItems.forEach(function(item) {
-            var target = document.getElementById(item.id);
-            if (!target) { return; }
-            var rect = target.getBoundingClientRect();
-            if (rect.bottom < panelRect.top || rect.top > panelRect.bottom) { return; }
-            if (!firstVisible || rect.top < firstVisible.top) {
-              firstVisible = {item: item, top: rect.top};
-            }
-            if (rect.top <= cursorY && rect.top >= bestTop) {
-              best = item;
-              bestTop = rect.top;
-            }
-          });
-
-          return best || (firstVisible && firstVisible.item) || null;
-        }
-
-        function updateActiveSectionFromScroll() {
-          var item = activeTocItemFromScroll();
-          if (!item) { return; }
-          setActiveConceptSection(item.id);
-        }
-
-        function scheduleDetailScrollSync() {
-          if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
-          if (detailScrollSyncTimer !== null) {
-            clearTimeout(detailScrollSyncTimer);
-          }
-          detailScrollSyncTimer = setTimeout(function() {
-            detailScrollSyncTimer = null;
-            if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
-            updateActiveSectionFromScroll();
-          }, 80);
-        }
-
         function renderConceptContent(conceptId, concept) {
-          if (shouldRenderContentBlocks(concept)) {
-            return conceptContentBlocks(concept).map(function(block) {
-              return renderContentBlock(conceptId, block);
-            }).join("");
-          }
-          return conceptSections(concept).map(function(section) {
-            var matchingBlocks = conceptContentBlocks(concept).filter(function(block) {
-              return block.kind === section.key;
-            });
-            return renderConceptSection(
-              conceptId,
-              matchingBlocks.length === 1 ? matchingBlocks[0].block_id : "",
-              section.key,
-              section.title,
-              section.text
-            );
+          return conceptContentBlocks(concept).map(function(block) {
+            return renderContentBlock(conceptId, block);
           }).join("");
         }
 
@@ -5550,16 +2942,6 @@
           return conceptSections(concept).reduce(function(titles, section) {
             return titles.concat(optionalDetailTitlesFromText(section.text));
           }, []);
-        }
-
-        function noteTitlesForConcept(nodeId) {
-          return userNotesState.notes
-            .filter(function(note) {
-              return note.targetType === "concept" && note.targetId === String(nodeId) &&
-                !noteIsDefaultEmpty(note);
-            })
-            .map(function(note) { return note.title || "Untitled note"; })
-            .filter(Boolean);
         }
 
         function tooltipListHtml(title, values) {
@@ -6432,8 +3814,7 @@
             rule && rule.depth,
             rule && rule.customTraversals
           );
-          renderGraphFromViewerState({fit: false});
-          updateGraphContextControls();
+          renderGraphFromViewerState();
         }
 
         async function showRelationshipSectionInGraph(preset, fullTree) {
@@ -6444,7 +3825,7 @@
             fullTree ? ContextDepth.TRANSITIVE : ContextDepth.ONE_HOP
           );
           if (viewerState.view === "details") { setViewerView("both"); }
-          renderGraphFromViewerState({fit: false});
+          renderGraphFromViewerState();
           document.getElementById("kg_fit_select").value = "context";
           updateGraphContextControls();
           await nextAnimationFrames(2);
@@ -6458,8 +3839,7 @@
           resetContextFitInteraction();
           viewerState.displayScope = [DisplayScope.ALL, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.ALL;
           updateGraphViewControls();
-          renderGraphFromViewerState({fit: false});
-          updateGraphContextControls();
+          renderGraphFromViewerState();
         }
 
         function representedNodeIds(conceptIds) {
@@ -6490,597 +3870,15 @@
           return [];
         }
 
-        function revealNodeIds(nodeIds, options) {
-          options = options || {};
-          var ids = (nodeIds || []).map(String).filter(function(id, index, values) {
-            var node = nodes.get(id);
-            return node && !node.hidden && values.indexOf(id) === index;
-          });
-          if (ids.length === 0) { return false; }
-
-          var bounds = nodeCanvasBounds(ids);
-          if (!bounds) { return false; }
-          var available = availableGraphRect();
-          var topLeft = network.DOMtoCanvas({x: available.left, y: available.top});
-          var bottomRight = network.DOMtoCanvas({
-            x: available.left + available.width,
-            y: available.top + available.height
-          });
-          var viewLeft = Math.min(topLeft.x, bottomRight.x);
-          var viewRight = Math.max(topLeft.x, bottomRight.x);
-          var viewTop = Math.min(topLeft.y, bottomRight.y);
-          var viewBottom = Math.max(topLeft.y, bottomRight.y);
-          var deltaX = 0;
-          var deltaY = 0;
-
-          if (bounds.width > viewRight - viewLeft) {
-            deltaX = bounds.x - ((viewLeft + viewRight) / 2);
-          } else if (bounds.left < viewLeft) {
-            deltaX = bounds.left - viewLeft;
-          } else if (bounds.right > viewRight) {
-            deltaX = bounds.right - viewRight;
-          }
-          if (bounds.height > viewBottom - viewTop) {
-            deltaY = bounds.y - ((viewTop + viewBottom) / 2);
-          } else if (bounds.top < viewTop) {
-            deltaY = bounds.top - viewTop;
-          } else if (bounds.bottom > viewBottom) {
-            deltaY = bounds.bottom - viewBottom;
-          }
-          if (Math.abs(deltaX) < 0.001 && Math.abs(deltaY) < 0.001) { return false; }
-
-          var position = network.getViewPosition();
-          network.moveTo({
-            position: {x: position.x + deltaX, y: position.y + deltaY},
-            scale: network.getScale(),
-            animation: options.animation === true ? {
-              duration: options.duration || 180,
-              easingFunction: "easeInOutQuad"
-            } : false
-          });
-          updateNodeLabelPositions();
-          return true;
-        }
-
         function revealViewerSelection(options) {
           return revealNodeIds(selectionRepresentationNodeIds(), options);
         }
 
-        function cameraAnimationEnabled() {
-          if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ) {
-            return false;
-          }
-          var memory = Number(navigator.deviceMemory);
-          if (Number.isFinite(memory) && memory > 0 && memory <= 4) {
-            return false;
-          }
-          var processors = Number(navigator.hardwareConcurrency);
-          if (Number.isFinite(processors) && processors > 0 && processors <= 4) {
-            return false;
-          }
-          return true;
-        }
         window.kgCameraAnimationEnabled = cameraAnimationEnabled;
-
-        function updateFitApplyButton() {
-          var button = document.getElementById("kg_fit_apply");
-          if (!button) { return; }
-          var fitSelect = document.getElementById("kg_fit_select");
-          var target = fitSelect ? fitSelect.value : "context";
-          var selection = viewerSelectionSnapshot();
-          var hasTarget = false;
-          if (target === "reveal" || target === "selection") {
-            hasTarget = selection.type !== "none" &&
-              selectionRepresentationNodeIds(selection).length > 0;
-          } else if (target === "displayed") {
-            hasTarget = Boolean(lastGraphRender && lastGraphRender.fitIds.length > 0);
-          } else {
-            hasTarget = selection.type !== "none" && representedNodeIds(
-              lastGraphRender ? lastGraphRender.contextNodeIds : []
-            ).length > 0;
-          }
-          var primed = hasTarget && Boolean(contextFitPrimedKey);
-          button.disabled = !hasTarget;
-          button.textContent = primed ? "Fit++" : "Fit";
-          button.setAttribute("data-fit-action", primed ? "contract" : "fit");
-          button.setAttribute(
-            "aria-label",
-            !hasTarget
-              ? "No available objects to fit"
-              : primed ? "Temporarily contract and fit this context" : "Fit selected target"
-          );
-          button.title = !hasTarget
-            ? (target === "displayed"
-              ? "Nothing is displayed to fit"
-              : "Select a concept or module to use this frame")
-            : primed
-              ? "Temporarily compact the context around the selection, then fit it into view. Navigate away to restore the layout."
-              : "Adjust the camera to the chosen frame. Fitting the context enables Fit++.";
-          document.getElementById("kg_fit_help").textContent = button.title;
-        }
-
-        function clearContextFitPriming() {
-          contextFitPrimedKey = null;
-          updateFitApplyButton();
-        }
-
-        function restoreContextContractionPositions() {
-          if (!contextContractionState) { return false; }
-          Object.keys(contextContractionState.restorePositions).forEach(function(nodeId) {
-            var position = contextContractionState.restorePositions[nodeId];
-            if (nodes.get(nodeId) && validLayoutPosition(position)) {
-              network.moveNode(nodeId, position.x, position.y);
-            }
-          });
-          contextContractionState = null;
-          var notice = document.getElementById("kg_context_notice");
-          if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-            showContextNotice("", "context-contracted");
-          }
-          updateGraphViewControls();
-          updateNodeLabelPositions();
-          return true;
-        }
-
-        function underlyingContextNodePosition(nodeId) {
-          var moduleId = moduleIdFromGraphNodeId(nodeId);
-          if (moduleId && selectedModuleIsFolded(moduleId)) {
-            return moduleGraphNodePosition(moduleId);
-          }
-          if (getConcept(nodeId)) {
-            return effectiveConceptPosition(nodeId);
-          }
-          return graphPositionForNode(nodeId);
-        }
-
-        function resetContextFitInteraction(options) {
-          options = options || {};
-          if (options.restore !== false) {
-            restoreContextContractionPositions();
-          } else {
-            contextContractionState = null;
-            var notice = document.getElementById("kg_context_notice");
-            if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-              showContextNotice("", "context-contracted");
-            }
-            updateGraphViewControls();
-          }
-          clearContextFitPriming();
-        }
-
-        function contextContractionCandidate() {
-          var selection = viewerSelectionSnapshot();
-          if (
-            selection.type === "none" ||
-            !lastGraphRender
-          ) {
-            return null;
-          }
-          var anchorIds = selectionRepresentationNodeIds(selection);
-          var nodeIds = representedNodeIds(lastGraphRender.contextNodeIds);
-          if (anchorIds.length !== 1 || nodeIds.length < 2) { return null; }
-          var anchorId = String(anchorIds[0]);
-          if (nodeIds.indexOf(anchorId) === -1 || !visibleGraphNode(anchorId)) { return null; }
-          nodeIds = nodeIds.map(String).filter(function(id, index, values) {
-            return visibleGraphNode(id) && values.indexOf(id) === index;
-          });
-          if (nodeIds.length < 2) { return null; }
-          var nodeKeep = {};
-          var adjacency = {};
-          nodeIds.forEach(function(nodeId) {
-            nodeKeep[nodeId] = true;
-            adjacency[nodeId] = [];
-          });
-          (lastGraphRender.contextEdgeIds || []).forEach(function(edgeId) {
-            var edge = originalEdges[String(edgeId)] || edges.get(String(edgeId));
-            if (!edge) { return; }
-            var fromIds = representedNodeIds([String(edge.from)]);
-            var toIds = representedNodeIds([String(edge.to)]);
-            var from = fromIds.length === 1 ? String(fromIds[0]) : null;
-            var to = toIds.length === 1 ? String(toIds[0]) : null;
-            if (!from || !to || from === to || !nodeKeep[from] || !nodeKeep[to]) {
-              return;
-            }
-            if (adjacency[from].indexOf(to) === -1) { adjacency[from].push(to); }
-            if (adjacency[to].indexOf(from) === -1) { adjacency[to].push(from); }
-          });
-          Object.keys(adjacency).forEach(function(nodeId) {
-            adjacency[nodeId].sort();
-          });
-          return {
-            anchorId: anchorId,
-            nodeIds: nodeIds,
-            adjacency: adjacency,
-            key: JSON.stringify({
-              selection: selection,
-              contextRule: viewerState.contextRule,
-              nodeIds: nodeIds.slice().sort()
-            })
-          };
-        }
-
-        function contractionGraphPlan(candidate) {
-          var depthByNode = {};
-          var parentCandidates = {};
-          var queue = [candidate.anchorId];
-          depthByNode[candidate.anchorId] = 0;
-
-          while (queue.length > 0) {
-            var current = queue.shift();
-            var nextDepth = depthByNode[current] + 1;
-            (candidate.adjacency[current] || []).forEach(function(neighbour) {
-              if (depthByNode[neighbour] === undefined) {
-                depthByNode[neighbour] = nextDepth;
-                parentCandidates[neighbour] = [current];
-                queue.push(neighbour);
-              } else if (
-                depthByNode[neighbour] === nextDepth &&
-                parentCandidates[neighbour].indexOf(current) === -1
-              ) {
-                parentCandidates[neighbour].push(current);
-              }
-            });
-          }
-          Object.keys(parentCandidates).forEach(function(nodeId) {
-            parentCandidates[nodeId].sort();
-          });
-          return {
-            depthByNode: depthByNode,
-            parentCandidates: parentCandidates,
-            maximumDepth: Object.keys(depthByNode).reduce(function(maximum, nodeId) {
-              return Math.max(maximum, depthByNode[nodeId]);
-            }, 0)
-          };
-        }
 
         window.kgContractionGraphPlan = contractionGraphPlan;
 
-        function reducedContractionExtents(extents) {
-          var left = Number(extents.left) * 0.9;
-          var right = Number(extents.right) * 0.9;
-          var top = Number(extents.top);
-          var bottom = Number(extents.bottom) * 0.9;
-          return {
-            left: left,
-            right: right,
-            top: top,
-            bottom: bottom,
-            width: left + right,
-            height: top + bottom
-          };
-        }
-
-        function contractionNodeExtents(nodeId) {
-          nodeId = String(nodeId);
-          var node = nodes.get(nodeId) || {};
-          if (node.isModuleNode === true || moduleIdFromGraphNodeId(nodeId)) {
-            var width = Number(node.moduleFootprintWidth) || 1;
-            var height = Number(node.moduleFootprintHeight) || 1;
-            return reducedContractionExtents({
-              left: width / 2,
-              right: width / 2,
-              top: height / 2,
-              bottom: height / 2,
-              width: width,
-              height: height
-            });
-          }
-          var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
-          var radius = baseRadius;
-          if (nodeId === String(activeNodeId || "")) {
-            radius *= activeNodeRadiusScale;
-          }
-          var footprint = conceptFootprintExtents(nodeId);
-          var labelVisibilityScale = Number(kgNodeLabelConfig.hideBelowPx) /
-            Math.max(1, nodeLabelFontSize);
-          var minimumVisibleLabelInflation = labelVisibilityScale > 0
-            ? Math.max(1, 0.25 / labelVisibilityScale)
-            : 1;
-          var left = Math.max(radius, footprint.left * minimumVisibleLabelInflation);
-          var right = Math.max(radius, footprint.right * minimumVisibleLabelInflation);
-          var top = Math.max(radius, footprint.top);
-          var bottom = Math.max(
-            radius,
-            radius + Math.max(0, footprint.bottom - baseRadius) *
-              minimumVisibleLabelInflation
-          );
-          var label = nodeLabelEls[nodeId];
-          var scale = network && network.getScale ? Number(network.getScale()) : 1;
-          if (
-            label &&
-            Number.isFinite(scale) &&
-            scale > 0 &&
-            window.getComputedStyle(label).display !== "none"
-          ) {
-            var renderedLabelBounds = label.getBoundingClientRect();
-            var renderedLabelWidth = renderedLabelBounds.width / scale;
-            var renderedLabelHeight = renderedLabelBounds.height / scale;
-            left = Math.max(left, renderedLabelWidth / 2);
-            right = Math.max(right, renderedLabelWidth / 2);
-            bottom = Math.max(
-              bottom,
-              radius + (3 / scale) + renderedLabelHeight
-            );
-          }
-          return reducedContractionExtents({
-            left: left,
-            right: right,
-            top: top,
-            bottom: bottom,
-            width: left + right,
-            height: top + bottom
-          });
-        }
-
-        function contractionClearance(left, right) {
-          var characteristicSize = Math.max(
-            Math.min(left.width, left.height),
-            Math.min(right.width, right.height)
-          );
-          return Math.max(60, Math.min(240, characteristicSize * 0.18));
-        }
-
-        function segmentEntryParameter(start, end, bounds) {
-          var delta = {x: end.x - start.x, y: end.y - start.y};
-          var entry = 0;
-          var exit = 1;
-          [
-            {origin: start.x, delta: delta.x, min: bounds.left, max: bounds.right},
-            {origin: start.y, delta: delta.y, min: bounds.top, max: bounds.bottom}
-          ].forEach(function(axis) {
-            if (entry > exit) { return; }
-            if (Math.abs(axis.delta) < 0.000001) {
-              if (axis.origin < axis.min || axis.origin > axis.max) {
-                entry = 2;
-                exit = 1;
-              }
-              return;
-            }
-            var first = (axis.min - axis.origin) / axis.delta;
-            var second = (axis.max - axis.origin) / axis.delta;
-            if (first > second) {
-              var swap = first;
-              first = second;
-              second = swap;
-            }
-            entry = Math.max(entry, first);
-            exit = Math.min(exit, second);
-          });
-          if (entry > exit || exit < 0 || entry > 1) { return null; }
-          return Math.max(0, entry);
-        }
-
-        function contractionObstacleBounds(movingExtents, obstacle) {
-          var clearance = contractionClearance(movingExtents, obstacle.extents);
-          return {
-            left: obstacle.position.x - obstacle.extents.left - clearance - movingExtents.right,
-            right: obstacle.position.x + obstacle.extents.right + clearance + movingExtents.left,
-            top: obstacle.position.y - obstacle.extents.top - clearance - movingExtents.bottom,
-            bottom: obstacle.position.y + obstacle.extents.bottom + clearance + movingExtents.top
-          };
-        }
-
-        function contractionCollisionEntry(start, end, movingExtents, obstacle) {
-          return segmentEntryParameter(
-            start,
-            end,
-            contractionObstacleBounds(movingExtents, obstacle)
-          );
-        }
-
-        function contractionPositionInsideBounds(position, bounds) {
-          return position.x > bounds.left && position.x < bounds.right &&
-            position.y > bounds.top && position.y < bounds.bottom;
-        }
-
-        function clearInitialContractionCollision(start, anchor, extents, placed) {
-          var radial = {x: start.x - anchor.x, y: start.y - anchor.y};
-          var length = Math.hypot(radial.x, radial.y);
-          if (length < 0.000001) { return copyLayoutPosition(start); }
-          var direction = {x: radial.x / length, y: radial.y / length};
-          var position = copyLayoutPosition(start);
-
-          for (var iteration = 0; iteration < 24; iteration += 1) {
-            var overlapping = placed.map(function(obstacle) {
-              return contractionObstacleBounds(extents, obstacle);
-            }).filter(function(bounds) {
-              return contractionPositionInsideBounds(position, bounds);
-            });
-            if (overlapping.length === 0) { break; }
-
-            var travel = 0;
-            overlapping.forEach(function(bounds) {
-              var horizontalExit = Infinity;
-              var verticalExit = Infinity;
-              if (direction.x > 0.000001) {
-                horizontalExit = (bounds.right - position.x) / direction.x;
-              } else if (direction.x < -0.000001) {
-                horizontalExit = (bounds.left - position.x) / direction.x;
-              }
-              if (direction.y > 0.000001) {
-                verticalExit = (bounds.bottom - position.y) / direction.y;
-              } else if (direction.y < -0.000001) {
-                verticalExit = (bounds.top - position.y) / direction.y;
-              }
-              travel = Math.max(travel, Math.min(horizontalExit, verticalExit));
-            });
-            if (!Number.isFinite(travel) || travel < 0) { break; }
-            position = {
-              x: position.x + direction.x * (travel + 0.5),
-              y: position.y + direction.y * (travel + 0.5)
-            };
-          }
-          return position;
-        }
-
-        function contractCurrentContext(candidate) {
-          candidate = candidate || contextContractionCandidate();
-          if (!candidate) { return false; }
-          restoreContextContractionPositions();
-
-          var originalPositions = network.getPositions(candidate.nodeIds);
-          var restorePositions = {};
-          candidate.nodeIds.forEach(function(nodeId) {
-            var position = underlyingContextNodePosition(nodeId);
-            if (validLayoutPosition(position)) {
-              restorePositions[nodeId] = copyLayoutPosition(position);
-            }
-          });
-          var anchorPosition = originalPositions[candidate.anchorId];
-          if (!validLayoutPosition(anchorPosition)) { return false; }
-          var plan = contractionGraphPlan(candidate);
-          var placed = [{
-            id: candidate.anchorId,
-            position: copyLayoutPosition(anchorPosition),
-            extents: contractionNodeExtents(candidate.anchorId)
-          }];
-          var finalPositions = {};
-          var parentByNode = {};
-          finalPositions[candidate.anchorId] = copyLayoutPosition(anchorPosition);
-
-          for (var depth = 1; depth <= plan.maximumDepth; depth += 1) {
-            var layer = candidate.nodeIds.filter(function(nodeId) {
-              return plan.depthByNode[nodeId] === depth &&
-                validLayoutPosition(originalPositions[nodeId]);
-            }).map(function(nodeId) {
-              var start = originalPositions[nodeId];
-              var candidates = (plan.parentCandidates[nodeId] || []).filter(function(parentId) {
-                return validLayoutPosition(finalPositions[parentId]);
-              });
-              var parentId = candidates.sort(function(leftId, rightId) {
-                var left = finalPositions[leftId];
-                var right = finalPositions[rightId];
-                var leftDistance = Math.hypot(start.x - left.x, start.y - left.y);
-                var rightDistance = Math.hypot(start.x - right.x, start.y - right.y);
-                return leftDistance - rightDistance ||
-                  String(leftId).localeCompare(String(rightId));
-              })[0];
-              var parentPosition = parentId ? finalPositions[parentId] : null;
-              return {
-                nodeId: nodeId,
-                parentId: parentId,
-                parentPosition: parentPosition,
-                distance: parentPosition
-                  ? Math.hypot(start.x - parentPosition.x, start.y - parentPosition.y)
-                  : Infinity
-              };
-            }).filter(function(item) {
-              return Boolean(item.parentId && item.parentPosition);
-            }).sort(function(left, right) {
-              return left.distance - right.distance ||
-                String(left.nodeId).localeCompare(String(right.nodeId));
-            });
-
-            layer.forEach(function(item) {
-              var nodeId = item.nodeId;
-              var start = originalPositions[nodeId];
-              var target = item.parentPosition;
-              var extents = contractionNodeExtents(nodeId);
-              var collisionFreeStart = clearInitialContractionCollision(
-                start,
-                target,
-                extents,
-                placed
-              );
-              var movedOutward = Math.hypot(
-                collisionFreeStart.x - start.x,
-                collisionFreeStart.y - start.y
-              ) > 0.001;
-              var stop = 1;
-              if (!movedOutward) {
-                placed.forEach(function(obstacle) {
-                  var entry = contractionCollisionEntry(
-                    start,
-                    target,
-                    extents,
-                    obstacle
-                  );
-                  if (entry !== null) { stop = Math.min(stop, entry); }
-                });
-                stop = Math.max(0, stop - 0.0001);
-              }
-              var finalPosition = movedOutward ? collisionFreeStart : {
-                x: start.x + (target.x - start.x) * stop,
-                y: start.y + (target.y - start.y) * stop
-              };
-              network.moveNode(nodeId, finalPosition.x, finalPosition.y);
-              finalPositions[nodeId] = finalPosition;
-              parentByNode[nodeId] = item.parentId;
-              placed.push({id: nodeId, position: finalPosition, extents: extents});
-            });
-          }
-
-          contextContractionState = {
-            key: candidate.key,
-            anchorId: candidate.anchorId,
-            originalPositions: originalPositions,
-            restorePositions: restorePositions,
-            finalPositions: finalPositions,
-            depthByNode: plan.depthByNode,
-            parentByNode: parentByNode
-          };
-          updateGraphViewControls();
-          updateNodeLabelPositions();
-          showContextNotice(
-            "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
-            "context-contracted"
-          );
-          return true;
-        }
-
-        function fitViewerTarget(target) {
-          // An explicit fit supersedes any pending pane-resize restoration.
-          cameraRestoreGeneration += 1;
-          var selection = viewerSelectionSnapshot();
-          var ids = [];
-          if (target === "reveal") {
-            revealViewerSelection({animation: cameraAnimationEnabled()});
-            return;
-          } else if (target === "selection") {
-            ids = selectionRepresentationNodeIds(selection);
-          } else if (target === "displayed") {
-            ids = lastGraphRender ? lastGraphRender.fitIds.slice() : [];
-          } else {
-            ids = representedNodeIds(lastGraphRender ? lastGraphRender.contextNodeIds : []);
-          }
-          var contractionCandidate = target === "context"
-            ? contextContractionCandidate()
-            : null;
-          if (
-            contractionCandidate &&
-            contextFitPrimedKey === contractionCandidate.key
-          ) {
-            clearContextFitPriming();
-            if (contractCurrentContext(contractionCandidate)) {
-              ids = contractionCandidate.nodeIds;
-            }
-            fitNodesToAvailableRect(ids, {maxScale: 0.85});
-            return;
-          }
-          clearContextFitPriming();
-          fitNodesToAvailableRect(ids, {maxScale: target === "selection" ? 0.75 : 0.85});
-          if (contractionCandidate) {
-            contextFitPrimedKey = contractionCandidate.key;
-            updateFitApplyButton();
-          }
-        }
-
-        window.kgContextContractionSnapshot = function() {
-          return {
-            primed: Boolean(contextFitPrimedKey),
-            active: Boolean(contextContractionState),
-            anchorId: contextContractionState ? contextContractionState.anchorId : null,
-            depthByNode: contextContractionState
-              ? Object.assign({}, contextContractionState.depthByNode)
-              : {},
-            parentByNode: contextContractionState
-              ? Object.assign({}, contextContractionState.parentByNode)
-              : {}
-          };
-        };
+        window.kgContextContractionSnapshot = contextLayout.snapshot;
 
         function contextTraversalLabelParts(relation, direction) {
           var label = relationDisplayLabel(relation);
@@ -7582,329 +4380,6 @@
           }
         }
 
-        function studyOutcomeText(outcome) {
-          if (outcome === "correct") { return "Correct"; }
-          if (outcome === "unknown") { return "I don’t know"; }
-          if (outcome === "incorrect") { return "Incorrect"; }
-          return "";
-        }
-
-        function studyOutcomeIcon(outcome) {
-          return outcome === "correct" ? "✓" : "✕";
-        }
-
-        function studyOutcomeFeedbackText(outcome) {
-          if (outcome === "correct") { return "Correct — nicely done."; }
-          if (outcome === "unknown") {
-            return "No problem — review the answer, then try when ready.";
-          }
-          if (outcome === "incorrect") {
-            return "Not quite — review the answer and have another go.";
-          }
-          return "";
-        }
-
-        function studyOptionResultHtml(result) {
-          var text = "";
-          if (result === "correct") { text = "✓ Correct answer"; }
-          if (result === "incorrect") { text = "✕ Your answer"; }
-          if (result === "unknown") { text = "✕ I don’t know"; }
-          return text
-            ? '<span class="study-option-result" data-outcome="' +
-              escapeHtml(result) + '">' + escapeHtml(text) + "</span>"
-            : "";
-        }
-
-        function studyQuestionStatusHtml(progress) {
-          var outcome = progress && progress.lastOutcome ? progress.lastOutcome : "";
-          if (!outcome) {
-            return '<span class="study-question-status" data-outcome=""></span>';
-          }
-          return '<span class="study-question-status" data-outcome="' +
-            escapeHtml(outcome) + '"><span aria-hidden="true">' +
-            studyOutcomeIcon(outcome) + "</span> " +
-            escapeHtml(studyOutcomeText(outcome)) + "</span>";
-        }
-
-        function automaticQuestionCorrectOption(question) {
-          var options = Array.isArray(question && question.options) ? question.options : [];
-          return options.find(function(option) { return option && option.is_correct === true; }) || null;
-        }
-
-        function automaticQuestionFeedbackHtml(question, progress) {
-          if (!progress || !progress.lastOutcome) { return ""; }
-          var answer = question && question.answer ? question.answer : "";
-          var html = '<div class="study-question-feedback">';
-          html += '<div class="study-question-result" data-outcome="' +
-            escapeHtml(progress.lastOutcome) + '"><span aria-hidden="true">' +
-            studyOutcomeIcon(progress.lastOutcome) + "</span> " +
-            escapeHtml(studyOutcomeFeedbackText(progress.lastOutcome)) + "</div>";
-          if (answer) {
-            html += renderStudyText(answer, "concept-body study-answer-body");
-          }
-          html += "</div>";
-          return html;
-        }
-
-        function renderAutomaticStudyQuestion(question, index) {
-          var questionId = String(question.question_id || "");
-          var prompt = question.prompt || question.question || "";
-          var options = Array.isArray(question.options) ? question.options : [];
-          var progress = studyProgressState.questions[questionId] || null;
-          var correctOption = automaticQuestionCorrectOption(question);
-          var inputName = "study-response-" + questionId;
-          var html = '<details class="study-question study-question-automatic" data-question-id="' +
-            escapeHtml(questionId) + '" open>';
-          html += '<summary class="study-question-heading"><span class="study-question-title">Question ' +
-            (index + 1) + "</span>" + studyQuestionStatusHtml(progress) + "</summary>";
-          html += '<div class="study-question-body">';
-          html += renderStudyText(prompt, "concept-body study-question-prompt");
-          html += '<fieldset class="study-options"><legend class="kg-visually-hidden">Choose one answer</legend>';
-          options.forEach(function(option) {
-            var optionId = String(option.option_id || "");
-            var result = progress && correctOption && optionId === String(correctOption.option_id)
-              ? "correct"
-              : "";
-            html += '<label class="study-option" data-option-id="' + escapeHtml(optionId) + '"' +
-              (result ? ' data-result="' + result + '"' : "") + ">";
-            html += '<input type="radio" name="' + escapeHtml(inputName) + '" value="' +
-              escapeHtml(optionId) + '">';
-            html += '<span class="study-option-text">' + renderConceptText(option.text || "") + "</span>";
-            html += studyOptionResultHtml(result);
-            html += "</label>";
-          });
-          html += '<label class="study-option study-option-unknown" data-option-id="__unknown__">';
-          html += '<input type="radio" name="' + escapeHtml(inputName) + '" value="__unknown__">';
-          html += '<span class="study-option-text">? — I don’t know; show me the answer</span>';
-          html += "</label></fieldset>";
-          html += '<button type="button" class="study-check-answer" disabled>Check answer</button>';
-          html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
-            automaticQuestionFeedbackHtml(question, progress) + "</div>";
-          html += "</div></details>";
-          return html;
-        }
-
-        function selfAssessedQuestionFeedbackHtml(question, progress, response, pending) {
-          if (!pending && (!progress || !progress.lastOutcome)) { return ""; }
-          var html = '<div class="study-question-feedback study-self-feedback">';
-          if (pending) {
-            html += '<div class="study-question-result study-review-prompt">' +
-              "Compare your answer, then mark it honestly.</div>";
-          } else {
-            html += '<div class="study-question-result" data-outcome="' +
-              escapeHtml(progress.lastOutcome) + '"><span aria-hidden="true">' +
-              studyOutcomeIcon(progress.lastOutcome) + "</span> " +
-              escapeHtml(studyOutcomeFeedbackText(progress.lastOutcome)) + "</div>";
-          }
-          if (response) {
-            html += '<div class="study-answer-label">Your answer</div>';
-            html += renderStudyText(response, "concept-body study-your-answer");
-          }
-          html += '<div class="study-answer-label">Model answer</div>';
-          html += renderStudyText(question.answer || "", "concept-body study-answer-body");
-          if (pending) {
-            html += '<div class="study-self-mark-actions" aria-label="Mark your answer">';
-            html += '<button type="button" class="study-self-mark" data-outcome="correct">✓ Correct</button>';
-            html += '<button type="button" class="study-self-mark" data-outcome="incorrect">✕ Incorrect</button>';
-            html += "</div>";
-          }
-          html += "</div>";
-          return html;
-        }
-
-        function renderSelfAssessedStudyQuestion(question, index) {
-          var questionId = String(question && question.question_id || "");
-          var prompt = question && (question.prompt || question.question)
-            ? (question.prompt || question.question)
-            : "";
-          if (!prompt) { return ""; }
-          var progress = studyProgressState.questions[questionId] || null;
-          var html = '<details class="study-question study-question-self-assessed" data-question-id="' +
-            escapeHtml(questionId) + '" open>';
-          html += '<summary class="study-question-heading"><span class="study-question-title">Question ' +
-            (index + 1) + "</span>" + studyQuestionStatusHtml(progress) + "</summary>";
-          html += '<div class="study-question-body">';
-          html += renderStudyText(prompt, "concept-body study-question-prompt");
-          html += '<label class="study-self-response-label">Your answer';
-          html += '<textarea class="study-self-response" rows="3"></textarea></label>';
-          html += '<div class="study-self-actions">';
-          html += '<button type="button" class="study-self-check-answer">Check answer</button>';
-          html += '<button type="button" class="study-self-unknown">? I don’t know — show answer</button>';
-          html += "</div>";
-          html += '<div class="study-response-validation" role="alert"></div>';
-          html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
-            selfAssessedQuestionFeedbackHtml(question, progress, "", false) + "</div>";
-          html += "</div></details>";
-          return html;
-        }
-
-        function studyOptionElement(card, optionId) {
-          var match = null;
-          card.querySelectorAll(".study-option").forEach(function(optionElement) {
-            if (!match && optionElement.getAttribute("data-option-id") === optionId) {
-              match = optionElement;
-            }
-          });
-          return match;
-        }
-
-        function setStudyOptionResult(optionElement, result) {
-          if (!optionElement) { return; }
-          optionElement.removeAttribute("data-result");
-          var oldResult = optionElement.querySelector(".study-option-result");
-          if (oldResult) { oldResult.remove(); }
-          if (!result) { return; }
-          optionElement.setAttribute("data-result", result);
-          optionElement.insertAdjacentHTML("beforeend", studyOptionResultHtml(result));
-        }
-
-        function applyAutomaticQuestionResult(card, question, progress, selectedOptionId) {
-          var correctOption = automaticQuestionCorrectOption(question);
-          card.querySelectorAll(".study-option").forEach(function(optionElement) {
-            setStudyOptionResult(optionElement, "");
-          });
-          if (correctOption) {
-            var correctElement = studyOptionElement(card, String(correctOption.option_id));
-            setStudyOptionResult(correctElement, "correct");
-          }
-          if (progress.lastOutcome !== "correct") {
-            var selectedElement = studyOptionElement(card, selectedOptionId);
-            if (selectedElement) {
-              setStudyOptionResult(
-                selectedElement,
-                progress.lastOutcome === "unknown" ? "unknown" : "incorrect"
-              );
-            }
-          }
-          var status = card.querySelector(".study-question-status");
-          if (status) {
-            status.setAttribute("data-outcome", progress.lastOutcome);
-            status.innerHTML = '<span aria-hidden="true">' +
-              studyOutcomeIcon(progress.lastOutcome) + "</span> " +
-              escapeHtml(studyOutcomeText(progress.lastOutcome));
-          }
-          var feedbackHost = card.querySelector(".study-feedback-host");
-          if (feedbackHost) {
-            replaceTypesetContent(
-              feedbackHost,
-              automaticQuestionFeedbackHtml(question, progress)
-            );
-          }
-          var button = card.querySelector(".study-check-answer");
-          if (button) { button.disabled = true; }
-          card.setAttribute("data-last-submitted-option-id", selectedOptionId);
-          if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise([card]).catch(function(err) {
-              console.warn("MathJax study feedback typesetting failed:", err);
-            });
-          }
-        }
-
-        function submitAutomaticStudyQuestion(card) {
-          if (!card) { return; }
-          var questionId = String(card.getAttribute("data-question-id") || "");
-          var indexed = studyQuestionIndex[questionId];
-          var question = indexed && indexed.question;
-          var selected = card.querySelector('input[type="radio"]:checked');
-          if (!question || !selected) { return; }
-          var selectedOptionId = String(selected.value || "");
-          if (card.getAttribute("data-last-submitted-option-id") === selectedOptionId) {
-            return;
-          }
-          var correctOption = automaticQuestionCorrectOption(question);
-          var outcome = selectedOptionId === "__unknown__"
-            ? "unknown"
-            : (correctOption && selectedOptionId === String(correctOption.option_id)
-              ? "correct"
-              : "incorrect");
-          var progress = recordStudyAttempt(questionId, outcome);
-          if (!progress) { return; }
-          applyAutomaticQuestionResult(card, question, progress, selectedOptionId);
-        }
-
-        function setStudyCardStatus(card, outcome) {
-          var status = card && card.querySelector(".study-question-status");
-          if (!status) { return; }
-          status.setAttribute("data-outcome", outcome || "");
-          status.innerHTML = outcome
-            ? '<span aria-hidden="true">' + studyOutcomeIcon(outcome) + "</span> " +
-              escapeHtml(studyOutcomeText(outcome))
-            : "";
-        }
-
-        function typesetStudyCard(card) {
-          if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise([card]).catch(function(err) {
-              console.warn("MathJax study feedback typesetting failed:", err);
-            });
-          }
-        }
-
-        function renderSelfAssessedFeedback(card, question, progress, response, pending) {
-          var feedbackHost = card.querySelector(".study-feedback-host");
-          if (feedbackHost) {
-            replaceTypesetContent(
-              feedbackHost,
-              selfAssessedQuestionFeedbackHtml(question, progress, response, pending)
-            );
-          }
-          typesetStudyCard(card);
-        }
-
-        function submitSelfAssessedQuestion(card) {
-          if (!card) { return; }
-          var questionId = String(card.getAttribute("data-question-id") || "");
-          var indexed = studyQuestionIndex[questionId];
-          var question = indexed && indexed.question;
-          var textarea = card.querySelector(".study-self-response");
-          var response = textarea ? String(textarea.value || "").trim() : "";
-          var validation = card.querySelector(".study-response-validation");
-          if (!question || !textarea) { return; }
-          if (!response) {
-            if (validation) { validation.textContent = "Enter an answer, or choose I don’t know."; }
-            textarea.focus();
-            return;
-          }
-          if (validation) { validation.textContent = ""; }
-          card.setAttribute("data-pending-response", response);
-          renderSelfAssessedFeedback(card, question, null, response, true);
-          var checkButton = card.querySelector(".study-self-check-answer");
-          if (checkButton) { checkButton.disabled = true; }
-        }
-
-        function markSelfAssessedQuestion(card, outcome) {
-          if (!card || ["correct", "incorrect"].indexOf(outcome) === -1) { return; }
-          var questionId = String(card.getAttribute("data-question-id") || "");
-          var indexed = studyQuestionIndex[questionId];
-          var question = indexed && indexed.question;
-          var response = String(card.getAttribute("data-pending-response") || "");
-          if (!question || !response) { return; }
-          var progress = recordStudyAttempt(questionId, outcome);
-          if (!progress) { return; }
-          card.removeAttribute("data-pending-response");
-          setStudyCardStatus(card, outcome);
-          renderSelfAssessedFeedback(card, question, progress, response, false);
-          var unknownButton = card.querySelector(".study-self-unknown");
-          if (unknownButton) { unknownButton.disabled = true; }
-        }
-
-        function submitUnknownSelfAssessedQuestion(card) {
-          if (!card) { return; }
-          var questionId = String(card.getAttribute("data-question-id") || "");
-          var indexed = studyQuestionIndex[questionId];
-          var question = indexed && indexed.question;
-          if (!question) { return; }
-          var progress = recordStudyAttempt(questionId, "unknown");
-          if (!progress) { return; }
-          card.removeAttribute("data-pending-response");
-          setStudyCardStatus(card, "unknown");
-          renderSelfAssessedFeedback(card, question, progress, "", false);
-          var checkButton = card.querySelector(".study-self-check-answer");
-          var unknownButton = card.querySelector(".study-self-unknown");
-          if (checkButton) { checkButton.disabled = true; }
-          if (unknownButton) { unknownButton.disabled = true; }
-        }
-
         function sequentialConceptIds() {
           var preferredDomains = ["sr", "math", "gr"];
           var seen = {};
@@ -7965,7 +4440,7 @@
           hideConceptPreview(true);
           var concept = getConcept(nodeId);
           if (!concept) {
-            currentConceptTocItems = [];
+            detailsView.setItems([]);
             setActiveConceptSection(null);
             var missingPanel = document.getElementById("info_panel");
             replaceTypesetContent(missingPanel,
@@ -7986,7 +4461,7 @@
             studyQuestions,
             conceptReferences
           );
-          currentConceptTocItems = tocItems.slice();
+          detailsView.setItems(tocItems);
 
           var panel = document.getElementById("info_panel");
           var html = "";
@@ -8045,9 +4520,9 @@
           if (conceptChanged && !options.scrollToSearchMatch) {
             panel.scrollTop = 0;
           }
-          detailScrollSyncSuppressedUntil = Date.now() + 350;
+          detailsView.suppressScrollSync(350);
           renderNotesOverview();
-          openUserNoteId = null;
+          notesController.closeEditor();
           var initialItem = initialTocItem(tocItems);
           setActiveConceptSection(initialItem ? initialItem.id : null);
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -8137,247 +4612,7 @@
           updateLayoutControls();
         }
 
-        function visualViewportRect() {
-          if (window.visualViewport) {
-            return {
-              left: window.visualViewport.offsetLeft,
-              top: window.visualViewport.offsetTop,
-              right: window.visualViewport.offsetLeft + window.visualViewport.width,
-              bottom: window.visualViewport.offsetTop + window.visualViewport.height,
-              width: window.visualViewport.width,
-              height: window.visualViewport.height
-            };
-          }
-          return {
-            left: 0,
-            top: 0,
-            right: window.innerWidth,
-            bottom: window.innerHeight,
-            width: window.innerWidth,
-            height: window.innerHeight
-          };
-        }
-
-        function intersectRects(a, b) {
-          var left = Math.max(a.left, b.left);
-          var top = Math.max(a.top, b.top);
-          var right = Math.min(a.right, b.right);
-          var bottom = Math.min(a.bottom, b.bottom);
-          if (right <= left || bottom <= top) { return null; }
-          return {
-            left: left,
-            top: top,
-            right: right,
-            bottom: bottom,
-            width: right - left,
-            height: bottom - top
-          };
-        }
-
         /* Viewport fitting around visible panels. */
-        function visiblePanelRects() {
-          return ["kg_controls", "info_panel", "kg_tutorial_narration"].map(function(id) {
-            var el = document.getElementById(id);
-            if (!el || el.hidden || el.classList.contains("kg-hidden")) { return null; }
-            return {
-              id: id,
-              rect: el.getBoundingClientRect()
-            };
-          }).filter(Boolean);
-        }
-
-        function panelOcclusionEdge(panel, baseRect, overlap) {
-          if (panel.id === "kg_tutorial_narration") {
-            return (overlap.top + overlap.bottom) / 2 >= (baseRect.top + baseRect.bottom) / 2
-              ? "bottom" : "top";
-          }
-          if (panel.id === "info_panel" && overlap.width >= baseRect.width * 0.60) {
-            return ((overlap.top + overlap.bottom) / 2) >= ((baseRect.top + baseRect.bottom) / 2)
-              ? "bottom"
-              : "top";
-          }
-          if (panel.id === "info_panel" && overlap.height >= baseRect.height * 0.45) {
-            return ((overlap.left + overlap.right) / 2) >= ((baseRect.left + baseRect.right) / 2)
-              ? "right"
-              : "left";
-          }
-          if (panel.id === "kg_controls" && overlap.height >= baseRect.height * 0.35) {
-            return ((overlap.left + overlap.right) / 2) >= ((baseRect.left + baseRect.right) / 2)
-              ? "right"
-              : "left";
-          }
-
-          var distances = {
-            left: Math.abs(overlap.left - baseRect.left),
-            right: Math.abs(baseRect.right - overlap.right),
-            top: Math.abs(overlap.top - baseRect.top),
-            bottom: Math.abs(baseRect.bottom - overlap.bottom)
-          };
-          return Object.keys(distances).sort(function(a, b) {
-            return distances[a] - distances[b];
-          })[0];
-        }
-
-        function availableGraphRect() {
-          var containerRect = graphContainer.getBoundingClientRect();
-          var viewport = visualViewportRect();
-          var baseAbs = intersectRects(containerRect, viewport) || containerRect;
-          var margin = 28;
-          var availableAbs = {
-            left: baseAbs.left + margin,
-            top: baseAbs.top + margin,
-            right: baseAbs.right - margin,
-            bottom: baseAbs.bottom - margin
-          };
-          var minWidth = Math.min(220, baseAbs.width * 0.65);
-          var minHeight = Math.min(180, baseAbs.height * 0.65);
-          var panels = visiblePanelRects();
-          panels.forEach(function(panel) {
-            if (panel.id !== "kg_tutorial_narration") { return; }
-            var overlap = intersectRects(baseAbs, panel.rect);
-            if (overlap) {
-              minHeight = Math.min(minHeight, Math.max(24, baseAbs.height - overlap.height - margin * 3));
-            }
-          });
-          panels.forEach(function(panel) {
-            var overlap = intersectRects(baseAbs, panel.rect);
-            if (!overlap) { return; }
-            var edge = panelOcclusionEdge(panel, baseAbs, overlap);
-            var candidate = Object.assign({}, availableAbs);
-            if (edge === "left") { candidate.left = Math.max(candidate.left, overlap.right + margin); }
-            if (edge === "right") { candidate.right = Math.min(candidate.right, overlap.left - margin); }
-            if (edge === "top") { candidate.top = Math.max(candidate.top, overlap.bottom + margin); }
-            if (edge === "bottom") { candidate.bottom = Math.min(candidate.bottom, overlap.top - margin); }
-            if (
-              candidate.right - candidate.left >= minWidth &&
-              candidate.bottom - candidate.top >= minHeight
-            ) {
-              availableAbs = candidate;
-            }
-          });
-          var availableWidth = availableAbs.right - availableAbs.left;
-          var availableHeight = availableAbs.bottom - availableAbs.top;
-
-          if (availableWidth < minWidth || availableHeight < minHeight) {
-            availableAbs = {
-              left: baseAbs.left + margin,
-              top: baseAbs.top + margin,
-              right: baseAbs.right - margin,
-              bottom: baseAbs.bottom - margin
-            };
-          }
-
-          var left = availableAbs.left - containerRect.left;
-          var top = availableAbs.top - containerRect.top;
-          var width = Math.max(1, availableAbs.right - availableAbs.left);
-          var height = Math.max(1, availableAbs.bottom - availableAbs.top);
-
-          return {
-            left: left,
-            top: top,
-            width: width,
-            height: height,
-            centerX: left + (width / 2),
-            centerY: top + (height / 2)
-          };
-        }
-
-        function nodeCanvasBounds(nodeIds) {
-          var positions = network.getPositions(nodeIds);
-          var minX = Infinity;
-          var maxX = -Infinity;
-          var minY = Infinity;
-          var maxY = -Infinity;
-
-          nodeIds.forEach(function(id) {
-            var pos = positions[id];
-            var node = nodes.get(id);
-            if (!pos || !node || node.hidden) { return; }
-
-            if (node.isModuleNode) {
-              minX = Math.min(minX, pos.x - node.moduleFootprintWidth / 2);
-              maxX = Math.max(maxX, pos.x + node.moduleFootprintWidth / 2);
-              minY = Math.min(minY, pos.y - node.moduleFootprintHeight / 2);
-              maxY = Math.max(maxY, pos.y + node.moduleFootprintHeight / 2);
-              return;
-            }
-
-            var baseRadius = Number(node.visualSize) || Number(node.size) || 18;
-            var radius = id === activeNodeId ? baseRadius * activeNodeRadiusScale : baseRadius;
-            var halfLabelWidth = nodeLabelWidth / 2;
-            var labelHeight = nodeLabelFontSize * 3.2;
-            var horizontalExtent = Math.max(radius, halfLabelWidth) + 18;
-            var topExtent = radius + 18;
-            var bottomExtent = radius + labelHeight + 28;
-
-            minX = Math.min(minX, pos.x - horizontalExtent);
-            maxX = Math.max(maxX, pos.x + horizontalExtent);
-            minY = Math.min(minY, pos.y - topExtent);
-            maxY = Math.max(maxY, pos.y + bottomExtent);
-          });
-
-          if (!Number.isFinite(minX)) {
-            return null;
-          }
-
-          return {
-            left: minX,
-            top: minY,
-            right: maxX,
-            bottom: maxY,
-            width: Math.max(1, maxX - minX),
-            height: Math.max(1, maxY - minY),
-            x: (minX + maxX) / 2,
-            y: (minY + maxY) / 2
-          };
-        }
-
-        function fitNodesToAvailableRect(nodeIds, options) {
-          options = options || {};
-          var fitIds = nodeIds.map(String).filter(function(id, index, ids) {
-            var node = nodes.get(id);
-            return node && !node.hidden && ids.indexOf(id) === index;
-          });
-          if (fitIds.length === 0) { return; }
-
-          var bounds = nodeCanvasBounds(fitIds);
-          if (!bounds) { return; }
-
-          var available = availableGraphRect();
-          var maxScale = options.maxScale === undefined ? 0.7 : Number(options.maxScale);
-          var minScale = options.minScale === undefined ? 0.001 : Number(options.minScale);
-          if (!Number.isFinite(maxScale) || maxScale <= 0) { maxScale = 0.7; }
-          if (!Number.isFinite(minScale) || minScale <= 0) { minScale = 0.001; }
-
-          var scale = Math.min(
-            available.width / bounds.width,
-            available.height / bounds.height,
-            maxScale
-          );
-          scale = Math.max(minScale, scale);
-
-          var containerCenter = {
-            x: graphContainer.clientWidth / 2,
-            y: graphContainer.clientHeight / 2
-          };
-          var targetPosition = {
-            x: bounds.x - ((available.centerX - containerCenter.x) / scale),
-            y: bounds.y - ((available.centerY - containerCenter.y) / scale)
-          };
-          var animate = options.animation === undefined
-            ? cameraAnimationEnabled()
-            : options.animation !== false;
-
-          network.moveTo({
-            position: targetPosition,
-            scale: scale,
-            animation: animate ? {
-              duration: options.duration || 250,
-              easingFunction: "easeInOutQuad"
-            } : false
-          });
-          setTimeout(updateNodeLabelPositions, animate ? 260 : 0);
-        }
 
         function scheduleViewportRefresh() {
           requestAnimationFrame(updateNodeLabelPositions);
@@ -8417,7 +4652,7 @@
           restoreHoveredEdge();
           hideNodeTooltip();
           if (changed) {
-            activeConceptSectionTargetId = null;
+            detailsView.restoreTarget(null);
           }
 
           activeNodeId = type === "concept" ? id : null;
@@ -8425,7 +4660,7 @@
           updateSelectedConceptHeader(activeNodeId);
           setActiveConceptItem(activeNodeId);
           setActiveModuleItem(activeModuleId);
-          renderGraphFromViewerState({fit: false});
+          renderGraphFromViewerState();
 
           if (type === "concept") {
             showConcept(id, {
@@ -8731,7 +4966,7 @@
           });
           return {
             sections: sections,
-            activeTargetId: activeConceptSectionTargetId,
+            activeTargetId: detailsView.activeTargetId(),
             blockId: active ? active.getAttribute("data-content-block-id") : null,
             derivedFromFullTree: derivedFromFullTreeEnabled,
             whereUsedFullTree: backlinksFullTreeEnabled,
@@ -8765,13 +5000,7 @@
             view: viewerState.view,
             moduleRepresentation: moduleRepresentation,
             details: tutorialDetailsSnapshot(),
-            contextFit: {
-              primedKey: contextFitPrimedKey,
-              contraction: contextContractionState ? Object.assign(
-                cloneSerializable(contextContractionState),
-                {finalPositions: network.getPositions(Object.keys(contextContractionState.finalPositions))}
-              ) : null
-            },
+            contextFit: contextLayout.capture(),
             search: tutorialSearchSnapshot(),
             workspaceSplitPercent: workspaceSplitPercent,
             tools: tutorialToolsSnapshot(),
@@ -8874,12 +5103,12 @@
             );
             if (block) { openTargetForToc(block); }
           }
-          activeConceptSectionTargetId = details.activeTargetId || null;
+          detailsView.restoreTarget(details.activeTargetId);
           Object.keys(details.sections || {}).forEach(function(id) {
             var section = document.getElementById(id);
             if (section && section.tagName === "DETAILS") { section.open = details.sections[id]; }
           });
-          updateConceptTocActive(activeConceptSectionTargetId);
+          updateConceptTocActive(detailsView.activeTargetId());
           document.getElementById("info_panel").scrollTop = Math.max(
             0, Number(details.scrollTop) || 0
           );
@@ -8891,22 +5120,8 @@
               snapshot.url
             );
           }
-          cameraRestoreGeneration += 1;
-          var savedContextFit = snapshot.contextFit || {};
-          contextFitPrimedKey = savedContextFit.primedKey || null;
-          if (savedContextFit.contraction) {
-            contextContractionState = cloneSerializable(savedContextFit.contraction);
-            Object.keys(contextContractionState.finalPositions).forEach(function(id) {
-              var position = contextContractionState.finalPositions[id];
-              if (nodes.get(id) && validLayoutPosition(position)) {
-                network.moveNode(id, position.x, position.y);
-              }
-            });
-            showContextNotice(
-              "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
-              "context-contracted"
-            );
-          }
+          graphCamera.cancelPendingRestore();
+          contextLayout.restoreCheckpoint(snapshot.contextFit || {});
           if (snapshot.camera && snapshot.camera.position) {
             network.moveTo({
               position: snapshot.camera.position,
@@ -8932,852 +5147,47 @@
         window.kgRestoreTutorialPresentation = restoreTutorialPresentation;
         window.kgReplayTutorialCommands = replayTutorialCommands;
 
-        var tutorialPlayback = {
-          selectedId: null,
-          activeRoute: null,
-          baseline: null,
-          exploreSnapshot: null,
-          exploring: false,
-          stepIndex: -1,
-          transitioning: false
-        };
-        var tutorialPointerState = {
-          target: null,
-          label: "",
-          rect: null,
-          visible: false
-        };
-
-        function tutorialElementTarget(element, label) {
-          if (!element) { return null; }
-          var rect = element.getBoundingClientRect();
-          if (!rect.width || !rect.height) { return null; }
-          return {
-            rect: {x: rect.left, y: rect.top, width: rect.width, height: rect.height},
-            label: label
-          };
-        }
-
-        function tutorialGraphBoundsTarget(bounds, label) {
-          if (!bounds || !network || !network.canvas || !network.canvas.frame) { return null; }
-          var canvasRect = network.canvas.frame.canvas.getBoundingClientRect();
-          var topLeft = network.canvasToDOM({x: bounds.left, y: bounds.top});
-          var bottomRight = network.canvasToDOM({x: bounds.right, y: bounds.bottom});
-          return {
-            rect: {
-              x: canvasRect.left + Math.min(topLeft.x, bottomRight.x),
-              y: canvasRect.top + Math.min(topLeft.y, bottomRight.y),
-              width: Math.max(1, Math.abs(bottomRight.x - topLeft.x)),
-              height: Math.max(1, Math.abs(bottomRight.y - topLeft.y))
-            },
-            label: label
-          };
-        }
-
-        function tutorialGraphNodeTarget(nodeId, label) {
-          nodeId = String(nodeId);
-          var node = nodes.get(nodeId);
-          var rendered = network && network.body && network.body.nodes[nodeId];
-          var shape = rendered && rendered.shape;
-          if (!node || node.hidden || !shape) { return null; }
-          return tutorialGraphBoundsTarget({
-            left: shape.left,
-            right: shape.left + shape.width,
-            top: shape.top,
-            bottom: shape.top + shape.height
-          }, label);
-        }
-
-        function tutorialEdgeReference(target, prefix) {
-          target = String(target || "");
-          if (target.indexOf(prefix) !== 0) {
-            throw new Error("Tutorial edge target must begin with " + prefix);
+        var tutorialTargets = kgCreateTutorialTargets({
+          network: network, nodes: nodes, edges: edges, adapter: visAdapter, container: graphContainer,
+          activeRadiusScale: activeNodeRadiusScale, markup: contentMarkup, content: contentModel,
+          selectedConceptId: function() { return activeNodeId; },
+          foldControls: function() { return moduleFoldControlEls; },
+          relationshipTarget: tutorialDetailsRelationshipForTarget,
+          graph: {
+            edgeHoverableInCurrentView: edgeHoverableInCurrentView,
+            edgeRelation: edgeRelation,
+            expandedModuleGeometrySnapshot: expandedModuleGeometrySnapshot,
+            foldedModuleConceptProxyForConcept: foldedModuleConceptProxyForConcept,
+            graphObjectDisplayText: graphObjectDisplayText,
+            graphPositionForNode: graphPositionForNode,
+            highlightHoveredEdge: highlightHoveredEdge,
+            moduleGraphNodeId: moduleGraphNodeId,
+            moduleIdForConcept: moduleIdForConcept,
+            relationshipPhrase: relationshipPhrase,
+            showEdgeTooltip: showEdgeTooltip,
+            showNodeTooltip: showNodeTooltip
           }
-          var parts = target.slice(prefix.length).split("|");
-          if (parts.length !== 3 || parts.some(function(part) { return !part; })) {
-            throw new Error("Tutorial edge target must identify source|RELATION|target");
-          }
-          return {from: parts[0], relation: parts[1], to: parts[2]};
-        }
-
-        function tutorialVisibleEdge(reference) {
-          return edges.get().find(function(edge) {
-            return String(edge.from) === reference.from &&
-              edgeRelation(edge) === reference.relation &&
-              String(edge.to) === reference.to &&
-              edgeHoverableInCurrentView(edge);
-          }) || null;
-        }
-
-        function tutorialGraphEdgeTarget(reference) {
-          var edge = tutorialVisibleEdge(reference);
-          if (!edge) { return null; }
-          var point = null;
-          var rendered = network && network.body && network.body.edges[edge.id];
-          try {
-            if (rendered && rendered.edgeType && rendered.edgeType.getPoint) {
-              point = rendered.edgeType.getPoint(0.5);
-            }
-          } catch (error) { point = null; }
-          if (!point) {
-            var from = graphPositionForNode(edge.from);
-            var to = graphPositionForNode(edge.to);
-            if (from && to) {
-              point = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2};
-            }
-          }
-          if (!point) { return null; }
-          var label = graphObjectDisplayText(edge.from) + " " +
-            relationshipPhrase(edge) + " " + graphObjectDisplayText(edge.to);
-          var target = tutorialGraphBoundsTarget({
-            left: point.x - 12,
-            right: point.x + 12,
-            top: point.y - 12,
-            bottom: point.y + 12
-          }, label);
-          if (target) { target.edgeId = edge.id; }
-          return target;
-        }
-
-        function tutorialConceptTarget(conceptId) {
-          conceptId = String(conceptId);
-          var concept = getConcept(conceptId);
-          if (!concept) { return null; }
-          var label = conceptDisplayId(conceptId) + " " + searchDisplayText(concept.label || "");
-          var node = nodes.get(conceptId);
-          var proxy = foldedModuleConceptProxyForConcept(conceptId);
-          if (proxy) {
-            return tutorialGraphBoundsTarget({
-              left: proxy.x - proxy.radius,
-              right: proxy.x + proxy.radius,
-              top: proxy.y - proxy.radius,
-              bottom: proxy.y + proxy.radius
-            }, label);
-          }
-          var position = graphPositionForNode(conceptId);
-          var direct = null;
-          if (node && !node.hidden && position) {
-            var radius = (Number(node.visualSize) || Number(node.size) || 18) *
-              (conceptId === String(activeNodeId || "") ? activeNodeRadiusScale : 1);
-            direct = tutorialGraphBoundsTarget({
-              left: position.x - radius,
-              right: position.x + radius,
-              top: position.y - radius,
-              bottom: position.y + radius
-            }, label);
-          }
-          if (direct) { return direct; }
-          var moduleId = moduleIdForConcept(conceptId);
-          if (!moduleId) { return null; }
-          return tutorialGraphNodeTarget(
-            moduleGraphNodeId(moduleId),
-            ((getModule(moduleId) || {}).title || moduleId) + " module containing " + label
-          );
-        }
-
-        function tutorialModuleTarget(moduleId) {
-          moduleId = String(moduleId);
-          var module = getModule(moduleId);
-          if (!module) { return null; }
-          var label = (module.title || moduleId) + " module";
-          var folded = tutorialGraphNodeTarget(moduleGraphNodeId(moduleId), label);
-          if (folded) { return folded; }
-          var outline = expandedModuleGeometrySnapshot().find(function(item) {
-            return String(item.moduleId) === moduleId;
-          });
-          return outline ? tutorialGraphBoundsTarget(outline, label) : null;
-        }
-
-        function tutorialTooltipPointer(resolved) {
-          if (!resolved || !graphContainer) { return null; }
-          var containerRect = graphContainer.getBoundingClientRect();
-          return {
-            DOM: {
-              x: resolved.rect.x + resolved.rect.width / 2 - containerRect.left,
-              y: resolved.rect.y + resolved.rect.height / 2 - containerRect.top
-            }
-          };
-        }
-
-        function showTutorialConceptHover(conceptId) {
-          conceptId = String(conceptId);
-          var resolved = tutorialConceptTarget(conceptId);
-          var pointer = tutorialTooltipPointer(resolved);
-          if (!getConcept(conceptId) || !resolved || !pointer) {
-            throw new Error("Tutorial concept hover is unavailable: " + conceptId);
-          }
-          showNodeTooltip(conceptId, pointer);
-        }
-
-        function showTutorialEdgeHover(reference) {
-          var resolved = tutorialGraphEdgeTarget(reference);
-          var pointer = tutorialTooltipPointer(resolved);
-          if (!resolved || !pointer || resolved.edgeId === undefined) {
-            throw new Error("Tutorial edge hover is unavailable");
-          }
-          highlightHoveredEdge(resolved.edgeId);
-          showEdgeTooltip(resolved.edgeId, pointer);
-        }
-
-        function resolveTutorialPointerTarget(target) {
-          target = String(target || "narration");
-          var controlTargets = {
-            context: ["kg_context_preset_select", "Context rule"],
-            depth: ["kg_context_depth_select", "Context depth"],
-            fit: ["kg_fit_apply", "Fit"],
-            "display-scope": ["kg_display_scope_select", "Graph display"],
-            "view": ["kg_view_select", "Workspace view"],
-            search: ["kg_search_toggle", "Search"],
-            "search-input": ["kg_search", "Search query"],
-            tools: ["kg_controls_toggle", "Tools"],
-            "expand-context": ["kg_expand_context_modules", "Expand context modules"]
-          };
-          if (target === "narration") {
-            return tutorialElementTarget(
-              document.getElementById("kg_tutorial_narration"), "Tutorial narration"
-            );
-          }
-          if (target.indexOf("control:module-fold:") === 0) {
-            var foldModuleId = target.slice("control:module-fold:".length);
-            var foldControl = moduleFoldControlEls[foldModuleId];
-            return tutorialElementTarget(
-              foldControl,
-              foldControl ? foldControl.getAttribute("aria-label") : "Module representation"
-            );
-          }
-          if (target.indexOf("control:") === 0) {
-            var control = controlTargets[target.slice("control:".length)];
-            return control
-              ? tutorialElementTarget(document.getElementById(control[0]), control[1])
-              : null;
-          }
-          if (target.indexOf("graph:concept:") === 0) {
-            return tutorialConceptTarget(target.slice("graph:concept:".length));
-          }
-          if (target.indexOf("graph:module:") === 0) {
-            return tutorialModuleTarget(target.slice("graph:module:".length));
-          }
-          if (target.indexOf("graph:edge:") === 0) {
-            return tutorialGraphEdgeTarget(tutorialEdgeReference(target, "graph:edge:"));
-          }
-          if (target.indexOf("search:concept:") === 0) {
-            var searchConceptId = target.slice("search:concept:".length);
-            return tutorialElementTarget(
-              document.querySelector(
-                '#kg_concept_list [data-concept-id="' +
-                cssAttributeValueEscape(searchConceptId) + '"]'
-              ),
-              "Search result " + conceptDisplayId(searchConceptId) + " " +
-                searchDisplayText((getConcept(searchConceptId) || {}).label || "")
-            );
-          }
-          if (target.indexOf("search:module:") === 0) {
-            var searchModuleId = target.slice("search:module:".length);
-            return tutorialElementTarget(
-              document.querySelector(
-                '#kg_concept_list [data-module-id="' +
-                cssAttributeValueEscape(searchModuleId) + '"]'
-              ),
-              "Search result " + ((getModule(searchModuleId) || {}).title || searchModuleId)
-            );
-          }
-          if (target.indexOf("details:block:") === 0) {
-            var blockId = target.slice("details:block:".length);
-            var block = document.querySelector(
-              '#info_panel [data-content-block-id="' + cssAttributeValueEscape(blockId) + '"]'
-            );
-            return tutorialElementTarget(block, "Details block " + blockId);
-          }
-          if (target === "details:heading") {
-            return tutorialElementTarget(
-              document.querySelector("#info_panel .concept-title"), "Details heading"
-            );
-          }
-          if (target === "details:contents") {
-            return tutorialElementTarget(
-              document.querySelector("#info_panel .concept-toc"), "Details contents"
-            );
-          }
-          if (target === "details:study-questions") {
-            return tutorialElementTarget(
-              document.querySelector("#info_panel .study-questions"), "Study Questions"
-            );
-          }
-          if (target === "details:graphic") {
-            return tutorialElementTarget(
-              document.querySelector("#info_panel .concept-figure"), "Details graphic"
-            );
-          }
-          if (target === "details:derived-from-full-tree" || target === "details:where-used-full-tree") {
-            var fullTreeSelector = target === "details:derived-from-full-tree"
-              ? ".concept-derived-from-full-tree" : ".concept-backlinks-full-tree";
-            return tutorialElementTarget(
-              document.querySelector("#info_panel " + fullTreeSelector), "Full tree"
-            );
-          }
-          var relationship = tutorialDetailsRelationshipForTarget(target);
-          if (relationship) {
-            return tutorialElementTarget(
-              document.querySelector("#info_panel " + relationship.showGraphSelector),
-              relationship.label + ": Show in graph"
-            );
-          }
-          if (target.indexOf("tools:section:") === 0) {
-            var toolsSectionName = target.slice("tools:section:".length);
-            var sectionIds = {
-              tutorials: "kg_tutorials_section",
-              modules: "kg_modules_section",
-              layouts: "kg_layouts_section",
-              study: "kg_study_section",
-              "personal-data": "kg_personal_data_section",
-              notes: "kg_notes_section"
-            };
-            return tutorialElementTarget(
-              document.getElementById(sectionIds[toolsSectionName]),
-              toolsSectionName + " Tools section"
-            );
-          }
-          return null;
-        }
-
-        function tutorialMotionDuration() {
-          return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? 0
-            : 360;
-        }
-
-        function positionTutorialPointer(resolved, target) {
-          var pointer = document.getElementById("kg_tutorial_pointer");
-          var halo = document.getElementById("kg_tutorial_halo");
-          if (!pointer || !halo || !resolved) { return; }
-          var rect = resolved.rect;
-          var padding = 6;
-          halo.hidden = false;
-          halo.style.left = (rect.x - padding) + "px";
-          halo.style.top = (rect.y - padding) + "px";
-          halo.style.width = (rect.width + padding * 2) + "px";
-          halo.style.height = (rect.height + padding * 2) + "px";
-          pointer.hidden = false;
-          pointer.style.transform = "translate3d(" +
-            (rect.x + rect.width / 2 - 3) + "px," +
-            (rect.y + rect.height / 2 - 2) + "px,0)";
-          tutorialPointerState = {
-            target: String(target || "narration"),
-            label: resolved.label,
-            rect: Object.assign({}, rect),
-            visible: true
-          };
-          document.getElementById("kg_tutorial_target_description").textContent =
-            "Target: " + resolved.label;
-        }
-
-        function refreshTutorialPointerPosition() {
-          if (!tutorialPointerState.visible || !tutorialPointerState.target) { return; }
-          var resolved = resolveTutorialPointerTarget(tutorialPointerState.target);
-          if (resolved) { positionTutorialPointer(resolved, tutorialPointerState.target); }
-        }
-
-        async function moveTutorialPointer(target) {
-          var resolved = resolveTutorialPointerTarget(target);
-          if (!resolved) { throw new Error("Tutorial target is not available: " + target); }
-          clearTutorialBlockSpotlight();
-          if (String(target).indexOf("details:block:") === 0) {
-            var spotlightBlockId = String(target).slice("details:block:".length);
-            var spotlightBlock = document.querySelector(
-              '#info_panel [data-content-block-id="' +
-              cssAttributeValueEscape(spotlightBlockId) + '"]'
-            );
-            if (spotlightBlock) {
-              spotlightBlock.classList.add("kg-tutorial-block-spotlight");
-            }
-          }
-          var pointer = document.getElementById("kg_tutorial_pointer");
-          var duration = tutorialMotionDuration();
-          if (pointer && !tutorialPointerState.visible && duration) {
-            var narration = document.getElementById("kg_tutorial_narration");
-            var start = narration ? narration.getBoundingClientRect() : null;
-            if (start && start.width && start.height) {
-              pointer.hidden = false;
-              pointer.style.transform = "translate3d(" +
-                (start.left + start.width / 2 - 3) + "px," +
-                (start.top + 8) + "px,0)";
-              void pointer.offsetWidth;
-            }
-          }
-          positionTutorialPointer(resolved, target);
-          if (duration) {
-            await new Promise(function(resolve) { setTimeout(resolve, duration); });
-          }
-        }
-
-        async function pulseTutorialPointer() {
-          var pointer = document.getElementById("kg_tutorial_pointer");
-          if (!pointer || pointer.hidden || tutorialMotionDuration() === 0) { return; }
-          pointer.classList.remove("kg-clicking");
-          void pointer.offsetWidth;
-          pointer.classList.add("kg-clicking");
-          await new Promise(function(resolve) { setTimeout(resolve, 240); });
-          pointer.classList.remove("kg-clicking");
-        }
-
-        function hideTutorialPointer(options) {
-          options = options || {};
-          var previousState = tutorialPointerState;
-          var pointer = document.getElementById("kg_tutorial_pointer");
-          var halo = document.getElementById("kg_tutorial_halo");
-          if (pointer) {
-            pointer.hidden = true;
-            pointer.classList.remove("kg-clicking");
-          }
-          if (halo) { halo.hidden = true; }
-          clearTutorialBlockSpotlight();
-          tutorialPointerState = options.preserveTarget
-            ? {
-                target: previousState.target,
-                label: previousState.label,
-                rect: previousState.rect,
-                visible: false
-              }
-            : {target: null, label: "", rect: null, visible: false};
-          document.getElementById("kg_tutorial_target_description").textContent = "";
-        }
-
-        function clearTutorialEmphasis(options) {
-          hideTutorialPointer(options);
-          hideNodeTooltip();
-          restoreHoveredEdge();
-        }
-
-        function tutorialActionIsHover(action) {
-          var command = String(action && action.command || "");
-          return command === "show-graph-concept-hover" ||
-            command === "show-graph-edge-hover";
-        }
-
-        function tutorialPointerIsTransientAction(target) {
-          target = String(target || "");
-          return target.indexOf("control:") === 0 ||
-            target === "details:derived-from-show-graph" ||
-            target === "details:where-used-show-graph";
-        }
-
-        function clearTutorialBlockSpotlight() {
-          document.querySelectorAll(".kg-tutorial-block-spotlight").forEach(function(block) {
-            block.classList.remove("kg-tutorial-block-spotlight");
-          });
-        }
-
-        function setGuidedTutorialActive(active) {
-          document.body.classList.toggle("kg-tutorial-active", Boolean(active));
-          [
-            "kg_app_header",
-            "kg_graph_context_panel",
-            "kg_controls",
-            "kg_search_section",
-            "info_panel",
-            "kg_pane_splitter"
-          ].forEach(function(id) {
-            var element = document.getElementById(id);
-            if (!element) { return; }
-            element.inert = Boolean(active);
-            if (active) { element.setAttribute("aria-disabled", "true"); }
-            else { element.removeAttribute("aria-disabled"); }
-          });
-        }
-
-        function blockInteractionDuringGuidedTutorial(event) {
-          if (!tutorialPlayback.activeRoute || tutorialPlayback.exploring) { return; }
-          var target = event.target && event.target.closest
-            ? event.target.closest(".kg-tutorial-narration")
-            : null;
-          if (target) { return; }
-          if (event.type === "keydown" && (event.metaKey || event.ctrlKey || event.altKey)) {
-            return;
-          }
-          event.preventDefault();
-          event.stopImmediatePropagation();
-        }
-
-        [
-          "click", "dblclick", "pointerdown", "pointerup", "touchstart",
-          "touchmove", "wheel", "keydown", "input", "change", "submit"
-        ].forEach(function(eventName) {
-          document.addEventListener(
-            eventName,
-            blockInteractionDuringGuidedTutorial,
-            {capture: true, passive: false}
-          );
         });
-
-        function tutorialPointerSnapshot() {
-          return {
-            target: tutorialPointerState.target,
-            label: tutorialPointerState.label,
-            visible: tutorialPointerState.visible,
-            x: tutorialPointerState.rect
-              ? tutorialPointerState.rect.x + tutorialPointerState.rect.width / 2
-              : null,
-            y: tutorialPointerState.rect
-              ? tutorialPointerState.rect.y + tutorialPointerState.rect.height / 2
-              : null,
-            halo: tutorialPointerState.rect ? Object.assign({}, tutorialPointerState.rect) : null
-          };
-        }
+        var tutorialEdgeReference = tutorialTargets.tutorialEdgeReference;
+        var showTutorialConceptHover = tutorialTargets.showTutorialConceptHover;
+        var showTutorialEdgeHover = tutorialTargets.showTutorialEdgeHover;
+        var guidedTutorial = kgCreateGuidedTutorial({
+          routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
+          presentation: {capture: captureTutorialPresentation, restore: restoreTutorialPresentation, replay: replayTutorialCommands},
+          settle: nextAnimationFrames, hover: {hide: hideNodeTooltip, restore: restoreHoveredEdge},
+          workspace: {dismissSplash: dismissSplash, setControlsVisible: setControlsVisible},
+          camera: graphCamera, details: detailsView, markup: contentMarkup
+        });
+        var refreshTutorialPointerPosition = guidedTutorial.refreshTutorialPointerPosition;
+        var tutorialPointerSnapshot = guidedTutorial.tutorialPointerSnapshot;
+        var tutorialRouteById = guidedTutorial.tutorialRouteById;
+        var positionTutorialNarration = guidedTutorial.positionTutorialNarration;
+        var startTutorialById = guidedTutorial.startTutorialById;
+        var requestedTutorialId = guidedTutorial.requestedTutorialId;
+        var tutorialPlaybackSnapshot = guidedTutorial.tutorialPlaybackSnapshot;
+        var initialiseTutorialPlayback = guidedTutorial.initialiseTutorialPlayback;
 
         window.kgTutorialPointerSnapshot = tutorialPointerSnapshot;
-
-        function tutorialRouteById(tutorialId) {
-          return (tutorialData || []).find(function(route) {
-            return String(route.tutorial_id) === String(tutorialId);
-          }) || null;
-        }
-
-        function tutorialCommandsThrough(route, stepIndex) {
-          var commands = [];
-          (route.steps || []).slice(0, stepIndex + 1).forEach(function(step) {
-            (step.prepare || []).forEach(function(command) { commands.push(command); });
-            tutorialStepActions(step).forEach(function(item) { commands.push(item.action); });
-          });
-          return commands;
-        }
-
-        function tutorialStepActions(step) {
-          return step.actions || [{action: step.action, pointer: step.pointer, pause_ms: 0}];
-        }
-
-        function tutorialFinalAction(step) {
-          var actions = tutorialStepActions(step);
-          return actions[actions.length - 1];
-        }
-
-        function renderTutorialList() {
-          var list = document.getElementById("kg_tutorial_list");
-          if (!list) { return; }
-          if (!tutorialData || !tutorialData.length) {
-            list.innerHTML = '<span class="kg-muted-label">No tutorials in this build.</span>';
-            return;
-          }
-          var categories = [
-            {id: "interface", title: "Using PhysicsKG"},
-            {id: "physics", title: "Physics routes"}
-          ];
-          list.innerHTML = categories.map(function(category) {
-            var routes = tutorialData.filter(function(route) {
-              return route.category === category.id;
-            });
-            if (!routes.length) { return ""; }
-            return '<div class="kg-tutorial-list-group">' + escapeHtml(category.title) + '</div>' +
-              routes.map(function(route) {
-                return '<button type="button" class="kg-tutorial-select" data-tutorial-id="' +
-                  escapeHtml(route.tutorial_id) + '" aria-current="false">' +
-                  '<span class="kg-tutorial-list-title">' + escapeHtml(route.title) + '</span>' +
-                  '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' +
-                  '</button>';
-              }).join("");
-          }).join("");
-        }
-
-        function selectTutorialIntroduction(tutorialId) {
-          var route = tutorialRouteById(tutorialId);
-          if (!route) { return; }
-          tutorialPlayback.selectedId = String(route.tutorial_id);
-          document.querySelectorAll(".kg-tutorial-select").forEach(function(button) {
-            button.setAttribute(
-              "aria-current",
-              String(button.getAttribute("data-tutorial-id")) === tutorialPlayback.selectedId
-                ? "true"
-                : "false"
-            );
-          });
-          document.getElementById("kg_tutorial_intro_title").textContent = route.title;
-          var launchUrl = new URL(window.location.href);
-          launchUrl.hash = "";
-          launchUrl.searchParams.set("tutorial", route.tutorial_id);
-          document.getElementById("kg_tutorial_launch_link").href = launchUrl.href;
-          document.getElementById("kg_tutorial_intro_summary").textContent = route.summary;
-          document.getElementById("kg_tutorial_intro_length").textContent =
-            String((route.steps || []).length) +
-            ((route.steps || []).length === 1 ? " step" : " steps");
-          document.getElementById("kg_tutorial_intro").hidden = false;
-        }
-
-        function setTutorialTransitioning(value) {
-          tutorialPlayback.transitioning = Boolean(value);
-          renderTutorialNarration();
-        }
-
-        function renderTutorialNarration(errorMessage) {
-          var card = document.getElementById("kg_tutorial_narration");
-          if (!card) { return; }
-          var route = tutorialPlayback.activeRoute;
-          var active = Boolean(route && tutorialPlayback.stepIndex >= 0);
-          card.hidden = !active;
-          if (!active) { return; }
-          var steps = route.steps || [];
-          var step = steps[tutorialPlayback.stepIndex];
-          document.getElementById("kg_tutorial_first_step_guidance").hidden =
-            tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
-          document.getElementById("kg_tutorial_title").textContent = route.title;
-          document.getElementById("kg_tutorial_progress").textContent =
-            String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
-          document.getElementById("kg_tutorial_step_title").textContent = step.title;
-          var commentary = document.getElementById("kg_tutorial_commentary");
-          replaceTypesetContent(commentary, renderConceptText(step.commentary || ""));
-          var error = document.getElementById("kg_tutorial_error");
-          error.hidden = !errorMessage;
-          error.textContent = errorMessage || "";
-          document.getElementById("kg_tutorial_back").disabled =
-            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-            tutorialPlayback.stepIndex <= 0;
-          document.getElementById("kg_tutorial_next").disabled =
-            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-            tutorialPlayback.stepIndex >= steps.length - 1;
-          document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
-          var exploreButton = document.getElementById("kg_tutorial_explore");
-          exploreButton.disabled = tutorialPlayback.transitioning;
-          exploreButton.textContent = tutorialPlayback.exploring
-            ? "Resume tutorial"
-            : "Explore from here";
-          document.getElementById("kg_tutorial_explore_status").hidden =
-            !tutorialPlayback.exploring;
-          positionTutorialNarration();
-          if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise([commentary]).catch(function(err) {
-              console.warn("Tutorial MathJax typesetting failed:", err);
-            }).then(function() {
-              positionTutorialNarration();
-            });
-          }
-        }
-
-        function positionTutorialNarration() {
-          var card = document.getElementById("kg_tutorial_narration");
-          if (!card) { return; }
-          var docked = !card.hidden && window.matchMedia("(max-width: 850px)").matches;
-          document.body.classList.toggle("kg-tutorial-phone-docked", docked);
-          if (!docked) {
-            document.documentElement.style.removeProperty("--kg-tutorial-dock-height");
-          }
-          if (card.hidden) { return; }
-          if (docked) {
-            var viewport = visualViewportRect();
-            var bottomInset = Math.max(0, window.innerHeight - viewport.bottom) + 7;
-            card.style.top = "auto";
-            card.style.bottom = bottomInset + "px";
-            card.style.left = (viewport.left + viewport.width / 2) + "px";
-            document.documentElement.style.setProperty(
-              "--kg-tutorial-dock-height", (card.offsetHeight + bottomInset + 7) + "px"
-            );
-            return;
-          }
-          var anchor = document.getElementById("kg_graph_pane");
-          var rect = anchor ? anchor.getBoundingClientRect() : null;
-          if (!rect || !rect.width || !rect.height) {
-            anchor = document.getElementById("kg_workspace");
-            rect = anchor ? anchor.getBoundingClientRect() : null;
-          }
-          if (!rect || !rect.width || !rect.height) { return; }
-          var inset = window.matchMedia("(max-width: 850px)").matches ? 7 : 12;
-          card.style.bottom = "auto";
-          card.style.left = (rect.left + rect.width / 2) + "px";
-          card.style.top = Math.max(
-            rect.top + inset,
-            rect.bottom - card.offsetHeight - inset
-          ) + "px";
-          var tooltip = document.getElementById("kg_node_tooltip");
-          if (
-            tooltip && tooltip.style.display !== "none" &&
-            intersectRects(card.getBoundingClientRect(), tooltip.getBoundingClientRect())
-          ) {
-            card.style.top = (rect.top + inset) + "px";
-          }
-        }
-
-        async function runTutorialStep(stepIndex, replay) {
-          if (
-            tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-            !tutorialPlayback.activeRoute
-          ) { return; }
-          var route = tutorialPlayback.activeRoute;
-          if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
-          setTutorialTransitioning(true);
-          clearTutorialEmphasis();
-          try {
-            if (replay) {
-              await replayTutorialCommands(
-                tutorialPlayback.baseline,
-                tutorialCommandsThrough(route, stepIndex)
-              );
-              setControlsVisible(false);
-              tutorialPlayback.stepIndex = stepIndex;
-              var replayStep = route.steps[stepIndex];
-              var replayAction = tutorialFinalAction(replayStep);
-              await moveTutorialPointer(
-                replayAction.pointer ? replayAction.pointer.target : "narration"
-              );
-            } else {
-              var step = route.steps[stepIndex];
-              tutorialPlayback.stepIndex = stepIndex;
-              renderTutorialNarration();
-              var prepare = step.prepare || [];
-              for (var index = 0; index < prepare.length; index += 1) {
-                await executeViewerCommand(prepare[index], {origin: "tutorial"});
-              }
-              var actions = tutorialStepActions(step);
-              for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
-                var item = actions[actionIndex];
-                clearTutorialEmphasis();
-                var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
-                await moveTutorialPointer(stepPointerTarget);
-                await pulseTutorialPointer();
-                await executeViewerCommand(item.action, {origin: "tutorial"});
-                await nextAnimationFrames(2);
-                if (tutorialPointerIsTransientAction(stepPointerTarget)) {
-                  hideTutorialPointer({preserveTarget: true});
-                } else {
-                  refreshTutorialPointerPosition();
-                }
-                if (actionIndex < actions.length - 1 && item.pause_ms) {
-                  await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
-                }
-              }
-            }
-            renderTutorialNarration();
-          } catch (error) {
-            renderTutorialNarration("Tutorial stopped: " + String(error.message || error));
-          } finally {
-            setTutorialTransitioning(false);
-          }
-        }
-
-        async function startSelectedTutorial() {
-          if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
-          var route = tutorialRouteById(tutorialPlayback.selectedId);
-          if (!route || !route.steps || !route.steps.length) { return; }
-          tutorialPlayback.baseline = captureTutorialPresentation();
-          tutorialPlayback.activeRoute = route;
-          tutorialPlayback.exploreSnapshot = null;
-          tutorialPlayback.exploring = false;
-          tutorialPlayback.stepIndex = -1;
-          setControlsVisible(false);
-          setGuidedTutorialActive(true);
-          await runTutorialStep(0, false);
-        }
-
-        function defaultGuidedTutorial() {
-          return tutorialRouteById("using-physicskg") ||
-            (tutorialData || []).find(function(route) { return route.category === "interface"; }) ||
-            (tutorialData || [])[0] || null;
-        }
-
-        async function startTutorialById(tutorialId) {
-          if (tutorialPlayback.activeRoute || tutorialPlayback.transitioning) { return false; }
-          var route = tutorialRouteById(tutorialId);
-          if (!route) { return false; }
-          selectTutorialIntroduction(route.tutorial_id);
-          var dialog = document.getElementById("kg_splash_dialog");
-          if (dialog && dialog.open) { dismissSplash(); }
-          await startSelectedTutorial();
-          return Boolean(tutorialPlayback.activeRoute);
-        }
-
-        function requestedTutorialId() {
-          try {
-            return new URL(window.location.href).searchParams.get("tutorial");
-          } catch (error) {
-            return null;
-          }
-        }
-
-        async function exitTutorial() {
-          if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
-          setTutorialTransitioning(true);
-          var baseline = tutorialPlayback.baseline;
-          try {
-            clearTutorialEmphasis();
-            await restoreTutorialPresentation(baseline);
-            tutorialPlayback.activeRoute = null;
-            tutorialPlayback.baseline = null;
-            tutorialPlayback.exploreSnapshot = null;
-            tutorialPlayback.exploring = false;
-            tutorialPlayback.stepIndex = -1;
-            document.getElementById("kg_tutorial_narration").hidden = true;
-            positionTutorialNarration();
-          } finally {
-            setGuidedTutorialActive(false);
-            tutorialPlayback.transitioning = false;
-          }
-        }
-
-        async function toggleTutorialExploration() {
-          if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
-          if (!tutorialPlayback.exploring) {
-            tutorialPlayback.exploreSnapshot = captureTutorialPresentation();
-            tutorialPlayback.exploring = true;
-            clearTutorialEmphasis();
-            setGuidedTutorialActive(false);
-            renderTutorialNarration();
-            return;
-          }
-          setTutorialTransitioning(true);
-          try {
-            await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
-            tutorialPlayback.exploreSnapshot = null;
-            tutorialPlayback.exploring = false;
-            setGuidedTutorialActive(true);
-            var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
-            var finalAction = tutorialFinalAction(step);
-            await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
-            if (tutorialActionIsHover(finalAction.action)) {
-              await executeViewerCommand(finalAction.action, {origin: "tutorial"});
-            }
-            renderTutorialNarration();
-          } catch (error) {
-            renderTutorialNarration(
-              "Could not resume the tutorial: " + String(error.message || error)
-            );
-          } finally {
-            setTutorialTransitioning(false);
-          }
-        }
-
-        function tutorialPlaybackSnapshot() {
-          return {
-            active: Boolean(tutorialPlayback.activeRoute),
-            tutorialId: tutorialPlayback.activeRoute
-              ? tutorialPlayback.activeRoute.tutorial_id
-              : null,
-            selectedId: tutorialPlayback.selectedId,
-            stepIndex: tutorialPlayback.stepIndex,
-            exploring: tutorialPlayback.exploring,
-            transitioning: tutorialPlayback.transitioning
-          };
-        }
-
-        function initialiseTutorialPlayback() {
-          renderTutorialList();
-          var defaultRoute = defaultGuidedTutorial();
-          var splashStart = document.getElementById("kg_splash_start_tutorial");
-          splashStart.hidden = !defaultRoute;
-          document.getElementById("kg_tutorial_list").addEventListener("click", function(event) {
-            var button = event.target.closest(".kg-tutorial-select");
-            if (button) { selectTutorialIntroduction(button.getAttribute("data-tutorial-id")); }
-          });
-          document.getElementById("kg_tutorial_start").addEventListener("click", startSelectedTutorial);
-          document.getElementById("kg_tutorial_back").addEventListener("click", function() {
-            runTutorialStep(tutorialPlayback.stepIndex - 1, true);
-          });
-          document.getElementById("kg_tutorial_next").addEventListener("click", function() {
-            runTutorialStep(tutorialPlayback.stepIndex + 1, false);
-          });
-          document.getElementById("kg_tutorial_explore").addEventListener(
-            "click", toggleTutorialExploration
-          );
-          document.getElementById("kg_tutorial_exit").addEventListener("click", exitTutorial);
-          splashStart.addEventListener("click", function() {
-            if (defaultRoute) { startTutorialById(defaultRoute.tutorial_id); }
-          });
-        }
 
         window.kgTutorialPlaybackSnapshot = tutorialPlaybackSnapshot;
         window.kgStartTutorial = startTutorialById;
@@ -9926,7 +5336,6 @@
           window.history.replaceState(navigationHistoryState(state), "",
             selection.type === "module" ? moduleHash(selection.id) : conceptHash(selection.id));
         }
-
 
         function focusModule(moduleId, statusPrefix, options) {
           return executeViewerCommand(
@@ -10215,8 +5624,7 @@
             return;
           }
           edges.get().forEach(function(edge) {
-            var rendered = network.body.edges[edge.id];
-            if (!rendered || edge.hidden) { return; }
+            if (edge.hidden) { return; }
             var width = Number(edge.width) || 1;
             var base = edge.isModuleEdge ? Number(edge.kgBaseWidth)
               : Number((originalEdges[edge.id] || {}).width);
@@ -10227,9 +5635,9 @@
             if (String(edge.id) === String(hoveredEdgeId)) {
               minimumPixels *= 2;
             }
-            rendered.options.width = scale < 1
+            visAdapter.setDrawnEdgeWidth(edge.id, scale < 1
               ? Math.max(width, minimumPixels / scale)
-              : width;
+              : width);
           });
           renderedEdgeWidthsDirty = false;
           renderedEdgeWidthScale = scale;
@@ -10268,9 +5676,7 @@
           hideNodeTooltip();
         });
 
-        var graphCanvas = network.canvas && network.canvas.frame
-          ? network.canvas.frame.canvas
-          : null;
+        var graphCanvas = visAdapter.canvasElement();
         var lockedDragProbe = null;
         var lockedLayoutNoticeShown = false;
         function graphNodeAtPointerEvent(e) {
@@ -10293,7 +5699,7 @@
           if (!lockedLayoutNoticeShown) {
             lockedLayoutNoticeShown = true;
             showTransientContextNotice(
-              contextContractionState
+              contextLayout.isActive()
                 ? "Only context nodes can be adjusted in this temporary Fit++ arrangement."
                 : "Layout locked — enable editing in Tools → Layouts.",
               "layout-locked",
@@ -10403,7 +5809,7 @@
           if (reset) {
             e.preventDefault();
             var resetQuestionId = reset.getAttribute("data-question-id");
-            var resetIndexed = studyQuestionIndex[resetQuestionId];
+            var resetIndexed = studyController.indexedQuestion(resetQuestionId);
             if (resetStudyQuestion(resetQuestionId) && resetIndexed &&
                 activeNodeId === resetIndexed.conceptId) {
               refreshActiveConcept();
@@ -10559,16 +5965,7 @@
             document.getElementById("kg_personal_data_section").open = true;
           }
         );
-        document.addEventListener("visibilitychange", function() {
-          if (
-            document.visibilityState === "visible" &&
-            personalDataSyncEngine &&
-            (!cloudSyncLastSuccessfulAt ||
-              Date.now() - cloudSyncLastSuccessfulAt >= cloudSyncPeriodicDelayMs)
-          ) {
-            syncPersonalDataNow();
-          }
-        });
+        document.addEventListener("visibilitychange", personalDataController.onVisibilityChange);
 
         document.getElementById("kg_notes_list").addEventListener("click", function(e) {
           var item = e.target.closest(".kg-note-list-item");
@@ -10579,7 +5976,7 @@
           var targetType = item.getAttribute("data-target-type");
           var targetId = item.getAttribute("data-target-id");
           if (!note) { return; }
-          openUserNoteId = note.id;
+          notesController.openEditor(note.id);
           if (targetType === "module" && getModule(targetId)) {
             focusModule(targetId, "Selected");
           } else if (targetType === "concept" && getConcept(targetId)) {
@@ -10979,7 +6376,7 @@
             var derivedSectionId = derivedSection ? derivedSection.id : null;
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
             refreshActiveConcept();
-            detailScrollSyncSuppressedUntil = Date.now() + 1000;
+            detailsView.suppressScrollSync(1000);
             setActiveConceptSection(derivedSectionId);
             return;
           }
@@ -10990,7 +6387,7 @@
             var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
             backlinksFullTreeEnabled = backlinksFullTree.checked;
             refreshActiveConcept();
-            detailScrollSyncSuppressedUntil = Date.now() + 1000;
+            detailsView.suppressScrollSync(1000);
             setActiveConceptSection(backlinksSectionId);
           }
         });
@@ -11002,9 +6399,9 @@
             var questionId = studyCard
               ? String(studyCard.getAttribute("data-question-id") || "")
               : "";
-            var indexed = studyQuestionIndex[questionId];
+            var indexed = studyController.indexedQuestion(questionId);
             var question = indexed && indexed.question;
-            var progress = studyProgressState.questions[questionId] || null;
+            var progress = studyController.getQuestion(questionId) || null;
             var checkButton = studyCard
               ? studyCard.querySelector(".study-self-check-answer")
               : null;

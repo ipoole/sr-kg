@@ -1,0 +1,246 @@
+/* Details DOM/MathJax lifecycle, section navigation and scroll state. */
+function kgCreateDetailsView(options) {
+  "use strict";
+  var cssAttributeValueEscape = options.markup.cssAttributeValueEscape;
+  var searchDisplayText = options.content.searchDisplayText;
+  var schedulePanelContentRefit = options.onContentChange;
+  var activeConceptSectionTargetId = null, currentConceptTocItems = [];
+  var detailScrollSyncTimer = null, detailScrollSyncSuppressedUntil = 0;
+  function setItems(items) { currentConceptTocItems = items.slice(); }
+  function suppressScrollSync(duration) { detailScrollSyncSuppressedUntil = Date.now() + duration; }
+  function activeTargetId() { return activeConceptSectionTargetId; }
+  function restoreTarget(id) { activeConceptSectionTargetId = id || null; }
+
+  function clearMathTypesetting(element) {
+    if (element && window.MathJax && MathJax.typesetClear) {
+      MathJax.typesetClear([element]);
+    }
+  }
+
+  function replaceTypesetContent(element, html) {
+    if (!element) { return; }
+    clearMathTypesetting(element);
+    element.innerHTML = html;
+  }
+
+  function typesetInfoPanel(options) {
+    options = options || {};
+    var panel = document.getElementById("info_panel");
+    schedulePanelContentRefit();
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([panel]).catch(function(err) {
+        console.warn("MathJax typesetting failed:", err);
+      }).then(function() {
+        applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
+        schedulePanelContentRefit();
+      });
+    } else if (options.searchQuery) {
+      setTimeout(function() {
+        applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
+        schedulePanelContentRefit();
+      }, 250);
+    }
+  }
+
+  function shouldSkipSearchHighlightNode(node) {
+    var el = node.parentElement;
+    if (!el) { return true; }
+    return Boolean(el.closest(
+      "mark, .study-questions, .concept-references, svg, mjx-container, script, style"
+    ));
+  }
+
+  function applyInfoPanelSearchHighlight(query, scrollToMatch) {
+    var normalizedQuery = searchDisplayText(query).toLowerCase();
+    if (!normalizedQuery) { return; }
+
+    var panel = document.getElementById("info_panel");
+    var walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(node) {
+        if (shouldSkipSearchHighlightNode(node)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (node.nodeValue.toLowerCase().indexOf(normalizedQuery) === -1) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    var matches = [];
+    var node;
+    while ((node = walker.nextNode())) {
+      matches.push(node);
+    }
+
+    var firstMark = null;
+    matches.forEach(function(textNode) {
+      var value = textNode.nodeValue;
+      var lower = value.toLowerCase();
+      var fragment = document.createDocumentFragment();
+      var cursor = 0;
+      var index = lower.indexOf(normalizedQuery);
+
+      while (index !== -1) {
+        if (index > cursor) {
+          fragment.appendChild(document.createTextNode(value.slice(cursor, index)));
+        }
+
+        var mark = document.createElement("mark");
+        mark.className = "kg-search-mark kg-detail-search-mark";
+        mark.textContent = value.slice(index, index + normalizedQuery.length);
+        fragment.appendChild(mark);
+        if (!firstMark) { firstMark = mark; }
+
+        cursor = index + normalizedQuery.length;
+        index = lower.indexOf(normalizedQuery, cursor);
+      }
+
+      if (cursor < value.length) {
+        fragment.appendChild(document.createTextNode(value.slice(cursor)));
+      }
+      textNode.parentNode.replaceChild(fragment, textNode);
+    });
+
+    if (scrollToMatch && firstMark) {
+      firstMark.scrollIntoView({block: "center", inline: "nearest"});
+    }
+  }
+
+  function openTargetForToc(target) {
+    if (!target) { return; }
+    if (target.tagName === "DETAILS") {
+      target.open = true;
+      return;
+    }
+    var closedDetails = target.closest && target.closest("details:not([open])");
+    if (closedDetails) {
+      closedDetails.open = true;
+    }
+  }
+
+  function scrollInfoPanelTargetBelowStickyToc(target, options) {
+    options = options || {};
+    var panel = document.getElementById("info_panel");
+    if (!panel || !target) { return; }
+
+    var panelRect = panel.getBoundingClientRect();
+    var targetRect = target.getBoundingClientRect();
+    var stickyHeader = panel.querySelector(".concept-sticky-header");
+    var toc = panel.querySelector(".concept-toc");
+    var stickyOffset = 0;
+    if (stickyHeader) {
+      stickyOffset = stickyHeader.getBoundingClientRect().bottom - panelRect.top + 8;
+    } else if (toc) {
+      stickyOffset = toc.getBoundingClientRect().bottom - panelRect.top + 8;
+    }
+
+    var targetTop = targetRect.top - panelRect.top + panel.scrollTop;
+    panel.scrollTo({
+      top: Math.max(0, targetTop - stickyOffset),
+      behavior: options.immediate ? "auto" : "smooth"
+    });
+  }
+
+  function updateConceptTocActive(targetId) {
+    var panel = document.getElementById("info_panel");
+    if (!panel) { return; }
+    panel.querySelectorAll(".concept-toc-link.active").forEach(function(link) {
+      link.classList.remove("active");
+      link.removeAttribute("aria-current");
+    });
+    panel.querySelectorAll(".kg-active-section").forEach(function(section) {
+      section.classList.remove("kg-active-section");
+    });
+    if (!targetId) { return; }
+    var link = panel.querySelector(
+      '.concept-toc-link[data-toc-target="' + cssAttributeValueEscape(targetId) + '"]'
+    );
+    if (!link) { return; }
+    link.classList.add("active");
+    link.setAttribute("aria-current", "true");
+    var target = document.getElementById(targetId);
+    if (target) { target.classList.add("kg-active-section"); }
+  }
+
+  function setActiveConceptSection(targetId) {
+    var nextTargetId = targetId ? String(targetId) : null;
+    var targetChanged = activeConceptSectionTargetId !== nextTargetId;
+    activeConceptSectionTargetId = nextTargetId;
+    if (targetChanged) { updateConceptTocActive(nextTargetId); }
+  }
+
+  function initialTocItem(tocItems) {
+    if (!Array.isArray(tocItems) || tocItems.length === 0) { return null; }
+    if (activeConceptSectionTargetId) {
+      var previous = tocItems.find(function(item) {
+        return item.id === activeConceptSectionTargetId;
+      });
+      if (previous) { return previous; }
+    }
+    return tocItems[0];
+  }
+
+  function activeTocItemFromScroll() {
+    var panel = document.getElementById("info_panel");
+    if (!panel || currentConceptTocItems.length === 0) { return null; }
+    var panelRect = panel.getBoundingClientRect();
+    var stickyHeader = panel.querySelector(".concept-sticky-header");
+    var stickyBottom = stickyHeader
+      ? stickyHeader.getBoundingClientRect().bottom
+      : panelRect.top;
+    var cursorY = stickyBottom + 12;
+    var best = null;
+    var bestTop = -Infinity;
+    var firstVisible = null;
+
+    currentConceptTocItems.forEach(function(item) {
+      var target = document.getElementById(item.id);
+      if (!target) { return; }
+      var rect = target.getBoundingClientRect();
+      if (rect.bottom < panelRect.top || rect.top > panelRect.bottom) { return; }
+      if (!firstVisible || rect.top < firstVisible.top) {
+        firstVisible = {item: item, top: rect.top};
+      }
+      if (rect.top <= cursorY && rect.top >= bestTop) {
+        best = item;
+        bestTop = rect.top;
+      }
+    });
+
+    return best || (firstVisible && firstVisible.item) || null;
+  }
+
+  function updateActiveSectionFromScroll() {
+    var item = activeTocItemFromScroll();
+    if (!item) { return; }
+    setActiveConceptSection(item.id);
+  }
+
+  function scheduleDetailScrollSync() {
+    if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
+    if (detailScrollSyncTimer !== null) {
+      clearTimeout(detailScrollSyncTimer);
+    }
+    detailScrollSyncTimer = setTimeout(function() {
+      detailScrollSyncTimer = null;
+      if (Date.now() < detailScrollSyncSuppressedUntil) { return; }
+      updateActiveSectionFromScroll();
+    }, 80);
+  }
+
+  return {
+    replaceTypesetContent: replaceTypesetContent,
+    typesetInfoPanel: typesetInfoPanel,
+    openTargetForToc: openTargetForToc,
+    scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,
+    updateConceptTocActive: updateConceptTocActive,
+    setActiveConceptSection: setActiveConceptSection,
+    initialTocItem: initialTocItem,
+    scheduleDetailScrollSync: scheduleDetailScrollSync,
+    setItems: setItems,
+    suppressScrollSync: suppressScrollSync,
+    activeTargetId: activeTargetId,
+    restoreTarget: restoreTarget
+  };
+}

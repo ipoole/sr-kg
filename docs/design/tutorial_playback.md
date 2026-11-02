@@ -10,6 +10,12 @@ contains an interface orientation and physics routes on rest energy and time
 dilation, all available in
 Tools or through a `?tutorial=<tutorial-id>` URL.
 
+Implementation ownership: `guided_tutorial.js` manages playback state and input
+locking; `tutorial_targets.js` resolves live controls, blocks and graph hover
+targets. The application supplies semantic command execution and a presentation
+capture/restore bridge; camera and temporary Fit++ state remain with their own
+controllers. See [Architecture](architecture.md) for those boundaries.
+
 ## Purpose
 
 PhysicsKG should support curated routes through the live viewer. A route may

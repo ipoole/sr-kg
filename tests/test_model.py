@@ -10,7 +10,7 @@ from srkg.model import (
 )
 
 
-def test_concept_serializes_sections_and_study_questions():
+def test_concept_serializes_study_questions_without_duplicate_sections():
     concept = Concept(
         id="sr.inertial_frames",
         display_id="1.1",
@@ -51,11 +51,7 @@ def test_concept_serializes_sections_and_study_questions():
     assert "definition_new" not in data
     assert "derivation_new" not in data
     assert "explanation_new" not in data
-    assert data["sections"] == [
-        {"key": "definition", "title": "Definition", "text": "Definition text"},
-        {"key": "derivation", "title": "Derivation", "text": ""},
-        {"key": "explanation", "title": "Explanation", "text": "Explanation text"},
-    ]
+    assert "sections" not in data
     assert data["study_questions"] == [
         {
             "question_id": "sr.inertial_frames.q1",
@@ -86,7 +82,7 @@ def test_concept_serializes_sections_and_study_questions():
     ]
 
 
-def test_concept_serializes_content_blocks_alongside_viewer_sections():
+def test_concept_serializes_canonical_content_blocks():
     concept = Concept(
         id="1.1",
         label="Inertial frames",

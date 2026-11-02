@@ -109,6 +109,14 @@ import remains available for compatibility.
 
 ## Synchronisation architecture
 
+Implementation ownership: `personal_data.js` owns the local profile/merge model;
+archive, sync and Drive modules provide separate codecs/protocol adapters.
+`personal_data_controller.js` owns connection UI and sync scheduling. Its explicit
+merge callback reloads the layout, notes and study controllers and updates
+summaries without replacing the active Details pane. This preserves open blocks,
+note editors and question drafts. See [Architecture](architecture.md) for the
+complete controller map.
+
 The provider-neutral sync engine downloads the portable archive, validates and
 merges it through the personal-data store, then uploads the merged archive. A
 provider supplies only revision-aware `read` and `write` operations. If a write

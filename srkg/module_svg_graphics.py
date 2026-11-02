@@ -6,20 +6,6 @@ from pathlib import Path
 import re
 
 
-IMPLEMENTED_MODULE_IDS = (
-    "sr.spacetime_foundations",
-    "sr.relativistic_mechanics",
-    "sr.variational_and_field_theory",
-    "sr.electromagnetic_structure_gauge_and_stress_energy",
-    "sr.field_dynamics_conservation_and_radiation",
-    "gr.foundations_and_spacetime_geometry",
-    "gr.connections_transport_and_motion",
-    "gr.curvature_and_gravitational_action",
-    "gr.matter_and_einstein_equations",
-    "gr.weak_field_and_classical_tests",
-    "gr.schwarzschild_geometry_and_black_holes",
-)
-
 _ASSET_ROOT = Path(__file__).with_name("svg_graphics") / "module_assets"
 _ASSETS = {
     "sr.spacetime_foundations": "sr1_spacetime_lorentz_{variant}.svg",
@@ -34,6 +20,7 @@ _ASSETS = {
     "gr.weak_field_and_classical_tests": "gr5_weak_field_{variant}.svg",
     "gr.schwarzschild_geometry_and_black_holes": "gr6_black_hole_{variant}.svg",
 }
+IMPLEMENTED_MODULE_IDS = tuple(_ASSETS)
 _TITLES = {
     "sr.spacetime_foundations": "SR-1 Spacetime and Lorentz Symmetry",
     "sr.relativistic_mechanics": "SR-2 Relativistic Particle Mechanics",

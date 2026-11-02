@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from srkg.pipeline import generate_viewer_from_root
-from srkg.data import createSvgGraphic as create_repo_svg_graphic
+from srkg.graphic_enrichment import createSvgGraphic as create_repo_svg_graphic
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -660,7 +660,7 @@ def playwright_browser():
 def browser_fixture_output(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("browser-fixture")
     _write_browser_fixture(tmp_path)
-    with patch("srkg.data.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
+    with patch("srkg.graphic_enrichment.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
         return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
 
 
@@ -678,7 +678,7 @@ def fast_browser_fixture_output(browser_fixture_output):
 def constructed_browser_fixture_output(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("browser-constructed-fixture")
     _write_browser_fixture(tmp_path, include_constructed_from=True)
-    with patch("srkg.data.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
+    with patch("srkg.graphic_enrichment.createSvgGraphic", side_effect=_create_fixture_svg_graphic):
         return _prepare_browser_output(tmp_path, tmp_path, "Browser Harness")
 
 

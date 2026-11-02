@@ -47,6 +47,15 @@ def test_connect_syncs_immediately_and_local_changes_schedule_another_sync(brows
     page.evaluate("() => kgSchedulePersonalDataAutoSync(0)")
     page.wait_for_function("() => window.__syncCalls === 2")
 
+    page.evaluate("""() => {
+      Object.defineProperty(document, 'visibilityState', {configurable: true, value: 'visible'});
+      const originalNow = Date.now;
+      Date.now = () => originalNow() + 6 * 60 * 1000;
+      try { document.dispatchEvent(new Event('visibilitychange')); }
+      finally { Date.now = originalNow; }
+    }""")
+    page.wait_for_function("() => window.__syncCalls === 3")
+
 
 @pytest.mark.browser
 def test_completed_sync_does_not_rebuild_an_active_details_editor(browser_graph):

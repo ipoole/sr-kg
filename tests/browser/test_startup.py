@@ -1234,18 +1234,6 @@ def test_browser_back_moves_from_module_to_concept(browser_graph):
 
 
 @pytest.mark.browser
-def test_legacy_concept_uses_coarse_details_sections(shared_browser_graph):
-    page = shared_browser_graph.page
-
-    shared_browser_graph.click_concept("2.1")
-
-    assert page.locator("#info_panel h3 .kg-noteable-title").evaluate_all(
-        "nodes => nodes.map(node => node.textContent)"
-    ) == ["Definition", "Explanation"]
-    assert page.locator("#info_panel .content-block").count() == 0
-
-
-@pytest.mark.browser
 def test_revised_concept_renders_ordered_content_blocks(shared_browser_graph):
     page = shared_browser_graph.page
 
@@ -1259,7 +1247,6 @@ def test_revised_concept_renders_ordered_content_blocks(shared_browser_graph):
     ) == ["Definition", "Gamma intuition"]
     assert "Gamma definition" in page.locator("#info_panel").inner_text()
     assert "Gamma intuition body" in page.locator("#info_panel").inner_text()
-    assert page.locator("#info_panel .concept-section h3").count() == 0
 
 
 @pytest.mark.browser

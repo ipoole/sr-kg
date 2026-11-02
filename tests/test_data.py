@@ -121,11 +121,7 @@ def test_build_concept_data_trims_fields_adds_graphics_and_study_questions():
         concept_data["sr.inertial_frames"]["domain_title"]
         == "Special Relativity and Classical Fields"
     )
-    assert concept_data["sr.inertial_frames"]["sections"] == [
-        {"key": "definition", "title": "Definition", "text": "Definition text"},
-        {"key": "derivation", "title": "Derivation", "text": "Derivation text"},
-        {"key": "explanation", "title": "Explanation", "text": "Explanation text"},
-    ]
+    assert "sections" not in concept_data["sr.inertial_frames"]
     assert concept_data["sr.inertial_frames"]["content_blocks"] == [
         {
             "block_id": "sr.inertial_frames.definition",

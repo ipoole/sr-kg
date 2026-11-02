@@ -239,7 +239,6 @@ class Concept:
             "label": self.label,
             "domain": self.domain,
             "domain_title": self.domain_title,
-            "sections": [section.to_viewer_data() for section in self.sections],
             "content_blocks": [
                 block.to_viewer_data() for block in self.content_blocks
             ],

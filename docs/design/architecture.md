@@ -1,60 +1,325 @@
 # Architecture
 
-## Generation and runtime
+Implementation after the responsibility refactor (issue 7.2), based on v4.3.1.
+This describes the running code, including remaining coupling. The staged
+verification record and comparable source counts are in
+[Refactoring progress](refactoring_progress.md). Domain-specific data/graphics
+separation remains issue 7.3; publishing changes remain issue 6.
 
-The project generates a static interactive HTML viewer from a manifest-backed
-knowledge base. Python loads and validates authored data, resolves relationships
-and layout, renders a base PyVis network, and injects the browser application.
-The generated page needs no application server, but is not self-contained:
-vis-network and MathJax load from CDNs, and the PyVis template also references
-`lib/bindings/utils.js` relative to the HTML file.
+## System boundary
 
-`srkg.pipeline` coordinates the stages. `srkg.kb` exposes the loaded knowledge
-model; data, graph diagnostics, layout and SVG graphics can be tested separately
-from rendering. `srkg.render_pyvis` produces the base document and
-`srkg.html_injection` adds the application in `srkg/viewer_assets`.
+PhysicsKG is a Python static-site generator plus a browser application. Authored
+CSV/YAML/JSON and deterministic SVG graphics become an interactive HTML viewer.
+There is no application server or database service operated by PhysicsKG.
+The browser holds personal data and optionally synchronises it directly with
+Google Drive. Neither browser edits nor sync write back to authored KB files.
 
-The [schema](kb_schema.md) defines durable input contracts. The generated viewer
-is an artifact, not an alternative authoring source.
+The viewer is not a self-contained offline file: vis-network and MathJax load
+from CDNs, and the PyVis template references `lib/bindings/utils.js` relative to
+the output. Google Identity Services loads on demand for sign-in. Root-level
+landing, privacy and terms pages, icons, sitemap and the legacy redirect are
+separate website files. Product identity/version lives in `srkg/branding.py`;
+build and presentation defaults live in `srkg/config.py`.
 
-## Content and presentation
+```mermaid
+flowchart TD
+    Sources[Manifest and authored data] --> KB[KB loading and model]
+    Graphics[SVG generators and assets] --> KB
+    KB --> Pipeline[Generation pipeline]
+    Layout[Published layout and generated positions] --> Pipeline
+    Pipeline --> PyVis[Base PyVis document]
+    Assets[Viewer HTML, CSS and JavaScript] --> Injection[HTML injection]
+    PyVis --> Injection
+    Injection --> Output[output/PhysicsKG.html]
+    Output --> Browser[Browser application]
+    Browser <--> Local[Browser personal-data profile]
+    Local <--> Sync[Archive and sync engine]
+    Sync <--> Drive[Optional Google Drive file]
+```
 
-The concept graph provides navigation; flat ordered blocks provide the teaching
-narrative. Block kinds express meaning. Folding, visual treatment
-and visibility are viewer policy; see [Viewer behaviour](viewer.md).
-The viewer keeps four concerns independent: selection, context rule, display
-scope and camera. A single renderer derives the selected context from a relation
-preset and depth, then projects it through the current folded or expanded module
-representation. Full display adds the structural graph as subdued background;
-Context-only display omits it. Neither mode silently changes folding or camera.
+## Authored data and Python generation
 
-Graph and details are peer views of the same KB. Selecting a detail section can
-offer a relevant context, but applying it remains an explicit user action.
-Search, cross-references and browser history provide navigation beyond visible
-nodes.
-Module semantics and graph filtering are described in [Modules](modules.md).
+`tools/generate_pyvis.py` is the CLI; it parses options and delegates generation
+to `srkg/pipeline.py`. The pipeline is the top-level composition point; lower-level
+modules should not import it.
 
-Concept graphics are deterministic SVGs, used directly in details and as
-rasterised graph icons. HTML labels allow mathematical notation on the graph.
-Rendering constants and drawing mechanics remain in code.
+| Responsibility | Current implementation |
+| --- | --- |
+| Resolve manifests/paths, read related tables and assemble the KB/query facade | `kb.py` |
+| Authored column/kind contracts and shared loading exception | `schema.py` |
+| Fail-fast table/referential checks, independent of I/O and SVG generation | `table_validation.py` |
+| Normalise frames and construct typed concepts/modules and caption metadata | `data.py` |
+| Optional enrichment of records through the existing SVG registries | `graphic_enrichment.py` |
+| Typed content, module, question and reference records; viewer serialisation | `model.py` |
+| Editorial/schema diagnostics exposed by `--validate` | `validation.py` |
+| Directed graph and module-boundary diagnostics, candidate partition analysis | `dag.py`, `module_diagnostics.py`, `module_partitioning.py` |
+| Module anchors, within-module topological ranks/positions, numbering proposals | `module_layout.py` |
+| Load/complete the authored global layout; module-free fallback placement | `layout_persistence.py`, `layout.py` |
+| Relation colours/direction and module visual identities | `edges.py`, `module_colours.py` |
+| Parse/validate declarative tutorial routes and semantic targets | `tutorials.py` |
+| Convert prepared graph data to a PyVis network and base HTML | `render_pyvis.py` |
+| Inject application assets, escaped JSON data, configuration, branding and MathJax | `html_injection.py` |
 
-## User state
+The normal generation path is:
 
-Notes, personal layout, study attempts and reading marks form one local-first
-[personal-data model](personal_data.md), separate from authored content and
-transient viewer state. A versioned portable archive supports backup and
-transfer. An optional Google Drive adapter synchronises that archive on demand,
-while local storage remains the working copy in each browser. Layout has the
-separate publication workflow described in [Layout](layout.md). Browser data
-never writes back to the KB automatically.
+1. Resolve `data/manifest.yaml`, load tables and construct `KnowledgeBase`.
+   It contains both pandas graph tables and typed concept/module records.
+2. Apply optional domain/relation filters to the loaded KB. These are build-time
+   views; they do not edit source data. Tutorial availability is filtered too.
+3. Generate module anchors and local concept positions, using authored anchors
+   where supplied; complete missing published positions deterministically.
+4. Render the base graph with PyVis, then inject teaching content, modules,
+   tutorials, layout and the browser application into the resulting document.
 
-Notes can target concept or module sections. New notes use the authored
-`block_id` where available and retain textual context around their insertion
-point. Existing title/index anchors are migrated when they resolve
-unambiguously. Notes whose content no longer has a safe match remain stored and
-are visibly flagged for placement.
+Loading performs structural checks through `table_validation.py`, raising the
+shared `KnowledgeBaseLoadError`. Existing imports of schema names and the
+exception through `kb.py` remain compatible. `load_knowledge_base()` and
+`load_knowledge_base_from_paths()` include graphics by default;
+`include_graphics=False` retains content, captions, layout and tutorial contracts
+without importing or running SVG generators through record construction.
+Editorial validation uses this text-only path. This option does not remove any
+structural checks or alter authored files.
 
-## Future plans
+The richer editorial validation and graph/module reports are separately
+requested CLI paths; a normal build does not implicitly run every editorial
+diagnostic. Other tools analyse partitions, propose concept
+numbering, inspect graphics and explore experimental fine-grained graphs.
 
-Fine-grained dependency-driven presentation remains an experiment, not a schema
-commitment; see the [pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).
+`KnowledgeBase` is the loaded query facade. Frozen dataclass records expose
+`to_viewer_data()` to define the browser payload; their contained lists/maps and
+DataFrames are not deeply immutable. The [KB schema](kb_schema.md) defines durable
+input contracts. Semantic IDs identify objects; display numbers and titles are
+presentation metadata. Canonical `content_blocks` are the browser's teaching
+content. Python retains grouped `Concept.sections` queries for library
+compatibility, but the browser payload no longer duplicates them as `sections`.
+
+**Domains are not yet separate packages or data roots.** The current manifest
+maps each table role to a single shared file containing SR, GR and MATHS records.
+Domain metadata and ID prefixes support filtering, but do not provide the
+physical separation envisaged by issue 7.3.
+
+## Graphics
+
+Concept SVGs are generated by Python drawing functions in
+`svg_graphics/concepts.py`, using shared `motifs.py` and `primitives.py`.
+`svg_graphics/registry.py` dispatches stable concept IDs to those functions;
+`concept_svg_graphics.py` is the public compatibility facade. Functions for the
+three domains currently share one large implementation file; some function
+names retain former layer numbering.
+
+Module graphics follow a different path: `module_svg_graphics.py` maps semantic
+module IDs to authored icon/detail SVGs in `svg_graphics/module_assets/` and
+wraps them in landscape framing. Graphics are optional. Caption/design metadata
+comes from the manifest tables, and assembled SVG text is embedded in the KB
+payload by `graphic_enrichment.py`, which returns replacement records and
+preserves authored captions. Text-only loading bypasses this bridge. The browser
+caches SVG-backed images for canvas drawing and uses SVG in Details. Module asset files also share one directory across domains.
+
+## Browser application and rendering
+
+`html_injection.py` embeds `controls.html`, `viewer.css` and helper scripts before
+`viewer.js`. Factories are defined before use; dependencies are supplied when the
+application initialises after PyVis's `nodes`, `edges` and `network` are ready.
+There is no JavaScript bundler, module loader or UI framework. The generated page
+retains ordinary local-file opening and its existing external library requests.
+
+`viewer.js` is the composition root and application coordinator. It retains
+selection/navigation, module projection and footprint coordination, search,
+responsive workspace controls, semantic commands and event wiring. It supplies
+query functions and explicit callbacks to closure-based controllers; it does not
+pass a mutable universal application-state object between them. Dynamic values
+such as selection, OAuth configuration and replaced fold-control maps are read
+through callbacks rather than captured once at controller construction.
+
+| Owner | Responsibility |
+| --- | --- |
+| `graph_model.js` | Stateless context traversal, folded-boundary grouping and shortest-hop Fit++ planning. |
+| `vis_network_adapter.js` | All direct `network.body`/`network.canvas` access: precise positions, borrowed geometry, curve points and draw-only widths. Public network operations stay with their callers. |
+| `global_layout.js` | Published/personal positions, revision state, debounced persistence and reset. |
+| `graph_camera.js` | Panel-aware framing/reveal, animation capability and cancellation of deferred camera restores. |
+| `context_layout.js` | Fit/Fit++ priming, temporary coordinates/drag membership and tutorial checkpoints. |
+| `layout_geometry.js`, `module_geometry.js` | Stateless collision/position helpers and module footprint geometry. |
+| `graph_presentation.js` | Canvas faces, outlines, completion ticks, SVG-image and fitted-label caches. |
+| `content_markup.js` | Escaping, references, optional-details markup and math-aware paragraph/caption/study rendering. |
+| `details_view.js` | Details replacement/MathJax lifecycle, contents selection and scroll state/timers. |
+| `notes_controller.js` | Notes state/editor identity, anchor recovery, rendering and CSV exchange. |
+| `study_controller.js` | Questions/read state and indexes, marking, completion caches and scorecard. |
+| `personal_data_controller.js` | Connection/import-export UI, OAuth/sync lifecycle and automatic-sync/visibility timers. |
+| `tutorial_targets.js` | Live semantic target geometry and concept/edge hover demonstrations. |
+| `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume. |
+| `csv.js` | Shared CSV encoding/decoding; callers retain their format-specific strictness and line endings. |
+
+`viewerState` holds context rule, display scope and workspace view. Selection and
+folding remain coordinated in the application; camera, personal layout, temporary
+layout, notes, study and playback have distinct owners. This is not one immutable
+store or a strict MVC implementation. Small compatibility APIs on `window.kg*`
+expose existing commands and copied snapshots to tests and tutorial integration;
+they are not access to a controller's private state.
+
+The computational graph helpers do not touch DOM, storage or vis-network.
+Adapter geometry is borrowed for synchronous reading; callers must not mutate it
+or treat it as a durable snapshot. Layout/tutorial snapshot APIs instead copy
+their state. Draw-only edge widths bypass DataSet updates to avoid redraw loops.
+Controllers expose operations/reload hooks; their caches and timers stay local.
+New feature code should use those operations and explicit query callbacks rather
+than reading private state from another controller. Register any new factory in
+`html_injection.py` before application initialisation, and test behaviour at the
+narrowest useful boundary without duplicating authored UI text.
+
+The underlying concept graph is retained separately from its visible projection.
+`renderGraphFromViewerState()` computes the context, styles/hides concepts and
+edges, then applies the folded-module projection. Boundary relations become
+aggregate module edges; a selected concept inside a folded module has a visual
+proxy without changing the semantic selection.
+
+The current independent presentation concerns are:
+
+- **Selection:** a concept or module; navigation retains a valid selection.
+- **Context rule:** relation/direction traversals plus depth, computed on concepts.
+- **Display scope:** All equally, Context + background, or Context only. Internally
+  these are `all`, `full` and `context`; `full` means Context + background.
+- **Module representation:** folded or expanded, independent of selection.
+- **Workspace view:** Graph, Details or Both.
+- **Camera:** Reveal, Selection, Context or All framing, and explicit Fit/Fit++.
+
+All equally shows the graph without foreground/background distinction; context
+is still available to explicit operations. Context + background emphasises the
+selection's context and subdues the rest. Context only omits the rest. Details
+links and Show in graph invoke explicit navigation/context actions rather than
+silently redefining context as the reader scrolls. Precise behaviour belongs in
+[Viewer model](viewer_ui_model.md) and [Viewer behaviour](viewer.md).
+
+Rendering is hybrid: vis-network manages the network, edges, hit testing and
+camera; drawing hooks paint concept faces, module graphics, completion ticks and
+expanded-module outlines. DOM overlays carry mathematical labels, visible module
+fold controls, previews and tutorial targets. MathJax typesets teaching content
+and mathematical labels. A draw callback can therefore also update DOM positions.
+
+Performance controls include cached SVG images, module footprints, fitted labels
+and completion summaries; deferred construction/typesetting of complex Details
+sections; low-zoom simplified concept faces/hidden labels; and batched or scheduled
+UI work. Camera animation is reduced on slower devices. These caches require
+invalidation when their inputs change; they are not separate application state.
+
+## Layout and temporary presentation
+
+The authored `layout.json` provides global concept positions and module anchors.
+Generated positions fill omissions. Browser personal overrides sit above that
+base; moving a module moves its members. Module footprints derive from member
+bounds rather than a separately authored rectangle.
+
+Fit changes the camera. Fit++ additionally contracts the context using graph-hop
+order and collision footprints, retaining the selected anchor. Its coordinates
+are temporary, can be adjusted manually, and reset on navigation. Personal layout
+editing is an explicit persistent operation. These presentation changes must stay
+separate from the authored KB and from the profile's saved layout.
+`global_layout.js` owns persistent coordinates; `context_layout.js` owns the
+transient Fit++ arrangement. Native canvas movement is not implicitly persisted.
+Reset cancels pending saves. Snapshot/capture APIs copy coordinates, and tutorial
+restoration uses explicit methods rather than writing another controller's
+private variables. See [Layout](layout.md) and [Modules](modules.md).
+
+## Personal data and cloud boundary
+
+`personal_data.js` creates the versioned local-first profile/store, migrates
+legacy storage and merges snapshots. Notes, saved layout, study attempts/resets
+and reading marks have stable identities and timestamps/deletion or reset records
+for merge behaviour. The working profile is JSON in browser localStorage;
+`personal_data_archive.js` exchanges a ZIP of readable CSV files. UI preferences
+and transient presentation state are not all part of that portable profile.
+
+`personal_data_sync.js` receives a store, archive codec and provider. It reads the
+remote archive, merges locally, exports the merged snapshot and writes against a
+remote revision, retrying bounded conflicts. Concurrent sync calls share the
+active promise. `personal_data_google_drive.js` implements OAuth and the Drive
+provider for the visible `PhysicsKG personal data.zip` file using `drive.file`.
+Access tokens remain in memory. No developer backend brokers the connection.
+
+`personal_data_controller.js` owns connection controls and automatic-sync timers.
+Its merge callback lets the application reload layout/notes/study stores and
+refresh summaries without replacing the active Details pane. Expiry pauses sync
+and exposes explicit Reconnect/Disconnect choices; local work continues.
+Disconnect clears the local connection even offline and retains personal data. Sync application preserves
+open Details blocks, notes and study interaction instead of rebuilding the pane
+indiscriminately. See [Personal data](personal_data.md).
+
+Notes target a concept/module block, preferably by stable authored `block_id`,
+and retain surrounding text to recover paragraph placement after edits. Legacy
+anchors migrate when unambiguous; unresolved notes stay stored and are shown as
+needing placement. Study and reading summaries feed both Details and optional
+graph completion markers.
+
+## Tutorial command and replay boundary
+
+`data/tutorials.yaml` contains validated routes of semantic commands, narration,
+pointer targets and optional multi-action cards. `executeViewerCommand()` is the
+shared command dispatcher used by tutorials and many ordinary UI actions. It
+calls viewer operations directly; pointer animation does not synthesise clicks.
+Some DOM handlers still call lower-level functions directly.
+
+`guided_tutorial.js` captures presentation through an application-supplied bridge,
+executes semantic commands, resolves targets through `tutorial_targets.js` and
+waits for rendering. The bridge coordinates selection, projection, Details,
+camera and temporary-layout controllers; playback does not own those states.
+Back restores the baseline and replays commands rather than inverting each
+action. Explore captures a checkpoint and releases normal input;
+Resume restores it, while Exit restores the pre-route presentation. These snapshots
+exclude personal-data changes, so exploration does not undo study or notes.
+See [Tutorial playback](tutorial_playback.md).
+
+## Design patterns actually present
+
+| Pattern/approach | Evidence and limits |
+| --- | --- |
+| Pipeline and composition root | `pipeline.py` assembles loading, layout, rendering and injection; the CLI delegates. |
+| Typed records and serialization boundary | Dataclasses plus `to_viewer_data()` separate loaded content from the browser payload; graph tables coexist with them. |
+| Facades and adapters | `KnowledgeBase` query facade; PyVis rendering adapter; graphics facade/ID registries; Drive provider behind the sync interface. |
+| Dependency injection | Controllers receive feature-specific queries, callbacks and collaborators; sync receives store/archive/provider. No DI framework or universal service locator. |
+| Functional core with imperative orchestration | Traversal, geometry, layout, merge and diagnostics have computational helpers; file, DOM, canvas and network work surround them. Separation remains incomplete. |
+| Projection | Folded modules and aggregate edges derive from the retained concept graph rather than replacing the authored graph. |
+| Command dispatch and snapshot/replay | Semantic tutorial/viewer commands and presentation checkpoints; this is not general event sourcing or universal undo. |
+| Event-driven controllers and module factories | DOM/vis-network listeners drive closure-based controllers; helper scripts use factories/IIFEs, not an ES-module component tree. |
+| Caching and deferred work | Rendering caches, deferred Details construction/typesetting and scheduled refreshes avoid repeating expensive work. |
+
+These are implemented techniques, not a claim that every subsystem follows a
+uniform architecture. In particular, `viewer.js` is still the main integration
+hub. Projection, geometry coordination and browser event wiring still coexist
+there; extracting every helper into a file would not necessarily improve cohesion.
+
+## Verification, delivery and remaining work
+
+Unit tests exercise loading, contracts, layout, diagnostics, graphics, tutorial
+validation and HTML injection. Playwright tests exercise generated pages, with a
+fast synthetic-data lane and a full lane adding repository content, mobile
+emulation and real MathJax. Browser tests are opt-in when their directory is
+selected; plain `pytest -q` runs unit tests and skips browser cases. See
+[Agent instructions](../../AGENTS.md) for environment and commands.
+
+Current publication still commits the generated viewer to main for GitHub Pages;
+phone previews still use a committed build on `phone-preview` through GitHack.
+Although generated HTML is conceptually a build product, untracked artifact
+publishing, hosted previews and history cleanup are only proposals in issue 6.
+They are not implemented by this document.
+
+The refactor is intended to preserve user-visible behaviour and durable data
+formats. Unit/browser coverage includes legacy note-anchor recovery, strict
+archive versus lenient legacy notes CSV parsing, layout debounce/reset, sync
+without Details replacement, graph algorithms/adapter geometry and all authored
+tutorial walkthroughs. Direct algorithm/adapter tests avoid generating a viewer;
+full integration tests retain real content and MathJax. CSS keeps its existing
+cascade order in one asset; feature tests remain grouped by behaviour rather
+than copying the controller directory structure.
+
+`tools/profile_viewer.py` provides a repeatable isolated local Chromium probe
+with optional CPU throttling, local vis assets and stub MathJax. Its timings are
+observations, not thresholds or a proxy for physical iPad testing. The progress
+record gives baseline/final results and the exact source-count scope, including
+all extracted files. Smaller `viewer.js` is not itself a reduction in total code.
+
+Domain tables still share source files and concept SVG implementations still
+share `svg_graphics/concepts.py`; those changes belong to issue 7.3. Remaining
+application projection/geometry/event coordination is explicit technical debt,
+not an incomplete controller contract. Revisit it for a concrete feature or
+performance benefit rather than a target file size. Fine-grained pedagogy remains
+an experiment; see the
+[pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).

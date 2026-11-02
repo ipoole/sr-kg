@@ -75,7 +75,7 @@ def test_header_search_keyboard_and_panel_fit(browser_graph, width):
 def test_search_snippets_normalise_nested_markup(browser_graph):
     page = browser_graph.page
     page.evaluate(r"""() => {
-      conceptData['2.1'].sections[0].text = String.raw`A ratio \(\frac{1}{\sqrt{1-\beta^2}}\) with \overset{boost}{=} and \cref{Alpha}{1.1}. \optional_details{Extra}{A ratio \(x^2\) <script>alert(1)</script>}`;
+      conceptData['2.1'].content_blocks.find(block => block.kind === 'definition').body = String.raw`A ratio \(\frac{1}{\sqrt{1-\beta^2}}\) with \overset{boost}{=} and \cref{Alpha}{1.1}. \optional_details{Extra}{A ratio \(x^2\) <script>alert(1)</script>}`;
     }""")
     browser_graph.open_search()
     page.locator('#kg_search').fill('ratio')

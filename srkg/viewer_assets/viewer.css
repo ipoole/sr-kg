@@ -217,6 +217,7 @@
         font-size: 0.923em;
         color: #333;
       }
+      /* Tutorial chooser (playback overlay rules follow later). */
       .kg-tutorial-list {
         display: grid;
         gap: 5px;
@@ -280,6 +281,7 @@
         line-height: 1.3;
         padding: 5px 7px;
       }
+      /* Graph context controls and status. */
       .kg-graph-context-panel {
         background: rgba(255, 255, 255, 0.96);
         border: 1px solid #cbd5e1;
@@ -1120,9 +1122,6 @@
         padding-left: 0.75em;
     }
 
-    #info_panel .concept-section {
-        margin: 0;
-    }
 
     #info_panel .concept-sticky-header {
         background: rgba(255,255,255,0.96);
@@ -1684,10 +1683,6 @@
         right: 0.1em;
     }
 
-    #info_panel .legacy-content-block > .kg-noteable-heading {
-        padding-right: 1.7em;
-        position: relative;
-    }
 
     #info_panel .content-block-read-toggle {
         appearance: none;
@@ -1936,9 +1931,6 @@
             padding-right: 68px;
         }
 
-        #info_panel .legacy-content-block > .kg-noteable-heading {
-            padding-right: 38px;
-        }
 
         #info_panel .kg-note-block-action {
             height: 32px;

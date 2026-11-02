@@ -77,7 +77,10 @@ Deferred until back at the laptop. Implement and verify publishing before rewrit
 
 ## 7. Refactoring 
 I feel we have acrued refactoring dept. Kets get the codebase back in good shape. 
-1. Update the architecture document to reflect the crrent codebase. What design patterns are used?
-2. Review the codebase to identify refactoring opportunities for improvement.  Some modules have become *very* large.  Dead code?  Unnecessary conditionality? Better use of design patterns?  Anything else?
+1. DONE — Updated [architecture](design/architecture.md) for v4.3.1, including current responsibilities,
+   data flows, implemented design patterns and coupling that remains before refactoring.
+2. DONE — Responsibility refactor: shared rendering/CSV helpers, graph model and vis adapter,
+   feature-owned browser controllers, Python table contracts and optional graphic enrichment.
+   See [refactoring progress](design/refactoring_progress.md) for scope, verification, timings and source counts.
 3. Look at issue 3.5.  In preparation each domain should be in its own files or directories.  Graphic svg generation should also be separated.  
-4. Update the architecture document.  
+4. Updated [architecture](design/architecture.md) after 7.2. Refresh again when the domain split in 7.3 is implemented.

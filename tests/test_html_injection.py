@@ -63,7 +63,7 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert "function kgAfterReady()" in injected
     assert "var kgModuleGeometry =" in injected
     assert "global.kgCreatePersonalDataStore = createStore" in injected
-    assert injected.index("var kgModuleGeometry =") < injected.index("var conceptData =")
+    assert injected.index("var kgModuleGeometry =") < injected.index("var conceptData = {};")
     assert "var conceptData = {};" in injected
     assert "var moduleData = {};" in injected
     assert "var tutorialData = [];" in injected
