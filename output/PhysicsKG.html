@@ -866,7 +866,7 @@ if (location.protocol === "file:") {
       #kg_tutorial_first_step_guidance { font-size: 0.9em; margin: 6px 0; }
       #kg_portrait_notice { display: none; }
       @media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (pointer: coarse) {
-        #kg_portrait_notice {
+        body.kg-device-landscape #kg_portrait_notice {
           display: grid; place-items: center; position: fixed; inset: 0;
           z-index: 11000; background: #f7f2ff; color: #57367b;
           padding: 24px; text-align: center; font: 18px/1.5 Arial, sans-serif;
@@ -15123,7 +15123,24 @@ var kgModuleGeometry = (function() {
           requestAnimationFrame(updateNodeLabelPositions);
         }
 
+        function updatePhoneOrientation() {
+          // CSS orientation describes viewport shape, which a keyboard can change.
+          var orientation = window.screen && window.screen.orientation;
+          var landscape;
+          if (orientation && typeof orientation.type === "string") {
+            landscape = orientation.type.indexOf("landscape") === 0;
+          } else if (typeof window.orientation === "number") {
+            landscape = Math.abs(window.orientation) === 90;
+          } else {
+            var active = document.activeElement;
+            var typing = active && active.matches("input, textarea, [contenteditable='true']");
+            landscape = window.innerWidth > window.innerHeight && !typing;
+          }
+          document.body.classList.toggle("kg-device-landscape", landscape);
+        }
+
         function handleViewportResize() {
+          updatePhoneOrientation();
           updateResponsiveControlLabels();
           updateGraphContextControls();
           applyWorkspaceSplit();
@@ -16177,6 +16194,9 @@ var kgModuleGeometry = (function() {
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", handleViewportResize);
         window.addEventListener("orientationchange", handleViewportResize);
+        if (window.screen && window.screen.orientation && window.screen.orientation.addEventListener) {
+          window.screen.orientation.addEventListener("change", handleViewportResize);
+        }
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", handleViewportResize);
           window.visualViewport.addEventListener("scroll", scheduleViewportRefresh);
@@ -17047,6 +17067,7 @@ var kgModuleGeometry = (function() {
         }, true);
 
         /* Initial render. */
+        updatePhoneOrientation();
         initialiseTutorialPlayback();
         applyDefaultModuleFoldState();
         buildModuleFoldControls();
