@@ -1183,21 +1183,19 @@ if (location.protocol === "file:") {
         transition: box-shadow 120ms ease-out;
     }
 
-    #info_panel .optional-detail {
+    #info_panel .kg-content-inline {
         margin: 0.75em 0;
         padding: 0;
     }
 
-    #info_panel .optional-detail > summary {
-        color: #174ea6;
+    #info_panel .kg-content-inline > summary {
+        color: var(--disclosure-color, #174ea6);
         cursor: pointer;
         font-weight: 700;
     }
 
     #info_panel .optional-detail-body {
-        border-left: 2px solid #c8d7f2;
         margin-top: 0.45em;
-        padding-left: 0.75em;
     }
 
 
@@ -1441,7 +1439,7 @@ if (location.protocol === "file:") {
         margin: 0 0 0.75em;
     }
 
-    #info_panel .content-block {
+    #info_panel .kg-content-block {
         --block-accent: #6a7b8f;
         --block-accent-dark: #34495f;
         --block-bg: transparent;
@@ -1455,7 +1453,7 @@ if (location.protocol === "file:") {
         padding: 0 0 0 0.85em;
     }
 
-    #info_panel .content-block > summary {
+    #info_panel .kg-content-block > summary {
         color: var(--block-accent-dark);
         cursor: pointer;
         font-weight: 700;
@@ -1624,8 +1622,8 @@ if (location.protocol === "file:") {
         padding: 0 0 0 0.85em;
     }
 
-    #info_panel .content-block > summary:hover,
-    #info_panel .content-block > summary:focus {
+    #info_panel .kg-content-block > summary:hover,
+    #info_panel .kg-content-block > summary:focus {
         color: var(--block-accent-dark);
         outline: none;
     }
@@ -2036,26 +2034,17 @@ if (location.protocol === "file:") {
     }
 
     #info_panel .user-note {
+        --block-accent: #bb9562;
+        --block-accent-dark: #7a5800;
+        --disclosure-color: #7a5800;
         background: #fbf5ee;
-        border: 1px solid #ead9c3;
-        border-radius: 6px;
-        margin: 0.75em 0;
-        padding: 0.35em 0.5em;
-    }
-
-    #info_panel .user-note > summary {
-        color: #7a5800;
-        cursor: pointer;
-        font-weight: 700;
     }
 
     #info_panel .user-note-editor {
-        border-left: 2px solid #e4c568;
         display: flex;
         flex-direction: column;
         gap: 0.35em;
         margin-top: 0.45em;
-        padding-left: 0.75em;
     }
 
     #info_panel .user-note-editor label {
@@ -3771,10 +3760,6 @@ if (location.protocol === "file:") {
         #kg_view_select { width:47px; }
       }
 
-    #info_panel .user-note-content {
-        border-left: 2px solid #e4c568;
-        padding: 0.35em 0 0.35em 0.75em;
-    }
     #info_panel .user-note-edit {
         background: transparent;
         border: 0;
@@ -3794,7 +3779,6 @@ if (location.protocol === "file:") {
         position: static;
         flex: 0 0 1.5em;
     }
-    #info_panel .kg-owner-notes { margin: 0.7em 0; }
 </style>
 </head>
 
@@ -3921,6 +3905,7 @@ if (location.protocol === "file:") {
           <button id="kg_notes_import_button" type="button">Import notes</button>
           <input id="kg_notes_import_input" type="file" accept=".csv,text/csv" style="display:none">
         </label>
+        <button id="kg_notes_delete_all" type="button" disabled>Delete all notes</button>
         <div id="kg_notes_status"></div>
         <div id="kg_notes_count"></div>
         <div id="kg_notes_list"></div>
@@ -5560,7 +5545,9 @@ function kgCreateContentMarkup(options) {
       ? options.summaryHtml
       : renderConceptText(options.title || "");
     var bodyTag = options.bodyTag || "div";
-    return '<details class="' + escapeHtml(options.className + ' kg-content-unit') + '"' + attrs + ">" +
+    var levelClass = options.level === "block" ? " kg-content-block"
+      : options.level === "inline" ? " kg-content-inline" : "";
+    return '<details class="' + escapeHtml(options.className + ' kg-content-unit' + levelClass) + '"' + attrs + ">" +
       "<summary>" + summaryHtml + "</summary>" +
       "<" + bodyTag + ' class="' + escapeHtml(options.bodyClass || "") + '">' +
       (options.bodyHtml || "") +
@@ -5569,7 +5556,7 @@ function kgCreateContentMarkup(options) {
 
   function renderOptionalDetail(summary, body) {
     return renderFoldDown({
-      className: "optional-detail",
+      className: "optional-detail", level: "inline",
       title: summary,
       bodyClass: "concept-body optional-detail-body",
       bodyHtml: renderConceptText(body)
@@ -7254,6 +7241,8 @@ function kgCreateNotesController(options) {
     if (!countEl || !listEl) { return; }
 
     var count = userNotesState.notes.length;
+    var deleteAllButton = document.getElementById("kg_notes_delete_all");
+    if (deleteAllButton) { deleteAllButton.disabled = count === 0; }
     countEl.innerText = count + " note" + (count === 1 ? "" : "s");
     if (count === 0) {
       listEl.innerHTML = '<div class="kg-note-list-empty">No notes yet.</div>';
@@ -7299,10 +7288,14 @@ function kgCreateNotesController(options) {
         '<button type="button" class="user-note-edit" data-note-id="' +
         escapeHtml(note.id) + '">Edit</button>';
     }
+    var topLevel = note.placement === "owner";
     return options.markup.renderFoldDown({
-      origin: "personal", id: note.id, className: "user-note",
+      origin: "personal", id: note.id,
+      level: topLevel ? "block" : "inline",
+      className: "user-note" + (topLevel ? "" : " optional-detail"),
       open: openNotes.has(note.id), title: note.title || "Untitled note",
-      bodyClass: "user-note-content", bodyHtml: body
+      bodyClass: "concept-body user-note-content " +
+        (topLevel ? "content-block-body" : "optional-detail-body"), bodyHtml: body
     });
   }
 
@@ -7396,6 +7389,15 @@ function kgCreateNotesController(options) {
     return note;
   }
 
+  function deleteAllNotes() {
+    userNotesState.notes = [];
+    editingNoteId = null;
+    openNotes.clear();
+    var saved = saveUserNotes();
+    refreshActiveConcept();
+    if (saved) { setNotesStatus("All notes deleted. Deletions will synchronise when connected."); }
+  }
+
   function deleteUserNote(noteId) {
     userNotesState.notes = userNotesState.notes.filter(function(note) {
       return note.id !== noteId;
@@ -7445,7 +7447,7 @@ function kgCreateNotesController(options) {
     if (!input) { return; }
     var start = input.selectionStart, end = input.selectionEnd;
     var example = "\\(\\gamma = 1/\\sqrt{1-v^2/c^2}\\)";
-    input.setRangeText(example, start, end, "select");
+    input.setRangeText(example, start, end, "end");
     input.focus({preventScroll: true});
     input.dispatchEvent(new Event("input", {bubbles: true}));
   }
@@ -7611,6 +7613,7 @@ function kgCreateNotesController(options) {
     renderUnmatchedNotes: renderUnmatchedNotes,
     createUserNote: createUserNote,
     deleteUserNote: deleteUserNote,
+    deleteAllNotes: deleteAllNotes,
     updateUserNote: updateUserNote,
     noteEditorField: noteEditorField,
     closeUserNote: closeUserNote,
@@ -12304,7 +12307,7 @@ var kgModuleGeometry = (function() {
               bodyClass += " content-block-note-body";
             }
             return renderFoldDown({
-              anchorId: anchorId,
+              level: "block", anchorId: anchorId,
               contentBlockId: block.block_id,
               noteBlock: true,
               className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
@@ -12314,7 +12317,7 @@ var kgModuleGeometry = (function() {
             });
           }
           return renderFoldDown({
-            anchorId: anchorId,
+            level: "block", anchorId: anchorId,
             contentBlockId: block.block_id,
             noteBlock: true,
             className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
@@ -16516,6 +16519,11 @@ var kgModuleGeometry = (function() {
             focusConcept(targetId, "Selected");
           }
           notesController.revealNote(note.id, false);
+        });
+
+        document.getElementById("kg_notes_delete_all").addEventListener("click", function() {
+          if (!window.confirm("Delete all your notes in all domains, including missing targets? Deletions will also synchronise to your other devices.")) { return; }
+          notesController.deleteAllNotes();
         });
 
         document.getElementById("kg_notes_import_button").addEventListener("click", function() {
