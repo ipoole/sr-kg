@@ -119,6 +119,7 @@
           <button id="kg_notes_import_button" type="button">Import notes</button>
           <input id="kg_notes_import_input" type="file" accept=".csv,text/csv" style="display:none">
         </label>
+        <button id="kg_notes_delete_all" type="button" disabled>Delete all notes</button>
         <div id="kg_notes_status"></div>
         <div id="kg_notes_count"></div>
         <div id="kg_notes_list"></div>
@@ -324,6 +325,10 @@
           </ul>
         </section>
         <section>
+          <h3>Clarifications and notes<span class="kg-status-badge">NEW</span></h3>
+          <p>Unfold built-in clarifications for extra reasoning and algebra. Add your own notes after a paragraph or as a top-level block; read and fold them like other content. Use Edit, Insert maths and Done to write notes with formulas.</p>
+        </section>
+        <section>
           <h3>Personal layout</h3>
           <ul>
             <li>Node dragging is off during ordinary browsing.</li>
@@ -346,6 +351,8 @@
           <ul>
             <li>Personal layouts, notes, study-question records and blue reading ticks are stored together.</li>
             <li>They remain in this browser by default; authored PhysicsKG content is unaffected.</li>
+            <li>Use a block's bubble + and choose a paragraph to add a note, or the title's bubble + to add top-level personal content.</li>
+            <li>Notes open for reading. Edit changes them; Insert maths supplies an example formula; Done returns to reading. Notes do not affect completion ticks.</li>
             <li>Tools → Personal data can download or import a portable archive.</li>
             <li>Optionally sign in with a Google account to synchronise automatically through Google Drive across browsers and devices.</li>
             <li>If authorization expires, Sync paused opens Personal data. Reconnect, or Disconnect to dismiss the notice and work offline; local changes stay safe.</li>

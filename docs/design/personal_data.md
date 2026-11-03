@@ -51,6 +51,28 @@ editorial changes. Legacy module notes with a valid stable block and
 unambiguous recorded paragraph are repaired during local migration; genuinely
 ambiguous notes remain visible as needing placement.
 
+Notes use the shared authored-content disclosure and text renderer. Existing notes
+open for reading; Edit exposes the editor, Done returns to reading, and folding an
+editor retains its draft and returns to reading on reopening. Inline and display
+MathJax are supported; Insert maths inserts an editable example, leaving it
+unselected with the caret at its end. Raw HTML is escaped. New notes open for editing. Neither folding nor reading a note changes
+its synchronised content timestamp.
+
+An optional `placement` is `anchor` (also the default for older records) or `owner`.
+Owner notes attach directly to a concept/module ID and appear after authored
+exposition, before relationships/study (and module member listings). They have no
+paragraph dependency and never enter anchor recovery. Both placements preserve
+stable IDs, timestamps and tombstones through merge and CSV/ZIP exchange; the
+optional CSV column keeps older exports readable. Presentation state is local;
+notes do not contribute to reading/question completion. See
+[Notes and authored content](notes_content_unification.md).
+
+Tools → Notes → Delete all notes requires confirmation and deletes every personal
+note, including missing targets, unresolved placements and unloaded domains.
+Existing deletion tombstones are retained and new ones synchronise, so merging an
+older snapshot cannot resurrect the notes. Other personal-data collections are
+untouched; Cancel leaves both saved notes and open editors unchanged.
+
 ### Layout
 
 Each concept position and module anchor is an independent record containing

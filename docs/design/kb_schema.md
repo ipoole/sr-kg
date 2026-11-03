@@ -180,6 +180,11 @@ For example, the Lorentz transformations definition block is identified as
 
 The existing `\optional_details{Title}{Body}` text macro remains available
 inside block bodies. It is a local text-disclosure device, not a `kind` value.
+These disclosures and personal notes share rendering, while authored rows retain
+stable block IDs and reading-completion semantics. Personal notes live only in the
+[personal-data profile](personal_data.md), with optional paragraph (`anchor`) or
+concept/module (`owner`) placement; they are not rows in these authored tables.
+Nested optional disclosures do not yet have independent IDs or read ticks.
 
 ## modules.csv
 

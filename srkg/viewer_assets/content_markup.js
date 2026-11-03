@@ -87,7 +87,7 @@ function kgCreateContentMarkup(options) {
   }
 
   function renderFoldDown(options) {
-    var attrs = "";
+    var attrs = ' data-content-origin="' + (options.origin === "personal" ? "personal" : "authored") + '"';
     if (options.anchorId) {
       attrs += ' id="' + escapeHtml(options.anchorId) + '"';
     }
@@ -107,23 +107,62 @@ function kgCreateContentMarkup(options) {
       ? options.summaryHtml
       : renderConceptText(options.title || "");
     var bodyTag = options.bodyTag || "div";
-    return '<details class="' + escapeHtml(options.className) + '"' + attrs + ">" +
+    var levelClass = options.level === "block" ? " kg-content-block"
+      : options.level === "inline" ? " kg-content-inline" : "";
+    return '<details class="' + escapeHtml(options.className + ' kg-content-unit' + levelClass) + '"' + attrs + ">" +
       "<summary>" + summaryHtml + "</summary>" +
       "<" + bodyTag + ' class="' + escapeHtml(options.bodyClass || "") + '">' +
       (options.bodyHtml || "") +
       "</" + bodyTag + "></details>";
   }
 
-  function renderOptionalDetail(summary, body) {
+  // A content unit is recursive. Origin, placement and capabilities are independent:
+  // callers adapt storage records and supply actions; this renderer owns the shell.
+  // bodyHtml is trusted renderer output, never unescaped user input.
+  function renderContentUnit(unit) {
+    var capabilities = unit.capabilities || {};
+    var level = unit.level === "block" ? "block" : "inline";
+    function renderActions(position) {
+      return (unit.actions || []).filter(function(action) {
+        return (action.position || "body") === position &&
+          (!action.capability || capabilities[action.capability] === true);
+      }).map(function(action) { return action.html || ""; }).join("");
+    }
+    var heading = '<span class="content-block-title-line">' +
+      (unit.markHtml || "") + '<span class="content-block-title-text">' +
+      renderConceptText(unit.title || "") + '</span>' + (unit.labelHtml || "") + '</span>' +
+      renderActions("heading");
+    var body = unit.bodyHtml !== undefined ? unit.bodyHtml : renderBodyLines(unit.body || "", "", {origin: unit.origin});
+    (unit.children || []).forEach(function(child) {
+      // Children are explanations unless explicitly placed at block level. Their
+      // origin/capabilities are their own, not inherited from a containing unit.
+      body += renderContentUnit(child);
+    });
+    body += renderActions("body");
     return renderFoldDown({
-      className: "optional-detail",
-      title: summary,
-      bodyClass: "concept-body optional-detail-body",
-      bodyHtml: renderConceptText(body)
+      origin: unit.origin, level: level, anchorId: unit.anchorId,
+      id: unit.id, contentBlockId: unit.contentBlockId,
+      noteBlock: capabilities.annotate === true,
+      open: unit.open,
+      className: (unit.className || "") + " kg-content-framed" +
+        (capabilities.edit ? " kg-content-editable" : "") +
+        (capabilities.trackRead ? " kg-content-trackable" : ""),
+      summaryHtml: heading,
+      bodyClass: "kg-content-body concept-body " + (unit.bodyClass || ""),
+      bodyHtml: body
     });
   }
 
-  function renderConceptText(s) {
+  function renderOptionalDetail(summary, body, context) {
+    return renderContentUnit({
+      className: "optional-detail", level: "inline", title: summary,
+      origin: context && context.origin,
+      bodyClass: "optional-detail-body",
+      bodyHtml: renderConceptText(body, context)
+    });
+  }
+
+  function renderConceptText(s, context) {
     var text = String(s || "");
     var macro = "\\optional_details";
     var html = "";
@@ -153,7 +192,7 @@ function kgCreateContentMarkup(options) {
         continue;
       }
 
-      html += renderOptionalDetail(summary.value, body.value);
+      html += renderOptionalDetail(summary.value, body.value, context);
       cursor = body.end;
     }
 
@@ -277,12 +316,12 @@ function kgCreateContentMarkup(options) {
       .replace(/\\n(?=(?:[A-Z]|[0-9]+)[.)]\s)/g, "\n");
   }
 
-  function renderBodyLines(text, className) {
+  function renderBodyLines(text, className, context) {
     var blocks = splitConceptBlocks(text);
     var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
     blocks.forEach(function(block) {
       html += '<div class="concept-line">' +
-        (block.text ? renderConceptText(block.text) : "&nbsp;") +
+        (block.text ? renderConceptText(block.text, context) : "&nbsp;") +
         "</div>";
     });
     html += "</div>";
@@ -332,6 +371,8 @@ function kgCreateContentMarkup(options) {
     skipOptionalDetailWhitespace: skipOptionalDetailWhitespace,
     parseBracedArgument: parseBracedArgument,
     renderFoldDown: renderFoldDown,
+    renderContentUnit: renderContentUnit,
+    renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,
     findNextOptionalDetailBlock: findNextOptionalDetailBlock,
     splitConceptBlocks: splitConceptBlocks,

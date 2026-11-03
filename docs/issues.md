@@ -53,13 +53,15 @@
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 7. Nice to have version history in the viewer, giving version number, publishing date and a very brief user facing summary of what changed. Populate retrospectively at least as far as 4.0.0, possibly earlier by date. 
  
-## 5. Notes enhancement and unification 
-1. Could we allow notes to be placed at the top level of a concept or module?  This could be powerfull as it makes the details exposition user extensible - the notes have similar status to other bocks. 
-2. Can users include MathJax formula notes which then get properly rendered?
-3. SR 2.5, Why this quantity measures energy transfer, need help with d gamma / dt.  
-4. Interestingly, that extra clarification could be via a pre-placed within block note, default folded, unobtrusive.  This is leading in the direction of extensibility. 
-5. When we changed ui model for note adding (was a check box in tools), notes now always open in edit mode.  They shoud normally open in reading mode with a minimal dicrete "Edit" button at the bottom.
-6. Taken together these enhancements allow for inline folded explanations/derivation details - authored or user provided, and user provided additional blocks.  Recursive content would be naturally emergent, whether or not we choose to allow it.  See 3.6 above.  
+## 5. Notes enhancement and unification
+
+1. Extend the shared foldable-content foundation to identifiable nested authored blocks when needed:
+   stable child IDs for annotations, tutorial targets and possibly independent reading progress.
+   Current optional disclosures and personal notes already share rendering; top-level personal notes,
+   mathematical reading/editing and SR-2.5's folded algebra clarifications are implemented.
+2. Consider recursive personal-content editing and generated derivation/explanation trees (see 3.6).
+   Define placement, depth/cycle limits, completion and sync semantics before exposing these features.
+   See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
 ## 6. Build artifacts, publishing and repository size
 Deferred until back at the laptop. Implement and verify publishing before rewriting history.

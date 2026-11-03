@@ -1260,34 +1260,30 @@ def test_revised_concept_renders_note_block_kinds_folded(shared_browser_graph):
     assert notes.locator("summary .content-block-title-text").evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Gamma warning", "Gamma history"]
-    assert not notes.nth(0).locator(".content-block-note-body").is_visible()
+    assert not notes.nth(0).locator(":scope > .kg-content-body").is_visible()
 
     notes.nth(0).locator("summary").click()
 
-    assert notes.nth(0).locator(".content-block-note-body").is_visible()
+    assert notes.nth(0).locator(":scope > .kg-content-body").is_visible()
     assert "Gamma warning body" in notes.nth(0).inner_text()
 
 
 @pytest.mark.browser
-def test_folded_content_blocks_use_compact_callout_spacing(shared_browser_graph):
+def test_initial_folding_does_not_change_content_frame_spacing(shared_browser_graph):
     page = shared_browser_graph.page
-
     shared_browser_graph.click_concept("2.2")
-
-    spacing = page.locator("#info_panel details.content-block-note").first.evaluate(
-        """el => {
-          const style = getComputedStyle(el);
-          return {
-            paddingTop: parseFloat(style.paddingTop),
-            paddingBottom: parseFloat(style.paddingBottom),
-            marginBottom: parseFloat(style.marginBottom)
-          };
-        }"""
-    )
-
-    assert spacing["paddingTop"] <= 8
-    assert spacing["paddingBottom"] <= 9
-    assert spacing["marginBottom"] <= 16
+    geometry = """el => {
+      const style = getComputedStyle(el);
+      return ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+              'marginBottom', 'borderTopWidth', 'borderLeftWidth', 'borderRadius']
+        .map(key => style[key]);
+    }"""
+    folded = page.locator("#info_panel details.content-block-note").first
+    expanded = page.locator("#info_panel .content-block-intuition")
+    assert folded.evaluate(geometry) == expanded.evaluate(geometry)
+    before = folded.evaluate(geometry)
+    folded.locator(':scope > summary').click()
+    assert folded.evaluate(geometry) == before
 
 
 @pytest.mark.browser
@@ -1299,11 +1295,11 @@ def test_revised_concept_renders_derivation_steps_folded(shared_browser_graph):
     step = page.locator("#info_panel details.content-block-derivation_step")
     assert step.count() == 1
     assert step.locator("summary .content-block-title-text").inner_text() == "Gamma algebra step"
-    assert not step.locator(".content-block-fold-body").is_visible()
+    assert not step.locator(":scope > .kg-content-body").is_visible()
 
     step.locator("summary").click()
 
-    assert step.locator(".content-block-fold-body").is_visible()
+    assert step.locator(":scope > .kg-content-body").is_visible()
     assert "Gamma derivation-step body" in step.inner_text()
 
 
@@ -2178,7 +2174,8 @@ def test_concept_details_show_backlinks_grouped_by_relation(shared_browser_graph
 
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.count() == 1
-    assert backlinks.evaluate("el => el.open")
+    assert not backlinks.evaluate("el => el.open")
+    backlinks.locator(":scope > summary").click()
     assert backlinks.locator(".concept-backlink-group").count() == 3
     assert backlinks.locator(".edge-detail-concept").evaluate_all(
         "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
@@ -2195,7 +2192,8 @@ def test_concept_details_show_derived_from_links_only(shared_browser_graph):
 
     derived_from = page.locator("#info_panel .concept-derived-from")
     assert derived_from.count() == 1
-    assert derived_from.evaluate("el => el.open")
+    assert not derived_from.evaluate("el => el.open")
+    derived_from.locator(":scope > summary").click()
     assert derived_from.locator(".edge-detail-concept").evaluate_all(
         "nodes => nodes.map(node => node.getAttribute('data-edge-concept-id'))"
     ) == ["1.1"]
@@ -2207,6 +2205,7 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
 
     browser_graph.click_concept("2.2")
     page.locator("#kg_view_select").select_option("details")
+    page.locator("#info_panel .concept-derived-from > summary").click()
     page.locator("#info_panel .concept-derived-from-show-graph").click()
 
     assert page.evaluate("() => kgViewerStateSnapshot()") == {
@@ -2224,7 +2223,9 @@ def test_details_relationship_sections_explicitly_set_graph_context(browser_grap
 
     browser_graph.click_concept("1.1")
     backlinks = page.locator("#info_panel .concept-backlinks")
+    backlinks.locator(":scope > summary").click()
     backlinks.locator(".concept-backlinks-full-tree").check()
+    assert backlinks.evaluate("el => el.open")
     backlinks.locator(".concept-backlinks-show-graph").click()
 
     assert page.evaluate("() => kgViewerStateSnapshot().contextRule") == {
@@ -2245,7 +2246,9 @@ def test_derived_from_full_tree_expands_only_derives_from_ancestry(browser_graph
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="1.1"]').count() == 0
 
+    derived_from.locator(":scope > summary").click()
     derived_from.locator(".concept-derived-from-full-tree").check()
+    assert derived_from.evaluate("el => el.open")
 
     derived_from = page.locator("#info_panel .concept-derived-from")
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
@@ -2263,7 +2266,9 @@ def test_derived_from_full_tree_includes_constructed_from_ancestry(constructed_b
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.1"]').count() == 0
 
+    derived_from.locator(":scope > summary").click()
     derived_from.locator(".concept-derived-from-full-tree").check()
+    assert derived_from.evaluate("el => el.open")
 
     derived_from = page.locator("#info_panel .concept-derived-from")
     assert derived_from.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
@@ -2279,6 +2284,7 @@ def test_derived_from_concept_hover_shows_preview(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
+    page.locator('#info_panel .concept-derived-from > summary').click()
     page.locator('#info_panel .concept-derived-from .edge-detail-concept[data-edge-concept-id="1.1"]').hover()
 
     preview = page.locator("#kg_concept_preview")
@@ -2296,8 +2302,10 @@ def test_backlinks_full_tree_expands_only_derives_from_descendants(browser_graph
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="3.1"]').count() == 0
+    backlinks.locator(":scope > summary").click()
 
     backlinks.locator(".concept-backlinks-full-tree").check()
+    assert backlinks.evaluate("el => el.open")
 
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
@@ -2313,9 +2321,11 @@ def test_backlinks_full_tree_includes_constructed_from_descendants(constructed_b
 
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
+    backlinks.locator(":scope > summary").click()
     assert "Built from this" in backlinks.inner_text()
 
     backlinks.locator(".concept-backlinks-full-tree").check()
+    assert backlinks.evaluate("el => el.open")
 
     backlinks = page.locator("#info_panel .concept-backlinks")
     assert backlinks.locator('.edge-detail-concept[data-edge-concept-id="2.2"]').count() == 1
@@ -2330,6 +2340,7 @@ def test_backlink_concept_hover_shows_preview(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("1.1")
+    page.locator('#info_panel .concept-backlinks > summary').click()
     page.locator('#info_panel .concept-backlinks .edge-detail-concept[data-edge-concept-id="2.2"]').hover()
 
     preview = page.locator("#kg_concept_preview")

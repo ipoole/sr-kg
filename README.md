@@ -90,7 +90,11 @@ downloads or imports them together as a portable ZIP of readable CSV files. See 
 [Viewer quick start](docs/design/viewer_quick_start.md) for a short introduction.
 Use the speech-bubble `+` in a block heading, then choose a paragraph, to add a
 note without leaving permanent insertion controls throughout the text. A filled
-bubble means that block already has notes.
+bubble means that block already has notes. The bubble beside a concept/module
+heading adds personal content after its authored exposition. Notes unfold into a
+reading view; use **Edit**, then **Done** to return to reading. Mathematics uses
+MathJax notation, with **Insert maths** supplying an editable example. Personal
+notes do not affect completion ticks. See [Notes and authored content](docs/design/notes_content_unification.md).
 
 An optional Google Drive connection synchronises the same visible
 `PhysicsKG personal data.zip` file between browsers. It syncs immediately on

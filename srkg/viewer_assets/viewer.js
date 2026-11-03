@@ -180,7 +180,8 @@
           store: personalDataStore, storageKey: userNotesStorageKey,
           content: contentModel, markup: contentMarkup, writeStorage: safeLocalStorageSet,
           onSave: function() { schedulePersonalDataAutoSync(); },
-          onContentChange: refreshActiveConcept, onSummariesChange: refreshNodeTooltips
+          onContentChange: refreshActiveConcept, onSummariesChange: refreshNodeTooltips,
+          onReveal: function(target) { scrollInfoPanelTargetBelowStickyToc(target, {immediate: true}); }
         });
         var setNotesStatus = notesController.setNotesStatus;
         var noteAnchorSpecs = notesController.noteAnchorSpecs;
@@ -1768,22 +1769,6 @@
             .replace(/^-+|-+$/g, "") || "unknown";
         }
 
-        function renderContentBlockHeading(targetType, targetId, block, title) {
-          var policy = contentBlockPolicyFor(block.kind);
-          return '<span class="content-block-title-line">' +
-            '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
-            '<span class="content-block-title-text">' +
-            renderConceptText(title) +
-            "</span>" +
-            '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
-            escapeHtml(policy.label) +
-            '"></span></span>' +
-            renderNoteBlockAction(
-              targetType, targetId, title, block.block_id, "", true
-            ) +
-            renderContentBlockReadToggle(block.block_id, title);
-        }
-
         function renderNoteableHeading(targetType, targetId, title, sectionKey) {
           return '<span class="kg-noteable-title">' + renderConceptText(title) + "</span>" +
             renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
@@ -1792,35 +1777,23 @@
         function renderOwnerContentBlock(ownerType, ownerId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
-          var anchorId = contentAnchorId(ownerId, title);
-          var bodyClass = "concept-body content-block-body";
-          var bodyHtml = renderNoteAnchoredBody(
-            ownerType, ownerId, title, block.block_id, "", block.body
-          );
-          if (policy.mode === "folded") {
-            bodyClass = "concept-body content-block-fold-body";
-            if (policy.note) {
-              bodyClass += " content-block-note-body";
-            }
-            return renderFoldDown({
-              anchorId: anchorId,
-              contentBlockId: block.block_id,
-              noteBlock: true,
-              className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
-              summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
-              bodyClass: bodyClass,
-              bodyHtml: bodyHtml
-            });
-          }
-          return renderFoldDown({
-            anchorId: anchorId,
+          return contentMarkup.renderContentUnit({
+            origin: "authored", level: "block", anchorId: contentAnchorId(ownerId, title),
             contentBlockId: block.block_id,
-            noteBlock: true,
+            capabilities: {annotate: true, trackRead: true, edit: false},
             className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
-            open: true,
-            summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
-            bodyClass: bodyClass,
-            bodyHtml: bodyHtml
+            open: policy.mode !== "folded", title: title,
+            markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
+            labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
+              escapeHtml(policy.label) + '"></span>',
+            actions: [
+              {position: "heading", capability: "annotate",
+                html: renderNoteBlockAction(ownerType, ownerId, title, block.block_id, "", true)},
+              {position: "heading", capability: "trackRead",
+                html: renderContentBlockReadToggle(block.block_id, title)}
+            ],
+            bodyClass: "content-block-body",
+            bodyHtml: renderNoteAnchoredBody(ownerType, ownerId, title, block.block_id, "", block.body)
           });
         }
 
@@ -1895,6 +1868,7 @@
           html += '<h2 class="concept-title" title="' + escapeHtml(conceptTitleText) + '">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
+          html += notesController.renderOwnerNoteAction("concept", nodeId);
           html += renderContentReadCompletionIndicator("concept", nodeId);
           html += renderStudyQuestionCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
@@ -2734,6 +2708,7 @@
           var html = '<div class="concept-sticky-header module-sticky-header">';
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
+          html += notesController.renderOwnerNoteAction("module", moduleId);
           html += renderContentReadCompletionIndicator("module", moduleId);
           html += renderStudyQuestionCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
@@ -2843,6 +2818,7 @@
           moduleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
+          html += notesController.renderOwnerNotes("module", moduleId);
           html += renderModuleMembers(moduleId, module);
           html += renderModuleBoundarySection(moduleId, "incoming", "Incoming boundary links");
           html += renderModuleBoundarySection(moduleId, "outgoing", "Outgoing boundary links");
@@ -2859,7 +2835,6 @@
           }
           detailsView.suppressScrollSync(350);
           renderNotesOverview();
-          notesController.closeEditor();
           var initialItem = initialTocItem(tocItems);
           setActiveConceptSection(initialItem ? initialItem.id : null);
           updateGraphContextControls();
@@ -2901,7 +2876,8 @@
             ":scope > .kg-noteable-heading .kg-note-block-action"
           );
           block.removeAttribute("data-note-placement");
-          block.querySelectorAll(".concept-line").forEach(function(line) {
+          block.querySelectorAll(".kg-note-placement-target").forEach(function(line) {
+            line.classList.remove("kg-note-placement-target");
             line.removeAttribute("tabindex");
             line.removeAttribute("aria-label");
           });
@@ -2916,7 +2892,9 @@
           if (!block) { return; }
           cancelNotePlacement();
           if (block.tagName === "DETAILS") { block.open = true; }
-          var lines = block.querySelectorAll(".concept-line");
+          var lines = Array.from(block.querySelectorAll(".concept-line")).filter(function(line) {
+            return !line.closest(".user-note");
+          });
           if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
             var blockNoteButton = block.querySelector(".kg-add-note");
             if (blockNoteButton) { blockNoteButton.click(); }
@@ -2925,6 +2903,7 @@
           block.setAttribute("data-note-placement", "active");
           action.setAttribute("aria-pressed", "true");
           lines.forEach(function(line) {
+            line.classList.add("kg-note-placement-target");
             line.setAttribute("tabindex", "0");
             line.setAttribute("aria-label", "Place note after this paragraph");
           });
@@ -4241,7 +4220,7 @@
           if (sourceEdges.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Derived From")) +
-            '" class="concept-derived-from" open>';
+            '" class="concept-derived-from">';
           html += "<summary>Derived from</summary>";
           html += fullTreeToggleHtml(
             "concept-derived-from-full-tree",
@@ -4279,7 +4258,7 @@
           if (groups.length === 0) { return ""; }
 
           var html = '<details id="' + escapeHtml(contentAnchorId(nodeId, "Where This Is Used")) +
-            '" class="concept-backlinks" open>';
+            '" class="concept-backlinks">';
           html += "<summary>Where this is used</summary>";
           html += fullTreeToggleHtml(
             "concept-backlinks-full-tree",
@@ -4470,6 +4449,7 @@
           html += renderConceptGraphic(nodeId, concept);
           html += "<hr>";
           html += renderConceptContent(nodeId, concept);
+          html += notesController.renderOwnerNotes("concept", nodeId);
           html += renderConceptDerivedFrom(nodeId);
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
@@ -4523,7 +4503,6 @@
           }
           detailsView.suppressScrollSync(350);
           renderNotesOverview();
-          notesController.closeEditor();
           var initialItem = initialTocItem(tocItems);
           setActiveConceptSection(initialItem ? initialItem.id : null);
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -4619,7 +4598,24 @@
           requestAnimationFrame(updateNodeLabelPositions);
         }
 
+        function updatePhoneOrientation() {
+          // CSS orientation describes viewport shape, which a keyboard can change.
+          var orientation = window.screen && window.screen.orientation;
+          var landscape;
+          if (orientation && typeof orientation.type === "string") {
+            landscape = orientation.type.indexOf("landscape") === 0;
+          } else if (typeof window.orientation === "number") {
+            landscape = Math.abs(window.orientation) === 90;
+          } else {
+            var active = document.activeElement;
+            var typing = active && active.matches("input, textarea, [contenteditable='true']");
+            landscape = window.innerWidth > window.innerHeight && !typing;
+          }
+          document.body.classList.toggle("kg-device-landscape", landscape);
+        }
+
         function handleViewportResize() {
+          updatePhoneOrientation();
           updateResponsiveControlLabels();
           updateGraphContextControls();
           applyWorkspaceSplit();
@@ -5673,6 +5669,9 @@
         network.on("animationFinished", updateNodeLabelPositions);
         window.addEventListener("resize", handleViewportResize);
         window.addEventListener("orientationchange", handleViewportResize);
+        if (window.screen && window.screen.orientation && window.screen.orientation.addEventListener) {
+          window.screen.orientation.addEventListener("change", handleViewportResize);
+        }
         if (window.visualViewport) {
           window.visualViewport.addEventListener("resize", handleViewportResize);
           window.visualViewport.addEventListener("scroll", scheduleViewportRefresh);
@@ -5982,12 +5981,18 @@
           var targetType = item.getAttribute("data-target-type");
           var targetId = item.getAttribute("data-target-id");
           if (!note) { return; }
-          notesController.openEditor(note.id);
+          notesController.openNote(note.id);
           if (targetType === "module" && getModule(targetId)) {
             focusModule(targetId, "Selected");
           } else if (targetType === "concept" && getConcept(targetId)) {
             focusConcept(targetId, "Selected");
           }
+          notesController.revealNote(note.id, false);
+        });
+
+        document.getElementById("kg_notes_delete_all").addEventListener("click", function() {
+          if (!window.confirm("Delete all your notes in all domains, including missing targets? Deletions will also synchronise to your other devices.")) { return; }
+          notesController.deleteAllNotes();
         });
 
         document.getElementById("kg_notes_import_button").addEventListener("click", function() {
@@ -6213,6 +6218,17 @@
             return;
           }
 
+          var ownerNoteButton = e.target.closest(".kg-note-owner-action");
+          if (ownerNoteButton) {
+            e.preventDefault();
+            var ownerNote = notesController.createOwnerNote(
+              ownerNoteButton.getAttribute("data-target-type"), ownerNoteButton.getAttribute("data-target-id")
+            );
+            refreshActiveConcept();
+            notesController.revealNote(ownerNote.id, true);
+            return;
+          }
+
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
@@ -6277,7 +6293,7 @@
           }
 
           var placementBlock = e.target.closest('[data-note-placement="active"]');
-          var placementLine = e.target.closest(".concept-line");
+          var placementLine = e.target.closest(".kg-note-placement-target");
           if (
             placementBlock && placementLine &&
             Date.now() >= notePlacementSuppressClickUntil &&
@@ -6287,6 +6303,20 @@
             var placementRow = placementLine.nextElementSibling;
             var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
             if (placementButton) { placementButton.click(); }
+            return;
+          }
+
+          var insertMathsButton = e.target.closest(".user-note-insert-maths");
+          if (insertMathsButton) {
+            e.preventDefault();
+            notesController.insertMaths(insertMathsButton.getAttribute("data-note-id"));
+            return;
+          }
+
+          var editNoteButton = e.target.closest(".user-note-edit");
+          if (editNoteButton) {
+            e.preventDefault();
+            notesController.editNote(editNoteButton.getAttribute("data-note-id"));
             return;
           }
 
@@ -6382,6 +6412,8 @@
             var derivedSectionId = derivedSection ? derivedSection.id : null;
             derivedFromFullTreeEnabled = derivedFromFullTree.checked;
             refreshActiveConcept();
+            var refreshedDerivedSection = document.getElementById(derivedSectionId);
+            if (refreshedDerivedSection) { refreshedDerivedSection.open = true; }
             detailsView.suppressScrollSync(1000);
             setActiveConceptSection(derivedSectionId);
             return;
@@ -6393,6 +6425,8 @@
             var backlinksSectionId = backlinksSection ? backlinksSection.id : null;
             backlinksFullTreeEnabled = backlinksFullTree.checked;
             refreshActiveConcept();
+            var refreshedBacklinksSection = document.getElementById(backlinksSectionId);
+            if (refreshedBacklinksSection) { refreshedBacklinksSection.open = true; }
             detailsView.suppressScrollSync(1000);
             setActiveConceptSection(backlinksSectionId);
           }
@@ -6455,7 +6489,7 @@
             return;
           }
           if (e.key !== "Enter" && e.key !== " ") { return; }
-          var placementLine = e.target.closest(".concept-line");
+          var placementLine = e.target.closest(".kg-note-placement-target");
           if (!placementLine) { return; }
           e.preventDefault();
           var placementRow = placementLine.nextElementSibling;
@@ -6464,7 +6498,7 @@
         });
 
         document.getElementById("info_panel").addEventListener("pointerdown", function(e) {
-          if (!e.target.closest('[data-note-placement="active"] .concept-line')) {
+          if (!e.target.closest('[data-note-placement="active"] .kg-note-placement-target')) {
             notePlacementPointerStart = null;
             return;
           }
@@ -6506,10 +6540,10 @@
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
             if (
-              e.target.classList.contains("user-note") &&
-              !e.target.open
+              e.target.classList.contains("user-note")
             ) {
-              closeUserNote(e.target.getAttribute("data-note-id"));
+              notesController.noteToggled(e.target);
+              schedulePanelContentRefit();
               return;
             }
             schedulePanelContentRefit();
@@ -6517,6 +6551,7 @@
         }, true);
 
         /* Initial render. */
+        updatePhoneOrientation();
         initialiseTutorialPlayback();
         applyDefaultModuleFoldState();
         buildModuleFoldControls();

@@ -207,6 +207,13 @@ section
 names; add page numbers when they improve precision. Keep rendered locators
 compact and record uncertainty in the link note.
 
+Fold optional algebra or clarification into `\optional_details{Title}{Body}` inside
+its relevant block; keep the main argument readable without opening it. These
+share disclosure/math rendering with personal notes, but remain authored content.
+Use `derivation` for the reasoning itself; “Derived from” lists supporting concepts.
+Personal notes are not authored blocks and do not affect completion. Nested
+disclosures have no independent block IDs, read ticks or tutorial targets yet.
+
 ## Study Questions
 
 Write 3 to 6 progressively ordered questions per concept, with no more than

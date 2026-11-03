@@ -32,14 +32,14 @@
       ["format", "srkg-personal-data-csv"]
     ];
     var notes = [[
-      "note_id", "target_type", "target_id", "concept_id", "section", "anchor_index",
+      "note_id", "target_type", "target_id", "concept_id", "section", "placement", "anchor_index",
       "anchor_after", "anchor_block_id", "anchor_section_key", "anchor_context_before",
       "anchor_context_after", "title", "body", "created_at", "updated_at", "deleted_at"
     ]];
     profile.notes.forEach(function(note) {
       var anchor = note.anchor || {};
       notes.push([
-        note.id, note.targetType, note.targetId, note.conceptId, note.section,
+        note.id, note.targetType, note.targetId, note.conceptId, note.section, note.placement || "anchor",
         Number(anchor.blockIndex) || 0, anchor.afterText, anchor.blockId, anchor.sectionKey,
         anchor.contextBefore, anchor.contextAfter, note.title, note.body,
         note.createdAt, note.updatedAt, note.deletedAt
@@ -194,6 +194,7 @@
       var note = {
         id: required(row.note_id, "note_id"), targetType: row.target_type,
         targetId: row.target_id, conceptId: row.concept_id, section: row.section,
+        placement: row.placement === "owner" ? "owner" : "anchor",
         anchor: {
           blockIndex: Math.max(0, Number(row.anchor_index) || 0), afterText: row.anchor_after,
           blockId: row.anchor_block_id, sectionKey: row.anchor_section_key,

@@ -95,3 +95,24 @@ def test_malformed_personal_data_archive_changes_nothing(browser_graph, tmp_path
 
     assert page.evaluate("() => window.kgPersonalData.getSnapshot().profileId") == before
     assert page.locator("#kg_personal_data_import_dialog").get_attribute("open") is None
+
+
+@pytest.mark.browser
+def test_note_placement_survives_archive_and_merge(browser_graph):
+    result = browser_graph.page.evaluate(r'''() => {
+      const store = kgPersonalData, profile = store.getSnapshot();
+      const now = '2026-11-02T12:00:00Z';
+      profile.notes = ['owner', 'anchor'].map(placement => ({
+        id: placement, targetType: 'concept', targetId: '2.1', conceptId: '2.1',
+        placement, section: placement === 'owner' ? 'Personal notes' : 'Definition',
+        anchor: {blockId: placement === 'anchor' ? '2.1.definition' : '', blockIndex: 0},
+        title: placement, body: '\\(x^2\\)', createdAt: now, updatedAt: now
+      }));
+      const roundTrip = kgPersonalDataArchive.importBytes(kgPersonalDataArchive.exportBytes(profile));
+      store.mergeSnapshot(roundTrip);
+      return store.getSnapshot().notes.map(n => [n.id, n.placement, n.anchor.blockId, n.body]);
+    }''')
+    assert sorted(result) == [
+        ['anchor', 'anchor', '2.1.definition', r'\(x^2\)'],
+        ['owner', 'owner', '', r'\(x^2\)'],
+    ]

@@ -283,7 +283,16 @@ Disconnect clears the local connection even offline and retains personal data. S
 open Details blocks, notes and study interaction instead of rebuilding the pane
 indiscriminately. See [Personal data](personal_data.md).
 
-Notes target a concept/module block, preferably by stable authored `block_id`,
+Built-in blocks, personal blocks and nested explanations use the recursive
+`content_markup.js` content-unit renderer: common heading, framed body, child units
+and capability-filtered actions. Kind/origin supply colour themes; nesting supplies
+placement, and adapters explicitly supply editing/annotation/read-tracking
+capabilities. Storage origin does not select a different presentation engine.
+See [Content-unit model](notes_content_unification.md). The
+notes controller owns reading/editing state and targeted MathJax replacement;
+editing one note does not rebuild the Details pane. Personal notes never enter
+completion accounting. Notes can attach directly to a concept/module (`placement:
+owner`) or target a block (`placement: anchor`), preferably by stable authored `block_id`,
 and retain surrounding text to recover paragraph placement after edits. Legacy
 anchors migrate when unambiguous; unresolved notes stay stored and are shown as
 needing placement. Study and reading summaries feed both Details and optional

@@ -106,6 +106,11 @@ when a newer published revision is detected. Camera state is never persisted.
 
 ## Reading and personal work
 
+Derived from and Where this is used start folded to keep lengthy relationship
+lists out of the main exposition. Open either to inspect it; changing Full tree
+keeps the open section visible.
+
+
 Concept details contain teaching blocks, graphics, relationships, questions and
 references. **Show in graph** in Derived from and Where this is used explicitly
 selects Derivation or Uses context respectively; the section's Full-tree choice
@@ -138,7 +143,11 @@ Use the speech-bubble `+` in a content-block heading, then choose a paragraph,
 to add a browser-local note. A filled bubble means the block already has notes
 and still adds another. The chosen paragraph highlights and the note is placed
 below it; paragraph spaces are not separate targets. Graphics and Study
-Questions use their one block-level note position immediately. CSV import and
+Questions use their one block-level note position immediately. The bubble beside
+a concept/module title adds a top-level note after authored exposition. Notes
+unfold for reading with rendered mathematics; Edit exposes the editor and Done
+returns to reading. Insert maths supplies an editable formula example. Personal
+notes do not affect completion ticks. CSV import and
 export preserve stable content anchors;
 unresolved notes remain visible as needing placement rather than being moved
 speculatively. Notes, Personal layout, study-question attempts and content read

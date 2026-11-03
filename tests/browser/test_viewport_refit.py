@@ -655,3 +655,45 @@ def test_phone_portrait_and_landscape_use_different_panel_layouts(browser_graph)
     assert abs(landscape_graph["width"] - landscape_details["width"]) <= 2
     assert landscape_graph["height"] > 290
     assert landscape_details["height"] > 290
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize("orientation_api", ["screen", "legacy", "fallback"])
+def test_phone_keyboard_does_not_trigger_rotate_notice(mobile_repo_browser_graph, orientation_api):
+    graph = mobile_repo_browser_graph
+    page = graph.page
+    graph.click_concept('sr.momentum_four_vector')
+    page.locator('#info_panel .kg-note-owner-action').tap()
+    title = page.locator('#info_panel .user-note-title-input')
+    title.focus()
+    # Keep physical orientation portrait while simulating keyboard viewport shrink.
+    page.evaluate("""api => {
+      if (api === 'screen') {
+        Object.defineProperty(screen.orientation, 'type', {configurable: true, value: 'portrait-primary'});
+      } else {
+        Object.defineProperty(screen, 'orientation', {configurable: true, value: undefined});
+        Object.defineProperty(window, 'orientation', {configurable: true, value: api === 'legacy' ? 0 : undefined});
+      }
+    }""", orientation_api)
+    page.set_viewport_size({'width': 430, 'height': 300})
+    assert page.evaluate("matchMedia('(orientation: landscape)').matches")
+    assert page.locator('#kg_portrait_notice').is_hidden()
+    title.fill('A title typed with the keyboard open')
+    body = page.locator('#info_panel .user-note-body-input')
+    body.focus()
+    assert page.locator('#kg_portrait_notice').is_hidden()
+    body.fill('The draft remains editable.')
+    page.set_viewport_size({'width': 430, 'height': 932})
+    page.locator('#info_panel .user-note-close').click()
+    assert page.locator('#info_panel .user-note-reading').inner_text() == 'The draft remains editable.'
+    page.locator('#info_panel .user-note-edit').blur()
+    page.evaluate("""api => {
+      if (api === 'screen') {
+        Object.defineProperty(screen.orientation, 'type', {configurable: true, value: 'landscape-primary'});
+      } else if (api === 'legacy') {
+        Object.defineProperty(window, 'orientation', {configurable: true, value: 90});
+      }
+    }""", orientation_api)
+    page.set_viewport_size({'width': 844, 'height': 390})
+    page.evaluate("window.dispatchEvent(new Event('orientationchange'))")
+    assert page.locator('#kg_portrait_notice').is_visible()

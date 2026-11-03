@@ -85,12 +85,21 @@ individual sections as you read. A block's
 checkbox records a blue read tick; completing every block marks its concept or
 module. A green title tick means that every study question is currently correct.
 Use a block's speech-bubble `+`, then choose a paragraph, to add a note; a filled
-bubble means notes are already present. **Next** at the foot of a concept follows
+bubble means notes are already present. The bubble beside the concept/module title
+adds a top-level personal note. Notes open for reading: use **Edit** to change them,
+**Insert maths** for an example formula, then **Done**. Personal notes do not affect
+completion ticks. **Next** at the foot of a concept follows
 the reading sequence through SR, MATHS and GR. Back and Forward retrace selections.
 
 Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
 layout** to save moved nodes in this browser. After Fit++, represented context
 nodes can instead be adjusted temporarily; navigating away restores them.
+
+## Clarifications and notes — NEW
+
+Unfold built-in clarifications for extra reasoning and algebra. Add your own notes
+after a paragraph or as a top-level block; read and fold them like other content.
+Use **Edit**, **Insert maths** and **Done** to write notes with formulas.
 
 ## Personal data
 

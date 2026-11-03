@@ -788,7 +788,7 @@
       #kg_tutorial_first_step_guidance { font-size: 0.9em; margin: 6px 0; }
       #kg_portrait_notice { display: none; }
       @media (orientation: landscape) and (max-height: 500px) and (max-width: 1000px) and (pointer: coarse) {
-        #kg_portrait_notice {
+        body.kg-device-landscape #kg_portrait_notice {
           display: grid; place-items: center; position: fixed; inset: 0;
           z-index: 11000; background: #f7f2ff; color: #57367b;
           padding: 24px; text-align: center; font: 18px/1.5 Arial, sans-serif;
@@ -1105,23 +1105,9 @@
         transition: box-shadow 120ms ease-out;
     }
 
-    #info_panel .optional-detail {
+    #info_panel .kg-content-inline {
         margin: 0.75em 0;
-        padding: 0;
     }
-
-    #info_panel .optional-detail > summary {
-        color: #174ea6;
-        cursor: pointer;
-        font-weight: 700;
-    }
-
-    #info_panel .optional-detail-body {
-        border-left: 2px solid #c8d7f2;
-        margin-top: 0.45em;
-        padding-left: 0.75em;
-    }
-
 
     #info_panel .concept-sticky-header {
         background: rgba(255,255,255,0.96);
@@ -1363,26 +1349,59 @@
         margin: 0 0 0.75em;
     }
 
-    #info_panel .content-block {
+    /* Shared frame; folded explanations suppress it below, regardless of origin. */
+    #info_panel .kg-content-framed {
         --block-accent: #6a7b8f;
         --block-accent-dark: #34495f;
-        --block-bg: transparent;
-        --block-border: transparent;
+        --block-bg: #fafbfd;
+        --block-border: #d8dfe7;
         --block-label-bg: #eef2f7;
         --block-label-color: #34495f;
         --block-mark-bg: #f2f5f8;
         --block-mark-color: #34495f;
-        border-left: 3px solid var(--block-accent);
-        margin: 0 0 1.05em;
-        padding: 0 0 0 0.85em;
+        background: var(--block-bg);
+        border: 1px solid var(--block-border);
+        border-left: 5px solid var(--block-accent);
+        border-radius: 6px;
+        padding: 0.72em 0.8em 0.78em 0.9em;
     }
 
-    #info_panel .content-block > summary {
+    #info_panel .kg-content-block {
+        margin: 0 0 1.05em;
+    }
+
+    #info_panel .kg-content-body {
+        margin-top: 0.45em;
+    }
+
+    #info_panel .kg-content-framed > summary {
         color: var(--block-accent-dark);
         cursor: pointer;
         font-weight: 700;
         list-style-position: outside;
         margin-bottom: 0.38em;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline {
+        background: transparent;
+        border: 1px solid #bcc2c9;
+        color: inherit;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline[open] > summary {
+        color: inherit;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline:not([open]) {
+        border: 0;
+        border-radius: 0;
+        margin: 0.35em 0;
+        padding: 0;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline:not([open]) > summary {
+        color: var(--disclosure-color, #174ea6);
+        margin-bottom: 0;
     }
 
     #info_panel .content-block-title-line {
@@ -1452,9 +1471,6 @@
         content: attr(data-label);
     }
 
-    #info_panel .content-block-body {
-        padding-top: 0.05em;
-    }
 
     #info_panel .module-member-list,
     #info_panel .module-support-list,
@@ -1540,19 +1556,13 @@
         margin: 0;
     }
 
-    #info_panel .content-block-fold {
-        border-left-color: var(--block-accent);
-        margin: 0 0 1.05em;
-        padding: 0 0 0 0.85em;
-    }
-
-    #info_panel .content-block > summary:hover,
-    #info_panel .content-block > summary:focus {
+    #info_panel .kg-content-framed > summary:hover,
+    #info_panel .kg-content-framed > summary:focus {
         color: var(--block-accent-dark);
         outline: none;
     }
 
-    #info_panel .content-block > summary {
+    #info_panel .kg-content-framed.kg-content-trackable > summary {
         padding-right: 3.35em;
         position: relative;
     }
@@ -1867,45 +1877,6 @@
         --block-mark-color: #3e541f;
     }
 
-    #info_panel .content-block-intuition,
-    #info_panel .content-block-result,
-    #info_panel .content-block-decomposition,
-    #info_panel .content-block-convention,
-    #info_panel .content-block-derivation,
-    #info_panel .content-block-example,
-    #info_panel .content-block-worked_example,
-    #info_panel .content-block-warning,
-    #info_panel .content-block-misconception,
-    #info_panel .content-block-historical_note,
-    #info_panel .content-block-summary {
-        background: var(--block-bg);
-        border: 1px solid var(--block-border);
-        border-left: 5px solid var(--block-accent);
-        border-radius: 6px;
-        padding: 0.72em 0.8em 0.78em 0.9em;
-    }
-
-    #info_panel .content-block-fold.content-block-note,
-    #info_panel .content-block-fold.content-block-derivation_step,
-    #info_panel .content-block-fold.content-block-convention {
-        margin-bottom: 0.8em;
-        padding: 0.42em 0.65em 0.48em 0.75em;
-    }
-
-    #info_panel .content-block-fold .content-block-title-line {
-        gap: 0.25em 0.35em;
-    }
-
-    #info_panel .content-block-fold .content-block-kind-mark {
-        font-size: 0.72em;
-        height: 1.42em;
-        min-width: 1.42em;
-    }
-
-    #info_panel .content-block-fold-body {
-        margin-top: 0.55em;
-    }
-
     #info_panel .concept-line {
         min-height: 1.45em;
     }
@@ -1914,20 +1885,20 @@
         display: none;
     }
 
-    #info_panel [data-note-placement="active"] .concept-line {
+    #info_panel [data-note-placement="active"] .kg-note-placement-target {
         border-radius: 4px;
         cursor: copy;
     }
 
-    #info_panel [data-note-placement="active"] .concept-line:hover,
-    #info_panel [data-note-placement="active"] .concept-line:focus-visible {
+    #info_panel [data-note-placement="active"] .kg-note-placement-target:hover,
+    #info_panel [data-note-placement="active"] .kg-note-placement-target:focus-visible {
         background: #fff9dc;
         outline: 2px solid #c8a632;
         outline-offset: 2px;
     }
 
     @media (pointer: coarse) {
-        #info_panel .content-block > summary {
+        #info_panel .kg-content-framed.kg-content-trackable > summary {
             padding-right: 68px;
         }
 
@@ -1952,29 +1923,24 @@
             padding-right: 12.5em;
         }
 
-        #info_panel [data-note-placement="active"] .concept-line {
+        #info_panel [data-note-placement="active"] .kg-note-placement-target {
             touch-action: pan-y;
         }
     }
 
-    #info_panel .user-note {
-        margin: 0.75em 0;
-        padding: 0;
-    }
-
-    #info_panel .user-note > summary {
-        color: #7a5800;
-        cursor: pointer;
-        font-weight: 700;
+    #info_panel .kg-content-framed[data-content-origin="personal"] {
+        --block-accent: #bb9562;
+        --block-accent-dark: #7a5800;
+        --block-bg: #fbf5ee;
+        --block-border: #e1cfb5;
+        --disclosure-color: #7a5800;
     }
 
     #info_panel .user-note-editor {
-        border-left: 2px solid #e4c568;
         display: flex;
         flex-direction: column;
         gap: 0.35em;
         margin-top: 0.45em;
-        padding-left: 0.75em;
     }
 
     #info_panel .user-note-editor label {
@@ -2005,6 +1971,7 @@
         gap: 0.5em;
     }
 
+    #info_panel .user-note-insert-maths,
     #info_panel .user-note-close {
         background: #f5f7fb;
         border: 1px solid #9aa8bd;
@@ -3688,3 +3655,23 @@
         #kg_display_scope_select { width:78px; }
         #kg_view_select { width:47px; }
       }
+
+    #info_panel .user-note-edit {
+        background: transparent;
+        border: 0;
+        color: #7a5800;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.85em;
+        padding: 0.2em 0;
+        text-decoration: underline;
+    }
+    #info_panel .user-note-reading { font-weight: normal; }
+
+    #info_panel .user-note-actions { flex-wrap: wrap; }
+    #info_panel .user-note-maths-help { color: #59616d; font-weight: normal; }
+
+    #info_panel .concept-title-row > .kg-note-owner-action {
+        position: static;
+        flex: 0 0 1.5em;
+    }

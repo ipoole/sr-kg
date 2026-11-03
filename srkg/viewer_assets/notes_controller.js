@@ -18,10 +18,58 @@ function kgCreateNotesController(options) {
   var safeLocalStorageSet = options.writeStorage;
   var schedulePersonalDataAutoSync = options.onSave;
   var refreshActiveConcept = options.onContentChange, refreshNodeTooltips = options.onSummariesChange;
-  var userNotesState = loadUserNotes(), openUserNoteId = null;
+  var userNotesState = loadUserNotes(), editingNoteId = null;
+  var openNotes = new Set();
   function reload() { userNotesState = loadUserNotes(); }
-  function openEditor(id) { openUserNoteId = id; }
-  function closeEditor() { openUserNoteId = null; }
+  function openNote(id) { openNotes.add(id); }
+  function openEditor(id) { editingNoteId = id; openNote(id); }
+  function noteToggled(element) {
+    if (!element.isConnected) { return; }
+    var id = element.getAttribute("data-note-id");
+    if (element.open) { openNotes.add(id); }
+    else {
+      openNotes.delete(id);
+      if (editingNoteId === id) {
+        syncUserNoteFromEditor(id);
+        editingNoteId = null;
+        replaceNoteElement(id);
+      }
+    }
+  }
+
+  function replaceNoteElement(noteId, focusSelector) {
+    var note = findUserNote(noteId);
+    var element = Array.from(document.querySelectorAll("#info_panel details.user-note"))
+      .find(function(item) { return item.getAttribute("data-note-id") === noteId; });
+    if (!element) { return; }
+    if (window.MathJax && MathJax.typesetClear) { MathJax.typesetClear([element]); }
+    var holder = document.createElement("div");
+    holder.innerHTML = note ? renderUserNote(note) : "";
+    var replacement = holder.firstElementChild;
+    if (replacement) { element.replaceWith(replacement); }
+    else { element.remove(); return; }
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([replacement]).catch(function(error) {
+        console.warn("Note mathematics could not be rendered", error);
+      });
+    }
+    var focus = replacement.querySelector(focusSelector || ":scope > summary");
+    if (focus) { focus.focus({preventScroll: true}); }
+    if (focusSelector === ".user-note-edit") { options.onReveal(replacement); }
+  }
+
+  function editNote(id) {
+    if (!findUserNote(id)) { return; }
+    if (editingNoteId && editingNoteId !== id) {
+      var previous = editingNoteId;
+      syncUserNoteFromEditor(previous);
+      editingNoteId = null;
+      replaceNoteElement(previous);
+    }
+    editingNoteId = id;
+    openNote(id);
+    replaceNoteElement(id, ".user-note-body-input");
+  }
 
   function loadUserNotes() {
     return {
@@ -66,6 +114,7 @@ function kgCreateNotesController(options) {
       targetType: targetType,
       targetId: targetId,
       conceptId: targetType === "concept" ? targetId : "",
+      placement: note.placement === "owner" ? "owner" : "anchor",
       section: String(note.section),
       anchor: {
         blockIndex: Math.floor(blockIndex),
@@ -218,6 +267,7 @@ function kgCreateNotesController(options) {
   }
 
   function resolveNoteAnchor(note) {
+    if (note.placement === "owner") { return {placement: "owner"}; }
     var candidates = noteAnchorCandidates(note.targetType, note.targetId);
     var anchor = note.anchor || {};
     var scoped = [];
@@ -319,7 +369,7 @@ function kgCreateNotesController(options) {
 
   function notesForAnchor(targetType, targetId, anchorSpec) {
     return userNotesState.notes.filter(function(note) {
-      return note.targetType === String(targetType) &&
+      return note.placement !== "owner" && note.targetType === String(targetType) &&
         note.targetId === String(targetId) &&
         sameNoteAnchor(resolveNoteAnchor(note), anchorSpec);
     }).sort(function(a, b) {
@@ -331,7 +381,7 @@ function kgCreateNotesController(options) {
     blockId = String(blockId || "");
     sectionKey = String(sectionKey || "");
     return userNotesState.notes.filter(function(note) {
-      if (note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
+      if (note.placement === "owner" || note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
         return false;
       }
       var resolved = resolveNoteAnchor(note);
@@ -340,6 +390,46 @@ function kgCreateNotesController(options) {
         ? resolved.blockId === blockId
         : resolved.sectionKey === sectionKey;
     }).length;
+  }
+
+  function ownerNotes(targetType, targetId) {
+    return sortedUserNotes().filter(function(note) {
+      return note.placement === "owner" && note.targetType === targetType && note.targetId === targetId;
+    });
+  }
+
+  function renderOwnerNoteAction(targetType, targetId) {
+    return '<button type="button" class="kg-note-block-action kg-note-owner-action"' +
+      ' data-note-state="' + (ownerNotes(targetType, targetId).length ? "present" : "empty") +
+      '" data-target-type="' + escapeHtml(targetType) + '" data-target-id="' + escapeHtml(targetId) +
+      '" aria-label="Add a personal note to this ' + escapeHtml(targetType) +
+      '" title="Add a personal note"><span class="kg-note-bubble-glyph" aria-hidden="true">+</span></button>';
+  }
+
+  function renderOwnerNotes(targetType, targetId) {
+    var notes = ownerNotes(targetType, targetId);
+    return notes.length ? '<section class="kg-owner-notes" aria-label="Personal notes">' +
+      notes.map(renderUserNote).join("") + '</section>' : "";
+  }
+
+  function createOwnerNote(targetType, targetId) {
+    return createUserNote(targetType, targetId, "Personal notes", 0, "", {placement: "owner"});
+  }
+
+  function revealNote(noteId, focusEditor) {
+    window.requestAnimationFrame(function() {
+      var input = noteEditorField(noteId, ".user-note-title-input") ||
+        noteEditorField(noteId, ".user-note-edit");
+      if (!input) { return; }
+      var parent = input.parentElement;
+      while (parent && parent.id !== "info_panel") {
+        if (parent.tagName === "DETAILS") { parent.open = true; }
+        parent = parent.parentElement;
+      }
+      options.onReveal(focusEditor ? input : input.closest("details.user-note"));
+      input.focus({preventScroll: true});
+      if (focusEditor) { input.select(); }
+    });
   }
 
   function renderNoteBlockAction(targetType, targetId, sectionName, blockId, sectionKey, withReadToggle) {
@@ -403,6 +493,8 @@ function kgCreateNotesController(options) {
     if (!countEl || !listEl) { return; }
 
     var count = userNotesState.notes.length;
+    var deleteAllButton = document.getElementById("kg_notes_delete_all");
+    if (deleteAllButton) { deleteAllButton.disabled = count === 0; }
     countEl.innerText = count + " note" + (count === 1 ? "" : "s");
     if (count === 0) {
       listEl.innerHTML = '<div class="kg-note-list-empty">No notes yet.</div>';
@@ -426,24 +518,38 @@ function kgCreateNotesController(options) {
   }
 
   function renderUserNote(note) {
-    var shouldOpen = note.id === openUserNoteId;
-    var html = '<details class="user-note" data-note-id="' + escapeHtml(note.id) + '"' +
-      (shouldOpen ? " open" : "") + ">";
-    html += "<summary>" + renderConceptText(note.title || "Untitled note") + "</summary>";
-    html += '<div class="user-note-editor">';
-    html += '<label>Title<input class="user-note-title-input" data-note-id="' +
-      escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>';
-    html += '<label>Note<textarea class="user-note-body-input" data-note-id="' +
-      escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + "</textarea></label>";
-    html += '<div class="user-note-actions">';
-    html += '<button type="button" class="user-note-close" data-note-id="' +
-      escapeHtml(note.id) + '">Close</button>';
-    html += '<button type="button" class="user-note-delete" data-note-id="' +
-      escapeHtml(note.id) + '">Delete</button>';
-    html += '<span class="user-note-saved">Saved locally</span>';
-    html += "</div></div>";
-    html += "</details>";
-    return html;
+    var editing = note.id === editingNoteId;
+    var body;
+    if (editing) {
+      body = '<div class="user-note-editor">' +
+        '<label>Title<input class="user-note-title-input" data-note-id="' +
+        escapeHtml(note.id) + '" value="' + escapeHtml(note.title || "") + '"></label>' +
+        '<label>Note<textarea class="user-note-body-input" data-note-id="' +
+        escapeHtml(note.id) + '">' + escapeHtml(note.body || "") + '</textarea></label>' +
+        '<small class="user-note-maths-help">Maths: inline <code>\\(x^2\\)</code>; display <code>\\[E=mc^2\\]</code>.</small>' +
+        '<div class="user-note-actions">' +
+        '<button type="button" class="user-note-insert-maths" data-note-id="' +
+        escapeHtml(note.id) + '">Insert maths</button>' +
+        '<button type="button" class="user-note-close" data-note-id="' +
+        escapeHtml(note.id) + '">Done</button>' +
+        '<button type="button" class="user-note-delete" data-note-id="' +
+        escapeHtml(note.id) + '">Delete</button>' +
+        '<span class="user-note-saved">Saved locally</span></div></div>';
+    } else {
+      body = options.markup.renderBodyLines(note.body || "", "user-note-reading", {origin: "personal"});
+    }
+    var topLevel = note.placement === "owner";
+    return options.markup.renderContentUnit({
+      origin: "personal", id: note.id,
+      capabilities: {edit: true, annotate: false, trackRead: false},
+      level: topLevel ? "block" : "inline",
+      className: "user-note" + (topLevel ? "" : " optional-detail"),
+      open: openNotes.has(note.id), title: note.title || "Untitled note",
+      bodyClass: "user-note-content", bodyHtml: body,
+      actions: editing ? [] : [{capability: "edit",
+        html: '<button type="button" class="user-note-edit" data-note-id="' +
+          escapeHtml(note.id) + '">Edit</button>'}]
+    });
   }
 
   function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec) {
@@ -516,6 +622,7 @@ function kgCreateNotesController(options) {
       targetId: String(targetId),
       conceptId: targetType === "concept" ? String(targetId) : "",
       section: String(sectionName),
+      placement: stableAnchor.placement === "owner" ? "owner" : "anchor",
       anchor: {
         blockIndex: Number(anchorIndex) || 0,
         afterText: String(afterText || ""),
@@ -530,16 +637,26 @@ function kgCreateNotesController(options) {
       updatedAt: now
     };
     userNotesState.notes.push(note);
-    openUserNoteId = note.id;
+    openEditor(note.id);
     saveUserNotes();
     return note;
+  }
+
+  function deleteAllNotes() {
+    userNotesState.notes = [];
+    editingNoteId = null;
+    openNotes.clear();
+    var saved = saveUserNotes();
+    refreshActiveConcept();
+    if (saved) { setNotesStatus("All notes deleted. Deletions will synchronise when connected."); }
   }
 
   function deleteUserNote(noteId) {
     userNotesState.notes = userNotesState.notes.filter(function(note) {
       return note.id !== noteId;
     });
-    if (openUserNoteId === noteId) { openUserNoteId = null; }
+    if (editingNoteId === noteId) { editingNoteId = null; }
+    openNotes.delete(noteId);
     saveUserNotes();
   }
 
@@ -568,22 +685,37 @@ function kgCreateNotesController(options) {
     if (!note) { return null; }
     var titleInput = noteEditorField(noteId, ".user-note-title-input");
     var bodyInput = noteEditorField(noteId, ".user-note-body-input");
-    if (titleInput) { note.title = String(titleInput.value || ""); }
-    if (bodyInput) { note.body = String(bodyInput.value || ""); }
+    var title = titleInput ? String(titleInput.value || "") : note.title;
+    var body = bodyInput ? String(bodyInput.value || "") : note.body;
+    if (title === note.title && body === note.body) { return note; }
+    note.title = title;
+    note.body = body;
     note.updatedAt = new Date().toISOString();
     saveUserNotes();
     return note;
   }
 
+  function insertMaths(noteId) {
+    var input = noteEditorField(noteId, ".user-note-body-input");
+    if (!input) { return; }
+    var start = input.selectionStart, end = input.selectionEnd;
+    var example = "\\(\\gamma = 1/\\sqrt{1-v^2/c^2}\\)";
+    input.setRangeText(example, start, end, "end");
+    input.focus({preventScroll: true});
+    input.dispatchEvent(new Event("input", {bubbles: true}));
+  }
+
   function closeUserNote(noteId) {
     var note = syncUserNoteFromEditor(noteId);
     if (!note) { return; }
+    editingNoteId = null;
     if (noteIsDefaultEmpty(note)) {
       deleteUserNote(noteId);
+      refreshActiveConcept();
     } else {
-      openUserNoteId = null;
+      openNote(noteId);
+      replaceNoteElement(noteId, ".user-note-edit");
     }
-    refreshActiveConcept();
   }
 
   function notesToCsv() {
@@ -595,6 +727,7 @@ function kgCreateNotesController(options) {
       "concept_id",
       "concept_label",
       "section",
+      "placement",
       "anchor_index",
       "anchor_after",
       "anchor_block_id",
@@ -616,6 +749,7 @@ function kgCreateNotesController(options) {
         note.targetType === "concept" ? note.targetId : "",
         concept.label || "",
         note.section,
+        note.placement || "anchor",
         String((note.anchor && note.anchor.blockIndex) || 0),
         (note.anchor && note.anchor.afterText) || "",
         (note.anchor && note.anchor.blockId) || "",
@@ -678,6 +812,7 @@ function kgCreateNotesController(options) {
         targetId: targetId,
         conceptId: targetType === "concept" ? targetId : "",
         section: section,
+        placement: value(row, "placement") === "owner" ? "owner" : "anchor",
         anchor: {
           blockIndex: Math.floor(blockIndex),
           afterText: value(row, "anchor_after"),
@@ -720,6 +855,10 @@ function kgCreateNotesController(options) {
     unresolvedNoteCount: unresolvedNoteCount,
     migrateUserNotesState: migrateUserNotesState,
     renderNoteBlockAction: renderNoteBlockAction,
+    renderOwnerNoteAction: renderOwnerNoteAction,
+    renderOwnerNotes: renderOwnerNotes,
+    createOwnerNote: createOwnerNote,
+    revealNote: revealNote,
     findUserNote: findUserNote,
     renderNotesOverview: renderNotesOverview,
     renderNotesAtAnchor: renderNotesAtAnchor,
@@ -727,6 +866,7 @@ function kgCreateNotesController(options) {
     renderUnmatchedNotes: renderUnmatchedNotes,
     createUserNote: createUserNote,
     deleteUserNote: deleteUserNote,
+    deleteAllNotes: deleteAllNotes,
     updateUserNote: updateUserNote,
     noteEditorField: noteEditorField,
     closeUserNote: closeUserNote,
@@ -734,7 +874,9 @@ function kgCreateNotesController(options) {
     noteTitlesForConcept: noteTitlesForConcept,
     exportNotes: exportNotes,
     reload: reload,
-    openEditor: openEditor,
-    closeEditor: closeEditor
+    openNote: openNote,
+    editNote: editNote,
+    insertMaths: insertMaths,
+    noteToggled: noteToggled
   };
 }
