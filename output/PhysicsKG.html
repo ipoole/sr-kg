@@ -295,6 +295,7 @@ if (location.protocol === "file:") {
         font-size: 0.923em;
         color: #333;
       }
+      #kg_status:empty { display: none; }
       /* Tutorial chooser (playback overlay rules follow later). */
       .kg-tutorial-list {
         display: grid;
@@ -3831,11 +3832,11 @@ if (location.protocol === "file:") {
       </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
+      <div id="kg_status" role="status"></div>
       <details id="kg_version_history" class="kg-fold">
         <summary>Version history</summary>
         <ol class="kg-release-history"><li><strong>v4.4.0</strong> <time datetime="2026-11-03">2026-11-03</time><p>Folded clarifications and improved personal notes, including top-level blocks, mathematical notation and explicit editing.</p></li><li><strong>v4.3.2</strong> <time datetime="2026-11-02">2026-11-02</time><p>Content organised into independent domains, supporting smaller subject-specific editions.</p></li><li><strong>v4.3.1</strong> <time datetime="2026-10-31">2026-10-31</time><p>A more informative opening graph and an offline Disconnect option when Google sync is paused.</p></li><li><strong>v4.3.0</strong> <time datetime="2026-10-30">2026-10-30</time><p>Simpler independent View and Graph controls, with updated guided tutorials.</p></li><li><strong>v4.2.1</strong> <time datetime="2026-10-29">2026-10-29</time><p>Reliable app icons, Back/Forward selection navigation and clearer control hints.</p></li><li><strong>v4.2.0</strong> <time datetime="2026-10-27">2026-10-27</time><p>Expanded rest-energy guidance, a time-dilation tutorial and improved phone tutorial layout.</p></li><li><strong>v4.1.0</strong> <time datetime="2026-10-25">2026-10-25</time><p>Guided tutorials with narration, highlighted controls and Explore/Resume.</p></li><li><strong>v4.0.1</strong> <time datetime="2026-10-21">2026-10-21</time><p>Silent synchronisation preserves open content and drafts; clearer reading and question progress totals.</p></li><li><strong>v4.0.0</strong> <time datetime="2026-10-20">2026-10-20</time><p>Automatic Google Drive synchronisation, improved completion markers and sequential reading through SR, MATHS and GR.</p></li></ol>
       </details>
-      <div id="kg_status">Ready. Use Context to choose the graph relationships.</div>
       <details id="kg_tutorials_section" class="kg-fold">
         <summary>Tutorials</summary>
         <div id="kg_tutorial_list" class="kg-tutorial-list"></div>
@@ -5849,6 +5850,33 @@ function kgCreateDetailsView(options) {
   function activeTargetId() { return activeConceptSectionTargetId; }
   function restoreTarget(id) { activeConceptSectionTargetId = id || null; }
 
+  var graphicSpacingMeasurements = new WeakMap();
+
+  function compactGraphicSpacing() {
+    document.querySelectorAll("#info_panel .concept-graphic").forEach(function(graphic) {
+      var svg = graphic.querySelector(":scope > svg");
+      var caption = graphic.nextElementSibling;
+      if (!svg || !caption || !caption.matches("figcaption")) { return; }
+      var rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) { return; }
+      var lineHeight = parseFloat(getComputedStyle(caption).lineHeight);
+      var signature = [rect.width, rect.height, lineHeight].join(":");
+      if (graphicSpacingMeasurements.get(svg) === signature) { return; }
+      var transform = svg.getScreenCTM();
+      if (!transform || !Number.isFinite(lineHeight)) { return; }
+      var ink = svg.getBBox();
+      var point = svg.createSVGPoint();
+      point.y = ink.y + ink.height;
+      var inkBottom = point.matrixTransform(transform).y;
+      // Reclaim only empty canvas, leaving stroke/marker clearance. Fixed negative
+      // margins caused the old overlap; this amount is bounded by measured ink.
+      var clearance = Math.max(8, rect.height * 0.04);
+      var trim = Math.min(2 * lineHeight, Math.max(0, rect.bottom - inkBottom - clearance));
+      graphic.style.marginBottom = String(-trim) + "px";
+      graphicSpacingMeasurements.set(svg, signature);
+    });
+  }
+
   function clearMathTypesetting(element) {
     if (element && window.MathJax && MathJax.typesetClear) {
       MathJax.typesetClear([element]);
@@ -6069,6 +6097,7 @@ function kgCreateDetailsView(options) {
 
   return {
     replaceTypesetContent: replaceTypesetContent,
+    compactGraphicSpacing: compactGraphicSpacing,
     typesetInfoPanel: typesetInfoPanel,
     openTargetForToc: openTargetForToc,
     scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,
@@ -11770,6 +11799,7 @@ var kgModuleGeometry = (function() {
           updateWorkspaceViewControl();
           updateGraphViewControls();
           preserveCameraAfterLayout(camera);
+          schedulePanelContentRefresh();
           updateGraphContextControls();
         }
 
@@ -15209,12 +15239,13 @@ var kgModuleGeometry = (function() {
           updateResponsiveControlLabels();
           updateGraphContextControls();
           applyWorkspaceSplit();
-          scheduleViewportRefresh();
+          schedulePanelContentRefresh();
           positionTutorialNarration();
         }
 
         function schedulePanelContentRefresh() {
           requestAnimationFrame(function() {
+            detailsView.compactGraphicSpacing();
             updateNodeLabelPositions();
           });
         }
@@ -15265,7 +15296,9 @@ var kgModuleGeometry = (function() {
           }
           revealViewerSelection();
 
-          if (statusPrefix) {
+          if (statusPrefix === "Selected") {
+            document.getElementById("kg_status").textContent = "";
+          } else if (statusPrefix) {
             var label = type === "concept"
               ? conceptDisplayId(id)
               : ((getModule(id) || {}).title || id) + " module";
