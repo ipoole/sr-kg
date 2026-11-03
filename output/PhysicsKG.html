@@ -1460,8 +1460,17 @@ if (location.protocol === "file:") {
         margin-bottom: 0.38em;
     }
 
-    #info_panel .kg-content-framed.kg-content-inline:not([open]) {
+    #info_panel .kg-content-framed.kg-content-inline {
         background: transparent;
+        border: 1px solid #bcc2c9;
+        color: inherit;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline[open] > summary {
+        color: inherit;
+    }
+
+    #info_panel .kg-content-framed.kg-content-inline:not([open]) {
         border: 0;
         border-radius: 0;
         margin: 0.35em 0;
