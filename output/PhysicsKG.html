@@ -1185,19 +1185,7 @@ if (location.protocol === "file:") {
 
     #info_panel .kg-content-inline {
         margin: 0.75em 0;
-        padding: 0;
     }
-
-    #info_panel .kg-content-inline > summary {
-        color: var(--disclosure-color, #174ea6);
-        cursor: pointer;
-        font-weight: 700;
-    }
-
-    #info_panel .optional-detail-body {
-        margin-top: 0.45em;
-    }
-
 
     #info_panel .concept-sticky-header {
         background: rgba(255,255,255,0.96);
@@ -1439,21 +1427,33 @@ if (location.protocol === "file:") {
         margin: 0 0 0.75em;
     }
 
-    #info_panel .kg-content-block {
+    /* One frame for every content unit. Origin/kind override colours only;
+       nesting changes margins, never the accent width or surrounding border. */
+    #info_panel .kg-content-framed {
         --block-accent: #6a7b8f;
         --block-accent-dark: #34495f;
-        --block-bg: transparent;
-        --block-border: transparent;
+        --block-bg: #fafbfd;
+        --block-border: #d8dfe7;
         --block-label-bg: #eef2f7;
         --block-label-color: #34495f;
         --block-mark-bg: #f2f5f8;
         --block-mark-color: #34495f;
-        border-left: 3px solid var(--block-accent);
-        margin: 0 0 1.05em;
-        padding: 0 0 0 0.85em;
+        background: var(--block-bg);
+        border: 1px solid var(--block-border);
+        border-left: 5px solid var(--block-accent);
+        border-radius: 6px;
+        padding: 0.72em 0.8em 0.78em 0.9em;
     }
 
-    #info_panel .kg-content-block > summary {
+    #info_panel .kg-content-block {
+        margin: 0 0 1.05em;
+    }
+
+    #info_panel .kg-content-body {
+        margin-top: 0.45em;
+    }
+
+    #info_panel .kg-content-framed > summary {
         color: var(--block-accent-dark);
         cursor: pointer;
         font-weight: 700;
@@ -1528,9 +1528,6 @@ if (location.protocol === "file:") {
         content: attr(data-label);
     }
 
-    #info_panel .content-block-body {
-        padding-top: 0.05em;
-    }
 
     #info_panel .module-member-list,
     #info_panel .module-support-list,
@@ -1616,19 +1613,13 @@ if (location.protocol === "file:") {
         margin: 0;
     }
 
-    #info_panel .content-block-fold {
-        border-left-color: var(--block-accent);
-        margin: 0 0 1.05em;
-        padding: 0 0 0 0.85em;
-    }
-
-    #info_panel .kg-content-block > summary:hover,
-    #info_panel .kg-content-block > summary:focus {
+    #info_panel .kg-content-framed > summary:hover,
+    #info_panel .kg-content-framed > summary:focus {
         color: var(--block-accent-dark);
         outline: none;
     }
 
-    #info_panel .content-block > summary {
+    #info_panel .kg-content-framed.kg-content-trackable > summary {
         padding-right: 3.35em;
         position: relative;
     }
@@ -1943,45 +1934,6 @@ if (location.protocol === "file:") {
         --block-mark-color: #3e541f;
     }
 
-    #info_panel .content-block-intuition,
-    #info_panel .content-block-result,
-    #info_panel .content-block-decomposition,
-    #info_panel .content-block-convention,
-    #info_panel .content-block-derivation,
-    #info_panel .content-block-example,
-    #info_panel .content-block-worked_example,
-    #info_panel .content-block-warning,
-    #info_panel .content-block-misconception,
-    #info_panel .content-block-historical_note,
-    #info_panel .content-block-summary {
-        background: var(--block-bg);
-        border: 1px solid var(--block-border);
-        border-left: 5px solid var(--block-accent);
-        border-radius: 6px;
-        padding: 0.72em 0.8em 0.78em 0.9em;
-    }
-
-    #info_panel .content-block-fold.content-block-note,
-    #info_panel .content-block-fold.content-block-derivation_step,
-    #info_panel .content-block-fold.content-block-convention {
-        margin-bottom: 0.8em;
-        padding: 0.42em 0.65em 0.48em 0.75em;
-    }
-
-    #info_panel .content-block-fold .content-block-title-line {
-        gap: 0.25em 0.35em;
-    }
-
-    #info_panel .content-block-fold .content-block-kind-mark {
-        font-size: 0.72em;
-        height: 1.42em;
-        min-width: 1.42em;
-    }
-
-    #info_panel .content-block-fold-body {
-        margin-top: 0.55em;
-    }
-
     #info_panel .concept-line {
         min-height: 1.45em;
     }
@@ -2003,7 +1955,7 @@ if (location.protocol === "file:") {
     }
 
     @media (pointer: coarse) {
-        #info_panel .content-block > summary {
+        #info_panel .kg-content-framed.kg-content-trackable > summary {
             padding-right: 68px;
         }
 
@@ -2033,11 +1985,12 @@ if (location.protocol === "file:") {
         }
     }
 
-    #info_panel .user-note {
+    #info_panel .kg-content-framed[data-content-origin="personal"] {
         --block-accent: #bb9562;
         --block-accent-dark: #7a5800;
+        --block-bg: #fbf5ee;
+        --block-border: #e1cfb5;
         --disclosure-color: #7a5800;
-        background: #fbf5ee;
     }
 
     #info_panel .user-note-editor {
@@ -5554,16 +5507,53 @@ function kgCreateContentMarkup(options) {
       "</" + bodyTag + "></details>";
   }
 
-  function renderOptionalDetail(summary, body) {
+  // A content unit is recursive. Origin, placement and capabilities are independent:
+  // callers adapt storage records and supply actions; this renderer owns the shell.
+  // bodyHtml is trusted renderer output, never unescaped user input.
+  function renderContentUnit(unit) {
+    var capabilities = unit.capabilities || {};
+    var level = unit.level === "block" ? "block" : "inline";
+    function renderActions(position) {
+      return (unit.actions || []).filter(function(action) {
+        return (action.position || "body") === position &&
+          (!action.capability || capabilities[action.capability] === true);
+      }).map(function(action) { return action.html || ""; }).join("");
+    }
+    var heading = '<span class="content-block-title-line">' +
+      (unit.markHtml || "") + '<span class="content-block-title-text">' +
+      renderConceptText(unit.title || "") + '</span>' + (unit.labelHtml || "") + '</span>' +
+      renderActions("heading");
+    var body = unit.bodyHtml !== undefined ? unit.bodyHtml : renderBodyLines(unit.body || "", "", {origin: unit.origin});
+    (unit.children || []).forEach(function(child) {
+      // Children are explanations unless explicitly placed at block level. Their
+      // origin/capabilities are their own, not inherited from a containing unit.
+      body += renderContentUnit(child);
+    });
+    body += renderActions("body");
     return renderFoldDown({
-      className: "optional-detail", level: "inline",
-      title: summary,
-      bodyClass: "concept-body optional-detail-body",
-      bodyHtml: renderConceptText(body)
+      origin: unit.origin, level: level, anchorId: unit.anchorId,
+      id: unit.id, contentBlockId: unit.contentBlockId,
+      noteBlock: capabilities.annotate === true,
+      open: unit.open,
+      className: (unit.className || "") + " kg-content-framed" +
+        (capabilities.edit ? " kg-content-editable" : "") +
+        (capabilities.trackRead ? " kg-content-trackable" : ""),
+      summaryHtml: heading,
+      bodyClass: "kg-content-body concept-body " + (unit.bodyClass || ""),
+      bodyHtml: body
     });
   }
 
-  function renderConceptText(s) {
+  function renderOptionalDetail(summary, body, context) {
+    return renderContentUnit({
+      className: "optional-detail", level: "inline", title: summary,
+      origin: context && context.origin,
+      bodyClass: "optional-detail-body",
+      bodyHtml: renderConceptText(body, context)
+    });
+  }
+
+  function renderConceptText(s, context) {
     var text = String(s || "");
     var macro = "\\optional_details";
     var html = "";
@@ -5593,7 +5583,7 @@ function kgCreateContentMarkup(options) {
         continue;
       }
 
-      html += renderOptionalDetail(summary.value, body.value);
+      html += renderOptionalDetail(summary.value, body.value, context);
       cursor = body.end;
     }
 
@@ -5717,12 +5707,12 @@ function kgCreateContentMarkup(options) {
       .replace(/\\n(?=(?:[A-Z]|[0-9]+)[.)]\s)/g, "\n");
   }
 
-  function renderBodyLines(text, className) {
+  function renderBodyLines(text, className, context) {
     var blocks = splitConceptBlocks(text);
     var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
     blocks.forEach(function(block) {
       html += '<div class="concept-line">' +
-        (block.text ? renderConceptText(block.text) : "&nbsp;") +
+        (block.text ? renderConceptText(block.text, context) : "&nbsp;") +
         "</div>";
     });
     html += "</div>";
@@ -5772,6 +5762,7 @@ function kgCreateContentMarkup(options) {
     skipOptionalDetailWhitespace: skipOptionalDetailWhitespace,
     parseBracedArgument: parseBracedArgument,
     renderFoldDown: renderFoldDown,
+    renderContentUnit: renderContentUnit,
     renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,
     findNextOptionalDetailBlock: findNextOptionalDetailBlock,
@@ -7284,18 +7275,19 @@ function kgCreateNotesController(options) {
         escapeHtml(note.id) + '">Delete</button>' +
         '<span class="user-note-saved">Saved locally</span></div></div>';
     } else {
-      body = options.markup.renderBodyLines(note.body || "", "concept-body user-note-reading") +
-        '<button type="button" class="user-note-edit" data-note-id="' +
-        escapeHtml(note.id) + '">Edit</button>';
+      body = options.markup.renderBodyLines(note.body || "", "user-note-reading", {origin: "personal"});
     }
     var topLevel = note.placement === "owner";
-    return options.markup.renderFoldDown({
+    return options.markup.renderContentUnit({
       origin: "personal", id: note.id,
+      capabilities: {edit: true, annotate: false, trackRead: false},
       level: topLevel ? "block" : "inline",
       className: "user-note" + (topLevel ? "" : " optional-detail"),
       open: openNotes.has(note.id), title: note.title || "Untitled note",
-      bodyClass: "concept-body user-note-content " +
-        (topLevel ? "content-block-body" : "optional-detail-body"), bodyHtml: body
+      bodyClass: "user-note-content", bodyHtml: body,
+      actions: editing ? [] : [{capability: "edit",
+        html: '<button type="button" class="user-note-edit" data-note-id="' +
+          escapeHtml(note.id) + '">Edit</button>'}]
     });
   }
 
@@ -12272,22 +12264,6 @@ var kgModuleGeometry = (function() {
             .replace(/^-+|-+$/g, "") || "unknown";
         }
 
-        function renderContentBlockHeading(targetType, targetId, block, title) {
-          var policy = contentBlockPolicyFor(block.kind);
-          return '<span class="content-block-title-line">' +
-            '<span class="content-block-kind-mark" aria-hidden="true"></span>' +
-            '<span class="content-block-title-text">' +
-            renderConceptText(title) +
-            "</span>" +
-            '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
-            escapeHtml(policy.label) +
-            '"></span></span>' +
-            renderNoteBlockAction(
-              targetType, targetId, title, block.block_id, "", true
-            ) +
-            renderContentBlockReadToggle(block.block_id, title);
-        }
-
         function renderNoteableHeading(targetType, targetId, title, sectionKey) {
           return '<span class="kg-noteable-title">' + renderConceptText(title) + "</span>" +
             renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
@@ -12296,35 +12272,23 @@ var kgModuleGeometry = (function() {
         function renderOwnerContentBlock(ownerType, ownerId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
-          var anchorId = contentAnchorId(ownerId, title);
-          var bodyClass = "concept-body content-block-body";
-          var bodyHtml = renderNoteAnchoredBody(
-            ownerType, ownerId, title, block.block_id, "", block.body
-          );
-          if (policy.mode === "folded") {
-            bodyClass = "concept-body content-block-fold-body";
-            if (policy.note) {
-              bodyClass += " content-block-note-body";
-            }
-            return renderFoldDown({
-              level: "block", anchorId: anchorId,
-              contentBlockId: block.block_id,
-              noteBlock: true,
-              className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
-              summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
-              bodyClass: bodyClass,
-              bodyHtml: bodyHtml
-            });
-          }
-          return renderFoldDown({
-            level: "block", anchorId: anchorId,
+          return contentMarkup.renderContentUnit({
+            origin: "authored", level: "block", anchorId: contentAnchorId(ownerId, title),
             contentBlockId: block.block_id,
-            noteBlock: true,
+            capabilities: {annotate: true, trackRead: true, edit: false},
             className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
-            open: true,
-            summaryHtml: renderContentBlockHeading(ownerType, ownerId, block, title),
-            bodyClass: bodyClass,
-            bodyHtml: bodyHtml
+            open: policy.mode !== "folded", title: title,
+            markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
+            labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
+              escapeHtml(policy.label) + '"></span>',
+            actions: [
+              {position: "heading", capability: "annotate",
+                html: renderNoteBlockAction(ownerType, ownerId, title, block.block_id, "", true)},
+              {position: "heading", capability: "trackRead",
+                html: renderContentBlockReadToggle(block.block_id, title)}
+            ],
+            bodyClass: "content-block-body",
+            bodyHtml: renderNoteAnchoredBody(ownerType, ownerId, title, block.block_id, "", block.body)
           });
         }
 
