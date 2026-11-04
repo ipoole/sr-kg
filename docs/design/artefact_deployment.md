@@ -1,7 +1,8 @@
 # Exact-build website deployment
 
-Status: preparation on `untracked-artefact-deployment`; live Pages still publishes
-from main's root. Issue 6.1 replaces that only at the explicit stage-5 cutover.
+Status: **stage 5 is live**, merged onto main on 4 November 2026. Pages publishes
+verified local packages through GitHub Actions. Stage 6 (untracking generated
+HTML and removing duplicate root deployment files) remains.
 History rewriting and historical viewer extraction are separate work.
 
 ## Contract
@@ -59,8 +60,8 @@ assets beneath both viewer directories, without rewriting viewer HTML.
 6. Remove generated HTML and duplicate deployment files from tracking, ignore
    build products, finish publication instructions and verify another release/preview.
 
-During stages 1–4 root files remain deployment copies; tests require them to match
-`website/`. Edit website sources, then refresh those copies until cutover.
+Until stage 6 root files remain deployment copies; tests require them to match
+`website/`. Edit website sources, then refresh those copies until stage-6 cleanup.
 
 ## Rollback
 
@@ -115,9 +116,9 @@ permissions. The built-in `GITHUB_TOKEN` suffices; no new account secret is need
 An upload is not a publication. Check the Actions run and the live deployment
 manifest after publishing, rather than assuming an accepted request succeeded.
 
-Before merging, a temporary push trigger limited to this feature branch and
-`.github/deployment-rehearsal.json` exercises the same validation job. It cannot
-run the deployment job. Remove the trigger and candidate record at cutover.
+The pre-merge rehearsal used a temporary branch-push trigger. That trigger and
+candidate record were removed before cutover. The live workflow exposes only
+manual dispatch, with deployment requiring an explicit request on main.
 The workflow uses only standard-library Python for validation and never installs
 generator dependencies. Pages transport artifacts expire after one day; durable
 packages remain Release attachments for update bases and rollback.
@@ -128,5 +129,7 @@ packages remain Release attachments for update bases and rollback.
 checksums, successful read-only Actions run, browser checks and unchanged live
 configuration. Cache-busted live-manifest checks reject stale bases. A deployment
 also waits for its expected manifest to become visible before releasing the
-workflow lock; failure requires inspection before a retry. The actual Pages
-transport/deployment and live rollback remain for the explicitly authorized cutover.
+workflow lock; failure requires inspection before a retry. The Pages transport,
+deployment and propagation check subsequently passed at stage 5;
+see [cutover results](artefact_deployment_cutover.md). Live rollback has not been
+needed or exercised. Keep deployment packages for that purpose.

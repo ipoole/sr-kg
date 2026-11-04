@@ -159,11 +159,14 @@ Source content and graphics live in `domains/<domain-id>/`; `data/` holds shared
 collection metadata. Shared implementation lives in `srkg/`, command-line tools
 in `tools/`, and tests in `tests/`. Run a tool with `--help` for its full options.
 
-## Exact-build deployment preparation
+## Exact-build publishing
 
-The [artefact deployment plan](docs/design/artefact_deployment.md) documents the
-replacement publishing route, local packaging/upload commands and rollback.
-Website sources now live in `website/`; root copies temporarily remain identical
-for the existing branch-based Pages deployment. **The live site has not switched
-publishing methods.** Do not remove the tracked viewer or root copies before the
-explicit cutover. Local packages belong in ignored `.deployment/`, not Git.
+GitHub Pages now deploys the exact locally built and tested website package;
+GitHub does not regenerate the viewer. See [Artefact deployment](docs/design/artefact_deployment.md)
+for packaging, upload, explicit publication and rollback commands. Pushing source
+to main alone no longer publishes the website.
+
+Website sources live in `website/`. Root copies and the tracked viewer are
+currently retained as a branch-publishing fallback until migration stage 6 removes
+them from tracking. Keep root copies identical to website sources during this
+transition. Local packages belong in ignored `.deployment/`, not Git.

@@ -24,18 +24,22 @@ the built viewer; add the new version when preparing a release. Keep the newest
 entry first and use the publication date. Entries back to 4.0.0 were reconstructed
 from publication commits on main, rather than intermediate branch commits.
 
-The publication commit message must include a single `Release note:` line whose
-text exactly matches the new Version history summary. Keep it brief and
-user-facing. Prepare the history entry and product version before building and
-testing; squash source changes onto main, then rebuild and commit the generated
-viewer separately. Tag that publication commit and push main and the tag.
+The source release commit message must include a single `Release note:` line whose
+text exactly matches the new Version history summary. Keep it brief and user-facing.
+Prepare the history entry and product version before building and testing. Merge
+source changes onto main and tag the source release commit `vX.Y.Z`. Package the
+exact locally tested viewer and publish it through the explicit Actions workflow;
+do not make a separate generated-HTML publication commit. Pushing main or a product
+tag alone does not publish the website.
 
-## Pending publishing migration
+## Exact-build publishing
 
-The exact-build artifact route is being prepared; the procedure above remains
-live until the explicit Pages switchover. See [Artefact deployment](artefact_deployment.md).
-Once switched, the tested local viewer will be packaged and uploaded as a Release
-attachment, rather than committed. Keep the `Release note:` line in the source
-release commit and the product tag on that commit. Package releases use separate
-`site-*` tags and record source commits/checksums; they are deployment records,
-not new product versions. No product version bump is needed for this preparation.
+Pages now uses the [artefact deployment route](artefact_deployment.md). Package
+releases use separate `site-*` tags and record source commits/checksums; they are
+deployment records, not new product versions. Validation is the default; `--deploy`
+explicitly publishes. Verify the workflow and live manifest after publication.
+
+During the remaining stage-6 transition, generated HTML is still tracked as a
+fallback, but changes to it should remain outside source commits. The root website
+copies also remain until that cleanup. The v4.5.0 switchover changed deployment
+only, so it did not bump the product version or add a Version history entry.

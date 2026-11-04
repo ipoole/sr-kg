@@ -5,7 +5,7 @@ and 7.3), based on v4.3.1.
 This describes the running code, including remaining coupling. The staged
 verification record and comparable source counts are in
 [Refactoring progress](refactoring_progress.md). Domain ownership and migration verification are recorded in
-[Domain packages](domain_packages.md); publishing changes remain issue 6.
+[Domain packages](domain_packages.md); deployment migration status is recorded under issue 6.
 
 ## System boundary
 
@@ -377,15 +377,16 @@ performance benefit rather than a target file size. Fine-grained pedagogy remain
 an experiment; see the
 [pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).
 
-## Deployment preparation (before cutover)
+## Exact-build deployment (stage 5 live)
 
 `website/` holds public page/branding sources; identical root copies temporarily
-support legacy Pages. `srkg/site_deployment.py` assembles, hashes and safely
-verifies complete site packages. `tools/package_site.py` packages locally;
+retain a branch-publishing fallback; active Pages now uses Actions.
+`srkg/site_deployment.py` assembles, hashes and safely verifies complete site packages. `tools/package_site.py` packages locally;
 `tools/publish_site.py` uses `gh` to retrieve the live base, upload Release
 attachments and request validation or explicit deployment. The Actions workflow
 validates standard-library-only and deploys the uploaded bytes without generating
 HTML. Release/preview updates preserve the other channel; stale-base checks and
 serialized workflows prevent lost updates. See [Artefact deployment](artefact_deployment.md)
-for the explicit switchover and rollback boundary. The existing live publication
-route is unchanged during preparation.
+for publication and rollback commands. Pushing source to main does not deploy;
+the local package is explicitly uploaded and deployed. Root deployment duplicates
+and the tracked viewer remain until stage 6.

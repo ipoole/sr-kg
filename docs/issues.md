@@ -66,9 +66,10 @@
    See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
 ## 6. Build artifacts, publishing and repository size
-Publishing preparation (stages 1–4) is complete on `untracked-artefact-deployment`;
-see [rehearsal results](design/artefact_deployment_rehearsal.md). Live Pages is unchanged;
-explicit switchover and untracking (stages 5–6) remain. Implement and verify publishing before rewriting history.
+Stages 1–5 are complete and merged: live Pages now deploys verified local packages
+through Actions. See [cutover results](design/artefact_deployment_cutover.md).
+Stage 6 remains: untrack generated HTML/remove duplicate deployment copies and
+verify subsequent release/preview updates. Implement and verify publishing before rewriting history.
 
 1. Publish the exact locally built and tested website as an untracked GitHub Pages deployment artifact,
    rather than rebuilding on GitHub or committing `output/PhysicsKG.html`. Keep local generation unchanged,
