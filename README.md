@@ -38,11 +38,12 @@ conda run -n sr-kg python tools/generate_pyvis.py \
 Open `output/PhysicsKG.html` in a browser. The generated page references
 CDN-hosted vis-network assets and MathJax, as well as a relative
 `lib/bindings/utils.js` asset; it is not a self-contained offline file.
-Generated HTML is a build artifact; do not commit it unless explicitly requested.
-Hosted pages use the root icon files (`favicon.svg`, `favicon-32.png`,
+Generated viewer HTML is an ignored build artifact and is not committed.
+Hosted pages use icon sources in `website/` (`favicon.svg`, `favicon-32.png`,
 `favicon.ico`, `apple-touch-icon.png`); keep them in sync with the source icons
 in `srkg/viewer_assets`. Increment the icon URL version when replacing the artwork.
 Locally opened viewer HTML retains embedded icons.
+Packaging places website sources at the deployed root, preserving their public URLs.
 Public pages declare their preferred `https://physicskg.org/` addresses with
 canonical links. `sitemap.xml` lists the four public pages and is advertised in
 `robots.txt`; submit `https://physicskg.org/sitemap.xml` in Google Search Console
@@ -166,7 +167,11 @@ GitHub does not regenerate the viewer. See [Artefact deployment](docs/design/art
 for packaging, upload, explicit publication and rollback commands. Pushing source
 to main alone no longer publishes the website.
 
-Website sources live in `website/`. Root copies and the tracked viewer are
-currently retained as a branch-publishing fallback until migration stage 6 removes
-them from tracking. Keep root copies identical to website sources during this
-transition. Local packages belong in ignored `.deployment/`, not Git.
+Website sources live only in `website/`; the tracked legacy URL page is
+`output/interactive_graph.html`. Generated viewers remain locally in ignored
+`output/*.html`, and local packages belong in ignored `.deployment/`.
+
+For remote review use `https://physicskg.org/preview/PhysicsKG.html` instead of
+GitHack. Release updates preserve the preview; preview updates preserve the
+release. Both URLs share browser personal data and Google authorization.
+Historical generated files remain in Git history pending a separate cleanup.

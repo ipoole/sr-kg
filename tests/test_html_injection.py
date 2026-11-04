@@ -118,14 +118,14 @@ def test_favicon_png_fallbacks_have_expected_dimensions():
         assert struct.unpack(">II", image[16:24]) == expected_size
 
 
-def test_hosted_icons_have_root_fallbacks_and_local_html_retains_embedded_icons():
+def test_hosted_icon_sources_match_viewer_assets_and_local_html_retains_embedded_icons():
     from pathlib import Path
     from srkg.html_injection import ASSET_DIR
 
     root = Path(__file__).resolve().parents[1]
     for name in ("favicon.svg", "favicon-32.png", "apple-touch-icon.png"):
-        assert (root / name).read_bytes() == (ASSET_DIR / name).read_bytes()
-    ico = (root / "favicon.ico").read_bytes()
+        assert (root / "website" / name).read_bytes() == (ASSET_DIR / name).read_bytes()
+    ico = (root / "website/favicon.ico").read_bytes()
     assert struct.unpack("<HHH", ico[:6]) == (0, 1, 1)
     assert ico[22:] == (ASSET_DIR / "favicon-32.png").read_bytes()
     injected = inject_controls(_base_pyvis_html(), {}, {}, "Title")

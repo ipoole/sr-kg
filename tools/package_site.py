@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from srkg.site_deployment import assemble, digest, extract_verified, make_package, read_package
+from srkg.site_deployment import assemble, extract_verified, make_package, read_package
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,10 +42,9 @@ def main():
         previous, manifest = read_package(args.previous)
         base = manifest['tag']
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    # Do not label uncommitted source as a reproducible source commit. Built HTML
-    # is deliberately allowed to differ: it is the exact tested local product.
+    # Do not label uncommitted source as a reproducible source commit. Generated
+    # viewers are ignored build products, so do not appear in this tracked diff.
     dirty = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only'], cwd=ROOT, text=True).splitlines()
-    dirty = [name for name in dirty if name != 'output/PhysicsKG.html']
     if dirty:
         parser.error('Commit source changes before packaging: ' + ', '.join(dirty))
     tag = args.tag or f'site-{datetime.now(timezone.utc):%Y%m%dT%H%M%S%fZ}-{commit[:8]}'

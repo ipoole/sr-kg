@@ -121,9 +121,3 @@ def test_unsafe_archive_members_rejected(tmp_path, kind):
             archive.addfile(entry, io.BytesIO(b''))
     with pytest.raises(ValueError, match='Non-regular or duplicate'):
         read_package(path)
-
-
-def test_transitional_legacy_pages_files_match_website_sources():
-    # Remove this guard with the duplicate root deployment files after cutover.
-    for name in SITE_FILES:
-        assert (ROOT / name).read_bytes() == (ROOT / 'website' / name).read_bytes()

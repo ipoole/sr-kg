@@ -26,3 +26,7 @@ books/
 
 # Local website deployment packages (not Git objects)
 .deployment/
+
+# Generated viewers; retain the small, hand-authored legacy URL page
+/output/*.html
+!/output/interactive_graph.html

@@ -53,6 +53,21 @@ data, content, layout, or viewer change, rebuild it with:
 conda run -n sr-kg python tools/generate_pyvis.py --data-root data --out output/PhysicsKG.html
 ```
 
-Because the file is large, leave it out of commits unless the user explicitly
-asks to include it. It is acceptable for this file to remain git-dirty for the
-user to commit selectively.
+Generated viewers under `output/` are ignored and must remain outside Git.
+`output/interactive_graph.html` is the small hand-authored legacy URL page and
+remains tracked. Website source pages and branding files live in `website/`;
+packaging places them at the public site root.
+
+## Publishing and previews
+
+Publish the exact locally built and tested HTML through the artifact workflow;
+GitHub does not run the generator. Pushing source to main does not deploy.
+After committing/pushing source, retrieve the live package, package the release
+or preview, upload it and explicitly request deployment. See
+`docs/design/artefact_deployment.md` for commands and rollback.
+
+The hosted preview is `https://physicskg.org/preview/PhysicsKG.html`; use this
+instead of committing builds to `phone-preview` or GitHack. Preview publication
+must retain the release, and release publication must retain the preview. Previews
+share browser personal data and Google authorization with the public viewer.
+Do not rewrite repository history as part of routine publishing.

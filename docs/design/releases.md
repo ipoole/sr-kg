@@ -39,7 +39,9 @@ releases use separate `site-*` tags and record source commits/checksums; they ar
 deployment records, not new product versions. Validation is the default; `--deploy`
 explicitly publishes. Verify the workflow and live manifest after publication.
 
-During the remaining stage-6 transition, generated HTML is still tracked as a
-fallback, but changes to it should remain outside source commits. The root website
-copies also remain until that cleanup. The v4.5.0 switchover changed deployment
-only, so it did not bump the product version or add a Version history entry.
+The generated viewer is ignored and untracked. Website sources live in
+`website/`; the only tracked HTML in `output/` is the small legacy URL page.
+Use the currently deployed complete package as the base for either release or
+preview publication so the other channel survives. Hosted previews replace
+GitHack/phone-preview publishing and share the public viewer's origin/personal data.
+The deployment migration itself leaves the product at v4.5.0.

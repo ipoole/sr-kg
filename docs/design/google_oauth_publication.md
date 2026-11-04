@@ -14,7 +14,7 @@ and security model remains in [Personal data](personal_data.md).
 | Privacy policy | `https://physicskg.org/privacy.html` |
 | Terms of service | `https://physicskg.org/terms.html` |
 | App entry point | `https://physicskg.org/output/PhysicsKG.html` |
-| Logo | `physicskg-logo-120.png` (120 by 120 pixels) |
+| Logo | `website/physicskg-logo-120.png` (120 by 120 pixels; deployed at the root) |
 | Authorised domain | `physicskg.org` |
 | Authorised JavaScript origin | `https://physicskg.org` |
 | OAuth scope | `https://www.googleapis.com/auth/drive.file` |

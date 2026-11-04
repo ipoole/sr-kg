@@ -17,9 +17,9 @@ Google Drive. Neither browser edits nor sync write back to authored KB files.
 
 The viewer is not a self-contained offline file: vis-network and MathJax load
 from CDNs, and the PyVis template references `lib/bindings/utils.js` relative to
-the output. Google Identity Services loads on demand for sign-in. Root-level
-landing, privacy and terms pages, icons, sitemap and the legacy redirect are
-separate website files. Product identity/version lives in `srkg/branding.py`;
+the output. Google Identity Services loads on demand for sign-in. Landing, privacy and terms pages, icons and sitemap are
+separate website sources under `website/`; packaging places them at the public
+root. The small legacy redirect source remains in `output/`. Product identity/version lives in `srkg/branding.py`;
 build and presentation defaults live in `srkg/config.py`.
 
 ```mermaid
@@ -344,11 +344,11 @@ emulation and real MathJax. Browser tests are opt-in when their directory is
 selected; plain `pytest -q` runs unit tests and skips browser cases. See
 [Agent instructions](../../AGENTS.md) for environment and commands.
 
-Current publication still commits the generated viewer to main for GitHub Pages;
-phone previews still use a committed build on `phone-preview` through GitHack.
-Although generated HTML is conceptually a build product, untracked artifact
-publishing, hosted previews and history cleanup are only proposals in issue 6.
-They are not implemented by this document.
+Publication uses locally built/tested complete-site packages stored as GitHub
+Release attachments and deployed unchanged through Actions. Generated viewer HTML
+is ignored and untracked. The hosted preview at `/preview/PhysicsKG.html` replaces
+GitHack; release/preview updates preserve the other channel. Git history cleanup
+remains separate work under issue 6.
 
 The refactor is intended to preserve user-visible behaviour and durable data
 formats. Unit/browser coverage includes legacy note-anchor recovery, strict
@@ -377,16 +377,18 @@ performance benefit rather than a target file size. Fine-grained pedagogy remain
 an experiment; see the
 [pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).
 
-## Exact-build deployment (stage 5 live)
+## Exact-build deployment
 
-`website/` holds public page/branding sources; identical root copies temporarily
-retain a branch-publishing fallback; active Pages now uses Actions.
-`srkg/site_deployment.py` assembles, hashes and safely verifies complete site packages. `tools/package_site.py` packages locally;
-`tools/publish_site.py` uses `gh` to retrieve the live base, upload Release
-attachments and request validation or explicit deployment. The Actions workflow
-validates standard-library-only and deploys the uploaded bytes without generating
-HTML. Release/preview updates preserve the other channel; stale-base checks and
-serialized workflows prevent lost updates. See [Artefact deployment](artefact_deployment.md)
-for publication and rollback commands. Pushing source to main does not deploy;
-the local package is explicitly uploaded and deployed. Root deployment duplicates
-and the tracked viewer remain until stage 6.
+`website/` holds public page/branding sources, assembled at the public root.
+`output/interactive_graph.html` is the tracked legacy URL page; generated viewers
+remain local, ignored build products. `srkg/site_deployment.py` assembles, hashes
+and safely verifies complete site packages. `tools/package_site.py` packages
+locally; `tools/publish_site.py` uses `gh` to retrieve the live base, upload
+Release attachments and request validation or explicit deployment. The Actions
+workflow validates with standard-library Python and deploys uploaded bytes without
+generating HTML. Release/preview updates preserve the other channel; stale-base
+checks and serialized workflows prevent lost updates. See
+[Artefact deployment](artefact_deployment.md) for publication/rollback commands.
+Pushing source to main does not deploy. Local website inspection can use an
+extracted package served over HTTP; direct opening of the generated viewer remains
+unchanged. Historical viewer blobs remain pending a separate history rewrite.
