@@ -1,0 +1,120 @@
+name: Validate or deploy exact website package
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing site-* Release attachment tag
+        required: true
+        type: string
+      sha256:
+        description: SHA-256 printed by local packaging
+        required: true
+        type: string
+      deploy:
+        description: Publish after verification (false only validates)
+        default: false
+        type: boolean
+      rollback:
+        description: Explicit rollback to an older complete site
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: physicskg-pages-publication
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.inputs.outputs.tag }}
+      sha256: ${{ steps.inputs.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Resolve and validate package identity
+        id: inputs
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_SHA256: ${{ inputs.sha256 }}
+        run: |
+          python - <<'PY'
+          import os, re
+          tag, sha = os.environ['INPUT_TAG'], os.environ['INPUT_SHA256']
+          assert re.fullmatch(r'site-[A-Za-z0-9._-]+', tag), 'Invalid tag'
+          assert re.fullmatch(r'[0-9a-f]{64}', sha), 'Invalid checksum'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'tag={tag}\nsha256={sha}\n')
+          PY
+      - name: Download exact local package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_TAG: ${{ steps.inputs.outputs.tag }}
+        run: |
+          gh release download "$PACKAGE_TAG" --repo "$GITHUB_REPOSITORY" --pattern site.tar.gz
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$PACKAGE_TAG" --jq .object.sha > package-source.txt
+      - name: Verify hashes, paths, resources and extraction
+        env:
+          PACKAGE_SHA256: ${{ steps.inputs.outputs.sha256 }}
+          PACKAGE_TAG: ${{ steps.inputs.outputs.tag }}
+        run: |
+          python tools/package_site.py verify site.tar.gz --sha256 "$PACKAGE_SHA256" --extract _site
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          manifest = json.loads(Path('_site/deployment.json').read_text())
+          assert manifest['tag'] == os.environ['PACKAGE_TAG'], 'Package/tag mismatch'
+          assert manifest['source_commit'] == Path('package-source.txt').read_text().strip(), 'Source/tag mismatch'
+          PY
+      - name: Upload short-lived Pages transport artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+          retention-days: 1
+      - name: Record validation result
+        env:
+          PACKAGE_TAG: ${{ steps.inputs.outputs.tag }}
+          PACKAGE_SHA256: ${{ steps.inputs.outputs.sha256 }}
+        run: |
+          echo "Validated package: $PACKAGE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "SHA-256: $PACKAGE_SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "Generator was not run. Validation alone does not change the live website." >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download and check the base immediately before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_TAG: ${{ needs.validate.outputs.tag }}
+          PACKAGE_SHA256: ${{ needs.validate.outputs.sha256 }}
+          ROLLBACK: ${{ inputs.rollback }}
+        run: |
+          gh release download "$PACKAGE_TAG" --repo "$GITHUB_REPOSITORY" --pattern site.tar.gz
+          if [ "$ROLLBACK" = "true" ]; then
+            python tools/publish_site.py check-live site.tar.gz --sha256 "$PACKAGE_SHA256" --rollback
+          else
+            python tools/publish_site.py check-live site.tar.gz --sha256 "$PACKAGE_SHA256"
+          fi
+      - uses: actions/configure-pages@v5
+      - name: Deploy verified bytes
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Confirm Pages propagation before allowing another deployment
+        env:
+          PACKAGE_SHA256: ${{ needs.validate.outputs.sha256 }}
+        run: python tools/publish_site.py confirm-live site.tar.gz --sha256 "$PACKAGE_SHA256"

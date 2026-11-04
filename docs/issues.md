@@ -66,7 +66,9 @@
    See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
 ## 6. Build artifacts, publishing and repository size
-Deferred until back at the laptop. Implement and verify publishing before rewriting history.
+Publishing preparation (stages 1–4) is complete on `untracked-artefact-deployment`;
+see [rehearsal results](design/artefact_deployment_rehearsal.md). Live Pages is unchanged;
+explicit switchover and untracking (stages 5–6) remain. Implement and verify publishing before rewriting history.
 
 1. Publish the exact locally built and tested website as an untracked GitHub Pages deployment artifact,
    rather than rebuilding on GitHub or committing `output/PhysicsKG.html`. Keep local generation unchanged,
@@ -85,7 +87,7 @@ Deferred until back at the laptop. Implement and verify publishing before rewrit
    other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
    depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
    (about 71% of reachable blob content); actual compressed savings need measurement.
-4. Consolidate homepage/site sources and branding assets under `website/` as part of artifact publishing,
+5. Consolidate homepage/site sources and branding assets under `website/` as part of artifact publishing,
    reducing repository-root clutter. Assemble these at the deployed website root, preserving the homepage,
    privacy/terms, viewer, favicon/icon, robots/sitemap and custom-domain URLs. Update generator asset paths,
    tests and documentation; retain browser favicon fallback and Google branding/OAuth links.

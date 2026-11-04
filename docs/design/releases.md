@@ -29,3 +29,13 @@ text exactly matches the new Version history summary. Keep it brief and
 user-facing. Prepare the history entry and product version before building and
 testing; squash source changes onto main, then rebuild and commit the generated
 viewer separately. Tag that publication commit and push main and the tag.
+
+## Pending publishing migration
+
+The exact-build artifact route is being prepared; the procedure above remains
+live until the explicit Pages switchover. See [Artefact deployment](artefact_deployment.md).
+Once switched, the tested local viewer will be packaged and uploaded as a Release
+attachment, rather than committed. Keep the `Release note:` line in the source
+release commit and the product tag on that commit. Package releases use separate
+`site-*` tags and record source commits/checksums; they are deployment records,
+not new product versions. No product version bump is needed for this preparation.
