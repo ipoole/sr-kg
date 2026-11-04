@@ -87,3 +87,37 @@ the assembled site. External CDN/Google URLs remain unchanged. Packages are
 reproducible for identical bytes and metadata. Build archives live in ignored
 `.deployment/`; do not commit them. Uncommitted tracked source changes prevent
 packaging, while the generated viewer may differ from Git.
+
+## Upload, validate, publish and rollback
+
+All commands run from the repository root, with `gh auth status` working. After
+the workflow is on main:
+
+```bash
+# Obtain the successful live base before preparing a release or preview update.
+conda run -n sr-kg python tools/publish_site.py current
+conda run -n sr-kg python tools/package_site.py package --previous .deployment/current-site.tar.gz
+# For previews, add --channel preview; build/test that viewer first.
+conda run -n sr-kg python tools/publish_site.py upload .deployment/site.tar.gz
+conda run -n sr-kg python tools/publish_site.py request --tag <tag> --sha256 <sha256>
+# Only this explicit flag requests a live deployment:
+conda run -n sr-kg python tools/publish_site.py request --tag <tag> --sha256 <sha256> --deploy
+# Restore a known earlier complete website:
+conda run -n sr-kg python tools/publish_site.py request --tag <older-tag> --sha256 <older-sha256> --deploy --rollback
+```
+
+Uploads are non-latest prereleases containing `site.tar.gz` and `site.sha256`.
+They are public like the repository: packages must contain only website files,
+never personal data or credentials. Deployment tags target the recorded source
+commit; product release tags remain separate. The workflow uses a read-only token
+for validation; only its guarded main-branch deployment job has Pages/OIDC write
+permissions. The built-in `GITHUB_TOKEN` suffices; no new account secret is needed.
+An upload is not a publication. Check the Actions run and the live deployment
+manifest after publishing, rather than assuming an accepted request succeeded.
+
+Before merging, a temporary push trigger limited to this feature branch and
+`.github/deployment-rehearsal.json` exercises the same validation job. It cannot
+run the deployment job. Remove the trigger and candidate record at cutover.
+The workflow uses only standard-library Python for validation and never installs
+generator dependencies. Pages transport artifacts expire after one day; durable
+packages remain Release attachments for update bases and rollback.

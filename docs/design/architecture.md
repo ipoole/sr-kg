@@ -376,3 +376,16 @@ not an incomplete controller contract. Revisit it for a concrete feature or
 performance benefit rather than a target file size. Fine-grained pedagogy remains
 an experiment; see the
 [pedagogy discussion](../discussion/adaptive_pedagogy_and_fine_grained_kb.md).
+
+## Deployment preparation (before cutover)
+
+`website/` holds public page/branding sources; identical root copies temporarily
+support legacy Pages. `srkg/site_deployment.py` assembles, hashes and safely
+verifies complete site packages. `tools/package_site.py` packages locally;
+`tools/publish_site.py` uses `gh` to retrieve the live base, upload Release
+attachments and request validation or explicit deployment. The Actions workflow
+validates standard-library-only and deploys the uploaded bytes without generating
+HTML. Release/preview updates preserve the other channel; stale-base checks and
+serialized workflows prevent lost updates. See [Artefact deployment](artefact_deployment.md)
+for the explicit switchover and rollback boundary. The existing live publication
+route is unchanged during preparation.
