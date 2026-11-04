@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -24,7 +25,8 @@ def gh(*args, **kwargs):
 
 
 def live_manifest():
-    request = Request(SITE + 'deployment.json', headers={'Cache-Control': 'no-cache'})
+    request = Request(SITE + f'deployment.json?check={time.time_ns()}',
+                      headers={'Cache-Control': 'no-cache'})
     try:
         with urlopen(request, timeout=30) as response:
             value = json.load(response)
@@ -40,6 +42,17 @@ def live_manifest():
 def check_base(manifest, live, rollback=False):
     if not rollback and manifest['base'] != (live['tag'] if live else None):
         raise ValueError('Live deployment changed: prepare again from the current package')
+
+
+def wait_live(manifest, attempts=60):
+    """Keep the deployment lock until Pages serves the expected manifest."""
+    for attempt in range(attempts):
+        live = live_manifest()
+        if live == manifest:
+            return
+        if attempt + 1 < attempts:
+            time.sleep(3)
+    raise ValueError('Pages has not served the expected deployment manifest; inspect before retrying')
 
 
 def download(tag, directory):
@@ -102,6 +115,9 @@ def main():
     check.add_argument('archive', type=Path)
     check.add_argument('--sha256', required=True)
     check.add_argument('--rollback', action='store_true')
+    confirm = commands.add_parser('confirm-live', help='Wait for Pages propagation before releasing the deployment lock')
+    confirm.add_argument('archive', type=Path)
+    confirm.add_argument('--sha256', required=True)
     args = parser.parse_args()
     if args.command == 'current':
         live = live_manifest()
@@ -120,10 +136,14 @@ def main():
             parser.error('Invalid deployment tag or checksum')
         dispatch(args.tag, args.sha256, args.deploy, args.rollback)
         print('Deployment requested' if args.deploy else 'Validation requested; live website unchanged')
-    else:
+    elif args.command == 'check-live':
         _, manifest = read_package(args.archive, args.sha256)
         check_base(manifest, live_manifest(), args.rollback)
         print('Live deployment base verified' if not args.rollback else 'Explicit rollback: base check bypassed')
+    else:
+        _, manifest = read_package(args.archive, args.sha256)
+        wait_live(manifest)
+        print('Pages is serving the expected deployment manifest')
 
 
 if __name__ == '__main__':

@@ -87,3 +87,17 @@ def test_workflow_readonly_validation_and_main_only_explicit_deployment():
     assert any('check-live' in step.get('run', '') for step in deploy['steps'])
     assert not any('generate_pyvis' in step.get('run', '') for job in workflow['jobs'].values()
                    for step in job['steps'])
+
+
+def test_deployment_waits_for_visible_manifest_before_unlocking(monkeypatch):
+    expected = {'tag': 'site-new', 'files': {'index.html': 'new-hash'}}
+    live = Mock(side_effect=[{'tag': 'site-old'}, expected])
+    sleep = Mock()
+    monkeypatch.setattr(publish, 'live_manifest', live)
+    monkeypatch.setattr(publish.time, 'sleep', sleep)
+    publish.wait_live(expected, attempts=2)
+    assert live.call_count == 2
+    sleep.assert_called_once_with(3)
+    monkeypatch.setattr(publish, 'live_manifest', lambda: {'tag': 'site-old'})
+    with pytest.raises(ValueError, match='inspect before retrying'):
+        publish.wait_live(expected, attempts=1)

@@ -123,3 +123,7 @@ jobs:
       - name: Deploy verified bytes
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Confirm Pages propagation before allowing another deployment
+        env:
+          PACKAGE_SHA256: ${{ needs.validate.outputs.sha256 }}
+        run: python tools/publish_site.py confirm-live site.tar.gz --sha256 "$PACKAGE_SHA256"
