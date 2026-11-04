@@ -68,9 +68,17 @@
 ## 6. Build artifacts, publishing and repository size
 Publishing (6.1), hosted preview (6.2) and website source consolidation (6.5) are
 complete. See [completion results](design/artefact_deployment_completion.md).
-Remaining work, retaining the original issue numbers:
+Original issue numbers are retained below:
 
-3. Before the following repository editing, extract all published viewers (.html) and save locally to an untracked directory with a filename which includes the version number, or date before v4.0.0.  Would be interesting to see how the project has developed over time.  
+3. **DONE — sampled historical archive.** [Inventory](published_viewers.csv) records 133
+   mainline/preview publication snapshots from 24 June to 4 November 2026; see
+   [scope and archive notes](published_viewers.md). As agreed, saved every other
+   PhysicsKG build (33) and every fifth interactive_graph build (14), oldest first,
+   in Git-ignored `historic_builds/`. Filenames end with version or date and include
+   commit IDs. The 47 exact HTML files, unchanged companion libraries and checksum
+   manifest are saved locally; archived HTML totals 95.2 MiB. This is the agreed
+   sample, not every inventory entry. Browser compatibility has not been tested
+   for every historical build.
 4. After artifact deployment is proven, back up the repository and remove historical generated viewer files
    (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
    so they do not retain the old objects; preserve the current small legacy redirect. Coordinate the history rewrite

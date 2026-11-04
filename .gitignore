@@ -30,3 +30,6 @@ books/
 # Generated viewers; retain the small, hand-authored legacy URL page
 /output/*.html
 !/output/interactive_graph.html
+
+# Local historical viewer archive
+/historic_builds/
