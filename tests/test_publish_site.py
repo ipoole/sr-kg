@@ -66,7 +66,6 @@ def test_upload_pins_source_and_does_not_dispatch_or_overwrite(monkeypatch, tmp_
     assert actual == checksum and manifest['tag'] == 'site-upload-test'
     assert len(calls) == 1
     assert calls[0][:3] == ('release', 'create', 'site-upload-test')
-    assert '--latest=false' in calls[0]
     assert '--prerelease' in calls[0]
     assert calls[0][calls[0].index('--target') + 1] == 'b' * 40
     assert '--clobber' not in calls[0]

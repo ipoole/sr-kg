@@ -87,7 +87,7 @@ def upload(path):
         # Existing tags/releases fail rather than silently replacing an archive.
         gh('release', 'create', tag, '--repo', REPO, '--target', manifest['source_commit'],
            '--title', f"Website package: {tag}", '--notes-file', str(notes_path),
-           '--prerelease', '--latest=false', str(archive), str(directory / 'site.sha256'))
+           '--prerelease', str(archive), str(directory / 'site.sha256'))
     return checksum, manifest
 
 
