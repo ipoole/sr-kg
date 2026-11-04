@@ -73,6 +73,7 @@ def test_upload_pins_source_and_does_not_dispatch_or_overwrite(monkeypatch, tmp_
 
 def test_workflow_readonly_validation_and_main_only_explicit_deployment():
     workflow = yaml.load((ROOT / '.github/workflows/deploy-site.yml').read_text(), Loader=yaml.BaseLoader)
+    assert set(workflow['on']) == {'workflow_dispatch'}
     assert workflow['permissions'] == {'contents': 'read'}
     assert workflow['on']['workflow_dispatch']['inputs']['deploy']['default'] == 'false'
     assert workflow['concurrency']['cancel-in-progress'] == 'false'

@@ -19,10 +19,6 @@ on:
         description: Explicit rollback to an older complete site
         default: false
         type: boolean
-  # Transitional rehearsal on this branch, without changing the live Pages source.
-  push:
-    branches: [untracked-artefact-deployment]
-    paths: [.github/deployment-rehearsal.json]
 
 permissions:
   contents: read
@@ -46,13 +42,8 @@ jobs:
           INPUT_SHA256: ${{ inputs.sha256 }}
         run: |
           python - <<'PY'
-          import json, os, re
-          from pathlib import Path
-          if os.environ['GITHUB_EVENT_NAME'] == 'push':
-              values = json.loads(Path('.github/deployment-rehearsal.json').read_text())
-              tag, sha = values['tag'], values['sha256']
-          else:
-              tag, sha = os.environ['INPUT_TAG'], os.environ['INPUT_SHA256']
+          import os, re
+          tag, sha = os.environ['INPUT_TAG'], os.environ['INPUT_SHA256']
           assert re.fullmatch(r'site-[A-Za-z0-9._-]+', tag), 'Invalid tag'
           assert re.fullmatch(r'[0-9a-f]{64}', sha), 'Invalid checksum'
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
