@@ -66,20 +66,10 @@
    See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
 ## 6. Build artifacts, publishing and repository size
-Stages 1–5 are complete and merged: live Pages now deploys verified local packages
-through Actions. See [cutover results](design/artefact_deployment_cutover.md).
-Stage 6 remains: untrack generated HTML/remove duplicate deployment copies and
-verify subsequent release/preview updates. Implement and verify publishing before rewriting history.
+Publishing (6.1), hosted preview (6.2) and website source consolidation (6.5) are
+complete. See [completion results](design/artefact_deployment_completion.md).
+Remaining work, retaining the original issue numbers:
 
-1. Publish the exact locally built and tested website as an untracked GitHub Pages deployment artifact,
-   rather than rebuilding on GitHub or committing `output/PhysicsKG.html`. Keep local generation unchanged,
-   ignore the generated viewer in Git, and retain the public URL and the small legacy redirect page.
-   Provide a publish command using the GitHub CLI and an Actions deployment workflow; record the source
-   commit and artifact checksum for traceability.
-2. Provide a separately updatable hosted preview artifact, e.g. `https://physicskg.org/preview/PhysicsKG.html`,
-   replacing the GitHack/phone-preview branch workflow. Publish the exact local test build without changing
-   the public release; deployments must preserve both release and preview. Same-origin previews share browser
-   personal data and Google authorization, so document that testing can affect that data.
 3. Before the following repository editing, extract all published viewers (.html) and save locally to an untracked directory with a filename which includes the version number, or date before v4.0.0.  Would be interesting to see how the project has developed over time.  
 4. After artifact deployment is proven, back up the repository and remove historical generated viewer files
    (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
@@ -88,7 +78,3 @@ verify subsequent release/preview updates. Implement and verify publishing befor
    other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
    depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
    (about 71% of reachable blob content); actual compressed savings need measurement.
-5. Consolidate homepage/site sources and branding assets under `website/` as part of artifact publishing,
-   reducing repository-root clutter. Assemble these at the deployed website root, preserving the homepage,
-   privacy/terms, viewer, favicon/icon, robots/sitemap and custom-domain URLs. Update generator asset paths,
-   tests and documentation; retain browser favicon fallback and Google branding/OAuth links.

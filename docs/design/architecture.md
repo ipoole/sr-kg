@@ -1,7 +1,7 @@
 # Architecture
 
 Implementation after the responsibility refactor and domain split (issues 7.2
-and 7.3), based on v4.3.1.
+and 7.3), updated for v4.5.0 and exact-build artifact publishing.
 This describes the running code, including remaining coupling. The staged
 verification record and comparable source counts are in
 [Refactoring progress](refactoring_progress.md). Domain ownership and migration verification are recorded in
