@@ -11,6 +11,33 @@ function kgCreateDetailsView(options) {
   function activeTargetId() { return activeConceptSectionTargetId; }
   function restoreTarget(id) { activeConceptSectionTargetId = id || null; }
 
+  var graphicSpacingMeasurements = new WeakMap();
+
+  function compactGraphicSpacing() {
+    document.querySelectorAll("#info_panel .concept-graphic").forEach(function(graphic) {
+      var svg = graphic.querySelector(":scope > svg");
+      var caption = graphic.nextElementSibling;
+      if (!svg || !caption || !caption.matches("figcaption")) { return; }
+      var rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) { return; }
+      var lineHeight = parseFloat(getComputedStyle(caption).lineHeight);
+      var signature = [rect.width, rect.height, lineHeight].join(":");
+      if (graphicSpacingMeasurements.get(svg) === signature) { return; }
+      var transform = svg.getScreenCTM();
+      if (!transform || !Number.isFinite(lineHeight)) { return; }
+      var ink = svg.getBBox();
+      var point = svg.createSVGPoint();
+      point.y = ink.y + ink.height;
+      var inkBottom = point.matrixTransform(transform).y;
+      // Reclaim only empty canvas, leaving stroke/marker clearance. Fixed negative
+      // margins caused the old overlap; this amount is bounded by measured ink.
+      var clearance = Math.max(8, rect.height * 0.04);
+      var trim = Math.min(2 * lineHeight, Math.max(0, rect.bottom - inkBottom - clearance));
+      graphic.style.marginBottom = String(-trim) + "px";
+      graphicSpacingMeasurements.set(svg, signature);
+    });
+  }
+
   function clearMathTypesetting(element) {
     if (element && window.MathJax && MathJax.typesetClear) {
       MathJax.typesetClear([element]);
@@ -231,6 +258,7 @@ function kgCreateDetailsView(options) {
 
   return {
     replaceTypesetContent: replaceTypesetContent,
+    compactGraphicSpacing: compactGraphicSpacing,
     typesetInfoPanel: typesetInfoPanel,
     openTargetForToc: openTargetForToc,
     scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,

@@ -12,6 +12,9 @@
 4. We should add User Guide, in addition to the current Quick start.   It should be aimed primarily at the human reader,
    but with some concession to an AI agent (with no prior context) which is required to drive PhysicsKG to achieve some
    task.
+   First draft: [User guide](user_guide.md), approximately 2,000 words with three
+   screenshot captions. Still to do: images, standalone webpage and links from
+   the viewer/homepage, plus consolidation of superseded documentation.
 
 ## 2 Tutorial related
 2. DEFERRED to a later branch — Looking forward to the possibility of automatically generated tutorials - e.g. to explain the derivation tree of a
@@ -43,15 +46,14 @@
    Verify personal-data continuity, Google sign-in/sync and export/import in standalone mode; offline changes must
    remain safe until sync is available. Test on both devices and retain ordinary browser use. Hosted icons and the
    landing-page installation tip are already implemented.
-2. Graphic caption often overlays graphic
-3. Helpful to give name of selected concept or module when view is graph only if space can be found on phone.
-4. When I get a question wrong, pressing the “x Incorrect” badge should reset the question so I can try again without the correct answer showing. 
 5. Avoid questions with free text answers if possible; they are tedious and not particularly instructive. 
+   Separate authoring pass: convert suitable questions to automatic multiple choice,
+   with plausible distractors and an unknown option. Preserve question IDs and
+   existing answered status; retain free text where explaining reasoning is the goal.
 6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
-7. Nice to have version history in the viewer, giving version number, publishing date and a very brief user facing summary of what changed. Populate retrospectively at least as far as 4.0.0, possibly earlier by date. 
  
 ## 5. Notes enhancement and unification
 

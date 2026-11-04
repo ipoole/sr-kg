@@ -39,7 +39,11 @@
       </div>
       <button onclick="kgShowEdgeKey()">Edge key</button>
       <button id="kg_features_button" type="button" onclick="kgShowSplash()">Quick start</button>
-      <div id="kg_status">Ready. Use Context to choose the graph relationships.</div>
+      <div id="kg_status" role="status"></div>
+      <details id="kg_version_history" class="kg-fold">
+        <summary>Version history</summary>
+        __RELEASE_HISTORY_HTML__
+      </details>
       <details id="kg_tutorials_section" class="kg-fold">
         <summary>Tutorials</summary>
         <div id="kg_tutorial_list" class="kg-tutorial-list"></div>
@@ -164,6 +168,7 @@
           </div>
         </div>
         <div class="kg-context-meta-row">
+          <button id="kg_graph_selection" type="button" hidden></button>
           <div id="kg_context_summary" class="kg-context-summary" aria-live="polite"></div>
           <div id="kg_representation_actions" class="kg-representation-actions" hidden>
             <button id="kg_expand_selected_module" type="button">Expand selected concept's module</button>
@@ -307,6 +312,7 @@
           <ul>
             <li>A selected concept inside a folded module appears as a circular concept face within the module.</li>
             <li>Expand context reveals any folded modules containing context concepts.</li>
+            <li>In Graph-only view on phones, tap the selection name in the context-status row to open Details.</li>
             <li>Context counts, expansion and fitting remain useful in every Graph mode.</li>
           </ul>
         </section>
@@ -341,6 +347,7 @@
           <ul>
             <li>Practice questions reveal their answers only after an attempt or “I don't know”.</li>
             <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
+            <li>Tap an Incorrect badge to try again with the answer hidden; previous attempts remain recorded.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>
             <li>Blue and green graph ticks summarise reading and question completion; one Study option hides both.</li>

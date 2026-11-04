@@ -17,3 +17,15 @@ runtime configuration.
 Published releases should be tagged `vX.Y.Z` after their release commit reaches
 `main`. Schema versions advance only when their own data contracts change; they
 do not follow the product version.
+
+**Tools → Version history** lists published versions, dates and short user-facing
+summaries. Its source is `srkg/viewer_assets/release_history.json`, rendered into
+the built viewer; add the new version when preparing a release. Keep the newest
+entry first and use the publication date. Entries back to 4.0.0 were reconstructed
+from publication commits on main, rather than intermediate branch commits.
+
+The publication commit message must include a single `Release note:` line whose
+text exactly matches the new Version history summary. Keep it brief and
+user-facing. Prepare the history entry and product version before building and
+testing; squash source changes onto main, then rebuild and commit the generated
+viewer separately. Tag that publication commit and push main and the tag.

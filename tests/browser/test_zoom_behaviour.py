@@ -1,6 +1,47 @@
 import pytest
 
 
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_graphic_caption_stays_below_svg_at_details_zoom(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 932})
+    browser_graph.click_concept('2.2')
+    figure = page.locator('#info_panel .concept-figure')
+    figure.locator('.concept-figure-body').evaluate('''body => {
+      const caption = document.createElement('figcaption');
+      caption.className = 'concept-graphic-caption';
+      caption.textContent = 'A caption long enough to wrap on a narrow phone screen.';
+      body.querySelector('.concept-graphic').after(caption);
+    }''')
+    for size in [18, 30]:
+        page.locator('#info_panel').evaluate('(el, size) => el.style.fontSize = size + "px"', size)
+        page.evaluate('window.dispatchEvent(new Event("resize"))')
+        page.wait_for_function('''() => parseFloat(getComputedStyle(
+          document.querySelector('#info_panel .concept-graphic')).marginBottom) < 0''')
+        ink_bottom = figure.locator('svg').evaluate('''svg => {
+          const box = svg.getBBox();
+          return new DOMPoint(0, box.y + box.height).matrixTransform(svg.getScreenCTM()).y;
+        }''')
+        caption = figure.locator('figcaption').bounding_box()
+        assert caption['y'] >= ink_bottom + 4
+        reclaimed, line_height = figure.locator('.concept-graphic').evaluate('''el => [
+          -parseFloat(getComputedStyle(el).marginBottom),
+          parseFloat(getComputedStyle(el.nextElementSibling).lineHeight)]''')
+        assert 0 < reclaimed <= 2 * line_height + 1
+    # A drawing that fills the canvas must keep all of its space.
+    figure.locator('svg').evaluate('''svg => {
+      const full = svg.cloneNode(false), box = svg.viewBox.baseVal;
+      full.innerHTML = `<rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}"/>`;
+      svg.replaceWith(full);
+    }''')
+    page.evaluate('window.dispatchEvent(new Event("resize"))')
+    page.wait_for_function('''() => parseFloat(getComputedStyle(
+      document.querySelector('#info_panel .concept-graphic')).marginBottom) === 0''')
+    svg = figure.locator('svg').bounding_box()
+    assert figure.locator('figcaption').bounding_box()['y'] >= svg['y'] + svg['height'] + 4
+
+
 def _center(box):
     return box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
 

@@ -1,6 +1,37 @@
 import pytest
 
 
+@pytest.mark.browser
+def test_incorrect_badge_retries_without_erasing_attempts(browser_graph):
+    page = browser_graph.page
+    question = _open_automatic_question(browser_graph)
+    wrong = question.locator('input[value="2.2.q3.a"]')
+    wrong.check()
+    question.locator('.study-check-answer').click()
+    before = page.evaluate("kgPersonalData.getSnapshot()")
+    question.locator(':scope > summary').click()
+    badge = question.locator('button.study-question-status[data-outcome="incorrect"]')
+    badge.focus()
+    page.keyboard.press('Enter')
+    assert question.evaluate('el => el.open')
+    assert question.locator('.study-answer-body').count() == 0
+    assert question.locator('.study-option-result').count() == 0
+    assert question.locator('input:checked').count() == 0
+    assert question.locator('.study-check-answer').is_disabled()
+    assert page.evaluate('kgPersonalData.getSnapshot()') == before
+    assert question.locator('input').first.evaluate('el => el === document.activeElement')
+    # Navigation must not redisclose an answer while a retry is in progress.
+    browser_graph.click_concept('2.1')
+    question = _open_automatic_question(browser_graph)
+    assert question.locator('.study-answer-body').count() == 0
+    question.locator('input[value="2.2.q3.a"]').check()
+    question.locator('.study-check-answer').click()
+    progress = page.evaluate("kgStudyProgress.getQuestion('2.2.q3')")
+    assert progress['attemptCount'] == 2
+    assert progress['lastOutcome'] == 'incorrect'
+    assert question.locator('.study-answer-body').is_visible()
+
+
 def _open_automatic_question(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.2")

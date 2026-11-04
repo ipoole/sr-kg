@@ -66,6 +66,8 @@ Choose one hop, two hops or the complete transitive chain.
 A selected concept inside a folded module appears within the module. Use the
 offered actions to expand its module or any folded part of its context. Context
 counts, expansion and fitting remain useful in every Graph mode.
+In Graph-only view on phones, the context-status row names the selection;
+tap its name to open Details. Expansion actions take priority over the count.
 
 ## Move, read and edit
 
@@ -123,7 +125,9 @@ attempts, including offline. Reconnecting later merges local changes with Drive.
 Open a concept's **Study Questions** block to answer questions. Answers appear
 after an attempt or **I don't know**. Automatic questions mark your choice; for free text, compare the
 model answer and mark yourself. Green ticks and red crosses record the latest
-result. **Tools → Study** lists attempts and links to each question. Progress is
+result. Tap an **Incorrect** badge to retry with the answer hidden; previous
+attempts remain recorded until the next submission updates the result.
+**Tools → Study** lists attempts and links to each question. Progress is
 stored locally and is included in the Personal data archive. By default the
 graph shows discreet blue reading-complete and green questions-complete ticks
 on concepts and folded modules; one **Tools → Study** option hides both.

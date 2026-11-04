@@ -19,6 +19,7 @@ function kgCreateStudyController(options) {
   var studyQuestionIndex = buildStudyQuestionIndex(), contentBlockIndex = buildContentBlockIndex();
   var contentOwnerBlockIdsCache = {}, graphCompletionStateCache = null;
   var studyProgressState = loadStudyProgress(), contentReadProgressState = loadContentReadProgress();
+  var retryingQuestions = new Set(); // Local presentation state; never resets synced attempts.
   function reload() {
     studyProgressState = loadStudyProgress(); contentReadProgressState = loadContentReadProgress();
   }
@@ -195,6 +196,7 @@ function kgCreateStudyController(options) {
     }
     var date = attemptedAt ? new Date(attemptedAt) : new Date();
     if (Number.isNaN(date.getTime())) { date = new Date(); }
+    retryingQuestions.delete(questionId);
     personalDataStore.addStudyAttempt(questionId, outcome, date.toISOString());
     studyProgressState = loadStudyProgress();
     saveStudyProgress();
@@ -206,6 +208,7 @@ function kgCreateStudyController(options) {
 
   function resetStudyQuestion(questionId) {
     questionId = String(questionId || "");
+    retryingQuestions.delete(questionId);
     if (!Object.prototype.hasOwnProperty.call(studyProgressState.questions, questionId)) {
       return false;
     }
@@ -218,6 +221,7 @@ function kgCreateStudyController(options) {
   }
 
   function resetAllStudyProgress() {
+    retryingQuestions.clear();
     personalDataStore.resetStudy("");
     studyProgressState = loadStudyProgress();
     saveStudyProgress();
@@ -405,10 +409,13 @@ function kgCreateStudyController(options) {
     if (!outcome) {
       return '<span class="study-question-status" data-outcome=""></span>';
     }
-    return '<span class="study-question-status" data-outcome="' +
-      escapeHtml(outcome) + '"><span aria-hidden="true">' +
-      studyOutcomeIcon(outcome) + "</span> " +
-      escapeHtml(studyOutcomeText(outcome)) + "</span>";
+    var retry = outcome === "incorrect";
+    var tag = retry ? "button" : "span";
+    return '<' + tag + ' class="study-question-status' + (retry ? ' study-retry' : '') +
+      '" data-outcome="' + escapeHtml(outcome) + '"' +
+      (retry ? ' type="button" aria-label="Try this question again; previous answer incorrect" title="Try again without showing the answer"' : '') +
+      '><span aria-hidden="true">' + studyOutcomeIcon(outcome) + "</span> " +
+      escapeHtml(studyOutcomeText(outcome)) + "</" + tag + ">";
   }
 
   function automaticQuestionCorrectOption(question) {
@@ -436,6 +443,7 @@ function kgCreateStudyController(options) {
     var prompt = question.prompt || question.question || "";
     var options = Array.isArray(question.options) ? question.options : [];
     var progress = studyProgressState.questions[questionId] || null;
+    var visibleProgress = retryingQuestions.has(questionId) ? null : progress;
     var correctOption = automaticQuestionCorrectOption(question);
     var inputName = "study-response-" + questionId;
     var html = '<details class="study-question study-question-automatic" data-question-id="' +
@@ -447,7 +455,7 @@ function kgCreateStudyController(options) {
     html += '<fieldset class="study-options"><legend class="kg-visually-hidden">Choose one answer</legend>';
     options.forEach(function(option) {
       var optionId = String(option.option_id || "");
-      var result = progress && correctOption && optionId === String(correctOption.option_id)
+      var result = visibleProgress && correctOption && optionId === String(correctOption.option_id)
         ? "correct"
         : "";
       html += '<label class="study-option" data-option-id="' + escapeHtml(optionId) + '"' +
@@ -464,7 +472,7 @@ function kgCreateStudyController(options) {
     html += "</label></fieldset>";
     html += '<button type="button" class="study-check-answer" disabled>Check answer</button>';
     html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
-      automaticQuestionFeedbackHtml(question, progress) + "</div>";
+      automaticQuestionFeedbackHtml(question, visibleProgress) + "</div>";
     html += "</div></details>";
     return html;
   }
@@ -518,7 +526,7 @@ function kgCreateStudyController(options) {
     html += "</div>";
     html += '<div class="study-response-validation" role="alert"></div>';
     html += '<div class="study-feedback-host" role="status" aria-live="polite" aria-atomic="true">' +
-      selfAssessedQuestionFeedbackHtml(question, progress, "", false) + "</div>";
+      selfAssessedQuestionFeedbackHtml(question, retryingQuestions.has(questionId) ? null : progress, "", false) + "</div>";
     html += "</div></details>";
     return html;
   }
@@ -561,13 +569,7 @@ function kgCreateStudyController(options) {
         );
       }
     }
-    var status = card.querySelector(".study-question-status");
-    if (status) {
-      status.setAttribute("data-outcome", progress.lastOutcome);
-      status.innerHTML = '<span aria-hidden="true">' +
-        studyOutcomeIcon(progress.lastOutcome) + "</span> " +
-        escapeHtml(studyOutcomeText(progress.lastOutcome));
-    }
+    setStudyCardStatus(card, progress.lastOutcome);
     var feedbackHost = card.querySelector(".study-feedback-host");
     if (feedbackHost) {
       replaceTypesetContent(
@@ -610,11 +612,33 @@ function kgCreateStudyController(options) {
   function setStudyCardStatus(card, outcome) {
     var status = card && card.querySelector(".study-question-status");
     if (!status) { return; }
-    status.setAttribute("data-outcome", outcome || "");
-    status.innerHTML = outcome
-      ? '<span aria-hidden="true">' + studyOutcomeIcon(outcome) + "</span> " +
-        escapeHtml(studyOutcomeText(outcome))
-      : "";
+    status.outerHTML = studyQuestionStatusHtml(outcome ? {lastOutcome: outcome} : null);
+  }
+
+  function retryStudyQuestion(card) {
+    if (!card) { return; }
+    var questionId = String(card.getAttribute("data-question-id") || "");
+    var progress = getQuestion(questionId);
+    if (!studyQuestionIndex[questionId] || !progress || progress.lastOutcome !== "incorrect") { return; }
+    retryingQuestions.add(questionId);
+    card.removeAttribute("data-last-submitted-option-id");
+    card.removeAttribute("data-pending-response");
+    card.querySelectorAll('input[type="radio"]').forEach(function(input) { input.checked = false; });
+    card.querySelectorAll('.study-option').forEach(function(option) { setStudyOptionResult(option, ""); });
+    var textarea = card.querySelector(".study-self-response");
+    if (textarea) { textarea.value = ""; }
+    var feedback = card.querySelector(".study-feedback-host");
+    if (feedback) { replaceTypesetContent(feedback, ""); }
+    var validation = card.querySelector(".study-response-validation");
+    if (validation) { validation.textContent = ""; }
+    var check = card.querySelector(".study-check-answer");
+    if (check) { check.disabled = true; }
+    card.querySelectorAll('.study-self-check-answer, .study-self-unknown').forEach(function(button) {
+      button.disabled = false;
+    });
+    card.open = true;
+    var input = textarea || card.querySelector('input[type="radio"]');
+    if (input) { input.focus({preventScroll: true}); }
   }
 
   function typesetStudyCard(card) {
@@ -703,6 +727,7 @@ function kgCreateStudyController(options) {
     renderAutomaticStudyQuestion: renderAutomaticStudyQuestion,
     renderSelfAssessedStudyQuestion: renderSelfAssessedStudyQuestion,
     submitAutomaticStudyQuestion: submitAutomaticStudyQuestion,
+    retryStudyQuestion: retryStudyQuestion,
     renderSelfAssessedFeedback: renderSelfAssessedFeedback,
     submitSelfAssessedQuestion: submitSelfAssessedQuestion,
     markSelfAssessedQuestion: markSelfAssessedQuestion,

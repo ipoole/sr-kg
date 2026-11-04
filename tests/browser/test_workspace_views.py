@@ -3,6 +3,67 @@ import pytest
 pytestmark = pytest.mark.browser
 
 
+def test_version_history_is_folded_and_available_in_tools(browser_graph):
+    import json
+    from srkg.html_injection import ASSET_DIR
+    page = browser_graph.page
+    assert not page.locator('#kg_version_history').evaluate('el => el.open')
+    browser_graph.open_control_section('kg_version_history')
+    section = page.locator('#kg_version_history')
+    entries = json.loads((ASSET_DIR / 'release_history.json').read_text())
+    assert section.locator('li').count() == len(entries)
+    assert section.locator('time').evaluate_all('nodes => nodes.map(n => n.dateTime)') == [entry['date'] for entry in entries]
+    section.locator(':scope > summary').click()
+    assert not section.evaluate('el => el.open')
+    assert not section.locator('ol').is_visible()
+
+
+def test_selection_does_not_leave_a_stray_status_below_version_history(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept('2.1')
+    if not page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
+    assert not page.locator('#kg_status').is_visible()
+    for _ in range(2):
+        page.locator('#kg_version_history > summary').click()
+        assert not page.locator('#kg_status').is_visible()
+
+
+@pytest.mark.parametrize('width', [360, 430])
+def test_phone_graph_only_selection_shares_context_row(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 932})
+    browser_graph.click_concept('2.1')
+    title = page.locator('#kg_graph_selection')
+    assert not title.is_visible()
+    page.locator('#kg_view_select').select_option('graph')
+    assert title.is_visible()
+    assert title.inner_text() == page.locator('#info_panel h2').inner_text()
+    assert title.bounding_box()['height'] < 24
+    page.evaluate("document.getElementById('kg_modules_collapse_all').click()")
+    expand = page.locator('#kg_expand_context_modules')
+    assert expand.is_visible()
+    assert not page.locator('#kg_context_summary').is_visible()
+    row = page.locator('.kg-context-meta-row').bounding_box()
+    assert row['height'] < 32
+    assert title.bounding_box()['x'] + title.bounding_box()['width'] <= expand.bounding_box()['x']
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    before = page.evaluate('kgViewerStateSnapshot()')
+    if page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
+    title.click()
+    assert page.locator('#kg_view_select').input_value() == 'both'
+    assert not title.is_visible()
+    assert page.evaluate('kgViewerStateSnapshot().selection') == before['selection']
+    assert page.evaluate('kgViewerStateSnapshot().contextRule') == before['contextRule']
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'module:test.m02_applications'})")
+    page.locator('#kg_view_select').select_option('graph')
+    assert title.inner_text() == page.locator('#info_panel h2').inner_text()
+    page.evaluate("document.getElementById('kg_modules_expand_all').click()")
+    assert page.locator('#kg_context_summary').is_visible()
+    assert title.is_visible()
+
+
 @pytest.mark.parametrize("view", ["both", "graph", "details"])
 @pytest.mark.parametrize("scope", ["all", "full", "context"])
 def test_pane_choice_is_independent_of_graph_scope(browser_graph, view, scope):

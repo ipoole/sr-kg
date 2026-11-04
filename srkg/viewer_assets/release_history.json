@@ -1,0 +1,12 @@
+[
+  {"version": "4.5.0", "date": "2026-11-04", "summary": "Clearer phone graph controls, tighter graphic spacing, easier question retries and an in-app version history."},
+  {"version": "4.4.0", "date": "2026-11-03", "summary": "Folded clarifications and improved personal notes, including top-level blocks, mathematical notation and explicit editing."},
+  {"version": "4.3.2", "date": "2026-11-02", "summary": "Content organised into independent domains, supporting smaller subject-specific editions."},
+  {"version": "4.3.1", "date": "2026-10-31", "summary": "A more informative opening graph and an offline Disconnect option when Google sync is paused."},
+  {"version": "4.3.0", "date": "2026-10-30", "summary": "Simpler independent View and Graph controls, with updated guided tutorials."},
+  {"version": "4.2.1", "date": "2026-10-29", "summary": "Reliable app icons, Back/Forward selection navigation and clearer control hints."},
+  {"version": "4.2.0", "date": "2026-10-27", "summary": "Expanded rest-energy guidance, a time-dilation tutorial and improved phone tutorial layout."},
+  {"version": "4.1.0", "date": "2026-10-25", "summary": "Guided tutorials with narration, highlighted controls and Explore/Resume."},
+  {"version": "4.0.1", "date": "2026-10-21", "summary": "Silent synchronisation preserves open content and drafts; clearer reading and question progress totals."},
+  {"version": "4.0.0", "date": "2026-10-20", "summary": "Automatic Google Drive synchronisation, improved completion markers and sequential reading through SR, MATHS and GR."}
+]

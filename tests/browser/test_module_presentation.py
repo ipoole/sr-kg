@@ -78,6 +78,11 @@ def test_authored_module_detail_graphic_is_optional_and_captioned(shared_repo_br
     assert 0.47 <= svg_box['width'] / body_box['width'] <= 0.53
     caption_box = caption.bounding_box()
     assert caption_box['y'] >= svg_box['y'] + svg_box['height'] + 4
+    for width in [390, 1280]:
+        page.set_viewport_size({'width': width, 'height': 900})
+        svg_box = figure.locator('.module-graphic > svg').bounding_box()
+        caption_box = caption.bounding_box()
+        assert caption_box['y'] >= svg_box['y'] + svg_box['height'] + 4
     assert page.locator('#info_panel .concept-toc a').filter(has_text="Module graphic").count() == 1
 
     page.locator(

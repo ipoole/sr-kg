@@ -9,6 +9,10 @@ function kgCreateContextLayout(options) {
   var revealViewerSelection = options.revealSelection;
   var updateGraphViewControls = options.onControlsChange, updateNodeLabelPositions = options.onPositionsChange;
   var showContextNotice = options.notice;
+  function showTemporaryNotice() {
+    showContextNotice("Temporary draggable layout", "context-contracted");
+  }
+
   var activeNodeRadiusScale = options.labels.activeRadiusScale, nodeLabelFontSize = options.labels.fontSize;
   var kgNodeLabelConfig = {hideBelowPx: options.labels.hideBelowPx};
   var contextFitPrimedKey = null, contextContractionState = null;
@@ -52,7 +56,7 @@ function kgCreateContextLayout(options) {
       var position = contextContractionState.finalPositions[id];
       if (nodes.get(id) && validLayoutPosition(position)) { network.moveNode(id, position.x, position.y); }
     });
-    showContextNotice("Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.", "context-contracted");
+    showTemporaryNotice();
   }
   function snapshot() {
     return {primed: Boolean(contextFitPrimedKey), active: isActive(),
@@ -370,10 +374,7 @@ function kgCreateContextLayout(options) {
     };
     updateGraphViewControls();
     updateNodeLabelPositions();
-    showContextNotice(
-      "Temporary context arrangement — drag context nodes to adjust; navigating away restores the layout.",
-      "context-contracted"
-    );
+    showTemporaryNotice();
     return true;
   }
 
@@ -421,6 +422,7 @@ function kgCreateContextLayout(options) {
     resetContextFitInteraction: resetContextFitInteraction,
     fitViewerTarget: fitViewerTarget,
     isActive: isActive,
+    showTemporaryNotice: showTemporaryNotice,
     canMove: canMove,
     recordDrag: recordDrag,
     capture: capture,

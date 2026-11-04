@@ -422,10 +422,7 @@
             draggedIds.forEach(function(nodeId) {
               contextLayout.recordDrag(nodeId, graphPositionForNode(nodeId));
             });
-            showContextNotice(
-              "Temporary context arrangement adjusted — navigating away restores the layout.",
-              "context-contracted"
-            );
+            contextLayout.showTemporaryNotice();
             return;
           }
           var affectedModules = {};
@@ -1186,6 +1183,7 @@
           updateWorkspaceViewControl();
           updateGraphViewControls();
           preserveCameraAfterLayout(camera);
+          schedulePanelContentRefresh();
           updateGraphContextControls();
         }
 
@@ -3766,6 +3764,12 @@
           } else if (selection.type === "module") {
             selectionLabel = getModule(selection.id).title || selection.id;
           }
+          var graphSelection = document.getElementById("kg_graph_selection");
+          graphSelection.hidden = viewerState.view !== "graph" || !selectionLabel;
+          graphSelection.textContent = selectionLabel;
+          graphSelection.title = "Open details for " + selectionLabel;
+          graphSelection.setAttribute("aria-label", graphSelection.title);
+          summary.parentElement.setAttribute("data-context-can-expand", representedCount > 0 ? "true" : "false");
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
             : viewerState.displayScope === DisplayScope.ALL ? "All equally" : "Context + background";
@@ -4619,12 +4623,13 @@
           updateResponsiveControlLabels();
           updateGraphContextControls();
           applyWorkspaceSplit();
-          scheduleViewportRefresh();
+          schedulePanelContentRefresh();
           positionTutorialNarration();
         }
 
         function schedulePanelContentRefresh() {
           requestAnimationFrame(function() {
+            detailsView.compactGraphicSpacing();
             updateNodeLabelPositions();
           });
         }
@@ -4675,7 +4680,9 @@
           }
           revealViewerSelection();
 
-          if (statusPrefix) {
+          if (statusPrefix === "Selected") {
+            document.getElementById("kg_status").textContent = "";
+          } else if (statusPrefix) {
             var label = type === "concept"
               ? conceptDisplayId(id)
               : ((getModule(id) || {}).title || id) + " module";
@@ -5906,6 +5913,9 @@
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
           executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
+        document.getElementById("kg_graph_selection").addEventListener("click", function() {
+          setViewerView("both");
+        });
         document.getElementById("kg_inspection_close").addEventListener("click", closeInspection);
         document.getElementById("kg_inspection_dialog").addEventListener("click", function(e) {
           if (e.target === this) { closeInspection(); }
@@ -6169,6 +6179,13 @@
             submitUnknownSelfAssessedQuestion(
               selfUnknownButton.closest(".study-question-self-assessed")
             );
+            return;
+          }
+
+          var retryButton = e.target.closest(".study-retry");
+          if (retryButton) {
+            e.preventDefault();
+            studyController.retryStudyQuestion(retryButton.closest(".study-question"));
             return;
           }
 

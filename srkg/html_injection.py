@@ -105,6 +105,7 @@ def inject_controls(
             "__PRODUCT_NAME__": html_escape(PRODUCT_NAME),
             "__PRODUCT_TAGLINE__": html_escape(PRODUCT_TAGLINE),
             "__PRODUCT_VERSION__": html_escape(PRODUCT_VERSION),
+            "__RELEASE_HISTORY_HTML__": _release_history_html(),
             "__PRODUCT_LOGO_URI__": product_logo_uri,
         },
     )
@@ -200,6 +201,20 @@ def _product_head_html() -> str:
         '  });\n'
         '}\n</script>'
     )
+
+
+def _release_history_html() -> str:
+    entries = json.loads(_asset_text("release_history.json"))
+    items = []
+    for entry in entries:
+        version = html_escape(entry["version"])
+        published = html_escape(entry["date"])
+        summary = html_escape(entry["summary"])
+        items.append(
+            f'<li><strong>v{version}</strong> '
+            f'<time datetime="{published}">{published}</time><p>{summary}</p></li>'
+        )
+    return '<ol class="kg-release-history">' + "".join(items) + '</ol>'
 
 
 def _asset_text(name: str) -> str:

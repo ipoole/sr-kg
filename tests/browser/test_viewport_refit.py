@@ -24,6 +24,29 @@ def _fit_then_contract(page):
     )
 
 
+@pytest.mark.browser
+def test_phone_temporary_layout_notice_overlays_without_using_space(browser_graph):
+    page = browser_graph.page
+    page.set_viewport_size({'width': 390, 'height': 844})
+    browser_graph.click_concept('3.1')
+    _close_tools_overlay(page)
+    page.locator('#kg_context_depth_select').select_option('transitive')
+    panel = page.locator('#kg_graph_context_panel')
+    height_before = panel.bounding_box()['height']
+    _fit_then_contract(page)
+    notice = page.locator('#kg_context_notice')
+    assert notice.is_visible()
+    assert panel.bounding_box()['height'] == pytest.approx(height_before, abs=1)
+    assert notice.evaluate('''el => {
+      const s = getComputedStyle(el);
+      return [s.position, s.backgroundColor, s.pointerEvents];
+    }''') == ['absolute', 'rgba(0, 0, 0, 0)', 'none']
+    assert notice.bounding_box()['height'] < 20
+    assert notice.bounding_box()['y'] >= panel.bounding_box()['y'] + height_before
+    browser_graph.click_concept('2.1')
+    assert not notice.is_visible()
+
+
 def _view_state(page):
     return page.evaluate(
         """() => ({
@@ -335,7 +358,7 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
     )
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == published
     assert page.evaluate("() => kgContextContractionSnapshot().active") is True
-    assert "navigating away" in page.locator("#kg_context_notice").inner_text().lower()
+    assert page.locator("#kg_context_notice").get_attribute("data-kind") == "context-contracted"
 
     browser_graph.click_concept("2.1")
     restored = page.evaluate("ids => network.getPositions(ids)", ids)
@@ -448,7 +471,7 @@ def test_fit_plus_unlocks_only_context_and_suspends_personal_editing(browser_gra
         "y": 888,
     }
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before_layout
-    assert "navigating away" in page.locator("#kg_context_notice").inner_text().lower()
+    assert page.locator("#kg_context_notice").get_attribute("data-kind") == "context-contracted"
 
     browser_graph.click_concept("2.1")
     assert personal_toggle.is_enabled()

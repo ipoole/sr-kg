@@ -1,6 +1,31 @@
 import pytest
 
 
+@pytest.mark.browser
+def test_self_assessed_incorrect_badge_clears_only_presentation(browser_graph):
+    page = browser_graph.page
+    question = _open_self_assessed_question(browser_graph)
+    question.locator('textarea').fill('An unsuccessful answer')
+    question.locator('.study-self-check-answer').click()
+    question.locator('.study-self-mark[data-outcome="incorrect"]').click()
+    before = page.evaluate('kgPersonalData.getSnapshot()')
+    question.locator('button.study-question-status[data-outcome="incorrect"]').click()
+    assert question.locator('textarea').input_value() == ''
+    assert question.locator('textarea').evaluate('el => el === document.activeElement')
+    assert question.locator('.study-answer-body').count() == 0
+    assert question.get_attribute('data-pending-response') is None
+    assert question.locator('.study-self-check-answer').is_enabled()
+    assert question.locator('.study-self-unknown').is_enabled()
+    assert page.evaluate('kgPersonalData.getSnapshot()') == before
+    question.locator('textarea').fill('A fresh answer')
+    question.locator('.study-self-check-answer').click()
+    question.locator('.study-self-mark[data-outcome="correct"]').click()
+    progress = page.evaluate("kgStudyProgress.getQuestion('2.1.q1')")
+    assert progress['attemptCount'] == 2
+    assert progress['lastOutcome'] == 'correct'
+    assert question.locator('button.study-question-status').count() == 0
+
+
 def _open_self_assessed_question(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")
