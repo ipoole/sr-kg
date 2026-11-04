@@ -69,3 +69,21 @@ main branch remains a usable branch-publishing fallback until stage 6. Subsequen
 redeploy a previous package using its recorded checksum, explicitly allowing the
 older base. This restores both release and preview together. Do not delete release
 attachments used for deployments or rollback. No force pushes are needed.
+
+## Local packaging commands
+
+After committing source changes and testing the generated viewer:
+
+```bash
+conda run -n sr-kg python tools/package_site.py package --bootstrap
+# Later updates use --previous .deployment/current-site.tar.gz instead.
+conda run -n sr-kg python tools/package_site.py verify .deployment/site.tar.gz --sha256 <printed-sha256>
+```
+
+Use `--channel preview --previous <current-package>` for a preview. The command
+refuses a preview without a complete previous release. Every file has a manifest
+hash, unsafe tar members are rejected, and local HTML links must resolve within
+the assembled site. External CDN/Google URLs remain unchanged. Packages are
+reproducible for identical bytes and metadata. Build archives live in ignored
+`.deployment/`; do not commit them. Uncommitted tracked source changes prevent
+packaging, while the generated viewer may differ from Git.

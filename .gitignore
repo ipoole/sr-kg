@@ -23,3 +23,6 @@ Thumbs.db
 .idea/vcs.xml
 
 books/
+
+# Local website deployment packages (not Git objects)
+.deployment/

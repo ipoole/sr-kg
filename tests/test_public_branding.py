@@ -7,6 +7,7 @@ from srkg.branding import PRODUCT_VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
+WEBSITE = ROOT / "website"
 
 
 def _canonical_urls(html):
@@ -37,7 +38,7 @@ def test_public_pages_and_viewer_declare_preferred_https_urls():
 
 
 def test_sitemap_lists_only_preferred_public_pages_and_is_discoverable():
-    sitemap = ElementTree.parse(ROOT / "sitemap.xml")
+    sitemap = ElementTree.parse(WEBSITE / "sitemap.xml")
     urls = [node.text for node in sitemap.findall("{*}url/{*}loc")]
     assert sorted(urls) == sorted([
         "https://physicskg.org/",
@@ -49,7 +50,7 @@ def test_sitemap_lists_only_preferred_public_pages_and_is_discoverable():
 
 
 def _page(name: str) -> str:
-    return (ROOT / name).read_text(encoding="utf-8")
+    return (WEBSITE / name).read_text(encoding="utf-8")
 
 
 def test_public_homepage_identifies_physicskg_and_links_required_pages():
@@ -98,7 +99,7 @@ def test_public_terms_cover_educational_use_and_optional_drive_service():
 
 
 def test_google_branding_logo_is_a_120_pixel_png():
-    logo = ROOT / "physicskg-logo-120.png"
+    logo = WEBSITE / "physicskg-logo-120.png"
     content = logo.read_bytes()
 
     assert content[:8] == b"\x89PNG\r\n\x1a\n"
