@@ -121,3 +121,12 @@ run the deployment job. Remove the trigger and candidate record at cutover.
 The workflow uses only standard-library Python for validation and never installs
 generator dependencies. Pages transport artifacts expire after one day; durable
 packages remain Release attachments for update bases and rollback.
+
+## Preparation results
+
+[Stage-4 rehearsal](artefact_deployment_rehearsal.md) records the uploaded candidate,
+checksums, successful read-only Actions run, browser checks and unchanged live
+configuration. Cache-busted live-manifest checks reject stale bases. A deployment
+also waits for its expected manifest to become visible before releasing the
+workflow lock; failure requires inspection before a retry. The actual Pages
+transport/deployment and live rollback remain for the explicitly authorized cutover.
