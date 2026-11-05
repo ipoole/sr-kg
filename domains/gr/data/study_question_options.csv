@@ -519,6 +519,10 @@ gr.weak_field_metric.q1,gr.weak_field_metric.q1.a,10,\(g_{\mu\nu}=\eta_{\mu\nu}+
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.b,20,\(g_{\mu\nu}=0\),false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.c,30,\(R=1\),false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.a,10,The retained order specifies which physical corrections are included and which powers are discarded.,true
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.b,20,A small perturbation guarantees that every nonlinear term is exactly zero.,false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.c,30,The retained order determines whether the metric has a Lorentzian signature at all.,false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.d,40,It is only a notation choice; all orders predict identical corrections.,false
 gr.weak_field_metric.q3,gr.weak_field_metric.q3.a,10,\(g_{00}=1.000002\),true
 gr.weak_field_metric.q3,gr.weak_field_metric.q3.b,20,\(g_{00}=0.999998\),false
 gr.weak_field_metric.q3,gr.weak_field_metric.q3.c,30,\(g_{00}=2\times10^{-6}\),false
@@ -527,10 +531,22 @@ gr.newtonian_limit.q1,gr.newtonian_limit.q1.a,10,\(g_{00}\),true
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.b,20,The determinant alone,false
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.c,30,Only \(g_{12}\),false
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.d,40,No metric component,false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.a,10,"Weak gravity alone, allowing arbitrary test speeds and relativistic pressure.",false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.b,20,"Local flatness at one event, with no assumptions about motion or time dependence.",false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.c,30,"Weak, approximately stationary gravity, slow test bodies, nonrelativistic low-pressure sources, and negligible cosmological term.",true
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.d,40,"Static coordinates alone, even arbitrarily close to a black-hole horizon.",false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.a,10,Only the acceleration law; GR cannot recover Poisson’s equation.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.b,20,The wave equation for light and the equation of state of pressureless matter.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.c,30,A universal constant coordinate speed and a zero potential throughout space.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.d,40,The gravitational acceleration law from geodesic motion and Poisson’s source equation from the field equations.,true
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.a,10,Clock rates and measured frequencies at different potentials,true
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.b,20,Rest masses only,false
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.c,30,Coordinate labels only,false
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.d,40,Curvature invariants only,false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.a,10,"Local light speed differs at the two endpoints, so red and blue depend on that speed.",false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.b,20,Reversing which observer emits and which receives inverts the frequency ratio.,true
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.c,30,A frequency ratio is meaningful only for two observers at the same event.,false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.d,40,Changing the direction of exchange leaves every frequency ratio unchanged.,false
 gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.b,10,\(\nu_B/\nu_A=0.81\),false
 gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.a,20,\(\nu_B/\nu_A=0.9\),true
 gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.c,30,\(\nu_B/\nu_A=1/0.9\),false
@@ -539,6 +555,10 @@ gr.light_deflection.q1,gr.light_deflection.q1.a,10,Light follows null geodesics 
 gr.light_deflection.q1,gr.light_deflection.q1.b,20,Light becomes massive,false
 gr.light_deflection.q1,gr.light_deflection.q1.c,30,Coordinates exert force,false
 gr.light_deflection.q1,gr.light_deflection.q1.d,40,The speed of light changes locally,false
+gr.light_deflection.q2,gr.light_deflection.q2.a,10,A Newtonian calculation is incomplete only because it uses the wrong photon rest mass.,false
+gr.light_deflection.q2,gr.light_deflection.q2.b,20,Light deflection requires a material medium around the gravitating mass.,false
+gr.light_deflection.q2,gr.light_deflection.q2.c,30,"Only a change of photon coordinate labels occurs, with no observable deflection at infinity.",false
+gr.light_deflection.q2,gr.light_deflection.q2.d,40,"Light follows null geodesics, and the full metric’s temporal and spatial corrections contribute to the GR bending.",true
 gr.light_deflection.q3,gr.light_deflection.q3.b,10,It doubles,false
 gr.light_deflection.q3,gr.light_deflection.q3.c,20,It falls by a factor of four,false
 gr.light_deflection.q3,gr.light_deflection.q3.a,30,It halves,true
@@ -547,6 +567,10 @@ gr.perihelion_precession.q1,gr.perihelion_precession.q1.a,10,The orbit's closest
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.b,20,The central mass necessarily,false
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.c,30,Coordinate time,false
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.d,40,The metric signature,false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.a,10,"Every relativistic orbit loses energy at each perihelion, even in a fixed Schwarzschild test-body calculation.",false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.b,20,"Curved-spacetime corrections make the radial and angular periods differ, so the closest-approach direction advances.",true
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.c,30,The inverse-square law in Newtonian theory already predicts the same advance for an isolated point mass.,false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.d,40,"The orbit is still a closed ellipse, but all observers choose rotating coordinate axes.",false
 gr.perihelion_precession.q3,gr.perihelion_precession.q3.b,10,It doubles,false
 gr.perihelion_precession.q3,gr.perihelion_precession.q3.c,20,It falls by a factor of four,false
 gr.perihelion_precession.q3,gr.perihelion_precession.q3.d,30,It is unchanged,false
@@ -555,10 +579,26 @@ gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.a,10,Weak 
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.b,20,Arbitrarily strong horizons,false
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.c,30,No gravity,false
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.d,40,Exact spherical symmetry always,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.a,10,It guarantees exact predictions at any speed once one correction is retained.,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.b,20,It requires keeping the same perturbation power in every metric component regardless of velocity factors.,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.c,30,It keeps all corrections required at a stated order and identifies the terms consistently neglected.,true
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.d,40,"It removes the need to specify whether a result concerns motion, waveforms or energy flux.",false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.a,10,Different gauges change the physical periapsis advance even after consistent conversion.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.b,20,Post-Newtonian formulas are tensor components whose values must be identical in every chart.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.c,30,The expansion parameter is always an exact equality between velocity squared and gravitational potential.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.d,40,Coordinates redistribute intermediate terms; invariant predictions agree when compared at the same retained order.,true
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.a,10,A small propagating metric perturbation with physical tidal effects,true
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.b,20,A sound wave in interstellar gas,false
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.c,30,A coordinate ripple with no observable consequence,false
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.d,40,A Newtonian inverse-square force pulse,false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.a,10,It produces an alternating transverse stretching and squeezing of relative separations.,true
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.b,20,"It accelerates every test mass equally, leaving all relative separations unchanged.",false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.c,30,It produces only a permanent longitudinal translation of the whole detector.,false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.d,40,It changes the local speed of light but leaves freely falling test masses unaffected.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.a,10,Vacuum contains an ordinary fluid whose pressure carries the wave.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.b,20,The gravitational field equations have propagating source-free solutions; no material medium is required.,true
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.c,30,A wave can propagate only where ordinary matter stress-energy is nonzero.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.d,40,A gravitational wave is a coordinate transformation of flat spacetime with no tidal effect.,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.a,10,"Static, spherically symmetric, and vacuum",true
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.b,20,Rotating and charged,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.c,30,Homogeneous cosmology,false
@@ -767,6 +807,22 @@ gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.a,10,"The vacuum equat
 gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.b,20,"The differential equations admit different solutions distinguished by data, symmetry, mass, rotation or radiation.",true
 gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.c,30,Every vacuum region has different local values of Newton’s gravitational constant.,false
 gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.d,40,The Weyl tensor is an arbitrary coordinate choice with no measurable effect.,false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.a,10,"\(g^{00}\simeq1+\delta\), neglecting terms of order \(\delta^2\).",false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.b,20,"\(g^{00}\simeq1-\delta\), neglecting terms of order \(\delta^2\).",true
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.c,30,"\(g^{00}\simeq-\delta\), neglecting terms of order \(\delta^2\).",false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.d,40,"\(g^{00}\simeq1-\delta\), with the first discarded term of order \(\delta^3\).",false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.a,10,The source is \(T_{00}-\tfrac12g_{00}T\); for low-pressure matter the trace removes half the leading density term.,true
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.b,20,Pressure dominates the source even in the stated nonrelativistic limit.,false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.c,30,"The trace term doubles \(T_{00}\), supplying the missing factor of two.",false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.d,40,"The trace vanishes for pressureless matter, so its effect must come from another component.",false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.a,10,Conservation of the symmetry-associated energy forces all local frequencies to be identical.,false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.b,20,The photon loses rest mass while its conserved energy remains unchanged.,false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.c,30,Different stationary observers divide the same conserved quantity by different \(\sqrt{g_{00}}\) factors.,true
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.d,40,Each observer measures a different local vacuum light speed.,false
+gr.light_deflection.q4,gr.light_deflection.q4.a,10,"Light’s spatial and temporal tangent components are comparable, so spatial metric corrections contribute at leading order.",true
+gr.light_deflection.q4,gr.light_deflection.q4.b,20,Spatial metric corrections dominate for slow bodies but are absent for light.,false
+gr.light_deflection.q4,gr.light_deflection.q4.c,30,"The time component of every null tangent vanishes, so the temporal metric never contributes.",false
+gr.light_deflection.q4,gr.light_deflection.q4.d,40,Light travels outside the weak-field approximation even at arbitrarily large impact parameter.,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
@@ -775,6 +831,10 @@ gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.b,10,1PN: 
 gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.c,20,1PN: \(10^{-2}\); 2PN: \(10^{-2}\),false
 gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.d,30,1PN: \(10^{-4}\); 2PN: \(10^{-8}\),false
 gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.a,40,1PN: \(10^{-2}\); 2PN: \(10^{-4}\),true
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.a,10,"Every small perturbation is a physical wave, even when its curvature is zero.",false
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.b,20,Only a large perturbation can carry physical information.,false
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.c,30,Gauge changes can produce component ripples; a physical wave has tidal effects remaining after coordinate freedom is accounted for.,true
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.d,40,Any coordinate dependence of the metric proves that gravitational radiation is present.,false
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.a,10,\(\mathcal C=0.05\),true
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.b,20,\(\mathcal C=0.10\),false
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.c,30,\(\mathcal C=5\),false
