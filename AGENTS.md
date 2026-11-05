@@ -66,6 +66,11 @@ After committing/pushing source, retrieve the live package, package the release
 or preview, upload it and explicitly request deployment. See
 `docs/design/artefact_deployment.md` for commands and rollback.
 
+Before each new preview publication, increment the product patch version in
+`srkg/branding.py`, add a dated Version history entry labelled Preview, and build/test
+that version. A retry of the same package keeps its version. See
+`docs/design/releases.md` for the versioning convention.
+
 The hosted preview is `https://physicskg.org/preview/PhysicsKG.html`; use this
 instead of committing builds to `phone-preview` or GitHack. Preview publication
 must retain the release, and release publication must retain the preview. Previews

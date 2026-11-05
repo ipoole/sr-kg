@@ -32,7 +32,9 @@ package from the newest uploaded Release; an upload need not have been deployed.
 
 ## Hosted preview
 
-Build/test the desired viewer, retrieve the current package, then substitute:
+Increment the product patch version, add a dated Preview history entry, then
+build/test the desired viewer. See [Preview versions](releases.md#preview-versions).
+Retrieve the current package, then substitute:
 
 ```bash
 conda run -n sr-kg python tools/package_site.py package --channel preview --previous .deployment/current-site.tar.gz

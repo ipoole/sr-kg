@@ -45,3 +45,18 @@ Use the currently deployed complete package as the base for either release or
 preview publication so the other channel survives. Hosted previews replace
 GitHack/phone-preview publishing and share the public viewer's origin/personal data.
 The deployment migration itself leaves the product at v4.5.0.
+
+## Preview versions
+
+Increment the product patch number before each new preview publication, starting
+with preview 4.5.1. Use the next unused patch for the current major/minor line,
+considering the public release and already published previews. Update
+`PRODUCT_VERSION` and prepend a dated Version history entry whose summary starts
+`Preview:` before building and testing. The displayed version then identifies the
+actual review build, even while the public release retains its previous version.
+
+Retrying the same immutable package or rolling back does not create a new version.
+New preview content does. `site-*` package tags still identify exact deployments;
+`vX.Y.Z` release tags are reserved for publication from main. Apply the normal
+major/minor/patch policy when preparing the eventual public release; keep preview
+history entries clearly identified as previews.
