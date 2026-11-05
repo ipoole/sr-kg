@@ -11,6 +11,10 @@ math.manifold.q3,math.manifold.q3.a,10,Their coordinate values must agree point 
 math.manifold.q3,math.manifold.q3.b,20,Their domains must cover equal-sized regions,false
 math.manifold.q3,math.manifold.q3.c,30,Their coordinate axes must be orthogonal,false
 math.manifold.q3,math.manifold.q3.d,40,Their transition maps and inverses must be smooth,true
+math.manifold.q4,math.manifold.q4.a,10,The manifold specifies lengths; the metric chooses coordinate labels for events.,false
+math.manifold.q4,math.manifold.q4.b,20,The manifold fixes which directions are timelike; the metric sets only the units.,false
+math.manifold.q4,math.manifold.q4.c,30,The manifold supplies events and smooth charts; the metric supplies intervals and causal structure.,true
+math.manifold.q4,math.manifold.q4.d,40,"The manifold and metric specify the same structure, so either determines the other.",false
 math.coordinate_chart.q1,math.coordinate_chart.q1.a,10,A tangent vector,false
 math.coordinate_chart.q1,math.coordinate_chart.q1.b,20,A physical distance from the origin,false
 math.coordinate_chart.q1,math.coordinate_chart.q1.c,30,An ordered tuple of real-number labels,true
@@ -23,6 +27,10 @@ math.coordinate_chart.q3,math.coordinate_chart.q3.a,10,The manifold is physicall
 math.coordinate_chart.q3,math.coordinate_chart.q3.b,20,The chart may fail there even if the manifold is regular,true
 math.coordinate_chart.q3,math.coordinate_chart.q3.c,30,Every tensor field must vanish there,false
 math.coordinate_chart.q3,math.coordinate_chart.q3.d,40,No other chart can include that point,false
+math.coordinate_chart.q4,math.coordinate_chart.q4.a,10,The numerical labels change; the peg remains the same surface point.,true
+math.coordinate_chart.q4,math.coordinate_chart.q4.b,20,The peg moves to whichever point has the original coordinate pair in the other chart.,false
+math.coordinate_chart.q4,math.coordinate_chart.q4.c,30,The surface is deformed so that the two coordinate grids agree.,false
+math.coordinate_chart.q4,math.coordinate_chart.q4.d,40,Physical distances to neighbouring pegs change with the coordinate scale.,false
 math.coordinate_transformation.q1,math.coordinate_transformation.q1.a,10,The metric tensor,false
 math.coordinate_transformation.q1,math.coordinate_transformation.q1.b,20,The Jacobian matrix,true
 math.coordinate_transformation.q1,math.coordinate_transformation.q1.c,30,The curvature tensor,false
@@ -35,6 +43,10 @@ math.coordinate_transformation.q3,math.coordinate_transformation.q3.a,10,Every c
 math.coordinate_transformation.q3,math.coordinate_transformation.q3.b,20,Lorentz transformations apply only on curved manifolds,false
 math.coordinate_transformation.q3,math.coordinate_transformation.q3.c,30,A Lorentz transformation is a linear flat-spacetime special case,true
 math.coordinate_transformation.q3,math.coordinate_transformation.q3.d,40,Lorentz transformations change physical events while coordinate transformations do not,false
+math.coordinate_transformation.q4,math.coordinate_transformation.q4.a,10,Each component is a scalar and must retain the same value in every chart.,false
+math.coordinate_transformation.q4,math.coordinate_transformation.q4.b,20,Changing only the coordinate labels leaves every component formula fixed.,false
+math.coordinate_transformation.q4,math.coordinate_transformation.q4.c,30,Different component arrays necessarily describe different physical fields.,false
+math.coordinate_transformation.q4,math.coordinate_transformation.q4.d,40,The components and basis can change together while the geometric field is unchanged.,true
 math.worldline.q1,math.worldline.q1.a,10,A tensor field over all spacetime,false
 math.worldline.q1,math.worldline.q1.b,20,A coordinate chart,false
 math.worldline.q1,math.worldline.q1.c,30,A set of simultaneous events,false
@@ -47,6 +59,10 @@ math.worldline.q3,math.worldline.q3.a,10,Massive particles are timelike and ligh
 math.worldline.q3,math.worldline.q3.b,20,Massive particles are null and light is timelike,false
 math.worldline.q3,math.worldline.q3.c,30,Both massive particles and light are spacelike,false
 math.worldline.q3,math.worldline.q3.d,40,All physical histories are null,false
+math.worldline.q4,math.worldline.q4.a,10,The particle must experience a force in the chart with the curved plot.,false
+math.worldline.q4,math.worldline.q4.b,20,No change of physical history is established; the coordinate maps may differ.,true
+math.worldline.q4,math.worldline.q4.c,30,The charts must describe different particles because a worldline has one fixed plotted shape.,false
+math.worldline.q4,math.worldline.q4.d,40,The curved plot cannot be a valid coordinate description of force-free motion.,false
 math.tangent_space.q1,math.tangent_space.q1.a,10,The set of all points near \(p\),false
 math.tangent_space.q1,math.tangent_space.q1.b,20,The vector space of tangents attached at \(p\),true
 math.tangent_space.q1,math.tangent_space.q1.c,30,The set of coordinate charts containing \(p\),false
@@ -59,6 +75,10 @@ math.tangent_space.q3,math.tangent_space.q3.a,10,Their components always have di
 math.tangent_space.q3,math.tangent_space.q3.b,20,A connection or transport rule is needed to compare their different tangent spaces,true
 math.tangent_space.q3,math.tangent_space.q3.c,30,Vector subtraction is forbidden even in flat Cartesian space,false
 math.tangent_space.q3,math.tangent_space.q3.d,40,Only covectors can be compared at different points,false
+math.tangent_space.q4,math.tangent_space.q4.a,10,The surface point \(p\) changes to compensate for the new components.,false
+math.tangent_space.q4,math.tangent_space.q4.b,20,The vector becomes a different physical direction whenever its components change.,false
+math.tangent_space.q4,math.tangent_space.q4.c,30,The basis changes too; the basis-component combination gives the same vector.,true
+math.tangent_space.q4,math.tangent_space.q4.d,40,"The basis stays fixed, and a metric makes all component tuples equivalent.",false
 math.cotangent_space.q1,math.cotangent_space.q1.a,10,It maps a tangent vector linearly to a real number,true
 math.cotangent_space.q1,math.cotangent_space.q1.b,20,It maps a point to another point,false
 math.cotangent_space.q1,math.cotangent_space.q1.c,30,It measures vector length without extra structure,false
@@ -71,6 +91,10 @@ math.cotangent_space.q3,math.cotangent_space.q3.a,10,\(dx^\mu(\partial/\partial 
 math.cotangent_space.q3,math.cotangent_space.q3.b,20,\(dx^\mu(\partial/\partial x^\nu)=g^{\mu\nu}\),false
 math.cotangent_space.q3,math.cotangent_space.q3.c,30,"\(dx^\mu(\partial/\partial x^\nu)=0\) for all \(\mu,\nu\)",false
 math.cotangent_space.q3,math.cotangent_space.q3.d,40,\(dx^\mu(\partial/\partial x^\nu)=x^\mu x^\nu\),false
+math.cotangent_space.q4,math.cotangent_space.q4.a,10,Identify \(dT\) with a unique gradient vector.,false
+math.cotangent_space.q4,math.cotangent_space.q4.b,20,Evaluate the covector \(dT\) on \(v\).,true
+math.cotangent_space.q4,math.cotangent_space.q4.c,30,Lower the index of \(v\) using the coordinate labels alone.,false
+math.cotangent_space.q4,math.cotangent_space.q4.d,40,Calculate the length of \(v\) from smoothness alone.,false
 math.tensor_field.q1,math.tensor_field.q1.a,10,It has at least two indices,false
 math.tensor_field.q1,math.tensor_field.q1.b,20,It assigns a tensor smoothly at each point,true
 math.tensor_field.q1,math.tensor_field.q1.c,30,Its components are constant in every chart,false
