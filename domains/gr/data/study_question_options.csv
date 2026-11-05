@@ -387,10 +387,26 @@ gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.a,10,"Energy density, mome
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.b,20,Coordinates only,false
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.c,30,Curvature only,false
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.d,40,Metric signature,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.a,10,Each observer creates a different matter tensor by changing coordinates.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.b,20,The tensor transformation law applies only in flat spacetime.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.c,30,Energy density is invariant under all changes of observer because it is a scalar projection.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.d,40,Different observers project the same tensor onto different time directions and spatial frames.,true
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.a,10,Both encode local energy and momentum; GR also treats the tensor as a curved-spacetime source of geometry.,true
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.b,20,"The SR tensor describes only rest mass, whereas GR introduces momentum for the first time.",false
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.c,30,"The GR tensor is a universal local gravitational-energy tensor, unlike the SR tensor.",false
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.d,40,"The GR tensor is invariant component by component, whereas the SR tensor transforms under boosts.",false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.a,10,Viscosity,true
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.b,20,Energy density,false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.c,30,Isotropic pressure,false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.d,40,Four-velocity,false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.a,10,"Pressure is zero, so every perfect fluid is dust.",false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.b,20,All observers measure the same energy flux and pressure components.,false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.c,30,"Pressure is equal in every spatial direction in that frame, with no preferred shear direction.",true
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.d,40,The fluid has equal coordinate velocity components along all three axes.,false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.a,10,\(T^{\mu\nu}=\epsilon g^{\mu\nu}\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.b,20,\(T^{\mu\nu}=0\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.c,30,\(T^{\mu\nu}=\epsilon(u^\mu u^\nu-g^{\mu\nu})\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.d,40,\(T^{\mu\nu}=\epsilon u^\mu u^\nu\),true
 gr.energy_conditions.q1,gr.energy_conditions.q1.a,10,Assumptions restricting stress-energy,true
 gr.energy_conditions.q1,gr.energy_conditions.q1.b,20,Identities obeyed by every quantum field,false
 gr.energy_conditions.q1,gr.energy_conditions.q1.c,30,Coordinate choices,false
@@ -399,14 +415,30 @@ gr.energy_conditions.q2,gr.energy_conditions.q2.b,10,Every observer measures zer
 gr.energy_conditions.q2,gr.energy_conditions.q2.c,20,The stress-energy trace must be positive,false
 gr.energy_conditions.q2,gr.energy_conditions.q2.a,30,Every timelike observer measures nonnegative local energy density,true
 gr.energy_conditions.q2,gr.energy_conditions.q2.d,40,Energy density must be identical in every frame,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.a,10,They are identities obeyed by every symmetric rank-two tensor.,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.b,20,"They are additional matter assumptions, and some classical models and quantum states violate them.",true
+gr.energy_conditions.q3,gr.energy_conditions.q3.c,30,They follow from Einstein’s equations without assumptions about matter.,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.d,40,"They differ only by sign convention, so apparent violations can always be translated away.",false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.a,10,\(\nabla_\mu T^{\mu\nu}=0\),true
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.b,20,\(T^{\mu\nu}=0\),false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.c,30,\(\partial_\mu g^{\mu\nu}=0\),false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.d,40,\(R=1\),false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.a,10,Partial derivatives cannot be taken for any field in curved spacetime.,false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.b,20,Conservation requires replacing every partial derivative by an ordinary time derivative.,false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.c,30,"The problem occurs only for nonzero curvature, never in flat curvilinear coordinates.",false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.d,40,It omits connection terms accounting for the tensor’s indices and changing coordinate basis.,true
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.a,10,The geometric divergence identity requires the total source to have vanishing covariant divergence in a coupled solution.,true
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.b,20,"It requires every interacting matter sector to be separately conserved, even during exchange.",false
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.c,30,It fixes all stress-energy components from geometry at one event without solving any field equation.,false
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.d,40,It imposes zero partial divergence of stress-energy in every chart.,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.a,10,Pressure to energy density,true
 gr.equation_of_state.q1,gr.equation_of_state.q1.b,20,Curvature to coordinates,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.c,30,Torsion to metric signature,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.d,40,Four-velocity to proper time only,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.a,10,It replaces the gravitational field equations by an algebraic relation for the metric.,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.b,20,It selects the coordinate chart in which fluid conservation is valid.,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.c,30,It supplies the material relation missing from conservation and gravitational field equations.,true
+gr.equation_of_state.q2,gr.equation_of_state.q2.d,40,It ensures every fluid has zero pressure gradients and follows geodesics.,false
 gr.equation_of_state.q3,gr.equation_of_state.q3.b,10,\(p=36\),false
 gr.equation_of_state.q3,gr.equation_of_state.q3.c,20,\(p=12\),false
 gr.equation_of_state.q3,gr.equation_of_state.q3.d,30,\(p=1/36\),false
@@ -415,10 +447,26 @@ gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.a,10,Curvature to 
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.b,20,Coordinates to units only,false
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.c,30,Torsion to charge,false
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.d,40,Pressure to temperature only,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.a,10,It keeps the physical dimensions of the source coupling explicit rather than setting the speed of light to one.,true
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.b,20,It accounts for the fact that the speed of light varies locally with curvature.,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.c,30,It gives the metric four extra independent components.,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.d,40,It makes the matter source vanish in the Newtonian limit.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.a,10,Both identities determine the metric algebraically without initial or boundary data.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.b,20,"The geometric side has identically zero divergence, compatible with the conserved total matter source on a solution.",true
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.c,30,The Bianchi identity sets all curvature to zero whenever matter is conserved.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.d,40,"Conservation cancels the matter source, leaving only the cosmological term.",false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.a,10,Support spacetime curvature,true
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.b,20,Force the metric to be flat,false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.c,30,Remove covariance,false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.d,40,Set all tensors to zero,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.a,10,"It contributes only to spatial components, so it describes pressureless dust.",false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.b,20,It selects one preferred timelike fluid velocity at every event.,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.c,30,It can be removed by a coordinate transformation whenever the region is empty.,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.d,40,Moving it to the source side gives a stress-energy tensor proportional to the metric.,true
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.a,10,No: GR allows an effective vacuum source but does not determine its microscopic origin or observed value.,true
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.b,20,Yes: classical GR uniquely predicts the quantum vacuum energy once the signature is chosen.,false
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.c,30,No: vacuum energy cannot enter a gravitational field equation.,false
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.d,40,Yes: the observed value follows solely from the Bianchi identity.,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.a,10,Ricci scalar,true
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.b,20,Proper time only,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.c,30,Electric potential,false
@@ -435,6 +483,14 @@ gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.a,10,A metric variat
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.b,20,Renaming coordinates only,false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.c,30,Setting curvature to zero,false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.d,40,Choosing a module,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.a,10,Every matter theory has the same Lagrangian after a change of coordinates.,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.b,20,Metric variation eliminates the need to specify any matter equations of motion.,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.c,30,The response of a matter action to metric variation supplies a common construction of its gravitational source.,true
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.d,40,The construction forces every matter source to have a vanishing trace.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.a,10,The metric signature by itself uniquely fixes all matter-action and variation signs.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.b,20,The sign is freely adjustable without changing any other formula or coupling.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.c,30,Changing the varied metric variable leaves its variation unchanged.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.d,40,Action signs and whether the metric or inverse metric is varied must be checked along with signature.,true
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.a,10,The scalar-curvature term inside the Einstein tensor,true
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.b,20,The stress-energy tensor,false
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.c,30,The metric,false
@@ -443,10 +499,22 @@ gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.b,10,\(T=T_{00}\),
 gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.c,20,\(T=\det(T_{\mu\nu})\),false
 gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.d,30,\(T=\nabla^\mu T_{\mu\nu}\),false
 gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.a,40,\(T=g^{\alpha\beta}T_{\alpha\beta}\),true
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.a,10,\(R_{\mu\nu}=g_{\mu\nu}\),false
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.b,20,\(R_{\mu\nu}=0\),true
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.c,30,\(R^\rho{}_{\sigma\mu\nu}=0\) necessarily,false
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.d,40,\(\Gamma^\rho{}_{\mu\nu}=0\) in every chart,false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.a,10,\(R_{\mu\nu}=0\),true
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.b,20,\(R^\rho{}_{\sigma\mu\nu}=0\) necessarily,false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.c,30,\(g_{\mu\nu}=0\),false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.a,10,Tidal acceleration requires no curvature and arises only from coordinate motion.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.b,20,Ricci-flatness makes the metric singular wherever tides occur.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.c,30,Zero Ricci means zero tidal acceleration; any apparent tides are support forces.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.d,40,The trace-free Weyl part of Riemann can remain nonzero when Ricci vanishes.,true
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.a,10,Exterior Schwarzschild geometry and vacuum gravitational waves.,true
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.b,20,Only flat Minkowski geometry and its coordinate relabellings.,false
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.c,30,A fluid-filled stellar interior and an ordinary material atmosphere.,false
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.d,40,Only geometries with nonzero ordinary matter density at every event.,false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.a,10,\(g_{\mu\nu}=\eta_{\mu\nu}+h_{\mu\nu}\) with small \(h\),true
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.b,20,\(g_{\mu\nu}=0\),false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.c,30,\(R=1\),false
@@ -659,6 +727,46 @@ gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.a,10,Only the explic
 gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.b,20,The variation of a particle path in the matter action.,false
 gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.c,30,The variation of the volume density \(\sqrt{-g}\).,true
 gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.d,40,"The cosmological term alone, even when the cosmological constant is zero.",false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.a,10,\(\epsilon\gamma\),false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.b,20,\(\epsilon\gamma^2\),true
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.c,30,\(\epsilon/\gamma\),false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.d,40,\(\epsilon\),false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.a,10,\(T=\epsilon-3p\); isotropic radiation gives \(T=0\).,true
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.b,20,\(T=\epsilon+3p\); isotropic radiation gives \(T=2\epsilon\).,false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.c,30,\(T=\epsilon-p\); isotropic radiation gives \(T=2\epsilon/3\).,false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.d,40,\(T=\epsilon-4p\); isotropic radiation gives \(T=-\epsilon/3\).,false
+gr.energy_conditions.q4,gr.energy_conditions.q4.a,10,Only the null energy condition fails.,false
+gr.energy_conditions.q4,gr.energy_conditions.q4.b,20,"The weak and dominant conditions fail, but the strong condition holds.",false
+gr.energy_conditions.q4,gr.energy_conditions.q4.c,30,Only the strong energy condition fails.,true
+gr.energy_conditions.q4,gr.energy_conditions.q4.d,40,All four conditions hold.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.a,10,It turns each coordinate component of stress-energy into an independently conserved scalar.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.b,20,It supplies a divergence-free vector current and a charge balance; vanishing boundary flux then gives a conserved charge.,true
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.c,30,It guarantees zero boundary flux for every chosen region.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.d,40,It makes any generic curved spacetime time-translation invariant.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.a,10,The two differ only because pressure and energy density have different SI units.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.b,20,"The ratio is an observer-dependent coordinate quantity, while its derivative is not.",false
+gr.equation_of_state.q4,gr.equation_of_state.q4.c,30,They must agree for every fluid with positive energy density.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.d,40,"For nonlinear \(p(\epsilon)\), the slope \(dp/d\epsilon\) need not equal the ratio \(p/\epsilon\).",true
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.a,10,A single density fixes the Ricci tensor and all Weyl curvature algebraically.,false
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.b,20,"The equations constrain only the metric determinant, leaving every other component physically arbitrary.",false
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.c,30,"They are differential equations sourced by full stress-energy and require matter dynamics and suitable data, with coordinate freedom.",true
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.d,40,The missing information is solely the observer’s choice of energy units.,false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.a,10,"\(R=4\Lambda\), \(\epsilon_\Lambda=\Lambda/\kappa\).",false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.b,20,"\(R=-4\Lambda\), \(\epsilon_\Lambda=\Lambda/\kappa\).",true
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.c,30,"\(R=-4\Lambda\), \(\epsilon_\Lambda=-\Lambda/\kappa\).",false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.d,40,"\(R=0\), \(\epsilon_\Lambda=0\).",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.a,10,"\(T_{\mu\nu}=Vg_{\mu\nu}\), with density \(V\) and pressure \(-V\).",true
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.b,20,"\(T_{\mu\nu}=0\), since every derivative of the field vanishes.",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.c,30,"\(T_{\mu\nu}=-Vg_{\mu\nu}\), with positive density \(V\).",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.d,40,"\(T_{\mu\nu}=Vu_\mu u_\nu\), describing pressureless dust.",false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.a,10,Yes: zero trace means every stress-energy component vanishes.,false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.b,20,Yes: trace-free matter produces only Weyl curvature and no Ricci curvature.,false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.c,30,"No: \(R=0\), but \(R_{\mu\nu}=\kappa T_{\mu\nu}\) can be nonzero.",true
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.d,40,No: trace-free matter necessarily gives a nonzero Ricci scalar.,false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.a,10,"The vacuum equation fixes a unique metric, so any difference must be a coordinate illusion.",false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.b,20,"The differential equations admit different solutions distinguished by data, symmetry, mass, rotation or radiation.",true
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.c,30,Every vacuum region has different local values of Newton’s gravitational constant.,false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.d,40,The Weyl tensor is an arbitrary coordinate choice with no measurable effect.,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
