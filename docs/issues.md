@@ -52,7 +52,9 @@
    existing answered status; retain free text where explaining reasoning is the goal.
    MATHS pass completed on `content-improvements-gc`: nine explanation questions
    converted across MATHS-1 and MATHS-2; all 36 MATHS questions now mark automatically,
-   with question IDs retained. Awaiting review before proceeding to SR and GR.
+   with question IDs retained. MATHS review accepted. SR pass completed module by
+   module: 186 further conversions; all 277 SR questions now mark automatically.
+   Question IDs and existing options are retained. GR remains for a later pass.
 6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.

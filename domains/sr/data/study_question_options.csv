@@ -487,6 +487,26 @@ sr.noether_theorem.q1,sr.noether_theorem.q1.a,10,Discrete labels to graph layout
 sr.noether_theorem.q1,sr.noether_theorem.q1.b,20,Continuous symmetries of the action to conserved quantities,true
 sr.noether_theorem.q1,sr.noether_theorem.q1.c,30,Any equation to any conservation law,false
 sr.noether_theorem.q1,sr.noether_theorem.q1.d,40,Coordinate names to units,false
+sr.noether_theorem.q2,sr.noether_theorem.q2.a,10,The standard derivation uses an infinitesimal parameter and a first-order variation of the action.,true
+sr.noether_theorem.q2,sr.noether_theorem.q2.b,20,Discrete symmetries can never have any physical consequences.,false
+sr.noether_theorem.q2,sr.noether_theorem.q2.c,30,Continuous means that the conserved quantity must increase continuously with time.,false
+sr.noether_theorem.q2,sr.noether_theorem.q2.d,40,Noether's theorem applies only when the trajectory itself has constant velocity.,false
+sr.noether_theorem.q3,sr.noether_theorem.q3.a,10,Time translations: momentum; spatial translations: angular momentum; rotations: energy.,false
+sr.noether_theorem.q3,sr.noether_theorem.q3.b,20,Time translations: energy; spatial translations: momentum; rotations: angular momentum.,true
+sr.noether_theorem.q3,sr.noether_theorem.q3.c,30,Time translations: angular momentum; spatial translations: energy; rotations: momentum.,false
+sr.noether_theorem.q3,sr.noether_theorem.q3.d,40,Time translations: charge; spatial translations: mass; rotations: temperature.,false
+sr.noether_theorem.q4,sr.noether_theorem.q4.a,10,"The coordinate \(q\) itself, because cyclic means \(\dot q=0\).",false
+sr.noether_theorem.q4,sr.noether_theorem.q4.b,20,"The Hamiltonian, even when the Lagrangian depends explicitly on time.",false
+sr.noether_theorem.q4,sr.noether_theorem.q4.c,30,"The conjugate momentum \(p=\partial L/\partial\dot q\), because \(dp/dt=0\).",true
+sr.noether_theorem.q4,sr.noether_theorem.q4.d,40,"The value of \(L\), because it cannot depend on any dynamical variable.",false
+sr.noether_theorem.q5,sr.noether_theorem.q5.a,10,\(p=-m\dot x\).,false
+sr.noether_theorem.q5,sr.noether_theorem.q5.b,20,\(p=\tfrac12m\dot x^2\).,false
+sr.noether_theorem.q5,sr.noether_theorem.q5.c,30,\(p=m\ddot x\).,false
+sr.noether_theorem.q5,sr.noether_theorem.q5.d,40,\(p=m\dot x\).,true
+sr.noether_theorem.q6,sr.noether_theorem.q6.a,10,A continuity equation constrains local density and flow; a conserved total also requires suitable boundary conditions.,true
+sr.noether_theorem.q6,sr.noether_theorem.q6.b,20,A current equation says only that a total integral is constant and places no restriction on local flow.,false
+sr.noether_theorem.q6,sr.noether_theorem.q6.c,30,A local current must vanish everywhere for its integrated charge to be conserved.,false
+sr.noether_theorem.q6,sr.noether_theorem.q6.d,40,Local conservation allows a quantity to disappear in one region and reappear elsewhere without any intervening flux.,false
 sr.scalar_field.q1,sr.scalar_field.q1.a,10,Scalar field,true
 sr.scalar_field.q1,sr.scalar_field.q1.b,20,Vector field,false
 sr.scalar_field.q1,sr.scalar_field.q1.c,30,Antisymmetric tensor field,false
@@ -708,6 +728,26 @@ sr.maxwells_equations.q1,sr.maxwells_equations.q1.a,10,They become unrelated to 
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.b,20,Their relativistic structure is visible without choosing a special frame,true
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.c,30,They no longer need sources,false
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.d,40,They stop describing waves,false
+sr.maxwells_equations.q2,sr.maxwells_equations.q2.a,10,The field tensor directly to the position of a distant charge at the same coordinate time.,false
+sr.maxwells_equations.q2,sr.maxwells_equations.q2.b,20,The electromagnetic energy density to a gauge condition on the potential.,false
+sr.maxwells_equations.q2,sr.maxwells_equations.q2.c,30,Local derivatives of the field tensor to the local charge-current source.,true
+sr.maxwells_equations.q2,sr.maxwells_equations.q2.d,40,Four independent scalar fields to a single absolute reference frame.,false
+sr.maxwells_equations.q3,sr.maxwells_equations.q3.a,10,The potential construction forces every electromagnetic field component to vanish.,false
+sr.maxwells_equations.q3,sr.maxwells_equations.q3.b,20,The homogeneous equations follow only if every component of the potential is constant.,false
+sr.maxwells_equations.q3,sr.maxwells_equations.q3.c,30,"Antisymmetry makes the two derivative terms equal with the same sign, so they add.",false
+sr.maxwells_equations.q3,sr.maxwells_equations.q3.d,40,The cyclic sum of second derivatives cancels because partial derivatives commute for a smooth local potential.,true
+sr.maxwells_equations.q4,sr.maxwells_equations.q4.a,10,"\(\partial_\mu F^{\mu\nu}=0\), which still permits nonzero source-free waves.",true
+sr.maxwells_equations.q4,sr.maxwells_equations.q4.b,20,"\(F^{\mu\nu}=0\), so no electromagnetic wave can exist.",false
+sr.maxwells_equations.q4,sr.maxwells_equations.q4.c,30,"\(\partial_\mu F^{\mu\nu}=\mu_0\), because only the current factor is removed.",false
+sr.maxwells_equations.q4,sr.maxwells_equations.q4.d,40,"\(\partial_\mu j^\mu=F^{\mu\nu}\), exchanging the field and source roles.",false
+sr.maxwells_equations.q5,sr.maxwells_equations.q5.a,10,The Lorenz gauge sets the charge density itself to zero everywhere.,false
+sr.maxwells_equations.q5,sr.maxwells_equations.q5.b,20,"The double divergence vanishes by field-tensor antisymmetry and commuting derivatives, forcing the current divergence to vanish.",true
+sr.maxwells_equations.q5,sr.maxwells_equations.q5.c,30,"Every nonzero current makes the field tensor symmetric, so its divergence vanishes.",false
+sr.maxwells_equations.q5,sr.maxwells_equations.q5.d,40,Charge conservation follows because every Maxwell solution has zero electromagnetic field.,false
+sr.maxwells_equations.q6,sr.maxwells_equations.q6.a,10,The four equations refer to unrelated fields with independent transformation laws.,false
+sr.maxwells_equations.q6,sr.maxwells_equations.q6.b,20,The equations become valid only after one preferred inertial frame is selected.,false
+sr.maxwells_equations.q6,sr.maxwells_equations.q6.c,30,The four familiar equations are frame components of the sourced tensor equation and the homogeneous identity.,true
+sr.maxwells_equations.q6,sr.maxwells_equations.q6.d,40,The homogeneous equations describe only electric fields and the sourced equations only magnetic fields.,false
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.a,10,\(\partial_\mu A^\mu\overset{\text{Lorenz gauge}}{=}0\),true
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.b,20,\(F_{\mu\nu}=0\),false
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.c,30,\(A_\mu=0\) in every frame,false
@@ -760,6 +800,26 @@ sr.four_current.q1,sr.four_current.q1.a,10,Four-current,true
 sr.four_current.q1,sr.four_current.q1.b,20,Proper time,false
 sr.four_current.q1,sr.four_current.q1.c,30,Scalar field only,false
 sr.four_current.q1,sr.four_current.q1.d,40,Magnetic field only,false
+sr.four_current.q2,sr.four_current.q2.a,10,Charge density alone is a Lorentz scalar that fully specifies every moving source.,false
+sr.four_current.q2,sr.four_current.q2.b,20,Charge density and spatial current density mix between inertial frames as components of one four-vector.,true
+sr.four_current.q2,sr.four_current.q2.c,30,Current density is an unrelated scalar that cannot be combined with charge density.,false
+sr.four_current.q2,sr.four_current.q2.d,40,Charge density changes only when charge conservation fails.,false
+sr.four_current.q3,sr.four_current.q3.a,10,Charge density must be constant at every point even when charge flows.,false
+sr.four_current.q3,sr.four_current.q3.b,20,Only the total charge of the entire universe is constrained; local transport is unrestricted.,false
+sr.four_current.q3,sr.four_current.q3.c,30,Local charge-density changes are balanced by charge flow; there is no uncompensated local creation or destruction.,true
+sr.four_current.q3,sr.four_current.q3.d,40,The four-current itself must vanish at every spacetime event.,false
+sr.four_current.q4,sr.four_current.q4.a,10,"\(j^\mu=(2,3,4,0)\) with no factor of \(c\) in the time component.",false
+sr.four_current.q4,sr.four_current.q4.b,20,"\(j^\mu=(6.0\times10^8,-3,-4,0)\) for the stated contravariant convention.",false
+sr.four_current.q4,sr.four_current.q4.c,30,"\(j^\mu=(6.0\times10^{-8},3,4,0)\) in compatible SI units.",false
+sr.four_current.q4,sr.four_current.q4.d,40,"\(j^\mu=(6.0\times10^8,3,4,0)\) in compatible SI units.",true
+sr.four_current.q5,sr.four_current.q5.a,10,As the source in \(\partial_\mu F^{\mu\nu}=\mu_0j^\nu\).,true
+sr.four_current.q5,sr.four_current.q5.b,20,As the field replacing \(A^\mu\) in \(\Box j^\mu=\mu_0 A^\mu\).,false
+sr.four_current.q5,sr.four_current.q5.c,30,As an energy-momentum source in \(\partial_\mu T^{\mu\nu}=\mu_0j^\nu\).,false
+sr.four_current.q5,sr.four_current.q5.d,40,Nowhere: Maxwell\'s equations require the four-current to be absent.,false
+sr.four_current.q6,sr.four_current.q6.a,10,"The history of one selected charge, with no information about charge density.",false
+sr.four_current.q6,sr.four_current.q6.b,20,"Local charge flow through spacetime, combining charge density with spatial current density.",true
+sr.four_current.q6,sr.four_current.q6.c,30,A four-dimensional coordinate position rather than a source field.,false
+sr.four_current.q6,sr.four_current.q6.d,40,A scalar total charge multiplied by a preferred observer's time direction only.,false
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.a,10,Minimal coupling,true
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.b,20,Proper time alone,false
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.c,30,Radiation reaction,false
@@ -812,6 +872,26 @@ sr.charge_conservation.q1,sr.charge_conservation.q1.a,10,\(\partial_\mu j^\mu\ov
 sr.charge_conservation.q1,sr.charge_conservation.q1.b,20,\(F_{\mu\nu}=0\),false
 sr.charge_conservation.q1,sr.charge_conservation.q1.c,30,\(p_\mu p^\mu=m^2\),false
 sr.charge_conservation.q1,sr.charge_conservation.q1.d,40,\(\nabla\times\mathbf E=0\),false
+sr.charge_conservation.q2,sr.charge_conservation.q2.a,10,"Any nonzero current density increases charge density, regardless of its divergence.",false
+sr.charge_conservation.q2,sr.charge_conservation.q2.b,20,Charge density cannot change anywhere if total charge is conserved.,false
+sr.charge_conservation.q2,sr.charge_conservation.q2.c,30,Positive outward divergence creates charge locally to keep the density fixed.,false
+sr.charge_conservation.q2,sr.charge_conservation.q2.d,40,Positive current divergence lowers the local charge density; negative divergence raises it.,true
+sr.charge_conservation.q3,sr.charge_conservation.q3.a,10,\(\partial\rho/\partial t=-5\) in compatible units.,true
+sr.charge_conservation.q3,sr.charge_conservation.q3.b,20,\(\partial\rho/\partial t=+5\) in compatible units.,false
+sr.charge_conservation.q3,sr.charge_conservation.q3.c,30,"\(\partial\rho/\partial t=0\), because conservation fixes density at every point.",false
+sr.charge_conservation.q3,sr.charge_conservation.q3.d,40,\(\partial\rho/\partial t=1/5\) in compatible units.,false
+sr.charge_conservation.q4,sr.charge_conservation.q4.a,10,Maxwell's equation requires the charge density and current density to be constant separately.,false
+sr.charge_conservation.q4,sr.charge_conservation.q4.b,20,"Commuting double derivatives contract to zero with the antisymmetric field tensor, requiring zero current four-divergence.",true
+sr.charge_conservation.q4,sr.charge_conservation.q4.c,30,"Choosing any gauge directly imposes zero current, which is the only conserved source.",false
+sr.charge_conservation.q4,sr.charge_conservation.q4.d,40,"The divergence of a tensor is always zero, regardless of its symmetry.",false
+sr.charge_conservation.q5,sr.charge_conservation.q5.a,10,"It requires the total charge to be zero, whereas global conservation permits nonzero charge.",false
+sr.charge_conservation.q5,sr.charge_conservation.q5.b,20,It forbids charge from moving between neighbouring regions.,false
+sr.charge_conservation.q5,sr.charge_conservation.q5.c,30,It also constrains transport: local changes must be balanced by current through the boundary.,true
+sr.charge_conservation.q5,sr.charge_conservation.q5.d,40,It allows distant compensating changes without any current between the regions.,false
+sr.charge_conservation.q6,sr.charge_conservation.q6.a,10,It would merely pick a different gauge for the same valid Maxwell source.,false
+sr.charge_conservation.q6,sr.charge_conservation.q6.b,20,It would be allowed whenever total integrated charge happens to stay constant.,false
+sr.charge_conservation.q6,sr.charge_conservation.q6.c,30,It would change only the unit used to measure electric charge.,false
+sr.charge_conservation.q6,sr.charge_conservation.q6.d,40,It would be incompatible with the identically vanishing double divergence of the antisymmetric field tensor.,true
 sr.em_energy_density.q1,sr.em_energy_density.q1.a,10,Field energy per unit volume,true
 sr.em_energy_density.q1,sr.em_energy_density.q1.b,20,Charge per unit volume only,false
 sr.em_energy_density.q1,sr.em_energy_density.q1.c,30,Gauge freedom per unit time,false
@@ -888,6 +968,26 @@ sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.a,10,Local densities a
 sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.b,20,Only electric charge density,false
 sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.c,30,Only particle rest mass,false
 sr.energy_momentum_tensor.q1,sr.energy_momentum_tensor.q1.d,40,Only gauge choices,false
+sr.energy_momentum_tensor.q2,sr.energy_momentum_tensor.q2.a,10,Local changes of energy-momentum density are balanced by fluxes through surrounding surfaces.,true
+sr.energy_momentum_tensor.q2,sr.energy_momentum_tensor.q2.b,20,Energy and momentum densities must be constant at every event.,false
+sr.energy_momentum_tensor.q2,sr.energy_momentum_tensor.q2.c,30,Every component of the energy-momentum tensor must vanish.,false
+sr.energy_momentum_tensor.q2,sr.energy_momentum_tensor.q2.d,40,Only one total energy number is constrained; momentum flow is unrestricted.,false
+sr.energy_momentum_tensor.q3,sr.energy_momentum_tensor.q3.a,10,Only internal gauge symmetry is relevant; spacetime translations play no role.,false
+sr.energy_momentum_tensor.q3,sr.energy_momentum_tensor.q3.b,20,Spacetime translation symmetries give energy and momentum currents that can be assembled into the tensor.,true
+sr.energy_momentum_tensor.q3,sr.energy_momentum_tensor.q3.c,30,Noether's theorem gives the tensor without requiring a Lagrangian or equations of motion.,false
+sr.energy_momentum_tensor.q3,sr.energy_momentum_tensor.q3.d,40,The tensor comes from spatial rotations alone and contains no translation currents.,false
+sr.energy_momentum_tensor.q4,sr.energy_momentum_tensor.q4.a,10,\(\partial_tu=+6\).,false
+sr.energy_momentum_tensor.q4,sr.energy_momentum_tensor.q4.b,20,\(\partial_tu=0\).,false
+sr.energy_momentum_tensor.q4,sr.energy_momentum_tensor.q4.c,30,\(\partial_tu=-6\).,true
+sr.energy_momentum_tensor.q4,sr.energy_momentum_tensor.q4.d,40,\(\partial_tu=1/6\).,false
+sr.energy_momentum_tensor.q5,sr.energy_momentum_tensor.q5.a,10,"It is never conserved, even when obtained from an exact translation symmetry.",false
+sr.energy_momentum_tensor.q5,sr.energy_momentum_tensor.q5.b,20,It must be discarded because tensor components are always coordinate-invariant scalars.,false
+sr.energy_momentum_tensor.q5,sr.energy_momentum_tensor.q5.c,30,"Any improvement term changes the total energy, so only the canonical tensor is physical.",false
+sr.energy_momentum_tensor.q5,sr.energy_momentum_tensor.q5.d,40,It may lack symmetry or gauge invariance; suitable improvement terms can improve these properties while preserving conserved totals.,true
+sr.energy_momentum_tensor.q6,sr.energy_momentum_tensor.q6.a,10,"Energy density is only one component; the tensor also records momentum density, energy flux and stresses.",true
+sr.energy_momentum_tensor.q6,sr.energy_momentum_tensor.q6.b,20,All other components are fixed multiples of energy density in every possible field configuration.,false
+sr.energy_momentum_tensor.q6,sr.energy_momentum_tensor.q6.c,30,"The tensor contains only the total energy of the universe, not local densities.",false
+sr.energy_momentum_tensor.q6,sr.energy_momentum_tensor.q6.d,40,Momentum transfer is a particle concept and has no tensor description in field theory.,false
 sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.a,10,They are mutually perpendicular,true
 sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.b,20,They are always parallel,false
 sr.electromagnetic_waves.q1,sr.electromagnetic_waves.q1.c,30,Only \(\mathbf E\) exists,false
@@ -896,18 +996,70 @@ sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.b,10,The electromagnetic
 sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.a,20,The local four-current vanishes in the region,true
 sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.c,30,The wave has no energy,false
 sr.electromagnetic_waves.q2,sr.electromagnetic_waves.q2.d,40,No source exists anywhere in spacetime,false
+sr.electromagnetic_waves.q3,sr.electromagnetic_waves.q3.a,10,Along \(-x\).,false
+sr.electromagnetic_waves.q3,sr.electromagnetic_waves.q3.b,20,Along \(+x\).,true
+sr.electromagnetic_waves.q3,sr.electromagnetic_waves.q3.c,30,Along \(+y\).,false
+sr.electromagnetic_waves.q3,sr.electromagnetic_waves.q3.d,40,Along \(+z\).,false
+sr.electromagnetic_waves.q4,sr.electromagnetic_waves.q4.a,10,The electric and magnetic fields must both point along the wavevector.,false
+sr.electromagnetic_waves.q4,sr.electromagnetic_waves.q4.b,20,Transversality follows only by choosing a gauge where the physical fields vanish.,false
+sr.electromagnetic_waves.q4,sr.electromagnetic_waves.q4.c,30,The source-free divergence equations give zero dot products of the wavevector with each field.,true
+sr.electromagnetic_waves.q4,sr.electromagnetic_waves.q4.d,40,The fields are transverse because their magnitudes are coordinate-invariant scalars.,false
+sr.electromagnetic_waves.q5,sr.electromagnetic_waves.q5.a,10,Radiation pressure requires vacuum light to have a rest frame.,false
+sr.electromagnetic_waves.q5,sr.electromagnetic_waves.q5.b,20,Only the magnetic field carries energy while the electric field supplies pressure.,false
+sr.electromagnetic_waves.q5,sr.electromagnetic_waves.q5.c,30,Pressure is possible only when a material medium carries the light.,false
+sr.electromagnetic_waves.q5,sr.electromagnetic_waves.q5.d,40,The wave carries momentum that can be transferred to a surface.,true
+sr.electromagnetic_waves.q6,sr.electromagnetic_waves.q6.a,10,Maxwell's equations link the electric and magnetic components of one propagating field disturbance.,true
+sr.electromagnetic_waves.q6,sr.electromagnetic_waves.q6.b,20,"The electric and magnetic waves can have arbitrary unrelated phases, directions and amplitudes in vacuum.",false
+sr.electromagnetic_waves.q6,sr.electromagnetic_waves.q6.c,30,"The magnetic part travels more slowly than the electric part, so the waves are independent.",false
+sr.electromagnetic_waves.q6,sr.electromagnetic_waves.q6.d,40,The two fields are separate scalar waves whose values never mix under changes of frame.,false
 sr.wave_equation.q1,sr.wave_equation.q1.a,10,The d'Alembertian \(\Box\coloneqq\partial_\mu\partial^\mu\),true
 sr.wave_equation.q1,sr.wave_equation.q1.b,20,Only the ordinary gradient,false
 sr.wave_equation.q1,sr.wave_equation.q1.c,30,Only the curl of velocity,false
 sr.wave_equation.q1,sr.wave_equation.q1.d,40,The mass-energy invariant,false
+sr.wave_equation.q2,sr.wave_equation.q2.a,10,"It forces \(A^\mu=0\), so the potential equation is satisfied trivially.",false
+sr.wave_equation.q2,sr.wave_equation.q2.b,20,"It sets \(\partial_\mu A^\mu=0\), removing the extra divergence term from the potential equation.",true
+sr.wave_equation.q2,sr.wave_equation.q2.c,30,"It removes every source, requiring \(j^\mu=0\) even when charges are present.",false
+sr.wave_equation.q2,sr.wave_equation.q2.d,40,It changes the invariant light speed so time and spatial derivatives can be matched.,false
 sr.wave_equation.q3,sr.wave_equation.q3.b,10,"\(\omega=1.5\times10^8\,\mathrm{s^{-1}}\)",false
 sr.wave_equation.q3,sr.wave_equation.q3.a,20,"\(\omega=6.0\times10^8\,\mathrm{s^{-1}}\)",true
 sr.wave_equation.q3,sr.wave_equation.q3.c,30,"\(\omega=6.0\times10^{16}\,\mathrm{s^{-1}}\)",false
 sr.wave_equation.q3,sr.wave_equation.q3.d,40,"\(\omega=3.0\times10^8\,\mathrm{s^{-1}}\)",false
+sr.wave_equation.q4,sr.wave_equation.q4.a,10,The field is required to vanish wherever the source is nonzero.,false
+sr.wave_equation.q4,sr.wave_equation.q4.b,20,The derivative operator becomes an ordinary algebraic number.,false
+sr.wave_equation.q4,sr.wave_equation.q4.c,30,The nonzero source drives the field; the equation is no longer just the homogeneous free-propagation equation.,true
+sr.wave_equation.q4,sr.wave_equation.q4.d,40,Every disturbance propagates instantaneously once a source term is included.,false
+sr.wave_equation.q5,sr.wave_equation.q5.a,10,The metric forces time and spatial derivatives to have the same Euclidean sign.,false
+sr.wave_equation.q5,sr.wave_equation.q5.b,20,"The metric appears only to label the source charge, not the propagation operator.",false
+sr.wave_equation.q5,sr.wave_equation.q5.c,30,Any choice of derivative signs gives the same light-cone propagation.,false
+sr.wave_equation.q5,sr.wave_equation.q5.d,40,The metric contracts derivatives into the d'Alembertian and fixes the relative time-space signs.,true
+sr.wave_equation.q6,sr.wave_equation.q6.a,10,A wave equation couples temporal and spatial variation; an oscillation alone does not specify propagation.,true
+sr.wave_equation.q6,sr.wave_equation.q6.b,20,Any sufficiently rapid oscillation automatically travels at the invariant light speed.,false
+sr.wave_equation.q6,sr.wave_equation.q6.c,30,An oscillation is relativistic whenever its amplitude is large.,false
+sr.wave_equation.q6,sr.wave_equation.q6.d,40,A relativistic wave equation must omit spatial derivatives and retain time derivatives only.,false
 sr.radiation_reaction.q1,sr.radiation_reaction.q1.a,10,Radiation reaction,true
 sr.radiation_reaction.q1,sr.radiation_reaction.q1.b,20,Gauge fixing,false
 sr.radiation_reaction.q1,sr.radiation_reaction.q1.c,30,Length contraction,false
 sr.radiation_reaction.q1,sr.radiation_reaction.q1.d,40,Charge conservation,false
+sr.radiation_reaction.q2,sr.radiation_reaction.q2.a,10,The external Lorentz force automatically includes every self-field effect without further treatment.,false
+sr.radiation_reaction.q2,sr.radiation_reaction.q2.b,20,"Emitted radiation carries energy and momentum away, which must enter the total balance for the charge and field.",true
+sr.radiation_reaction.q2,sr.radiation_reaction.q2.c,30,"Radiation carries energy but never momentum, so only the particle's mass label needs changing.",false
+sr.radiation_reaction.q2,sr.radiation_reaction.q2.d,40,Conservation requires all radiated energy to return immediately to the charge.,false
+sr.radiation_reaction.q3,sr.radiation_reaction.q3.a,10,"\(0.4\,\mathrm J\).",false
+sr.radiation_reaction.q3,sr.radiation_reaction.q3.b,20,"\(2.5\,\mathrm J\).",false
+sr.radiation_reaction.q3,sr.radiation_reaction.q3.c,30,"\(10\,\mathrm J\).",true
+sr.radiation_reaction.q3,sr.radiation_reaction.q3.d,40,"\(7\,\mathrm J\).",false
+sr.radiation_reaction.q4,sr.radiation_reaction.q4.a,10,It is ordinary air resistance under another name and vanishes in vacuum.,false
+sr.radiation_reaction.q4,sr.radiation_reaction.q4.b,20,It arises only from collisions between the charge and other material particles.,false
+sr.radiation_reaction.q4,sr.radiation_reaction.q4.c,30,It is a constant opposing force independent of the charge's motion and radiation.,false
+sr.radiation_reaction.q4,sr.radiation_reaction.q4.d,40,"It concerns the charge's own field and radiated energy-momentum, rather than drag against material surroundings.",true
+sr.radiation_reaction.q5,sr.radiation_reaction.q5.a,10,Unphysical self-force solutions with acceleration growing without an appropriate external cause.,true
+sr.radiation_reaction.q5,sr.radiation_reaction.q5.b,20,Ordinary acceleration caused by a steadily increasing external electric field.,false
+sr.radiation_reaction.q5,sr.radiation_reaction.q5.c,30,A guarantee that any externally driven particle must exceed the speed of light.,false
+sr.radiation_reaction.q5,sr.radiation_reaction.q5.d,40,Trajectories that radiate no energy because every field component is zero.,false
+sr.radiation_reaction.q6,sr.radiation_reaction.q6.a,10,Radiation reaction is exactly zero for every accelerating charge.,false
+sr.radiation_reaction.q6,sr.radiation_reaction.q6.b,20,"In suitable regimes radiative losses are small relative to the dominant external-force dynamics, allowing a controlled correction.",true
+sr.radiation_reaction.q6,sr.radiation_reaction.q6.c,30,An approximation is used because energy-momentum conservation need not hold for radiation.,false
+sr.radiation_reaction.q6,sr.radiation_reaction.q6.d,40,Keeping only a small correction makes all point-particle self-force equations exact in every regime.,false
 sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.a,10,Lorentz invariance,true
 sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.b,20,Gauge fixing,false
 sr.lorentz_invariance.q1,sr.lorentz_invariance.q1.c,30,Radiation reaction,false
