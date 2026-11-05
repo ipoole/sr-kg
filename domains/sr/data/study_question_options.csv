@@ -207,6 +207,10 @@ sr.proper_time.q1,sr.proper_time.q1.a,10,The coordinate time assigned by a chose
 sr.proper_time.q1,sr.proper_time.q1.b,20,The time read by a clock along its own timelike worldline,true
 sr.proper_time.q1,sr.proper_time.q1.c,30,The time light takes to reach an observer,false
 sr.proper_time.q1,sr.proper_time.q1.d,40,The same number as distance divided by \(c\),false
+sr.proper_time.q2,sr.proper_time.q2.a,10,Reuniting clocks must agree because their meeting events are the same.,false
+sr.proper_time.q2,sr.proper_time.q2.b,20,The clocks can accumulate different proper times along different timelike worldlines between the meetings.,true
+sr.proper_time.q2,sr.proper_time.q2.c,30,One clock necessarily malfunctioned if the final readings differ.,false
+sr.proper_time.q2,sr.proper_time.q2.d,40,"Only the separation of the meeting events matters, regardless of either path.",false
 sr.proper_time.q3,sr.proper_time.q3.b,10,"\(12.5\,\mathrm s\)",false
 sr.proper_time.q3,sr.proper_time.q3.a,20,"\(8\,\mathrm s\)",true
 sr.proper_time.q3,sr.proper_time.q3.c,30,"\(6\,\mathrm s\)",false
@@ -215,6 +219,10 @@ sr.proper_time.q4,sr.proper_time.q4.b,10,\(d\tau=8\),false
 sr.proper_time.q4,sr.proper_time.q4.c,20,\(d\tau=\sqrt{34}\),false
 sr.proper_time.q4,sr.proper_time.q4.a,30,\(d\tau=4\),true
 sr.proper_time.q4,sr.proper_time.q4.d,40,\(d\tau=2\),false
+sr.proper_time.q5,sr.proper_time.q5.a,10,Correcting the light-travel delay always makes the elapsed proper times equal.,false
+sr.proper_time.q5,sr.proper_time.q5.b,20,Proper time describes when a camera receives images rather than what the clock records.,false
+sr.proper_time.q5,sr.proper_time.q5.c,30,"Reunited clocks compare locally, so a residual reading difference cannot be a remote signal delay.",true
+sr.proper_time.q5,sr.proper_time.q5.d,40,"Signal speed is frame-dependent, which creates different proper times.",false
 sr.time_dilation.q1,sr.time_dilation.q1.a,10,\(\Delta t=\gamma\Delta\tau\),true
 sr.time_dilation.q1,sr.time_dilation.q1.b,20,\(\Delta t=\Delta\tau/\gamma\),false
 sr.time_dilation.q1,sr.time_dilation.q1.c,30,\(\Delta t=\Delta\tau\),false
@@ -255,6 +263,10 @@ sr.four_vectors.q1,sr.four_vectors.q1.a,10,It has exactly four positive componen
 sr.four_vectors.q1,sr.four_vectors.q1.b,20,Its components transform under Lorentz transformations like spacetime displacement components,true
 sr.four_vectors.q1,sr.four_vectors.q1.c,30,Its Euclidean length is fixed,false
 sr.four_vectors.q1,sr.four_vectors.q1.d,40,Its spatial components are always zero,false
+sr.four_vectors.q2,sr.four_vectors.q2.a,10,Any four real numbers are a four-vector once displayed as a column.,false
+sr.four_vectors.q2,sr.four_vectors.q2.b,20,The four entries must each be unchanged under every Lorentz transformation.,false
+sr.four_vectors.q2,sr.four_vectors.q2.c,30,All four entries must have the same numerical value in one frame.,false
+sr.four_vectors.q2,sr.four_vectors.q2.d,40,"The components must transform together by the Lorentz four-vector law, not merely form a four-entry list.",true
 sr.four_vectors.q3,sr.four_vectors.q3.b,10,\(50\): the vector is timelike,false
 sr.four_vectors.q3,sr.four_vectors.q3.a,20,\(0\): the vector is null,true
 sr.four_vectors.q3,sr.four_vectors.q3.c,30,\(-50\): the vector is spacelike,false
@@ -263,10 +275,22 @@ sr.four_vectors.q4,sr.four_vectors.q4.b,10,\(A_\mu B^\mu=10\),false
 sr.four_vectors.q4,sr.four_vectors.q4.c,20,\(A_\mu B^\mu=-2\),false
 sr.four_vectors.q4,sr.four_vectors.q4.a,30,\(A_\mu B^\mu=2\),true
 sr.four_vectors.q4,sr.four_vectors.q4.d,40,\(A_\mu B^\mu=24\),false
+sr.four_vectors.q5,sr.four_vectors.q5.a,10,Metric contractions give scalars whose values inertial observers agree on.,true
+sr.four_vectors.q5,sr.four_vectors.q5.b,20,Contractions make the separate vector components invariant too.,false
+sr.four_vectors.q5,sr.four_vectors.q5.c,30,They eliminate the need to specify a metric or index placement.,false
+sr.four_vectors.q5,sr.four_vectors.q5.d,40,They select a preferred inertial frame for evaluating the laws.,false
 sr.position_four_vector.q1,sr.position_four_vector.q1.a,10,To make time disappear,false
 sr.position_four_vector.q1,sr.position_four_vector.q1.b,20,To give the time component dimensions of length,true
 sr.position_four_vector.q1,sr.position_four_vector.q1.c,30,To force every event to be lightlike,false
 sr.position_four_vector.q1,sr.position_four_vector.q1.d,40,To avoid Lorentz transformations,false
+sr.position_four_vector.q2,sr.position_four_vector.q2.a,10,The physical event moves whenever an observer chooses a new coordinate origin.,false
+sr.position_four_vector.q2,sr.position_four_vector.q2.b,20,It describes an event relative to a chosen origin; changing that origin changes the assigned vector.,true
+sr.position_four_vector.q2,sr.position_four_vector.q2.c,30,The origin determines an event's invariant mass.,false
+sr.position_four_vector.q2,sr.position_four_vector.q2.d,40,Every event has one absolute position four-vector independent of any origin.,false
+sr.position_four_vector.q3,sr.position_four_vector.q3.a,10,The difference retains the absolute position of the origin but removes time dependence.,false
+sr.position_four_vector.q3,sr.position_four_vector.q3.b,20,Subtracting two position vectors makes every displacement null.,false
+sr.position_four_vector.q3,sr.position_four_vector.q3.c,30,The difference cancels a common origin shift and gives a displacement whose norm determines the interval.,true
+sr.position_four_vector.q3,sr.position_four_vector.q3.d,40,An origin shift changes the invariant interval even when the physical events are fixed.,false
 sr.position_four_vector.q4,sr.position_four_vector.q4.b,10,"\(x^\mu=(12,0.8,0,0)\,\mathrm m\)",false
 sr.position_four_vector.q4,sr.position_four_vector.q4.c,20,"\(x^\mu=(0.12,0.8,0,0)\,\mathrm m\)",false
 sr.position_four_vector.q4,sr.position_four_vector.q4.d,30,"\(x^\mu=(4.0,0.8,0,0)\,\mathrm m\)",false
@@ -279,6 +303,10 @@ sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.a,10,Coordinate time in an
 sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.b,20,Proper time along the particle's worldline,true
 sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.c,30,Spatial distance along the path,false
 sr.velocity_four_vector.q1,sr.velocity_four_vector.q1.d,40,Laboratory clock synchronization error,false
+sr.velocity_four_vector.q2,sr.velocity_four_vector.q2.a,10,Three-velocity is a four-vector whose time component has simply been omitted.,false
+sr.velocity_four_vector.q2,sr.velocity_four_vector.q2.b,20,"Coordinate time is invariant, while proper time changes under a frame transformation.",false
+sr.velocity_four_vector.q2,sr.velocity_four_vector.q2.c,30,All ordinary three-velocity components are invariant scalars.,false
+sr.velocity_four_vector.q2,sr.velocity_four_vector.q2.d,40,Three-velocity uses frame-dependent coordinate time; four-velocity uses invariant proper time.,true
 sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.b,10,"\(U^\mu/c=(1.25,0.60,0,0)\)",false
 sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.a,20,"\(U^\mu/c=(1.25,0.75,0,0)\)",true
 sr.velocity_four_vector.q3,sr.velocity_four_vector.q3.c,30,"\(U^\mu/c=(0.80,0.75,0,0)\)",false
@@ -287,10 +315,18 @@ sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.b,10,\(U_\mu U^\mu/c^2=2.1
 sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.c,20,\(U_\mu U^\mu/c^2=0.5\),false
 sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.a,30,\(U_\mu U^\mu/c^2=1\),true
 sr.velocity_four_vector.q4,sr.velocity_four_vector.q4.d,40,\(U_\mu U^\mu/c^2=-1\),false
+sr.velocity_four_vector.q5,sr.velocity_four_vector.q5.a,10,The future-directed tangent to a timelike worldline per unit proper time.,true
+sr.velocity_four_vector.q5,sr.velocity_four_vector.q5.b,20,A finite displacement joining the beginning and end of the entire journey.,false
+sr.velocity_four_vector.q5,sr.velocity_four_vector.q5.c,30,The spacetime coordinate position of the particle relative to a fixed origin.,false
+sr.velocity_four_vector.q5,sr.velocity_four_vector.q5.d,40,"The tangent per unit coordinate time, without a Lorentz-factor correction.",false
 sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.a,10,"\(p^\mu=(m,\mathbf v)\)",false
 sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.b,20,"\(p^\mu\coloneqq mU^\mu\coloneqq(E/c,\mathbf p)\)",true
 sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.c,30,"\(p^\mu=(E,\mathbf p)\)",false
 sr.momentum_four_vector.q1,sr.momentum_four_vector.q1.d,40,"\(p^\mu=(c,\mathbf v)\)",false
+sr.momentum_four_vector.q2,sr.momentum_four_vector.q2.a,10,"Energy and momentum must agree component by component, so one observer is mistaken.",false
+sr.momentum_four_vector.q2,sr.momentum_four_vector.q2.b,20,Energy and spatial momentum are frame-dependent components of one four-vector with an invariant norm.,true
+sr.momentum_four_vector.q2,sr.momentum_four_vector.q2.c,30,Each observer describes a different particle whenever their energy measurements differ.,false
+sr.momentum_four_vector.q2,sr.momentum_four_vector.q2.d,40,"The norm changes with the components, so the particle has a different invariant mass in each frame.",false
 sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.b,10,"\(E=1.6,\ |\mathbf p|=1.5\)",false
 sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.c,20,"\(E=2.5,\ |\mathbf p|=1.2\)",false
 sr.momentum_four_vector.q3,sr.momentum_four_vector.q3.d,30,"\(E=2,\ |\mathbf p|=0.6\)",false
@@ -303,14 +339,34 @@ sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.b,10,"\(p^\mu=(0,mc,0,0)\)
 sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.a,20,"\(p^\mu=(mc,\mathbf0)\)",true
 sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.c,30,"\(p^\mu=(mc^2,\mathbf0)\)",false
 sr.momentum_four_vector.q5,sr.momentum_four_vector.q5.d,40,"\(p^\mu=(0,\mathbf0)\)",false
+sr.momentum_four_vector.q6,sr.momentum_four_vector.q6.a,10,A massless particle has zero energy and therefore zero four-momentum.,false
+sr.momentum_four_vector.q6,sr.momentum_four_vector.q6.b,20,Every photon has a rest frame in which its four-velocity can be evaluated.,false
+sr.momentum_four_vector.q6,sr.momentum_four_vector.q6.c,30,"A null path has no massive-particle proper-time parametrization or rest frame, though its four-momentum exists.",true
+sr.momentum_four_vector.q6,sr.momentum_four_vector.q6.d,40,The formula applies by setting the photon's three-velocity to zero before taking its mass to zero.,false
 sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.a,10,The kinetic energy of any moving particle,false
 sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.b,20,The rest energy of a system with invariant mass \(m\),true
 sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.c,30,The potential energy of an electromagnetic field only,false
 sr.mass_energy_equivalence.q1,sr.mass_energy_equivalence.q1.d,40,The energy lost by every object per second,false
+sr.mass_energy_equivalence.q2,sr.mass_energy_equivalence.q2.a,10,The full relation says total energy is \(mc^2\) in every moving frame.,false
+sr.mass_energy_equivalence.q2,sr.mass_energy_equivalence.q2.b,20,The full relation removes any distinction between invariant mass and three-momentum.,false
+sr.mass_energy_equivalence.q2,sr.mass_energy_equivalence.q2.c,30,"The full relation applies only to particles at rest, unlike the slogan.",false
+sr.mass_energy_equivalence.q2,sr.mass_energy_equivalence.q2.d,40,The full relation includes momentum; \(E_0=mc^2\) is its zero-momentum case.,true
+sr.mass_energy_equivalence.q3,sr.mass_energy_equivalence.q3.a,10,\(E_0=mc^2\) on the positive-energy branch.,true
+sr.mass_energy_equivalence.q3,sr.mass_energy_equivalence.q3.b,20,\(E_0=mc\) on the positive-energy branch.,false
+sr.mass_energy_equivalence.q3,sr.mass_energy_equivalence.q3.c,30,\(E_0=m^2c^4\) on the positive-energy branch.,false
+sr.mass_energy_equivalence.q3,sr.mass_energy_equivalence.q3.d,40,"\(E_0=0\), because rest means the particle has no energy.",false
 sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.b,10,"\(3.0\times10^8\,\mathrm{kg}\)",false
 sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.a,20,"\(1.0\,\mathrm{kg}\)",true
 sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.c,30,"\(9.0\times10^{16}\,\mathrm{kg}\)",false
 sr.mass_energy_equivalence.q4,sr.mass_energy_equivalence.q4.d,40,"\(0.50\,\mathrm{kg}\)",false
+sr.mass_energy_equivalence.q5,sr.mass_energy_equivalence.q5.a,10,"Heating changes only the motion of the whole box, so its invariant mass cannot change.",false
+sr.mass_energy_equivalence.q5,sr.mass_energy_equivalence.q5.b,20,Added internal energy raises the system's rest-frame energy and thus its mass by \(\Delta E_0/c^2\).,true
+sr.mass_energy_equivalence.q5,sr.mass_energy_equivalence.q5.c,30,Only the number of constituent particles determines invariant mass; internal energy is irrelevant.,false
+sr.mass_energy_equivalence.q5,sr.mass_energy_equivalence.q5.d,40,Heat is a separate substance that adds rest mass independently of its energy.,false
+sr.mass_energy_equivalence.q6,sr.mass_energy_equivalence.q6.a,10,Relativity forbids changes in the invariant mass of any composite system.,false
+sr.mass_energy_equivalence.q6,sr.mass_energy_equivalence.q6.b,20,"Energy and mass have the same SI units, so they are identical measurements.",false
+sr.mass_energy_equivalence.q6,sr.mass_energy_equivalence.q6.c,30,"It suggests two substances, whereas invariant mass measures the system's total energy-momentum content.",true
+sr.mass_energy_equivalence.q6,sr.mass_energy_equivalence.q6.d,40,Only kinetic energy contributes to the energy-momentum content of a system.,false
 sr.action_principle.q1,sr.action_principle.q1.a,10,\(S=0\),false
 sr.action_principle.q1,sr.action_principle.q1.b,20,\(\delta S\overset{\text{stationary}}{=}0\),true
 sr.action_principle.q1,sr.action_principle.q1.c,30,\(L=0\),false
