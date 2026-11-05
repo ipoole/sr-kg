@@ -107,6 +107,10 @@ math.tensor_field.q3,math.tensor_field.q3.a,10,2,true
 math.tensor_field.q3,math.tensor_field.q3.b,20,10,false
 math.tensor_field.q3,math.tensor_field.q3.c,30,-2,false
 math.tensor_field.q3,math.tensor_field.q3.d,40,14,false
+math.tensor_field.q4,math.tensor_field.q4.a,10,Only when every corresponding component value agrees between the charts.,false
+math.tensor_field.q4,math.tensor_field.q4.b,20,Only when both arrays are constant throughout the overlap.,false
+math.tensor_field.q4,math.tensor_field.q4.c,30,"Whenever the arrays have the same number of components, however their values are related.",false
+math.tensor_field.q4,math.tensor_field.q4.d,40,When the arrays obey the tensor transformation law on the overlap.,true
 math.index_notation.q1,math.index_notation.q1.a,10,A free index selecting one component,false
 math.index_notation.q1,math.index_notation.q1.b,20,A label for a coordinate chart,false
 math.index_notation.q1,math.index_notation.q1.c,30,A repeated dummy index that is summed,true
@@ -119,6 +123,10 @@ math.index_notation.q3,math.index_notation.q3.a,10,\(T^{\mu\nu}=V^\mu\),true
 math.index_notation.q3,math.index_notation.q3.b,20,\(A^\mu=B^\mu+C^\mu\),false
 math.index_notation.q3,math.index_notation.q3.c,30,\(S=A^\mu B_\mu\),false
 math.index_notation.q3,math.index_notation.q3.d,40,\(T^\mu{}_{\nu}=A^\mu B_\nu\),false
+math.index_notation.q4,math.index_notation.q4.a,10,Abstract indices describe slots and contractions; component indices label entries in the chosen basis.,true
+math.index_notation.q4,math.index_notation.q4.b,20,Abstract indices label numerical entries; component indices describe tensor type without a basis.,false
+math.index_notation.q4,math.index_notation.q4.c,30,Abstract indices must always be summed; component indices must always be free.,false
+math.index_notation.q4,math.index_notation.q4.d,40,Abstract indices apply to curved space; component indices apply only to flat space.,false
 math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.a,10,Both use the new-with-respect-to-old Jacobian,false
 math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.b,20,Both use the inverse Jacobian,false
 math.tensor_transformation_law.q1,math.tensor_transformation_law.q1.c,30,Upper indices do not transform but lower indices do,false
@@ -131,3 +139,7 @@ math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.a,10,One,fal
 math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.b,20,Two,false
 math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.c,30,Three,true
 math.tensor_transformation_law.q3,math.tensor_transformation_law.q3.d,40,Six,false
+math.tensor_transformation_law.q4,math.tensor_transformation_law.q4.a,10,Both sets of components must stay numerically fixed under every chart change.,false
+math.tensor_transformation_law.q4,math.tensor_transformation_law.q4.b,20,"Their transformation factors cancel in the contraction, though individual components can change.",true
+math.tensor_transformation_law.q4,math.tensor_transformation_law.q4.c,30,The contraction changes for nonlinear charts because their Jacobian depends on position.,false
+math.tensor_transformation_law.q4,math.tensor_transformation_law.q4.d,40,The contraction is invariant only after a metric identifies the vector and covector.,false
