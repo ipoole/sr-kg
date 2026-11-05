@@ -175,18 +175,46 @@ gr.connection.q2,gr.connection.q2.b,10,Zero curvature and zero torsion,false
 gr.connection.q2,gr.connection.q2.c,20,Metric compatibility and zero curvature,false
 gr.connection.q2,gr.connection.q2.d,30,A coordinate chart and an affine parameter,false
 gr.connection.q2,gr.connection.q2.a,40,Metric compatibility and zero torsion,true
+gr.connection.q3,gr.connection.q3.a,10,"A chart fixes distances, while a connection merely changes coordinate labels.",false
+gr.connection.q3,gr.connection.q3.b,20,A chart labels points; a connection additionally specifies differentiation and comparison between tangent spaces.,true
+gr.connection.q3,gr.connection.q3.c,30,"A connection assigns the local metric signature, which a chart leaves arbitrary.",false
+gr.connection.q3,gr.connection.q3.d,40,A chart already fixes a unique connection; the extra information is just notation.,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.a,10,Coordinate coefficients of a connection,true
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.b,20,Components of a scalar,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.c,30,Curvature invariants,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.d,40,Matter densities,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.a,10,"They have three indices, whereas a tensor may have at most two.",false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.b,20,Their values cannot vanish at any point in a curved spacetime.,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.c,30,They are non-tensorial because their lower indices are symmetric.,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.d,40,Their coordinate transformation includes an extra term with second derivatives of the coordinate change.,true
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.a,10,All the coefficients vanish in that chart throughout the region.,true
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.b,20,Only coefficients with a time index vanish.,false
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.c,30,The coefficients remain nonzero because the inverse metric is nonzero.,false
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.d,40,The coefficients vanish only if the constant metric is the identity matrix.,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.a,10,Make the result transform tensorially,true
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.b,20,Change the metric signature,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.c,30,Add matter,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.d,40,Choose natural units,false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.a,10,Both derivatives always equal partial derivatives because coordinate changes preserve all components.,false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.b,20,"A scalar needs one connection term, while a vector needs none.",false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.c,30,A scalar’s first derivative is its partial derivative; a vector’s derivative includes an index connection term.,true
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.d,40,"The scalar’s first covariant derivative is zero, while a vector’s need not be.",false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.a,10,\(0\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.b,20,\(V^\mu V^\nu\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.c,30,\(\partial_\nu V^\mu\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.d,40,\(\partial_\mu V^\nu\),true
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.a,10,\(\nabla_\alpha g_{\mu\nu}=0\),true
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.b,20,\(g_{\mu\nu}=0\),false
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.c,30,\(R=0\),false
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.d,40,\(ds^2=0\),false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.a,10,The separate coordinate components of each transported vector.,false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.b,20,The inner product of two parallel-transported vectors.,true
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.c,30,The coordinate distance between the endpoints of the path.,false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.d,40,The orientation of each vector after transport around any closed loop.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.a,10,It makes all partial derivatives of the metric vanish in every chart.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.b,20,It makes covariant differentiation unnecessary for tensors with raised indices.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.c,30,Raising or lowering an index commutes with covariant differentiation.,true
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.d,40,It allows an index to be raised without contracting with the inverse metric.,false
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.a,10,\(\Gamma^\rho{}_{\mu\nu}=\Gamma^\rho{}_{\nu\mu}\),true
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.b,20,Every Christoffel symbol vanishes,false
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.c,30,Curvature vanishes,false
@@ -207,6 +235,10 @@ gr.parallel_transport.q2,gr.parallel_transport.q2.b,10,\(\partial_\nu V^\mu=0\),
 gr.parallel_transport.q2,gr.parallel_transport.q2.a,20,\(u^\nu\nabla_\nu V^\mu=0\),true
 gr.parallel_transport.q2,gr.parallel_transport.q2.c,30,\(\nabla_\mu V^\mu=0\),false
 gr.parallel_transport.q2,gr.parallel_transport.q2.d,40,\(u^\nu V_\nu=0\),false
+gr.parallel_transport.q3,gr.parallel_transport.q3.a,10,"Parallel transport preserves coordinate components, which forces rotation on every loop.",false
+gr.parallel_transport.q3,gr.parallel_transport.q3.b,20,Curvature can make transport around a contractible loop path-dependent.,true
+gr.parallel_transport.q3,gr.parallel_transport.q3.c,30,Metric compatibility requires a vector’s norm to grow around a closed loop.,false
+gr.parallel_transport.q3,gr.parallel_transport.q3.d,40,A nonzero Christoffel symbol at one point proves that every closed loop rotates vectors.,false
 gr.geodesic.q1,gr.geodesic.q1.a,10,Free fall without non-gravitational force,true
 gr.geodesic.q1,gr.geodesic.q1.b,20,A supported observer,false
 gr.geodesic.q1,gr.geodesic.q1.c,30,Any coordinate line,false
@@ -215,6 +247,10 @@ gr.geodesic.q2,gr.geodesic.q2.b,10,\(\partial_\nu u^\mu=0\),false
 gr.geodesic.q2,gr.geodesic.q2.c,20,\(\nabla_\mu u^\mu=0\),false
 gr.geodesic.q2,gr.geodesic.q2.a,30,\(u^\nu\nabla_\nu u^\mu=0\),true
 gr.geodesic.q2,gr.geodesic.q2.d,40,\(u_\mu u^\mu=0\),false
+gr.geodesic.q3,gr.geodesic.q3.a,10,Every geodesic is a global minimum of positive spatial distance.,false
+gr.geodesic.q3,gr.geodesic.q3.b,20,"The word applies only to null paths, whose length is zero.",false
+gr.geodesic.q3,gr.geodesic.q3.c,30,A geodesic has constant coordinate speed and therefore cannot extremise proper time.,false
+gr.geodesic.q3,gr.geodesic.q3.d,40,It is defined by parallel transport of its tangent; timelike segments locally maximise proper time when sufficiently short.,true
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.a,10,Connection and coordinate-basis change,true
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.b,20,Rocket thrust,false
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.c,30,Matter density alone,false
@@ -223,14 +259,30 @@ gr.geodesic_equation.q2,gr.geodesic_equation.q2.b,10,No; free fall requires ever
 gr.geodesic_equation.q2,gr.geodesic_equation.q2.c,20,Only if spacetime is flat,false
 gr.geodesic_equation.q2,gr.geodesic_equation.q2.d,30,Only for a massless body,false
 gr.geodesic_equation.q2,gr.geodesic_equation.q2.a,40,Yes; coordinate acceleration can be nonzero while four-acceleration vanishes,true
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.a,10,\(dx^\mu/d\lambda=0\),false
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.b,20,\(d^2x^\mu/d\lambda^2=0\),true
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.c,30,\(g_{\mu\nu}\dot x^\mu\dot x^\nu=0\) for every geodesic,false
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.d,40,\(d^2x^\mu/d\lambda^2=dx^\mu/d\lambda\),false
 gr.geodesic_action.q1,gr.geodesic_action.q1.a,10,Endpoint events,true
 gr.geodesic_action.q1,gr.geodesic_action.q1.b,20,Every point of the path,false
 gr.geodesic_action.q1,gr.geodesic_action.q1.c,30,The Christoffel symbols at zero,false
 gr.geodesic_action.q1,gr.geodesic_action.q1.d,40,Coordinate time everywhere,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.a,10,"Coordinate time alone, independent of the metric and the chosen worldline.",false
+gr.geodesic_action.q2,gr.geodesic_action.q2.b,20,The Ricci scalar integrated over all spacetime.,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.c,30,The magnitude of four-acceleration along the particle path.,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.d,40,"Proper length, equivalently proper time multiplied by the appropriate constants.",true
+gr.geodesic_action.q3,gr.geodesic_action.q3.a,10,Varying the path with fixed endpoints yields an Euler–Lagrange equation for free motion.,true
+gr.geodesic_action.q3,gr.geodesic_action.q3.b,20,The action prescribes the particle’s coordinate acceleration without varying anything.,false
+gr.geodesic_action.q3,gr.geodesic_action.q3.c,30,The variational principle requires proper time to be a global minimum.,false
+gr.geodesic_action.q3,gr.geodesic_action.q3.d,40,Varying the particle’s mass determines the spacetime metric.,false
 gr.four_velocity.q1,gr.four_velocity.q1.a,10,Proper time,true
 gr.four_velocity.q1,gr.four_velocity.q1.b,20,Any spatial distance,false
 gr.four_velocity.q1,gr.four_velocity.q1.c,30,Curvature scalar,false
 gr.four_velocity.q1,gr.four_velocity.q1.d,40,Coordinate volume,false
+gr.four_velocity.q2,gr.four_velocity.q2.a,10,Different events always have different spacetime dimensions.,false
+gr.four_velocity.q2,gr.four_velocity.q2.b,20,The velocity vectors cease to be tensors when their events differ.,false
+gr.four_velocity.q2,gr.four_velocity.q2.c,30,Each velocity is a tangent vector at its own event; comparison needs a transport or observation prescription.,true
+gr.four_velocity.q2,gr.four_velocity.q2.d,40,"Each event has its own metric signature, so the vectors cannot share a norm convention.",false
 gr.four_velocity.q3,gr.four_velocity.q3.b,10,\(g_{\mu\nu}u^\mu u^\nu=0\),false
 gr.four_velocity.q3,gr.four_velocity.q3.a,20,\(g_{\mu\nu}u^\mu u^\nu=1\),true
 gr.four_velocity.q3,gr.four_velocity.q3.c,30,\(g_{\mu\nu}u^\mu u^\nu=-1\),false
@@ -239,10 +291,26 @@ gr.four_acceleration.q1,gr.four_acceleration.q1.a,10,A rocket firing to hover,tr
 gr.four_acceleration.q1,gr.four_acceleration.q1.b,20,A freely falling test body,false
 gr.four_acceleration.q1,gr.four_acceleration.q1.c,30,A geodesic observer,false
 gr.four_acceleration.q1,gr.four_acceleration.q1.d,40,An unforced satellite,false
+gr.four_acceleration.q2,gr.four_acceleration.q2.a,10,"All stationary observers are freely falling, but their accelerometers use incorrect coordinates.",false
+gr.four_acceleration.q2,gr.four_acceleration.q2.b,20,"Earth’s curvature gives every observer nonzero four-acceleration, including orbiters.",false
+gr.four_acceleration.q2,gr.four_acceleration.q2.c,30,Four-acceleration is nonzero whenever the coordinate time increases.,false
+gr.four_acceleration.q2,gr.four_acceleration.q2.d,40,The ground’s support force prevents geodesic motion despite fixed spatial coordinates.,true
+gr.four_acceleration.q3,gr.four_acceleration.q3.a,10,Four-acceleration is a vector with measurable invariant magnitude; coordinate acceleration depends on the chart.,true
+gr.four_acceleration.q3,gr.four_acceleration.q3.b,20,"Coordinate acceleration is measurable, while four-acceleration is only a plotting convention.",false
+gr.four_acceleration.q3,gr.four_acceleration.q3.c,30,"Four-acceleration is always zero for massive observers, unlike coordinate acceleration.",false
+gr.four_acceleration.q3,gr.four_acceleration.q3.d,40,The two differ only by a constant factor of the speed of light in all charts.,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.a,10,Relative acceleration of nearby geodesics,true
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.b,20,One object's coordinate speed,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.c,30,A coordinate transformation,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.d,40,Metric determinant,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.a,10,The equation identifies all coordinate acceleration of a single body with curvature.,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.b,20,The equation removes tidal acceleration by selecting a different chart.,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.c,30,Riemann curvature determines the covariant relative acceleration of neighbouring geodesics.,true
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.d,40,"Only the metric determinant, rather than its curvature, controls relative acceleration.",false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.a,10,The sign must be chosen separately for every pair of test bodies.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.b,20,The sign changes whenever either body has a different mass.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.c,30,The metric signature alone completely specifies every author’s Riemann definition.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.d,40,Reversing the Riemann definition reverses its components and the corresponding displayed equation sign.,true
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.a,10,Failure of covariant derivatives to commute,true
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.b,20,Coordinate labels alone,false
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.c,30,Matter density only,false
@@ -471,10 +539,54 @@ gr.metric_signature.q4,gr.metric_signature.q4.a,10,Yes: fixing the metric signat
 gr.metric_signature.q4,gr.metric_signature.q4.b,20,No: the Riemann sign convention is independent and must also be checked.,true
 gr.metric_signature.q4,gr.metric_signature.q4.c,30,Yes: positive timelike norm requires every curvature scalar to be positive.,false
 gr.metric_signature.q4,gr.metric_signature.q4.d,40,No: the curvature sign may be changed independently at each event without altering any equations.,false
+gr.connection.q4,gr.connection.q4.a,10,Different coefficients in the same chart must always represent the same transport rule.,false
+gr.connection.q4,gr.connection.q4.b,20,"Only the time coordinate determines a connection, so spatial charts can share several.",false
+gr.connection.q4,gr.connection.q4.c,30,The chart does not select a transport rule; extra conditions such as Levi-Civita compatibility and zero torsion do.,true
+gr.connection.q4,gr.connection.q4.d,40,One connection acts on vectors and an unrelated one must be chosen for covectors.,false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.a,10,\(+r\),false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.b,20,\(-r\),true
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.c,30,\(-1/r\),false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.d,40,\(0\),false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.a,10,"The first derivative is a covector, whose lower index needs a connection correction.",true
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.b,20,Taking one derivative changes the scalar into a contravariant vector without using a metric.,false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.c,30,"The connection term measures the scalar’s own parallel transport, even at first order.",false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.d,40,Two ordinary partial derivatives fail to commute in every curved coordinate chart.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.a,10,No: preserving norm fixes every vector’s final direction.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.b,20,Yes: metric-compatible transport must change direction even in a contractible flat region.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.c,30,No: any rotation around a loop implies nonzero torsion rather than curvature.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.d,40,Yes: inner products can be preserved while curvature makes transport path-dependent.,true
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.a,10,"A noncoordinate basis can have nonzero commutators, which also enter the torsion formula.",true
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.b,20,Only coordinate bases permit covariant differentiation of vectors.,false
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.c,30,Torsion is a tensor only in coordinate bases.,false
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.d,40,The metric must be diagonal before lower-index symmetry has any meaning.,false
+gr.parallel_transport.q4,gr.parallel_transport.q4.a,10,"The two endpoints and initial vector, with no path specified.",false
+gr.parallel_transport.q4,gr.parallel_transport.q4.b,20,"The path and final norm alone, with no initial vector.",false
+gr.parallel_transport.q4,gr.parallel_transport.q4.c,30,"The connection, the specified path, and the initial vector.",true
+gr.parallel_transport.q4,gr.parallel_transport.q4.d,40,"The coordinate chart alone, with no connection or initial vector.",false
+gr.geodesic.q4,gr.geodesic.q4.a,10,No: metric compatibility and affine geodesic motion preserve the tangent’s squared norm.,true
+gr.geodesic.q4,gr.geodesic.q4.b,20,Yes: nonzero curvature necessarily converts null tangents into timelike tangents.,false
+gr.geodesic.q4,gr.geodesic.q4.c,30,Yes: changing coordinates changes the causal type of the tangent.,false
+gr.geodesic.q4,gr.geodesic.q4.d,40,No: the tangent must remain componentwise constant in every chart.,false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.a,10,A change of parameter changes the metric and therefore the free-fall trajectory.,false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.b,20,"Proper time is the only affine parameter, even for null geodesics.",false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.c,30,A non-affine parameter introduces a tangent-proportional term even on the same geometric path.,true
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.d,40,The missing term is a physical support force exerted by the new parameter.,false
+gr.geodesic_action.q4,gr.geodesic_action.q4.a,10,"Both vary only the particle path, using different curve parameters.",false
+gr.geodesic_action.q4,gr.geodesic_action.q4.b,20,The particle action varies a path in a fixed metric; the gravitational action varies the metric field.,true
+gr.geodesic_action.q4,gr.geodesic_action.q4.c,30,"The particle action varies the metric, whereas the gravitational action varies the path.",false
+gr.geodesic_action.q4,gr.geodesic_action.q4.d,40,Neither varies the metric; both merely impose a coordinate condition.,false
 gr.four_velocity.q4,gr.four_velocity.q4.a,10,\(v/c=\sqrt3/2\),true
 gr.four_velocity.q4,gr.four_velocity.q4.b,20,\(v/c=1/2\),false
 gr.four_velocity.q4,gr.four_velocity.q4.c,30,\(v/c=\sqrt2/2\),false
 gr.four_velocity.q4,gr.four_velocity.q4.d,40,\(v/c=2\),false
+gr.four_acceleration.q4,gr.four_acceleration.q4.a,10,All four-vectors have negative squared norm in a Lorentzian metric.,false
+gr.four_acceleration.q4,gr.four_acceleration.q4.b,20,"It is orthogonal to timelike four-velocity, so a nonzero acceleration is spacelike with signature +---.",true
+gr.four_acceleration.q4,gr.four_acceleration.q4.c,30,The negative norm means an accelerometer measures an imaginary acceleration.,false
+gr.four_acceleration.q4,gr.four_acceleration.q4.d,40,Its norm is negative because it is parallel to the timelike four-velocity.,false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.a,10,"A smooth affine geodesic family, first-order separation, zero torsion, and commuting parameter directions.",true
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.b,20,"Arbitrary accelerated paths at any separation, provided the metric is diagonal.",false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.c,30,"Any two paths sharing endpoints, with no connection specified.",false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.d,40,Geodesics with arbitrary independent non-affine parameters and no additional terms.,false
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.b,10,It becomes \(1/243\) as large,false
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.a,20,It becomes \(1/729\) as large,true
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.c,30,It becomes \(1/9\) as large,false
