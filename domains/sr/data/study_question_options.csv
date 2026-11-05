@@ -371,26 +371,102 @@ sr.action_principle.q1,sr.action_principle.q1.a,10,\(S=0\),false
 sr.action_principle.q1,sr.action_principle.q1.b,20,\(\delta S\overset{\text{stationary}}{=}0\),true
 sr.action_principle.q1,sr.action_principle.q1.c,30,\(L=0\),false
 sr.action_principle.q1,sr.action_principle.q1.d,40,\(\dot q=0\),false
+sr.action_principle.q2,sr.action_principle.q2.a,10,Fixing the endpoints sets the variation to zero at every point of each trial path.,false
+sr.action_principle.q2,sr.action_principle.q2.b,20,Fixed endpoint variations make the integration-by-parts boundary terms vanish.,true
+sr.action_principle.q2,sr.action_principle.q2.c,30,Endpoint values are fixed because every particle starts and ends at rest.,false
+sr.action_principle.q2,sr.action_principle.q2.d,40,Fixed endpoints force the action to be zero for every allowed trial path.,false
+sr.action_principle.q3,sr.action_principle.q3.a,10,The action must be the smallest value among all possible paths without endpoint restrictions.,false
+sr.action_principle.q3,sr.action_principle.q3.b,20,"The physical path must have zero action, not merely stationary action.",false
+sr.action_principle.q3,sr.action_principle.q3.c,30,The first-order variation must vanish; a stationary action need not be a minimum.,true
+sr.action_principle.q3,sr.action_principle.q3.d,40,"Every stationary point is a strict minimum, so the two terms are interchangeable.",false
+sr.action_principle.q4,sr.action_principle.q4.a,10,No: the nonzero \(a^2\) coefficient prevents stationarity.,false
+sr.action_principle.q4,sr.action_principle.q4.b,20,"Only if \(S_0=0\), because stationary action must have zero value.",false
+sr.action_principle.q4,sr.action_principle.q4.c,30,No: the derivative at \(a=0\) equals \(3\).,false
+sr.action_principle.q4,sr.action_principle.q4.d,40,"Yes: \(dS/da=0\) at \(a=0\), so the first-order change vanishes.",true
+sr.action_principle.q5,sr.action_principle.q5.a,10,"No: \(dS/da=2\) at \(a=0\), so a first-order change remains.",true
+sr.action_principle.q5,sr.action_principle.q5.b,20,Yes: every quadratic polynomial is stationary at \(a=0\).,false
+sr.action_principle.q5,sr.action_principle.q5.c,30,Yes: the positive coefficient \(3\) makes the first derivative vanish there.,false
+sr.action_principle.q5,sr.action_principle.q5.d,40,"Only if \(S_0=0\), because the derivative depends on the constant term.",false
+sr.action_principle.q6,sr.action_principle.q6.a,10,A scalar action makes each coordinate value identical in every inertial frame.,false
+sr.action_principle.q6,sr.action_principle.q6.b,20,A scalar action makes the stationarity criterion agree between inertial frames.,true
+sr.action_principle.q6,sr.action_principle.q6.c,30,The scalar form forbids interactions and applies only to free particles.,false
+sr.action_principle.q6,sr.action_principle.q6.d,40,The condition is needed to ensure the action takes only positive values.,false
 sr.lagrangian.q1,sr.lagrangian.q1.a,10,It is the local function integrated to form the action,true
 sr.lagrangian.q1,sr.lagrangian.q1.b,20,It is always the total conserved energy,false
 sr.lagrangian.q1,sr.lagrangian.q1.c,30,It is a list of all possible forces,false
 sr.lagrangian.q1,sr.lagrangian.q1.d,40,It is the same thing as a spacetime interval,false
+sr.lagrangian.q2,sr.lagrangian.q2.a,10,"Every Lagrangian is defined as \(T-V\), including all relativistic field theories.",false
+sr.lagrangian.q2,sr.lagrangian.q2.b,20,"A Lagrangian is defined as the total energy, regardless of the action.",false
+sr.lagrangian.q2,sr.lagrangian.q2.c,30,\(T-V\) is a useful special form; more generally \(L\) is the function integrated to construct the action.,true
+sr.lagrangian.q2,sr.lagrangian.q2.d,40,The Lagrangian is the time integral of the action.,false
+sr.lagrangian.q3,sr.lagrangian.q3.a,10,A total derivative has no effect because its value is identically zero at every time.,false
+sr.lagrangian.q3,sr.lagrangian.q3.b,20,Two such Lagrangians always have identical canonical momenta as well as identical equations.,false
+sr.lagrangian.q3,sr.lagrangian.q3.c,30,The extra term is cancelled by changing the physical force on the particle.,false
+sr.lagrangian.q3,sr.lagrangian.q3.d,40,"A total derivative changes the action only by endpoint terms, whose variation vanishes for fixed endpoints.",true
 sr.lagrangian.q4,sr.lagrangian.q4.b,10,\(L=14\),false
 sr.lagrangian.q4,sr.lagrangian.q4.c,20,\(L=1\),false
 sr.lagrangian.q4,sr.lagrangian.q4.a,30,\(L=4\),true
 sr.lagrangian.q4,sr.lagrangian.q4.d,40,\(L=-4\),false
+sr.lagrangian.q5,sr.lagrangian.q5.a,10,Invariant ingredients help make the action frame-independent and its equations Lorentz-covariant.,true
+sr.lagrangian.q5,sr.lagrangian.q5.b,20,Invariant ingredients force every trajectory to have zero velocity in all frames.,false
+sr.lagrangian.q5,sr.lagrangian.q5.c,30,Each component of the Lagrangian must be independently invariant under arbitrary gauge changes.,false
+sr.lagrangian.q5,sr.lagrangian.q5.d,40,Lorentz invariance makes time evolution unnecessary.,false
 sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.a,10,\(L=0\),false
 sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.b,20,\(\partial L/\partial q=0\),false
 sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.c,30,\(\frac{d}{dt}(\partial L/\partial\dot q)-\partial L/\partial q\overset{\text{stationary action}}{=}0\),true
 sr.euler_lagrange_equations.q1,sr.euler_lagrange_equations.q1.d,40,\(S=L/t\),false
+sr.euler_lagrange_equations.q2,sr.euler_lagrange_equations.q2.a,10,It removes all dependence of the Lagrangian on velocity before varying.,false
+sr.euler_lagrange_equations.q2,sr.euler_lagrange_equations.q2.b,20,"It sets \(\delta q=0\) throughout the path, not just at its endpoints.",false
+sr.euler_lagrange_equations.q2,sr.euler_lagrange_equations.q2.c,30,It transfers the derivative from \(\delta\dot q\) so the bulk variation can be written in terms of arbitrary \(\delta q\).,true
+sr.euler_lagrange_equations.q2,sr.euler_lagrange_equations.q2.d,40,It replaces an arbitrary path variation by a single constant displacement.,false
+sr.euler_lagrange_equations.q3,sr.euler_lagrange_equations.q3.a,10,The momentum must vanish at both endpoints of every physical path.,false
+sr.euler_lagrange_equations.q3,sr.euler_lagrange_equations.q3.b,20,The Lagrangian is required to vanish at each endpoint.,false
+sr.euler_lagrange_equations.q3,sr.euler_lagrange_equations.q3.c,30,Integration by parts discards every boundary term even when endpoint variations are nonzero.,false
+sr.euler_lagrange_equations.q3,sr.euler_lagrange_equations.q3.d,40,"The boundary contribution contains \(\delta q\), which is zero at the fixed endpoints.",true
+sr.euler_lagrange_equations.q4,sr.euler_lagrange_equations.q4.a,10,"\(\partial L/\partial\dot x=m\dot x\), \(\partial L/\partial x=-dV/dx\).",true
+sr.euler_lagrange_equations.q4,sr.euler_lagrange_equations.q4.b,20,"\(\partial L/\partial\dot x=m\dot x\), \(\partial L/\partial x=+dV/dx\).",false
+sr.euler_lagrange_equations.q4,sr.euler_lagrange_equations.q4.c,30,"\(\partial L/\partial\dot x=\tfrac12m\dot x^2\), \(\partial L/\partial x=-V\).",false
+sr.euler_lagrange_equations.q4,sr.euler_lagrange_equations.q4.d,40,"\(\partial L/\partial\dot x=m\ddot x\), \(\partial L/\partial x=0\).",false
+sr.euler_lagrange_equations.q5,sr.euler_lagrange_equations.q5.a,10,\(m\ddot x=+dV/dx\).,false
+sr.euler_lagrange_equations.q5,sr.euler_lagrange_equations.q5.b,20,\(m\ddot x=-dV/dx\).,true
+sr.euler_lagrange_equations.q5,sr.euler_lagrange_equations.q5.c,30,\(m\dot x=-V(x)\).,false
+sr.euler_lagrange_equations.q5,sr.euler_lagrange_equations.q5.d,40,\(\ddot x=0\) for every potential.,false
+sr.euler_lagrange_equations.q6,sr.euler_lagrange_equations.q6.a,10,They remove the need to specify coordinates or a model for the dynamics.,false
+sr.euler_lagrange_equations.q6,sr.euler_lagrange_equations.q6.b,20,They require every generalised coordinate to be a Cartesian distance.,false
+sr.euler_lagrange_equations.q6,sr.euler_lagrange_equations.q6.c,30,The same variational recipe applies after choosing suitable generalised coordinates and a Lagrangian.,true
+sr.euler_lagrange_equations.q6,sr.euler_lagrange_equations.q6.d,40,They allow arbitrary coordinate changes without transforming the Lagrangian.,false
 sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.a,10,Coordinates and accelerations,false
 sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.b,20,Coordinates and canonical momenta,true
 sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.c,30,Forces and masses only,false
 sr.hamiltonian_formalism.q1,sr.hamiltonian_formalism.q1.d,40,Spacetime intervals only,false
+sr.hamiltonian_formalism.q2,sr.hamiltonian_formalism.q2.a,10,It integrates the Lagrangian over time to eliminate all momenta.,false
+sr.hamiltonian_formalism.q2,sr.hamiltonian_formalism.q2.b,20,It replaces momentum by acceleration as the independent phase-space variable.,false
+sr.hamiltonian_formalism.q2,sr.hamiltonian_formalism.q2.c,30,"It trades velocity dependence for momentum dependence, where the momentum-velocity relation can be inverted.",true
+sr.hamiltonian_formalism.q2,sr.hamiltonian_formalism.q2.d,40,It changes the physical trajectory rather than the variables used to describe dynamics.,false
+sr.hamiltonian_formalism.q3,sr.hamiltonian_formalism.q3.a,10,Phase space adds only a time coordinate to configuration space.,false
+sr.hamiltonian_formalism.q3,sr.hamiltonian_formalism.q3.b,20,"Configuration space includes momenta, but phase space omits them.",false
+sr.hamiltonian_formalism.q3,sr.hamiltonian_formalism.q3.c,30,"Phase space contains all possible histories, while configuration space contains only the physical one.",false
+sr.hamiltonian_formalism.q3,sr.hamiltonian_formalism.q3.d,40,"Phase space specifies coordinates and conjugate momenta, while configuration space specifies coordinates alone.",true
+sr.hamiltonian_formalism.q4,sr.hamiltonian_formalism.q4.a,10,\(\dot x=p/m\).,true
+sr.hamiltonian_formalism.q4,sr.hamiltonian_formalism.q4.b,20,\(\dot x=-p/m\).,false
+sr.hamiltonian_formalism.q4,sr.hamiltonian_formalism.q4.c,30,\(\dot x=p^2/(2m)\).,false
+sr.hamiltonian_formalism.q4,sr.hamiltonian_formalism.q4.d,40,\(\dot x=-dV/dx\).,false
+sr.hamiltonian_formalism.q5,sr.hamiltonian_formalism.q5.a,10,\(\dot p=+dV/dx\).,false
+sr.hamiltonian_formalism.q5,sr.hamiltonian_formalism.q5.b,20,\(\dot p=-dV/dx\).,true
+sr.hamiltonian_formalism.q5,sr.hamiltonian_formalism.q5.c,30,\(\dot p=p/m\).,false
+sr.hamiltonian_formalism.q5,sr.hamiltonian_formalism.q5.d,40,\(\dot p=0\) for every potential.,false
+sr.hamiltonian_formalism.q6,sr.hamiltonian_formalism.q6.a,10,"It is always conserved, including for explicitly time-dependent Hamiltonians.",false
+sr.hamiltonian_formalism.q6,sr.hamiltonian_formalism.q6.b,20,It is defined as kinetic energy alone and never contains potential terms.,false
+sr.hamiltonian_formalism.q6,sr.hamiltonian_formalism.q6.c,30,Its defining role is to generate phase-space time evolution; equality with physical energy needs the appropriate assumptions.,true
+sr.hamiltonian_formalism.q6,sr.hamiltonian_formalism.q6.d,40,It equals physical energy in every constrained or gauge description without qualification.,false
 sr.canonical_momentum.q1,sr.canonical_momentum.q1.a,10,\(p=\partial L/\partial q\),false
 sr.canonical_momentum.q1,sr.canonical_momentum.q1.b,20,\(p\coloneqq\partial L/\partial\dot q\),true
 sr.canonical_momentum.q1,sr.canonical_momentum.q1.c,30,\(p=L\dot q\),false
 sr.canonical_momentum.q1,sr.canonical_momentum.q1.d,40,\(p=q/\dot q\),false
+sr.canonical_momentum.q2,sr.canonical_momentum.q2.a,10,"It is always equal to \(m\dot q\), independently of the interaction terms.",false
+sr.canonical_momentum.q2,sr.canonical_momentum.q2.b,20,It is a second position coordinate introduced to double configuration space.,false
+sr.canonical_momentum.q2,sr.canonical_momentum.q2.c,30,It is conjugate because its numerical value is the complex conjugate of \(q\).,false
+sr.canonical_momentum.q2,sr.canonical_momentum.q2.d,40,It pairs with \(\delta q\) in the action's boundary variation and is the phase-space partner of \(q\).,true
 sr.canonical_momentum.q3,sr.canonical_momentum.q3.b,10,\(p=7\),false
 sr.canonical_momentum.q3,sr.canonical_momentum.q3.c,20,\(p=24\),false
 sr.canonical_momentum.q3,sr.canonical_momentum.q3.d,30,\(p=\tfrac34\),false
@@ -399,6 +475,14 @@ sr.canonical_momentum.q4,sr.canonical_momentum.q4.a,10,\(p_{\rm can}=11\),true
 sr.canonical_momentum.q4,sr.canonical_momentum.q4.b,20,\(p_{\rm can}=1\),false
 sr.canonical_momentum.q4,sr.canonical_momentum.q4.c,30,\(p_{\rm can}=30\),false
 sr.canonical_momentum.q4,sr.canonical_momentum.q4.d,40,\(p_{\rm can}=6\),false
+sr.canonical_momentum.q5,sr.canonical_momentum.q5.a,10,Velocity-dependent interactions contribute when the full Lagrangian is differentiated with respect to velocity.,true
+sr.canonical_momentum.q5,sr.canonical_momentum.q5.b,20,Canonical momentum ignores every interaction term in the Lagrangian.,false
+sr.canonical_momentum.q5,sr.canonical_momentum.q5.c,30,Mechanical momentum is determined only by the coordinate origin.,false
+sr.canonical_momentum.q5,sr.canonical_momentum.q5.d,40,Canonical and mechanical momentum differ only because they use different units.,false
+sr.canonical_momentum.q6,sr.canonical_momentum.q6.a,10,It replaces the generalised coordinates so the Hamiltonian has momentum variables only.,false
+sr.canonical_momentum.q6,sr.canonical_momentum.q6.b,20,It supplies the momentum variables used in the Legendre transform from velocities to phase space.,true
+sr.canonical_momentum.q6,sr.canonical_momentum.q6.c,30,It makes the Hamiltonian equal to the Lagrangian without any transformation.,false
+sr.canonical_momentum.q6,sr.canonical_momentum.q6.d,40,It removes the need for equations of motion in the Hamiltonian description.,false
 sr.noether_theorem.q1,sr.noether_theorem.q1.a,10,Discrete labels to graph layout,false
 sr.noether_theorem.q1,sr.noether_theorem.q1.b,20,Continuous symmetries of the action to conserved quantities,true
 sr.noether_theorem.q1,sr.noether_theorem.q1.c,30,Any equation to any conservation law,false
@@ -407,26 +491,98 @@ sr.scalar_field.q1,sr.scalar_field.q1.a,10,Scalar field,true
 sr.scalar_field.q1,sr.scalar_field.q1.b,20,Vector field,false
 sr.scalar_field.q1,sr.scalar_field.q1.c,30,Antisymmetric tensor field,false
 sr.scalar_field.q1,sr.scalar_field.q1.d,40,Four-current,false
+sr.scalar_field.q2,sr.scalar_field.q2.a,10,"The scalar has the same value at every event, not just in different descriptions of one event.",false
+sr.scalar_field.q2,sr.scalar_field.q2.b,20,The scalar value mixes with three other scalar components under a Lorentz boost.,false
+sr.scalar_field.q2,sr.scalar_field.q2.c,30,"Both observers must evaluate the field at the same numerical coordinates, even if these label different events.",false
+sr.scalar_field.q2,sr.scalar_field.q2.d,40,"The observers assign the same scalar value to the same event, although that event has different coordinate labels.",true
+sr.scalar_field.q3,sr.scalar_field.q3.a,10,Scalar describes the transformation at one event; its value may vary between events.,true
+sr.scalar_field.q3,sr.scalar_field.q3.b,20,A scalar is constant in time but may vary in space.,false
+sr.scalar_field.q3,sr.scalar_field.q3.c,30,A scalar is constant in space but may vary in time.,false
+sr.scalar_field.q3,sr.scalar_field.q3.d,40,Any nonconstant field must be a vector field.,false
 sr.scalar_field.q4,sr.scalar_field.q4.b,10,\(\phi=14\),false
 sr.scalar_field.q4,sr.scalar_field.q4.a,20,\(\phi=10\),true
 sr.scalar_field.q4,sr.scalar_field.q4.c,30,\(\phi=7\),false
 sr.scalar_field.q4,sr.scalar_field.q4.d,40,\(\phi=24\),false
+sr.scalar_field.q5,sr.scalar_field.q5.a,10,"Each four-vector component is an invariant scalar, so there is no transformation difference.",false
+sr.scalar_field.q5,sr.scalar_field.q5.b,20,"A scalar value is unchanged at the same event, while four-vector components can mix between inertial frames.",true
+sr.scalar_field.q5,sr.scalar_field.q5.c,30,"A scalar changes value between frames, while all vector components remain fixed.",false
+sr.scalar_field.q5,sr.scalar_field.q5.d,40,Only a scalar field can vary with spacetime position.,false
+sr.scalar_field.q6,sr.scalar_field.q6.a,10,Scalar fields require no equations of motion because they are constant.,false
+sr.scalar_field.q6,sr.scalar_field.q6.b,20,"Scalar fields have no spacetime arguments, which removes locality questions.",false
+sr.scalar_field.q6,sr.scalar_field.q6.c,30,They introduce local spacetime dependence and dynamics without vector/tensor component bookkeeping.,true
+sr.scalar_field.q6,sr.scalar_field.q6.d,40,They describe all electromagnetic polarisation effects without additional fields.,false
 sr.vector_field.q1,sr.vector_field.q1.a,10,Scalar field,false
 sr.vector_field.q1,sr.vector_field.q1.b,20,Vector field,true
 sr.vector_field.q1,sr.vector_field.q1.c,30,Scalar invariant,false
 sr.vector_field.q1,sr.vector_field.q1.d,40,Proper time,false
+sr.vector_field.q2,sr.vector_field.q2.a,10,"Each component is independently invariant, exactly as for four unrelated scalars.",false
+sr.vector_field.q2,sr.vector_field.q2.b,20,The four functions must always have equal values at an event.,false
+sr.vector_field.q2,sr.vector_field.q2.c,30,Only the time component transforms; the spatial components are absolute.,false
+sr.vector_field.q2,sr.vector_field.q2.d,40,Its components mix together by the four-vector law; unrelated scalar fields each transform as scalars.,true
+sr.vector_field.q3,sr.vector_field.q3.a,10,The event coordinates change and the components at that same event transform together.,true
+sr.vector_field.q3,sr.vector_field.q3.b,20,Only the argument changes; every component stays numerically fixed.,false
+sr.vector_field.q3,sr.vector_field.q3.c,30,Only the components change; the event must keep identical coordinate labels.,false
+sr.vector_field.q3,sr.vector_field.q3.d,40,The physical event and field are replaced by different ones in the new frame.,false
+sr.vector_field.q4,sr.vector_field.q4.a,10,"\(A'^0=3.25\), \(A'^1=2.75\).",false
+sr.vector_field.q4,sr.vector_field.q4.b,20,"\(A'^0=1.75\), \(A'^1=-0.25\).",true
+sr.vector_field.q4,sr.vector_field.q4.c,30,"\(A'^0=1.4\), \(A'^1=-0.2\).",false
+sr.vector_field.q4,sr.vector_field.q4.d,40,"\(A'^0=2.5\), \(A'^1=1.25\).",false
+sr.vector_field.q5,sr.vector_field.q5.a,10,It is a single invariant scalar whose value directly equals the electric field.,false
+sr.vector_field.q5,sr.vector_field.q5.b,20,Its four entries are unrelated scalars that do not mix under frame changes.,false
+sr.vector_field.q5,sr.vector_field.q5.c,30,"It assigns a four-vector potential at each event, whose derivatives construct the electromagnetic field tensor.",true
+sr.vector_field.q5,sr.vector_field.q5.d,40,It supplies only a spatial coordinate grid and has no field interpretation.,false
+sr.vector_field.q6,sr.vector_field.q6.a,10,A guarantee that the field is spatially uniform.,false
+sr.vector_field.q6,sr.vector_field.q6.b,20,An extra independent scalar that makes five field components.,false
+sr.vector_field.q6,sr.vector_field.q6.c,30,A preferred inertial frame in which the field must be defined.,false
+sr.vector_field.q6,sr.vector_field.q6.d,40,"Linked components or directions at each event, transforming together as a four-vector.",true
 sr.field_lagrangian.q1,sr.field_lagrangian.q1.a,10,A single particle velocity,false
 sr.field_lagrangian.q1,sr.field_lagrangian.q1.b,20,A Lagrangian density \(\mathcal L\),true
 sr.field_lagrangian.q1,sr.field_lagrangian.q1.c,30,Only the total charge,false
 sr.field_lagrangian.q1,sr.field_lagrangian.q1.d,40,The graph layout energy,false
+sr.field_lagrangian.q2,sr.field_lagrangian.q2.a,10,It is a local contribution integrated over spacetime volume to give the field action.,true
+sr.field_lagrangian.q2,sr.field_lagrangian.q2.b,20,It is the total action of the whole field before any integration.,false
+sr.field_lagrangian.q2,sr.field_lagrangian.q2.c,30,It is called a density because its value is always a charge per unit volume.,false
+sr.field_lagrangian.q2,sr.field_lagrangian.q2.d,40,It is a probability density that must integrate to one.,false
+sr.field_lagrangian.q3,sr.field_lagrangian.q3.a,10,Locality requires the density to ignore all spacetime derivatives.,false
+sr.field_lagrangian.q3,sr.field_lagrangian.q3.b,20,"The density uses fields and derivatives at the event, rather than direct instantaneous data from distant events.",true
+sr.field_lagrangian.q3,sr.field_lagrangian.q3.c,30,"The density must be identical at every event, so no local dynamics is possible.",false
+sr.field_lagrangian.q3,sr.field_lagrangian.q3.d,40,Locality permits arbitrary instantaneous dependencies as long as they are written under an integral.,false
 sr.field_lagrangian.q4,sr.field_lagrangian.q4.b,10,\(S=8\),false
 sr.field_lagrangian.q4,sr.field_lagrangian.q4.c,20,\(S=\tfrac35\),false
 sr.field_lagrangian.q4,sr.field_lagrangian.q4.a,30,\(S=15\),true
 sr.field_lagrangian.q4,sr.field_lagrangian.q4.d,40,\(S=3\),false
+sr.field_lagrangian.q5,sr.field_lagrangian.q5.a,10,They force each field component to remain identical under every boost.,false
+sr.field_lagrangian.q5,sr.field_lagrangian.q5.b,20,They make the spacetime integration region physically the same coordinate box in every frame.,false
+sr.field_lagrangian.q5,sr.field_lagrangian.q5.c,30,They help make the action frame-independent and the field equations Lorentz-covariant.,true
+sr.field_lagrangian.q5,sr.field_lagrangian.q5.d,40,They replace the need to impose the variational equation.,false
+sr.field_lagrangian.q6,sr.field_lagrangian.q6.a,10,The Lagrangian density is always identical to the total energy density.,false
+sr.field_lagrangian.q6,sr.field_lagrangian.q6.b,20,Energy density is the time derivative of every Lagrangian density.,false
+sr.field_lagrangian.q6,sr.field_lagrangian.q6.c,30,The two differ only by a universal factor of the speed of light.,false
+sr.field_lagrangian.q6,sr.field_lagrangian.q6.d,40,It is varied to obtain equations of motion; energy density is a component of the energy-momentum tensor.,true
 sr.field_equations.q1,sr.field_equations.q1.a,10,Field equations,true
 sr.field_equations.q1,sr.field_equations.q1.b,20,The module display number,false
 sr.field_equations.q1,sr.field_equations.q1.c,30,A gauge name only,false
 sr.field_equations.q1,sr.field_equations.q1.d,40,A historical note,false
+sr.field_equations.q2,sr.field_equations.q2.a,10,Particle mechanics varies paths in time; field theory varies field functions throughout spacetime.,true
+sr.field_equations.q2,sr.field_equations.q2.b,20,Particle mechanics varies momenta only; field theory varies the coordinate grid only.,false
+sr.field_equations.q2,sr.field_equations.q2.c,30,Field theory has no local degrees of freedom to vary.,false
+sr.field_equations.q2,sr.field_equations.q2.d,40,Field equations are obtained by varying only the total spatial volume.,false
+sr.field_equations.q3,sr.field_equations.q3.a,10,It sets the field variation to zero at every interior point.,false
+sr.field_equations.q3,sr.field_equations.q3.b,20,"It moves derivatives off \(\delta\phi_a\), leaving an arbitrary local field variation as a factor.",true
+sr.field_equations.q3,sr.field_equations.q3.c,30,It removes every derivative from the original field equations.,false
+sr.field_equations.q3,sr.field_equations.q3.d,40,It makes the action independent of all boundary conditions.,false
+sr.field_equations.q4,sr.field_equations.q4.a,10,\(\omega^2=-c^2k^2\).,false
+sr.field_equations.q4,sr.field_equations.q4.b,20,\(\omega^2=k^2/c^2\).,false
+sr.field_equations.q4,sr.field_equations.q4.c,30,\(\omega^2=c^2k^2\).,true
+sr.field_equations.q4,sr.field_equations.q4.d,40,\(\omega^2=c^4k^2\).,false
+sr.field_equations.q5,sr.field_equations.q5.a,10,They prohibit disturbances from propagating beyond their point of origin.,false
+sr.field_equations.q5,sr.field_equations.q5.b,20,They refer only to a single total field energy integrated over all space.,false
+sr.field_equations.q5,sr.field_equations.q5.c,30,They compute one region's field instantly from the simultaneous state of every other region.,false
+sr.field_equations.q5,sr.field_equations.q5.d,40,"They constrain fields and derivatives at each event, not merely totals over distant regions.",true
+sr.field_equations.q6,sr.field_equations.q6.a,10,They are local relativistic equations connecting the electromagnetic tensor to sources and permitting wave propagation.,true
+sr.field_equations.q6,sr.field_equations.q6.b,20,They are global constraints with no information about local field derivatives.,false
+sr.field_equations.q6,sr.field_equations.q6.c,30,They describe only static forces and exclude propagating disturbances.,false
+sr.field_equations.q6,sr.field_equations.q6.d,40,They require a preferred inertial frame because electric and magnetic fields mix.,false
 sr.vector_potential.q1,sr.vector_potential.q1.a,10,Proper time,false
 sr.vector_potential.q1,sr.vector_potential.q1.b,20,The electromagnetic field tensor,true
 sr.vector_potential.q1,sr.vector_potential.q1.c,30,The invariant interval alone,false
