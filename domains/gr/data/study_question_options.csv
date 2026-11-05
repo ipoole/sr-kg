@@ -603,10 +603,22 @@ gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.a,10,"Static, spherically 
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.b,20,Rotating and charged,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.c,30,Homogeneous cosmology,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.d,40,Only a weak-field approximation,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.a,10,The exterior formula fails whenever the stellar radius exceeds the Schwarzschild radius.,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.b,20,"An ordinary stellar interior contains matter, so an interior solution must be matched to the vacuum exterior.",true
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.c,30,The star’s interior is necessarily flat because spherical symmetry removes curvature.,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.d,40,The same vacuum solution describes the interior if its time coordinate is rescaled.,false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.a,10,"Every metric component approaches zero, making spacetime degenerate.",false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.b,20,It approaches the identity matrix in the same spherical coordinates.,false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.c,30,It approaches the Minkowski metric in spherical spatial coordinates.,true
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.d,40,Curvature tends to a nonzero constant set by the Schwarzschild mass.,false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.a,10,\(2GM/c^2\),true
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.b,20,\(GM/c\),false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.c,30,\(c^2/GM\),false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.d,40,\(8\pi GM\),false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.a,10,It is a mass-defined length scale; an ordinary body can have a much larger material radius.,true
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.b,20,It is the physical surface radius of every spherical body by definition.,false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.c,30,It measures the distance from the material surface to the centre using radial rulers.,false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.d,40,It is meaningful only if the body already has an event horizon.,false
 gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.a,10,It doubles,true
 gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.b,20,It halves,false
 gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.c,30,It increases by a factor of four,false
@@ -615,6 +627,10 @@ gr.event_horizon.q1,gr.event_horizon.q1.a,10,A global causal boundary,true
 gr.event_horizon.q1,gr.event_horizon.q1.b,20,A material shell,false
 gr.event_horizon.q1,gr.event_horizon.q1.c,30,A curvature divergence in every case,false
 gr.event_horizon.q1,gr.event_horizon.q1.d,40,A coordinate grid line only,false
+gr.event_horizon.q2,gr.event_horizon.q2.a,10,Its location is determined solely by the curvature scalar at one event.,false
+gr.event_horizon.q2,gr.event_horizon.q2.b,20,"Its definition depends on which future causal paths can escape, requiring the spacetime’s global future structure.",true
+gr.event_horizon.q2,gr.event_horizon.q2.c,30,Every observer sees it at the same coordinate radius in every chart.,false
+gr.event_horizon.q2,gr.event_horizon.q2.d,40,It is a material surface whose composition must be specified throughout space.,false
 gr.event_horizon.q3,gr.event_horizon.q3.a,10,Yes; a large regular horizon need not have singular local curvature,true
 gr.event_horizon.q3,gr.event_horizon.q3.b,20,No; every horizon is a curvature singularity,false
 gr.event_horizon.q3,gr.event_horizon.q3.c,30,Only a photon can cross it,false
@@ -623,10 +639,22 @@ gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.a,10,Whether regular c
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.b,20,Whether one metric component is large,false
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.c,30,Whether time is present,false
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.d,40,Whether mass is nonzero,false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.a,10,"All divergent components are harmless, even when curvature scalars diverge.",false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.b,20,"The metric ceases to be Lorentzian at the horizon, eliminating any physical meaning.",false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.c,30,The divergence is cancelled physically by infinite negative matter density.,false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.d,40,The divergent component can be removed in horizon-regular coordinates.,true
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.a,10,Their values are coordinate-independent; Schwarzschild’s finite horizon values contrast with central curvature divergence.,true
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.b,20,They always vanish wherever a coordinate component diverges.,false
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.c,30,A finite value of any single invariant proves complete regularity in every spacetime.,false
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.d,40,"They depend only on coordinate labels, so another chart can remove their divergence.",false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.a,10,\(r=0\),true
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.b,20,Every point at \(r=r_s\),false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.c,30,Spatial infinity,false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.d,40,Every circular orbit,false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.a,10,"The radial Schwarzschild metric component alone diverges there, which is sufficient in any chart.",false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.b,20,"Every zero areal radius is singular, including the centre of flat space.",false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.c,30,A coordinate-independent curvature scalar diverges there; a smooth coordinate change cannot remove that divergence.,true
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.d,40,"The Schwarzschild time coordinate stops increasing there, which defines every physical singularity.",false
 gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.b,10,It increases by a factor of \(6\),false
 gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.a,20,It increases by a factor of \(64\),true
 gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.c,30,It increases by a factor of \(2\),false
@@ -635,6 +663,14 @@ gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.a,10,Conserved
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.b,20,Vanishing mass only,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.c,30,A coordinate singularity,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.d,40,Nonzero torsion,false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.a,10,Instantaneously zero radial speed where \(\mathcal E^2=V_{\mathrm{eff}}\); a circular orbit also requires a stationary potential.,true
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.b,20,"Zero total speed, including zero angular motion, at every potential minimum.",false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.c,30,"Radii where \(\mathcal E=V_{\mathrm{eff}}\), irrespective of the energy normalisation.",false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.d,40,"Any point where the radial acceleration vanishes, even with nonzero radial speed.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.a,10,"Null orbits feel no curvature, so their potential is zero everywhere.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.b,20,Timelike norm contributes a rest-mass term; the null tangent has zero norm and lacks that term.,true
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.c,30,"Timelike orbits have no angular momentum term, while null orbits do.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.d,40,The two potentials differ only because null curves use imaginary proper time.,false
 gr.equivalence_principle.q4,gr.equivalence_principle.q4.a,10,Yes: every pair of freely falling bodies must keep a fixed distance.,false
 gr.equivalence_principle.q4,gr.equivalence_principle.q4.b,20,Yes: free fall requires the metric to be constant throughout the capsule.,false
 gr.equivalence_principle.q4,gr.equivalence_principle.q4.c,30,No: finite-separation tidal effects are compatible with local recovery of SR.,true
@@ -835,7 +871,27 @@ gr.gravitational_waves.q4,gr.gravitational_waves.q4.a,10,"Every small perturbati
 gr.gravitational_waves.q4,gr.gravitational_waves.q4.b,20,Only a large perturbation can carry physical information.,false
 gr.gravitational_waves.q4,gr.gravitational_waves.q4.c,30,Gauge changes can produce component ripples; a physical wave has tidal effects remaining after coordinate freedom is accounted for.,true
 gr.gravitational_waves.q4,gr.gravitational_waves.q4.d,40,Any coordinate dependence of the metric proves that gravitational radiation is present.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.a,10,No: any moving matter must create outgoing gravitational radiation.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.b,20,Yes: the exterior must be flat whenever the source remains spherical.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.c,30,No: spherical symmetry forces the stellar interior and exterior to pulsate with the same time dependence.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.d,40,Yes: Birkhoff’s theorem permits a locally Schwarzschild vacuum exterior; spherical pulsations do not radiate gravitational waves.,true
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.a,10,\(\mathcal C=0.05\),true
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.b,20,\(\mathcal C=0.10\),false
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.c,30,\(\mathcal C=5\),false
 gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.d,40,\(\mathcal C=20\),false
+gr.event_horizon.q4,gr.event_horizon.q4.a,10,Light locally slows to zero speed because the horizon absorbs its kinetic energy.,false
+gr.event_horizon.q4,gr.event_horizon.q4.b,20,"The horizon generator is timelike, so the photon has acquired a rest frame.",false
+gr.event_horizon.q4,gr.event_horizon.q4.c,30,"Areal radius is constant along that horizon generator, while a local freely falling observer still measures light speed c.",true
+gr.event_horizon.q4,gr.event_horizon.q4.d,40,Zero radial coordinate speed implies a zero tangent vector in every frame.,false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.a,10,"Eigenvalues \(0,0\): degenerate because both diagonal entries vanish.",false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.b,20,"Eigenvalues \(+1,-1\): nondegenerate, with one timelike and one spacelike direction.",true
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.c,30,"Eigenvalues \(+1,+1\): a positive-definite spatial block.",false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.d,40,"Eigenvalues \(-1,-1\): two negative directions and no timelike direction.",false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.a,10,The singularity is a material sphere that a sufficiently powerful rocket can circle inside the horizon.,false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.b,20,Inside the horizon a change of coordinates permits a future-directed path to increasing areal radius and escape.,false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.c,30,"The central singularity is another chart failure, removed in the same way as the horizon.",false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.d,40,In the black-hole interior all future causal paths decrease areal radius; the singularity is a spacelike future boundary.,true
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.a,10,\(L^2=64m^2/5\); radially unstable.,false
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.b,20,\(L^2=8m^2\); radially stable.,false
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.c,30,\(L^2=64m^2/5\); radially stable.,true
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.d,40,\(L^2=64m^2/11\); radially unstable.,false
