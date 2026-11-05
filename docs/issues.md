@@ -6,8 +6,11 @@
    equations, and Einstein equations from the metric action; add the Schwarzschild calculation
    and missing Christoffel/light-deflection inputs. See the [review](../domains/gr/docs/derivation_edge_review.md)
    for retained definitions and follow-up questions about alternative routes and module ordering.
-2. In explanation of tangent and cotangent spaces, I feel a units/dimensional angle is helpful;
-   their product needs to form a dimensionless (or at least coordinate-less) quantity.
+2. **DONE — units in tangent/cotangent explanations.** Add metre/centimetre terrain
+   examples, coordinate-rate versus physical-speed guidance, and a calculation
+   question for each concept. Pairings are coordinate-independent, not necessarily
+   dimensionless: temperature changes have units K and probe rates K/s. The dual-basis
+   normalisation is dimensionless; linearity and transformation laws still define duality.
 3. Module MATHS-2 — Tensor Calculus needs more work. There is insufficient explanation to answer some questions.
    Tensor rank needs more explanation, and more examples are needed generally. There is too much emphasis on
    subtleties such as abstract versus component indices and not enough on the basics. Perhaps the module is trying
@@ -54,12 +57,12 @@
    with plausible distractors and an unknown option. Preserve question IDs and
    existing answered status; retain free text where explaining reasoning is the goal.
    MATHS pass completed on `content-improvements-gc`: nine explanation questions
-   converted across MATHS-1 and MATHS-2; all 36 MATHS questions now mark automatically,
+   converted across MATHS-1 and MATHS-2; all 36 MATHS questions then marked automatically,
    with question IDs retained. MATHS review accepted. SR pass completed module by
    module: 186 further conversions; all 277 SR questions now mark automatically.
    GR pass completed in six module commits: 135 further conversions, making
-   all 224 GR questions automatically marked. All 537 questions across the three
-   domains now mark automatically; question IDs and existing options are retained.
+   all 224 GR questions automatically marked. The subsequent units pass adds two
+   MATHS questions, so all 539 questions across the three domains now mark automatically; question IDs and existing options are retained.
    Reviewed alternatives target the original interpretation or calculation, with
    worked feedback preserved. Complete, pending preview review.
 6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,

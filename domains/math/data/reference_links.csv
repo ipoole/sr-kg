@@ -1,1 +1,3 @@
 source_type,source_id,reference_id,locator,note
+concept,math.tangent_space,tong.gr,§2.2.1 Tangent Vectors,Supports the vector/covector definitions and reciprocal transformation laws; the terrain unit calculations are original examples.
+concept,math.cotangent_space,tong.gr,§2.3.1 Covectors and One-Forms,Supports the vector/covector definitions and reciprocal transformation laws; the terrain unit calculations are original examples.
