@@ -315,6 +315,14 @@ gr.riemann_tensor.q1,gr.riemann_tensor.q1.a,10,Failure of covariant derivatives 
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.b,20,Coordinate labels alone,false
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.c,30,Matter density only,false
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.d,40,Metric signature,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.a,10,The sign is determined uniquely by whether timelike vectors have positive norm.,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.b,20,Changing the definition changes the measured direction of tidal acceleration even if all formulas are translated.,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.c,30,Reversing the defining derivative order reverses Riemann’s sign and dependent formulas must change consistently.,true
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.d,40,"Curvature must be positive near positive masses, so its sign is chosen separately at each event.",false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.a,10,Transport depends on curvature but geodesic deviation depends only on coordinate acceleration.,false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.b,20,"Geodesic deviation requires torsion, whereas parallel transport requires curvature.",false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.c,30,Both effects vanish whenever Christoffel symbols are made zero at one event.,false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.d,40,The same curvature tensor controls small-loop transport changes and relative acceleration of nearby geodesics.,true
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.a,10,Contracting the Riemann tensor,true
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.b,20,Differentiating a scalar twice only,false
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.c,30,Choosing coordinates,false
@@ -323,10 +331,18 @@ gr.ricci_tensor.q2,gr.ricci_tensor.q2.a,10,No; trace-free Weyl curvature may rem
 gr.ricci_tensor.q2,gr.ricci_tensor.q2.b,20,Yes; Ricci contains all four-dimensional curvature,false
 gr.ricci_tensor.q2,gr.ricci_tensor.q2.c,30,"Yes, provided matter is absent",false
 gr.ricci_tensor.q2,gr.ricci_tensor.q2.d,40,No; because Ricci never vanishes,false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.a,10,"All directional tidal shape changes, with no information discarded from Riemann.",false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.b,20,"The trace of tidal focusing, relevant to the volume behaviour of a nearby geodesic bundle.",true
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.c,30,The coordinate acceleration of a supported observer.,false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.d,40,"The local metric signature, rather than changes in a geodesic bundle.",false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.a,10,\(g^{\mu\nu}R_{\mu\nu}\),true
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.b,20,\(R_{\mu\nu}=0\),false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.c,30,\(g_{\mu\nu}g^{\mu\nu}=0\),false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.d,40,\(\nabla_\mu R=0\),false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.a,10,A scalar has no geometric meaning unless its value is nonzero.,false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.b,20,Flatness is determined only by the metric determinant.,false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.c,30,"Zero Ricci scalar guarantees flatness at an event, but never in a region.",false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.d,40,A vanishing contraction can hide nonzero components of Ricci or Riemann curvature.,true
 gr.ricci_scalar.q3,gr.ricci_scalar.q3.b,10,\(R=5\),false
 gr.ricci_scalar.q3,gr.ricci_scalar.q3.c,20,\(R=1\),false
 gr.ricci_scalar.q3,gr.ricci_scalar.q3.a,30,\(R=-1\),true
@@ -335,6 +351,14 @@ gr.einstein_tensor.q1,gr.einstein_tensor.q1.a,10,Its covariant divergence vanish
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.b,20,It is always zero,false
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.c,30,It is a scalar,false
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.d,40,It depends only on coordinates,false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.a,10,\(R_{\mu\nu}+\tfrac12 g_{\mu\nu}R\),false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.b,20,\(R_{\mu\nu}-\tfrac12 g_{\mu\nu}R\),true
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.c,30,\(R_{\mu\nu}-g_{\mu\nu}R\),false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.d,40,\(g_{\mu\nu}R\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.a,10,\(R/2\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.b,20,\(0\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.c,30,\(-R\),true
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.d,40,\(-3R\),false
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.a,10,\(\nabla^\mu G_{\mu\nu}=0\),true
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.b,20,\(G_{\mu\nu}=0\) everywhere,false
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.c,30,\(R=1\),false
@@ -343,10 +367,22 @@ gr.bianchi_identity.q2,gr.bianchi_identity.q2.b,10,Yes; it is an independent mat
 gr.bianchi_identity.q2,gr.bianchi_identity.q2.a,20,No; it is a geometric identity,true
 gr.bianchi_identity.q2,gr.bianchi_identity.q2.c,30,Yes; it must be imposed as a gauge condition,false
 gr.bianchi_identity.q2,gr.bianchi_identity.q2.d,40,No; it is a coordinate convention,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.a,10,The divergence-free geometric side requires compatible covariant conservation of the source in a coupled solution.,true
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.b,20,It fixes the equation of state of every matter source.,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.c,30,It proves that matter stress-energy vanishes wherever curvature is present.,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.d,40,It guarantees a globally conserved total energy in every spacetime without additional conditions.,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.a,10,Their values are coordinate-independent,true
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.b,20,They always vanish,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.c,30,They choose a chart,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.d,40,They remove curvature,false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.a,10,\(R_{00}\),false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.b,20,\(\det(g_{\mu\nu})\),false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.c,30,\(R_{\mu\nu}R^{\mu\nu}\),true
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.d,40,\(\Gamma^\rho{}_{\mu\nu}\Gamma^\nu{}_{\rho\sigma}\),false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.a,10,Yes: one finite scalar contraction proves every component and geodesic is regular.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.b,20,Yes: finite invariants imply zero Riemann curvature.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.c,30,No: scalar contractions have different values in different regular charts.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.d,40,No: common scalar contractions do not by themselves establish extendibility or geodesic completeness.,true
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.a,10,"Energy density, momentum flux, and stress",true
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.b,20,Coordinates only,false
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.c,30,Curvature only,false
@@ -387,6 +423,14 @@ gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.a,10,Ricci scalar,tr
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.b,20,Proper time only,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.c,30,Electric potential,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.d,40,Torsion scalar in standard GR,false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.a,10,"The metric field, equivalently its inverse, rather than a particle path in a fixed metric.",true
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.b,20,"Only the particle worldlines, leaving the metric fixed.",false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.c,30,"Only the coordinate labels, leaving every physical field fixed.",false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.d,40,Only the numerical value of Newton’s gravitational constant.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.a,10,Boundary conditions choose the metric signature and therefore eliminate the need for field equations.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.b,20,"The curvature scalar contains second metric derivatives, whose variation produces boundary terms.",true
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.c,30,The action is a coordinate scalar only if spacetime has no boundary.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.d,40,"The Einstein tensor comes entirely from varying a boundary term, with no bulk contribution.",false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.a,10,A metric variation,true
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.b,20,Renaming coordinates only,false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.c,30,Setting curvature to zero,false
@@ -587,10 +631,34 @@ gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.a,10,"A smooth affine geodesic
 gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.b,20,"Arbitrary accelerated paths at any separation, provided the metric is diagonal.",false
 gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.c,30,"Any two paths sharing endpoints, with no connection specified.",false
 gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.d,40,Geodesics with arbitrary independent non-affine parameters and no additional terms.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.a,10,Derivatives of the connection can survive; the quadratic connection terms vanish there.,true
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.b,20,Only products of connection coefficients can survive.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.c,30,Every term vanishes because normal coordinates make the region flat.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.d,40,Only derivatives of the metric determinant can survive.,false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.a,10,"Zero Ricci implies zero Riemann, so the shape change must be a coordinate illusion.",false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.b,20,Ricci-flat spacetime requires the cloud’s particles to accelerate by nongravitational forces.,false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.c,30,Weyl curvature can stretch and squeeze in different directions while the initial tidal trace is zero.,true
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.d,40,A zero trace requires every tidal eigenvalue to be zero separately.,false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.a,10,"\(R=12k\), with units of inverse length squared.",true
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.b,20,"\(R=3k\), with units of inverse length squared.",false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.c,30,"\(R=-6k\), with units of inverse length squared.",false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.d,40,"\(R=12k^2\), with units of inverse length to the fourth power.",false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.a,10,Yes: a zero sum requires each term in that sum to be zero.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.b,20,Yes: metric compatibility makes every tensor covariantly constant.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.c,30,No: the divergence condition is meaningful only in flat spacetime.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.d,40,No: vanishing divergence contracts a derivative index and is weaker than every derivative component vanishing.,true
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.a,10,Any \(\Lambda(x)\) is allowed because \(\nabla g=0\) also makes its derivative vanish.,false
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.b,20,The unchanged equations require \(\partial_\nu\Lambda=0\); variation needs extra dynamics or exchange with matter.,true
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.c,30,Only the value of the matter pressure must change; no conservation equation is affected.,false
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.d,40,A varying cosmological term can always be removed by changing coordinates.,false
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.b,10,It becomes \(1/243\) as large,false
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.a,20,It becomes \(1/729\) as large,true
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.c,30,It becomes \(1/9\) as large,false
 gr.curvature_invariants.q4,gr.curvature_invariants.q4.d,40,It becomes \(729\) times larger,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.a,10,Only the explicit inverse metric in \(R=g^{\mu\nu}R_{\mu\nu}\).,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.b,20,The variation of a particle path in the matter action.,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.c,30,The variation of the volume density \(\sqrt{-g}\).,true
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.d,40,"The cosmological term alone, even when the cosmological constant is zero.",false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
 gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
