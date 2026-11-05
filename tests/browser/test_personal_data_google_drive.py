@@ -196,14 +196,17 @@ def test_paused_sync_opens_choices_without_reconnecting(browser_graph, action):
     if action == "disconnect":
         before = page.evaluate("kgPersonalData.getSnapshot()")
         page.context.set_offline(True)
-        page.locator("#kg_cloud_sync_disconnect").click()
-        assert attention.is_hidden()
-        assert page.locator("#kg_cloud_sync_disconnect").is_hidden()
-        assert page.locator("#kg_cloud_sync_connect").is_visible()
-        assert page.evaluate("window.__connectCalls") == 1
-        assert page.evaluate("window.__disconnectCalls") == 1
-        assert page.evaluate("kgSchedulePersonalDataAutoSync(0)") is False
-        assert page.evaluate("kgPersonalData.getSnapshot()") == before
+        try:
+            page.locator("#kg_cloud_sync_disconnect").click()
+            assert attention.is_hidden()
+            assert page.locator("#kg_cloud_sync_disconnect").is_hidden()
+            assert page.locator("#kg_cloud_sync_connect").is_visible()
+            assert page.evaluate("window.__connectCalls") == 1
+            assert page.evaluate("window.__disconnectCalls") == 1
+            assert page.evaluate("kgSchedulePersonalDataAutoSync(0)") is False
+            assert page.evaluate("kgPersonalData.getSnapshot()") == before
+        finally:
+            page.context.set_offline(False)
     else:
         page.evaluate("window.__syncFails = false")
         page.locator("#kg_cloud_sync_connect").click()
