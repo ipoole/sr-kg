@@ -86,7 +86,7 @@ def test_selection_is_permanent_and_does_not_choose_graph_mode(browser_graph):
     page = browser_graph.page
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": "test.m01_foundations"}
     assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator("#kg_fit_select").input_value() == "displayed"
+    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator("#kg_clear_selection").count() == 0
     browser_graph.click_concept("2.2")
     assert page.locator("#kg_display_scope_select").input_value() == "full"

@@ -92,7 +92,7 @@ View changes never initiate layout changes or automatic fitting.
 
 Startup selects SR-5 Field Dynamics and Radiation, otherwise the first available module or concept. A valid
 deep link overrides that default; missing/invalid selections use the fallback.
-The initial controls are Both, Context + background, transitive Foundations and Frame All,
+The initial controls are Both, Context + background, transitive Foundations and Frame Context,
 with authored module defaults and layout editing off. Initial load fits once.
 Browser Back/Forward and the viewer history buttons retrace selections, leaving
 View, Graph, Context rule and module representation unchanged.

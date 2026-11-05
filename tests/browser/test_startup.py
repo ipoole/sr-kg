@@ -1559,7 +1559,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     )
     assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
     assert page.locator("#kg_clear_selection").count() == 0
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit displayed graph"
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit context"
 
 
 @pytest.mark.browser
@@ -1606,7 +1606,7 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     assert visible_labels.nth(1).inner_text() == "Frame"
     assert visible_labels.nth(0).is_visible()
     assert visible_labels.nth(1).is_visible()
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "All"
+    assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
 
     summary = page.locator("#kg_context_summary")
     assert "Foundations" not in summary.inner_text()
@@ -1707,7 +1707,7 @@ def test_default_startup_honours_domain_metadata_with_transitive_foundations(sha
     assert page.locator("#kg_context_preset_select").input_value() == "foundations"
     assert page.locator("#kg_context_depth_select").input_value() == "transitive"
     assert page.locator("#kg_view_select").input_value() == "both"
-    assert page.locator("#kg_fit_select").input_value() == "displayed"
+    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator(".kg-concept-item.active").count() == 0
 
 
@@ -2456,7 +2456,7 @@ def test_context_controls_group_semantics_and_default_fit_target(browser_graph):
     assert groups.nth(0).locator("#kg_context_depth_select").count() == 1
     assert groups.nth(1).locator("#kg_fit_select").count() == 1
     assert groups.nth(1).locator("#kg_fit_apply").count() == 1
-    assert page.locator("#kg_fit_select").input_value() == "displayed"
+    assert page.locator("#kg_fit_select").input_value() == "context"
 
 
 

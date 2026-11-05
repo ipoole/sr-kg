@@ -32,7 +32,7 @@ to rotate to portrait. Returning to portrait restores the current view.
 
 The first visit opens the Quick start; dismissal is remembered locally and
 **Tools → Quick start** reopens it. Startup selects SR-5 Field Dynamics and Radiation (or the first available
-module/concept), with transitive Foundations, Context + background, Both, Frame All, authored
+module/concept), with transitive Foundations, Context + background, Both, Frame Context, authored
 module defaults, layout editing off, and one initial fit. Valid URL selections
 override that default; missing/invalid URLs and history entries use the fallback.
 Empty-space clicks retain selection, and no Clear action is exposed.
@@ -81,7 +81,7 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
-Frame offers Reveal selection, Selection, Context and All. The default is All.
+Frame offers Reveal selection, Selection, Context and All. The default is Context.
 Selection and its context remain available in each graph mode; module folding
 changes their representation without changing the selected object.
 
