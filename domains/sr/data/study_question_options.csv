@@ -587,6 +587,26 @@ sr.vector_potential.q1,sr.vector_potential.q1.a,10,Proper time,false
 sr.vector_potential.q1,sr.vector_potential.q1.b,20,The electromagnetic field tensor,true
 sr.vector_potential.q1,sr.vector_potential.q1.c,30,The invariant interval alone,false
 sr.vector_potential.q1,sr.vector_potential.q1.d,40,The graph layout,false
+sr.vector_potential.q2,sr.vector_potential.q2.a,10,Each component of \(A_\mu\) is directly one measured component of the electric field.,false
+sr.vector_potential.q2,sr.vector_potential.q2.b,20,The potential uniquely specifies an observable field without any descriptive redundancy.,false
+sr.vector_potential.q2,sr.vector_potential.q2.c,30,The potential represents only magnetic fields; electric fields are unrelated to it.,false
+sr.vector_potential.q2,sr.vector_potential.q2.d,40,"The observed fields come from derivatives of \(A_\mu\), and gauge-related potentials can give the same field tensor.",true
+sr.vector_potential.q3,sr.vector_potential.q3.a,10,Antisymmetry cancels the added second derivatives when the gauge function is smooth.,true
+sr.vector_potential.q3,sr.vector_potential.q3.b,20,"The gauge function must be zero everywhere, so its derivatives vanish separately.",false
+sr.vector_potential.q3,sr.vector_potential.q3.c,30,The two added derivative terms have the same sign and cancel by addition.,false
+sr.vector_potential.q3,sr.vector_potential.q3.d,40,The metric forces every derivative of the potential to vanish.,false
+sr.vector_potential.q4,sr.vector_potential.q4.a,10,"\(A^0=6.0\times10^8\), so \(A^\mu=(6.0\times10^8,1,2,0)\).",false
+sr.vector_potential.q4,sr.vector_potential.q4.b,20,"\(A^0=2\), so \(A^\mu=(2,1,2,0)\) in the specified units.",true
+sr.vector_potential.q4,sr.vector_potential.q4.c,30,"\(A^0=0.5\), so \(A^\mu=(0.5,1,2,0)\).",false
+sr.vector_potential.q4,sr.vector_potential.q4.d,40,"\(A^0=2\), so the contravariant components are \(A^\mu=(2,-1,-2,0)\).",false
+sr.vector_potential.q5,sr.vector_potential.q5.a,10,"It is directly the invariant energy density, so varying it is unnecessary.",false
+sr.vector_potential.q5,sr.vector_potential.q5.b,20,"Its components are fixed in every inertial frame, simplifying away all transformation rules.",false
+sr.vector_potential.q5,sr.vector_potential.q5.c,30,"It is a local four-vector variable with a scalar coupling to charge, whose variation yields field equations.",true
+sr.vector_potential.q5,sr.vector_potential.q5.d,40,It removes the need to include the charge-current source in the action.,false
+sr.vector_potential.q6,sr.vector_potential.q6.a,10,A gauge change necessarily creates a new electric or magnetic field.,false
+sr.vector_potential.q6,sr.vector_potential.q6.b,20,Gauge freedom lets the measured charge change without affecting any field equations.,false
+sr.vector_potential.q6,sr.vector_potential.q6.c,30,The potential has no dynamical role because it is not unique.,false
+sr.vector_potential.q6,sr.vector_potential.q6.d,40,Different gauge-related potentials can represent the same physical electromagnetic field.,true
 sr.field_tensor.q1,sr.field_tensor.q1.a,10,It removes magnetism,false
 sr.field_tensor.q1,sr.field_tensor.q1.b,20,It packages them into one Lorentz-transforming tensor,true
 sr.field_tensor.q1,sr.field_tensor.q1.c,30,It has only one scalar component,false
@@ -595,10 +615,30 @@ sr.field_tensor.q2,sr.field_tensor.q2.b,10,It is symmetric: \(F_{\mu\nu}=F_{\nu\
 sr.field_tensor.q2,sr.field_tensor.q2.c,20,It is diagonal in every frame,false
 sr.field_tensor.q2,sr.field_tensor.q2.a,30,It is antisymmetric: \(F_{\mu\nu}=-F_{\nu\mu}\),true
 sr.field_tensor.q2,sr.field_tensor.q2.d,40,It must vanish without sources,false
+sr.field_tensor.q3,sr.field_tensor.q3.a,10,\(6\): four diagonal entries vanish and off-diagonal entries form opposite-sign pairs.,true
+sr.field_tensor.q3,sr.field_tensor.q3.b,20,\(12\): only the four diagonal entries are constrained.,false
+sr.field_tensor.q3,sr.field_tensor.q3.c,30,\(10\): the off-diagonal entries form equal-sign pairs and the diagonal remains free.,false
+sr.field_tensor.q3,sr.field_tensor.q3.d,40,\(16\): antisymmetry does not reduce the independent entries.,false
+sr.field_tensor.q4,sr.field_tensor.q4.a,10,The four diagonal entries supply all electric and magnetic components.,false
+sr.field_tensor.q4,sr.field_tensor.q4.b,20,"Time-space components give the electric part and purely spatial components the magnetic part, with conventions fixed.",true
+sr.field_tensor.q4,sr.field_tensor.q4.c,30,The time-time component gives the electric field and the spatial trace gives the magnetic field.,false
+sr.field_tensor.q4,sr.field_tensor.q4.d,40,Electric and magnetic components can be identified without any frame or sign conventions.,false
+sr.field_tensor.q5,sr.field_tensor.q5.a,10,A boost adds an independent magnetic field that was absent from the original tensor.,false
+sr.field_tensor.q5,sr.field_tensor.q5.b,20,Time-space and space-space tensor components are separately invariant under every boost.,false
+sr.field_tensor.q5,sr.field_tensor.q5.c,30,"A boost mixes time and space directions, mixing the electric and magnetic parts of the same tensor.",true
+sr.field_tensor.q5,sr.field_tensor.q5.d,40,The mixing occurs because the electric charge changes sign between frames.,false
+sr.field_tensor.q6,sr.field_tensor.q6.a,10,Index positions are typographic choices with no algebraic consequences.,false
+sr.field_tensor.q6,sr.field_tensor.q6.b,20,All raised and lowered components are identical because the tensor is antisymmetric.,false
+sr.field_tensor.q6,sr.field_tensor.q6.c,30,Lowering an index changes the physical electric charge rather than its component description.,false
+sr.field_tensor.q6,sr.field_tensor.q6.d,40,Raising/lowering indices uses the Lorentzian metric and can change component signs.,true
 sr.electric_field.q1,sr.electric_field.q1.a,10,In the time-space components of \(F_{\mu\nu}\),true
 sr.electric_field.q1,sr.electric_field.q1.b,20,Only in the metric tensor,false
 sr.electric_field.q1,sr.electric_field.q1.c,30,Only as a scalar invariant,false
 sr.electric_field.q1,sr.electric_field.q1.d,40,Only in historical notes,false
+sr.electric_field.q2,sr.electric_field.q2.a,10,It is the electric part of one observer's decomposition of the electromagnetic tensor.,true
+sr.electric_field.q2,sr.electric_field.q2.b,20,The electric field is frame-independent because charge is invariant.,false
+sr.electric_field.q2,sr.electric_field.q2.c,30,A new inertial frame observes a different physical field rather than a different decomposition.,false
+sr.electric_field.q2,sr.electric_field.q2.d,40,Only magnetic components transform; electric components retain fixed values.,false
 sr.electric_field.q3,sr.electric_field.q3.b,10,Force per unit mass on any test body,false
 sr.electric_field.q3,sr.electric_field.q3.c,20,Potential energy per unit volume,false
 sr.electric_field.q3,sr.electric_field.q3.d,30,The rate of change of magnetic flux,false
@@ -607,6 +647,10 @@ sr.electric_field.q4,sr.electric_field.q4.b,10,\(E_x=-2\),false
 sr.electric_field.q4,sr.electric_field.q4.c,20,\(E_x=10-2x\),false
 sr.electric_field.q4,sr.electric_field.q4.d,30,\(E_x=0\),false
 sr.electric_field.q4,sr.electric_field.q4.a,40,\(E_x=2\),true
+sr.electric_field.q5,sr.electric_field.q5.a,10,Signs and factors of \(c\) may be chosen independently in each line without affecting units.,false
+sr.electric_field.q5,sr.electric_field.q5.b,20,"Coordinate, potential, metric and index conventions determine signs and factors of \(c\) consistently.",true
+sr.electric_field.q5,sr.electric_field.q5.c,30,Every component of \(F_{\mu\nu}\) equals an electric component with no conventional factors.,false
+sr.electric_field.q5,sr.electric_field.q5.d,40,The conventions change the physical value of the measured elementary charge.,false
 sr.electric_field.q6,sr.electric_field.q6.a,10,The field tensor \(F_{\mu\nu}\),true
 sr.electric_field.q6,sr.electric_field.q6.b,20,The electric three-vector alone,false
 sr.electric_field.q6,sr.electric_field.q6.c,30,The magnetic three-vector alone,false
@@ -615,6 +659,22 @@ sr.magnetic_field.q1,sr.magnetic_field.q1.a,10,The diagonal of the metric,false
 sr.magnetic_field.q1,sr.magnetic_field.q1.b,20,The purely spatial antisymmetric components of \(F_{\mu\nu}\),true
 sr.magnetic_field.q1,sr.magnetic_field.q1.c,30,The scalar field value,false
 sr.magnetic_field.q1,sr.magnetic_field.q1.d,40,Only the time-time component,false
+sr.magnetic_field.q2,sr.magnetic_field.q2.a,10,"Each is an invariant substance, and the tensor simply lists them without mixing.",false
+sr.magnetic_field.q2,sr.magnetic_field.q2.b,20,"Only magnetic fields carry energy, so electric fields must be a different kind of substance.",false
+sr.magnetic_field.q2,sr.magnetic_field.q2.c,30,Both are frame-dependent parts of one field tensor and can mix under changes of inertial frame.,true
+sr.magnetic_field.q2,sr.magnetic_field.q2.d,40,The magnetic field is a scalar that replaces the electric field in a moving frame.,false
+sr.magnetic_field.q3,sr.magnetic_field.q3.a,10,"The diagonal entries alone remain, giving three arbitrary values.",false
+sr.magnetic_field.q3,sr.magnetic_field.q3.b,20,All nine entries remain independent because the block has three rows.,false
+sr.magnetic_field.q3,sr.magnetic_field.q3.c,30,"Antisymmetry forces every entry, including all off-diagonal ones, to vanish.",false
+sr.magnetic_field.q3,sr.magnetic_field.q3.d,40,The diagonal entries vanish and three off-diagonal pairs each carry one independent value.,true
+sr.magnetic_field.q4,sr.magnetic_field.q4.a,10,"\(B_z=B\), with \(B\) treated as a constant.",true
+sr.magnetic_field.q4,sr.magnetic_field.q4.b,20,"\(B_z=B/2\), because only \(\partial_x A_y\) contributes.",false
+sr.magnetic_field.q4,sr.magnetic_field.q4.c,30,"\(B_z=0\), because the two equal-magnitude derivatives cancel in the curl.",false
+sr.magnetic_field.q4,sr.magnetic_field.q4.d,40,"\(B_z=-B\), because the curl uses \(\partial_y A_x-\partial_x A_y\).",false
+sr.magnetic_field.q5,sr.magnetic_field.q5.a,10,It acts with the same force on a charge at rest and a charge moving through the field.,false
+sr.magnetic_field.q5,sr.magnetic_field.q5.b,20,"It contains \(q\mathbf v\times\mathbf B\), so it depends on the charge's velocity in the chosen frame.",true
+sr.magnetic_field.q5,sr.magnetic_field.q5.c,30,"It depends only on the position of the charge, never on its velocity.",false
+sr.magnetic_field.q5,sr.magnetic_field.q5.d,40,It is always parallel to the velocity and therefore always changes speed.,false
 sr.magnetic_field.q6,sr.magnetic_field.q6.b,10,\(\nabla\times\mathbf B=0\),false
 sr.magnetic_field.q6,sr.magnetic_field.q6.a,20,\(\nabla\cdot\mathbf B=0\),true
 sr.magnetic_field.q6,sr.magnetic_field.q6.c,30,\(\nabla\cdot\mathbf E=0\),false
@@ -624,6 +684,26 @@ sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.b,20,"The field tensor \
 u}\)",true
 sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.c,30,Only the scalar potential,false
 sr.electromagnetic_field.q1,sr.electromagnetic_field.q1.d,40,A single electric-field component,false
+sr.electromagnetic_field.q2,sr.electromagnetic_field.q2.a,10,The split changes the physical source charge whenever an observer changes frame.,false
+sr.electromagnetic_field.q2,sr.electromagnetic_field.q2.b,20,Observers must agree on every electric and magnetic component separately.,false
+sr.electromagnetic_field.q2,sr.electromagnetic_field.q2.c,30,Different observers split the same field tensor into different electric and magnetic components.,true
+sr.electromagnetic_field.q2,sr.electromagnetic_field.q2.d,40,The electric part is physical but the magnetic part is only a coordinate error.,false
+sr.electromagnetic_field.q3,sr.electromagnetic_field.q3.a,10,A four-dimensional tensor has only four entries regardless of its rank.,false
+sr.electromagnetic_field.q3,sr.electromagnetic_field.q3.b,20,The six components are independent scalars whose values never mix under boosts.,false
+sr.electromagnetic_field.q3,sr.electromagnetic_field.q3.c,30,"All sixteen entries are independent, but ten are simply omitted from measurements.",false
+sr.electromagnetic_field.q3,sr.electromagnetic_field.q3.d,40,"Antisymmetry leaves six independent tensor components, matching three electric and three magnetic components in a frame.",true
+sr.electromagnetic_field.q4,sr.electromagnetic_field.q4.a,10,"Six component slots are specified: three electric and three magnetic, including those whose values are zero.",true
+sr.electromagnetic_field.q4,sr.electromagnetic_field.q4.b,20,Two component slots are specified because only two of the given entries are nonzero.,false
+sr.electromagnetic_field.q4,sr.electromagnetic_field.q4.c,30,Four component slots are specified because spacetime has four dimensions.,false
+sr.electromagnetic_field.q4,sr.electromagnetic_field.q4.d,40,Nine component slots are specified because each three-vector has three directions at every point.,false
+sr.electromagnetic_field.q5,sr.electromagnetic_field.q5.a,10,Local field language requires all electromagnetic influences to act instantaneously.,false
+sr.electromagnetic_field.q5,sr.electromagnetic_field.q5.b,20,"Fields and their derivatives describe sources, forces and propagation locally at spacetime events.",true
+sr.electromagnetic_field.q5,sr.electromagnetic_field.q5.c,30,It replaces spacetime-dependent fields with one global number for the entire experiment.,false
+sr.electromagnetic_field.q5,sr.electromagnetic_field.q5.d,40,It removes the need for any description of how disturbances propagate.,false
+sr.electromagnetic_field.q6,sr.electromagnetic_field.q6.a,10,Yes: a vanishing magnetic field is a Lorentz-invariant property by itself.,false
+sr.electromagnetic_field.q6,sr.electromagnetic_field.q6.b,20,No: the second observer creates an additional physical field by changing frame.,false
+sr.electromagnetic_field.q6,sr.electromagnetic_field.q6.c,30,No: some boosts mix electric and magnetic parts while describing the same field.,true
+sr.electromagnetic_field.q6,sr.electromagnetic_field.q6.d,40,"Yes: a Lorentz boost can change only the electric magnitude, never the magnetic part.",false
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.a,10,They become unrelated to electric and magnetic fields,false
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.b,20,Their relativistic structure is visible without choosing a special frame,true
 sr.maxwells_equations.q1,sr.maxwells_equations.q1.c,30,They no longer need sources,false
@@ -632,6 +712,22 @@ sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.a,10,\(\partial_\mu A^\mu\overset{\text{Lo
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.b,20,\(F_{\mu\nu}=0\),false
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.c,30,\(A_\mu=0\) in every frame,false
 sr.lorenz_gauge.q1,sr.lorenz_gauge.q1.d,40,\(\partial_\mu j^\mu=1\),false
+sr.lorenz_gauge.q2,sr.lorenz_gauge.q2.a,10,"Equivalent potentials give the same field, so one may choose a convenient gauge representative.",true
+sr.lorenz_gauge.q2,sr.lorenz_gauge.q2.b,20,A gauge condition changes the source charge to compensate for changed electromagnetic fields.,false
+sr.lorenz_gauge.q2,sr.lorenz_gauge.q2.c,30,"The potential is uniquely observable, so a gauge condition measures it directly.",false
+sr.lorenz_gauge.q2,sr.lorenz_gauge.q2.d,40,Gauge conditions are allowed only for zero electric and magnetic fields.,false
+sr.lorenz_gauge.q3,sr.lorenz_gauge.q3.a,10,It sets every potential component to a separate Lorentz-invariant number.,false
+sr.lorenz_gauge.q3,sr.lorenz_gauge.q3.b,20,"\(\partial_\mu A^\mu\) is a scalar contraction, so setting it to zero is Lorentz-covariant.",true
+sr.lorenz_gauge.q3,sr.lorenz_gauge.q3.c,30,"It uses spatial derivatives only, so it is independent of time transformations.",false
+sr.lorenz_gauge.q3,sr.lorenz_gauge.q3.d,40,It identifies one preferred frame where every electromagnetic field is purely electric.,false
+sr.lorenz_gauge.q4,sr.lorenz_gauge.q4.a,10,\(6\); the component magnitudes must be added.,false
+sr.lorenz_gauge.q4,sr.lorenz_gauge.q4.b,20,\(-6\); a second minus sign is required for the time component.,false
+sr.lorenz_gauge.q4,sr.lorenz_gauge.q4.c,30,\(0\); the two stated contributions cancel.,true
+sr.lorenz_gauge.q4,sr.lorenz_gauge.q4.d,40,\(3\); only the time contribution enters the divergence.,false
+sr.lorenz_gauge.q5,sr.lorenz_gauge.q5.a,10,It becomes the electromagnetic field tensor rather than vanishing.,false
+sr.lorenz_gauge.q5,sr.lorenz_gauge.q5.b,20,It forces the source four-current to vanish in every problem.,false
+sr.lorenz_gauge.q5,sr.lorenz_gauge.q5.c,30,"It removes all second derivatives, leaving an algebraic equation for the potential.",false
+sr.lorenz_gauge.q5,sr.lorenz_gauge.q5.d,40,"It vanishes, removing the extra divergence term from the potential equation.",true
 sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.b,10,"Lorentz gauge, after Hendrik Lorentz",false
 sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.c,20,"Loren gauge, after Ludvig Loren",false
 sr.lorenz_gauge.q6,sr.lorenz_gauge.q6.a,30,"Lorenz gauge, after Ludvig Lorenz",true
@@ -640,6 +736,26 @@ sr.gauge_invariance.q1,sr.gauge_invariance.q1.a,10,Gauge invariance,true
 sr.gauge_invariance.q1,sr.gauge_invariance.q1.b,20,Time dilation,false
 sr.gauge_invariance.q1,sr.gauge_invariance.q1.c,30,Mass-energy equivalence,false
 sr.gauge_invariance.q1,sr.gauge_invariance.q1.d,40,A change of metric signature,false
+sr.gauge_invariance.q2,sr.gauge_invariance.q2.a,10,Every gauge function has identically zero first derivative.,false
+sr.gauge_invariance.q2,sr.gauge_invariance.q2.b,20,"The potential is unchanged by a gauge transformation, so no cancellation is needed.",false
+sr.gauge_invariance.q2,sr.gauge_invariance.q2.c,30,Gauge transformations reverse the sign of the electric charge to compensate for changed fields.,false
+sr.gauge_invariance.q2,sr.gauge_invariance.q2.d,40,The added antisymmetric second derivatives of a smooth gauge function cancel because partial derivatives commute.,true
+sr.gauge_invariance.q3,sr.gauge_invariance.q3.a,10,It is a useful but redundant description: gauge-related potentials can encode the same physical field.,true
+sr.gauge_invariance.q3,sr.gauge_invariance.q3.b,20,Every different potential is a different physical electromagnetic field.,false
+sr.gauge_invariance.q3,sr.gauge_invariance.q3.c,30,Only potentials that vanish everywhere have observable consequences.,false
+sr.gauge_invariance.q3,sr.gauge_invariance.q3.d,40,Gauge freedom makes the field tensor depend on an arbitrary measuring convention.,false
+sr.gauge_invariance.q4,sr.gauge_invariance.q4.a,10,"\(6\), because the mixed second derivatives must be added.",false
+sr.gauge_invariance.q4,sr.gauge_invariance.q4.b,20,"\(0\), because both mixed second derivatives equal \(3\).",true
+sr.gauge_invariance.q4,sr.gauge_invariance.q4.c,30,"\(3\), because one mixed second derivative vanishes.",false
+sr.gauge_invariance.q4,sr.gauge_invariance.q4.d,40,"\(9xy\), because the two first derivatives must be multiplied.",false
+sr.gauge_invariance.q5,sr.gauge_invariance.q5.a,10,Gauge fixing adds a force that cancels the change of physical fields.,false
+sr.gauge_invariance.q5,sr.gauge_invariance.q5.b,20,"Every gauge choice changes the physical solution, but the change is too small to observe.",false
+sr.gauge_invariance.q5,sr.gauge_invariance.q5.c,30,Gauge fixing selects a convenient representative without changing the gauge-invariant field.,true
+sr.gauge_invariance.q5,sr.gauge_invariance.q5.d,40,Gauge fixing is allowed only when the electromagnetic field vanishes.,false
+sr.gauge_invariance.q6,sr.gauge_invariance.q6.a,10,Gauge invariance permits arbitrary observable dependence on a potential's chosen gauge.,false
+sr.gauge_invariance.q6,sr.gauge_invariance.q6.b,20,It forbids all interactions between charges and electromagnetic fields.,false
+sr.gauge_invariance.q6,sr.gauge_invariance.q6.c,30,It requires electric charge to vary with the observer's inertial frame.,false
+sr.gauge_invariance.q6,sr.gauge_invariance.q6.d,40,Gauge-related descriptions must yield the same physical predictions; minimal coupling implements this compatibility.,true
 sr.four_current.q1,sr.four_current.q1.a,10,Four-current,true
 sr.four_current.q1,sr.four_current.q1.b,20,Proper time,false
 sr.four_current.q1,sr.four_current.q1.c,30,Scalar field only,false
@@ -648,14 +764,46 @@ sr.minimal_coupling.q1,sr.minimal_coupling.q1.a,10,Minimal coupling,true
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.b,20,Proper time alone,false
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.c,30,Radiation reaction,false
 sr.minimal_coupling.q1,sr.minimal_coupling.q1.d,40,Gauge fixing,false
+sr.minimal_coupling.q2,sr.minimal_coupling.q2.a,10,The simplest local coupling compatible with the required relativistic and gauge symmetries.,true
+sr.minimal_coupling.q2,sr.minimal_coupling.q2.b,20,The coupling with the smallest numerical charge in every set of units.,false
+sr.minimal_coupling.q2,sr.minimal_coupling.q2.c,30,A rule that eliminates every interaction from the action.,false
+sr.minimal_coupling.q2,sr.minimal_coupling.q2.d,40,An arbitrary substitution applied only after solving the uncoupled equations.,false
+sr.minimal_coupling.q3,sr.minimal_coupling.q3.a,10,It is a sum of separately invariant potential components without any contraction.,false
+sr.minimal_coupling.q3,sr.minimal_coupling.q3.b,20,It contracts a covector with a displacement four-vector to give a scalar action contribution.,true
+sr.minimal_coupling.q3,sr.minimal_coupling.q3.c,30,It is a preferred-frame interaction because it uses the time component only.,false
+sr.minimal_coupling.q3,sr.minimal_coupling.q3.d,40,It is the field energy density integrated over three-dimensional space.,false
+sr.minimal_coupling.q4,sr.minimal_coupling.q4.a,10,\(13\).,false
+sr.minimal_coupling.q4,sr.minimal_coupling.q4.b,20,\(15\).,false
+sr.minimal_coupling.q4,sr.minimal_coupling.q4.c,30,\(1\).,true
+sr.minimal_coupling.q4,sr.minimal_coupling.q4.d,40,\(5\).,false
+sr.minimal_coupling.q5,sr.minimal_coupling.q5.a,10,"Canonical momentum always ignores the potential, while mechanical momentum includes it.",false
+sr.minimal_coupling.q5,sr.minimal_coupling.q5.b,20,The two momenta differ only because the particle has been moved to a different coordinate origin.,false
+sr.minimal_coupling.q5,sr.minimal_coupling.q5.c,30,Mechanical momentum is not defined for any charged particle.,false
+sr.minimal_coupling.q5,sr.minimal_coupling.q5.d,40,"The Lagrangian includes potential-dependent velocity couplings, so its canonical momentum need not equal the mechanical momentum.",true
+sr.minimal_coupling.q6,sr.minimal_coupling.q6.a,10,"The Lorentz force law, with derivatives of the potential combining into the field tensor.",true
+sr.minimal_coupling.q6,sr.minimal_coupling.q6.b,20,A force proportional to the raw gauge function alone.,false
+sr.minimal_coupling.q6,sr.minimal_coupling.q6.c,30,A rule requiring every charged particle to remain at rest.,false
+sr.minimal_coupling.q6,sr.minimal_coupling.q6.d,40,An equation fixing a unique potential with no remaining gauge redundancy.,false
 sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.a,10,\(\mathbf F\overset{\text{3-vector}}{=}q(\mathbf E+\mathbf v\times\mathbf B)\),true
 sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.b,20,\(\mathbf F=m\mathbf a/q\),false
 sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.c,30,\(\mathbf F=q(\mathbf E\cdot\mathbf B)\),false
 sr.lorentz_force_law.q1,sr.lorentz_force_law.q1.d,40,\(\mathbf F=\nabla\cdot\mathbf E\),false
+sr.lorentz_force_law.q2,sr.lorentz_force_law.q2.a,10,The four-momentum is the ordinary coordinate-time derivative of the field tensor.,false
+sr.lorentz_force_law.q2,sr.lorentz_force_law.q2.b,20,The proper-time rate of four-momentum equals charge times the field tensor acting on four-velocity.,true
+sr.lorentz_force_law.q2,sr.lorentz_force_law.q2.c,30,"The force is proportional only to the particle's position, not to its motion.",false
+sr.lorentz_force_law.q2,sr.lorentz_force_law.q2.d,40,The equation says that every four-momentum component is conserved in an external electromagnetic field.,false
 sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.a,10,"\(\mathbf F=(46,0,0)\)",true
 sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.b,20,"\(\mathbf F=(6,40,0)\)",false
 sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.c,30,"\(\mathbf F=(23,0,0)\)",false
 sr.lorentz_force_law.q3,sr.lorentz_force_law.q3.d,40,"\(\mathbf F=(-34,0,0)\)",false
+sr.lorentz_force_law.q4,sr.lorentz_force_law.q4.a,10,The magnetic force vanishes for every moving charged particle.,false
+sr.lorentz_force_law.q4,sr.lorentz_force_law.q4.b,20,The magnetic force is parallel to velocity but is too weak to transfer energy.,false
+sr.lorentz_force_law.q4,sr.lorentz_force_law.q4.c,30,"The magnetic force is perpendicular to velocity, making its instantaneous power zero.",true
+sr.lorentz_force_law.q4,sr.lorentz_force_law.q4.d,40,Magnetic forces conserve all three momentum components separately.,false
+sr.lorentz_force_law.q5,sr.lorentz_force_law.q5.a,10,The raw potential itself is invariant under every gauge transformation.,false
+sr.lorentz_force_law.q5,sr.lorentz_force_law.q5.b,20,The field tensor is introduced to hide a dependence on the preferred gauge.,false
+sr.lorentz_force_law.q5,sr.lorentz_force_law.q5.c,30,The force has no relationship to spacetime derivatives of the potential.,false
+sr.lorentz_force_law.q5,sr.lorentz_force_law.q5.d,40,"The variation produces antisymmetric derivatives of the potential, giving the gauge-invariant field tensor.",true
 sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.b,10,The force from an external electromagnetic field,false
 sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.c,20,Relativistic momentum,false
 sr.lorentz_force_law.q6,sr.lorentz_force_law.q6.a,30,Reaction to the charge's own emitted radiation,true
@@ -668,6 +816,26 @@ sr.em_energy_density.q1,sr.em_energy_density.q1.a,10,Field energy per unit volum
 sr.em_energy_density.q1,sr.em_energy_density.q1.b,20,Charge per unit volume only,false
 sr.em_energy_density.q1,sr.em_energy_density.q1.c,30,Gauge freedom per unit time,false
 sr.em_energy_density.q1,sr.em_energy_density.q1.d,40,Proper time along a worldline,false
+sr.em_energy_density.q2,sr.em_energy_density.q2.a,10,Squares give positive vacuum field-energy contributions that are unchanged by reversing the fields.,true
+sr.em_energy_density.q2,sr.em_energy_density.q2.b,20,The sign of the stored energy must reverse when either field reverses.,false
+sr.em_energy_density.q2,sr.em_energy_density.q2.c,30,The squares ensure that stronger fields always store less energy.,false
+sr.em_energy_density.q2,sr.em_energy_density.q2.d,40,"The energy is linear in the fields, but squaring is used only to remove units.",false
+sr.em_energy_density.q3,sr.em_energy_density.q3.a,10,\(25\).,false
+sr.em_energy_density.q3,sr.em_energy_density.q3.b,20,\(12.5\).,true
+sr.em_energy_density.q3,sr.em_energy_density.q3.c,30,\(3.5\).,false
+sr.em_energy_density.q3,sr.em_energy_density.q3.d,40,\(4.5\).,false
+sr.em_energy_density.q4,sr.em_energy_density.q4.a,10,\(u\) is the Lorentz-invariant trace of the electromagnetic stress-energy tensor.,false
+sr.em_energy_density.q4,sr.em_energy_density.q4.b,20,\(u=T^{01}\) for every choice of inertial frame.,false
+sr.em_energy_density.q4,sr.em_energy_density.q4.c,30,\(u=T^{00}\) in the chosen inertial frame.,true
+sr.em_energy_density.q4,sr.em_energy_density.q4.d,40,\(u\) is independent of the tensor and depends only on the potential's gauge.,false
+sr.em_energy_density.q5,sr.em_energy_density.q5.a,10,Field energy exists only at the positions of material charges.,false
+sr.em_energy_density.q5,sr.em_energy_density.q5.b,20,An electromagnetic wave carries momentum but no energy between source and detector.,false
+sr.em_energy_density.q5,sr.em_energy_density.q5.c,30,Energy density is nonzero only where matter absorbs the field.,false
+sr.em_energy_density.q5,sr.em_energy_density.q5.d,40,"Fields store and transport energy locally, including in regions with no charged particles.",true
+sr.em_energy_density.q6,sr.em_energy_density.q6.a,10,"Energy density is one frame-dependent component; fluxes, momentum density and stresses also belong in the tensor.",true
+sr.em_energy_density.q6,sr.em_energy_density.q6.b,20,Energy density is the only physical component; all other tensor entries are optional notation.,false
+sr.em_energy_density.q6,sr.em_energy_density.q6.c,30,A single invariant energy density determines every tensor component in every frame.,false
+sr.em_energy_density.q6,sr.em_energy_density.q6.d,40,Energy density alone fixes the field direction and polarisation at an event.,false
 sr.poynting_vector.q1,sr.poynting_vector.q1.a,10,\(\mathbf S\overset{\text{SI}}{=}(1/\mu_0)\mathbf E\times\mathbf B\),true
 sr.poynting_vector.q1,sr.poynting_vector.q1.b,20,\(\mathbf S=\nabla\cdot\mathbf E\),false
 sr.poynting_vector.q1,sr.poynting_vector.q1.c,30,\(\mathbf S=m\mathbf v\),false
@@ -676,10 +844,42 @@ sr.poynting_vector.q2,sr.poynting_vector.q2.b,10,Electric charge density,false
 sr.poynting_vector.q2,sr.poynting_vector.q2.c,20,Magnetic flux density,false
 sr.poynting_vector.q2,sr.poynting_vector.q2.d,30,Electromagnetic scalar potential,false
 sr.poynting_vector.q2,sr.poynting_vector.q2.a,40,Electromagnetic energy flux,true
+sr.poynting_vector.q3,sr.poynting_vector.q3.a,10,"\(\mathbf S=(6,0,0)\).",true
+sr.poynting_vector.q3,sr.poynting_vector.q3.b,20,"\(\mathbf S=(-6,0,0)\).",false
+sr.poynting_vector.q3,sr.poynting_vector.q3.c,30,"\(\mathbf S=(0,6,0)\).",false
+sr.poynting_vector.q3,sr.poynting_vector.q3.d,40,"\(\mathbf S=(0,0,6)\).",false
+sr.poynting_vector.q4,sr.poynting_vector.q4.a,10,\(\mathbf g=c^2\mathbf S\).,false
+sr.poynting_vector.q4,sr.poynting_vector.q4.b,20,\(\mathbf g=\mathbf S/c^2\).,true
+sr.poynting_vector.q4,sr.poynting_vector.q4.c,30,\(\mathbf g=\mathbf S/c\).,false
+sr.poynting_vector.q4,sr.poynting_vector.q4.d,40,\(\mathbf g=c\mathbf S\).,false
+sr.poynting_vector.q5,sr.poynting_vector.q5.a,10,Light pressure requires photons to have nonzero invariant rest mass.,false
+sr.poynting_vector.q5,sr.poynting_vector.q5.b,20,Only a static electric field can transfer momentum; a travelling wave cannot.,false
+sr.poynting_vector.q5,sr.poynting_vector.q5.c,30,The electromagnetic field carries momentum that can be transferred to matter on absorption or reflection.,true
+sr.poynting_vector.q5,sr.poynting_vector.q5.d,40,Radiation pressure is caused solely by a heating-induced change in air pressure.,false
+sr.poynting_vector.q6,sr.poynting_vector.q6.a,10,Every arrow is the measured path of one photon.,false
+sr.poynting_vector.q6,sr.poynting_vector.q6.b,20,Each arrow gives the velocity of a charged source particle.,false
+sr.poynting_vector.q6,sr.poynting_vector.q6.c,30,Poynting-vector arrows determine a unique material flow even when no matter is present.,false
+sr.poynting_vector.q6,sr.poynting_vector.q6.d,40,"The arrows depict local field energy flux, not trajectories of individual particles.",true
 sr.em_stress_energy.q1,sr.em_stress_energy.q1.a,10,"It also describes momentum density, flux, and stress",true
 sr.em_stress_energy.q1,sr.em_stress_energy.q1.b,20,It removes the electromagnetic field,false
 sr.em_stress_energy.q1,sr.em_stress_energy.q1.c,30,It fixes a gauge,false
 sr.em_stress_energy.q1,sr.em_stress_energy.q1.d,40,It replaces charge conservation,false
+sr.em_stress_energy.q2,sr.em_stress_energy.q2.a,10,"The field tensor, combined algebraically using the metric for contractions and index placement.",true
+sr.em_stress_energy.q2,sr.em_stress_energy.q2.b,20,"The gauge function alone, without any field-tensor dependence.",false
+sr.em_stress_energy.q2,sr.em_stress_energy.q2.c,30,"The particle position four-vector, with no electromagnetic ingredients.",false
+sr.em_stress_energy.q2,sr.em_stress_energy.q2.d,40,Four unrelated scalar potentials that are unchanged under boosts.,false
+sr.em_stress_energy.q3,sr.em_stress_energy.q3.a,10,"Energy must reverse sign whenever the field reverses, requiring linear terms.",false
+sr.em_stress_energy.q3,sr.em_stress_energy.q3.b,20,"Quadratic terms are unchanged when the field reverses sign, as the electromagnetic energy should be.",true
+sr.em_stress_energy.q3,sr.em_stress_energy.q3.c,30,Antisymmetry forbids multiplying the field tensor by itself in contractions.,false
+sr.em_stress_energy.q3,sr.em_stress_energy.q3.d,40,The stress-energy tensor must be linear because Maxwell's vacuum equations are linear.,false
+sr.em_stress_energy.q4,sr.em_stress_energy.q4.a,10,"\(10\,\mathrm{Pa}\).",false
+sr.em_stress_energy.q4,sr.em_stress_energy.q4.b,20,"\(2.5\,\mathrm{Pa}\).",false
+sr.em_stress_energy.q4,sr.em_stress_energy.q4.c,30,"\(5\,\mathrm{Pa}\).",true
+sr.em_stress_energy.q4,sr.em_stress_energy.q4.d,40,"\(25\,\mathrm{Pa}\).",false
+sr.em_stress_energy.q5,sr.em_stress_energy.q5.a,10,"Each is a separate Lorentz scalar, so their values must be the same in every frame.",false
+sr.em_stress_energy.q5,sr.em_stress_energy.q5.b,20,The tensor describes a different physical electromagnetic field for each observer.,false
+sr.em_stress_energy.q5,sr.em_stress_energy.q5.c,30,"The split is fixed absolutely by the gauge function, independently of the observer.",false
+sr.em_stress_energy.q5,sr.em_stress_energy.q5.d,40,They are components of one tensor relative to a chosen observer's time-space split.,true
 sr.em_stress_energy.q6,sr.em_stress_energy.q6.a,10,No; it repackages the existing field's energy and momentum,true
 sr.em_stress_energy.q6,sr.em_stress_energy.q6.b,20,Yes; it is an independent fifth electromagnetic field,false
 sr.em_stress_energy.q6,sr.em_stress_energy.q6.c,30,Yes; it replaces the field tensor,false
@@ -736,3 +936,23 @@ sr.gauge_fixing.q1,sr.gauge_fixing.q1.a,10,Choosing a representative potential f
 sr.gauge_fixing.q1,sr.gauge_fixing.q1.b,20,Changing the physical electromagnetic field,false
 sr.gauge_fixing.q1,sr.gauge_fixing.q1.c,30,Making charge non-conserved,false
 sr.gauge_fixing.q1,sr.gauge_fixing.q1.d,40,Replacing Lorentz transformations,false
+sr.gauge_fixing.q2,sr.gauge_fixing.q2.a,10,"Gauge invariance makes the potential uniquely measurable, so no freedom remains.",false
+sr.gauge_fixing.q2,sr.gauge_fixing.q2.b,20,"Many potentials represent the same physical field, allowing a convenient representative to be chosen.",true
+sr.gauge_fixing.q2,sr.gauge_fixing.q2.c,30,Gauge fixing is possible because any change of potential creates a compensating charge.,false
+sr.gauge_fixing.q2,sr.gauge_fixing.q2.d,40,A gauge condition changes the field while leaving only the particle positions unchanged.,false
+sr.gauge_fixing.q3,sr.gauge_fixing.q3.a,10,Yes: any constant value of \(\Box\Lambda\) preserves the condition.,false
+sr.gauge_fixing.q3,sr.gauge_fixing.q3.b,20,Yes: preserving the field tensor guarantees preserving every gauge condition.,false
+sr.gauge_fixing.q3,sr.gauge_fixing.q3.c,30,"No: preserving Lorenz gauge requires \(\Box\Lambda=0\), not \(3\).",true
+sr.gauge_fixing.q3,sr.gauge_fixing.q3.d,40,"No: Lorenz gauge forbids every further gauge transformation, even those with \(\Box\Lambda=0\).",false
+sr.gauge_fixing.q4,sr.gauge_fixing.q4.a,10,It adds a small physical force to make an otherwise inconsistent field equation solvable.,false
+sr.gauge_fixing.q4,sr.gauge_fixing.q4.b,20,"It selects a new charge distribution, so it is an extra source assumption.",false
+sr.gauge_fixing.q4,sr.gauge_fixing.q4.c,30,It removes all electric fields but preserves magnetic ones.,false
+sr.gauge_fixing.q4,sr.gauge_fixing.q4.d,40,It changes the representative potential while leaving the field tensor and gauge-invariant predictions unchanged.,true
+sr.gauge_fixing.q5,sr.gauge_fixing.q5.a,10,It is Lorentz-covariant and simplifies the potential equations to wave-equation form.,true
+sr.gauge_fixing.q5,sr.gauge_fixing.q5.b,20,"It fixes the potential uniquely in every region, with no residual freedom possible.",false
+sr.gauge_fixing.q5,sr.gauge_fixing.q5.c,30,It is a new field law requiring all electromagnetic waves to vanish.,false
+sr.gauge_fixing.q5,sr.gauge_fixing.q5.d,40,It avoids covariance by selecting a preferred observer.,false
+sr.gauge_fixing.q6,sr.gauge_fixing.q6.a,10,Yes: every distinct potential necessarily gives a different physical force.,false
+sr.gauge_fixing.q6,sr.gauge_fixing.q6.b,20,No: a calculation using only their shared field tensor gives the same gauge-invariant predictions.,true
+sr.gauge_fixing.q6,sr.gauge_fixing.q6.c,30,Yes: the energy must depend on which gauge label is chosen.,false
+sr.gauge_fixing.q6,sr.gauge_fixing.q6.d,40,Only if both potentials are zero; otherwise no prediction can be gauge-invariant.,false
