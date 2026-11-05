@@ -2,7 +2,10 @@
 
 
 ## 1. Content
-1. It is surprising that the Schwarzschild metric has no derivation edges. Other GR concepts may need review.
+1. **DONE — GR derivation-edge repair and audit.** Schwarzschild now derives from the vacuum
+   equations, and Einstein equations from the metric action; add the Schwarzschild calculation
+   and missing Christoffel/light-deflection inputs. See the [review](../domains/gr/docs/derivation_edge_review.md)
+   for retained definitions and follow-up questions about alternative routes and module ordering.
 2. In explanation of tangent and cotangent spaces, I feel a units/dimensional angle is helpful;
    their product needs to form a dimensionless (or at least coordinate-less) quantity.
 3. Module MATHS-2 — Tensor Calculus needs more work. There is insufficient explanation to answer some questions.

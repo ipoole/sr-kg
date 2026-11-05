@@ -17,3 +17,7 @@ records the conventions that future changes must preserve.
 
 The SR and GR metric and stress-energy concepts remain separate, linked by
 `RELATED`. This is settled policy, not a pending merge decision.
+
+The [November derivation-edge review](derivation_edge_review.md) records repaired
+Schwarzschild/action dependencies and remaining module-ordering or alternative-
+derivation decisions. Those follow-ups are explicit limitations of the teaching DAG.

@@ -107,6 +107,10 @@ def test_runtime_gr_modules_match_the_reviewed_partition_candidate():
             "gr.schwarzschild_geometry_and_black_holes",
             "gr.curvature_and_gravitational_action",
         ),
+        (
+            "gr.schwarzschild_geometry_and_black_holes",
+            "gr.matter_and_einstein_equations",
+        ),
     }
 
 
@@ -159,3 +163,24 @@ def test_module_titles_include_domain_and_module_number():
         title.startswith(prefix)
         for title, prefix in zip(modules["title"], expected_prefixes)
     )
+
+
+def test_schwarzschild_derivation_reaches_vacuum_equations_and_metric_action():
+    edges = _read_csv("edges.csv")
+    derivations = set(zip(
+        edges.loc[edges["relation"].eq("DERIVES_FROM"), "source"],
+        edges.loc[edges["relation"].eq("DERIVES_FROM"), "target"],
+    ))
+    route = [
+        "gr.schwarzschild_metric",
+        "gr.vacuum_field_equations",
+        "gr.einstein_field_equations",
+        "gr.einstein_hilbert_action",
+    ]
+    assert all(pair in derivations for pair in zip(route, route[1:]))
+    # A solution can retain its taxonomy as well as its derivation dependency.
+    assert not edges[
+        edges["source"].eq(route[0])
+        & edges["target"].eq(route[1])
+        & edges["relation"].eq("INSTANCE_OF")
+    ].empty
