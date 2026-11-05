@@ -14,11 +14,12 @@ var kgGraphModel = (function() {
   var ContextDepth = Object.freeze({
     ONE_HOP: "one-hop",
     TWO_HOPS: "two-hops",
+    THREE_HOPS: "three-hops",
     TRANSITIVE: "transitive"
   });
 
   function normaliseContextDepth(depth) {
-    if (depth === ContextDepth.TWO_HOPS || depth === ContextDepth.TRANSITIVE) {
+    if (depth === ContextDepth.TWO_HOPS || depth === ContextDepth.THREE_HOPS || depth === ContextDepth.TRANSITIVE) {
       return depth;
     }
     return ContextDepth.ONE_HOP;
@@ -90,6 +91,7 @@ var kgGraphModel = (function() {
 
   function contextDepthLimit(depth) {
     if (depth === ContextDepth.TWO_HOPS) { return 2; }
+    if (depth === ContextDepth.THREE_HOPS) { return 3; }
     if (depth === ContextDepth.TRANSITIVE) { return Infinity; }
     return 1;
   }

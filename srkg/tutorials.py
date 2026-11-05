@@ -43,7 +43,7 @@ CONTEXT_PRESETS = frozenset({
     "uses",
     "related",
 })
-CONTEXT_DEPTHS = frozenset({"one-hop", "two-hops", "transitive"})
+CONTEXT_DEPTHS = frozenset({"one-hop", "two-hops", "three-hops", "transitive"})
 VIEWS = frozenset({"both", "graph", "details"})
 MODULE_REPRESENTATIONS = frozenset({"folded", "expanded"})
 FIT_TARGETS = frozenset({"reveal", "selection", "context", "displayed"})

@@ -79,7 +79,7 @@ Context asks a question about your selection:
 | **Related** | Associations without a prerequisite direction. |
 | **Custom…** | Your own combination of relationships and directions. |
 
-**Depth** chooses one hop, two hops or **Transitive**, which follows the complete
+**Depth** chooses one hop, two hops, three hops or **Transitive**, which follows the complete
 reachable chain. Begin with one hop to inspect a few immediate connections;
 increase the depth to understand a longer argument. For a module, context starts
 from all its member concepts.

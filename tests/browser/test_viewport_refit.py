@@ -83,6 +83,7 @@ def _close_tools_overlay(page):
 
 def _enter_browsing_mode(browser_graph, mode):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     page.locator("#kg_context_depth_select").select_option("one-hop")
     browser_graph.click_concept("3.1")
 
@@ -278,6 +279,7 @@ def test_fit_skips_animation_on_low_capability_devices(browser_graph):
 @pytest.mark.browser
 def test_second_context_fit_contracts_around_selection_until_navigation(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     _close_tools_overlay(page)
     published = page.evaluate("() => kgGlobalLayoutSnapshot()")
     browser_graph.click_concept("3.1")
@@ -405,6 +407,7 @@ def test_contraction_graph_plan_walks_arbitrary_depth_and_keeps_shortest_parents
 @pytest.mark.browser
 def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     _close_tools_overlay(page)
     browser_graph.click_concept("3.1")
     assert page.locator("#kg_display_scope_select").input_value() == "full"
@@ -438,6 +441,7 @@ def test_full_graph_fit_plus_moves_only_context_nodes(browser_graph):
 @pytest.mark.browser
 def test_fit_plus_unlocks_only_context_and_suspends_personal_editing(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     browser_graph.open_control_section("kg_layouts_section")
     assert page.locator("#kg_layout_edit_persistence").count() == 0
     personal_toggle = page.locator("#kg_layout_edit_toggle")

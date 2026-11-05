@@ -113,6 +113,9 @@ def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph
 @pytest.mark.browser
 def test_node_hover_tooltip_typesets_mathjax(mathjax_browser_graph):
     page = mathjax_browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_fit_select").select_option("displayed")
+    page.locator("#kg_fit_apply").click()
 
     point = page.evaluate(
         """() => {
@@ -355,6 +358,7 @@ def test_expand_context_is_offered_for_context_represented_by_other_folded_modul
     browser_graph,
 ):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
@@ -587,6 +591,7 @@ def test_focused_folded_modules_aggregate_boundary_edges_by_relation(browser_gra
 @pytest.mark.browser
 def test_module_boundary_hover_lists_short_underlying_relationships(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
@@ -1618,6 +1623,7 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
 @pytest.mark.browser
 def test_phone_context_status_and_representation_actions_share_one_row(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     page.set_viewport_size({"width": 390, "height": 800})
     browser_graph.click_concept("2.1")
     page.locator(
@@ -1697,15 +1703,15 @@ def test_phone_module_masthead_places_contents_to_right_until_open(repo_browser_
 
 
 @pytest.mark.browser
-def test_default_startup_honours_domain_metadata_with_transitive_foundations(shared_repo_browser_graph):
+def test_default_startup_honours_domain_metadata_with_two_hop_derivation(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
 
     module_id = page.evaluate('kgViewerConfig.domains.find(item => item.initialSelection).initialSelection.split(":")[1]')
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": module_id}
     assert page.locator("#info_panel").get_attribute("data-module-id") == module_id
     assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator("#kg_context_preset_select").input_value() == "foundations"
-    assert page.locator("#kg_context_depth_select").input_value() == "transitive"
+    assert page.locator("#kg_context_preset_select").input_value() == "derivation"
+    assert page.locator("#kg_context_depth_select").input_value() == "two-hops"
     assert page.locator("#kg_view_select").input_value() == "both"
     assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator(".kg-concept-item.active").count() == 0
@@ -1971,6 +1977,7 @@ def test_concept_link_hover_shows_preview_without_navigating(browser_graph):
 @pytest.mark.browser
 def test_concept_link_preview_highlights_visible_graph_target(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
 
     browser_graph.click_concept("2.1")
     page.locator("#info_panel details.optional-detail summary").click()
@@ -2011,6 +2018,7 @@ def test_concept_link_preview_does_not_highlight_hidden_graph_target(browser_gra
 @pytest.mark.browser
 def test_edge_click_opens_relationship_inspection(shared_browser_graph):
     page = shared_browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
 
     page.evaluate(
         """() => {
@@ -2044,6 +2052,7 @@ def test_edge_click_opens_relationship_inspection(shared_browser_graph):
 @pytest.mark.browser
 def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathjax_browser_graph):
     page = mathjax_browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     page.locator("#kg_display_scope_select").select_option("all")
 
     page.evaluate(

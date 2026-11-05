@@ -40,7 +40,7 @@ can open, bookmark or copy to share.
 ## Start with the map
 
 The viewer opens with modules folded and SR-5 Field Dynamics and Radiation selected.
-Context + background emphasises its transitive Foundations across the wider map.
+Context + background emphasises its 2-hop Derivation across the wider map.
 
 - Click a module to read its introduction.
 - Use the `+` in a folded module's top-right corner to reveal its concepts; use
@@ -61,7 +61,7 @@ which relationships are followed:
 - **Foundations** — derivation, construction and prerequisites together.
 - **Uses** — ideas that depend on or use the selection.
 
-Choose one hop, two hops or the complete transitive chain.
+Choose one hop, two hops, three hops or the complete transitive chain.
 
 A selected concept inside a folded module appears within the module. Use the
 offered actions to expand its module or any folded part of its context. Context
