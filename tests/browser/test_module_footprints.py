@@ -148,7 +148,7 @@ def test_module_footer_extends_only_bottom_and_preserves_anchor_offsets(browser_
     base, box = result['base'], result['withFooter']
     for key in ['left', 'right', 'top', 'width', 'x']:
         assert box[key] == base[key]
-    assert box['footerHeight'] > 0
+    assert 0 < box['footerHeight'] <= 220
     assert box['contentBottom'] == base['bottom']
     assert box['bottom'] == base['bottom'] + box['footerHeight']
     assert box['height'] == base['height'] + box['footerHeight']

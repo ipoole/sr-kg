@@ -124,9 +124,8 @@ def test_real_module_label_ink_stays_inside_boxes(shared_repo_browser_graph):
           const bottom = matrix.d * (y+metrics.actualBoundingBoxDescent) + matrix.f;
           const inside = modules.some(node => {
             const n = network.body.nodes[node.id], s = n.shape;
-            const footprint = kgModuleFootprint(node.moduleId);
-            const a = network.canvasToDOM({x:s.left,y:footprint.contentBottom});
-            const b = network.canvasToDOM({x:s.left+s.width,y:s.top+s.height});
+            const a = network.canvasToDOM({x:s.left,y:n.y+node.moduleGraphicLabelArea.top});
+            const b = network.canvasToDOM({x:s.left+s.width,y:n.y+node.moduleGraphicLabelArea.bottom});
             const ratio = network.canvas.frame.canvas.width / network.canvas.frame.canvas.clientWidth;
             return left >= a.x*ratio-1 && right <= b.x*ratio+1 &&
               top >= a.y*ratio-1 && bottom <= b.y*ratio+1;
@@ -488,3 +487,39 @@ def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes
     assert page.evaluate('() => kgExpandedModuleLabelSnapshot()') == []
     assert page.evaluate('() => kgGlobalLayoutSnapshot()') == before
     assert not browser_graph.page_errors
+
+
+@pytest.mark.browser
+def test_folded_module_text_is_visually_centred_in_available_area(shared_repo_browser_graph):
+    result = shared_repo_browser_graph.page.evaluate("""() => {
+      const ctx=network.canvas.frame.canvas.getContext('2d'), fill=ctx.fillText;
+      const modules=nodes.get().filter(n=>n.isModuleNode && !n.hidden);
+      const originals={}, ink={}; let active=null;
+      modules.forEach(n=>{
+        const live=network.body.nodes[n.id]; originals[n.id]=live.draw;
+        live.draw=function(...args){active=n.id;
+          try{return originals[n.id].apply(this,args)}finally{active=null}};
+      });
+      ctx.fillText=function(text,x,y,...args){
+        if(active && this.fillStyle==='#111827' && text.trim()){
+          const m=this.measureText(text), t=this.getTransform();
+          const r=ink[active]||(ink[active]={top:Infinity,bottom:-Infinity});
+          r.top=Math.min(r.top,t.d*(y-m.actualBoundingBoxAscent)+t.f);
+          r.bottom=Math.max(r.bottom,t.d*(y+m.actualBoundingBoxDescent)+t.f);
+        }
+        return fill.call(this,text,x,y,...args);
+      };
+      try{network.redraw()}finally{
+        ctx.fillText=fill;
+        modules.forEach(n=>network.body.nodes[n.id].draw=originals[n.id]);
+      }
+      const ratio=ctx.canvas.width/ctx.canvas.clientWidth;
+      return modules.map(n=>{
+        const p=network.getPositions([n.id])[n.id];
+        const target=network.canvasToDOM({x:p.x,y:p.y+n.moduleGraphicLabelCenter});
+        return {id:n.moduleId,error:Math.abs((ink[n.id].top+ink[n.id].bottom)/2-target.y*ratio)
+          /(network.getScale()*ratio)};
+      });
+    }""")
+    assert result
+    assert all(item['error'] < 5 for item in result), result

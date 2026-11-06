@@ -283,24 +283,32 @@ function kgCreateGraphPresentation(options) {
       context.font = countFontSize + "px Arial";
       var labelHeight = options.availableHeight || height * 0.84;
       var lineHeightFactor = options.lineHeightFactor || 1.25;
-      if ((lines.length * size + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
+      if ((lines.length * Math.max(size, countFontSize) + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
           context.measureText(countLabel).width <= width * 0.88) {
         low = size;
       } else { high = size; }
     }
     var titleLines = linesAt(low);
     var verticalShift = Number(options.verticalShift) || 0;
+    var titleLineHeight = Math.max(low, countFontSize);
+    context.textBaseline = "middle";
+    context.font = "bold " + low + "px Arial";
+    var titleAscent = context.measureText(titleLines[0] || "").actualBoundingBoxAscent;
+    context.font = countFontSize + "px Arial";
+    var countDescent = context.measureText(countLabel).actualBoundingBoxDescent;
+    if (Number.isFinite(titleAscent) && Number.isFinite(countDescent)) {
+      verticalShift -= (titleLineHeight - countFontSize) / 4 + (countDescent - titleAscent) / 2;
+    }
     var result = {
       text: titleLines.map(function(line) {
         return "<b>" + escapeHtml(line) + "</b>";
       }).join("\n") + "\n" + countLabel,
       size: low,
       countSize: countFontSize,
-      // vis centres the first baseline using the base (count) font size,
-      // even for larger bold title lines. Correct each style's baseline
-      // so the combined title/count block is centred inside its box.
-      titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
-      countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
+      // vis starts at the count-font baseline and gives each title line at
+      // least that height. Centre the actual glyph ink, including the count.
+      titleOffset: (titleLines.length - 1) * (countFontSize - titleLineHeight) / 2 + verticalShift,
+      countOffset: titleLines.length * (countFontSize - titleLineHeight) / 2 + verticalShift
     };
     fittedModuleLabelCache[cacheKey] = result;
     return Object.assign({}, result);
@@ -312,12 +320,14 @@ function kgCreateGraphPresentation(options) {
       var inset = Math.max(18, Math.min(width, contentHeight) * 0.055);
       var imageWidth = Math.max(1, Math.min(width - 2 * inset, (contentHeight - 2 * inset) * 1.6));
       var imageHeight = imageWidth / 1.6;
+      var labelTop = inset + imageHeight + inset * 0.55;
+      var labelBottom = height - inset * 0.6;
       return {
-        graphic: {x: (width - imageWidth) / 2, y: (contentHeight - imageHeight) / 2,
+        graphic: {x: (width - imageWidth) / 2, y: inset,
           width: imageWidth, height: imageHeight},
-        labelArea: {top: contentHeight - height / 2, bottom: height / 2,
-          height: options.moduleFooterHeight},
-        labelCenter: contentHeight + options.moduleFooterHeight / 2 - height / 2
+        labelArea: {top: labelTop - height / 2, bottom: labelBottom - height / 2,
+          height: labelBottom - labelTop},
+        labelCenter: (labelTop + labelBottom) / 2 - height / 2
       };
     }
     var pad = Math.max(18, Math.min(width, height) * 0.055);

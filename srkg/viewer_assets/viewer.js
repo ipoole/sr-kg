@@ -2337,6 +2337,11 @@
           var selectedConceptProxyId = selectedConceptInFoldedModule(moduleId);
           var usesGraphicLayout = hasGraphic || Boolean(selectedConceptProxyId);
           var graphicLayout = moduleGraphicLayout(footprint.width, footprint.height);
+          var labelArea = usesGraphicLayout ? graphicLayout.labelArea : {
+            top: -footprint.height * 0.42, bottom: footprint.height * 0.42,
+            height: footprint.height * 0.84
+          };
+          var labelCenter = (labelArea.top + labelArea.bottom) / 2;
           var fittedLabel = fittedModuleLabel(
             module.title || moduleId,
             memberCount,
@@ -2345,8 +2350,8 @@
             {
               countFontSize: usesGraphicLayout ? 52 : 80,
               titleFontCap: 128,
-              verticalShift: graphicLayout.labelCenter,
-              availableHeight: graphicLayout.labelArea.height * (usesGraphicLayout ? 0.94 : 0.75),
+              verticalShift: labelCenter,
+              availableHeight: labelArea.height * 0.94,
               lineWidthFraction: 0.72,
               lineHeightFactor: 1.06
             }
@@ -2360,10 +2365,8 @@
             selectedConceptProxyId: selectedConceptProxyId || "",
             // Keep the custom metadata type stable across DataSet updates;
             // vis-network cannot merge a nested object over a previous null.
-            moduleGraphicLabelArea: graphicLayout
-              ? graphicLayout.labelArea
-              : {top: 0, bottom: 0, height: 0},
-            moduleGraphicLabelCenter: graphicLayout ? graphicLayout.labelCenter : 0,
+            moduleGraphicLabelArea: labelArea,
+            moduleGraphicLabelCenter: labelCenter,
             label: fittedLabel.text,
             moduleFootprintWidth: footprint.width,
             moduleFootprintHeight: footprint.height,

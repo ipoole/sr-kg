@@ -32,7 +32,7 @@ var kgModuleGeometry = (function() {
       x: x, y: y, offset: {x: x - anchor.x, y: y - anchor.y}
     };
   }
-  var footerHeight = 300;
+  var footerHeight = 220;
 
   function withFooter(bounds) {
     return Object.assign({}, bounds, {

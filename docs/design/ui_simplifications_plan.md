@@ -80,11 +80,13 @@ Summary links are clipped outside both endpoint boundaries and drawn below pale,
 semi-transparent expanded-module backgrounds. Internal links and concepts are
 drawn above those backgrounds; passing summaries remain faintly visible beneath.
 
-The option-2 experiment reserves a 300-unit footer below the concept bounds, in
+The option-2 experiment reserves a 220-unit footer below the concept bounds, in
 both folded and expanded module footprints. Only the bottom extends: concept
 positions and module anchors remain unchanged. Expanded titles use 72-unit text,
 at most two lines with ellipsis, centred inside the footer. Folded graphics occupy
-the content area, with their existing fitted title/count rendering in the footer.
+the content area; their fitted title/count block is visually centred in the full
+remaining space below the graphic. Modules without graphics centre their text
+within the whole box. Font metrics correct the mixed-size title/count baselines.
 The expanded footer has an opaque pale fill to protect its title from passing
 edges. Framing and folded collision boxes include the enlarged footprint; Fit++
 reserves visible footer rectangles. Context-only views omit expanded boundaries
