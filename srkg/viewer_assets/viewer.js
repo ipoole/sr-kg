@@ -12,7 +12,6 @@
       var edgeHoverWidth = kgViewerConfig.edgeHoverWidth;
 
       var DisplayScope = Object.freeze({
-        ALL: "all",
         OVERVIEW: "overview",
         FULL: "full",
         CONTEXT: "context"
@@ -1340,7 +1339,7 @@
           var select = document.getElementById("kg_display_scope_select");
           if (select) {
             select.value = viewerState.displayScope;
-            select.title = "Overview: internal concept edges and module summaries. All equally: the whole graph in foreground. Context + background: emphasise the selected context. Context only: omit the background.";
+            select.title = "Overview: internal concept edges and module summaries. Context + background: emphasise the selected context. Context only: omit the background.";
           }
           document.body.classList.toggle(
             "kg-graph-hidden",
@@ -3702,7 +3701,6 @@
         function updateResponsiveControlLabels() {
           var compact = phoneViewportActive();
           setResponsiveOptionLabels("kg_display_scope_select", {
-            all: ["All equally", "All equally"],
             overview: ["Overview", "Overview"],
             full: ["Context + background", "Context + bg"],
             context: ["Context only", "Context"]
@@ -3797,7 +3795,6 @@
           summary.parentElement.setAttribute("data-context-can-expand", representedCount > 0 ? "true" : "false");
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
-            : viewerState.displayScope === DisplayScope.ALL ? "All equally"
             : viewerState.displayScope === DisplayScope.OVERVIEW ? "Overview" : "Context + background";
           summary.setAttribute("data-selection-type", selection.type);
           summary.setAttribute("data-context-preset", viewerState.contextRule.preset);
@@ -3847,7 +3844,7 @@
 
         function setViewerDisplayScope(scope) {
           resetContextFitInteraction();
-          viewerState.displayScope = [DisplayScope.ALL, DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.ALL;
+          viewerState.displayScope = [DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.OVERVIEW;
           updateGraphViewControls();
           renderGraphFromViewerState();
         }
@@ -4849,7 +4846,7 @@
               selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
             } else if (name === "set-display-scope") {
               setViewerDisplayScope(commandEnumValue(
-                command, "value", [DisplayScope.ALL, DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT]
+                command, "value", [DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT]
               ));
             } else if (name === "set-context") {
               var preset = commandEnumValue(command, "preset", Object.keys(ContextPreset).map(function(key) {
@@ -5086,12 +5083,11 @@
             snapshot.contextRule && snapshot.contextRule.customTraversals
           );
           viewerState.displayScope = [
-            DisplayScope.ALL,
             DisplayScope.OVERVIEW,
             DisplayScope.FULL,
             DisplayScope.CONTEXT
           ].indexOf(snapshot.displayScope) === -1
-            ? DisplayScope.ALL
+            ? DisplayScope.OVERVIEW
             : snapshot.displayScope;
           restoreTutorialModuleRepresentations(snapshot.moduleRepresentation || {});
 
@@ -5438,7 +5434,7 @@
             var rendered = baseNodeForRender(node.id);
             var id = String(node.id);
             var inContext = context.keep[id] === true;
-            var overview = scope === DisplayScope.ALL || scope === DisplayScope.OVERVIEW;
+            var overview = scope === DisplayScope.OVERVIEW;
             rendered.hidden = !included[id];
             rendered.opacity = inContext || overview ? 1.0 : 0.34;
             rendered.font = Object.assign({}, rendered.font || {}, {
@@ -5454,7 +5450,7 @@
             var rendered = Object.assign({}, originalEdges[edge.id]);
             var inContext = context.edgeKeep[String(edge.id)] === true;
             var endpointsIncluded = included[String(edge.from)] && included[String(edge.to)];
-            var overview = scope === DisplayScope.ALL || scope === DisplayScope.OVERVIEW;
+            var overview = scope === DisplayScope.OVERVIEW;
             rendered.kgContextEdge = inContext && !overview;
             rendered.kgOverviewEdge = overview;
             if (!endpointsIncluded) {
@@ -5488,6 +5484,15 @@
           fitIds = applyFoldedModuleOverlay(Object.keys(included), {
             compact: scope === DisplayScope.CONTEXT
           });
+
+          // Cross-module edges pass below expanded module backgrounds. Within-
+          // module edges remain in the normal foreground pass in both map modes.
+          visAdapter.setLayeredEdges(scope === DisplayScope.CONTEXT ? [] : edges.get().filter(function(edge) {
+            if (!visibleGraphEdge(edge)) { return false; }
+            var fromModule = moduleIdFromGraphNodeId(edge.from) || moduleIdForConcept(edge.from);
+            var toModule = moduleIdFromGraphNodeId(edge.to) || moduleIdForConcept(edge.to);
+            return fromModule && toModule && fromModule !== toModule;
+          }).map(function(edge) { return edge.id; }));
 
           network.unselectAll();
           if (selection.type === "concept" && visibleGraphNode(selection.id)) {
@@ -5637,8 +5642,6 @@
           if (moduleEdges.length > 0) {
             edges.add(moduleEdges);
           }
-          visAdapter.setLayeredEdges(viewerState.displayScope === DisplayScope.OVERVIEW
-            ? moduleEdges.map(function(edge) { return edge.id; }) : []);
 
           return fitIds.filter(function(id, index, ids) {
             return ids.indexOf(id) === index;
@@ -5721,7 +5724,7 @@
 
         network.on("beforeDrawing", function(ctx) {
           updateRenderedEdgeWidths();
-          if (viewerState.displayScope === DisplayScope.OVERVIEW) {
+          if (viewerState.displayScope !== DisplayScope.CONTEXT) {
             visAdapter.drawLayeredEdges(ctx, graphPresentation.clipModuleEdgeEndpoints);
             graphPresentation.drawExpandedModuleBackgrounds(ctx);
           }

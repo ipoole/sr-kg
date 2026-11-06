@@ -19,6 +19,9 @@ def _context(page, concept_id, preset, depth="one-hop", custom=None):
 @pytest.mark.browser
 def test_viewer_state_snapshot_adapts_existing_selection_and_scope(browser_graph):
     page = browser_graph.page
+    assert page.locator('#kg_display_scope_select option').evaluate_all(
+        '(options) => options.map(option => option.value)'
+    ) == ['overview', 'full', 'context']
 
     assert page.evaluate("() => kgViewerStateSnapshot()") == {
         "selection": {"type": "module", "id": "test.m01_foundations"},
@@ -140,7 +143,7 @@ def test_module_context_starts_from_every_member(browser_graph):
 def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     page = browser_graph.page
     page.locator("#kg_context_preset_select").select_option("foundations")
-    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_display_scope_select").select_option("overview")
     page.locator("#kg_context_depth_select").select_option("one-hop")
 
     initial = page.evaluate("() => kgDisplayedGraphSnapshot()")
@@ -148,7 +151,7 @@ def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     assert initial["includedNodeIds"] == ["1.1", "2.1", "2.2", "3.1"]
     assert page.evaluate(
         "() => edges.get().filter(edge => !edge.hidden).map(edge => edge.relation).sort()"
-    ) == ["DERIVES_FROM", "DERIVES_FROM", "REQUIRES", "REQUIRES", "REQUIRES"]
+    ) == ["DERIVES_FROM", "MODULE_BOUNDARY", "REQUIRES", "REQUIRES"]
     colours = page.evaluate(
         """() => [...new Set(edges.get().filter(edge => !edge.hidden)
           .map(edge => edge.color.color))].sort()"""
@@ -438,7 +441,7 @@ def test_overview_summarises_boundaries_independently_of_folding(browser_graph):
     page.locator('#kg_context_preset_select').select_option('prerequisites')
     assert page.evaluate("""() => edges.get().filter(e => !e.hidden && e.isModuleEdge)
       .map(e => e.relationCounts)""") == [{'REQUIRES': 1}]
-    page.locator('#kg_display_scope_select').select_option('all')
+    page.locator('#kg_display_scope_select').select_option('full')
     assert page.evaluate("() => nodes.get().filter(n => n.isOverviewAnchor).length") == 0
     assert page.evaluate("() => edges.get().filter(e => !e.hidden && !e.isModuleEdge).length") == 3
     assert not browser_graph.page_errors

@@ -113,7 +113,7 @@ def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph
 @pytest.mark.browser
 def test_node_hover_tooltip_typesets_mathjax(mathjax_browser_graph):
     page = mathjax_browser_graph.page
-    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_display_scope_select").select_option("overview")
     page.locator("#kg_fit_select").select_option("displayed")
     page.locator("#kg_fit_apply").click()
 
@@ -181,7 +181,7 @@ def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
     page.locator("#kg_context_preset_select").select_option("connections")
     page.locator("#kg_display_scope_select").select_option("context")
     assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+        """() => Object.fromEntries(nodes.get().filter(n => !n.isOverviewAnchor).map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
         "1.1": False,
         "2.1": False,
@@ -191,16 +191,16 @@ def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
 
 
 @pytest.mark.browser
-def test_module_all_mode_highlights_members_and_keeps_background_visible(browser_graph):
+def test_module_overview_mode_highlights_members_and_keeps_background_visible(browser_graph):
     page = browser_graph.page
-    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_display_scope_select").select_option("overview")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
 
-    assert page.locator("#kg_display_scope_select").input_value() == "all"
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
     assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+        """() => Object.fromEntries(nodes.get().filter(n => !n.isOverviewAnchor).map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
         "1.1": False,
         "2.1": False,
@@ -208,7 +208,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
         "3.1": False,
     }
     assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, node.opacity]))"""
+        """() => Object.fromEntries(nodes.get().filter(n => !n.isOverviewAnchor).map(node => [node.id, node.opacity]))"""
     ) == {
         "1.1": 1,
         "2.1": 1,
@@ -216,7 +216,7 @@ def test_module_all_mode_highlights_members_and_keeps_background_visible(browser
         "3.1": 1,
     }
     assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
-    assert page.locator("#kg_context_summary").get_attribute("data-display-scope") == "all"
+    assert page.locator("#kg_context_summary").get_attribute("data-display-scope") == "overview"
 
 
 @pytest.mark.browser
@@ -230,7 +230,7 @@ def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph)
     page.locator("#kg_display_scope_select").select_option("context")
 
     assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+        """() => Object.fromEntries(nodes.get().filter(n => !n.isOverviewAnchor).map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
         "1.1": False,
         "2.1": False,
@@ -2052,8 +2052,9 @@ def test_edge_click_opens_relationship_inspection(shared_browser_graph):
 @pytest.mark.browser
 def test_edge_hover_tooltip_typesets_mathjax_and_uses_relationship_heading(mathjax_browser_graph):
     page = mathjax_browser_graph.page
+    mathjax_browser_graph.click_concept("2.1")
     page.locator("#kg_context_preset_select").select_option("foundations")
-    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_display_scope_select").select_option("full")
 
     page.evaluate(
         """() => {
@@ -2399,7 +2400,7 @@ def test_focussed_mode_hides_non_neighbourhood_context(browser_graph):
 
     assert page.locator("#kg_display_scope_select").input_value() == "context"
     assert page.evaluate(
-        """() => Object.fromEntries(nodes.get().map(node => [node.id, Boolean(node.hidden)]))"""
+        """() => Object.fromEntries(nodes.get().filter(n => !n.isOverviewAnchor).map(node => [node.id, Boolean(node.hidden)]))"""
     ) == {
         "1.1": False,
         "2.1": False,

@@ -9,7 +9,7 @@ The [Quick start](viewer_quick_start.md) introduces the controls;
 
 1. **Selection**: always one concept or module.
 2. **Context rule**: relations, directions and a shared depth.
-3. **Graph**: All equally, Context + background, or Context only.
+3. **Graph**: Overview, Context + background, or Context only.
 4. **Module representation**: each module folded or expanded.
 5. **View**: Both, Graph or Details.
 
@@ -41,7 +41,7 @@ The selection and a selected module's members are always in the context.
 
 In both whole-graph modes, the Context relation set filters eligible edges
 across the whole graph. Direction and depth determine the context, rather than
-restricting that global edge set. All equally puts all eligible objects in
+restricting that global edge set. Overview puts all eligible objects in
 foreground, with coloured edges. Context + background emphasises the context
 and subdues the rest. Context only excludes the background. Context counts,
 expansion and Fit context remain meaningful in every mode.

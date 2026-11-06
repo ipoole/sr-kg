@@ -3,7 +3,7 @@
 ## Agreed contract
 
 - View: Both, Graph, Details. This controls panes, independently of Graph.
-- Graph: Overview, All equally, Context + background, Context only. Selection never changes it.
+- Graph: Overview, Context + background, Context only. Selection never changes it.
 - Selection always identifies an existing concept or module. Prefer SR-5 Field Dynamics and Radiation as the
   startup/fallback module; a valid URL overrides it. Empty-space clicks retain it.
 - Startup: Both, Context + background, 2-hop Derivation, Frame Context, authored module defaults.
@@ -74,7 +74,7 @@ is rebuilt and committed separately for publication.
 
 ## Overview graph projection
 
-Overview uses All equally visibility and emphasis, retaining the active Context relation filter. Internal edges remain between concepts; cross-module edges aggregate by ordered module pair with relation counts and original edge IDs. Expanded module boundaries supply transparent, non-interactive endpoints; folded modules use their boxes. Folding, selection, camera and saved layouts retain their usual behaviour. Depth does not limit this whole-map projection.
+Overview uses Overview visibility and emphasis, retaining the active Context relation filter. Internal edges remain between concepts; cross-module edges aggregate by ordered module pair with relation counts and original edge IDs. Expanded module boundaries supply transparent, non-interactive endpoints; folded modules use their boxes. Folding, selection, camera and saved layouts retain their usual behaviour. Depth does not limit this whole-map projection.
 
 Summary links are clipped outside both endpoint boundaries and drawn below pale,
 semi-transparent expanded-module backgrounds. Internal links and concepts are

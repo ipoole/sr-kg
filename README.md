@@ -53,7 +53,7 @@ The published interface tour can be launched directly at
 
 ## Study with the viewer
 
-**View** chooses Graph, Details or Both. **Graph** chooses Overview, All equally, Context +
+**View** chooses Graph, Details or Both. **Graph** chooses Overview, Context +
 background or Context only. Overview shows internal concept edges and summarises cross-module connections at module boundaries, including expanded modules. Selection is always retained; startup selects SR-5 with 2-hop Derivation and Context + background.
 The Context rule remains available for fitting and expansion in every graph mode.
 Show in graph fits its context automatically without unfolding modules.

@@ -18,7 +18,7 @@ tutorials:
     - command: set-all-module-representations
       value: folded
     - command: set-display-scope
-      value: all
+      value: overview
     - command: set-view
       value: both
     - command: set-context
@@ -62,12 +62,12 @@ tutorials:
         target: control:view
   - step_id: choose-graph-emphasis
     title: Choose how the graph is treated
-    commentary: All equally shows the whole map in foreground. Context + background emphasises the selected context;
+    commentary: Overview shows the whole map with internal concept links and module summaries. Context + background emphasises the selected context;
       Context only omits the background. Selecting something never changes this choice automatically.
     actions:
     - action:
         command: set-display-scope
-        value: all
+        value: overview
       pointer:
         target: control:display-scope
     - action:

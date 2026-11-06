@@ -216,15 +216,15 @@ The current independent presentation concerns are:
 
 - **Selection:** a concept or module; navigation retains a valid selection.
 - **Context rule:** relation/direction traversals plus depth, computed on concepts.
-- **Display scope:** Overview, All equally, Context + background, or Context only. Internally
-  these are `overview`, `all`, `full` and `context`; `full` means Context + background.
+- **Display scope:** Overview, Context + background, or Context only. Internally
+  these are `overview`, `full` and `context`; `full` means Context + background.
   Overview retains internal concept edges and aggregates cross-module edges at
   module boundaries, regardless of folding.
 - **Module representation:** folded or expanded, independent of selection.
 - **Workspace view:** Graph, Details or Both.
 - **Camera:** Reveal, Selection, Context or All framing, and explicit Fit/Fit++.
 
-All equally shows the graph without foreground/background distinction; context
+Overview shows the graph without foreground/background distinction; context
 is still available to explicit operations. Context + background emphasises the
 selection's context and subdues the rest. Context only omits the rest. Details
 links and Show in graph invoke explicit navigation/context actions rather than
