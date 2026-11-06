@@ -13,6 +13,7 @@
 
       var DisplayScope = Object.freeze({
         ALL: "all",
+        OVERVIEW: "overview",
         FULL: "full",
         CONTEXT: "context"
       });
@@ -368,7 +369,7 @@
 
         function nodeDraggingEnabled(nodeId) {
           var node = nodes.get(String(nodeId));
-          if (!node || node.hidden || viewerState.view === "details") {
+          if (!node || node.hidden || node.isOverviewAnchor || viewerState.view === "details") {
             return false;
           }
           if (contextLayout.isActive()) {
@@ -848,7 +849,7 @@
           var result = {enabled: graphCompletionMarkersEnabled, markers: []};
           if (!graphCompletionMarkersEnabled || !network || !nodes) { return result; }
           var candidates = nodes.get().map(function(node) {
-            if (node.hidden) { return; }
+            if (node.hidden || node.isOverviewAnchor) { return; }
             var ownerType = node.isModuleNode ? "module" : "concept";
             var ownerId = node.isModuleNode
               ? moduleIdFromGraphNodeId(node.id)
@@ -1328,7 +1329,7 @@
           var select = document.getElementById("kg_display_scope_select");
           if (select) {
             select.value = viewerState.displayScope;
-            select.title = "All equally: the whole graph in foreground. Context + background: emphasise the selected context. Context only: omit the background.";
+            select.title = "Overview: internal concept edges and module summaries. All equally: the whole graph in foreground. Context + background: emphasise the selected context. Context only: omit the background.";
           }
           document.body.classList.toggle(
             "kg-graph-hidden",
@@ -2112,6 +2113,16 @@
             refreshFoldedModuleGeometry(moduleId);
           } else {
             moduleFootprintCache[String(moduleId)] = moduleFootprint(moduleId);
+            var anchor = nodes.get(moduleGraphNodeId(moduleId));
+            if (anchor && anchor.isOverviewAnchor) {
+              var footprint = moduleFootprintCache[String(moduleId)];
+              nodes.update({id: anchor.id,
+                widthConstraint: {minimum: footprint.width, maximum: footprint.width},
+                heightConstraint: {minimum: footprint.height},
+                shapeProperties: {borderRadius: moduleCornerRadius(footprint.width, footprint.height)}
+              });
+              network.moveNode(anchor.id, footprint.x, footprint.y);
+            }
           }
         }
 
@@ -3680,6 +3691,7 @@
           var compact = phoneViewportActive();
           setResponsiveOptionLabels("kg_display_scope_select", {
             all: ["All equally", "All equally"],
+            overview: ["Overview", "Overview"],
             full: ["Context + background", "Context + bg"],
             context: ["Context only", "Context"]
           }, compact);
@@ -3773,7 +3785,8 @@
           summary.parentElement.setAttribute("data-context-can-expand", representedCount > 0 ? "true" : "false");
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
-            : viewerState.displayScope === DisplayScope.ALL ? "All equally" : "Context + background";
+            : viewerState.displayScope === DisplayScope.ALL ? "All equally"
+            : viewerState.displayScope === DisplayScope.OVERVIEW ? "Overview" : "Context + background";
           summary.setAttribute("data-selection-type", selection.type);
           summary.setAttribute("data-context-preset", viewerState.contextRule.preset);
           summary.setAttribute("data-context-depth", viewerState.contextRule.depth);
@@ -3822,7 +3835,7 @@
 
         function setViewerDisplayScope(scope) {
           resetContextFitInteraction();
-          viewerState.displayScope = [DisplayScope.ALL, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.ALL;
+          viewerState.displayScope = [DisplayScope.ALL, DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT].indexOf(scope) !== -1 ? scope : DisplayScope.ALL;
           updateGraphViewControls();
           renderGraphFromViewerState();
         }
@@ -4824,7 +4837,7 @@
               selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
             } else if (name === "set-display-scope") {
               setViewerDisplayScope(commandEnumValue(
-                command, "value", [DisplayScope.ALL, DisplayScope.FULL, DisplayScope.CONTEXT]
+                command, "value", [DisplayScope.ALL, DisplayScope.OVERVIEW, DisplayScope.FULL, DisplayScope.CONTEXT]
               ));
             } else if (name === "set-context") {
               var preset = commandEnumValue(command, "preset", Object.keys(ContextPreset).map(function(key) {
@@ -5062,6 +5075,7 @@
           );
           viewerState.displayScope = [
             DisplayScope.ALL,
+            DisplayScope.OVERVIEW,
             DisplayScope.FULL,
             DisplayScope.CONTEXT
           ].indexOf(snapshot.displayScope) === -1
@@ -5394,6 +5408,10 @@
 
         function renderGraphFromViewerState() {
           clearProjectedModuleEdges();
+          var anchorIds = nodes.get().filter(function(node) {
+            return node.isOverviewAnchor;
+          }).map(function(node) { return node.id; });
+          if (anchorIds.length) { nodes.remove(anchorIds); }
           var selection = viewerSelectionSnapshot();
           var scope = viewerState.displayScope;
           var context = computeViewerContext(selection, viewerState.contextRule);
@@ -5408,7 +5426,7 @@
             var rendered = baseNodeForRender(node.id);
             var id = String(node.id);
             var inContext = context.keep[id] === true;
-            var overview = scope === DisplayScope.ALL;
+            var overview = scope === DisplayScope.ALL || scope === DisplayScope.OVERVIEW;
             rendered.hidden = !included[id];
             rendered.opacity = inContext || overview ? 1.0 : 0.34;
             rendered.font = Object.assign({}, rendered.font || {}, {
@@ -5424,7 +5442,7 @@
             var rendered = Object.assign({}, originalEdges[edge.id]);
             var inContext = context.edgeKeep[String(edge.id)] === true;
             var endpointsIncluded = included[String(edge.from)] && included[String(edge.to)];
-            var overview = scope === DisplayScope.ALL;
+            var overview = scope === DisplayScope.ALL || scope === DisplayScope.OVERVIEW;
             rendered.kgContextEdge = inContext && !overview;
             rendered.kgOverviewEdge = overview;
             if (!endpointsIncluded) {
@@ -5504,7 +5522,7 @@
           var compact = options.compact === true;
           var foldedIds = foldedModuleIdList();
           clearProjectedModuleEdges();
-          if (foldedIds.length === 0) {
+          if (foldedIds.length === 0 && viewerState.displayScope !== DisplayScope.OVERVIEW) {
             return baseVisibleIds.slice();
           }
 
@@ -5568,9 +5586,36 @@
             return {id: id, hidden: true};
           }));
 
-          var moduleEdges = projectedModuleEdges(hiddenMembers);
+          // Expanded modules use transparent, non-interactive boxes only as
+          // boundary endpoints. They never replace member concepts or enter fitIds.
+          var boundaryMembers = Object.assign({}, hiddenMembers);
+          if (viewerState.displayScope === DisplayScope.OVERVIEW) {
+            moduleIdsWithMembers().forEach(function(moduleId) {
+              moduleMemberIds(getModule(moduleId)).forEach(function(id) {
+                boundaryMembers[String(id)] = true;
+              });
+              if (selectedModuleIsFolded(moduleId)) { return; }
+              var footprint = moduleFootprint(moduleId);
+              var anchor = {
+                id: moduleGraphNodeId(moduleId), moduleId: moduleId,
+                isModuleNode: true, isOverviewAnchor: true,
+                x: footprint.x, y: footprint.y, physics: false, fixed: true,
+                hidden: false, label: "", shape: "box", opacity: 0,
+                margin: 0, borderWidth: 0, chosen: false,
+                widthConstraint: {minimum: footprint.width, maximum: footprint.width},
+                heightConstraint: {minimum: footprint.height},
+                shapeProperties: {borderRadius: moduleCornerRadius(footprint.width, footprint.height)}
+              };
+              nodes.add(anchor);
+              network.moveNode(anchor.id, anchor.x, anchor.y);
+              visAdapter.disableNodeHitTesting(anchor.id);
+            });
+          }
+          var moduleEdges = projectedModuleEdges(boundaryMembers);
           edges.update(allEdges.filter(function(e) {
-            return hiddenMembers[String(e.from)] || hiddenMembers[String(e.to)];
+            var crossesModules = viewerState.displayScope === DisplayScope.OVERVIEW &&
+              moduleIdForConcept(e.from) !== moduleIdForConcept(e.to);
+            return crossesModules || hiddenMembers[String(e.from)] || hiddenMembers[String(e.to)];
           }).map(function(e) {
             var current = edges.get(e.id) || originalEdges[e.id] || e;
             return setEdgeHidden(Object.assign({}, current), true);

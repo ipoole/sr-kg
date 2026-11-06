@@ -381,3 +381,58 @@ def test_edge_inspection_does_not_replace_selection_details(browser_graph):
     }
     assert page.locator("#kg_inspection_dialog").get_attribute("open") is not None
     assert "Relationship" in page.locator("#kg_inspection_body").inner_text()
+
+
+@pytest.mark.browser
+def test_overview_summarises_boundaries_independently_of_folding(browser_graph):
+    page = browser_graph.page
+    page.locator('#kg_display_scope_select').select_option('overview')
+    page.locator('#kg_context_preset_select').select_option('foundations')
+    for first, second in [('expanded', 'expanded'), ('folded', 'expanded'),
+                          ('expanded', 'folded'), ('folded', 'folded')]:
+        for module, representation in [('test.m01_foundations', first),
+                                       ('test.m02_applications', second)]:
+            page.evaluate("""args => kgExecuteViewerCommand({
+              command:'set-module-representation', target:'module:' + args[0], value:args[1]
+            })""", [module, representation])
+        snapshot = page.evaluate("""() => {
+          const visible = edges.get().filter(e => !e.hidden &&
+            !nodes.get(e.from).hidden && !nodes.get(e.to).hidden);
+          return {
+            summaries: visible.filter(e => e.isModuleEdge).map(e => ({
+              from:e.from, to:e.to, counts:e.relationCounts, ids:e.edgeIds
+            })),
+            internal: visible.filter(e => !e.isModuleEdge).map(e => e.id),
+            hiddenConcepts: ['1.1','2.1','2.2','3.1'].filter(id => nodes.get(id).hidden)
+          };
+        }""")
+        assert len(snapshot['summaries']) == 1
+        summary = snapshot['summaries'][0]
+        assert 'test.m02_applications' in summary['from']
+        assert 'test.m01_foundations' in summary['to']
+        assert summary['counts'] == {'REQUIRES': 1, 'DERIVES_FROM': 1}
+        assert len(summary['ids']) == 2
+        assert len(snapshot['internal']) == (3 if second == 'expanded' else 0)
+        assert set(snapshot['hiddenConcepts']) == (
+            ({'1.1'} if first == 'folded' else set()) |
+            ({'2.1', '2.2', '3.1'} if second == 'folded' else set()))
+
+    page.evaluate("""() => kgExecuteViewerCommand({
+      command:'set-all-module-representations', value:'expanded'
+    })""")
+    # Invisible boundary endpoints must not intercept concept clicks.
+    page.locator('#kg_fit_select').select_option('displayed')
+    page.locator('#kg_fit_apply').click()
+    page.wait_for_timeout(700)
+    point = page.evaluate("""() => network.canvasToDOM(network.getPositions(['2.1'])['2.1'])""")
+    assert page.evaluate("point => network.getNodeAt(point)", point) == '2.1'
+    canvas = page.locator('#mynetwork canvas').bounding_box()
+    page.mouse.click(canvas['x'] + point['x'], canvas['y'] + point['y'])
+    assert page.evaluate('() => kgViewerStateSnapshot().selection.id') == '2.1'
+    page.locator('#kg_context_preset_select').select_option('prerequisites')
+    assert page.evaluate("""() => edges.get().filter(e => !e.hidden && e.isModuleEdge)
+      .map(e => e.relationCounts)""") == [{'REQUIRES': 1}]
+    page.locator('#kg_display_scope_select').select_option('all')
+    assert page.evaluate("() => nodes.get().filter(n => n.isOverviewAnchor).length") == 0
+    assert page.evaluate("() => edges.get().filter(e => !e.hidden && !e.isModuleEdge).length") == 3
+    assert not browser_graph.page_errors

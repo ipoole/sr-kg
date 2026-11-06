@@ -52,6 +52,7 @@ status; tap it to open Details.
 
 | Graph setting | What you see |
 | --- | --- |
+| **Overview** | The whole map, with internal concept edges and module-to-module summaries, whether modules are folded or expanded. |
 | **All equally** | The whole map, with eligible relationships coloured throughout. |
 | **Context + background** | The selected context stands out; surrounding material is subdued. |
 | **Context only** | Just the selection and its context. |

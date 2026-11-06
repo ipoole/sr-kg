@@ -18,6 +18,13 @@ function kgCreateVisNetworkAdapter(network) {
     canvasElement: function() {
       return network.canvas && network.canvas.frame ? network.canvas.frame.canvas : null;
     },
+    // Boundary-only endpoints must not obstruct selection, dragging or hover.
+    disableNodeHitTesting: function(id) {
+      var node = nativeNode(id);
+      if (!node) { return; }
+      node.isOverlappingWith = function() { return false; };
+      node.getItemsOnPoint = function() { return []; };
+    },
     nodeGeometry: function(id) {
       var node = nativeNode(id);
       return node && node.shape || null;
