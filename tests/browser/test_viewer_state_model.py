@@ -23,8 +23,8 @@ def test_viewer_state_snapshot_adapts_existing_selection_and_scope(browser_graph
     assert page.evaluate("() => kgViewerStateSnapshot()") == {
         "selection": {"type": "module", "id": "test.m01_foundations"},
         "contextRule": {
-            "preset": "foundations",
-            "depth": "transitive",
+            "preset": "derivation",
+            "depth": "two-hops",
             "customTraversals": [],
         },
         "displayScope": "full",
@@ -139,6 +139,7 @@ def test_module_context_starts_from_every_member(browser_graph):
 @pytest.mark.browser
 def test_unified_renderer_separates_context_background_and_scope(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     page.locator("#kg_display_scope_select").select_option("all")
     page.locator("#kg_context_depth_select").select_option("one-hop")
 
@@ -241,23 +242,25 @@ def test_explicit_context_controls_update_viewer_state(browser_graph):
         "related",
         "custom",
     ]
-    assert page.locator("#kg_context_depth_select").count() == 1
+    assert page.locator("#kg_context_depth_select option").evaluate_all(
+        "options => options.map(option => option.value)"
+    ) == ["one-hop", "two-hops", "three-hops", "transitive"]
     assert page.locator("#kg_fit_apply").count() == 1
     assert not page.locator("#kg_context_preset_select").is_disabled()
     assert page.locator("#kg_context_depth_select").is_enabled()
 
     browser_graph.click_concept("3.1")
     page.locator("#kg_context_preset_select").select_option("prerequisites")
-    page.locator("#kg_context_depth_select").select_option("two-hops")
+    page.locator("#kg_context_depth_select").select_option("three-hops")
 
     state = page.evaluate("() => kgViewerStateSnapshot()")
     assert state["contextRule"] == {
         "preset": "prerequisites",
-        "depth": "two-hops",
+        "depth": "three-hops",
         "customTraversals": [],
     }
     assert page.locator("#kg_context_summary").get_attribute("data-context-preset") == "prerequisites"
-    assert page.locator("#kg_context_summary").get_attribute("data-context-depth") == "two-hops"
+    assert page.locator("#kg_context_summary").get_attribute("data-context-depth") == "three-hops"
 
     browser_graph.click_concept("2.1")
     assert page.evaluate("() => kgViewerStateSnapshot().contextRule") == state["contextRule"]
@@ -356,6 +359,7 @@ def test_selecting_concept_preserves_folded_representation_and_view_axes(browser
 @pytest.mark.browser
 def test_edge_inspection_does_not_replace_selection_details(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     browser_graph.click_concept("2.1")
     edge_id = page.evaluate(
         """() => edges.get().find(edge =>

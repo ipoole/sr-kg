@@ -139,19 +139,20 @@
             <select id="kg_context_preset_select" class="kg-canvas-select" aria-describedby="kg_context_help" title="Choose the relationships used to find context around the selection. In both whole-graph modes, also filters which edges are shown.">
               <option value="connections">Connections</option>
               <option value="prerequisites">Prerequisites</option>
-              <option value="derivation">Derivation</option>
-              <option value="foundations" selected>Foundations</option>
+              <option value="derivation" selected>Derivation</option>
+              <option value="foundations">Foundations</option>
               <option value="uses">Uses</option>
               <option value="related">Related</option>
               <option value="custom">Custom…</option>
             </select>
             <button id="kg_custom_context_edit" class="kg-shell-button" type="button" hidden>Edit custom…</button>
             <label for="kg_context_depth_select">Depth</label>
-            <span id="kg_depth_help" class="kg-visually-hidden">How far to follow the context relationships: one hop, two hops, or transitively through the graph.</span>
-            <select id="kg_context_depth_select" class="kg-canvas-select" aria-describedby="kg_depth_help" title="How far to follow the context relationships: one hop, two hops, or transitively through the graph.">
+            <span id="kg_depth_help" class="kg-visually-hidden">How far to follow the context relationships: one hop, two hops, three hops, or transitively through the graph.</span>
+            <select id="kg_context_depth_select" class="kg-canvas-select" aria-describedby="kg_depth_help" title="How far to follow the context relationships: one hop, two hops, three hops, or transitively through the graph.">
               <option value="one-hop">1 hop</option>
-              <option value="two-hops">2 hops</option>
-              <option value="transitive" selected>Transitive</option>
+              <option value="two-hops" selected>2 hops</option>
+              <option value="three-hops">3 hops</option>
+              <option value="transitive">Transitive</option>
             </select>
           </div>
           <div class="kg-context-control-group" aria-label="Camera framing">
@@ -160,8 +161,8 @@
             <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target" aria-describedby="kg_frame_help" title="Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.">
               <option value="reveal">Reveal selection</option>
               <option value="selection">Fit selection</option>
-              <option value="context">Fit context</option>
-              <option value="displayed" selected>Fit displayed graph</option>
+              <option value="context" selected>Fit context</option>
+              <option value="displayed">Fit displayed graph</option>
             </select>
             <span id="kg_fit_help" class="kg-visually-hidden"></span>
             <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit</button>
@@ -289,7 +290,7 @@
         <section>
           <h3>Start with the map</h3>
           <ul>
-            <li>The viewer starts with SR-5 Field Dynamics and Radiation selected, modules folded, Context + background and transitive Foundations.</li>
+            <li>The viewer starts with SR-5 Field Dynamics and Radiation selected, modules folded, Context + background and 2-hop Derivation.</li>
             <li>Click a module to read its introduction and connections.</li>
             <li>Use the + in a folded module's top-right corner to reveal its concepts; use the − on an expanded module's boundary to fold it again.</li>
             <li>Use Search to go directly to a concept or module.</li>
@@ -301,7 +302,7 @@
           <ul>
             <li>Context chooses relationships around the selection and filters eligible edges across the whole map.</li>
             <li>Use named contexts such as Prerequisites, Derivation, Foundations, Uses, or Related.</li>
-            <li>Choose one hop, two hops, or the complete transitive chain.</li>
+            <li>Choose one hop, two hops, three hops, or the complete transitive chain.</li>
             <li>Changing context does not move the graph or fold modules.</li>
             <li>In Derived from or Where this is used, Show in graph applies that section's context and fits it automatically. Full tree follows the complete chain.</li>
             <li>From Details-only, Show in graph opens Both without changing module folding.</li>
@@ -346,7 +347,7 @@
           <h3>Study</h3>
           <ul>
             <li>Practice questions reveal their answers only after an attempt or “I don't know”.</li>
-            <li>Automatic questions are marked for you; compare free-text answers and mark yourself.</li>
+            <li>All current questions offer answer choices and mark automatically, including calculations. Worked feedback explains the answer.</li>
             <li>Tap an Incorrect badge to try again with the answer hidden; previous attempts remain recorded.</li>
             <li>Tools → Study tracks attempts and latest results locally, with links back to each question.</li>
             <li>Blue ticks record read content blocks and completed concepts or modules.</li>

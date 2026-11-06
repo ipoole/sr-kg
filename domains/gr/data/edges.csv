@@ -37,6 +37,8 @@ gr.connection,math.tangent_space,REQUIRES,A connection compares vectors belongin
 gr.connection,math.tensor_field,REQUIRES,Connections provide the differentiation rule for tensor fields.
 gr.christoffel_symbols,gr.connection,CONSTRUCTED_FROM,Christoffel symbols are the coordinate coefficients representing a connection.
 gr.christoffel_symbols,gr.metric_tensor,CONSTRUCTED_FROM,The Levi-Civita Christoffel symbols are built from the metric and its first derivatives.
+gr.christoffel_symbols,gr.metric_compatibility,DERIVES_FROM,Expanding metric compatibility and combining cyclic permutations provides the metric-derivative terms in the Levi-Civita formula.
+gr.christoffel_symbols,gr.torsion_free_connection,DERIVES_FROM,Zero torsion supplies the lower-index symmetry needed alongside metric compatibility to derive the Levi-Civita formula in a coordinate basis.
 gr.covariant_derivative,gr.connection,CONSTRUCTED_FROM,The covariant derivative uses the connection to correct ordinary component derivatives.
 gr.covariant_derivative,math.tensor_transformation_law,REQUIRES,Its defining purpose is to produce derivatives with tensorial transformation behaviour.
 gr.metric_compatibility,gr.covariant_derivative,REQUIRES,Metric compatibility is stated using the covariant derivative of the metric.
@@ -84,6 +86,7 @@ gr.equation_of_state,gr.perfect_fluid,REQUIRES,A fluid equation of state closes 
 gr.einstein_field_equations,gr.einstein_tensor,CONSTRUCTED_FROM,The Einstein tensor supplies the principal geometric side.
 gr.einstein_field_equations,gr.stress_energy_tensor,CONSTRUCTED_FROM,Stress-energy supplies the matter source side.
 gr.einstein_field_equations,gr.covariant_conservation,REQUIRES,Source conservation is required for consistency with the geometric identity.
+gr.einstein_field_equations,gr.einstein_hilbert_action,DERIVES_FROM,Stationary variation of the gravitational action together with the matter action gives the metric field equations; the source convention and boundary treatment must be consistent.
 gr.cosmological_constant,gr.einstein_field_equations,COMPONENT_OF,The cosmological term is an optional metric-proportional component of the equations.
 gr.cosmological_constant,gr.metric_tensor,CONSTRUCTED_FROM,The term is proportional to the spacetime metric.
 gr.einstein_hilbert_action,gr.ricci_scalar,CONSTRUCTED_FROM,The gravitational action integrates the Ricci scalar.
@@ -104,6 +107,7 @@ gr.gravitational_redshift,gr.proper_time,DERIVES_FROM,The effect compares proper
 gr.gravitational_redshift,gr.weak_field_metric,REQUIRES,Weak-field clock-rate differences give the leading redshift formula.
 gr.light_deflection,gr.null_curve,REQUIRES,Light propagation follows null directions.
 gr.light_deflection,gr.geodesic_equation,DERIVES_FROM,The bending follows from null geodesics in the weak metric.
+gr.light_deflection,gr.weak_field_metric,DERIVES_FROM,The leading bending calculation inserts both the temporal and spatial perturbations of the weak spherical metric into null propagation.
 gr.perihelion_precession,gr.geodesic_equation,DERIVES_FROM,The orbital correction follows from timelike geodesic motion.
 gr.perihelion_precession,gr.weak_field_metric,REQUIRES,The leading formula assumes a weak spherical field.
 gr.post_newtonian_approximation,gr.newtonian_limit,CONSTRUCTED_FROM,Post-Newtonian theory systematically extends the Newtonian limit.
@@ -115,6 +119,7 @@ gr.gravitational_waves,gr.geodesic_deviation,RELATED,Passing waves are detected 
 gr.gravitational_waves,gr.post_newtonian_approximation,RELATED,Compact-binary inspiral connects near-zone post-Newtonian motion to far-zone wave radiation.
 gr.schwarzschild_metric,gr.vacuum_field_equations,INSTANCE_OF,The exterior metric is an exact spherically symmetric vacuum solution.
 gr.schwarzschild_metric,gr.metric_signature,REQUIRES,The displayed line element uses the atlas's mostly-minus signature.
+gr.schwarzschild_metric,gr.vacuum_field_equations,DERIVES_FROM,"Solving the zero-cosmological-constant vacuum equations on a spherical exterior, with asymptotic normalisation and a mass parameter, gives the Schwarzschild metric."
 gr.schwarzschild_radius,gr.schwarzschild_metric,CONSTRUCTED_FROM,The mass parameter defines the metric's characteristic radius.
 gr.event_horizon,gr.schwarzschild_metric,CONSTRUCTED_FROM,The Schwarzschild horizon occurs at the characteristic radius in the extended solution.
 gr.event_horizon,gr.causal_structure,REQUIRES,A horizon is defined by the global reach of future-directed causal curves.

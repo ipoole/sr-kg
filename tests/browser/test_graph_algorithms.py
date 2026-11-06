@@ -18,7 +18,8 @@ def algorithms_page(playwright_browser):
 @pytest.mark.parametrize("depth,expected", [
     ("one-hop", ["a", "b"]),
     ("two-hops", ["a", "b", "c"]),
-    ("transitive", ["a", "b", "c"]),
+    ("three-hops", ["a", "b", "c", "d"]),
+    ("transitive", ["a", "b", "c", "d", "e"]),
 ])
 def test_context_depth_handles_cycles_and_invalid_endpoints(algorithms_page, depth, expected):
     result = algorithms_page.evaluate("""depth => {
@@ -26,12 +27,14 @@ def test_context_depth_handles_cycles_and_invalid_endpoints(algorithms_page, dep
         {id:'ab',from:'a',to:'b',relation:'REQUIRES'},
         {id:'bc',from:'b',to:'c',relation:'REQUIRES'},
         {id:'ca',from:'c',to:'a',relation:'REQUIRES'},
+        {id:'cd',from:'c',to:'d',relation:'REQUIRES'},
+        {id:'de',from:'d',to:'e',relation:'REQUIRES'},
         {id:'bad',from:'a',to:'missing',relation:'REQUIRES'}
       ];
       const before = JSON.stringify(graph);
       const result = kgGraphModel.computeContextSubgraph(['a','a'],
         {preset:'prerequisites',depth}, graph, {REQUIRES:{directed:true}},
-        {a:true,b:true,c:true});
+        {a:true,b:true,c:true,d:true,e:true});
       return {result,unchanged:before===JSON.stringify(graph)};
     }""", depth)
     assert result["result"]["nodeIds"] == expected

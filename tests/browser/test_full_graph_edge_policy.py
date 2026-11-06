@@ -39,6 +39,7 @@ def test_context_relation_filter_survives_scope_and_folding(browser_graph, folde
 @pytest.mark.browser
 def test_real_full_graph_filters_internal_and_projected_edges(shared_repo_browser_graph):
     page = shared_repo_browser_graph.page
+    page.locator("#kg_context_preset_select").select_option("foundations")
     assert visible_relations(page) == KEY_RELATIONS
     page.locator('#kg_context_preset_select').select_option('prerequisites')
     page.locator('#kg_context_depth_select').select_option('one-hop')

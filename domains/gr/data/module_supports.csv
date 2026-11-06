@@ -11,3 +11,4 @@ gr.weak_field_and_classical_tests,module,gr.matter_and_einstein_equations,prereq
 gr.schwarzschild_geometry_and_black_holes,module,gr.foundations_and_spacetime_geometry,prerequisite,The Schwarzschild line element and horizon use metric conventions and causal structure.
 gr.schwarzschild_geometry_and_black_holes,module,gr.connections_transport_and_motion,prerequisite,Effective orbital dynamics derives from the geodesic equation.
 gr.schwarzschild_geometry_and_black_holes,module,gr.curvature_and_gravitational_action,prerequisite,Curvature invariants distinguish coordinate pathologies from physical singularities.
+gr.schwarzschild_geometry_and_black_holes,module,gr.matter_and_einstein_equations,prerequisite,The Schwarzschild metric derives from the spherical vacuum field equations.

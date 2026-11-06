@@ -2,9 +2,6 @@
 
 
 ## 1. Content
-1. It is surprising that the Schwarzschild metric has no derivation edges. Other GR concepts may need review.
-2. In explanation of tangent and cotangent spaces, I feel a units/dimensional angle is helpful;
-   their product needs to form a dimensionless (or at least coordinate-less) quantity.
 3. Module MATHS-2 — Tensor Calculus needs more work. There is insufficient explanation to answer some questions.
    Tensor rank needs more explanation, and more examples are needed generally. There is too much emphasis on
    subtleties such as abstract versus component indices and not enough on the basics. Perhaps the module is trying
@@ -46,10 +43,6 @@
    Verify personal-data continuity, Google sign-in/sync and export/import in standalone mode; offline changes must
    remain safe until sync is available. Test on both devices and retain ordinary browser use. Hosted icons and the
    landing-page installation tip are already implemented.
-5. Avoid questions with free text answers if possible; they are tedious and not particularly instructive. 
-   Separate authoring pass: convert suitable questions to automatic multiple choice,
-   with plausible distractors and an unknown option. Preserve question IDs and
-   existing answered status; retain free text where explaining reasoning is the goal.
 6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.

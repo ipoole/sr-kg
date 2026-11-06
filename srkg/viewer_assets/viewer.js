@@ -63,7 +63,7 @@
         var activeNodeId = null;
         var activeModuleId = null;
         var viewerState = {
-          contextRule: createContextRule(ContextPreset.FOUNDATIONS, ContextDepth.TRANSITIVE),
+          contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
           displayScope: DisplayScope.FULL,
           view: "both"
         };
@@ -3657,6 +3657,7 @@
 
         function contextDepthLabel(depth) {
           if (depth === ContextDepth.TWO_HOPS) { return "2 hops"; }
+          if (depth === ContextDepth.THREE_HOPS) { return "3 hops"; }
           if (depth === ContextDepth.TRANSITIVE) { return "Transitive"; }
           return "1 hop";
         }

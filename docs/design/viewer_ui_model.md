@@ -35,7 +35,7 @@ folded modules representing those concepts.
 | Related | Undirected `RELATED` |
 | Custom | Explicit relation/direction choices |
 
-Depth is one hop, two hops or Transitive. Traversal is cycle-safe. A concept
+Depth is one hop, two hops, three hops or Transitive. Traversal is cycle-safe. A concept
 selection supplies one seed; a module selection supplies every member concept.
 The selection and a selected module's members are always in the context.
 
@@ -92,7 +92,7 @@ View changes never initiate layout changes or automatic fitting.
 
 Startup selects SR-5 Field Dynamics and Radiation, otherwise the first available module or concept. A valid
 deep link overrides that default; missing/invalid selections use the fallback.
-The initial controls are Both, Context + background, transitive Foundations and Frame All,
+The initial controls are Both, Context + background, 2-hop Derivation and Frame Context,
 with authored module defaults and layout editing off. Initial load fits once.
 Browser Back/Forward and the viewer history buttons retrace selections, leaving
 View, Graph, Context rule and module representation unchanged.

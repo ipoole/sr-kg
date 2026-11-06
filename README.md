@@ -54,7 +54,7 @@ The published interface tour can be launched directly at
 ## Study with the viewer
 
 **View** chooses Graph, Details or Both. **Graph** chooses All equally, Context +
-background or Context only. Selection is always retained; startup selects SR-5 with transitive Foundations and Context + background.
+background or Context only. Selection is always retained; startup selects SR-5 with 2-hop Derivation and Context + background.
 The Context rule remains available for fitting and expansion in every graph mode.
 Show in graph fits its context automatically without unfolding modules.
 
@@ -63,12 +63,12 @@ to expand or fold it, or use the header **Search** button to find a concept.
 Follow links to explore related material and use browser Back or the floating
 **‹ ›** selection-history controls to return.
 **Details** shows the complete material, folds its blocks, or hides the pane.
-Open **Study Questions** to answer or self-mark questions before seeing their model answers. Automatic
-questions include an “I don't know” choice; free-text questions ask you to
-compare with a model answer. Clear ticks and crosses show the latest result,
-and optional graph ticks summarise reading and question completion.
-Use **Context** and **Depth** to choose related material, and **Display** to show
-the full graph, only that context, or the details pane on its own.
+Open **Study Questions** to choose an answer before seeing the worked feedback.
+All current questions mark automatically, including calculations; choose
+“I don't know” to reveal an answer without guessing. Clear ticks and crosses
+show the latest result, and optional graph ticks summarise reading and question
+completion. Use **Context** and **Depth** to choose related material, and
+**Frame** to choose what Fit brings into view; it defaults to Context.
 The responsive viewer is tuned for phones and reduces costly rendering,
 animation and eager content work on older or slower devices.
 

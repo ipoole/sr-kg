@@ -79,7 +79,7 @@ Context asks a question about your selection:
 | **Related** | Associations without a prerequisite direction. |
 | **Custom…** | Your own combination of relationships and directions. |
 
-**Depth** chooses one hop, two hops or **Transitive**, which follows the complete
+**Depth** chooses one hop, two hops, three hops or **Transitive**, which follows the complete
 reachable chain. Begin with one hop to inspect a few immediate connections;
 increase the depth to understand a longer argument. For a module, context starts
 from all its member concepts.
@@ -181,9 +181,9 @@ title tick when all its blocks are read. A module earns one when its own blocks
 and those of every member concept are read. Personal notes do not affect this.
 
 Open **Study Questions** to practise. Choose an answer and press **Check answer**;
-calculation questions may also offer alternatives. Choose **I don't know** to
-reveal the answer without guessing. For a free-text question, submit your answer,
-compare it with the model answer, and mark yourself Correct or Incorrect.
+all current questions offer alternatives and mark automatically, including
+calculations. Choose **I don't know** to reveal the worked answer without
+guessing. The feedback explains the result.
 
 Press an **Incorrect** badge to try again with the answer hidden. Earlier attempts
 remain recorded; another submission adds an attempt and updates the latest

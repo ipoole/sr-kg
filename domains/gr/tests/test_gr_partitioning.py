@@ -20,12 +20,12 @@ def test_proposed_gr_partition_is_complete_cohesive_and_acyclic():
 
     assert candidate.module_count == 6
     assert sorted(candidate.module_sizes) == [6, 7, 7, 10, 12, 14]
-    # The Schwarzschild chart is a prerequisite of its coordinate-failure example.
-    assert candidate.internal_edge_count == 54
-    assert candidate.boundary_edge_count == 30
+    # Counts include the reviewed metric/action and spherical-vacuum derivations.
+    assert candidate.internal_edge_count == 57
+    assert candidate.boundary_edge_count == 32
     assert candidate.boundary_relation_counts == {
         "CONSTRUCTED_FROM": 8,
-        "DERIVES_FROM": 11,
+        "DERIVES_FROM": 13,
         "REQUIRES": 11,
     }
     assert candidate.is_dag is True

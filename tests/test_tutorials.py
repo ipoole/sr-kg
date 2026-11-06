@@ -156,7 +156,7 @@ tutorials:
         action:
           command: set-context
           preset: foundations
-          depth: one-hop
+          depth: three-hops
         pointer:
           target: control:context
 """,
@@ -173,6 +173,7 @@ tutorials:
         "viewer-tour",
         "spacetime-route",
     ]
+    assert tutorials[0].steps[0].action["depth"] == "three-hops"
     assert tutorials[1].steps[0].action == {
         "command": "select",
         "target": "concept:sr.alpha",

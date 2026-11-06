@@ -94,3 +94,4 @@ content_block,gr.coordinate_singularity.historical_context,schwarzschild.1916,Or
 content_block,gr.coordinate_singularity.historical_context,finkelstein.1958,Horizon-penetrating interpretation.,
 content_block,gr.black_hole_singularity.historical_context,oppenheimer.snyder.1939,Full paper,
 content_block,gr.black_hole_singularity.historical_context,penrose.1965,Full paper,
+content_block,gr.schwarzschild_metric.derivation,tong.gr,§6.1 The Schwarzschild Solution; §6.1.1 Birkhoff's Theorem,Static exterior derivation and spherical-vacuum assumptions; translated to atlas +--- signature with explicit c.

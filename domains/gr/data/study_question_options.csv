@@ -1,357 +1,897 @@
 question_id,option_id,sequence,text,is_correct
-gr.metric_tensor.q3,gr.metric_tensor.q3.a,30,\(ds^2=3\): timelike,true
-gr.metric_tensor.q3,gr.metric_tensor.q3.b,10,\(ds^2=5\): timelike,false
-gr.metric_tensor.q3,gr.metric_tensor.q3.c,20,\(ds^2=-3\): spacelike,false
-gr.metric_tensor.q3,gr.metric_tensor.q3.d,40,\(ds^2=1\): null,false
-gr.inverse_metric.q3,gr.inverse_metric.q3.a,40,"\(\operatorname{diag}(1/4,-1/9)\)",true
-gr.inverse_metric.q3,gr.inverse_metric.q3.b,10,"\(\operatorname{diag}(4,-9)\)",false
-gr.inverse_metric.q3,gr.inverse_metric.q3.c,20,"\(\operatorname{diag}(-1/4,1/9)\)",false
-gr.inverse_metric.q3,gr.inverse_metric.q3.d,30,"\(\operatorname{diag}(1/2,-1/3)\)",false
-gr.volume_element.q3,gr.volume_element.q3.a,10,\(3\),true
-gr.volume_element.q3,gr.volume_element.q3.b,20,\(9\),false
-gr.volume_element.q3,gr.volume_element.q3.c,30,\(-3\),false
-gr.volume_element.q3,gr.volume_element.q3.d,40,\(1/3\),false
-gr.line_element.q3,gr.line_element.q3.a,20,\(ds^2=8\),true
-gr.line_element.q3,gr.line_element.q3.b,10,\(ds^2=10\),false
-gr.line_element.q3,gr.line_element.q3.c,30,\(ds^2=-8\),false
-gr.line_element.q3,gr.line_element.q3.d,40,\(ds^2=2\),false
-gr.proper_time.q3,gr.proper_time.q3.a,30,\(d\tau=2\),true
-gr.proper_time.q3,gr.proper_time.q3.b,10,\(d\tau=4\),false
-gr.proper_time.q3,gr.proper_time.q3.c,20,\(d\tau=16\),false
-gr.proper_time.q3,gr.proper_time.q3.d,40,\(d\tau=1/2\),false
-gr.metric_signature.q3,gr.metric_signature.q3.a,40,Timelike,true
-gr.metric_signature.q3,gr.metric_signature.q3.b,10,Null,false
-gr.metric_signature.q3,gr.metric_signature.q3.c,20,Spacelike,false
-gr.metric_signature.q3,gr.metric_signature.q3.d,30,The classification is convention-independent but unknowable,false
-gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.a,10,\(\Gamma^1{}_{20}=3\),true
-gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.b,20,\(\Gamma^1{}_{20}=-3\),false
-gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.c,30,\(\Gamma^1{}_{20}=0\),false
-gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.d,40,It is unconstrained,false
-gr.four_velocity.q3,gr.four_velocity.q3.a,20,\(g_{\mu\nu}u^\mu u^\nu=1\),true
-gr.four_velocity.q3,gr.four_velocity.q3.b,10,\(g_{\mu\nu}u^\mu u^\nu=0\),false
-gr.four_velocity.q3,gr.four_velocity.q3.c,30,\(g_{\mu\nu}u^\mu u^\nu=-1\),false
-gr.four_velocity.q3,gr.four_velocity.q3.d,40,\(g_{\mu\nu}u^\mu u^\nu=c\),false
-gr.ricci_scalar.q3,gr.ricci_scalar.q3.a,30,\(R=-1\),true
-gr.ricci_scalar.q3,gr.ricci_scalar.q3.b,10,\(R=5\),false
-gr.ricci_scalar.q3,gr.ricci_scalar.q3.c,20,\(R=1\),false
-gr.ricci_scalar.q3,gr.ricci_scalar.q3.d,40,\(R=-5\),false
-gr.equation_of_state.q3,gr.equation_of_state.q3.a,40,\(p=4\),true
-gr.equation_of_state.q3,gr.equation_of_state.q3.b,10,\(p=36\),false
-gr.equation_of_state.q3,gr.equation_of_state.q3.c,20,\(p=12\),false
-gr.equation_of_state.q3,gr.equation_of_state.q3.d,30,\(p=1/36\),false
-gr.weak_field_metric.q3,gr.weak_field_metric.q3.a,10,\(g_{00}=1.000002\),true
-gr.weak_field_metric.q3,gr.weak_field_metric.q3.b,20,\(g_{00}=0.999998\),false
-gr.weak_field_metric.q3,gr.weak_field_metric.q3.c,30,\(g_{00}=2\times10^{-6}\),false
-gr.weak_field_metric.q3,gr.weak_field_metric.q3.d,40,\(g_{00}=1.0000002\),false
-gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.a,20,\(\nu_B/\nu_A=0.9\),true
-gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.b,10,\(\nu_B/\nu_A=0.81\),false
-gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.c,30,\(\nu_B/\nu_A=1/0.9\),false
-gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.d,40,\(\nu_B/\nu_A=0.6561\),false
-gr.light_deflection.q3,gr.light_deflection.q3.a,30,It halves,true
-gr.light_deflection.q3,gr.light_deflection.q3.b,10,It doubles,false
-gr.light_deflection.q3,gr.light_deflection.q3.c,20,It falls by a factor of four,false
-gr.light_deflection.q3,gr.light_deflection.q3.d,40,It is unchanged,false
-gr.perihelion_precession.q3,gr.perihelion_precession.q3.a,40,It halves,true
-gr.perihelion_precession.q3,gr.perihelion_precession.q3.b,10,It doubles,false
-gr.perihelion_precession.q3,gr.perihelion_precession.q3.c,20,It falls by a factor of four,false
-gr.perihelion_precession.q3,gr.perihelion_precession.q3.d,30,It is unchanged,false
-gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.a,10,It doubles,true
-gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.b,20,It halves,false
-gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.c,30,It increases by a factor of four,false
-gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.d,40,It is unchanged,false
-gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.a,20,It increases by a factor of \(64\),true
-gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.b,10,It increases by a factor of \(6\),false
-gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.c,30,It increases by a factor of \(2\),false
-gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.d,40,It decreases by a factor of \(64\),false
-gr.tidal_gravity.q4,gr.tidal_gravity.q4.a,30,It becomes \(1/8\) as large,true
-gr.tidal_gravity.q4,gr.tidal_gravity.q4.b,10,It becomes \(1/4\) as large,false
-gr.tidal_gravity.q4,gr.tidal_gravity.q4.c,20,It becomes \(1/2\) as large,false
-gr.tidal_gravity.q4,gr.tidal_gravity.q4.d,40,It becomes \(1/16\) as large,false
-gr.proper_time.q4,gr.proper_time.q4.a,40,"\(8\,\mathrm s\)",true
-gr.proper_time.q4,gr.proper_time.q4.b,10,"\(12.5\,\mathrm s\)",false
-gr.proper_time.q4,gr.proper_time.q4.c,20,"\(6\,\mathrm s\)",false
-gr.proper_time.q4,gr.proper_time.q4.d,30,"\(10\,\mathrm s\)",false
-gr.four_velocity.q4,gr.four_velocity.q4.a,10,\(v/c=\sqrt3/2\),true
-gr.four_velocity.q4,gr.four_velocity.q4.b,20,\(v/c=1/2\),false
-gr.four_velocity.q4,gr.four_velocity.q4.c,30,\(v/c=\sqrt2/2\),false
-gr.four_velocity.q4,gr.four_velocity.q4.d,40,\(v/c=2\),false
-gr.curvature_invariants.q4,gr.curvature_invariants.q4.a,20,It becomes \(1/729\) as large,true
-gr.curvature_invariants.q4,gr.curvature_invariants.q4.b,10,It becomes \(1/243\) as large,false
-gr.curvature_invariants.q4,gr.curvature_invariants.q4.c,30,It becomes \(1/9\) as large,false
-gr.curvature_invariants.q4,gr.curvature_invariants.q4.d,40,It becomes \(729\) times larger,false
-gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
-gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
-gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
-gr.perihelion_precession.q4,gr.perihelion_precession.q4.d,40,\(6.283\) radians,false
-gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.a,40,1PN: \(10^{-2}\); 2PN: \(10^{-4}\),true
-gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.b,10,1PN: \(10^{-1}\); 2PN: \(10^{-2}\),false
-gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.c,20,1PN: \(10^{-2}\); 2PN: \(10^{-2}\),false
-gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.d,30,1PN: \(10^{-4}\); 2PN: \(10^{-8}\),false
-gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.a,10,\(\mathcal C=0.05\),true
-gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.b,20,\(\mathcal C=0.10\),false
-gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.c,30,\(\mathcal C=5\),false
-gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.d,40,\(\mathcal C=20\),false
-gr.connection.q2,gr.connection.q2.a,40,Metric compatibility and zero torsion,true
-gr.connection.q2,gr.connection.q2.b,10,Zero curvature and zero torsion,false
-gr.connection.q2,gr.connection.q2.c,20,Metric compatibility and zero curvature,false
-gr.connection.q2,gr.connection.q2.d,30,A coordinate chart and an affine parameter,false
-gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.a,10,No; curvature may still be nonzero,true
-gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.b,20,Yes; zero torsion forces zero curvature,false
-gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.c,30,"Yes, but only in four dimensions",false
-gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.d,40,No; because torsion and curvature are identical,false
-gr.parallel_transport.q2,gr.parallel_transport.q2.a,20,\(u^\nu\nabla_\nu V^\mu=0\),true
-gr.parallel_transport.q2,gr.parallel_transport.q2.b,10,\(\partial_\nu V^\mu=0\),false
-gr.parallel_transport.q2,gr.parallel_transport.q2.c,30,\(\nabla_\mu V^\mu=0\),false
-gr.parallel_transport.q2,gr.parallel_transport.q2.d,40,\(u^\nu V_\nu=0\),false
-gr.geodesic.q2,gr.geodesic.q2.a,30,\(u^\nu\nabla_\nu u^\mu=0\),true
-gr.geodesic.q2,gr.geodesic.q2.b,10,\(\partial_\nu u^\mu=0\),false
-gr.geodesic.q2,gr.geodesic.q2.c,20,\(\nabla_\mu u^\mu=0\),false
-gr.geodesic.q2,gr.geodesic.q2.d,40,\(u_\mu u^\mu=0\),false
-gr.geodesic_equation.q2,gr.geodesic_equation.q2.a,40,Yes; coordinate acceleration can be nonzero while four-acceleration vanishes,true
-gr.geodesic_equation.q2,gr.geodesic_equation.q2.b,10,No; free fall requires every coordinate acceleration to vanish,false
-gr.geodesic_equation.q2,gr.geodesic_equation.q2.c,20,Only if spacetime is flat,false
-gr.geodesic_equation.q2,gr.geodesic_equation.q2.d,30,Only for a massless body,false
-gr.ricci_tensor.q2,gr.ricci_tensor.q2.a,10,No; trace-free Weyl curvature may remain,true
-gr.ricci_tensor.q2,gr.ricci_tensor.q2.b,20,Yes; Ricci contains all four-dimensional curvature,false
-gr.ricci_tensor.q2,gr.ricci_tensor.q2.c,30,"Yes, provided matter is absent",false
-gr.ricci_tensor.q2,gr.ricci_tensor.q2.d,40,No; because Ricci never vanishes,false
-gr.bianchi_identity.q2,gr.bianchi_identity.q2.a,20,No; it is a geometric identity,true
-gr.bianchi_identity.q2,gr.bianchi_identity.q2.b,10,Yes; it is an independent matter equation,false
-gr.bianchi_identity.q2,gr.bianchi_identity.q2.c,30,Yes; it must be imposed as a gauge condition,false
-gr.bianchi_identity.q2,gr.bianchi_identity.q2.d,40,No; it is a coordinate convention,false
-gr.energy_conditions.q2,gr.energy_conditions.q2.a,30,Every timelike observer measures nonnegative local energy density,true
-gr.energy_conditions.q2,gr.energy_conditions.q2.b,10,Every observer measures zero pressure,false
-gr.energy_conditions.q2,gr.energy_conditions.q2.c,20,The stress-energy trace must be positive,false
-gr.energy_conditions.q2,gr.energy_conditions.q2.d,40,Energy density must be identical in every frame,false
-gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.a,40,\(T=g^{\alpha\beta}T_{\alpha\beta}\),true
-gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.b,10,\(T=T_{00}\),false
-gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.c,20,\(T=\det(T_{\mu\nu})\),false
-gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.d,30,\(T=\nabla^\mu T_{\mu\nu}\),false
-gr.event_horizon.q3,gr.event_horizon.q3.a,10,Yes; a large regular horizon need not have singular local curvature,true
-gr.event_horizon.q3,gr.event_horizon.q3.b,20,No; every horizon is a curvature singularity,false
-gr.event_horizon.q3,gr.event_horizon.q3.c,30,Only a photon can cross it,false
-gr.event_horizon.q3,gr.event_horizon.q3.d,40,Only if the observer fires rockets outward,false
 gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.a,10,A force field acting on fixed spacetime,true
 gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.b,20,Conservation of energy,false
 gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.c,30,The use of coordinates,false
 gr.gravity_as_geometry.q1,gr.gravity_as_geometry.q1.d,40,The finite speed of light,false
+gr.gravity_as_geometry.q2,gr.gravity_as_geometry.q2.a,10,A separate downward force in an embedding space pushes particles along curved paths.,false
+gr.gravity_as_geometry.q2,gr.gravity_as_geometry.q2.b,20,Particles follow curves of constant coordinate speed in every chart.,false
+gr.gravity_as_geometry.q2,gr.gravity_as_geometry.q2.c,30,Each particle chooses a different metric according to its mass.,false
+gr.gravity_as_geometry.q2,gr.gravity_as_geometry.q2.d,40,Force-free test motion follows geodesics of the spacetime metric.,true
+gr.gravity_as_geometry.q3,gr.gravity_as_geometry.q3.a,10,Tides reveal curvature that cannot be removed by changing to a falling frame.,true
+gr.gravity_as_geometry.q3,gr.gravity_as_geometry.q3.b,20,Tides show that no observer can ever have a zero accelerometer reading.,false
+gr.gravity_as_geometry.q3,gr.gravity_as_geometry.q3.c,30,Tides identify the unique preferred coordinate system of a gravitational field.,false
+gr.gravity_as_geometry.q3,gr.gravity_as_geometry.q3.d,40,Tides demonstrate that gravity is only a distortion of spatial coordinate lines.,false
 gr.equivalence_principle.q1,gr.equivalence_principle.q1.a,10,The effects of gravity in a sufficiently small freely falling laboratory,true
 gr.equivalence_principle.q1,gr.equivalence_principle.q1.b,20,All tidal effects over an extended region,false
 gr.equivalence_principle.q1,gr.equivalence_principle.q1.c,30,The speed of light,false
 gr.equivalence_principle.q1,gr.equivalence_principle.q1.d,40,The need for coordinates,false
+gr.equivalence_principle.q2,gr.equivalence_principle.q2.a,10,Tidal relative acceleration can be detected across a finite laboratory.,true
+gr.equivalence_principle.q2,gr.equivalence_principle.q2.b,20,A freely falling frame removes tides only if its clock runs slowly enough.,false
+gr.equivalence_principle.q2,gr.equivalence_principle.q2.c,30,Special relativity requires all experiments to use identical coordinate labels.,false
+gr.equivalence_principle.q2,gr.equivalence_principle.q2.d,40,The principle applies only where the gravitational potential is zero.,false
+gr.equivalence_principle.q3,gr.equivalence_principle.q3.a,10,Curved spacetime admits one global SR inertial frame.,false
+gr.equivalence_principle.q3,gr.equivalence_principle.q3.b,20,Local nongravitational laws recover their SR form in a freely falling laboratory.,true
+gr.equivalence_principle.q3,gr.equivalence_principle.q3.c,30,SR applies only where no distant gravitating matter exists.,false
+gr.equivalence_principle.q3,gr.equivalence_principle.q3.d,40,SR is recovered by setting all clock readings equal to coordinate time.,false
 gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.a,10,A frame adapted to a freely falling observer near one event,true
 gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.b,20,A global inertial frame covering all curved spacetime,false
 gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.c,30,A frame where tidal gravity disappears everywhere,false
 gr.local_inertial_frame.q1,gr.local_inertial_frame.q1.d,40,A coordinate system that changes the speed of light,false
+gr.local_inertial_frame.q2,gr.local_inertial_frame.q2.a,10,It is a global inertial frame obtained by removing the gravitational source.,false
+gr.local_inertial_frame.q2,gr.local_inertial_frame.q2.b,20,It is any chart whose observer has fixed spatial coordinates.,false
+gr.local_inertial_frame.q2,gr.local_inertial_frame.q2.c,30,"It recovers SR only for light, while massive particles retain a local gravitational force.",false
+gr.local_inertial_frame.q2,gr.local_inertial_frame.q2.d,40,"It recovers SR at an event and approximately nearby, without making the whole spacetime flat.",true
+gr.local_inertial_frame.q3,gr.local_inertial_frame.q3.a,10,Curvature causes tidal relative acceleration between nearby freely falling bodies.,true
+gr.local_inertial_frame.q3,gr.local_inertial_frame.q3.b,20,The first derivatives of every curved metric must be nonzero at every event.,false
+gr.local_inertial_frame.q3,gr.local_inertial_frame.q3.c,30,A freely falling observer always has nonzero proper acceleration after a short time.,false
+gr.local_inertial_frame.q3,gr.local_inertial_frame.q3.d,40,The speed of light changes locally as the laboratory falls.,false
 gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.a,10,A spacecraft coasting with engines off and no support force,true
 gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.b,20,A person standing on the ground,false
 gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.c,30,A rocket firing engines to hover,false
 gr.freely_falling_observer.q1,gr.freely_falling_observer.q1.d,40,A laboratory held fixed by a tower,false
+gr.freely_falling_observer.q2,gr.freely_falling_observer.q2.a,10,"The person has zero coordinate velocity, which excludes free fall in every chart.",false
+gr.freely_falling_observer.q2,gr.freely_falling_observer.q2.b,20,"The person is in a region with curvature, which excludes all free fall.",false
+gr.freely_falling_observer.q2,gr.freely_falling_observer.q2.c,30,The ground supplies a support force that prevents geodesic free fall.,true
+gr.freely_falling_observer.q2,gr.freely_falling_observer.q2.d,40,"The person has rest mass, whereas only light follows free-fall paths.",false
+gr.freely_falling_observer.q3,gr.freely_falling_observer.q3.a,10,Free fall has zero acceleration only when the falling body is momentarily at rest.,false
+gr.freely_falling_observer.q3,gr.freely_falling_observer.q3.b,20,Every nonzero coordinate acceleration produces an accelerometer reading.,false
+gr.freely_falling_observer.q3,gr.freely_falling_observer.q3.c,30,A coordinate change introduces a physical contact force on the falling body.,false
+gr.freely_falling_observer.q3,gr.freely_falling_observer.q3.d,40,"Coordinate acceleration depends on the chart, even when covariant acceleration is zero.",true
 gr.tidal_gravity.q1,gr.tidal_gravity.q1.a,10,Relative acceleration of nearby freely falling bodies,true
 gr.tidal_gravity.q1,gr.tidal_gravity.q1.b,20,The absolute speed of a single falling body,false
 gr.tidal_gravity.q1,gr.tidal_gravity.q1.c,30,The choice of units for \(c\),false
 gr.tidal_gravity.q1,gr.tidal_gravity.q1.d,40,A force that vanishes only at infinity,false
+gr.tidal_gravity.q2,gr.tidal_gravity.q2.a,10,Tidal gravity is a force due to the mass of the measuring instrument.,false
+gr.tidal_gravity.q2,gr.tidal_gravity.q2.b,20,Eliminating the connection at one event does not remove relative free-fall acceleration across a separation.,true
+gr.tidal_gravity.q2,gr.tidal_gravity.q2.c,30,"A local inertial frame can remove only spatial curvature, leaving time curvature unchanged.",false
+gr.tidal_gravity.q2,gr.tidal_gravity.q2.d,40,"All relative motion is invariant, so even constant relative velocity is a tidal effect.",false
+gr.tidal_gravity.q3,gr.tidal_gravity.q3.a,10,Tidal acceleration measures only the coordinate speed of one falling body.,false
+gr.tidal_gravity.q3,gr.tidal_gravity.q3.b,20,Tides show that the metric must be singular wherever gravity is present.,false
+gr.tidal_gravity.q3,gr.tidal_gravity.q3.c,30,The Riemann tensor quantifies the relative free-fall acceleration measured as tides.,true
+gr.tidal_gravity.q3,gr.tidal_gravity.q3.d,40,Tides arise only inside matter and disappear in every vacuum region.,false
 gr.metric_tensor.q1,gr.metric_tensor.q1.a,10,Supplies the local rule for intervals and inner products,true
 gr.metric_tensor.q1,gr.metric_tensor.q1.b,20,Lists all possible coordinate systems,false
 gr.metric_tensor.q1,gr.metric_tensor.q1.c,30,Measures only matter density,false
 gr.metric_tensor.q1,gr.metric_tensor.q1.d,40,Replaces the need for clocks,false
+gr.metric_tensor.q2,gr.metric_tensor.q2.a,10,"The GR metric is nonsymmetric, unlike the Minkowski metric.",false
+gr.metric_tensor.q2,gr.metric_tensor.q2.b,20,The GR metric has no inverse because lightlike vectors have zero norm.,false
+gr.metric_tensor.q2,gr.metric_tensor.q2.c,30,GR allows a dynamical metric field whose geometry need not be Minkowskian throughout a region.,true
+gr.metric_tensor.q2,gr.metric_tensor.q2.d,40,"The Minkowski metric is a scalar, whereas the GR metric is a tensor.",false
+gr.metric_tensor.q3,gr.metric_tensor.q3.b,10,\(ds^2=5\): timelike,false
+gr.metric_tensor.q3,gr.metric_tensor.q3.c,20,\(ds^2=-3\): spacelike,false
+gr.metric_tensor.q3,gr.metric_tensor.q3.a,30,\(ds^2=3\): timelike,true
+gr.metric_tensor.q3,gr.metric_tensor.q3.d,40,\(ds^2=1\): null,false
 gr.inverse_metric.q1,gr.inverse_metric.q1.a,10,\(g^{\mu\alpha}g_{\alpha\nu}=\delta^\mu{}_\nu\),true
 gr.inverse_metric.q1,gr.inverse_metric.q1.b,20,\(g^{\mu\nu}=g_{\mu\nu}\) in all coordinates,false
 gr.inverse_metric.q1,gr.inverse_metric.q1.c,30,\(g^{\mu\nu}=0\),false
 gr.inverse_metric.q1,gr.inverse_metric.q1.d,40,\(g_{\mu\nu}dx^\mu dx^\nu=0\),false
+gr.inverse_metric.q2,gr.inverse_metric.q2.a,10,It is uniquely fixed by the metric’s matrix-inverse relation.,true
+gr.inverse_metric.q2,gr.inverse_metric.q2.b,20,It is freely chosen and then averaged with the metric to define distances.,false
+gr.inverse_metric.q2,gr.inverse_metric.q2.c,30,It describes a second spacetime with the opposite curvature.,false
+gr.inverse_metric.q2,gr.inverse_metric.q2.d,40,It is independent because upper and lower indices refer to unrelated bases.,false
+gr.inverse_metric.q3,gr.inverse_metric.q3.b,10,"\(\operatorname{diag}(4,-9)\)",false
+gr.inverse_metric.q3,gr.inverse_metric.q3.c,20,"\(\operatorname{diag}(-1/4,1/9)\)",false
+gr.inverse_metric.q3,gr.inverse_metric.q3.d,30,"\(\operatorname{diag}(1/2,-1/3)\)",false
+gr.inverse_metric.q3,gr.inverse_metric.q3.a,40,"\(\operatorname{diag}(1/4,-1/9)\)",true
 gr.volume_element.q1,gr.volume_element.q1.a,10,It is the invariant spacetime volume measure,true
 gr.volume_element.q1,gr.volume_element.q1.b,20,It is the electromagnetic field strength,false
 gr.volume_element.q1,gr.volume_element.q1.c,30,It is the definition of proper velocity,false
 gr.volume_element.q1,gr.volume_element.q1.d,40,It is a coordinate chart,false
+gr.volume_element.q2,gr.volume_element.q2.a,10,The factor supplies the curvature scalar missing from coordinate volume.,false
+gr.volume_element.q2,gr.volume_element.q2.b,20,"Coordinate volume is already invariant, but the factor converts time into length in every convention.",false
+gr.volume_element.q2,gr.volume_element.q2.c,30,Coordinate-cell sizes change with the chart; the metric determinant supplies the compensating factor.,true
+gr.volume_element.q2,gr.volume_element.q2.d,40,The factor removes every dependence of the integral on the chosen region.,false
+gr.volume_element.q3,gr.volume_element.q3.a,10,\(3\),true
+gr.volume_element.q3,gr.volume_element.q3.b,20,\(9\),false
+gr.volume_element.q3,gr.volume_element.q3.c,30,\(-3\),false
+gr.volume_element.q3,gr.volume_element.q3.d,40,\(1/3\),false
 gr.line_element.q1,gr.line_element.q1.a,10,The local spacetime interval of a small displacement,true
 gr.line_element.q1,gr.line_element.q1.b,20,The total mass of a source,false
 gr.line_element.q1,gr.line_element.q1.c,30,A coordinate transformation,false
 gr.line_element.q1,gr.line_element.q1.d,40,The number of spacetime dimensions,false
+gr.line_element.q2,gr.line_element.q2.a,10,It measures an infinitesimal displacement; finite lengths or clock times require a path integral.,true
+gr.line_element.q2,gr.line_element.q2.b,20,It is valid only for observers close to the source of gravity.,false
+gr.line_element.q2,gr.line_element.q2.c,30,Its value depends on coordinate labels even for a fixed displacement.,false
+gr.line_element.q2,gr.line_element.q2.d,40,It can be evaluated only after choosing coordinates that make the metric constant everywhere.,false
+gr.line_element.q3,gr.line_element.q3.b,10,\(ds^2=10\),false
+gr.line_element.q3,gr.line_element.q3.a,20,\(ds^2=8\),true
+gr.line_element.q3,gr.line_element.q3.c,30,\(ds^2=-8\),false
+gr.line_element.q3,gr.line_element.q3.d,40,\(ds^2=2\),false
 gr.proper_time.q1,gr.proper_time.q1.a,10,The time recorded by a clock along a timelike worldline,true
 gr.proper_time.q1,gr.proper_time.q1.b,20,The coordinate label \(t\) in every chart,false
 gr.proper_time.q1,gr.proper_time.q1.c,30,The same number for every path between two events,false
 gr.proper_time.q1,gr.proper_time.q1.d,40,A quantity only defined in flat spacetime,false
+gr.proper_time.q2,gr.proper_time.q2.a,10,Their readings differ only because one observer has chosen an incorrect coordinate chart.,false
+gr.proper_time.q2,gr.proper_time.q2.b,20,"Proper time is an endpoint coordinate difference, which is different for each clock.",false
+gr.proper_time.q2,gr.proper_time.q2.c,30,"They follow different worldlines, so the metric integrals along their histories can differ.",true
+gr.proper_time.q2,gr.proper_time.q2.d,40,Only a clock subject to a support force can accumulate proper time.,false
+gr.proper_time.q3,gr.proper_time.q3.b,10,\(d\tau=4\),false
+gr.proper_time.q3,gr.proper_time.q3.c,20,\(d\tau=16\),false
+gr.proper_time.q3,gr.proper_time.q3.a,30,\(d\tau=2\),true
+gr.proper_time.q3,gr.proper_time.q3.d,40,\(d\tau=1/2\),false
 gr.null_curve.q1,gr.null_curve.q1.a,10,\(ds^2=0\) along the curve,true
 gr.null_curve.q1,gr.null_curve.q1.b,20,No coordinate displacement,false
 gr.null_curve.q1,gr.null_curve.q1.c,30,Infinite proper time,false
 gr.null_curve.q1,gr.null_curve.q1.d,40,A spacelike tangent everywhere,false
+gr.null_curve.q2,gr.null_curve.q2.a,10,A null curve has zero displacement at each event but jumps between events.,false
+gr.null_curve.q2,gr.null_curve.q2.b,20,The metric becomes singular along every light ray.,false
+gr.null_curve.q2,gr.null_curve.q2.c,30,Light has nonzero proper time because its coordinate displacement is nonzero.,false
+gr.null_curve.q2,gr.null_curve.q2.d,40,Temporal and spatial contributions to the metric interval can cancel for a nonzero displacement.,true
+gr.null_curve.q3,gr.null_curve.q3.a,10,Null directions form the boundary between timelike and spacelike tangent directions.,true
+gr.null_curve.q3,gr.null_curve.q3.b,20,Null directions fill the entire interior of the future light cone.,false
+gr.null_curve.q3,gr.null_curve.q3.c,30,Null directions lie outside the cone and cannot carry signals.,false
+gr.null_curve.q3,gr.null_curve.q3.d,40,Null directions are defined by coordinate lines at 45 degrees in every chart.,false
 gr.causal_structure.q1,gr.causal_structure.q1.a,10,"The metric through its timelike, null, and spacelike directions",true
 gr.causal_structure.q1,gr.causal_structure.q1.b,20,The names chosen for coordinates,false
 gr.causal_structure.q1,gr.causal_structure.q1.c,30,The colour used in a diagram,false
 gr.causal_structure.q1,gr.causal_structure.q1.d,40,The volume element alone,false
+gr.causal_structure.q2,gr.causal_structure.q2.a,10,It assigns a unique global clock time to every distant event.,false
+gr.causal_structure.q2,gr.causal_structure.q2.b,20,It determines the force that accelerates each nearby particle.,false
+gr.causal_structure.q2,gr.causal_structure.q2.c,30,It separates timelike and null causal directions from spacelike directions.,true
+gr.causal_structure.q2,gr.causal_structure.q2.d,40,It identifies spacelike directions as possible local light-signal paths.,false
+gr.causal_structure.q3,gr.causal_structure.q3.a,10,One cone fixes the coordinate speed of every signal everywhere.,false
+gr.causal_structure.q3,gr.causal_structure.q3.b,20,Local cones guarantee that every event can signal every other event.,false
+gr.causal_structure.q3,gr.causal_structure.q3.c,30,Cones determine global proper-time lengths without the rest of the metric.,false
+gr.causal_structure.q3,gr.causal_structure.q3.d,40,Following the allowed cones along complete paths determines distant signal reachability and horizons.,true
 gr.local_flatness.q1,gr.local_flatness.q1.a,10,The metric is Minkowskian at that event,true
 gr.local_flatness.q1,gr.local_flatness.q1.b,20,Curvature vanishes everywhere,false
 gr.local_flatness.q1,gr.local_flatness.q1.c,30,All tidal effects vanish over any finite region,false
 gr.local_flatness.q1,gr.local_flatness.q1.d,40,Every coordinate grid is inertial,false
+gr.local_flatness.q2,gr.local_flatness.q2.a,10,Local flatness requires zero curvature but allows it to reappear only at the edge of a chart.,false
+gr.local_flatness.q2,gr.local_flatness.q2.b,20,Flattening the metric and its first derivatives at an event leaves curvature over a region.,true
+gr.local_flatness.q2,gr.local_flatness.q2.c,30,Global flatness fails only because clocks use different units.,false
+gr.local_flatness.q2,gr.local_flatness.q2.d,40,The metric can be flattened at a point only by making its determinant vanish.,false
+gr.local_flatness.q3,gr.local_flatness.q3.a,10,It derives Einstein’s field equations from a coordinate transformation.,false
+gr.local_flatness.q3,gr.local_flatness.q3.b,20,It makes every supported laboratory inertial if its coordinates are orthogonal.,false
+gr.local_flatness.q3,gr.local_flatness.q3.c,30,It gives the geometric setting in which a small freely falling laboratory recovers SR.,true
+gr.local_flatness.q3,gr.local_flatness.q3.d,40,It asserts that tidal forces vanish throughout every freely falling laboratory.,false
 gr.metric_signature.q1,gr.metric_signature.q1.a,10,"Mostly minus, \(+---\)",true
 gr.metric_signature.q1,gr.metric_signature.q1.b,20,"Mostly plus, \(-+++\)",false
 gr.metric_signature.q1,gr.metric_signature.q1.c,30,"Euclidean, \(++++\)",false
 gr.metric_signature.q1,gr.metric_signature.q1.d,40,No sign convention is needed,false
+gr.metric_signature.q2,gr.metric_signature.q2.a,10,Changing the overall metric sign changes scalar contractions and requires consistent translation of dependent formulas.,true
+gr.metric_signature.q2,gr.metric_signature.q2.b,20,The two signatures predict different physical light speeds even after consistent translation.,false
+gr.metric_signature.q2,gr.metric_signature.q2.c,30,Only diagonal metric components change; all derived formulas stay identical.,false
+gr.metric_signature.q2,gr.metric_signature.q2.d,40,The signature determines whether a chart covers a large or small region.,false
+gr.metric_signature.q3,gr.metric_signature.q3.b,10,Null,false
+gr.metric_signature.q3,gr.metric_signature.q3.c,20,Spacelike,false
+gr.metric_signature.q3,gr.metric_signature.q3.d,30,The classification is convention-independent but unknowable,false
+gr.metric_signature.q3,gr.metric_signature.q3.a,40,Timelike,true
 gr.connection.q1,gr.connection.q1.a,10,Vectors at different events belong to different tangent spaces,true
 gr.connection.q1,gr.connection.q1.b,20,Coordinates must be physical,false
 gr.connection.q1,gr.connection.q1.c,30,The metric is always constant,false
 gr.connection.q1,gr.connection.q1.d,40,Scalars cannot be differentiated,false
+gr.connection.q2,gr.connection.q2.b,10,Zero curvature and zero torsion,false
+gr.connection.q2,gr.connection.q2.c,20,Metric compatibility and zero curvature,false
+gr.connection.q2,gr.connection.q2.d,30,A coordinate chart and an affine parameter,false
+gr.connection.q2,gr.connection.q2.a,40,Metric compatibility and zero torsion,true
+gr.connection.q3,gr.connection.q3.a,10,"A chart fixes distances, while a connection merely changes coordinate labels.",false
+gr.connection.q3,gr.connection.q3.b,20,A chart labels points; a connection additionally specifies differentiation and comparison between tangent spaces.,true
+gr.connection.q3,gr.connection.q3.c,30,"A connection assigns the local metric signature, which a chart leaves arbitrary.",false
+gr.connection.q3,gr.connection.q3.d,40,A chart already fixes a unique connection; the extra information is just notation.,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.a,10,Coordinate coefficients of a connection,true
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.b,20,Components of a scalar,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.c,30,Curvature invariants,false
 gr.christoffel_symbols.q1,gr.christoffel_symbols.q1.d,40,Matter densities,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.a,10,"They have three indices, whereas a tensor may have at most two.",false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.b,20,Their values cannot vanish at any point in a curved spacetime.,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.c,30,They are non-tensorial because their lower indices are symmetric.,false
+gr.christoffel_symbols.q2,gr.christoffel_symbols.q2.d,40,Their coordinate transformation includes an extra term with second derivatives of the coordinate change.,true
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.a,10,All the coefficients vanish in that chart throughout the region.,true
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.b,20,Only coefficients with a time index vanish.,false
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.c,30,The coefficients remain nonzero because the inverse metric is nonzero.,false
+gr.christoffel_symbols.q3,gr.christoffel_symbols.q3.d,40,The coefficients vanish only if the constant metric is the identity matrix.,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.a,10,Make the result transform tensorially,true
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.b,20,Change the metric signature,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.c,30,Add matter,false
 gr.covariant_derivative.q1,gr.covariant_derivative.q1.d,40,Choose natural units,false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.a,10,Both derivatives always equal partial derivatives because coordinate changes preserve all components.,false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.b,20,"A scalar needs one connection term, while a vector needs none.",false
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.c,30,A scalar’s first derivative is its partial derivative; a vector’s derivative includes an index connection term.,true
+gr.covariant_derivative.q2,gr.covariant_derivative.q2.d,40,"The scalar’s first covariant derivative is zero, while a vector’s need not be.",false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.a,10,\(0\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.b,20,\(V^\mu V^\nu\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.c,30,\(\partial_\nu V^\mu\),false
+gr.covariant_derivative.q3,gr.covariant_derivative.q3.d,40,\(\partial_\mu V^\nu\),true
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.a,10,\(\nabla_\alpha g_{\mu\nu}=0\),true
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.b,20,\(g_{\mu\nu}=0\),false
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.c,30,\(R=0\),false
 gr.metric_compatibility.q1,gr.metric_compatibility.q1.d,40,\(ds^2=0\),false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.a,10,The separate coordinate components of each transported vector.,false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.b,20,The inner product of two parallel-transported vectors.,true
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.c,30,The coordinate distance between the endpoints of the path.,false
+gr.metric_compatibility.q2,gr.metric_compatibility.q2.d,40,The orientation of each vector after transport around any closed loop.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.a,10,It makes all partial derivatives of the metric vanish in every chart.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.b,20,It makes covariant differentiation unnecessary for tensors with raised indices.,false
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.c,30,Raising or lowering an index commutes with covariant differentiation.,true
+gr.metric_compatibility.q3,gr.metric_compatibility.q3.d,40,It allows an index to be raised without contracting with the inverse metric.,false
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.a,10,\(\Gamma^\rho{}_{\mu\nu}=\Gamma^\rho{}_{\nu\mu}\),true
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.b,20,Every Christoffel symbol vanishes,false
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.c,30,Curvature vanishes,false
 gr.torsion_free_connection.q1,gr.torsion_free_connection.q1.d,40,The metric is Euclidean,false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.a,10,No; curvature may still be nonzero,true
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.b,20,Yes; zero torsion forces zero curvature,false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.c,30,"Yes, but only in four dimensions",false
+gr.torsion_free_connection.q2,gr.torsion_free_connection.q2.d,40,No; because torsion and curvature are identical,false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.a,10,\(\Gamma^1{}_{20}=3\),true
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.b,20,\(\Gamma^1{}_{20}=-3\),false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.c,30,\(\Gamma^1{}_{20}=0\),false
+gr.torsion_free_connection.q3,gr.torsion_free_connection.q3.d,40,It is unconstrained,false
 gr.parallel_transport.q1,gr.parallel_transport.q1.a,10,Spacetime curvature,true
 gr.parallel_transport.q1,gr.parallel_transport.q1.b,20,A change of units,false
 gr.parallel_transport.q1,gr.parallel_transport.q1.c,30,Renaming an index,false
 gr.parallel_transport.q1,gr.parallel_transport.q1.d,40,A constant scalar,false
+gr.parallel_transport.q2,gr.parallel_transport.q2.b,10,\(\partial_\nu V^\mu=0\),false
+gr.parallel_transport.q2,gr.parallel_transport.q2.a,20,\(u^\nu\nabla_\nu V^\mu=0\),true
+gr.parallel_transport.q2,gr.parallel_transport.q2.c,30,\(\nabla_\mu V^\mu=0\),false
+gr.parallel_transport.q2,gr.parallel_transport.q2.d,40,\(u^\nu V_\nu=0\),false
+gr.parallel_transport.q3,gr.parallel_transport.q3.a,10,"Parallel transport preserves coordinate components, which forces rotation on every loop.",false
+gr.parallel_transport.q3,gr.parallel_transport.q3.b,20,Curvature can make transport around a contractible loop path-dependent.,true
+gr.parallel_transport.q3,gr.parallel_transport.q3.c,30,Metric compatibility requires a vector’s norm to grow around a closed loop.,false
+gr.parallel_transport.q3,gr.parallel_transport.q3.d,40,A nonzero Christoffel symbol at one point proves that every closed loop rotates vectors.,false
 gr.geodesic.q1,gr.geodesic.q1.a,10,Free fall without non-gravitational force,true
 gr.geodesic.q1,gr.geodesic.q1.b,20,A supported observer,false
 gr.geodesic.q1,gr.geodesic.q1.c,30,Any coordinate line,false
 gr.geodesic.q1,gr.geodesic.q1.d,40,A spacelike signal,false
+gr.geodesic.q2,gr.geodesic.q2.b,10,\(\partial_\nu u^\mu=0\),false
+gr.geodesic.q2,gr.geodesic.q2.c,20,\(\nabla_\mu u^\mu=0\),false
+gr.geodesic.q2,gr.geodesic.q2.a,30,\(u^\nu\nabla_\nu u^\mu=0\),true
+gr.geodesic.q2,gr.geodesic.q2.d,40,\(u_\mu u^\mu=0\),false
+gr.geodesic.q3,gr.geodesic.q3.a,10,Every geodesic is a global minimum of positive spatial distance.,false
+gr.geodesic.q3,gr.geodesic.q3.b,20,"The word applies only to null paths, whose length is zero.",false
+gr.geodesic.q3,gr.geodesic.q3.c,30,A geodesic has constant coordinate speed and therefore cannot extremise proper time.,false
+gr.geodesic.q3,gr.geodesic.q3.d,40,It is defined by parallel transport of its tangent; timelike segments locally maximise proper time when sufficiently short.,true
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.a,10,Connection and coordinate-basis change,true
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.b,20,Rocket thrust,false
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.c,30,Matter density alone,false
 gr.geodesic_equation.q1,gr.geodesic_equation.q1.d,40,Metric signature only,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.b,10,No; free fall requires every coordinate acceleration to vanish,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.c,20,Only if spacetime is flat,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.d,30,Only for a massless body,false
+gr.geodesic_equation.q2,gr.geodesic_equation.q2.a,40,Yes; coordinate acceleration can be nonzero while four-acceleration vanishes,true
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.a,10,\(dx^\mu/d\lambda=0\),false
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.b,20,\(d^2x^\mu/d\lambda^2=0\),true
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.c,30,\(g_{\mu\nu}\dot x^\mu\dot x^\nu=0\) for every geodesic,false
+gr.geodesic_equation.q3,gr.geodesic_equation.q3.d,40,\(d^2x^\mu/d\lambda^2=dx^\mu/d\lambda\),false
 gr.geodesic_action.q1,gr.geodesic_action.q1.a,10,Endpoint events,true
 gr.geodesic_action.q1,gr.geodesic_action.q1.b,20,Every point of the path,false
 gr.geodesic_action.q1,gr.geodesic_action.q1.c,30,The Christoffel symbols at zero,false
 gr.geodesic_action.q1,gr.geodesic_action.q1.d,40,Coordinate time everywhere,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.a,10,"Coordinate time alone, independent of the metric and the chosen worldline.",false
+gr.geodesic_action.q2,gr.geodesic_action.q2.b,20,The Ricci scalar integrated over all spacetime.,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.c,30,The magnitude of four-acceleration along the particle path.,false
+gr.geodesic_action.q2,gr.geodesic_action.q2.d,40,"Proper length, equivalently proper time multiplied by the appropriate constants.",true
+gr.geodesic_action.q3,gr.geodesic_action.q3.a,10,Varying the path with fixed endpoints yields an Euler–Lagrange equation for free motion.,true
+gr.geodesic_action.q3,gr.geodesic_action.q3.b,20,The action prescribes the particle’s coordinate acceleration without varying anything.,false
+gr.geodesic_action.q3,gr.geodesic_action.q3.c,30,The variational principle requires proper time to be a global minimum.,false
+gr.geodesic_action.q3,gr.geodesic_action.q3.d,40,Varying the particle’s mass determines the spacetime metric.,false
 gr.four_velocity.q1,gr.four_velocity.q1.a,10,Proper time,true
 gr.four_velocity.q1,gr.four_velocity.q1.b,20,Any spatial distance,false
 gr.four_velocity.q1,gr.four_velocity.q1.c,30,Curvature scalar,false
 gr.four_velocity.q1,gr.four_velocity.q1.d,40,Coordinate volume,false
+gr.four_velocity.q2,gr.four_velocity.q2.a,10,Different events always have different spacetime dimensions.,false
+gr.four_velocity.q2,gr.four_velocity.q2.b,20,The velocity vectors cease to be tensors when their events differ.,false
+gr.four_velocity.q2,gr.four_velocity.q2.c,30,Each velocity is a tangent vector at its own event; comparison needs a transport or observation prescription.,true
+gr.four_velocity.q2,gr.four_velocity.q2.d,40,"Each event has its own metric signature, so the vectors cannot share a norm convention.",false
+gr.four_velocity.q3,gr.four_velocity.q3.b,10,\(g_{\mu\nu}u^\mu u^\nu=0\),false
+gr.four_velocity.q3,gr.four_velocity.q3.a,20,\(g_{\mu\nu}u^\mu u^\nu=1\),true
+gr.four_velocity.q3,gr.four_velocity.q3.c,30,\(g_{\mu\nu}u^\mu u^\nu=-1\),false
+gr.four_velocity.q3,gr.four_velocity.q3.d,40,\(g_{\mu\nu}u^\mu u^\nu=c\),false
 gr.four_acceleration.q1,gr.four_acceleration.q1.a,10,A rocket firing to hover,true
 gr.four_acceleration.q1,gr.four_acceleration.q1.b,20,A freely falling test body,false
 gr.four_acceleration.q1,gr.four_acceleration.q1.c,30,A geodesic observer,false
 gr.four_acceleration.q1,gr.four_acceleration.q1.d,40,An unforced satellite,false
+gr.four_acceleration.q2,gr.four_acceleration.q2.a,10,"All stationary observers are freely falling, but their accelerometers use incorrect coordinates.",false
+gr.four_acceleration.q2,gr.four_acceleration.q2.b,20,"Earth’s curvature gives every observer nonzero four-acceleration, including orbiters.",false
+gr.four_acceleration.q2,gr.four_acceleration.q2.c,30,Four-acceleration is nonzero whenever the coordinate time increases.,false
+gr.four_acceleration.q2,gr.four_acceleration.q2.d,40,The ground’s support force prevents geodesic motion despite fixed spatial coordinates.,true
+gr.four_acceleration.q3,gr.four_acceleration.q3.a,10,Four-acceleration is a vector with measurable invariant magnitude; coordinate acceleration depends on the chart.,true
+gr.four_acceleration.q3,gr.four_acceleration.q3.b,20,"Coordinate acceleration is measurable, while four-acceleration is only a plotting convention.",false
+gr.four_acceleration.q3,gr.four_acceleration.q3.c,30,"Four-acceleration is always zero for massive observers, unlike coordinate acceleration.",false
+gr.four_acceleration.q3,gr.four_acceleration.q3.d,40,The two differ only by a constant factor of the speed of light in all charts.,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.a,10,Relative acceleration of nearby geodesics,true
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.b,20,One object's coordinate speed,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.c,30,A coordinate transformation,false
 gr.geodesic_deviation.q1,gr.geodesic_deviation.q1.d,40,Metric determinant,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.a,10,The equation identifies all coordinate acceleration of a single body with curvature.,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.b,20,The equation removes tidal acceleration by selecting a different chart.,false
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.c,30,Riemann curvature determines the covariant relative acceleration of neighbouring geodesics.,true
+gr.geodesic_deviation.q2,gr.geodesic_deviation.q2.d,40,"Only the metric determinant, rather than its curvature, controls relative acceleration.",false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.a,10,The sign must be chosen separately for every pair of test bodies.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.b,20,The sign changes whenever either body has a different mass.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.c,30,The metric signature alone completely specifies every author’s Riemann definition.,false
+gr.geodesic_deviation.q3,gr.geodesic_deviation.q3.d,40,Reversing the Riemann definition reverses its components and the corresponding displayed equation sign.,true
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.a,10,Failure of covariant derivatives to commute,true
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.b,20,Coordinate labels alone,false
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.c,30,Matter density only,false
 gr.riemann_tensor.q1,gr.riemann_tensor.q1.d,40,Metric signature,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.a,10,The sign is determined uniquely by whether timelike vectors have positive norm.,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.b,20,Changing the definition changes the measured direction of tidal acceleration even if all formulas are translated.,false
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.c,30,Reversing the defining derivative order reverses Riemann’s sign and dependent formulas must change consistently.,true
+gr.riemann_tensor.q2,gr.riemann_tensor.q2.d,40,"Curvature must be positive near positive masses, so its sign is chosen separately at each event.",false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.a,10,Transport depends on curvature but geodesic deviation depends only on coordinate acceleration.,false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.b,20,"Geodesic deviation requires torsion, whereas parallel transport requires curvature.",false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.c,30,Both effects vanish whenever Christoffel symbols are made zero at one event.,false
+gr.riemann_tensor.q3,gr.riemann_tensor.q3.d,40,The same curvature tensor controls small-loop transport changes and relative acceleration of nearby geodesics.,true
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.a,10,Contracting the Riemann tensor,true
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.b,20,Differentiating a scalar twice only,false
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.c,30,Choosing coordinates,false
 gr.ricci_tensor.q1,gr.ricci_tensor.q1.d,40,Setting curvature to zero,false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.a,10,No; trace-free Weyl curvature may remain,true
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.b,20,Yes; Ricci contains all four-dimensional curvature,false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.c,30,"Yes, provided matter is absent",false
+gr.ricci_tensor.q2,gr.ricci_tensor.q2.d,40,No; because Ricci never vanishes,false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.a,10,"All directional tidal shape changes, with no information discarded from Riemann.",false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.b,20,"The trace of tidal focusing, relevant to the volume behaviour of a nearby geodesic bundle.",true
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.c,30,The coordinate acceleration of a supported observer.,false
+gr.ricci_tensor.q3,gr.ricci_tensor.q3.d,40,"The local metric signature, rather than changes in a geodesic bundle.",false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.a,10,\(g^{\mu\nu}R_{\mu\nu}\),true
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.b,20,\(R_{\mu\nu}=0\),false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.c,30,\(g_{\mu\nu}g^{\mu\nu}=0\),false
 gr.ricci_scalar.q1,gr.ricci_scalar.q1.d,40,\(\nabla_\mu R=0\),false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.a,10,A scalar has no geometric meaning unless its value is nonzero.,false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.b,20,Flatness is determined only by the metric determinant.,false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.c,30,"Zero Ricci scalar guarantees flatness at an event, but never in a region.",false
+gr.ricci_scalar.q2,gr.ricci_scalar.q2.d,40,A vanishing contraction can hide nonzero components of Ricci or Riemann curvature.,true
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.b,10,\(R=5\),false
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.c,20,\(R=1\),false
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.a,30,\(R=-1\),true
+gr.ricci_scalar.q3,gr.ricci_scalar.q3.d,40,\(R=-5\),false
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.a,10,Its covariant divergence vanishes identically,true
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.b,20,It is always zero,false
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.c,30,It is a scalar,false
 gr.einstein_tensor.q1,gr.einstein_tensor.q1.d,40,It depends only on coordinates,false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.a,10,\(R_{\mu\nu}+\tfrac12 g_{\mu\nu}R\),false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.b,20,\(R_{\mu\nu}-\tfrac12 g_{\mu\nu}R\),true
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.c,30,\(R_{\mu\nu}-g_{\mu\nu}R\),false
+gr.einstein_tensor.q2,gr.einstein_tensor.q2.d,40,\(g_{\mu\nu}R\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.a,10,\(R/2\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.b,20,\(0\),false
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.c,30,\(-R\),true
+gr.einstein_tensor.q3,gr.einstein_tensor.q3.d,40,\(-3R\),false
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.a,10,\(\nabla^\mu G_{\mu\nu}=0\),true
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.b,20,\(G_{\mu\nu}=0\) everywhere,false
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.c,30,\(R=1\),false
 gr.bianchi_identity.q1,gr.bianchi_identity.q1.d,40,All coordinates are inertial,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.b,10,Yes; it is an independent matter equation,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.a,20,No; it is a geometric identity,true
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.c,30,Yes; it must be imposed as a gauge condition,false
+gr.bianchi_identity.q2,gr.bianchi_identity.q2.d,40,No; it is a coordinate convention,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.a,10,The divergence-free geometric side requires compatible covariant conservation of the source in a coupled solution.,true
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.b,20,It fixes the equation of state of every matter source.,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.c,30,It proves that matter stress-energy vanishes wherever curvature is present.,false
+gr.bianchi_identity.q3,gr.bianchi_identity.q3.d,40,It guarantees a globally conserved total energy in every spacetime without additional conditions.,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.a,10,Their values are coordinate-independent,true
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.b,20,They always vanish,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.c,30,They choose a chart,false
 gr.curvature_invariants.q1,gr.curvature_invariants.q1.d,40,They remove curvature,false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.a,10,\(R_{00}\),false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.b,20,\(\det(g_{\mu\nu})\),false
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.c,30,\(R_{\mu\nu}R^{\mu\nu}\),true
+gr.curvature_invariants.q2,gr.curvature_invariants.q2.d,40,\(\Gamma^\rho{}_{\mu\nu}\Gamma^\nu{}_{\rho\sigma}\),false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.a,10,Yes: one finite scalar contraction proves every component and geodesic is regular.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.b,20,Yes: finite invariants imply zero Riemann curvature.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.c,30,No: scalar contractions have different values in different regular charts.,false
+gr.curvature_invariants.q3,gr.curvature_invariants.q3.d,40,No: common scalar contractions do not by themselves establish extendibility or geodesic completeness.,true
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.a,10,"Energy density, momentum flux, and stress",true
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.b,20,Coordinates only,false
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.c,30,Curvature only,false
 gr.stress_energy_tensor.q1,gr.stress_energy_tensor.q1.d,40,Metric signature,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.a,10,Each observer creates a different matter tensor by changing coordinates.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.b,20,The tensor transformation law applies only in flat spacetime.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.c,30,Energy density is invariant under all changes of observer because it is a scalar projection.,false
+gr.stress_energy_tensor.q2,gr.stress_energy_tensor.q2.d,40,Different observers project the same tensor onto different time directions and spatial frames.,true
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.a,10,Both encode local energy and momentum; GR also treats the tensor as a curved-spacetime source of geometry.,true
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.b,20,"The SR tensor describes only rest mass, whereas GR introduces momentum for the first time.",false
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.c,30,"The GR tensor is a universal local gravitational-energy tensor, unlike the SR tensor.",false
+gr.stress_energy_tensor.q3,gr.stress_energy_tensor.q3.d,40,"The GR tensor is invariant component by component, whereas the SR tensor transforms under boosts.",false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.a,10,Viscosity,true
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.b,20,Energy density,false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.c,30,Isotropic pressure,false
 gr.perfect_fluid.q1,gr.perfect_fluid.q1.d,40,Four-velocity,false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.a,10,"Pressure is zero, so every perfect fluid is dust.",false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.b,20,All observers measure the same energy flux and pressure components.,false
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.c,30,"Pressure is equal in every spatial direction in that frame, with no preferred shear direction.",true
+gr.perfect_fluid.q2,gr.perfect_fluid.q2.d,40,The fluid has equal coordinate velocity components along all three axes.,false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.a,10,\(T^{\mu\nu}=\epsilon g^{\mu\nu}\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.b,20,\(T^{\mu\nu}=0\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.c,30,\(T^{\mu\nu}=\epsilon(u^\mu u^\nu-g^{\mu\nu})\),false
+gr.perfect_fluid.q3,gr.perfect_fluid.q3.d,40,\(T^{\mu\nu}=\epsilon u^\mu u^\nu\),true
 gr.energy_conditions.q1,gr.energy_conditions.q1.a,10,Assumptions restricting stress-energy,true
 gr.energy_conditions.q1,gr.energy_conditions.q1.b,20,Identities obeyed by every quantum field,false
 gr.energy_conditions.q1,gr.energy_conditions.q1.c,30,Coordinate choices,false
 gr.energy_conditions.q1,gr.energy_conditions.q1.d,40,Definitions of curvature,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.b,10,Every observer measures zero pressure,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.c,20,The stress-energy trace must be positive,false
+gr.energy_conditions.q2,gr.energy_conditions.q2.a,30,Every timelike observer measures nonnegative local energy density,true
+gr.energy_conditions.q2,gr.energy_conditions.q2.d,40,Energy density must be identical in every frame,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.a,10,They are identities obeyed by every symmetric rank-two tensor.,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.b,20,"They are additional matter assumptions, and some classical models and quantum states violate them.",true
+gr.energy_conditions.q3,gr.energy_conditions.q3.c,30,They follow from Einstein’s equations without assumptions about matter.,false
+gr.energy_conditions.q3,gr.energy_conditions.q3.d,40,"They differ only by sign convention, so apparent violations can always be translated away.",false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.a,10,\(\nabla_\mu T^{\mu\nu}=0\),true
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.b,20,\(T^{\mu\nu}=0\),false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.c,30,\(\partial_\mu g^{\mu\nu}=0\),false
 gr.covariant_conservation.q1,gr.covariant_conservation.q1.d,40,\(R=1\),false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.a,10,Partial derivatives cannot be taken for any field in curved spacetime.,false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.b,20,Conservation requires replacing every partial derivative by an ordinary time derivative.,false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.c,30,"The problem occurs only for nonzero curvature, never in flat curvilinear coordinates.",false
+gr.covariant_conservation.q2,gr.covariant_conservation.q2.d,40,It omits connection terms accounting for the tensor’s indices and changing coordinate basis.,true
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.a,10,The geometric divergence identity requires the total source to have vanishing covariant divergence in a coupled solution.,true
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.b,20,"It requires every interacting matter sector to be separately conserved, even during exchange.",false
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.c,30,It fixes all stress-energy components from geometry at one event without solving any field equation.,false
+gr.covariant_conservation.q3,gr.covariant_conservation.q3.d,40,It imposes zero partial divergence of stress-energy in every chart.,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.a,10,Pressure to energy density,true
 gr.equation_of_state.q1,gr.equation_of_state.q1.b,20,Curvature to coordinates,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.c,30,Torsion to metric signature,false
 gr.equation_of_state.q1,gr.equation_of_state.q1.d,40,Four-velocity to proper time only,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.a,10,It replaces the gravitational field equations by an algebraic relation for the metric.,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.b,20,It selects the coordinate chart in which fluid conservation is valid.,false
+gr.equation_of_state.q2,gr.equation_of_state.q2.c,30,It supplies the material relation missing from conservation and gravitational field equations.,true
+gr.equation_of_state.q2,gr.equation_of_state.q2.d,40,It ensures every fluid has zero pressure gradients and follows geodesics.,false
+gr.equation_of_state.q3,gr.equation_of_state.q3.b,10,\(p=36\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.c,20,\(p=12\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.d,30,\(p=1/36\),false
+gr.equation_of_state.q3,gr.equation_of_state.q3.a,40,\(p=4\),true
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.a,10,Curvature to stress-energy,true
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.b,20,Coordinates to units only,false
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.c,30,Torsion to charge,false
 gr.einstein_field_equations.q1,gr.einstein_field_equations.q1.d,40,Pressure to temperature only,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.a,10,It keeps the physical dimensions of the source coupling explicit rather than setting the speed of light to one.,true
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.b,20,It accounts for the fact that the speed of light varies locally with curvature.,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.c,30,It gives the metric four extra independent components.,false
+gr.einstein_field_equations.q2,gr.einstein_field_equations.q2.d,40,It makes the matter source vanish in the Newtonian limit.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.a,10,Both identities determine the metric algebraically without initial or boundary data.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.b,20,"The geometric side has identically zero divergence, compatible with the conserved total matter source on a solution.",true
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.c,30,The Bianchi identity sets all curvature to zero whenever matter is conserved.,false
+gr.einstein_field_equations.q3,gr.einstein_field_equations.q3.d,40,"Conservation cancels the matter source, leaving only the cosmological term.",false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.a,10,Support spacetime curvature,true
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.b,20,Force the metric to be flat,false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.c,30,Remove covariance,false
 gr.cosmological_constant.q1,gr.cosmological_constant.q1.d,40,Set all tensors to zero,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.a,10,"It contributes only to spatial components, so it describes pressureless dust.",false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.b,20,It selects one preferred timelike fluid velocity at every event.,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.c,30,It can be removed by a coordinate transformation whenever the region is empty.,false
+gr.cosmological_constant.q2,gr.cosmological_constant.q2.d,40,Moving it to the source side gives a stress-energy tensor proportional to the metric.,true
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.a,10,No: GR allows an effective vacuum source but does not determine its microscopic origin or observed value.,true
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.b,20,Yes: classical GR uniquely predicts the quantum vacuum energy once the signature is chosen.,false
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.c,30,No: vacuum energy cannot enter a gravitational field equation.,false
+gr.cosmological_constant.q3,gr.cosmological_constant.q3.d,40,Yes: the observed value follows solely from the Bianchi identity.,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.a,10,Ricci scalar,true
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.b,20,Proper time only,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.c,30,Electric potential,false
 gr.einstein_hilbert_action.q1,gr.einstein_hilbert_action.q1.d,40,Torsion scalar in standard GR,false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.a,10,"The metric field, equivalently its inverse, rather than a particle path in a fixed metric.",true
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.b,20,"Only the particle worldlines, leaving the metric fixed.",false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.c,30,"Only the coordinate labels, leaving every physical field fixed.",false
+gr.einstein_hilbert_action.q2,gr.einstein_hilbert_action.q2.d,40,Only the numerical value of Newton’s gravitational constant.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.a,10,Boundary conditions choose the metric signature and therefore eliminate the need for field equations.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.b,20,"The curvature scalar contains second metric derivatives, whose variation produces boundary terms.",true
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.c,30,The action is a coordinate scalar only if spacetime has no boundary.,false
+gr.einstein_hilbert_action.q3,gr.einstein_hilbert_action.q3.d,40,"The Einstein tensor comes entirely from varying a boundary term, with no bulk contribution.",false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.a,10,A metric variation,true
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.b,20,Renaming coordinates only,false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.c,30,Setting curvature to zero,false
 gr.stress_energy_variation.q1,gr.stress_energy_variation.q1.d,40,Choosing a module,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.a,10,Every matter theory has the same Lagrangian after a change of coordinates.,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.b,20,Metric variation eliminates the need to specify any matter equations of motion.,false
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.c,30,The response of a matter action to metric variation supplies a common construction of its gravitational source.,true
+gr.stress_energy_variation.q2,gr.stress_energy_variation.q2.d,40,The construction forces every matter source to have a vanishing trace.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.a,10,The metric signature by itself uniquely fixes all matter-action and variation signs.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.b,20,The sign is freely adjustable without changing any other formula or coupling.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.c,30,Changing the varied metric variable leaves its variation unchanged.,false
+gr.stress_energy_variation.q3,gr.stress_energy_variation.q3.d,40,Action signs and whether the metric or inverse metric is varied must be checked along with signature.,true
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.a,10,The scalar-curvature term inside the Einstein tensor,true
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.b,20,The stress-energy tensor,false
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.c,30,The metric,false
 gr.trace_reversed_equations.q1,gr.trace_reversed_equations.q1.d,40,All curvature,false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.b,10,\(T=T_{00}\),false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.c,20,\(T=\det(T_{\mu\nu})\),false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.d,30,\(T=\nabla^\mu T_{\mu\nu}\),false
+gr.trace_reversed_equations.q2,gr.trace_reversed_equations.q2.a,40,\(T=g^{\alpha\beta}T_{\alpha\beta}\),true
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.a,10,\(R_{\mu\nu}=g_{\mu\nu}\),false
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.b,20,\(R_{\mu\nu}=0\),true
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.c,30,\(R^\rho{}_{\sigma\mu\nu}=0\) necessarily,false
+gr.trace_reversed_equations.q3,gr.trace_reversed_equations.q3.d,40,\(\Gamma^\rho{}_{\mu\nu}=0\) in every chart,false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.a,10,\(R_{\mu\nu}=0\),true
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.b,20,\(R^\rho{}_{\sigma\mu\nu}=0\) necessarily,false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.c,30,\(g_{\mu\nu}=0\),false
 gr.vacuum_field_equations.q1,gr.vacuum_field_equations.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.a,10,Tidal acceleration requires no curvature and arises only from coordinate motion.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.b,20,Ricci-flatness makes the metric singular wherever tides occur.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.c,30,Zero Ricci means zero tidal acceleration; any apparent tides are support forces.,false
+gr.vacuum_field_equations.q2,gr.vacuum_field_equations.q2.d,40,The trace-free Weyl part of Riemann can remain nonzero when Ricci vanishes.,true
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.a,10,Exterior Schwarzschild geometry and vacuum gravitational waves.,true
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.b,20,Only flat Minkowski geometry and its coordinate relabellings.,false
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.c,30,A fluid-filled stellar interior and an ordinary material atmosphere.,false
+gr.vacuum_field_equations.q3,gr.vacuum_field_equations.q3.d,40,Only geometries with nonzero ordinary matter density at every event.,false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.a,10,\(g_{\mu\nu}=\eta_{\mu\nu}+h_{\mu\nu}\) with small \(h\),true
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.b,20,\(g_{\mu\nu}=0\),false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.c,30,\(R=1\),false
 gr.weak_field_metric.q1,gr.weak_field_metric.q1.d,40,\(T_{\mu\nu}=g_{\mu\nu}\),false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.a,10,The retained order specifies which physical corrections are included and which powers are discarded.,true
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.b,20,A small perturbation guarantees that every nonlinear term is exactly zero.,false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.c,30,The retained order determines whether the metric has a Lorentzian signature at all.,false
+gr.weak_field_metric.q2,gr.weak_field_metric.q2.d,40,It is only a notation choice; all orders predict identical corrections.,false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.a,10,\(g_{00}=1.000002\),true
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.b,20,\(g_{00}=0.999998\),false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.c,30,\(g_{00}=2\times10^{-6}\),false
+gr.weak_field_metric.q3,gr.weak_field_metric.q3.d,40,\(g_{00}=1.0000002\),false
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.a,10,\(g_{00}\),true
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.b,20,The determinant alone,false
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.c,30,Only \(g_{12}\),false
 gr.newtonian_limit.q1,gr.newtonian_limit.q1.d,40,No metric component,false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.a,10,"Weak gravity alone, allowing arbitrary test speeds and relativistic pressure.",false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.b,20,"Local flatness at one event, with no assumptions about motion or time dependence.",false
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.c,30,"Weak, approximately stationary gravity, slow test bodies, nonrelativistic low-pressure sources, and negligible cosmological term.",true
+gr.newtonian_limit.q2,gr.newtonian_limit.q2.d,40,"Static coordinates alone, even arbitrarily close to a black-hole horizon.",false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.a,10,Only the acceleration law; GR cannot recover Poisson’s equation.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.b,20,The wave equation for light and the equation of state of pressureless matter.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.c,30,A universal constant coordinate speed and a zero potential throughout space.,false
+gr.newtonian_limit.q3,gr.newtonian_limit.q3.d,40,The gravitational acceleration law from geodesic motion and Poisson’s source equation from the field equations.,true
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.a,10,Clock rates and measured frequencies at different potentials,true
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.b,20,Rest masses only,false
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.c,30,Coordinate labels only,false
 gr.gravitational_redshift.q1,gr.gravitational_redshift.q1.d,40,Curvature invariants only,false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.a,10,"Local light speed differs at the two endpoints, so red and blue depend on that speed.",false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.b,20,Reversing which observer emits and which receives inverts the frequency ratio.,true
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.c,30,A frequency ratio is meaningful only for two observers at the same event.,false
+gr.gravitational_redshift.q2,gr.gravitational_redshift.q2.d,40,Changing the direction of exchange leaves every frequency ratio unchanged.,false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.b,10,\(\nu_B/\nu_A=0.81\),false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.a,20,\(\nu_B/\nu_A=0.9\),true
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.c,30,\(\nu_B/\nu_A=1/0.9\),false
+gr.gravitational_redshift.q3,gr.gravitational_redshift.q3.d,40,\(\nu_B/\nu_A=0.6561\),false
 gr.light_deflection.q1,gr.light_deflection.q1.a,10,Light follows null geodesics of curved spacetime,true
 gr.light_deflection.q1,gr.light_deflection.q1.b,20,Light becomes massive,false
 gr.light_deflection.q1,gr.light_deflection.q1.c,30,Coordinates exert force,false
 gr.light_deflection.q1,gr.light_deflection.q1.d,40,The speed of light changes locally,false
+gr.light_deflection.q2,gr.light_deflection.q2.a,10,A Newtonian calculation is incomplete only because it uses the wrong photon rest mass.,false
+gr.light_deflection.q2,gr.light_deflection.q2.b,20,Light deflection requires a material medium around the gravitating mass.,false
+gr.light_deflection.q2,gr.light_deflection.q2.c,30,"Only a change of photon coordinate labels occurs, with no observable deflection at infinity.",false
+gr.light_deflection.q2,gr.light_deflection.q2.d,40,"Light follows null geodesics, and the full metric’s temporal and spatial corrections contribute to the GR bending.",true
+gr.light_deflection.q3,gr.light_deflection.q3.b,10,It doubles,false
+gr.light_deflection.q3,gr.light_deflection.q3.c,20,It falls by a factor of four,false
+gr.light_deflection.q3,gr.light_deflection.q3.a,30,It halves,true
+gr.light_deflection.q3,gr.light_deflection.q3.d,40,It is unchanged,false
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.a,10,The orbit's closest-approach direction,true
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.b,20,The central mass necessarily,false
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.c,30,Coordinate time,false
 gr.perihelion_precession.q1,gr.perihelion_precession.q1.d,40,The metric signature,false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.a,10,"Every relativistic orbit loses energy at each perihelion, even in a fixed Schwarzschild test-body calculation.",false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.b,20,"Curved-spacetime corrections make the radial and angular periods differ, so the closest-approach direction advances.",true
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.c,30,The inverse-square law in Newtonian theory already predicts the same advance for an isolated point mass.,false
+gr.perihelion_precession.q2,gr.perihelion_precession.q2.d,40,"The orbit is still a closed ellipse, but all observers choose rotating coordinate axes.",false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.b,10,It doubles,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.c,20,It falls by a factor of four,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.d,30,It is unchanged,false
+gr.perihelion_precession.q3,gr.perihelion_precession.q3.a,40,It halves,true
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.a,10,Weak fields and \(v/c\ll1\),true
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.b,20,Arbitrarily strong horizons,false
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.c,30,No gravity,false
 gr.post_newtonian_approximation.q1,gr.post_newtonian_approximation.q1.d,40,Exact spherical symmetry always,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.a,10,It guarantees exact predictions at any speed once one correction is retained.,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.b,20,It requires keeping the same perturbation power in every metric component regardless of velocity factors.,false
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.c,30,It keeps all corrections required at a stated order and identifies the terms consistently neglected.,true
+gr.post_newtonian_approximation.q2,gr.post_newtonian_approximation.q2.d,40,"It removes the need to specify whether a result concerns motion, waveforms or energy flux.",false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.a,10,Different gauges change the physical periapsis advance even after consistent conversion.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.b,20,Post-Newtonian formulas are tensor components whose values must be identical in every chart.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.c,30,The expansion parameter is always an exact equality between velocity squared and gravitational potential.,false
+gr.post_newtonian_approximation.q3,gr.post_newtonian_approximation.q3.d,40,Coordinates redistribute intermediate terms; invariant predictions agree when compared at the same retained order.,true
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.a,10,A small propagating metric perturbation with physical tidal effects,true
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.b,20,A sound wave in interstellar gas,false
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.c,30,A coordinate ripple with no observable consequence,false
 gr.gravitational_waves.q1,gr.gravitational_waves.q1.d,40,A Newtonian inverse-square force pulse,false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.a,10,It produces an alternating transverse stretching and squeezing of relative separations.,true
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.b,20,"It accelerates every test mass equally, leaving all relative separations unchanged.",false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.c,30,It produces only a permanent longitudinal translation of the whole detector.,false
+gr.gravitational_waves.q2,gr.gravitational_waves.q2.d,40,It changes the local speed of light but leaves freely falling test masses unaffected.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.a,10,Vacuum contains an ordinary fluid whose pressure carries the wave.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.b,20,The gravitational field equations have propagating source-free solutions; no material medium is required.,true
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.c,30,A wave can propagate only where ordinary matter stress-energy is nonzero.,false
+gr.gravitational_waves.q3,gr.gravitational_waves.q3.d,40,A gravitational wave is a coordinate transformation of flat spacetime with no tidal effect.,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.a,10,"Static, spherically symmetric, and vacuum",true
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.b,20,Rotating and charged,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.c,30,Homogeneous cosmology,false
 gr.schwarzschild_metric.q1,gr.schwarzschild_metric.q1.d,40,Only a weak-field approximation,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.a,10,The exterior formula fails whenever the stellar radius exceeds the Schwarzschild radius.,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.b,20,"An ordinary stellar interior contains matter, so an interior solution must be matched to the vacuum exterior.",true
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.c,30,The star’s interior is necessarily flat because spherical symmetry removes curvature.,false
+gr.schwarzschild_metric.q2,gr.schwarzschild_metric.q2.d,40,The same vacuum solution describes the interior if its time coordinate is rescaled.,false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.a,10,"Every metric component approaches zero, making spacetime degenerate.",false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.b,20,It approaches the identity matrix in the same spherical coordinates.,false
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.c,30,It approaches the Minkowski metric in spherical spatial coordinates.,true
+gr.schwarzschild_metric.q3,gr.schwarzschild_metric.q3.d,40,Curvature tends to a nonzero constant set by the Schwarzschild mass.,false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.a,10,\(2GM/c^2\),true
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.b,20,\(GM/c\),false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.c,30,\(c^2/GM\),false
 gr.schwarzschild_radius.q1,gr.schwarzschild_radius.q1.d,40,\(8\pi GM\),false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.a,10,It is a mass-defined length scale; an ordinary body can have a much larger material radius.,true
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.b,20,It is the physical surface radius of every spherical body by definition.,false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.c,30,It measures the distance from the material surface to the centre using radial rulers.,false
+gr.schwarzschild_radius.q2,gr.schwarzschild_radius.q2.d,40,It is meaningful only if the body already has an event horizon.,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.a,10,It doubles,true
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.b,20,It halves,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.c,30,It increases by a factor of four,false
+gr.schwarzschild_radius.q3,gr.schwarzschild_radius.q3.d,40,It is unchanged,false
 gr.event_horizon.q1,gr.event_horizon.q1.a,10,A global causal boundary,true
 gr.event_horizon.q1,gr.event_horizon.q1.b,20,A material shell,false
 gr.event_horizon.q1,gr.event_horizon.q1.c,30,A curvature divergence in every case,false
 gr.event_horizon.q1,gr.event_horizon.q1.d,40,A coordinate grid line only,false
+gr.event_horizon.q2,gr.event_horizon.q2.a,10,Its location is determined solely by the curvature scalar at one event.,false
+gr.event_horizon.q2,gr.event_horizon.q2.b,20,"Its definition depends on which future causal paths can escape, requiring the spacetime’s global future structure.",true
+gr.event_horizon.q2,gr.event_horizon.q2.c,30,Every observer sees it at the same coordinate radius in every chart.,false
+gr.event_horizon.q2,gr.event_horizon.q2.d,40,It is a material surface whose composition must be specified throughout space.,false
+gr.event_horizon.q3,gr.event_horizon.q3.a,10,Yes; a large regular horizon need not have singular local curvature,true
+gr.event_horizon.q3,gr.event_horizon.q3.b,20,No; every horizon is a curvature singularity,false
+gr.event_horizon.q3,gr.event_horizon.q3.c,30,Only a photon can cross it,false
+gr.event_horizon.q3,gr.event_horizon.q3.d,40,Only if the observer fires rockets outward,false
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.a,10,Whether regular coordinates and finite invariants remove the divergence,true
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.b,20,Whether one metric component is large,false
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.c,30,Whether time is present,false
 gr.coordinate_singularity.q1,gr.coordinate_singularity.q1.d,40,Whether mass is nonzero,false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.a,10,"All divergent components are harmless, even when curvature scalars diverge.",false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.b,20,"The metric ceases to be Lorentzian at the horizon, eliminating any physical meaning.",false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.c,30,The divergence is cancelled physically by infinite negative matter density.,false
+gr.coordinate_singularity.q2,gr.coordinate_singularity.q2.d,40,The divergent component can be removed in horizon-regular coordinates.,true
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.a,10,Their values are coordinate-independent; Schwarzschild’s finite horizon values contrast with central curvature divergence.,true
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.b,20,They always vanish wherever a coordinate component diverges.,false
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.c,30,A finite value of any single invariant proves complete regularity in every spacetime.,false
+gr.coordinate_singularity.q3,gr.coordinate_singularity.q3.d,40,"They depend only on coordinate labels, so another chart can remove their divergence.",false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.a,10,\(r=0\),true
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.b,20,Every point at \(r=r_s\),false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.c,30,Spatial infinity,false
 gr.black_hole_singularity.q1,gr.black_hole_singularity.q1.d,40,Every circular orbit,false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.a,10,"The radial Schwarzschild metric component alone diverges there, which is sufficient in any chart.",false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.b,20,"Every zero areal radius is singular, including the centre of flat space.",false
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.c,30,A coordinate-independent curvature scalar diverges there; a smooth coordinate change cannot remove that divergence.,true
+gr.black_hole_singularity.q2,gr.black_hole_singularity.q2.d,40,"The Schwarzschild time coordinate stops increasing there, which defines every physical singularity.",false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.b,10,It increases by a factor of \(6\),false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.a,20,It increases by a factor of \(64\),true
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.c,30,It increases by a factor of \(2\),false
+gr.black_hole_singularity.q3,gr.black_hole_singularity.q3.d,40,It decreases by a factor of \(64\),false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.a,10,Conserved energy and angular momentum from symmetry,true
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.b,20,Vanishing mass only,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.c,30,A coordinate singularity,false
 gr.effective_potential_orbits.q1,gr.effective_potential_orbits.q1.d,40,Nonzero torsion,false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.a,10,Instantaneously zero radial speed where \(\mathcal E^2=V_{\mathrm{eff}}\); a circular orbit also requires a stationary potential.,true
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.b,20,"Zero total speed, including zero angular motion, at every potential minimum.",false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.c,30,"Radii where \(\mathcal E=V_{\mathrm{eff}}\), irrespective of the energy normalisation.",false
+gr.effective_potential_orbits.q2,gr.effective_potential_orbits.q2.d,40,"Any point where the radial acceleration vanishes, even with nonzero radial speed.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.a,10,"Null orbits feel no curvature, so their potential is zero everywhere.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.b,20,Timelike norm contributes a rest-mass term; the null tangent has zero norm and lacks that term.,true
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.c,30,"Timelike orbits have no angular momentum term, while null orbits do.",false
+gr.effective_potential_orbits.q3,gr.effective_potential_orbits.q3.d,40,The two potentials differ only because null curves use imaginary proper time.,false
+gr.equivalence_principle.q4,gr.equivalence_principle.q4.a,10,Yes: every pair of freely falling bodies must keep a fixed distance.,false
+gr.equivalence_principle.q4,gr.equivalence_principle.q4.b,20,Yes: free fall requires the metric to be constant throughout the capsule.,false
+gr.equivalence_principle.q4,gr.equivalence_principle.q4.c,30,No: finite-separation tidal effects are compatible with local recovery of SR.,true
+gr.equivalence_principle.q4,gr.equivalence_principle.q4.d,40,No: changing distance proves only a difference in the bodies’ compositions.,false
+gr.local_inertial_frame.q4,gr.local_inertial_frame.q4.a,10,Yes: curvature depends only on products of connection coefficients.,false
+gr.local_inertial_frame.q4,gr.local_inertial_frame.q4.b,20,No: derivatives of the connection can still give nonzero curvature.,true
+gr.local_inertial_frame.q4,gr.local_inertial_frame.q4.c,30,Yes: zero coefficients at one event imply zero coefficients throughout the chart.,false
+gr.local_inertial_frame.q4,gr.local_inertial_frame.q4.d,40,No: curvature then comes from the metric determinant alone.,false
+gr.freely_falling_observer.q4,gr.freely_falling_observer.q4.a,10,Yes: an unsupported orbiter can follow a geodesic while a stationary observer is supported.,true
+gr.freely_falling_observer.q4,gr.freely_falling_observer.q4.b,20,No: any curved spatial trajectory requires nonzero proper acceleration.,false
+gr.freely_falling_observer.q4,gr.freely_falling_observer.q4.c,30,No: free fall requires decreasing altitude in all coordinates.,false
+gr.freely_falling_observer.q4,gr.freely_falling_observer.q4.d,40,"Yes: coordinate rest always implies free fall, while orbital motion does not.",false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.b,10,It becomes \(1/4\) as large,false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.c,20,It becomes \(1/2\) as large,false
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.a,30,It becomes \(1/8\) as large,true
+gr.tidal_gravity.q4,gr.tidal_gravity.q4.d,40,It becomes \(1/16\) as large,false
+gr.gravity_as_geometry.q4,gr.gravity_as_geometry.q4.a,10,Any coordinate dependence of the metric can always be removed over an entire spacetime.,false
+gr.gravity_as_geometry.q4,gr.gravity_as_geometry.q4.b,20,Flat spacetime can have position-dependent metric components in curvilinear coordinates.,true
+gr.gravity_as_geometry.q4,gr.gravity_as_geometry.q4.c,30,"Only the determinant, rather than metric components, can depend on coordinates.",false
+gr.gravity_as_geometry.q4,gr.gravity_as_geometry.q4.d,40,A metric describes clock readings but contains no information about curvature.,false
+gr.metric_tensor.q4,gr.metric_tensor.q4.a,10,Zero norm is possible only when the metric has zero determinant.,false
+gr.metric_tensor.q4,gr.metric_tensor.q4.b,20,Every null vector is the zero vector when written in an inertial frame.,false
+gr.metric_tensor.q4,gr.metric_tensor.q4.c,30,A Lorentzian metric has an inverse only on its timelike vectors.,false
+gr.metric_tensor.q4,gr.metric_tensor.q4.d,40,A null vector can have nonzero pairing with another vector; degeneracy would require zero pairing with every vector.,true
+gr.inverse_metric.q4,gr.inverse_metric.q4.a,10,"\(4,-9\)",false
+gr.inverse_metric.q4,gr.inverse_metric.q4.b,20,"\(1/4,-1/9\)",true
+gr.inverse_metric.q4,gr.inverse_metric.q4.c,30,"\(1/4,1/9\)",false
+gr.inverse_metric.q4,gr.inverse_metric.q4.d,40,"\(-4,9\)",false
+gr.volume_element.q4,gr.volume_element.q4.a,10,Yes: any nonconstant volume factor proves nonzero Riemann curvature.,false
+gr.volume_element.q4,gr.volume_element.q4.b,20,Yes: flat space always has a unit volume factor in every chart.,false
+gr.volume_element.q4,gr.volume_element.q4.c,30,No: the factor is a freely chosen density unrelated to metric distances.,false
+gr.volume_element.q4,gr.volume_element.q4.d,40,No: the same factor occurs for flat space in spherical coordinates.,true
+gr.line_element.q4,gr.line_element.q4.a,10,Yes: proper time depends only on the two endpoint events.,false
+gr.line_element.q4,gr.line_element.q4.b,20,"No: proper time is coordinate-independent for a given timelike path, but can differ between paths.",true
+gr.line_element.q4,gr.line_element.q4.c,30,Yes: reparametrising one path can give it any desired proper time.,false
+gr.line_element.q4,gr.line_element.q4.d,40,No: changing coordinates alone changes the elapsed time on either clock.,false
+gr.proper_time.q4,gr.proper_time.q4.b,10,"\(12.5\,\mathrm s\)",false
+gr.proper_time.q4,gr.proper_time.q4.c,20,"\(6\,\mathrm s\)",false
+gr.proper_time.q4,gr.proper_time.q4.d,30,"\(10\,\mathrm s\)",false
+gr.proper_time.q4,gr.proper_time.q4.a,40,"\(8\,\mathrm s\)",true
+gr.null_curve.q4,gr.null_curve.q4.a,10,The null condition fixes the path but leaves its coordinate labels undetermined.,false
+gr.null_curve.q4,gr.null_curve.q4.b,20,Zero tangent norm does not impose the geodesic evolution law for that tangent.,true
+gr.null_curve.q4,gr.null_curve.q4.c,30,Only timelike curves can satisfy a geodesic equation.,false
+gr.null_curve.q4,gr.null_curve.q4.d,40,Every null curve has nonzero proper acceleration because it moves at light speed.,false
+gr.causal_structure.q4,gr.causal_structure.q4.a,10,Yes: a smooth positive conformal rescaling preserves cones but generally changes proper times.,true
+gr.causal_structure.q4,gr.causal_structure.q4.b,20,No: identical cones determine every metric component uniquely.,false
+gr.causal_structure.q4,gr.causal_structure.q4.c,30,Yes: a coordinate relabelling alone changes physical clock readings.,false
+gr.causal_structure.q4,gr.causal_structure.q4.d,40,No: proper time depends only on whether a tangent is inside or outside a cone.,false
+gr.local_flatness.q4,gr.local_flatness.q4.a,10,Yes: vanishing first derivatives force the Einstein tensor to equal the matter source.,false
+gr.local_flatness.q4,gr.local_flatness.q4.b,20,Yes: the equivalence principle uniquely selects the matter coupling constant.,false
+gr.local_flatness.q4,gr.local_flatness.q4.c,30,No: first derivatives can vanish only for metrics that violate the field equations.,false
+gr.local_flatness.q4,gr.local_flatness.q4.d,40,No: pointwise flattening is a geometric property; field equations independently constrain the metric.,true
+gr.metric_signature.q4,gr.metric_signature.q4.a,10,Yes: fixing the metric signature fixes the order of derivatives in the Riemann definition.,false
+gr.metric_signature.q4,gr.metric_signature.q4.b,20,No: the Riemann sign convention is independent and must also be checked.,true
+gr.metric_signature.q4,gr.metric_signature.q4.c,30,Yes: positive timelike norm requires every curvature scalar to be positive.,false
+gr.metric_signature.q4,gr.metric_signature.q4.d,40,No: the curvature sign may be changed independently at each event without altering any equations.,false
+gr.connection.q4,gr.connection.q4.a,10,Different coefficients in the same chart must always represent the same transport rule.,false
+gr.connection.q4,gr.connection.q4.b,20,"Only the time coordinate determines a connection, so spatial charts can share several.",false
+gr.connection.q4,gr.connection.q4.c,30,The chart does not select a transport rule; extra conditions such as Levi-Civita compatibility and zero torsion do.,true
+gr.connection.q4,gr.connection.q4.d,40,One connection acts on vectors and an unrelated one must be chosen for covectors.,false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.a,10,\(+r\),false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.b,20,\(-r\),true
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.c,30,\(-1/r\),false
+gr.christoffel_symbols.q4,gr.christoffel_symbols.q4.d,40,\(0\),false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.a,10,"The first derivative is a covector, whose lower index needs a connection correction.",true
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.b,20,Taking one derivative changes the scalar into a contravariant vector without using a metric.,false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.c,30,"The connection term measures the scalar’s own parallel transport, even at first order.",false
+gr.covariant_derivative.q4,gr.covariant_derivative.q4.d,40,Two ordinary partial derivatives fail to commute in every curved coordinate chart.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.a,10,No: preserving norm fixes every vector’s final direction.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.b,20,Yes: metric-compatible transport must change direction even in a contractible flat region.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.c,30,No: any rotation around a loop implies nonzero torsion rather than curvature.,false
+gr.metric_compatibility.q4,gr.metric_compatibility.q4.d,40,Yes: inner products can be preserved while curvature makes transport path-dependent.,true
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.a,10,"A noncoordinate basis can have nonzero commutators, which also enter the torsion formula.",true
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.b,20,Only coordinate bases permit covariant differentiation of vectors.,false
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.c,30,Torsion is a tensor only in coordinate bases.,false
+gr.torsion_free_connection.q4,gr.torsion_free_connection.q4.d,40,The metric must be diagonal before lower-index symmetry has any meaning.,false
+gr.parallel_transport.q4,gr.parallel_transport.q4.a,10,"The two endpoints and initial vector, with no path specified.",false
+gr.parallel_transport.q4,gr.parallel_transport.q4.b,20,"The path and final norm alone, with no initial vector.",false
+gr.parallel_transport.q4,gr.parallel_transport.q4.c,30,"The connection, the specified path, and the initial vector.",true
+gr.parallel_transport.q4,gr.parallel_transport.q4.d,40,"The coordinate chart alone, with no connection or initial vector.",false
+gr.geodesic.q4,gr.geodesic.q4.a,10,No: metric compatibility and affine geodesic motion preserve the tangent’s squared norm.,true
+gr.geodesic.q4,gr.geodesic.q4.b,20,Yes: nonzero curvature necessarily converts null tangents into timelike tangents.,false
+gr.geodesic.q4,gr.geodesic.q4.c,30,Yes: changing coordinates changes the causal type of the tangent.,false
+gr.geodesic.q4,gr.geodesic.q4.d,40,No: the tangent must remain componentwise constant in every chart.,false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.a,10,A change of parameter changes the metric and therefore the free-fall trajectory.,false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.b,20,"Proper time is the only affine parameter, even for null geodesics.",false
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.c,30,A non-affine parameter introduces a tangent-proportional term even on the same geometric path.,true
+gr.geodesic_equation.q4,gr.geodesic_equation.q4.d,40,The missing term is a physical support force exerted by the new parameter.,false
+gr.geodesic_action.q4,gr.geodesic_action.q4.a,10,"Both vary only the particle path, using different curve parameters.",false
+gr.geodesic_action.q4,gr.geodesic_action.q4.b,20,The particle action varies a path in a fixed metric; the gravitational action varies the metric field.,true
+gr.geodesic_action.q4,gr.geodesic_action.q4.c,30,"The particle action varies the metric, whereas the gravitational action varies the path.",false
+gr.geodesic_action.q4,gr.geodesic_action.q4.d,40,Neither varies the metric; both merely impose a coordinate condition.,false
+gr.four_velocity.q4,gr.four_velocity.q4.a,10,\(v/c=\sqrt3/2\),true
+gr.four_velocity.q4,gr.four_velocity.q4.b,20,\(v/c=1/2\),false
+gr.four_velocity.q4,gr.four_velocity.q4.c,30,\(v/c=\sqrt2/2\),false
+gr.four_velocity.q4,gr.four_velocity.q4.d,40,\(v/c=2\),false
+gr.four_acceleration.q4,gr.four_acceleration.q4.a,10,All four-vectors have negative squared norm in a Lorentzian metric.,false
+gr.four_acceleration.q4,gr.four_acceleration.q4.b,20,"It is orthogonal to timelike four-velocity, so a nonzero acceleration is spacelike with signature +---.",true
+gr.four_acceleration.q4,gr.four_acceleration.q4.c,30,The negative norm means an accelerometer measures an imaginary acceleration.,false
+gr.four_acceleration.q4,gr.four_acceleration.q4.d,40,Its norm is negative because it is parallel to the timelike four-velocity.,false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.a,10,"A smooth affine geodesic family, first-order separation, zero torsion, and commuting parameter directions.",true
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.b,20,"Arbitrary accelerated paths at any separation, provided the metric is diagonal.",false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.c,30,"Any two paths sharing endpoints, with no connection specified.",false
+gr.geodesic_deviation.q4,gr.geodesic_deviation.q4.d,40,Geodesics with arbitrary independent non-affine parameters and no additional terms.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.a,10,Derivatives of the connection can survive; the quadratic connection terms vanish there.,true
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.b,20,Only products of connection coefficients can survive.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.c,30,Every term vanishes because normal coordinates make the region flat.,false
+gr.riemann_tensor.q4,gr.riemann_tensor.q4.d,40,Only derivatives of the metric determinant can survive.,false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.a,10,"Zero Ricci implies zero Riemann, so the shape change must be a coordinate illusion.",false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.b,20,Ricci-flat spacetime requires the cloud’s particles to accelerate by nongravitational forces.,false
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.c,30,Weyl curvature can stretch and squeeze in different directions while the initial tidal trace is zero.,true
+gr.ricci_tensor.q4,gr.ricci_tensor.q4.d,40,A zero trace requires every tidal eigenvalue to be zero separately.,false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.a,10,"\(R=12k\), with units of inverse length squared.",true
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.b,20,"\(R=3k\), with units of inverse length squared.",false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.c,30,"\(R=-6k\), with units of inverse length squared.",false
+gr.ricci_scalar.q4,gr.ricci_scalar.q4.d,40,"\(R=12k^2\), with units of inverse length to the fourth power.",false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.a,10,Yes: a zero sum requires each term in that sum to be zero.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.b,20,Yes: metric compatibility makes every tensor covariantly constant.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.c,30,No: the divergence condition is meaningful only in flat spacetime.,false
+gr.einstein_tensor.q4,gr.einstein_tensor.q4.d,40,No: vanishing divergence contracts a derivative index and is weaker than every derivative component vanishing.,true
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.a,10,Any \(\Lambda(x)\) is allowed because \(\nabla g=0\) also makes its derivative vanish.,false
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.b,20,The unchanged equations require \(\partial_\nu\Lambda=0\); variation needs extra dynamics or exchange with matter.,true
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.c,30,Only the value of the matter pressure must change; no conservation equation is affected.,false
+gr.bianchi_identity.q4,gr.bianchi_identity.q4.d,40,A varying cosmological term can always be removed by changing coordinates.,false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.b,10,It becomes \(1/243\) as large,false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.a,20,It becomes \(1/729\) as large,true
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.c,30,It becomes \(1/9\) as large,false
+gr.curvature_invariants.q4,gr.curvature_invariants.q4.d,40,It becomes \(729\) times larger,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.a,10,Only the explicit inverse metric in \(R=g^{\mu\nu}R_{\mu\nu}\).,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.b,20,The variation of a particle path in the matter action.,false
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.c,30,The variation of the volume density \(\sqrt{-g}\).,true
+gr.einstein_hilbert_action.q4,gr.einstein_hilbert_action.q4.d,40,"The cosmological term alone, even when the cosmological constant is zero.",false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.a,10,\(\epsilon\gamma\),false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.b,20,\(\epsilon\gamma^2\),true
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.c,30,\(\epsilon/\gamma\),false
+gr.stress_energy_tensor.q4,gr.stress_energy_tensor.q4.d,40,\(\epsilon\),false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.a,10,\(T=\epsilon-3p\); isotropic radiation gives \(T=0\).,true
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.b,20,\(T=\epsilon+3p\); isotropic radiation gives \(T=2\epsilon\).,false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.c,30,\(T=\epsilon-p\); isotropic radiation gives \(T=2\epsilon/3\).,false
+gr.perfect_fluid.q4,gr.perfect_fluid.q4.d,40,\(T=\epsilon-4p\); isotropic radiation gives \(T=-\epsilon/3\).,false
+gr.energy_conditions.q4,gr.energy_conditions.q4.a,10,Only the null energy condition fails.,false
+gr.energy_conditions.q4,gr.energy_conditions.q4.b,20,"The weak and dominant conditions fail, but the strong condition holds.",false
+gr.energy_conditions.q4,gr.energy_conditions.q4.c,30,Only the strong energy condition fails.,true
+gr.energy_conditions.q4,gr.energy_conditions.q4.d,40,All four conditions hold.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.a,10,It turns each coordinate component of stress-energy into an independently conserved scalar.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.b,20,It supplies a divergence-free vector current and a charge balance; vanishing boundary flux then gives a conserved charge.,true
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.c,30,It guarantees zero boundary flux for every chosen region.,false
+gr.covariant_conservation.q4,gr.covariant_conservation.q4.d,40,It makes any generic curved spacetime time-translation invariant.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.a,10,The two differ only because pressure and energy density have different SI units.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.b,20,"The ratio is an observer-dependent coordinate quantity, while its derivative is not.",false
+gr.equation_of_state.q4,gr.equation_of_state.q4.c,30,They must agree for every fluid with positive energy density.,false
+gr.equation_of_state.q4,gr.equation_of_state.q4.d,40,"For nonlinear \(p(\epsilon)\), the slope \(dp/d\epsilon\) need not equal the ratio \(p/\epsilon\).",true
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.a,10,A single density fixes the Ricci tensor and all Weyl curvature algebraically.,false
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.b,20,"The equations constrain only the metric determinant, leaving every other component physically arbitrary.",false
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.c,30,"They are differential equations sourced by full stress-energy and require matter dynamics and suitable data, with coordinate freedom.",true
+gr.einstein_field_equations.q4,gr.einstein_field_equations.q4.d,40,The missing information is solely the observer’s choice of energy units.,false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.a,10,"\(R=4\Lambda\), \(\epsilon_\Lambda=\Lambda/\kappa\).",false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.b,20,"\(R=-4\Lambda\), \(\epsilon_\Lambda=\Lambda/\kappa\).",true
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.c,30,"\(R=-4\Lambda\), \(\epsilon_\Lambda=-\Lambda/\kappa\).",false
+gr.cosmological_constant.q4,gr.cosmological_constant.q4.d,40,"\(R=0\), \(\epsilon_\Lambda=0\).",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.a,10,"\(T_{\mu\nu}=Vg_{\mu\nu}\), with density \(V\) and pressure \(-V\).",true
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.b,20,"\(T_{\mu\nu}=0\), since every derivative of the field vanishes.",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.c,30,"\(T_{\mu\nu}=-Vg_{\mu\nu}\), with positive density \(V\).",false
+gr.stress_energy_variation.q4,gr.stress_energy_variation.q4.d,40,"\(T_{\mu\nu}=Vu_\mu u_\nu\), describing pressureless dust.",false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.a,10,Yes: zero trace means every stress-energy component vanishes.,false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.b,20,Yes: trace-free matter produces only Weyl curvature and no Ricci curvature.,false
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.c,30,"No: \(R=0\), but \(R_{\mu\nu}=\kappa T_{\mu\nu}\) can be nonzero.",true
+gr.trace_reversed_equations.q4,gr.trace_reversed_equations.q4.d,40,No: trace-free matter necessarily gives a nonzero Ricci scalar.,false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.a,10,"The vacuum equation fixes a unique metric, so any difference must be a coordinate illusion.",false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.b,20,"The differential equations admit different solutions distinguished by data, symmetry, mass, rotation or radiation.",true
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.c,30,Every vacuum region has different local values of Newton’s gravitational constant.,false
+gr.vacuum_field_equations.q4,gr.vacuum_field_equations.q4.d,40,The Weyl tensor is an arbitrary coordinate choice with no measurable effect.,false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.a,10,"\(g^{00}\simeq1+\delta\), neglecting terms of order \(\delta^2\).",false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.b,20,"\(g^{00}\simeq1-\delta\), neglecting terms of order \(\delta^2\).",true
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.c,30,"\(g^{00}\simeq-\delta\), neglecting terms of order \(\delta^2\).",false
+gr.weak_field_metric.q4,gr.weak_field_metric.q4.d,40,"\(g^{00}\simeq1-\delta\), with the first discarded term of order \(\delta^3\).",false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.a,10,The source is \(T_{00}-\tfrac12g_{00}T\); for low-pressure matter the trace removes half the leading density term.,true
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.b,20,Pressure dominates the source even in the stated nonrelativistic limit.,false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.c,30,"The trace term doubles \(T_{00}\), supplying the missing factor of two.",false
+gr.newtonian_limit.q4,gr.newtonian_limit.q4.d,40,"The trace vanishes for pressureless matter, so its effect must come from another component.",false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.a,10,Conservation of the symmetry-associated energy forces all local frequencies to be identical.,false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.b,20,The photon loses rest mass while its conserved energy remains unchanged.,false
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.c,30,Different stationary observers divide the same conserved quantity by different \(\sqrt{g_{00}}\) factors.,true
+gr.gravitational_redshift.q4,gr.gravitational_redshift.q4.d,40,Each observer measures a different local vacuum light speed.,false
+gr.light_deflection.q4,gr.light_deflection.q4.a,10,"Light’s spatial and temporal tangent components are comparable, so spatial metric corrections contribute at leading order.",true
+gr.light_deflection.q4,gr.light_deflection.q4.b,20,Spatial metric corrections dominate for slow bodies but are absent for light.,false
+gr.light_deflection.q4,gr.light_deflection.q4.c,30,"The time component of every null tangent vanishes, so the temporal metric never contributes.",false
+gr.light_deflection.q4,gr.light_deflection.q4.d,40,Light travels outside the weak-field approximation even at arbitrarily large impact parameter.,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.b,10,\(0.00628\) radians,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.c,20,\(0.1885\) radians,false
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.a,30,\(0.01885\) radians,true
+gr.perihelion_precession.q4,gr.perihelion_precession.q4.d,40,\(6.283\) radians,false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.b,10,1PN: \(10^{-1}\); 2PN: \(10^{-2}\),false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.c,20,1PN: \(10^{-2}\); 2PN: \(10^{-2}\),false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.d,30,1PN: \(10^{-4}\); 2PN: \(10^{-8}\),false
+gr.post_newtonian_approximation.q4,gr.post_newtonian_approximation.q4.a,40,1PN: \(10^{-2}\); 2PN: \(10^{-4}\),true
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.a,10,"Every small perturbation is a physical wave, even when its curvature is zero.",false
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.b,20,Only a large perturbation can carry physical information.,false
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.c,30,Gauge changes can produce component ripples; a physical wave has tidal effects remaining after coordinate freedom is accounted for.,true
+gr.gravitational_waves.q4,gr.gravitational_waves.q4.d,40,Any coordinate dependence of the metric proves that gravitational radiation is present.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.a,10,No: any moving matter must create outgoing gravitational radiation.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.b,20,Yes: the exterior must be flat whenever the source remains spherical.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.c,30,No: spherical symmetry forces the stellar interior and exterior to pulsate with the same time dependence.,false
+gr.schwarzschild_metric.q4,gr.schwarzschild_metric.q4.d,40,Yes: Birkhoff’s theorem permits a locally Schwarzschild vacuum exterior; spherical pulsations do not radiate gravitational waves.,true
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.a,10,\(\mathcal C=0.05\),true
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.b,20,\(\mathcal C=0.10\),false
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.c,30,\(\mathcal C=5\),false
+gr.schwarzschild_radius.q4,gr.schwarzschild_radius.q4.d,40,\(\mathcal C=20\),false
+gr.event_horizon.q4,gr.event_horizon.q4.a,10,Light locally slows to zero speed because the horizon absorbs its kinetic energy.,false
+gr.event_horizon.q4,gr.event_horizon.q4.b,20,"The horizon generator is timelike, so the photon has acquired a rest frame.",false
+gr.event_horizon.q4,gr.event_horizon.q4.c,30,"Areal radius is constant along that horizon generator, while a local freely falling observer still measures light speed c.",true
+gr.event_horizon.q4,gr.event_horizon.q4.d,40,Zero radial coordinate speed implies a zero tangent vector in every frame.,false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.a,10,"Eigenvalues \(0,0\): degenerate because both diagonal entries vanish.",false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.b,20,"Eigenvalues \(+1,-1\): nondegenerate, with one timelike and one spacelike direction.",true
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.c,30,"Eigenvalues \(+1,+1\): a positive-definite spatial block.",false
+gr.coordinate_singularity.q4,gr.coordinate_singularity.q4.d,40,"Eigenvalues \(-1,-1\): two negative directions and no timelike direction.",false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.a,10,The singularity is a material sphere that a sufficiently powerful rocket can circle inside the horizon.,false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.b,20,Inside the horizon a change of coordinates permits a future-directed path to increasing areal radius and escape.,false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.c,30,"The central singularity is another chart failure, removed in the same way as the horizon.",false
+gr.black_hole_singularity.q4,gr.black_hole_singularity.q4.d,40,In the black-hole interior all future causal paths decrease areal radius; the singularity is a spacelike future boundary.,true
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.a,10,\(L^2=64m^2/5\); radially unstable.,false
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.b,20,\(L^2=8m^2\); radially stable.,false
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.c,30,\(L^2=64m^2/5\); radially stable.,true
+gr.effective_potential_orbits.q4,gr.effective_potential_orbits.q4.d,40,\(L^2=64m^2/11\); radially unstable.,false

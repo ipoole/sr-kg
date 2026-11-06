@@ -32,7 +32,7 @@ to rotate to portrait. Returning to portrait restores the current view.
 
 The first visit opens the Quick start; dismissal is remembered locally and
 **Tools → Quick start** reopens it. Startup selects SR-5 Field Dynamics and Radiation (or the first available
-module/concept), with transitive Foundations, Context + background, Both, Frame All, authored
+module/concept), with 2-hop Derivation, Context + background, Both, Frame Context, authored
 module defaults, layout editing off, and one initial fit. Valid URL selections
 override that default; missing/invalid URLs and history entries use the fallback.
 Empty-space clicks retain selection, and no Clear action is exposed.
@@ -56,7 +56,7 @@ Named contexts are Connections, Prerequisites, Derivation, Foundations, Uses
 and Related. Foundations combines derivation, construction and prerequisite
 inputs. Custom context exposes clearly worded
 relation/direction checkboxes and can be reopened for editing.
-Depth is one hop, two hops or Transitive and applies uniformly to the rule.
+Depth is one hop, two hops, three hops or Transitive and applies uniformly to the rule.
 
 In All equally and Context + background, the Context relation set filters edges
 across the whole graph. All equally shows every eligible edge in its relation
@@ -81,7 +81,7 @@ control explicitly offers Reveal selection, Fit selection, Fit context and Fit
 displayed graph. Context, display, folding, details and viewport changes do not
 fit or rezoom automatically.
 
-Frame offers Reveal selection, Selection, Context and All. The default is All.
+Frame offers Reveal selection, Selection, Context and All. The default is Context.
 Selection and its context remain available in each graph mode; module folding
 changes their representation without changing the selected object.
 

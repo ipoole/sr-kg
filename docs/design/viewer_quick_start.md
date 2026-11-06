@@ -40,7 +40,7 @@ can open, bookmark or copy to share.
 ## Start with the map
 
 The viewer opens with modules folded and SR-5 Field Dynamics and Radiation selected.
-Context + background emphasises its transitive Foundations across the wider map.
+Context + background emphasises its 2-hop Derivation across the wider map.
 
 - Click a module to read its introduction.
 - Use the `+` in a folded module's top-right corner to reveal its concepts; use
@@ -61,7 +61,7 @@ which relationships are followed:
 - **Foundations** — derivation, construction and prerequisites together.
 - **Uses** — ideas that depend on or use the selection.
 
-Choose one hop, two hops or the complete transitive chain.
+Choose one hop, two hops, three hops or the complete transitive chain.
 
 A selected concept inside a folded module appears within the module. Use the
 offered actions to expand its module or any folded part of its context. Context
@@ -123,9 +123,9 @@ attempts, including offline. Reconnecting later merges local changes with Drive.
 ## Study
 
 Open a concept's **Study Questions** block to answer questions. Answers appear
-after an attempt or **I don't know**. Automatic questions mark your choice; for free text, compare the
-model answer and mark yourself. Green ticks and red crosses record the latest
-result. Tap an **Incorrect** badge to retry with the answer hidden; previous
+after an attempt or **I don't know**. All current questions offer answer choices
+and mark automatically, including calculations. Worked feedback explains the
+answer. Green ticks and red crosses record the latest result. Tap an **Incorrect** badge to retry with the answer hidden; previous
 attempts remain recorded until the next submission updates the result.
 **Tools → Study** lists attempts and links to each question. Progress is
 stored locally and is included in the Personal data archive. By default the
