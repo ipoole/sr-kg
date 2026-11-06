@@ -216,13 +216,15 @@ The current independent presentation concerns are:
 
 - **Selection:** a concept or module; navigation retains a valid selection.
 - **Context rule:** relation/direction traversals plus depth, computed on concepts.
-- **Display scope:** All equally, Context + background, or Context only. Internally
-  these are `all`, `full` and `context`; `full` means Context + background.
+- **Display scope:** Overview, Context + background, or Context only. Internally
+  these are `overview`, `full` and `context`; `full` means Context + background.
+  Overview retains internal concept edges and aggregates cross-module edges at
+  module boundaries, regardless of folding.
 - **Module representation:** folded or expanded, independent of selection.
 - **Workspace view:** Graph, Details or Both.
 - **Camera:** Reveal, Selection, Context or All framing, and explicit Fit/Fit++.
 
-All equally shows the graph without foreground/background distinction; context
+Overview shows the graph without foreground/background distinction; context
 is still available to explicit operations. Context + background emphasises the
 selection's context and subdues the rest. Context only omits the rest. Details
 links and Show in graph invoke explicit navigation/context actions rather than
@@ -236,17 +238,24 @@ fold controls, previews and tutorial targets. MathJax typesets teaching content
 and mathematical labels. A draw callback can therefore also update DOM positions.
 
 Performance controls include cached SVG images, module footprints, fitted labels
-and completion summaries; deferred construction/typesetting of complex Details
+and completion summaries, a shared text-measurement canvas, and one expanded-module
+geometry snapshot per draw; deferred construction/typesetting of complex Details
 sections; low-zoom simplified concept faces/hidden labels; and batched or scheduled
 UI work. Camera animation is reduced on slower devices. These caches require
 invalidation when their inputs change; they are not separate application state.
+
+Folded and expanded module labels share title wrapping and measurement. Folded
+labels fit a title/count block below the graphic; expanded labels use fixed-size,
+two-line text in the reserved footer. These remain distinct presentation policies.
 
 ## Layout and temporary presentation
 
 The authored `layout.json` provides global concept positions and module anchors.
 Generated positions fill omissions. Browser personal overrides sit above that
 base; moving a module moves its members. Module footprints derive from member
-bounds rather than a separately authored rectangle.
+bounds plus a shared reserved title footer, rather than a separately authored
+rectangle. The footer extends only the bottom in both folded and expanded forms;
+the resulting bounds drive clipping, framing and folded collision geometry.
 
 Fit changes the camera. Fit++ additionally contracts the context using graph-hop
 order and collision footprints, retaining the selected anchor. Its coordinates

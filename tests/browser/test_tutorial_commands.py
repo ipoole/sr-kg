@@ -182,8 +182,9 @@ def test_semantic_command_opens_questions_without_recording_attempts(browser_gra
 @pytest.mark.browser
 def test_semantic_command_previews_a_visible_graph_edge(browser_graph):
     page = browser_graph.page
+    browser_graph.click_concept("2.1")
     page.locator("#kg_context_preset_select").select_option("foundations")
-    page.locator("#kg_display_scope_select").select_option("all")
+    page.locator("#kg_display_scope_select").select_option("full")
     page.evaluate(
         """async () => {
           await kgExecuteViewerCommand({

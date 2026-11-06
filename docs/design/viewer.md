@@ -11,7 +11,7 @@ Independent controls determine the workspace and graph:
 
 1. **Selection**: always one concept or module.
 2. **Context rule**: named or custom relationship traversals and a shared depth.
-3. **Graph**: All equally, Context + background, or Context only.
+3. **Graph**: Overview, Context + background, or Context only.
 4. **Module representation**: each module folded or expanded.
 5. **View**: Both, Graph, or Details; controls pane visibility only.
 
@@ -58,13 +58,15 @@ inputs. Custom context exposes clearly worded
 relation/direction checkboxes and can be reopened for editing.
 Depth is one hop, two hops, three hops or Transitive and applies uniformly to the rule.
 
-In All equally and Context + background, the Context relation set filters edges
-across the whole graph. All equally shows every eligible edge in its relation
-colour and all nodes in foreground, while retaining a conspicuous selection.
+In Overview and Context + background, the Context relation set filters edges
+across the whole graph. Overview shows internal concept edges and module-to-module
+summaries in relation colours, with all nodes in foreground and a conspicuous selection.
 Context + background emphasises the selected context and subdues other nodes and
 edges. Direction and depth govern context traversal, not the global edge filter.
 Context only includes the context subgraph. Selection never changes Graph mode.
-Context counts, module expansion and Fit/Fit++ remain available in All equally.
+Context counts, module expansion and Fit/Fit++ remain available in Overview.
+Both whole-map modes use pale expanded-module backgrounds above cross-module links
+and below internal relationships and concepts.
 
 View chooses Both, Graph or Details. Switching panes preserves camera, splitter,
 selection, section opening states and graph mode; it does not fit automatically.

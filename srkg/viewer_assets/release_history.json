@@ -1,4 +1,9 @@
 [
+  {"version": "4.5.9", "date": "2026-11-06", "summary": "Preview: More compact module footers and folded labels centred in the space below their graphics."},
+  {"version": "4.5.8", "date": "2026-11-06", "summary": "Preview: Larger module titles in a reserved bottom area shared by folded and expanded module boxes."},
+  {"version": "4.5.7", "date": "2026-11-06", "summary": "Preview: Overview replaces All equally, both map modes soften passing links, and expanded modules retain their titles."},
+  {"version": "4.5.6", "date": "2026-11-06", "summary": "Preview: Overview links stop at module boundaries and fade beneath pale expanded-module backgrounds."},
+  {"version": "4.5.5", "date": "2026-11-06", "summary": "Preview: Overview graph mode combines internal concept relationships with module-to-module summaries."},
   {"version": "4.5.1", "date": "2026-11-06", "summary": "Automatically marked study questions, clearer GR derivations and tangent/cotangent examples, and refined graph context controls."},
   {"version": "4.5.0", "date": "2026-11-04", "summary": "Clearer phone graph controls, tighter graphic spacing, easier question retries and an in-app version history."},
   {"version": "4.4.0", "date": "2026-11-03", "summary": "Folded clarifications and improved personal notes, including top-level blocks, mathematical notation and explicit editing."},

@@ -287,6 +287,16 @@ function kgCreateContextLayout(options) {
       position: copyLayoutPosition(anchorPosition),
       extents: contractionNodeExtents(candidate.anchorId)
     }];
+    // Expanded-module footers stay with the authored module boundary while
+    // Fit++ temporarily moves context nodes. Keep these reserved areas clear.
+    (options.fixedObstacles ? options.fixedObstacles() : []).forEach(function(bounds) {
+      placed.push({position: {x: (bounds.left + bounds.right) / 2,
+        y: (bounds.top + bounds.bottom) / 2}, extents: {
+        left: bounds.width / 2, right: bounds.width / 2,
+        top: bounds.height / 2, bottom: bounds.height / 2,
+        width: bounds.width, height: bounds.height
+      }});
+    });
     var finalPositions = {};
     var parentByNode = {};
     finalPositions[candidate.anchorId] = copyLayoutPosition(anchorPosition);

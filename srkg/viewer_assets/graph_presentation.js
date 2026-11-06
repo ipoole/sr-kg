@@ -12,6 +12,83 @@ function kgCreateGraphPresentation(options) {
   var activeNodeRadiusScale = options.activeRadiusScale, activeNodeBorderWidth = options.activeBorderWidth;
   var detailedConceptRenderMinRadiusPx = options.detailThreshold;
   var svgImageCache = {}, fittedModuleLabelCache = {};
+  var expandedLabelCache = {}, textContext = null;
+
+  function moduleTextContext() {
+    if (!textContext) { textContext = document.createElement("canvas").getContext("2d"); }
+    return textContext;
+  }
+
+  function wrapModuleTitle(context, title, maxWidth) {
+    var lines = [], line = "";
+    String(title).split(/\s+/).forEach(function(word) {
+      var next = line ? line + " " + word : word;
+      if (line && context.measureText(next).width > maxWidth) {
+        lines.push(line); line = word;
+      } else { line = next; }
+    });
+    if (line) { lines.push(line); }
+    return lines;
+  }
+
+  function expandedModuleLabelSnapshot(outlines) {
+    return (outlines || expandedModuleOutlineSnapshot()).map(function(outline) {
+      var module = getModule(outline.moduleId) || {};
+      var title = module.title || outline.moduleId;
+      var selected = options.selectedModuleId() === outline.moduleId;
+      var fontSize = 72, lineHeight = 87;
+      var maxWidth = Math.max(1, Math.min(1000,
+        outline.width - 2 * Math.max(24, outline.radius * 0.4)));
+      var font = (selected ? "bold " : "") + fontSize + "px Arial";
+      var key = JSON.stringify([title, maxWidth, font]);
+      var measured = expandedLabelCache[key];
+      if (!measured) {
+        var context = moduleTextContext();
+        context.font = font;
+        var lines = wrapModuleTitle(context, title, maxWidth);
+        var truncated = lines.length > 2;
+        lines = lines.slice(0, 2).map(function(text, index) {
+          if ((truncated && index === 1) || context.measureText(text).width > maxWidth) {
+            while (text && context.measureText(text + "…").width > maxWidth) {
+              text = text.slice(0, -1);
+            }
+            return text.trimEnd() + "…";
+          }
+          return text;
+        });
+        measured = {lines: lines, width: Math.max.apply(null, lines.map(function(text) {
+          return context.measureText(text).width;
+        }).concat([1]))};
+        expandedLabelCache[key] = measured;
+      }
+      var x = outline.left + outline.width / 2;
+      var top = outline.contentBottom +
+        (outline.footerHeight - measured.lines.length * lineHeight) / 2;
+      return {moduleId: outline.moduleId, lines: measured.lines.slice(), selected: selected,
+        fontSize: fontSize, font: font, lineHeight: lineHeight, x: x,
+        top: top, bottom: top + measured.lines.length * lineHeight,
+        left: x - measured.width / 2, right: x + measured.width / 2,
+        width: measured.width, height: measured.lines.length * lineHeight};
+    });
+  }
+
+  function drawExpandedModuleLabels(ctx, outlines) {
+    expandedModuleLabelSnapshot(outlines).forEach(function(label) {
+      ctx.save();
+      ctx.font = label.font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = label.selected ? "#1f2937" : "#5b6471";
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 3;
+      label.lines.forEach(function(line, index) {
+        var y = label.top + index * label.lineHeight;
+        ctx.strokeText(line, label.x, y);
+        ctx.fillText(line, label.x, y);
+      });
+      ctx.restore();
+    });
+  }
 
   function drawConceptFace(ctx, node, pos, options) {
       options = options || {};
@@ -184,24 +261,13 @@ function kgCreateGraphPresentation(options) {
     if (fittedModuleLabelCache[cacheKey]) {
       return Object.assign({}, fittedModuleLabelCache[cacheKey]);
     }
-    var context = document.createElement("canvas").getContext("2d");
+    var context = moduleTextContext();
     var countLabel = memberCount + " concept" + (memberCount === 1 ? "" : "s");
     var countFontSize = options.countFontSize || 80;
     var lineWidth = width * (options.lineWidthFraction || 0.88);
     function linesAt(size) {
       context.font = "bold " + size + "px Arial";
-      var lines = [], line = "";
-      String(title).split(/\s+/).forEach(function(word) {
-        var candidate = line ? line + " " + word : word;
-        if (context.measureText(candidate).width <= lineWidth) {
-          line = candidate;
-        } else {
-          if (line) { lines.push(line); }
-          line = word;
-        }
-      });
-      if (line) { lines.push(line); }
-      return lines;
+      return wrapModuleTitle(context, title, lineWidth);
     }
     // Cap titles in graph-space units: extra box area need not enlarge text.
     var low = 1, high = Math.min(options.titleFontCap || 160, Math.min(width, height) * 0.3);
@@ -214,46 +280,49 @@ function kgCreateGraphPresentation(options) {
       context.font = countFontSize + "px Arial";
       var labelHeight = options.availableHeight || height * 0.84;
       var lineHeightFactor = options.lineHeightFactor || 1.25;
-      if ((lines.length * size + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
+      if ((lines.length * Math.max(size, countFontSize) + countFontSize) * lineHeightFactor <= labelHeight && titleFits &&
           context.measureText(countLabel).width <= width * 0.88) {
         low = size;
       } else { high = size; }
     }
     var titleLines = linesAt(low);
     var verticalShift = Number(options.verticalShift) || 0;
+    var titleLineHeight = Math.max(low, countFontSize);
+    context.textBaseline = "middle";
+    context.font = "bold " + low + "px Arial";
+    var titleAscent = context.measureText(titleLines[0] || "").actualBoundingBoxAscent;
+    context.font = countFontSize + "px Arial";
+    var countDescent = context.measureText(countLabel).actualBoundingBoxDescent;
+    if (Number.isFinite(titleAscent) && Number.isFinite(countDescent)) {
+      verticalShift -= (titleLineHeight - countFontSize) / 4 + (countDescent - titleAscent) / 2;
+    }
     var result = {
       text: titleLines.map(function(line) {
         return "<b>" + escapeHtml(line) + "</b>";
       }).join("\n") + "\n" + countLabel,
       size: low,
       countSize: countFontSize,
-      // vis centres the first baseline using the base (count) font size,
-      // even for larger bold title lines. Correct each style's baseline
-      // so the combined title/count block is centred inside its box.
-      titleOffset: (titleLines.length - 1) * (countFontSize - low) / 2 + verticalShift,
-      countOffset: titleLines.length * (countFontSize - low) / 2 + verticalShift
+      // vis starts at the count-font baseline and gives each title line at
+      // least that height. Centre the actual glyph ink, including the count.
+      titleOffset: (titleLines.length - 1) * (countFontSize - titleLineHeight) / 2 + verticalShift,
+      countOffset: titleLines.length * (countFontSize - titleLineHeight) / 2 + verticalShift
     };
     fittedModuleLabelCache[cacheKey] = result;
     return Object.assign({}, result);
   }
 
   function moduleGraphicLayout(width, height) {
-    var pad = Math.max(18, Math.min(width, height) * 0.055);
-    var availableWidth = Math.max(1, width - 2 * pad);
-    var availableHeight = Math.max(1, height * 0.62 - 2 * pad);
-    var graphicWidth = Math.min(availableWidth, availableHeight * 1.6);
-    var graphicHeight = graphicWidth / 1.6;
-    var graphicX = (width - graphicWidth) / 2;
-    var graphicY = pad;
-    var labelTop = graphicY + graphicHeight + pad * 0.55;
-    var labelBottom = height - pad * 0.6;
+    var contentHeight = Math.max(1, height - options.moduleFooterHeight);
+    var inset = Math.max(18, Math.min(width, contentHeight) * 0.055);
+    var imageWidth = Math.max(1, Math.min(width - 2 * inset, (contentHeight - 2 * inset) * 1.6));
+    var imageHeight = imageWidth / 1.6;
+    var labelTop = inset + imageHeight + inset * 0.55;
+    var labelBottom = height - inset * 0.6;
     return {
-      graphic: {x: graphicX, y: graphicY, width: graphicWidth, height: graphicHeight},
-      labelArea: {
-        top: labelTop - height / 2,
-        bottom: labelBottom - height / 2,
-        height: Math.max(1, labelBottom - labelTop)
-      },
+      graphic: {x: (width - imageWidth) / 2, y: inset,
+        width: imageWidth, height: imageHeight},
+      labelArea: {top: labelTop - height / 2, bottom: labelBottom - height / 2,
+        height: labelBottom - labelTop},
       labelCenter: (labelTop + labelBottom) / 2 - height / 2
     };
   }
@@ -262,10 +331,10 @@ function kgCreateGraphPresentation(options) {
     return Math.min(width, height) * 0.18;
   }
 
-  function drawExpandedModuleOutlines(ctx) {
+  function drawExpandedModuleOutlines(ctx, outlines) {
     var scale = network && network.getScale ? Number(network.getScale()) : 1;
     if (!Number.isFinite(scale) || scale <= 0) { scale = 1; }
-    expandedModuleOutlineSnapshot().forEach(function(outline) {
+    (outlines || expandedModuleOutlineSnapshot()).forEach(function(outline) {
       ctx.save();
       ctx.globalAlpha = outline.opacity;
       ctx.strokeStyle = outline.colour;
@@ -280,6 +349,44 @@ function kgCreateGraphPresentation(options) {
       );
       ctx.stroke();
       ctx.restore();
+    });
+  }
+
+  function drawExpandedModuleBackgrounds(ctx, outlines) {
+    (outlines || expandedModuleOutlineSnapshot()).forEach(function(outline) {
+      ctx.save();
+      ctx.fillStyle = "rgba(248, 250, 252, 0.90)";
+      roundedRectPath(ctx, outline.left, outline.top, outline.width, outline.height, outline.radius);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawExpandedModuleFooters(ctx, outlines) {
+    (outlines || expandedModuleOutlineSnapshot()).forEach(function(outline) {
+      ctx.save();
+      roundedRectPath(ctx, outline.left, outline.top, outline.width, outline.height, outline.radius);
+      ctx.clip();
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(outline.left, outline.contentBottom, outline.width, outline.footerHeight);
+      ctx.restore();
+    });
+  }
+
+  function clipModuleEdgeEndpoints(ctx, edge) {
+    var canvas = ctx.canvas;
+    var topLeft = network.DOMtoCanvas({x: 0, y: 0});
+    var bottomRight = network.DOMtoCanvas({
+      x: canvas.clientWidth || canvas.width, y: canvas.clientHeight || canvas.height
+    });
+    [edge.fromId, edge.toId].forEach(function(id) {
+      var bounds = options.moduleBoundary(id);
+      if (bounds) {
+        ctx.beginPath();
+        ctx.rect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+        roundedRectPath(ctx, bounds.left, bounds.top, bounds.width, bounds.height, bounds.radius, true);
+        ctx.clip("evenodd");
+      }
     });
   }
 
@@ -307,9 +414,9 @@ function kgCreateGraphPresentation(options) {
       : null;
   }
 
-  function roundedRectPath(ctx, x, y, width, height, radius) {
+  function roundedRectPath(ctx, x, y, width, height, radius, append) {
     radius = Math.min(radius, width / 2, height / 2);
-    ctx.beginPath();
+    if (!append) { ctx.beginPath(); }
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
     ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
@@ -363,12 +470,17 @@ function kgCreateGraphPresentation(options) {
   }
 
   return {
+    expandedModuleLabelSnapshot: expandedModuleLabelSnapshot,
+    drawExpandedModuleLabels: drawExpandedModuleLabels,
     drawVisibleNodes: drawVisibleNodes,
     drawGraphCompletionMarkers: drawGraphCompletionMarkers,
     fittedModuleLabel: fittedModuleLabel,
     moduleGraphicLayout: moduleGraphicLayout,
     moduleCornerRadius: moduleCornerRadius,
     drawExpandedModuleOutlines: drawExpandedModuleOutlines,
+    drawExpandedModuleBackgrounds: drawExpandedModuleBackgrounds,
+    drawExpandedModuleFooters: drawExpandedModuleFooters,
+    clipModuleEdgeEndpoints: clipModuleEdgeEndpoints,
     moduleGraphicCornerRadius: moduleGraphicCornerRadius,
     moduleGraphicImage: moduleGraphicImage,
     drawFoldedModuleGraphics: drawFoldedModuleGraphics

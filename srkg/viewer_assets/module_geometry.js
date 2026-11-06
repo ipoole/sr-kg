@@ -32,5 +32,17 @@ var kgModuleGeometry = (function() {
       x: x, y: y, offset: {x: x - anchor.x, y: y - anchor.y}
     };
   }
-  return {footprint: footprint};
+  var footerHeight = 220;
+
+  function withFooter(bounds) {
+    return Object.assign({}, bounds, {
+      contentBottom: bounds.bottom, contentHeight: bounds.height,
+      footerHeight: footerHeight,
+      bottom: bounds.bottom + footerHeight,
+      height: bounds.height + footerHeight,
+      y: bounds.y + footerHeight / 2,
+      offset: {x: bounds.offset.x, y: bounds.offset.y + footerHeight / 2}
+    });
+  }
+  return {footprint: footprint, withFooter: withFooter, footerHeight: footerHeight};
 })();

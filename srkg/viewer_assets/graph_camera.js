@@ -315,6 +315,13 @@ function kgCreateGraphCamera(options) {
       maxY = Math.max(maxY, pos.y + bottomExtent);
     });
 
+    (options.additionalBounds ? options.additionalBounds(nodeIds) : []).forEach(function(bounds) {
+      minX = Math.min(minX, bounds.left);
+      maxX = Math.max(maxX, bounds.right);
+      minY = Math.min(minY, bounds.top);
+      maxY = Math.max(maxY, bounds.bottom);
+    });
+
     if (!Number.isFinite(minX)) {
       return null;
     }

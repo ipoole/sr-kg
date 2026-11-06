@@ -245,7 +245,7 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | Command | Parameters | Existing viewer operation |
 | --- | --- | --- |
 | `select` | concept or module semantic ID | normal selection transition, without history |
-| `set-display-scope` | `all`, `full`, `context` | All equally, Context + background, Context only |
+| `set-display-scope` | `overview`, `full`, `context` | Overview, Context + background, Context only |
 | `set-context` | preset and depth | Context rule controls |
 | `set-view` | `both`, `graph`, `details` | Workspace panes; preserves reading state |
 | `set-module-representation` | module ID and `folded`/`expanded` | normal module representation transition |

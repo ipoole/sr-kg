@@ -34,7 +34,7 @@ TUTORIAL_COMMANDS = frozenset({
     "close-search",
     "wait",
 })
-DISPLAY_SCOPES = frozenset({"all", "full", "context"})
+DISPLAY_SCOPES = frozenset({"overview", "full", "context"})
 CONTEXT_PRESETS = frozenset({
     "connections",
     "prerequisites",

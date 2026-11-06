@@ -14,7 +14,7 @@ zoom and opened sections.
 
 **Graph** chooses how the map is presented:
 
-- **All equally** — the whole map in foreground, with coloured relationships.
+- **Overview** — the whole map in foreground, with coloured relationships.
 - **Context + background** — the selected context stands out; the rest is subdued.
 - **Context only** — just the selection and its context.
 

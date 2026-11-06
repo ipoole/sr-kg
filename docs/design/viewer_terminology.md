@@ -40,7 +40,7 @@ relationships.
 
 Which graph objects are included and how their background is treated:
 
-- **All equally** includes the whole graph in foreground.
+- **Overview** includes the whole graph in foreground.
 - **Context + background** includes the whole graph, with context emphasised.
 - **Context only** excludes the background.
 
@@ -76,13 +76,13 @@ not mean that every authored edge is drawn.
 ### Background
 
 Eligible objects which are not in the context. In Context + background, background
-edges are light grey and background nodes subdued. In All equally, all eligible
+edges are light grey and background nodes subdued. In Overview, all eligible
 edges retain their relation colours and every object is in foreground. Background objects do not
 contribute to semantic context counts.
 If `C` is the context and `B` the background, the displayed graph is:
 
 ```text
-All equally          = C ∪ B, uniform foreground
+Overview          = C ∪ B, uniform foreground
 Context + background = C ∪ B, context emphasised
 Context only         = C
 ```

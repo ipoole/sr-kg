@@ -186,12 +186,12 @@ var kgGraphModel = (function() {
 
 
   // Group the visible boundaries of a graph projection. Inputs remain unchanged.
-  function groupBoundaryEdges(graphEdges, renderedEdges, representedByConcept, hiddenMembers, prefix) {
+  function groupBoundaryEdges(graphEdges, renderedEdges, representedByConcept, moduleEndpointMembers, prefix) {
     var groups = {};
     graphEdges.forEach(function(edge) {
       var current = renderedEdges[edge.id];
       if (!current || current.hidden) { return; }
-      if (!hiddenMembers[String(edge.from)] && !hiddenMembers[String(edge.to)]) { return; }
+      if (!moduleEndpointMembers[String(edge.from)] && !moduleEndpointMembers[String(edge.to)]) { return; }
       var from = representedByConcept[String(edge.from)];
       var to = representedByConcept[String(edge.to)];
       if (!from || !to || from === to) { return; }

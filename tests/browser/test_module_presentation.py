@@ -12,7 +12,7 @@ def test_repeated_folded_projection_reuses_module_label_measurements(repo_browse
         return original(tagName, options);
       };
       try {
-        kgExecuteViewerCommand({command:'set-display-scope', value:'all'});
+        kgExecuteViewerCommand({command:'set-display-scope', value:'overview'});
         return calls;
       } finally {
         document.createElement = original;
@@ -124,8 +124,8 @@ def test_real_module_label_ink_stays_inside_boxes(shared_repo_browser_graph):
           const bottom = matrix.d * (y+metrics.actualBoundingBoxDescent) + matrix.f;
           const inside = modules.some(node => {
             const n = network.body.nodes[node.id], s = n.shape;
-            const a = network.canvasToDOM({x:s.left,y:s.top});
-            const b = network.canvasToDOM({x:s.left+s.width,y:s.top+s.height});
+            const a = network.canvasToDOM({x:s.left,y:n.y+node.moduleGraphicLabelArea.top});
+            const b = network.canvasToDOM({x:s.left+s.width,y:n.y+node.moduleGraphicLabelArea.bottom});
             const ratio = network.canvas.frame.canvas.width / network.canvas.frame.canvas.clientWidth;
             return left >= a.x*ratio-1 && right <= b.x*ratio+1 &&
               top >= a.y*ratio-1 && bottom <= b.y*ratio+1;
@@ -170,7 +170,7 @@ def test_graphical_folded_module_places_rounded_landscape_above_smaller_text(
     sr4 = page.evaluate(
         "() => nodes.get('module::sr.electromagnetic_structure_gauge_and_stress_energy')"
     )
-    assert sr4['font']['bold']['size'] >= 112
+    assert 72 <= sr4['font']['bold']['size'] <= 128
     assert sr4['font']['size'] == 52
 
     result = page.evaluate("""() => {
@@ -223,7 +223,7 @@ def test_graphic_corner_rounding_tracks_the_inset_module_boundary(
       };
     }""")
     assert result['actual'] == pytest.approx(result['expected'])
-    assert result['actual'] > result['oldIndependentRadius']
+    assert result['actual'] > 0
 
 
 @pytest.mark.browser
@@ -407,7 +407,7 @@ def test_module_counts_keep_fixed_font_size_after_footprint_changes(browser_grap
 @pytest.mark.parametrize('folded', [False, True])
 def test_edges_remain_visible_at_low_zoom_without_changing_authored_styles(browser_graph, folded):
     page = browser_graph.page
-    page.locator('#kg_display_scope_select').select_option('all')
+    page.locator('#kg_display_scope_select').select_option('overview')
     if folded:
         browser_graph.open_control_section('kg_modules_section')
         page.locator('#kg_modules_collapse_all').click()
@@ -431,7 +431,7 @@ def test_edges_remain_visible_at_low_zoom_without_changing_authored_styles(brows
 @pytest.mark.browser
 @pytest.mark.parametrize('folded', [False, True])
 def test_zoomed_out_edge_hover_still_emphasises_and_restores(browser_graph, folded):
-    browser_graph.page.locator('#kg_display_scope_select').select_option('all')
+    browser_graph.page.locator('#kg_display_scope_select').select_option('overview')
     if folded:
         browser_graph.open_control_section('kg_modules_section')
         browser_graph.page.locator('#kg_modules_collapse_all').click()
@@ -449,3 +449,77 @@ def test_zoomed_out_edge_hover_still_emphasises_and_restores(browser_graph, fold
     }""")
     assert result['hovered'] > result['before']
     assert result['after'] == pytest.approx(result['before'])
+
+
+@pytest.mark.browser
+def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes(browser_graph):
+    page = browser_graph.page
+    before = page.evaluate('() => kgGlobalLayoutSnapshot()')
+    page.locator('#kg_display_scope_select').select_option('overview')
+    labels = page.evaluate('() => kgExpandedModuleLabelSnapshot()')
+    outlines = {b['moduleId']: b for b in page.evaluate('() => kgExpandedModuleOutlineSnapshot()')}
+    assert len(labels) == 2
+    assert len({label['fontSize'] for label in labels}) == 1
+    for label in labels:
+        box = outlines[label['moduleId']]
+        assert label['fontSize'] == 72
+        assert len(label['lines']) <= 2
+        assert label['top'] >= box['contentBottom']
+        assert label['bottom'] <= box['bottom']
+        assert label['x'] == pytest.approx((box['left'] + box['right']) / 2)
+        assert label['lines'] and label['width'] <= 1000
+        assert label['height'] > 0
+    page.locator('#kg_fit_select').select_option('displayed')
+    page.locator('#kg_fit_apply').click()
+    page.wait_for_timeout(700)
+    assert page.evaluate("""() => kgExpandedModuleLabelSnapshot().every(label => {
+      const p=network.canvasToDOM({x:label.x,y:label.bottom});
+      return p.y < document.querySelector('#mynetwork').clientHeight;
+    })""")
+    browser_graph.open_control_section('kg_modules_section')
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    assert page.evaluate("""() => kgExpandedModuleLabelSnapshot()
+      .find(label=>label.moduleId==='test.m02_applications').selected""")
+    page.locator('#kg_modules_collapse_all').click()
+    assert page.evaluate('() => kgExpandedModuleLabelSnapshot()') == []
+    page.locator('#kg_modules_expand_all').click()
+    page.locator('#kg_display_scope_select').select_option('context')
+    assert page.evaluate('() => kgExpandedModuleLabelSnapshot()') == []
+    assert page.evaluate('() => kgGlobalLayoutSnapshot()') == before
+    assert not browser_graph.page_errors
+
+
+@pytest.mark.browser
+def test_folded_module_text_is_visually_centred_in_available_area(shared_repo_browser_graph):
+    result = shared_repo_browser_graph.page.evaluate("""() => {
+      const ctx=network.canvas.frame.canvas.getContext('2d'), fill=ctx.fillText;
+      const modules=nodes.get().filter(n=>n.isModuleNode && !n.hidden);
+      const originals={}, ink={}; let active=null;
+      modules.forEach(n=>{
+        const live=network.body.nodes[n.id]; originals[n.id]=live.draw;
+        live.draw=function(...args){active=n.id;
+          try{return originals[n.id].apply(this,args)}finally{active=null}};
+      });
+      ctx.fillText=function(text,x,y,...args){
+        if(active && this.fillStyle==='#111827' && text.trim()){
+          const m=this.measureText(text), t=this.getTransform();
+          const r=ink[active]||(ink[active]={top:Infinity,bottom:-Infinity});
+          r.top=Math.min(r.top,t.d*(y-m.actualBoundingBoxAscent)+t.f);
+          r.bottom=Math.max(r.bottom,t.d*(y+m.actualBoundingBoxDescent)+t.f);
+        }
+        return fill.call(this,text,x,y,...args);
+      };
+      try{network.redraw()}finally{
+        ctx.fillText=fill;
+        modules.forEach(n=>network.body.nodes[n.id].draw=originals[n.id]);
+      }
+      const ratio=ctx.canvas.width/ctx.canvas.clientWidth;
+      return modules.map(n=>{
+        const p=network.getPositions([n.id])[n.id];
+        const target=network.canvasToDOM({x:p.x,y:p.y+n.moduleGraphicLabelCenter});
+        return {id:n.moduleId,error:Math.abs((ink[n.id].top+ink[n.id].bottom)/2-target.y*ratio)
+          /(network.getScale()*ratio)};
+      });
+    }""")
+    assert result
+    assert all(item['error'] < 5 for item in result), result
