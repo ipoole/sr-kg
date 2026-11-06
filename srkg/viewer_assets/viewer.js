@@ -248,7 +248,17 @@
         var graphCamera = kgCreateGraphCamera({
           network: network, nodes: nodes, container: graphContainer,
           labels: {width: nodeLabelWidth, fontSize: nodeLabelFontSize, activeRadiusScale: activeNodeRadiusScale},
-          selectedConceptId: function() { return activeNodeId; }, onChange: updateNodeLabelPositions
+          selectedConceptId: function() { return activeNodeId; }, onChange: updateNodeLabelPositions,
+          additionalBounds: function(nodeIds) {
+            if (!graphPresentation) { return []; }
+            var included = {};
+            nodeIds.forEach(function(id) { included[String(id)] = true; });
+            return graphPresentation.expandedModuleLabelSnapshot().filter(function(label) {
+              return moduleMemberIds(getModule(label.moduleId)).every(function(id) {
+                return included[String(id)];
+              });
+            });
+          }
         });
         var cameraSnapshot = graphCamera.cameraSnapshot;
         var preserveCameraAfterLayout = graphCamera.preserveCameraAfterLayout;
@@ -265,6 +275,9 @@
           labels: {activeRadiusScale: activeNodeRadiusScale, fontSize: nodeLabelFontSize, hideBelowPx: kgNodeLabelConfig.hideBelowPx},
           revealSelection: revealViewerSelection, onControlsChange: updateGraphViewControls,
           onPositionsChange: updateNodeLabelPositions, notice: showContextNotice,
+          fixedObstacles: function() {
+            return graphPresentation ? graphPresentation.expandedModuleLabelSnapshot() : [];
+          },
           graph: {
             viewerSelectionSnapshot: viewerSelectionSnapshot,
             representedNodeIds: representedNodeIds,
@@ -301,6 +314,7 @@
           foldedModuleIds: foldedModuleIdList, moduleNodeId: moduleGraphNodeId,
           selectedConceptProxy: foldedModuleConceptProxy, escapeHtml: escapeHtml,
           selectedConceptId: function() { return activeNodeId; },
+          selectedModuleId: function() { return activeModuleId; },
           transientHighlight: function() { return transientConceptHighlight; },
           activeRadiusScale: activeNodeRadiusScale, activeBorderWidth: activeNodeBorderWidth,
           detailThreshold: detailedConceptRenderMinRadiusPx
@@ -314,6 +328,7 @@
         var moduleGraphicCornerRadius = graphPresentation.moduleGraphicCornerRadius;
         var moduleGraphicImage = graphPresentation.moduleGraphicImage;
         var drawFoldedModuleGraphics = graphPresentation.drawFoldedModuleGraphics;
+        window.kgExpandedModuleLabelSnapshot = graphPresentation.expandedModuleLabelSnapshot;
 
         function nodeWithGlobalPosition(node) {
           var result = Object.assign({}, node || {});
@@ -5735,6 +5750,7 @@
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           drawGraphCompletionMarkers(ctx);
+          graphPresentation.drawExpandedModuleLabels(ctx);
           updateNodeLabelPositions();
         });
         network.on("dragEnd", function(params) {

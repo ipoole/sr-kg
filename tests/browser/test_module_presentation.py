@@ -449,3 +449,38 @@ def test_zoomed_out_edge_hover_still_emphasises_and_restores(browser_graph, fold
     }""")
     assert result['hovered'] > result['before']
     assert result['after'] == pytest.approx(result['before'])
+
+
+@pytest.mark.browser
+def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes(browser_graph):
+    page = browser_graph.page
+    before = page.evaluate('() => kgGlobalLayoutSnapshot()')
+    page.locator('#kg_display_scope_select').select_option('overview')
+    labels = page.evaluate('() => kgExpandedModuleLabelSnapshot()')
+    outlines = {b['moduleId']: b for b in page.evaluate('() => kgExpandedModuleOutlineSnapshot()')}
+    assert len(labels) == 2
+    assert len({label['fontSize'] for label in labels}) == 1
+    for label in labels:
+        box = outlines[label['moduleId']]
+        assert label['top'] > box['bottom']
+        assert label['x'] == pytest.approx((box['left'] + box['right']) / 2)
+        assert label['lines'] and label['width'] <= 1000
+        assert label['height'] > 0
+    page.locator('#kg_fit_select').select_option('displayed')
+    page.locator('#kg_fit_apply').click()
+    page.wait_for_timeout(700)
+    assert page.evaluate("""() => kgExpandedModuleLabelSnapshot().every(label => {
+      const p=network.canvasToDOM({x:label.x,y:label.bottom});
+      return p.y < document.querySelector('#mynetwork').clientHeight;
+    })""")
+    browser_graph.open_control_section('kg_modules_section')
+    page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
+    assert page.evaluate("""() => kgExpandedModuleLabelSnapshot()
+      .find(label=>label.moduleId==='test.m02_applications').selected""")
+    page.locator('#kg_modules_collapse_all').click()
+    assert page.evaluate('() => kgExpandedModuleLabelSnapshot()') == []
+    page.locator('#kg_modules_expand_all').click()
+    page.locator('#kg_display_scope_select').select_option('context')
+    assert page.evaluate('() => kgExpandedModuleLabelSnapshot()') == []
+    assert page.evaluate('() => kgGlobalLayoutSnapshot()') == before
+    assert not browser_graph.page_errors

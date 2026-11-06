@@ -12,6 +12,63 @@ function kgCreateGraphPresentation(options) {
   var activeNodeRadiusScale = options.activeRadiusScale, activeNodeBorderWidth = options.activeBorderWidth;
   var detailedConceptRenderMinRadiusPx = options.detailThreshold;
   var svgImageCache = {}, fittedModuleLabelCache = {};
+  var expandedLabelCache = {}, expandedLabelContext = null;
+
+  function expandedModuleLabelSnapshot() {
+    return expandedModuleOutlineSnapshot().map(function(outline) {
+      var module = getModule(outline.moduleId) || {};
+      var title = module.title || outline.moduleId;
+      var selected = options.selectedModuleId() === outline.moduleId;
+      var fontSize = 48, lineHeight = 58, gap = 24;
+      var maxWidth = Math.min(1000, Math.max(400, outline.width));
+      var font = (selected ? "bold " : "") + fontSize + "px Arial";
+      var key = JSON.stringify([title, maxWidth, font]);
+      var measured = expandedLabelCache[key];
+      if (!measured) {
+        if (!expandedLabelContext) {
+          expandedLabelContext = document.createElement("canvas").getContext("2d");
+        }
+        expandedLabelContext.font = font;
+        var lines = [], line = "";
+        String(title).split(/\s+/).forEach(function(word) {
+          var next = line ? line + " " + word : word;
+          if (line && expandedLabelContext.measureText(next).width > maxWidth) {
+            lines.push(line); line = word;
+          } else { line = next; }
+        });
+        if (line) { lines.push(line); }
+        measured = {lines: lines, width: Math.max.apply(null, lines.map(function(text) {
+          return expandedLabelContext.measureText(text).width;
+        }).concat([1]))};
+        expandedLabelCache[key] = measured;
+      }
+      var x = outline.left + outline.width / 2;
+      var top = outline.bottom + gap;
+      return {moduleId: outline.moduleId, lines: measured.lines.slice(), selected: selected,
+        fontSize: fontSize, font: font, lineHeight: lineHeight, x: x,
+        top: top, bottom: top + measured.lines.length * lineHeight,
+        left: x - measured.width / 2, right: x + measured.width / 2,
+        width: measured.width, height: measured.lines.length * lineHeight};
+    });
+  }
+
+  function drawExpandedModuleLabels(ctx) {
+    expandedModuleLabelSnapshot().forEach(function(label) {
+      ctx.save();
+      ctx.font = label.font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = label.selected ? "#1f2937" : "#5b6471";
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 3;
+      label.lines.forEach(function(line, index) {
+        var y = label.top + index * label.lineHeight;
+        ctx.strokeText(line, label.x, y);
+        ctx.fillText(line, label.x, y);
+      });
+      ctx.restore();
+    });
+  }
 
   function drawConceptFace(ctx, node, pos, options) {
       options = options || {};
@@ -390,6 +447,8 @@ function kgCreateGraphPresentation(options) {
   }
 
   return {
+    expandedModuleLabelSnapshot: expandedModuleLabelSnapshot,
+    drawExpandedModuleLabels: drawExpandedModuleLabels,
     drawVisibleNodes: drawVisibleNodes,
     drawGraphCompletionMarkers: drawGraphCompletionMarkers,
     fittedModuleLabel: fittedModuleLabel,

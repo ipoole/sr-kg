@@ -74,8 +74,14 @@ is rebuilt and committed separately for publication.
 
 ## Overview graph projection
 
-Overview uses Overview visibility and emphasis, retaining the active Context relation filter. Internal edges remain between concepts; cross-module edges aggregate by ordered module pair with relation counts and original edge IDs. Expanded module boundaries supply transparent, non-interactive endpoints; folded modules use their boxes. Folding, selection, camera and saved layouts retain their usual behaviour. Depth does not limit this whole-map projection.
+Overview shows the whole map with equal emphasis, retaining the active Context relation filter. Internal edges remain between concepts; cross-module edges aggregate by ordered module pair with relation counts and original edge IDs. Expanded module boundaries supply transparent, non-interactive endpoints; folded modules use their boxes. Folding, selection, camera and saved layouts retain their usual behaviour. Depth does not limit this whole-map projection.
 
 Summary links are clipped outside both endpoint boundaries and drawn below pale,
 semi-transparent expanded-module backgrounds. Internal links and concepts are
 drawn above those backgrounds; passing summaries remain faintly visible beneath.
+
+Expanded modules display a centred, wrapping title below their boundary. Titles
+use a fixed font size (48 graph units), a 400–1000-unit wrapping width, and stronger
+emphasis for a selected module. They do not change the concept footprint or saved
+layout. Framing a complete module includes its title; Fit++ treats visible module
+titles as fixed text obstacles. Context-only views omit module boundaries and titles.
