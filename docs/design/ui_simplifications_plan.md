@@ -81,7 +81,7 @@ semi-transparent expanded-module backgrounds. Internal links and concepts are
 drawn above those backgrounds; passing summaries remain faintly visible beneath.
 
 Expanded modules display a centred, wrapping title below their boundary. Titles
-use a fixed font size (48 graph units), a 400–1000-unit wrapping width, and stronger
+use a fixed font size (72 graph units), at most two lines with ellipsis, a 400–1000-unit wrapping width, and stronger
 emphasis for a selected module. They do not change the concept footprint or saved
 layout. Framing a complete module includes its title; Fit++ treats visible module
 titles as fixed text obstacles. Context-only views omit module boundaries and titles.

@@ -19,7 +19,7 @@ function kgCreateGraphPresentation(options) {
       var module = getModule(outline.moduleId) || {};
       var title = module.title || outline.moduleId;
       var selected = options.selectedModuleId() === outline.moduleId;
-      var fontSize = 48, lineHeight = 58, gap = 24;
+      var fontSize = 72, lineHeight = 87, gap = 24;
       var maxWidth = Math.min(1000, Math.max(400, outline.width));
       var font = (selected ? "bold " : "") + fontSize + "px Arial";
       var key = JSON.stringify([title, maxWidth, font]);
@@ -37,6 +37,16 @@ function kgCreateGraphPresentation(options) {
           } else { line = next; }
         });
         if (line) { lines.push(line); }
+        var truncated = lines.length > 2;
+        lines = lines.slice(0, 2).map(function(text, index) {
+          if ((truncated && index === 1) || expandedLabelContext.measureText(text).width > maxWidth) {
+            while (text && expandedLabelContext.measureText(text + "…").width > maxWidth) {
+              text = text.slice(0, -1);
+            }
+            return text.trimEnd() + "…";
+          }
+          return text;
+        });
         measured = {lines: lines, width: Math.max.apply(null, lines.map(function(text) {
           return expandedLabelContext.measureText(text).width;
         }).concat([1]))};

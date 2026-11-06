@@ -462,6 +462,8 @@ def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes
     assert len({label['fontSize'] for label in labels}) == 1
     for label in labels:
         box = outlines[label['moduleId']]
+        assert label['fontSize'] == 72
+        assert len(label['lines']) <= 2
         assert label['top'] > box['bottom']
         assert label['x'] == pytest.approx((box['left'] + box['right']) / 2)
         assert label['lines'] and label['width'] <= 1000
