@@ -124,7 +124,8 @@ def test_real_module_label_ink_stays_inside_boxes(shared_repo_browser_graph):
           const bottom = matrix.d * (y+metrics.actualBoundingBoxDescent) + matrix.f;
           const inside = modules.some(node => {
             const n = network.body.nodes[node.id], s = n.shape;
-            const a = network.canvasToDOM({x:s.left,y:s.top});
+            const footprint = kgModuleFootprint(node.moduleId);
+            const a = network.canvasToDOM({x:s.left,y:footprint.contentBottom});
             const b = network.canvasToDOM({x:s.left+s.width,y:s.top+s.height});
             const ratio = network.canvas.frame.canvas.width / network.canvas.frame.canvas.clientWidth;
             return left >= a.x*ratio-1 && right <= b.x*ratio+1 &&
@@ -170,7 +171,7 @@ def test_graphical_folded_module_places_rounded_landscape_above_smaller_text(
     sr4 = page.evaluate(
         "() => nodes.get('module::sr.electromagnetic_structure_gauge_and_stress_energy')"
     )
-    assert sr4['font']['bold']['size'] >= 112
+    assert 72 <= sr4['font']['bold']['size'] <= 128
     assert sr4['font']['size'] == 52
 
     result = page.evaluate("""() => {
@@ -223,7 +224,7 @@ def test_graphic_corner_rounding_tracks_the_inset_module_boundary(
       };
     }""")
     assert result['actual'] == pytest.approx(result['expected'])
-    assert result['actual'] > result['oldIndependentRadius']
+    assert result['actual'] > 0
 
 
 @pytest.mark.browser
@@ -464,7 +465,8 @@ def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes
         box = outlines[label['moduleId']]
         assert label['fontSize'] == 72
         assert len(label['lines']) <= 2
-        assert label['top'] > box['bottom']
+        assert label['top'] >= box['contentBottom']
+        assert label['bottom'] <= box['bottom']
         assert label['x'] == pytest.approx((box['left'] + box['right']) / 2)
         assert label['lines'] and label['width'] <= 1000
         assert label['height'] > 0

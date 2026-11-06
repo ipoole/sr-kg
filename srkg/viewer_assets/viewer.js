@@ -253,8 +253,8 @@
             if (!graphPresentation) { return []; }
             var included = {};
             nodeIds.forEach(function(id) { included[String(id)] = true; });
-            return graphPresentation.expandedModuleLabelSnapshot().filter(function(label) {
-              return moduleMemberIds(getModule(label.moduleId)).every(function(id) {
+            return expandedModuleOutlineSnapshot().filter(function(box) {
+              return moduleMemberIds(getModule(box.moduleId)).every(function(id) {
                 return included[String(id)];
               });
             });
@@ -276,7 +276,10 @@
           revealSelection: revealViewerSelection, onControlsChange: updateGraphViewControls,
           onPositionsChange: updateNodeLabelPositions, notice: showContextNotice,
           fixedObstacles: function() {
-            return graphPresentation ? graphPresentation.expandedModuleLabelSnapshot() : [];
+            return expandedModuleOutlineSnapshot().map(function(box) {
+              return {left: box.left, right: box.right, top: box.contentBottom,
+                bottom: box.bottom, width: box.width, height: box.footerHeight};
+            });
           },
           graph: {
             viewerSelectionSnapshot: viewerSelectionSnapshot,
@@ -317,7 +320,8 @@
           selectedModuleId: function() { return activeModuleId; },
           transientHighlight: function() { return transientConceptHighlight; },
           activeRadiusScale: activeNodeRadiusScale, activeBorderWidth: activeNodeBorderWidth,
-          detailThreshold: detailedConceptRenderMinRadiusPx
+          detailThreshold: detailedConceptRenderMinRadiusPx,
+          moduleFooterHeight: kgModuleGeometry.footerHeight
         });
         var drawVisibleNodes = graphPresentation.drawVisibleNodes;
         var drawGraphCompletionMarkers = graphPresentation.drawGraphCompletionMarkers;
@@ -2110,9 +2114,9 @@
         }
 
         function moduleFootprint(moduleId) {
-          return kgModuleGeometry.footprint(moduleMemberIds(getModule(moduleId)).map(function(id) {
+          return kgModuleGeometry.withFooter(kgModuleGeometry.footprint(moduleMemberIds(getModule(moduleId)).map(function(id) {
             return {position: effectiveConceptPosition(id), extents: conceptFootprintExtents(id)};
-          }), effectiveModuleAnchor(moduleId));
+          }), effectiveModuleAnchor(moduleId)));
         }
 
         window.kgModuleFootprint = moduleFootprint;
@@ -2302,6 +2306,8 @@
               right: footprint.right,
               top: footprint.top,
               bottom: footprint.bottom,
+              contentBottom: footprint.contentBottom,
+              footerHeight: footprint.footerHeight,
               width: footprint.width,
               height: footprint.height,
               radius: moduleCornerRadius(footprint.width, footprint.height),
@@ -2330,22 +2336,20 @@
           var hasGraphic = Boolean(module.svg_icon);
           var selectedConceptProxyId = selectedConceptInFoldedModule(moduleId);
           var usesGraphicLayout = hasGraphic || Boolean(selectedConceptProxyId);
-          var graphicLayout = usesGraphicLayout
-            ? moduleGraphicLayout(footprint.width, footprint.height)
-            : null;
+          var graphicLayout = moduleGraphicLayout(footprint.width, footprint.height);
           var fittedLabel = fittedModuleLabel(
             module.title || moduleId,
             memberCount,
             footprint.width,
             footprint.height,
-            usesGraphicLayout ? {
-              countFontSize: 52,
+            {
+              countFontSize: usesGraphicLayout ? 52 : 80,
               titleFontCap: 128,
               verticalShift: graphicLayout.labelCenter,
-              availableHeight: graphicLayout.labelArea.height * 0.94,
+              availableHeight: graphicLayout.labelArea.height * (usesGraphicLayout ? 0.94 : 0.75),
               lineWidthFraction: 0.72,
               lineHeightFactor: 1.06
-            } : {}
+            }
           );
           var visualColor = moduleVisualColor(moduleId);
           return {
@@ -5743,10 +5747,11 @@
             visAdapter.drawLayeredEdges(ctx, graphPresentation.clipModuleEdgeEndpoints);
             graphPresentation.drawExpandedModuleBackgrounds(ctx);
           }
-          drawExpandedModuleOutlines(ctx);
         });
         network.on("afterDrawing", function(ctx) {
           if (!initialGraphProjectionReady) { return; }
+          graphPresentation.drawExpandedModuleFooters(ctx);
+          drawExpandedModuleOutlines(ctx);
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           drawGraphCompletionMarkers(ctx);

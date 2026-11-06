@@ -135,3 +135,23 @@ def test_box_drag_translates_anchor_and_members_without_expansion_jump(browser_g
     assert after["concepts"]["1.1"] == before["concepts"]["1.1"]
     page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == after
+
+
+@pytest.mark.browser
+def test_module_footer_extends_only_bottom_and_preserves_anchor_offsets(browser_graph):
+    result = browser_graph.page.evaluate("""() => {
+      const base=kgModuleGeometry.footprint([
+        {position:{x:40,y:50},extents:{left:10,right:20,top:15,bottom:25}}
+      ],{x:5,y:7});
+      return {base,withFooter:kgModuleGeometry.withFooter(base)};
+    }""")
+    base, box = result['base'], result['withFooter']
+    for key in ['left', 'right', 'top', 'width', 'x']:
+        assert box[key] == base[key]
+    assert box['footerHeight'] > 0
+    assert box['contentBottom'] == base['bottom']
+    assert box['bottom'] == base['bottom'] + box['footerHeight']
+    assert box['height'] == base['height'] + box['footerHeight']
+    assert box['y'] == base['y'] + box['footerHeight'] / 2
+    assert box['offset']['y'] == base['offset']['y'] + box['footerHeight'] / 2
+    assert box['offset']['x'] == base['offset']['x']

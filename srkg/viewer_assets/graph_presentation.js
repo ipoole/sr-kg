@@ -19,8 +19,9 @@ function kgCreateGraphPresentation(options) {
       var module = getModule(outline.moduleId) || {};
       var title = module.title || outline.moduleId;
       var selected = options.selectedModuleId() === outline.moduleId;
-      var fontSize = 72, lineHeight = 87, gap = 24;
-      var maxWidth = Math.min(1000, Math.max(400, outline.width));
+      var fontSize = 72, lineHeight = 87;
+      var maxWidth = Math.max(1, Math.min(1000,
+        outline.width - 2 * Math.max(24, outline.radius * 0.4)));
       var font = (selected ? "bold " : "") + fontSize + "px Arial";
       var key = JSON.stringify([title, maxWidth, font]);
       var measured = expandedLabelCache[key];
@@ -53,7 +54,8 @@ function kgCreateGraphPresentation(options) {
         expandedLabelCache[key] = measured;
       }
       var x = outline.left + outline.width / 2;
-      var top = outline.bottom + gap;
+      var top = outline.contentBottom +
+        (outline.footerHeight - measured.lines.length * lineHeight) / 2;
       return {moduleId: outline.moduleId, lines: measured.lines.slice(), selected: selected,
         fontSize: fontSize, font: font, lineHeight: lineHeight, x: x,
         top: top, bottom: top + measured.lines.length * lineHeight,
@@ -305,6 +307,19 @@ function kgCreateGraphPresentation(options) {
   }
 
   function moduleGraphicLayout(width, height) {
+    if (options.moduleFooterHeight > 0) {
+      var contentHeight = Math.max(1, height - options.moduleFooterHeight);
+      var inset = Math.max(18, Math.min(width, contentHeight) * 0.055);
+      var imageWidth = Math.max(1, Math.min(width - 2 * inset, (contentHeight - 2 * inset) * 1.6));
+      var imageHeight = imageWidth / 1.6;
+      return {
+        graphic: {x: (width - imageWidth) / 2, y: (contentHeight - imageHeight) / 2,
+          width: imageWidth, height: imageHeight},
+        labelArea: {top: contentHeight - height / 2, bottom: height / 2,
+          height: options.moduleFooterHeight},
+        labelCenter: contentHeight + options.moduleFooterHeight / 2 - height / 2
+      };
+    }
     var pad = Math.max(18, Math.min(width, height) * 0.055);
     var availableWidth = Math.max(1, width - 2 * pad);
     var availableHeight = Math.max(1, height * 0.62 - 2 * pad);
@@ -356,6 +371,17 @@ function kgCreateGraphPresentation(options) {
       ctx.fillStyle = "rgba(248, 250, 252, 0.90)";
       roundedRectPath(ctx, outline.left, outline.top, outline.width, outline.height, outline.radius);
       ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawExpandedModuleFooters(ctx) {
+    expandedModuleOutlineSnapshot().forEach(function(outline) {
+      ctx.save();
+      roundedRectPath(ctx, outline.left, outline.top, outline.width, outline.height, outline.radius);
+      ctx.clip();
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(outline.left, outline.contentBottom, outline.width, outline.footerHeight);
       ctx.restore();
     });
   }
@@ -466,6 +492,7 @@ function kgCreateGraphPresentation(options) {
     moduleCornerRadius: moduleCornerRadius,
     drawExpandedModuleOutlines: drawExpandedModuleOutlines,
     drawExpandedModuleBackgrounds: drawExpandedModuleBackgrounds,
+    drawExpandedModuleFooters: drawExpandedModuleFooters,
     clipModuleEdgeEndpoints: clipModuleEdgeEndpoints,
     moduleGraphicCornerRadius: moduleGraphicCornerRadius,
     moduleGraphicImage: moduleGraphicImage,

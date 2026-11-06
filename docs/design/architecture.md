@@ -248,7 +248,9 @@ invalidation when their inputs change; they are not separate application state.
 The authored `layout.json` provides global concept positions and module anchors.
 Generated positions fill omissions. Browser personal overrides sit above that
 base; moving a module moves its members. Module footprints derive from member
-bounds rather than a separately authored rectangle.
+bounds plus a shared reserved title footer, rather than a separately authored
+rectangle. The footer extends only the bottom in both folded and expanded forms;
+the resulting bounds drive clipping, framing and folded collision geometry.
 
 Fit changes the camera. Fit++ additionally contracts the context using graph-hop
 order and collision footprints, retaining the selected anchor. Its coordinates

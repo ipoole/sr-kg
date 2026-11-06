@@ -287,8 +287,8 @@ function kgCreateContextLayout(options) {
       position: copyLayoutPosition(anchorPosition),
       extents: contractionNodeExtents(candidate.anchorId)
     }];
-    // Expanded-module captions stay with the authored module boundary while
-    // Fit++ temporarily moves context nodes. Keep their text area clear.
+    // Expanded-module footers stay with the authored module boundary while
+    // Fit++ temporarily moves context nodes. Keep these reserved areas clear.
     (options.fixedObstacles ? options.fixedObstacles() : []).forEach(function(bounds) {
       placed.push({position: {x: (bounds.left + bounds.right) / 2,
         y: (bounds.top + bounds.bottom) / 2}, extents: {
