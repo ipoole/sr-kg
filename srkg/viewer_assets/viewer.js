@@ -288,6 +288,17 @@
         var graphPresentation = kgCreateGraphPresentation({
           network: network, nodes: nodes, adapter: visAdapter, concept: getConcept, module: getModule,
           completionMarkers: graphCompletionMarkersSnapshot, expandedOutlines: expandedModuleOutlineSnapshot,
+          moduleBoundary: function(nodeId) {
+            var moduleId = moduleIdFromGraphNodeId(nodeId);
+            if (!moduleId) { return null; }
+            var bounds = selectedModuleIsFolded(moduleId)
+              ? visAdapter.nodeGeometry(nodeId) : moduleFootprintCache[moduleId];
+            if (!bounds || !(bounds.width > 0) || !(bounds.height > 0)) {
+              bounds = moduleFootprint(moduleId);
+            }
+            return {left: bounds.left, top: bounds.top, width: bounds.width, height: bounds.height,
+              radius: moduleCornerRadius(bounds.width, bounds.height)};
+          },
           foldedModuleIds: foldedModuleIdList, moduleNodeId: moduleGraphNodeId,
           selectedConceptProxy: foldedModuleConceptProxy, escapeHtml: escapeHtml,
           selectedConceptId: function() { return activeNodeId; },
@@ -2155,6 +2166,7 @@
         }
 
         function clearProjectedModuleEdges() {
+          visAdapter.setLayeredEdges([]);
           if (hoveredEdgeId && String(hoveredEdgeId).indexOf(projectedModuleEdgePrefix) === 0) {
             hoveredEdgeId = null;
             hoveredEdgeBeforeHover = null;
@@ -5601,7 +5613,9 @@
                 isModuleNode: true, isOverviewAnchor: true,
                 x: footprint.x, y: footprint.y, physics: false, fixed: true,
                 hidden: false, label: "", shape: "box", opacity: 0,
-                margin: 0, borderWidth: 0, chosen: false,
+                margin: {top: 0, right: 0, bottom: 0, left: 0},
+                font: {size: 1, face: "Arial", vadjust: 0},
+                borderWidth: 0, chosen: false,
                 widthConstraint: {minimum: footprint.width, maximum: footprint.width},
                 heightConstraint: {minimum: footprint.height},
                 shapeProperties: {borderRadius: moduleCornerRadius(footprint.width, footprint.height)}
@@ -5623,6 +5637,8 @@
           if (moduleEdges.length > 0) {
             edges.add(moduleEdges);
           }
+          visAdapter.setLayeredEdges(viewerState.displayScope === DisplayScope.OVERVIEW
+            ? moduleEdges.map(function(edge) { return edge.id; }) : []);
 
           return fitIds.filter(function(id, index, ids) {
             return ids.indexOf(id) === index;
@@ -5704,8 +5720,12 @@
         });
 
         network.on("beforeDrawing", function(ctx) {
-          drawExpandedModuleOutlines(ctx);
           updateRenderedEdgeWidths();
+          if (viewerState.displayScope === DisplayScope.OVERVIEW) {
+            visAdapter.drawLayeredEdges(ctx, graphPresentation.clipModuleEdgeEndpoints);
+            graphPresentation.drawExpandedModuleBackgrounds(ctx);
+          }
+          drawExpandedModuleOutlines(ctx);
         });
         network.on("afterDrawing", function(ctx) {
           if (!initialGraphProjectionReady) { return; }

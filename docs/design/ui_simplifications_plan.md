@@ -75,3 +75,7 @@ is rebuilt and committed separately for publication.
 ## Overview graph projection
 
 Overview uses All equally visibility and emphasis, retaining the active Context relation filter. Internal edges remain between concepts; cross-module edges aggregate by ordered module pair with relation counts and original edge IDs. Expanded module boundaries supply transparent, non-interactive endpoints; folded modules use their boxes. Folding, selection, camera and saved layouts retain their usual behaviour. Depth does not limit this whole-map projection.
+
+Summary links are clipped outside both endpoint boundaries and drawn below pale,
+semi-transparent expanded-module backgrounds. Internal links and concepts are
+drawn above those backgrounds; passing summaries remain faintly visible beneath.

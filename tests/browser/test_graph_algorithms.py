@@ -112,3 +112,41 @@ def test_vis_adapter_preserves_precise_positions_and_draw_only_widths(algorithms
     assert result["width"] == 3
     assert result["canvas"] == "surface"
     assert result["missing"] is None and result["missingEdge"] is None
+
+
+@pytest.mark.browser
+def test_overview_edges_clip_both_endpoints_and_fade_beneath_expanded_modules(algorithms_page):
+    page = algorithms_page
+    page.add_script_tag(path=str(ASSETS / 'graph_presentation.js'))
+    result = page.evaluate("""() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600; canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      const box = x => ({left:x,top:50,width:100,height:100,radius:18});
+      const bounds = {a:box(0),b:box(500)};
+      const edge = {fromId:'a',toId:'b',draw(ctx) {
+        ctx.strokeStyle='#ff0000'; ctx.lineWidth=4;
+        ctx.beginPath(); ctx.moveTo(50,100); ctx.lineTo(550,100); ctx.stroke();
+      },drawArrows() {}};
+      const originalDraw = edge.draw;
+      const network = {body:{edges:{e:edge}},getScale:()=>1,DOMtoCanvas:p=>p};
+      const adapter = kgCreateVisNetworkAdapter(network);
+      const presentation = kgCreateGraphPresentation({network,
+        moduleBoundary:id=>bounds[id],
+        expandedOutlines:()=>[box(200)]});
+      adapter.setLayeredEdges(['e']);
+      adapter.drawLayeredEdges(ctx,presentation.clipModuleEdgeEndpoints);
+      const pixel = x => [...ctx.getImageData(x,100,1,1).data];
+      const clipped = [pixel(75),pixel(525)];
+      const exposed = pixel(150);
+      presentation.drawExpandedModuleBackgrounds(ctx);
+      // Normal renderer calls must not paint summary links over the background.
+      edge.draw(ctx); edge.drawArrows(ctx);
+      const faded = pixel(250);
+      adapter.setLayeredEdges([]);
+      return {clipped,exposed,faded,restored:edge.draw===originalDraw};
+    }""")
+    assert result['clipped'] == [[0, 0, 0, 0], [0, 0, 0, 0]]
+    assert result['exposed'] == [255, 0, 0, 255]
+    assert result['faded'][1] > 200 and result['faded'][2] > 200
+    assert result['restored']

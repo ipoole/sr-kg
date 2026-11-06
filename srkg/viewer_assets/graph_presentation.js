@@ -283,6 +283,33 @@ function kgCreateGraphPresentation(options) {
     });
   }
 
+  function drawExpandedModuleBackgrounds(ctx) {
+    expandedModuleOutlineSnapshot().forEach(function(outline) {
+      ctx.save();
+      ctx.fillStyle = "rgba(248, 250, 252, 0.90)";
+      roundedRectPath(ctx, outline.left, outline.top, outline.width, outline.height, outline.radius);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function clipModuleEdgeEndpoints(ctx, edge) {
+    var canvas = ctx.canvas;
+    var topLeft = network.DOMtoCanvas({x: 0, y: 0});
+    var bottomRight = network.DOMtoCanvas({
+      x: canvas.clientWidth || canvas.width, y: canvas.clientHeight || canvas.height
+    });
+    [edge.fromId, edge.toId].forEach(function(id) {
+      var bounds = options.moduleBoundary(id);
+      if (bounds) {
+        ctx.beginPath();
+        ctx.rect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+        roundedRectPath(ctx, bounds.left, bounds.top, bounds.width, bounds.height, bounds.radius, true);
+        ctx.clip("evenodd");
+      }
+    });
+  }
+
   function moduleGraphicCornerRadius(width, height, layout) {
     layout = layout || moduleGraphicLayout(width, height);
     var outerRadius = moduleCornerRadius(width, height);
@@ -307,9 +334,9 @@ function kgCreateGraphPresentation(options) {
       : null;
   }
 
-  function roundedRectPath(ctx, x, y, width, height, radius) {
+  function roundedRectPath(ctx, x, y, width, height, radius, append) {
     radius = Math.min(radius, width / 2, height / 2);
-    ctx.beginPath();
+    if (!append) { ctx.beginPath(); }
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
     ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
@@ -369,6 +396,8 @@ function kgCreateGraphPresentation(options) {
     moduleGraphicLayout: moduleGraphicLayout,
     moduleCornerRadius: moduleCornerRadius,
     drawExpandedModuleOutlines: drawExpandedModuleOutlines,
+    drawExpandedModuleBackgrounds: drawExpandedModuleBackgrounds,
+    clipModuleEdgeEndpoints: clipModuleEdgeEndpoints,
     moduleGraphicCornerRadius: moduleGraphicCornerRadius,
     moduleGraphicImage: moduleGraphicImage,
     drawFoldedModuleGraphics: drawFoldedModuleGraphics

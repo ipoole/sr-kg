@@ -424,6 +424,12 @@ def test_overview_summarises_boundaries_independently_of_folding(browser_graph):
     page.locator('#kg_fit_select').select_option('displayed')
     page.locator('#kg_fit_apply').click()
     page.wait_for_timeout(700)
+    assert page.evaluate("""() => nodes.get().filter(n=>n.isOverviewAnchor).every(n=>{
+      const s=network.body.nodes[n.id].shape;
+      return Number.isFinite(s.width) && Number.isFinite(s.height) &&
+        Math.abs(s.width-n.widthConstraint.minimum)<1 &&
+        Math.abs(s.height-n.heightConstraint.minimum)<1;
+    })""")
     point = page.evaluate("""() => network.canvasToDOM(network.getPositions(['2.1'])['2.1'])""")
     assert page.evaluate("point => network.getNodeAt(point)", point) == '2.1'
     canvas = page.locator('#mynetwork canvas').bounding_box()
