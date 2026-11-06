@@ -65,7 +65,7 @@ def test_phone_graph_only_selection_shares_context_row(browser_graph, width):
 
 
 @pytest.mark.parametrize("view", ["both", "graph", "details"])
-@pytest.mark.parametrize("scope", ["all", "full", "context"])
+@pytest.mark.parametrize("scope", ["overview", "full", "context"])
 def test_pane_choice_is_independent_of_graph_scope(browser_graph, view, scope):
     page = browser_graph.page
     browser_graph.click_concept("2.2")
@@ -125,7 +125,7 @@ def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_gra
     assert all(b["left"] >= 0 and b["right"] <= width for b in boxes), boxes
 
 
-@pytest.mark.parametrize("scope", ["all", "full", "context"])
+@pytest.mark.parametrize("scope", ["overview", "full", "context"])
 @pytest.mark.parametrize("frame", ["reveal", "selection", "context", "displayed"])
 def test_frame_choices_have_targets_with_permanent_selection(browser_graph, scope, frame):
     page = browser_graph.page
