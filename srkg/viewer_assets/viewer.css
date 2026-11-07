@@ -804,6 +804,23 @@
       .kg-tutorial-narration[hidden] {
         display: none;
       }
+      .kg-tutorial-narration.kg-exploring {
+        background: none;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        transform: none;
+        width: auto;
+      }
+      .kg-tutorial-narration.kg-exploring > :not(.kg-tutorial-actions):not(.kg-tutorial-error),
+      .kg-tutorial-narration.kg-exploring .kg-tutorial-actions > :not(#kg_tutorial_explore) {
+        display: none;
+      }
+      .kg-tutorial-narration.kg-exploring .kg-tutorial-actions { margin: 0; }
+      .kg-tutorial-narration.kg-exploring #kg_tutorial_explore {
+        box-shadow: 0 1px 5px rgba(15, 23, 42, 0.18);
+        min-height: 32px;
+      }
       .kg-tutorial-narration-meta {
         align-items: baseline;
         color: #28536b;
@@ -906,6 +923,7 @@
         overflow: visible;
         width: 28px;
       }
+      .kg-tutorial-pointer.kg-settled { opacity: 0.12; }
       .kg-tutorial-pointer path {
         fill: #fff;
         stroke: #17658f;

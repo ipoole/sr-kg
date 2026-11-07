@@ -1,4 +1,5 @@
 [
+  {"version": "4.5.11", "date": "2026-11-07", "summary": "Preview: Quieter tutorial pointers, full-space exploration and a physical light-emission argument for energy and inertia."},
   {"version": "4.5.10", "date": "2026-11-07", "summary": "Preview: Phone-friendly guided tutorials with an expanded Overview demonstration and full-screen physics reading."},
   {"version": "4.5.9", "date": "2026-11-06", "summary": "Preview: More compact module footers and folded labels centred in the space below their graphics."},
   {"version": "4.5.8", "date": "2026-11-06", "summary": "Preview: Larger module titles in a reserved bottom area shared by folded and expanded module boxes."},

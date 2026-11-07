@@ -95,12 +95,16 @@ It contains:
 - one short heading and commentary;
 - **Back**, **Next step**, **Explore from here** and **Exit**.
 
+After a demonstrated action, the arrow becomes highly transparent so it does not
+obscure reading; the block highlight remains visible.
+
 The stable card is preferable to commentary which jumps between targets. The
 pointer supplies the spatial connection. On a narrow phone the card occupies
 a dedicated strip at the bottom of the screen, below both panes. The workspace
 reserves its measured height, keeping the existing graph-row sizing and leaving
-the remaining area for Details. The strip remains available during
-Explore; Exit restores the normal workspace. Desktop narration remains an
+the remaining area for Details. Explore removes the strip and releases its
+reserved space, leaving only a small Continue with tutorial button over the
+workspace. Exit restores the normal workspace. Desktop narration remains an
 overlay, with Fit and Reveal accounting for its occupied space. The interface
 tutorial expands and fits its module within one card. When the graph is hidden,
 desktop narration is anchored to the workspace rather than the absent pane.
@@ -174,9 +178,10 @@ available controls.
 This avoids implying that a learner must guess which control to operate.
 
 **Explore from here** snapshots the current tutorial checkpoint, removes the
-interaction lock and hides tutorial emphasis while leaving the narration card
-available. The learner may navigate, search and change any presentation
-control. **Resume tutorial** restores Selection, Context, Display, module
+interaction lock and hides tutorial emphasis and narration. Only a small
+**Continue with tutorial** button remains; no narration space is reserved. The
+learner may navigate, search and change any presentation
+control. **Continue with tutorial** restores Selection, Context, Display, module
 representations, Details and Camera to the saved checkpoint. Notes, question
 attempts, reading marks and other personal data created while exploring remain.
 

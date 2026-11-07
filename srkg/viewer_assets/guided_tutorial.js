@@ -83,6 +83,7 @@ function kgCreateGuidedTutorial(options) {
       }
     }
     var pointer = document.getElementById("kg_tutorial_pointer");
+    if (pointer) { pointer.classList.remove("kg-settled"); }
     var duration = tutorialMotionDuration();
     if (pointer && !tutorialPointerState.visible && duration) {
       var narration = document.getElementById("kg_tutorial_narration");
@@ -150,6 +151,15 @@ function kgCreateGuidedTutorial(options) {
     return target.indexOf("control:") === 0 ||
       target === "details:derived-from-show-graph" ||
       target === "details:where-used-show-graph";
+  }
+
+  function settleTutorialPointer(target) {
+    if (tutorialPointerIsTransientAction(target)) {
+      hideTutorialPointer({preserveTarget: true});
+    } else {
+      refreshTutorialPointerPosition();
+      document.getElementById("kg_tutorial_pointer").classList.add("kg-settled");
+    }
   }
 
   function clearTutorialBlockSpotlight() {
@@ -314,7 +324,7 @@ function kgCreateGuidedTutorial(options) {
     var exploreButton = document.getElementById("kg_tutorial_explore");
     exploreButton.disabled = tutorialPlayback.transitioning;
     exploreButton.textContent = tutorialPlayback.exploring
-      ? "Resume tutorial"
+      ? "Continue with tutorial"
       : "Explore from here";
     document.getElementById("kg_tutorial_explore_status").hidden =
       !tutorialPlayback.exploring;
@@ -331,12 +341,23 @@ function kgCreateGuidedTutorial(options) {
   function positionTutorialNarration() {
     var card = document.getElementById("kg_tutorial_narration");
     if (!card) { return; }
-    var docked = !card.hidden && window.matchMedia("(max-width: 850px)").matches;
+    var exploring = !card.hidden && tutorialPlayback.exploring;
+    card.classList.toggle("kg-exploring", exploring);
+    var docked = !card.hidden && !exploring && window.matchMedia("(max-width: 850px)").matches;
     document.body.classList.toggle("kg-tutorial-phone-docked", docked);
     if (!docked) {
       document.documentElement.style.removeProperty("--kg-tutorial-dock-height");
     }
     if (card.hidden) { return; }
+    card.style.right = "auto";
+    if (exploring) {
+      var exploreViewport = visualViewportRect();
+      card.style.top = "auto";
+      card.style.bottom = (Math.max(0, window.innerHeight - exploreViewport.bottom) + 7) + "px";
+      card.style.left = "auto";
+      card.style.right = "7px";
+      return;
+    }
     if (docked) {
       var viewport = visualViewportRect();
       var bottomInset = Math.max(0, window.innerHeight - viewport.bottom) + 7;
@@ -393,6 +414,7 @@ function kgCreateGuidedTutorial(options) {
         await moveTutorialPointer(
           replayAction.pointer ? replayAction.pointer.target : "narration"
         );
+        settleTutorialPointer(replayAction.pointer ? replayAction.pointer.target : "narration");
       } else {
         var step = route.steps[stepIndex];
         tutorialPlayback.stepIndex = stepIndex;
@@ -410,11 +432,7 @@ function kgCreateGuidedTutorial(options) {
           await pulseTutorialPointer();
           await executeViewerCommand(item.action, {origin: "tutorial"});
           await nextAnimationFrames(2);
-          if (tutorialPointerIsTransientAction(stepPointerTarget)) {
-            hideTutorialPointer({preserveTarget: true});
-          } else {
-            refreshTutorialPointerPosition();
-          }
+          settleTutorialPointer(stepPointerTarget);
           if (actionIndex < actions.length - 1 && item.pause_ms) {
             await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
           }
@@ -499,18 +517,23 @@ function kgCreateGuidedTutorial(options) {
     }
     setTutorialTransitioning(true);
     try {
-      await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
-      tutorialPlayback.exploreSnapshot = null;
       tutorialPlayback.exploring = false;
       setGuidedTutorialActive(true);
+      renderTutorialNarration();
+      await nextAnimationFrames(2);
+      await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
       var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
       var finalAction = tutorialFinalAction(step);
       await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
       if (tutorialActionIsHover(finalAction.action)) {
         await executeViewerCommand(finalAction.action, {origin: "tutorial"});
       }
+      settleTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
       renderTutorialNarration();
+      tutorialPlayback.exploreSnapshot = null;
     } catch (error) {
+      tutorialPlayback.exploring = true;
+      setGuidedTutorialActive(false);
       renderTutorialNarration(
         "Could not resume the tutorial: " + String(error.message || error)
       );

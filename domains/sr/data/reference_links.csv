@@ -128,3 +128,5 @@ content_block,sr.lorentz_invariance.historical_context,lorentz.1904,§4,
 content_block,sr.lorentz_invariance.historical_context,poincare.1905,Full note,
 content_block,sr.gauge_invariance.weyl_history,weyl.1929,Full paper,
 content_block,sr.electromagnetic_waves.hertz_history,hertz.1888,Full paper,
+content_block,sr.mass_energy_equivalence.light_emission,einstein.1905.mass_energy,Full paper,"Light-emission energy balances and low-speed inertia argument; checked against the English translation reproduced in Charles Nash, Introduction to Relativity, chapter 8."
+content_block,sr.mass_energy_equivalence.light_inertia,einstein.1905.mass_energy,Full paper,"Light-emission energy balances and low-speed inertia argument; checked against the English translation reproduced in Charles Nash, Introduction to Relativity, chapter 8."

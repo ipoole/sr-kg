@@ -353,8 +353,11 @@ def test_guided_playback_blocks_viewer_interaction_centrally(browser_graph):
     ) == "pointer"
 
 
-def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_graph):
+@pytest.mark.parametrize("viewport", [(1280, 900), (390, 844)])
+def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_graph, viewport):
+    browser_graph.page.set_viewport_size({"width": viewport[0], "height": viewport[1]})
     page = _open_tutorial(browser_graph)
+    workspace_bottom = page.locator("#kg_workspace").bounding_box()["y"] + page.locator("#kg_workspace").bounding_box()["height"]
     page.locator("#kg_tutorial_start").click()
     page.wait_for_function(
         "() => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -365,7 +368,11 @@ def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_
 
     page.locator("#kg_tutorial_explore").click()
     assert page.evaluate("kgTutorialPlaybackSnapshot().exploring") is True
-    assert page.locator("#kg_tutorial_explore").inner_text() == "Resume tutorial"
+    assert page.locator("#kg_tutorial_explore").is_visible()
+    for selector in ["#kg_tutorial_commentary", "#kg_tutorial_back", "#kg_tutorial_next", "#kg_tutorial_exit"]:
+        assert page.locator(selector).is_hidden()
+    assert not page.locator("body").evaluate("el => el.classList.contains('kg-tutorial-phone-docked')")
+    page.wait_for_function("bottom => Math.abs(document.querySelector('#kg_workspace').getBoundingClientRect().bottom - bottom) < 2", arg=workspace_bottom)
     assert not page.locator("#kg_app_header").evaluate("el => el.inert")
     assert page.locator("#kg_tutorial_pointer").is_hidden()
 
@@ -403,6 +410,7 @@ def test_details_step_spotlights_the_whole_authored_block(browser_graph):
     block = page.locator('[data-content-block-id="1.1.definition"]')
     assert block.evaluate("el => el.classList.contains('kg-tutorial-block-spotlight')")
     assert page.locator(".kg-tutorial-block-spotlight").count() == 1
+    page.wait_for_function("() => Number(getComputedStyle(document.querySelector('#kg_tutorial_pointer')).opacity) <= 0.15")
 
     page.locator("#kg_tutorial_explore").click()
     assert page.locator(".kg-tutorial-block-spotlight").count() == 0
@@ -454,7 +462,7 @@ def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, 
     page.wait_for_function("() => typeof kgExecuteViewerCommand === 'function'")
     for concept, blocks in {
         "sr.momentum_four_vector": ["work_energy", "kinetic_limit"],
-        "sr.mass_energy_equivalence": ["three_energies", "systems", "heated_box", "heating_calculation"],
+        "sr.mass_energy_equivalence": ["three_energies", "systems", "heated_box", "heating_calculation", "light_emission", "light_inertia"],
         "sr.time_dilation": ["light_clock_setup", "light_clock_derivation", "worked_comparison", "interval_derivation", "reciprocal"],
     }.items():
         page.evaluate(

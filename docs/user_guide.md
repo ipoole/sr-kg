@@ -221,7 +221,7 @@ reconnect. Export/import is also available without a Google connection.
 
 Under **Tools → Tutorials**, choose a route and press **Start**, then **Next
 step**. PhysicsKG operates the controls during guided playback. **Explore from
-here** temporarily hands control to you; **Resume tutorial** restores the
+here** hides the tutorial card and hands control to you; **Continue with tutorial** restores the
 tutorial checkpoint while retaining your notes and study activity. **Exit**
 returns to ordinary browsing. Each introduction provides a direct tutorial link.
 

@@ -13,7 +13,7 @@ tutorials:
     title: Why does mass have rest energy?
     commentary: We will investigate a heated box, then trace rest energy back through momentum and spacetime to
       the foundations of special relativity. Press Next to watch the guided actions and read the highlighted content.
-      Explore from here lets you take control; Resume returns to the tutorial.
+      Explore from here lets you take control; Continue with tutorial returns to the tutorial.
     action:
       command: wait
       milliseconds: 0
@@ -92,7 +92,7 @@ tutorials:
   - step_id: preview-heated-box
     title: Same box, more mass?
     commentary: Read the heated-box example. Identify the system boundary and what enters it. Keep its predicted
-      mass change as a question to explain, rather than accepting the formula as the explanation.
+      inertia change as a question. Why should retained energy make it harder to accelerate? The formula alone cannot answer that.
     action:
       command: open-details-block
       target: block:sr.mass_energy_equivalence.heated_box
@@ -393,13 +393,31 @@ tutorials:
       value: context
     pointer:
       target: control:fit
+  - step_id: emit-light-without-recoiling
+    title: Lose energy without slowing down
+    commentary: Read Light leaves without a kick. Compare the same emission in the body's rest frame and a moving frame.
+      Why do the two pulses carry different total energies in those frames, although neither description changes the experiment?
+    prepare:
+    - command: set-view
+      value: details
+    action:
+      command: open-details-block
+      target: block:sr.mass_energy_equivalence.light_emission
+    pointer:
+      target: details:block:sr.mass_energy_equivalence.light_emission
+  - step_id: infer-the-inertia-change
+    title: Energy conservation requires an inertia change
+    commentary: Work through the two energy balances and their subtraction. Notice how the low-speed kinetic-energy coefficient
+      measures inertia. This argument obtains the mass change without assuming the rest-energy formula.
+    action:
+      command: open-details-block
+      target: block:sr.mass_energy_equivalence.light_inertia
+    pointer:
+      target: details:block:sr.mass_energy_equivalence.light_inertia
   - step_id: rest-frame-derivation
     title: Reconstruct the argument
     commentary: Read the rest-frame derivation, then reconstruct the chain forward in your own words. Explore from
       here if any link still feels abrupt.
-    prepare:
-    - command: set-view
-      value: details
     action:
       command: open-details-block
       target: block:sr.mass_energy_equivalence.rest_frame
@@ -416,8 +434,8 @@ tutorials:
       target: details:block:sr.mass_energy_equivalence.systems
   - step_id: explain-the-heated-box
     title: Return to the opening puzzle
-    commentary: Re-read the heated-box example and explain its mass change. Contrast heating the contents with accelerating
-      the entire box.
+    commentary: Re-read the box setup. Reverse the light-emission argument to explain why retained radiation increases its inertia.
+      Contrast this internal change with simply boosting the entire box; the numerical application comes next.
     action:
       command: open-details-block
       target: block:sr.mass_energy_equivalence.heated_box
@@ -462,7 +480,7 @@ tutorials:
     title: Why do moving clocks record less time?
     commentary: We will follow a light pulse, compare two ticks of the same clock and connect the result to Lorentz
       transformations and proper time. Press Next to watch the guided actions and read the highlighted content.
-      Explore from here lets you take control; Resume returns to the tutorial.
+      Explore from here lets you take control; Continue with tutorial returns to the tutorial.
     action:
       command: wait
       milliseconds: 0
@@ -693,7 +711,7 @@ tutorials:
   - step_id: check-the-comparison-yourself
     title: Test your clock reasoning
     commentary: Use Explore from here to try the moving-clock and light-clock calculations. Then explain the reciprocal-frame
-      comparison in your own words. Resume returns to this step and keeps your study work.
+      comparison in your own words. Continue with tutorial returns to this step and keeps your study work.
     action:
       command: open-study-questions
     pointer:

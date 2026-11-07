@@ -79,7 +79,7 @@ record less time**. Each introduction offers a direct launch link to bookmark
 or share; the time-dilation route uses `?tutorial=time-dilation`.
 During playback PhysicsKG performs the actions; use **Back**, **Next step** and **Exit** to
 control playback. **Explore from here** temporarily releases the viewer for
-free investigation; **Resume tutorial** restores the saved tutorial view
+free investigation with only a small return button; **Continue with tutorial** restores the saved tutorial view
 without undoing notes or study progress.
 
 See [Viewer behaviour](docs/design/viewer.md) for details presentation, navigation and
