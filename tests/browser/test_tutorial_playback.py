@@ -479,6 +479,24 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
         assert page.locator("#kg_tutorial_error").is_hidden(), (step["step_id"], page.locator("#kg_tutorial_error").inner_text())
         assert page.evaluate("kgViewerStateSnapshot().selection.type") != "none"
         selection = page.evaluate("kgViewerStateSnapshot().selection")
+        if tutorial_id == "using-physicskg":
+            graph_steps = {
+                "see-the-whole-map", "overview-across-subjects", "return-to-one-module", "select-a-module",
+                "choose-the-pane", "choose-graph-emphasis", "reveal-the-concepts",
+                "preview-a-concept", "select-a-concept", "choose-connections",
+                "show-the-context", "frame-the-result", "preview-a-relationship",
+                "return-to-the-map", "show-the-derivation-in-graph", "show-a-derivation-tree",
+            }
+            if step["step_id"] in graph_steps:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "graph", step["step_id"]
+            if step["step_id"] == "overview-across-subjects":
+                presentation = page.evaluate("kgCaptureTutorialPresentation()")
+                assert presentation["displayScope"] == "overview"
+                assert presentation["contextRule"]["preset"] == "derivation"
+                for module_id, representation in presentation["moduleRepresentation"].items():
+                    assert representation == ("expanded" if module_id.startswith(("sr.", "math.")) else "folded")
+            if step["step_id"] in {"inspect-details", "inspect-a-derivation-tree"}:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "details"
         if tutorial_id == "using-physicskg" and step["step_id"] == "select-a-module":
             assert selection != previous_selection
         if tutorial_id == "using-physicskg" and step["step_id"] == "show-a-derivation-tree":

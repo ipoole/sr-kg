@@ -7,6 +7,7 @@ tutorials:
   sequence: 10
   domains:
   - sr
+  - math
   steps:
   - step_id: see-the-whole-map
     title: See the whole map
@@ -20,9 +21,9 @@ tutorials:
     - command: set-display-scope
       value: overview
     - command: set-view
-      value: both
+      value: graph
     - command: set-context
-      preset: foundations
+      preset: derivation
       depth: one-hop
     action:
       command: fit
@@ -31,8 +32,8 @@ tutorials:
       target: control:fit
   - step_id: select-a-module
     title: Select a module
-    commentary: Modules organise the landscape into coherent subjects. Selecting SR-2 makes it the subject in both
-      the graph and Details.
+    commentary: Modules organise the landscape into coherent subjects. Selecting SR-2 makes it the subject in the
+      graph; Details follows the same selection.
     action:
       command: select
       target: module:sr.relativistic_mechanics
@@ -51,35 +52,15 @@ tutorials:
       pause_ms: 3000
     - action:
         command: set-view
-        value: graph
+        value: both
       pointer:
         target: control:view
       pause_ms: 3000
     - action:
         command: set-view
-        value: both
+        value: graph
       pointer:
         target: control:view
-  - step_id: choose-graph-emphasis
-    title: Choose how the graph is treated
-    commentary: Overview shows the whole map with internal concept links and module summaries. Context + background emphasises the selected context;
-      Context only omits the background. Selecting something never changes this choice automatically.
-    actions:
-    - action:
-        command: set-display-scope
-        value: overview
-      pointer:
-        target: control:display-scope
-    - action:
-        command: set-display-scope
-        value: context
-      pointer:
-        target: control:display-scope
-    - action:
-        command: set-display-scope
-        value: full
-      pointer:
-        target: control:display-scope
   - step_id: reveal-the-concepts
     title: Reveal its concepts
     commentary: The plus control expands a module in place. Its concepts appear inside the same persistent area
@@ -96,6 +77,84 @@ tutorials:
         value: selection
       pointer:
         target: control:fit
+  - step_id: overview-across-subjects
+    title: See the wood and the trees
+    commentary: Overview combines open and folded modules. Here SR and Maths are expanded while GR stays folded.
+      Derivation links connect concepts within each open module; between modules, summary links stop at the module boundaries.
+      Module titles remain visible below their concepts.
+    actions:
+    - action:
+        command: set-module-representation
+        target: module:sr.spacetime_foundations
+        value: expanded
+      pointer:
+        target: control:module-fold:sr.spacetime_foundations
+    - action:
+        command: set-module-representation
+        target: module:sr.variational_and_field_theory
+        value: expanded
+      pointer:
+        target: control:module-fold:sr.variational_and_field_theory
+    - action:
+        command: set-module-representation
+        target: module:sr.electromagnetic_structure_gauge_and_stress_energy
+        value: expanded
+      pointer:
+        target: control:module-fold:sr.electromagnetic_structure_gauge_and_stress_energy
+    - action:
+        command: set-module-representation
+        target: module:sr.field_dynamics_conservation_and_radiation
+        value: expanded
+      pointer:
+        target: control:module-fold:sr.field_dynamics_conservation_and_radiation
+    - action:
+        command: set-module-representation
+        target: module:math.m01_manifolds_and_coordinates
+        value: expanded
+      pointer:
+        target: control:module-fold:math.m01_manifolds_and_coordinates
+    - action:
+        command: set-module-representation
+        target: module:math.m02_tensor_calculus
+        value: expanded
+      pointer:
+        target: control:module-fold:math.m02_tensor_calculus
+    - action:
+        command: fit
+        value: displayed
+      pointer:
+        target: control:fit
+  - step_id: return-to-one-module
+    title: Take a closer look
+    commentary: Fit selection brings SR-2 back into view. Expanding other modules has not moved its concepts or changed
+      the selection. Next, compare how the graph modes treat the same map.
+    action:
+      command: fit
+      value: selection
+    pointer:
+      target: control:fit
+  - step_id: choose-graph-emphasis
+    title: Choose how the graph is treated
+    commentary: Overview shows the whole map with internal concept links and module summaries. Context + background emphasises the selected context;
+      Context only omits the background. Selecting something never changes this choice automatically.
+    actions:
+    - action:
+        command: set-display-scope
+        value: overview
+      pointer:
+        target: control:display-scope
+      pause_ms: 3000
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+      pause_ms: 3000
+    - action:
+        command: set-display-scope
+        value: full
+      pointer:
+        target: control:display-scope
   - step_id: preview-a-concept
     title: Preview without selecting
     commentary: On a pointer device, hovering over a concept previews it without changing Selection. PhysicsKG demonstrates
@@ -183,7 +242,7 @@ tutorials:
     prepare:
     - command: close-search
     - command: set-view
-      value: both
+      value: details
     action:
       command: open-details-block
       target: block:sr.lorentz_transformations.overview
@@ -198,7 +257,7 @@ tutorials:
         command: select
         target: concept:sr.mass_energy_equivalence
       pointer:
-        target: graph:concept:sr.mass_energy_equivalence
+        target: details:heading
     - action:
         command: open-details-relationship
         value: derived-from
@@ -212,9 +271,15 @@ tutorials:
         target: details:derived-from-full-tree
   - step_id: show-the-derivation-in-graph
     title: Turn the reading into a graph
-    commentary: Choose Context only, then Show in graph. This shortcut sets Derivation and Transitive depth and
-      fits the context automatically. Expand the folded context modules, then fit again to frame their concepts.
+    commentary: Briefly show Both to see the reading and graph controls together. Choose Context only, then Show in graph.
+      This shortcut sets Derivation and Transitive depth and
+      fits the context automatically. Switch to Graph for more room, then fit again to frame the concepts.
     actions:
+    - action:
+        command: set-view
+        value: both
+      pointer:
+        target: control:view
     - action:
         command: set-display-scope
         value: context
@@ -227,9 +292,10 @@ tutorials:
       pointer:
         target: details:derived-from-show-graph
     - action:
-        command: expand-context-modules
+        command: set-view
+        value: graph
       pointer:
-        target: control:expand-context
+        target: control:view
     - action:
         command: fit
         value: context

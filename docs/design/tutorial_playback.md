@@ -105,6 +105,12 @@ overlay, with Fit and Reveal accounting for its occupied space. The interface
 tutorial expands and fits its module within one card. When the graph is hidden,
 desktop narration is anchored to the workspace rather than the absent pane.
 
+Author graph demonstrations in Graph only view so the canvas remains useful on
+phones. Use Details for reading; Both can briefly explain the connection between
+the panes, then return to Graph before framing or contracting the result. The
+interface route demonstrates Overview with SR and Maths expanded and GR folded,
+using Derivation links before zooming into an individual module.
+
 The temporary Fit++ arrangement notice is suppressed during guided playback,
 when manual dragging is unavailable. It reappears during Explore.
 
