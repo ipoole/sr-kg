@@ -18,9 +18,9 @@ tutorials:
       command: wait
       milliseconds: 0
   - step_id: begin-with-rest-energy
-    title: Begin with rest energy
-    commentary: A resting body has no kinetic energy as a whole. What, then, does its rest energy mean? Read this
-      opening puzzle; we will investigate a concrete example before tracing the argument.
+    title: Map the argument
+    commentary: First look over the derivation route in Graph view. Fit++ brings its concepts together.
+      The following cards give the reading the full screen; Explore from here lets you inspect a branch.
     prepare:
     - command: select
       target: module:sr.spacetime_foundations
@@ -54,6 +54,16 @@ tutorials:
       pointer:
         target: details:derived-from-show-graph
     - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: control:view
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+    - action:
         command: expand-context-modules
       pointer:
         target: control:expand-context
@@ -67,11 +77,18 @@ tutorials:
         value: context
       pointer:
         target: control:fit
-    - action:
-        command: open-details-block
-        target: block:sr.mass_energy_equivalence.overview
-      pointer:
-        target: details:block:sr.mass_energy_equivalence.overview
+  - step_id: read-opening-question
+    title: Begin with rest energy
+    commentary: A resting body has no kinetic energy as a whole. What, then, does its rest energy mean? Read this opening puzzle;
+      we will investigate a concrete example before tracing the argument.
+    prepare:
+    - command: set-view
+      value: details
+    action:
+      command: open-details-block
+      target: block:sr.mass_energy_equivalence.overview
+    pointer:
+      target: details:block:sr.mass_energy_equivalence.overview
   - step_id: preview-heated-box
     title: Same box, more mass?
     commentary: Read the heated-box example. Identify the system boundary and what enters it. Keep its predicted
@@ -101,7 +118,7 @@ tutorials:
       target: details:block:sr.mass_energy_equivalence.definition
   - step_id: show-derived-from-in-graph
     title: What each link contributes
-    commentary: Read the full derivation tree beside the graph. Each edge note explains what the next concept supplies.
+    commentary: Read the full derivation tree. Each edge note explains what the next concept supplies; the next card shows the graph.
       Notice the physical qualification on the first link to four-momentum.
     action:
       command: open-details-relationship
@@ -111,6 +128,8 @@ tutorials:
     commentary: The graph now follows Foundations transitively. Look over the whole route before reading it step
       by step; Explore from here if you want to inspect a branch or edge.
     prepare:
+    - command: set-view
+      value: graph
     - command: set-context
       preset: foundations
       depth: transitive
@@ -133,6 +152,9 @@ tutorials:
     title: Energy and momentum belong together
     commentary: Read the four-momentum overview. Identify which quantities become components of one object and which
       aspects can remain invariant.
+    prepare:
+    - command: set-view
+      value: details
     action:
       command: open-details-block
       target: block:sr.momentum_four_vector.overview
@@ -183,6 +205,9 @@ tutorials:
   - step_id: select-invariant-interval
     title: Follow the route to the interval
     commentary: Select SR-1.7 Spacetime interval, the geometric foundation of proper time.
+    prepare:
+    - command: set-view
+      value: graph
     action:
       command: select
       target: concept:sr.spacetime_interval
@@ -199,6 +224,9 @@ tutorials:
   - step_id: invariant-interval
     title: Proper time comes from the interval
     commentary: Read the interval definition. Notice what changes between observers and what combination does not.
+    prepare:
+    - command: set-view
+      value: details
     action:
       command: open-details-block
       target: block:sr.spacetime_interval.definition
@@ -208,6 +236,8 @@ tutorials:
     title: Follow the route to Lorentz transformations
     commentary: Return to the wider map and select SR-1.8 Lorentz transformations.
     prepare:
+    - command: set-view
+      value: graph
     - command: set-display-scope
       value: full
     action:
@@ -230,6 +260,9 @@ tutorials:
     title: Preserve the spacetime geometry
     commentary: Read the overview. Relate the coordinate transformation to the invariant quantity you have just
       examined.
+    prepare:
+    - command: set-view
+      value: details
     action:
       command: open-details-block
       target: block:sr.lorentz_transformations.overview
@@ -331,6 +364,8 @@ tutorials:
     title: Return to rest energy
     commentary: Return to the wider map and select SR-2.6 Mass-energy equivalence.
     prepare:
+    - command: set-view
+      value: graph
     - command: set-display-scope
       value: full
     action:
@@ -362,6 +397,9 @@ tutorials:
     title: Reconstruct the argument
     commentary: Read the rest-frame derivation, then reconstruct the chain forward in your own words. Explore from
       here if any link still feels abrupt.
+    prepare:
+    - command: set-view
+      value: details
     action:
       command: open-details-block
       target: block:sr.mass_energy_equivalence.rest_frame
@@ -429,9 +467,9 @@ tutorials:
       command: wait
       milliseconds: 0
   - step_id: begin-with-two-ticks
-    title: One clock, two ticks
-    commentary: Read the opening question. The graph traces the derivation behind this clock comparison; keep the
-      same two tick events in mind throughout the explanation.
+    title: Map the argument
+    commentary: First look over the derivation route in Graph view. Fit++ brings its concepts together.
+      The following cards give the reading the full screen; Explore from here lets you inspect a branch.
     prepare:
     - command: select
       target: module:sr.spacetime_foundations
@@ -465,15 +503,10 @@ tutorials:
       pointer:
         target: details:derived-from-show-graph
     - action:
-        command: set-display-scope
-        value: context
+        command: set-view
+        value: graph
       pointer:
-        target: control:display-scope
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
+        target: control:view
     - action:
         command: expand-context-modules
       pointer:
@@ -488,11 +521,17 @@ tutorials:
         value: context
       pointer:
         target: control:fit
-    - action:
-        command: open-details-block
-        target: block:sr.time_dilation.overview
-      pointer:
-        target: details:block:sr.time_dilation.overview
+  - step_id: read-opening-question
+    title: One clock, two ticks
+    commentary: Read the opening question. Keep the same two tick events in mind throughout the explanation.
+    prepare:
+    - command: set-view
+      value: details
+    action:
+      command: open-details-block
+      target: block:sr.time_dilation.overview
+    pointer:
+      target: details:block:sr.time_dilation.overview
   - step_id: define-the-comparison
     title: How does the lab assign time?
     commentary: Read One travelling clock and a lab clock network. Identify A and B, the clock that visits both,
@@ -573,17 +612,7 @@ tutorials:
         command: select
         target: concept:sr.lorentz_transformations
       pointer:
-        target: graph:concept:sr.lorentz_transformations
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
+        target: details:heading
     - action:
         command: open-details-block
         target: block:sr.lorentz_transformations.boost_formula
@@ -600,16 +629,6 @@ tutorials:
       pointer:
         target: details:heading
     - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
-    - action:
         command: open-details-block
         target: block:sr.time_dilation.lorentz_derivation
       pointer:
@@ -624,20 +643,6 @@ tutorials:
         target: concept:sr.proper_time
       pointer:
         target: details:heading
-    - action:
-        command: expand-context-modules
-      pointer:
-        target: control:expand-context
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
     - action:
         command: open-details-block
         target: block:sr.proper_time.coordinate_time
@@ -662,16 +667,6 @@ tutorials:
         target: concept:sr.time_dilation
       pointer:
         target: details:heading
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
-    - action:
-        command: fit
-        value: context
-      pointer:
-        target: control:fit
     - action:
         command: open-details-block
         target: block:sr.time_dilation.interval_derivation

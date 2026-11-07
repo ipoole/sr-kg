@@ -266,6 +266,9 @@ def test_tutorial_hides_the_previous_pointer_during_step_preparation(browser_gra
 
 def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph):
     page = _open_tutorial(repo_browser_graph, "rest-energy-to-sr-foundations")
+    frame_index = page.evaluate("""() => tutorialData
+      .find(t => t.tutorial_id === 'rest-energy-to-sr-foundations')
+      .steps.findIndex(s => s.step_id === 'expose-the-foundations')""")
     page.locator("#kg_tutorial_start").click()
     page.wait_for_function("() => !kgTutorialPlaybackSnapshot().transitioning")
     page.locator("#kg_tutorial_next").click()
@@ -279,7 +282,7 @@ def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph)
         "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 1",
         timeout=30000,
     )
-    for step_index in range(2, 7):
+    for step_index in range(2, frame_index + 1):
         page.locator("#kg_tutorial_next").click()
         page.wait_for_function(
             "index => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -296,8 +299,9 @@ def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph)
 
     page.locator("#kg_tutorial_next").click()
     page.wait_for_function(
-        "() => !kgTutorialPlaybackSnapshot().transitioning && "
-        "kgTutorialPlaybackSnapshot().stepIndex === 7"
+        "index => !kgTutorialPlaybackSnapshot().transitioning && "
+        "kgTutorialPlaybackSnapshot().stepIndex === index",
+        arg=frame_index + 1,
     )
     pointer = page.evaluate("kgTutorialPointerSnapshot()")
     assert pointer["target"] == "graph:concept:sr.momentum_four_vector"
@@ -479,6 +483,14 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
         assert page.locator("#kg_tutorial_error").is_hidden(), (step["step_id"], page.locator("#kg_tutorial_error").inner_text())
         assert page.evaluate("kgViewerStateSnapshot().selection.type") != "none"
         selection = page.evaluate("kgViewerStateSnapshot().selection")
+        if tutorial_id != "using-physicskg":
+            final_action = (step.get("actions") or [step])[-1]["action"]
+            if final_action["command"] in {
+                "open-details-block", "open-details-graphic", "open-details-relationship", "open-study-questions"
+            }:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "details", step["step_id"]
+            elif final_action["command"] in {"fit", "select"}:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "graph", step["step_id"]
         if tutorial_id == "using-physicskg":
             graph_steps = {
                 "see-the-whole-map", "overview-across-subjects", "return-to-one-module", "select-a-module",
