@@ -80,3 +80,12 @@ Checked the original English translation reproduced in Charles Nash's
 Introduction to Relativity, chapter 8 (PDF pages 114–116):
 https://www.pks.mpg.de/~haque/maynooth_MP352/MP352_CharlesNash_Notes.pdf
 The source is linked through the existing Einstein 1905 bibliography entry.
+
+## Route review: assume Lorentz transformations
+
+The route now has 29 cards rather than 40. It assumes Lorentz transformations
+and removes the postulate and interval/proper-time detour. The light-emission
+setup and inertia argument follow the heated-box question immediately, giving
+the intuition an early payoff. The later four-momentum/work discussion retains
+the distinction between geometry and physical energy. Graph cards use a bounded
+two-hop Derivation context rather than retracing the full prerequisite tree.

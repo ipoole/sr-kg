@@ -1,6 +1,17 @@
 import pytest
 
 
+@pytest.mark.parametrize("width,expected", [(1280, 25.2), (1000, 21), (390, 15.4)])
+def test_details_default_text_scale_applies_outside_tutorials(browser_graph, width, expected):
+    page = browser_graph.page
+    page.set_viewport_size({"width": width, "height": 932})
+    browser_graph.click_concept("2.1")
+    assert not page.evaluate("kgTutorialPlaybackSnapshot().active")
+    assert _font_size(page, "#info_panel") == pytest.approx(expected)
+    page.locator("#kg_view_select").select_option("details")
+    assert _font_size(page, "#info_panel") == pytest.approx(expected)
+
+
 @pytest.mark.browser
 @pytest.mark.parametrize('width', [390, 1280])
 def test_graphic_caption_stays_below_svg_at_details_zoom(browser_graph, width):
