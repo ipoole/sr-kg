@@ -220,7 +220,9 @@ reconnect. Export/import is also available without a Google connection.
 ## 9. Tutorials, links and common puzzles
 
 Under **Tools → Tutorials**, choose a route and press **Start**, then **Next
-step**. PhysicsKG operates the controls during guided playback. **Explore from
+step**. PhysicsKG operates the controls during guided playback. You can scroll
+and zoom Details, select text, use Contents and open clarifications. Other
+navigation, hover previews and study actions stay locked. **Explore from
 here** hides the tutorial card and hands control to you; **Continue with tutorial** restores the
 tutorial checkpoint while retaining your notes and study activity. **Exit**
 returns to ordinary browsing. Each introduction provides a direct tutorial link.

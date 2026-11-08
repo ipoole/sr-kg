@@ -4675,6 +4675,10 @@
           requestAnimationFrame(function() {
             detailsView.compactGraphicSpacing();
             detailsView.refreshEquationOverflow();
+            if (guidedTutorial) {
+              guidedTutorial.refreshReadingControls();
+              refreshTutorialPointerPosition();
+            }
             updateNodeLabelPositions();
           });
         }

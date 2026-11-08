@@ -29,8 +29,9 @@ interface orientation or a short physics route. Physics routes cover
 **Why mass has rest energy** and **Why moving
 clocks record less time**, including a light-clock argument and worked examples.
 PhysicsKG operates the viewer and points to each target; use **Back**,
-**Next step** and **Exit** rather
-than operating the normal controls during playback. **Explore from here**
+**Next step** and **Exit** to control playback. You can scroll and zoom Details,
+select text, use Contents and open clarifications while reading. Wide equations
+marked ↔ can be scrolled sideways. **Explore from here**
 temporarily returns control to you and hides the tutorial card; **Continue with tutorial** restores the view at
 which you left the route while preserving any study activity. Tutorials can also be
 launched by a direct `?tutorial=<tutorial-id>` link. Select a route under

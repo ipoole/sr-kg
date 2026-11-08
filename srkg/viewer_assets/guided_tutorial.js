@@ -30,6 +30,54 @@ function kgCreateGuidedTutorial(options) {
     visible: false
   };
   function isGuiding() { return Boolean(tutorialPlayback.activeRoute && !tutorialPlayback.exploring); }
+  var readingControlAttributes = new WeakMap();
+  var readingPanelActive = false, readingPanelTabIndex = null, readingPointerFrame = null;
+
+  function refreshReadingControls() {
+    var panel = document.getElementById("info_panel"), active = isGuiding();
+    if (!active && !readingPanelActive) { return; }
+    if (active && !readingPanelActive) {
+      readingPanelTabIndex = panel.getAttribute("tabindex");
+      panel.setAttribute("tabindex", "0");
+    } else if (!active && readingPanelActive) {
+      if (readingPanelTabIndex === null) { panel.removeAttribute("tabindex"); }
+      else { panel.setAttribute("tabindex", readingPanelTabIndex); }
+    }
+    readingPanelActive = active;
+    panel.querySelectorAll('a, button, input, textarea, select, [contenteditable], [role="button"]').forEach(function(control) {
+      if (control.matches("a.concept-toc-link")) { return; }
+      var original = readingControlAttributes.get(control);
+      if (active) {
+        if (!original) {
+          original = {};
+          ["disabled", "tabindex", "aria-disabled", "contenteditable"].forEach(function(name) {
+            original[name] = control.getAttribute(name);
+          });
+          readingControlAttributes.set(control, original);
+        }
+        if ("disabled" in control && !control.disabled) { control.disabled = true; }
+        if (control.hasAttribute("contenteditable") && control.getAttribute("contenteditable") !== "false") {
+          control.setAttribute("contenteditable", "false");
+        }
+        if (control.getAttribute("aria-disabled") !== "true") { control.setAttribute("aria-disabled", "true"); }
+        if (control.getAttribute("tabindex") !== "-1") { control.setAttribute("tabindex", "-1"); }
+      } else if (original) {
+        Object.keys(original).forEach(function(name) {
+          if (original[name] === null) { control.removeAttribute(name); }
+          else { control.setAttribute(name, original[name]); }
+        });
+        readingControlAttributes.delete(control);
+      }
+    });
+  }
+
+  function scheduleReadingPointerRefresh() {
+    if (!isGuiding() || tutorialPlayback.transitioning || readingPointerFrame !== null) { return; }
+    readingPointerFrame = requestAnimationFrame(function() {
+      readingPointerFrame = null;
+      refreshTutorialPointerPosition();
+    });
+  }
 
   function tutorialMotionDuration() {
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -48,6 +96,24 @@ function kgCreateGuidedTutorial(options) {
     halo.style.top = (rect.y - padding) + "px";
     halo.style.width = (rect.width + padding * 2) + "px";
     halo.style.height = (rect.height + padding * 2) + "px";
+    halo.style.clipPath = "";
+    pointer.style.visibility = "";
+    if (String(target).indexOf("details:") === 0) {
+      var panel = document.getElementById("info_panel"), clip = panel.getBoundingClientRect();
+      var header = panel.querySelector(".concept-sticky-header");
+      var top = clip.top;
+      if (header && target !== "details:heading" && target !== "details:contents") {
+        top = Math.max(top, header.getBoundingClientRect().bottom);
+      }
+      halo.style.clipPath = "inset(" + [
+        Math.max(0, top - rect.y + padding),
+        Math.max(0, rect.x + rect.width + padding - clip.right),
+        Math.max(0, rect.y + rect.height + padding - clip.bottom),
+        Math.max(0, clip.left - rect.x + padding)
+      ].map(function(value) { return value + "px"; }).join(" ") + ")";
+      var centreY = rect.y + rect.height / 2;
+      if (centreY < top || centreY > clip.bottom) { pointer.style.visibility = "hidden"; }
+    }
     pointer.hidden = false;
     pointer.style.transform = "translate3d(" +
       (rect.x + rect.width / 2 - 3) + "px," +
@@ -175,7 +241,6 @@ function kgCreateGuidedTutorial(options) {
       "kg_graph_context_panel",
       "kg_controls",
       "kg_search_section",
-      "info_panel",
       "kg_pane_splitter"
     ].forEach(function(id) {
       var element = document.getElementById(id);
@@ -184,6 +249,7 @@ function kgCreateGuidedTutorial(options) {
       if (active) { element.setAttribute("aria-disabled", "true"); }
       else { element.removeAttribute("aria-disabled"); }
     });
+    refreshReadingControls();
   }
 
   function blockInteractionDuringGuidedTutorial(event) {
@@ -192,6 +258,25 @@ function kgCreateGuidedTutorial(options) {
       ? event.target.closest(".kg-tutorial-narration")
       : null;
     if (target) { return; }
+    var element = event.target && event.target.closest ? event.target : null;
+    var details = element && element.closest("#info_panel");
+    if (details && !tutorialPlayback.transitioning) {
+      if (["wheel", "touchstart", "touchmove", "pointerdown", "pointerup"].indexOf(event.type) !== -1) { return; }
+      var interactive = element.closest('a, button, input, textarea, select, label, [contenteditable="true"], [role="button"]');
+      var readingAction = (!interactive && element.closest("summary")) || element.closest("a.concept-toc-link");
+      if (event.type === "keydown" && (
+        (!interactive && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", " "].indexOf(event.key) !== -1) ||
+        (readingAction && (event.key === "Enter" || event.key === " "))
+      )) { return; }
+      if (event.type === "click" || event.type === "dblclick") {
+        if (readingAction) { return; }
+        if (!interactive) {
+          event.stopImmediatePropagation();
+          return;
+        }
+      }
+    }
+    if (event.type === "keydown" && event.key === "Tab") { return; }
     if (event.type === "keydown" && (event.metaKey || event.ctrlKey || event.altKey)) {
       return;
     }
@@ -575,6 +660,7 @@ function kgCreateGuidedTutorial(options) {
       "click", toggleTutorialExploration
     );
     document.getElementById("kg_tutorial_exit").addEventListener("click", exitTutorial);
+    document.getElementById("info_panel").addEventListener("scroll", scheduleReadingPointerRefresh, true);
     splashStart.addEventListener("click", function() {
       if (defaultRoute) { startTutorialById(defaultRoute.tutorial_id); }
     });
@@ -582,7 +668,8 @@ function kgCreateGuidedTutorial(options) {
 
   [
     "click", "dblclick", "pointerdown", "pointerup", "touchstart",
-    "touchmove", "wheel", "keydown", "input", "change", "submit"
+    "touchmove", "wheel", "keydown", "input", "change", "submit",
+    "pointerover", "pointerout", "focusin", "focusout"
   ].forEach(function(eventName) {
     document.addEventListener(
       eventName,
@@ -593,6 +680,7 @@ function kgCreateGuidedTutorial(options) {
 
   return {
     refreshTutorialPointerPosition: refreshTutorialPointerPosition,
+    refreshReadingControls: refreshReadingControls,
     tutorialPointerSnapshot: tutorialPointerSnapshot,
     tutorialRouteById: tutorialRouteById,
     positionTutorialNarration: positionTutorialNarration,

@@ -970,6 +970,11 @@
       body.kg-tutorial-active .kg-tutorial-narration button:not(:disabled) {
         cursor: pointer !important;
       }
+      body.kg-tutorial-active #info_panel,
+      body.kg-tutorial-active #info_panel * { cursor: text !important; }
+      body.kg-tutorial-active #info_panel summary,
+      body.kg-tutorial-active #info_panel .concept-toc-link { cursor: pointer !important; }
+      body.kg-tutorial-active #info_panel [aria-disabled="true"] { cursor: not-allowed !important; }
       body.kg-tutorial-active #kg_context_notice[data-kind="context-contracted"] {
         display: none;
       }
@@ -1137,7 +1142,7 @@
 
         font-family: Arial, sans-serif;
         font-size: __INFO_PANEL_FONT_SIZE_PX__px;
-        touch-action: pan-y;
+        touch-action: pan-x pan-y;
 
         box-shadow: none;
 

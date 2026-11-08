@@ -172,10 +172,15 @@ than trying to define an inverse for every command.
 It also cancels tutorial highlights and pointer animation. Authored, personal
 and temporary layout coordinates are never modified by a route.
 
-Playback is deliberately guided: ordinary viewer interaction is blocked while
-a route is active, leaving Back, Next step, Explore from here and Exit as the
-available controls.
-This avoids implying that a learner must guess which control to operate.
+Playback is deliberately guided. Details permits vertical and horizontal
+scrolling, text selection, Contents links, disclosure toggles and its existing
+pinch/Ctrl-wheel text zoom. Other navigation, graph gestures, hover previews,
+notes editing, reading ticks and study answers remain locked until Explore.
+The header and graph controls remain inert; Details uses a central event policy
+and restores the original enabled/tab state of its controls after playback.
+Pointer geometry follows reading scroll and zoom, with Details highlights clipped
+to the reading pane. Text zoom remains a reader preference across steps.
+Back, Next step and Exit control the route; the learner need not guess an action.
 
 **Explore from here** snapshots the current tutorial checkpoint, removes the
 interaction lock and hides tutorial emphasis and narration. Only a small
