@@ -1,11 +1,14 @@
 # Documentation
 
+- **Using PhysicsKG:** the illustrated [user guide](../website/user-guide.html)
+  is maintained as a website page. The viewer's Quick Start covers the basics;
+  Tools → Version history records release news.
 - **Design** describes current contracts and consequential decisions:
   [schema](design/kb_schema.md), [architecture](design/architecture.md),
   [viewer behaviour](design/viewer.md), [modules](design/modules.md), and
   [layout](design/layout.md). The [viewer state terminology](design/viewer_terminology.md)
   defines the vocabulary used by the accepted [revised viewer UI model](design/viewer_ui_model.md),
-  with a user-facing [viewer quick start](design/viewer_quick_start.md). The
+  with [Quick Start scope and maintenance rules](design/viewer_quick_start.md). The
   [guided tutorial design](design/tutorial_playback.md) describes semantic
   routes, grouped actions, direct launch links and presentation restoration.
   Current physics routes cover rest energy and time dilation. The

@@ -16,10 +16,19 @@ from urllib.parse import unquote, urlsplit
 
 SCHEMA = 1
 MAX_SIZE = 1024 ** 3
-SITE_FILES = (
+BASE_SITE_FILES = (
     'index.html', 'privacy.html', 'terms.html', 'site.css', 'favicon.svg',
     'favicon-32.png', 'favicon.ico', 'apple-touch-icon.png',
     'physicskg-logo-120.png', 'robots.txt', 'sitemap.xml', 'CNAME',
+)
+GUIDE_FILES = (
+    'user-guide.html', 'guide/overview.png', 'guide/module-details.png',
+    'guide/clarifications-notes.png', 'guide/phone-both.png',
+)
+SITE_FILES = BASE_SITE_FILES + GUIDE_FILES
+PREVIEW_SITE_FILES = GUIDE_FILES + (
+    'site.css', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
+    'physicskg-logo-120.png',
 )
 
 
@@ -51,7 +60,9 @@ class LocalLinks(HTMLParser):
 
 
 def validate_site(files: dict[str, bytes]) -> None:
-    required = {*SITE_FILES, 'output/PhysicsKG.html',
+    # New pages are validated through their links when present; earlier deployed
+    # packages must remain readable as the base for preview updates and rollbacks.
+    required = {*BASE_SITE_FILES, 'output/PhysicsKG.html',
                 'output/interactive_graph.html', 'output/lib/bindings/utils.js'}
     missing = required - files.keys()
     if missing:
@@ -103,6 +114,8 @@ def assemble(root: Path, viewer: Path, channel: str, previous=None) -> dict[str,
         directory = 'output'
     else:
         files = {k: v for k, v in files.items() if not k.startswith('preview/')}
+        files.update({f'preview/{name}': (root / 'website' / name).read_bytes()
+                      for name in PREVIEW_SITE_FILES})
         directory = 'preview'
     files[f'{directory}/PhysicsKG.html'] = viewer.read_bytes()
     for path in sorted((root / 'lib').rglob('*')):

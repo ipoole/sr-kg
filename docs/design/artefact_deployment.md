@@ -44,6 +44,12 @@ Upload and explicitly deploy using the same commands. The preview is
 `https://physicskg.org/preview/PhysicsKG.html`. Use `--viewer <path>` to package a
 different locally built HTML file. No changes to the generated HTML are made.
 
+The illustrated guide is also previewed at `https://physicskg.org/preview/user-guide.html`,
+with its own styles, branding assets and screenshots. Its Home, atlas and policy links
+lead to the public site; the guide itself and its images remain under `/preview/`.
+Preview packaging copies these source files unchanged and does not update public pages.
+Validation remains compatible with older packages that predate the guide.
+
 A preview update replaces only `preview/`; a release update replaces the public
 website while retaining `preview/`. Both require the last successful complete
 package, including after a rollback. Previews share browser personal data and
