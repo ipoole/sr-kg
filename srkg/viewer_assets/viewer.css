@@ -2643,6 +2643,26 @@
         padding: 4px 0;
     }
 
+    #info_panel .kg-equation-scroll {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 100%;
+        position: relative;
+    }
+    #info_panel .kg-equation-overflow > mjx-container { text-align: left; }
+    #info_panel .kg-equation-scroll-hint {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 3px;
+        color: #526779;
+        font: 16px/1 Arial, sans-serif;
+        padding: 2px 4px;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    #info_panel .kg-equation-scroll-hint[hidden] { display: none; }
+
     #info_panel strong {
         font-weight: 700;
     }

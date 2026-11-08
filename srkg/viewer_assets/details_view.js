@@ -12,6 +12,52 @@ function kgCreateDetailsView(options) {
   function restoreTarget(id) { activeConceptSectionTargetId = id || null; }
 
   var graphicSpacingMeasurements = new WeakMap();
+  var equationAccessibility = new WeakMap();
+
+  function refreshEquationOverflow() {
+    var equations = Array.from(document.querySelectorAll('#info_panel mjx-container[display="true"]'));
+    equations.forEach(function(equation) {
+      var wrapper = equation.parentElement;
+      if (!wrapper.classList.contains("kg-equation-scroll")) {
+        wrapper = document.createElement("div");
+        wrapper.className = "kg-equation-scroll";
+        equation.before(wrapper);
+        wrapper.appendChild(equation);
+        var hint = document.createElement("span");
+        hint.className = "kg-equation-scroll-hint";
+        hint.textContent = "↔";
+        hint.setAttribute("aria-hidden", "true");
+        wrapper.appendChild(hint);
+      }
+      if (!equationAccessibility.has(equation)) {
+        var original = {};
+        ["tabindex", "role", "aria-label"].forEach(function(name) {
+          original[name] = equation.getAttribute(name);
+        });
+        equationAccessibility.set(equation, original);
+      }
+    });
+    // Batch layout reads before visual updates, including after a zoom or resize.
+    var overflow = equations.map(function(equation) {
+      return equation.clientWidth > 0 && equation.scrollWidth > equation.clientWidth + 2;
+    });
+    equations.forEach(function(equation, index) {
+      var wrapper = equation.parentElement, overflowing = overflow[index];
+      wrapper.classList.toggle("kg-equation-overflow", overflowing);
+      wrapper.querySelector(".kg-equation-scroll-hint").hidden = !overflowing;
+      if (overflowing) {
+        equation.setAttribute("tabindex", "0");
+        equation.setAttribute("role", "region");
+        equation.setAttribute("aria-label", "Wide equation; scroll horizontally to read the rest");
+      } else {
+        var saved = equationAccessibility.get(equation);
+        Object.keys(saved).forEach(function(name) {
+          if (saved[name] === null) { equation.removeAttribute(name); }
+          else { equation.setAttribute(name, saved[name]); }
+        });
+      }
+    });
+  }
 
   function compactGraphicSpacing() {
     document.querySelectorAll("#info_panel .concept-graphic").forEach(function(graphic) {
@@ -259,6 +305,7 @@ function kgCreateDetailsView(options) {
   return {
     replaceTypesetContent: replaceTypesetContent,
     compactGraphicSpacing: compactGraphicSpacing,
+    refreshEquationOverflow: refreshEquationOverflow,
     typesetInfoPanel: typesetInfoPanel,
     openTargetForToc: openTargetForToc,
     scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,

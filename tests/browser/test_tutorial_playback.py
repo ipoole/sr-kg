@@ -458,12 +458,16 @@ def test_tutorial_card_remains_operable_above_mobile_search(browser_graph):
 
 def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, repo_browser_output):
     page = repo_browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 844})
     page.goto(repo_browser_output.as_uri(), wait_until="domcontentloaded")
     page.wait_for_function("() => typeof kgExecuteViewerCommand === 'function'")
+    page.evaluate("kgExecuteViewerCommand({command:'set-view',value:'details'})")
     for concept, blocks in {
         "sr.momentum_four_vector": ["work_energy", "kinetic_limit"],
         "sr.mass_energy_equivalence": ["three_energies", "systems", "heated_box", "heating_calculation", "light_emission", "light_inertia"],
         "sr.time_dilation": ["light_clock_setup", "light_clock_derivation", "worked_comparison", "interval_derivation", "reciprocal"],
+        "sr.proper_time": ["rate"],
+        "sr.lorentz_transformations": ["boost_formula", "interval_condition", "interval_check"],
     }.items():
         page.evaluate(
             "id => kgExecuteViewerCommand({command: 'select', target: 'concept:' + id})",
@@ -473,6 +477,9 @@ def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, 
             block = page.locator(f'[data-content-block-id="{concept}.{block_id}"]')
             block.locator("mjx-container").first.wait_for(state="attached")
             assert block.locator("mjx-merror, [data-mjx-error]").count() == 0
+            assert block.locator('mjx-container[display="true"]').evaluate_all(
+                "elements => elements.every(e => !e.clientWidth || e.scrollWidth <= e.clientWidth + 2)"
+            ), block_id
 
 
 @pytest.mark.browser_full  # Dynamic fixture lookup bypasses automatic fixture classification.

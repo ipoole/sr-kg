@@ -181,6 +181,7 @@
           content: contentModel, markup: contentMarkup, writeStorage: safeLocalStorageSet,
           onSave: function() { schedulePersonalDataAutoSync(); },
           onContentChange: refreshActiveConcept, onSummariesChange: refreshNodeTooltips,
+          onGeometryChange: schedulePanelContentRefit,
           onReveal: function(target) { scrollInfoPanelTargetBelowStickyToc(target, {immediate: true}); }
         });
         var setNotesStatus = notesController.setNotesStatus;
@@ -4673,6 +4674,7 @@
         function schedulePanelContentRefresh() {
           requestAnimationFrame(function() {
             detailsView.compactGraphicSpacing();
+            detailsView.refreshEquationOverflow();
             updateNodeLabelPositions();
           });
         }
