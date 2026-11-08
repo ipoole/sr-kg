@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Field equations — nested explanations prototype</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fafbf9; color: #26333b; font: 19px/1.65 Georgia, serif; }
+    main { max-width: 850px; margin: auto; padding: 40px 28px 80px; }
+    header { border-bottom: 1px solid #d4dcdc; padding-bottom: 22px; margin-bottom: 30px; }
+    .eyebrow, .source, button, summary, h1, h2 { font-family: system-ui, sans-serif; }
+    .eyebrow { color: #60717b; font-size: 13px; letter-spacing: .06em; }
+    h1 { color: #183e51; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.2; margin: 12px 0; }
+    h2 { font-size: 1.25rem; line-height: 1.4; margin: 32px 0 16px; }
+    p { margin: 0 0 18px; }
+    .intro { font-size: 16px; color: #60717b; }
+    .source { font-size: 12px; color: #647780; margin-left: .6em; font-weight: 400; }
+    .reference { margin: 12px 0 25px; }
+    details { margin: 12px 0 22px; }
+    summary { color: #285a85; cursor: pointer; font-size: .94em; font-weight: 600; line-height: 1.5; }
+    summary:hover { text-decoration: underline; }
+    summary:focus-visible, button:focus-visible { outline: 2px solid #285a85; outline-offset: 4px; }
+    details[open] { border: 1px solid #c5cfd4; border-radius: 6px; padding: 14px 18px 0; }
+    details[open] > summary { color: inherit; margin-bottom: 18px; }
+    .statement { margin-bottom: 8px; }
+    .statement p:last-child { margin-bottom: 8px; }
+    .result { border-left: 3px solid #628594; padding-left: 18px; margin: 22px 0; }
+    .math-scroll { overflow-x: auto; max-width: 100%; }
+    mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; }
+    button { border: 1px solid #aebfc7; border-radius: 6px; background: white; color: #28516a; padding: 7px 12px; cursor: pointer; font-size: 14px; }
+    footer { border-top: 1px solid #d4dcdc; margin-top: 40px; padding-top: 18px; }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      main { padding: 24px 16px 60px; }
+      details[open] { padding: 12px 9px 0; }
+      .source { display: block; margin: 2px 0 0 16px; }
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']],
+            macros: {coloneqq: '\\mathrel{:=}'}},
+      svg: {fontCache: 'global'},
+      startup: {typeset: false, pageReady: function () {
+        return MathJax.startup.defaultPageReady().then(function () { return MathJax.typesetPromise([document.querySelector('main')]); });
+      }}
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">PhysicsKG · reading prototype 4.6.3 · SR-3.9</span>
+    <h1>Field equations</h1>
+    <p class="intro">Read the short argument, borrowing its stated results, or open the explanations wherever you want more detail. Shared explanations can be opened independently in each place.</p>
+  </header>
+  <noscript><p>This prototype needs JavaScript to insert its shared explanations.</p></noscript>
+  <article>
+    <h2>From an action to a local rule</h2>
+    <p>A field equation tells us which field configurations are dynamically allowed. How can a rule comparing whole field configurations produce a differential equation at each event?</p>
+    <p>Consider one smooth real scalar field \(\phi(x)\) in a fixed spacetime region \(\Omega\). Hold the field fixed on its boundary. Choose a Lagrangian density depending on the field, its first derivatives and, possibly, the coordinates. Gauge constraints and higher-derivative theories are outside this example.</p>
+
+    <h2>The action we vary</h2>
+    <p>We first need a quantity to compare for neighbouring field configurations. A field Lagrangian supplies it:</p>
+    <div data-source="density" data-question="Where does this action come from?"></div>
+
+    <h2>The procedure we borrow</h2>
+    <p>To obtain an equation from this action, we use the variational procedure behind the Euler–Lagrange equations:</p>
+    <div data-source="procedure" data-question="Why does this procedure work?"></div>
+    <p>In our field problem the varied function is \(\phi(x)\), and derivatives run over spacetime rather than time alone. The field-specific algebra below carries out that step; it is not justified merely by changing the symbols in the particle result.</p>
+
+    <h2>The local field equation</h2>
+    <p>We adopt the physical condition that the action is stationary for every allowed infinitesimal variation of the field. Applying the procedure above, with the boundary variation zero, gives</p>
+    <div class="result">
+      \[
+      \frac{\partial\mathcal L}{\partial\phi}
+      -\partial_\mu\left(\frac{\partial\mathcal L}{\partial(\partial_\mu\phi)}\right)
+      \overset{\text{stationary action}}{=}0.
+      \]
+    </div>
+    <p>This is the field Euler–Lagrange equation. It holds locally throughout the interior, rather than merely imposing one total constraint on the whole region.</p>
+    <details id="field-algebra">
+      <summary>Algebra: varying the field</summary>
+      <p>Write a nearby field as \(\phi_\varepsilon=\phi+\varepsilon\eta\), where the smooth variation \(\eta\) vanishes on the boundary. Define \(\delta S\coloneqq(dS[\phi_\varepsilon]/d\varepsilon)_{\varepsilon=0}\).</p>
+      <p>Since \(\delta(\partial_\mu\phi)=\partial_\mu\eta\), the chain rule gives</p>
+      \[
+      \begin{aligned}
+      \delta S&=\int_\Omega\left[
+      \frac{\partial\mathcal L}{\partial\phi}\eta+P^\mu\partial_\mu\eta
+      \right]d^4x,\\
+      P^\mu&\coloneqq\frac{\partial\mathcal L}{\partial(\partial_\mu\phi)}.
+      \end{aligned}
+      \]
+      <p>Integrating the second term by parts moves its derivative onto \(P^\mu\).</p>
+      <details>
+        <summary>Why does the derivative move?</summary>
+        <p>The product rule says</p>
+        \[
+        \partial_\mu(P^\mu\eta)=(\partial_\mu P^\mu)\eta+P^\mu\partial_\mu\eta.
+        \]
+        <p>Rearrange it and integrate:</p>
+        \[
+        \begin{aligned}
+        \int_\Omega P^\mu\partial_\mu\eta\,d^4x
+        &=\int_{\partial\Omega}P^\mu\eta\,d\Sigma_\mu\\
+        &\quad-\int_\Omega(\partial_\mu P^\mu)\eta\,d^4x.
+        \end{aligned}
+        \]
+        <p>The directed surface element \(d\Sigma_\mu\) converts the divergence integral into a boundary integral. The minus sign comes from rearranging the product rule. The boundary term is zero because \(\eta=0\) there.</p>
+      </details>
+      <p>Consequently,</p>
+      \[
+      \delta S=\int_\Omega\left[
+      \frac{\partial\mathcal L}{\partial\phi}-\partial_\mu P^\mu
+      \right]\eta\,d^4x.
+      \]
+      <p>Stationarity requires this to vanish for every allowed variation. Smooth variations supported inside arbitrarily small interior regions can be chosen freely. For a continuous bracket, the fundamental lemma of the calculus of variations therefore makes the bracket zero at every interior point.</p>
+      <p>This gives the displayed field equation. It does not say that each original contribution to the action is zero.</p>
+    </details>
+
+    <p>The same conclusion has a useful physical picture.</p>
+    <details>
+      <summary>A physical picture: many small adjustments</summary>
+      <p>Picture a field configuration as values assigned throughout spacetime. We can make a small smooth adjustment in one interior region while leaving distant values unchanged. If some such adjustment changed the action to first order, the configuration would not be stationary.</p>
+      <p>Requiring stationarity against every local adjustment forces a local condition. The derivatives in the density couple neighbouring values, which is why the condition is a differential equation.</p>
+      <p>These are comparisons between trial histories, not a process in which the field searches for the smallest action or communicates instantly across spacetime. The picture explains the locality step; it does not replace the algebra or establish the theory’s causal properties.</p>
+    </details>
+    <p>For a relativistic theory, the action must also have the appropriate Lorentz covariance. That constrains our choice of density; it is not established by the variational calculation alone.</p>
+  </article>
+  <footer><button id="fold-all" type="button">Fold all explanations</button></footer>
+</main>
+
+<!-- Shared units are authored once. Each use receives an independent DOM occurrence. -->
+<template id="density" data-owner="SR-3.8 Field Lagrangian">
+  <div data-statement>
+    <p>The field action is the spacetime integral of a local Lagrangian density:</p>
+    \[S[\phi]\coloneqq\int_\Omega\mathcal L(\phi,\partial_\mu\phi,x)\,d^4x.\]
+  </div>
+  <div data-body>
+    <p>For a particle, an action adds contributions along a history in time. For a field, the unknown has a value at every spacetime event, so the action adds a local density over spacetime.</p>
+    <p>Choosing \(\mathcal L\) specifies the theory to which we apply the variational principle. The calculus does not choose that density for us.</p>
+    <details>
+      <summary>Why integrate over spacetime?</summary>
+      <p>A particle has finitely many coordinates, so its action integrates one Lagrangian over time. A field has degrees of freedom throughout spacetime. The density supplies the contribution per spacetime volume; integrating it adds these contributions into the action for the whole field history.</p>
+      <p>Integrating an arbitrary density does not automatically give a physically successful theory.</p>
+    </details>
+    <p>The role of this action is supplied by the Action principle:</p>
+    <div data-source="stationarity" data-question="What does stationary mean?"></div>
+  </div>
+</template>
+
+<template id="procedure" data-owner="SR-3.3 Euler–Lagrange equations">
+  <div data-statement>
+    <p>The Euler–Lagrange method varies the unknown function, integrates derivatives off its variation, and uses the freedom to vary that function locally. With a stationary action, the remaining coefficient of the arbitrary variation must vanish.</p>
+  </div>
+  <div data-body>
+    <p>The physical input is again the Action principle:</p>
+    <div data-source="stationarity" data-question="What does stationary mean?"></div>
+    <p>To see the procedure with one unknown function, take a particle path \(q(t)\) with fixed endpoints and action \(S[q]=\int_{t_1}^{t_2}L(q,\dot q,t)\,dt\). Its first variation is</p>
+    \[
+    \delta S=\int_{t_1}^{t_2}\left(
+    L_q\,\delta q+L_{\dot q}\frac{d\delta q}{dt}\right)dt.
+    \]
+    <p>Here subscripts denote partial derivatives. Integration by parts gives</p>
+    \[
+    \begin{aligned}
+    \delta S&=\left[L_{\dot q}\,\delta q\right]_{t_1}^{t_2}\\
+    &\quad+\int_{t_1}^{t_2}
+    \left(L_q-\frac{dL_{\dot q}}{dt}\right)\delta q\,dt.
+    \end{aligned}
+    \]
+    <p>The boundary term vanishes because \(\delta q\) vanishes at the endpoints. Inside the interval, smooth variations can be supported in arbitrarily small regions. For \(\delta S=0\) for every such variation, the bracket must vanish pointwise. This gives the Euler–Lagrange equation.</p>
+  </div>
+</template>
+
+<template id="stationarity" data-owner="SR-3.2 Action principle">
+  <div data-statement>
+    <p>The physical history makes the first-order change in action vanish under every allowed variation: \(\delta S=0\).</p>
+  </div>
+  <div data-body>
+    <p>Consider an allowed family of histories \(h_\varepsilon\) passing through the candidate physical history \(h_0\). Stationarity means, for every such family,</p>
+    \[\left.\frac{dS[h_\varepsilon]}{d\varepsilon}\right|_{\varepsilon=0}=0.\]
+    <p>Small allowed changes therefore have no first-order effect on the action. Stationary does not necessarily mean smallest: the action may have a minimum, maximum or saddle behaviour.</p>
+    <p>Which histories and variations are allowed is part of the physical problem. For fixed-endpoint particle histories the endpoint variations vanish; in the field example the variation vanishes on the spacetime boundary.</p>
+    <details>
+      <summary>Why exactly?</summary>
+      <p>For a sufficiently smooth action along this family,</p>
+      \[S[h_\varepsilon]=S[h_0]+\varepsilon a+O(\varepsilon^2).\]
+      <p>Stationarity says \(a=0\). It removes the linear change; it makes no claim that the quadratic change is positive.</p>
+      <p>This explains the mathematical condition. It does not prove that nature obeys the Action principle: that is a physical input to the argument.</p>
+    </details>
+  </div>
+</template>
+
+<script>
+  function insertSharedExplanations(container) {
+    Array.from(container.querySelectorAll('[data-source]')).forEach(function (use) {
+      var source = document.getElementById(use.dataset.source);
+      var fragment = source.content.cloneNode(true);
+      var statement = fragment.querySelector('[data-statement]');
+      statement.className = 'statement';
+      var body = fragment.querySelector('[data-body]');
+      insertSharedExplanations(body);
+      var explanation = document.createElement('details');
+      explanation.dataset.sharedSource = source.id;
+      var summary = document.createElement('summary');
+      summary.textContent = use.dataset.question;
+      var owner = document.createElement('span');
+      owner.className = 'source';
+      owner.textContent = source.dataset.owner;
+      summary.appendChild(owner);
+      explanation.append(summary, body);
+      use.className = 'reference';
+      use.replaceChildren(statement, explanation);
+      use.removeAttribute('data-source');
+    });
+  }
+  insertSharedExplanations(document.querySelector('article'));
+  document.getElementById('fold-all').addEventListener('click', function () {
+    document.querySelectorAll('main details').forEach(function (explanation) { explanation.open = false; });
+  });
+</script>
+</body>
+</html>
