@@ -1,143 +1,19 @@
-# Viewer quick start
+# Viewer Quick Start
 
-**Modules** show the overall structure; **concepts** reveal detailed physics.
-See [Viewer behaviour](viewer.md) for the full model.
+Quick Start is a short, stable introduction to the essential controls, not a
+feature announcement or a complete manual. Its maintained user-facing text is
+in `srkg/viewer_assets/controls.html`; avoid keeping a second copy here.
 
-The user model has been simplified, the UI space optimised for phones, and
-rendering and interaction made faster on older or slower devices. Selection,
-context, graph emphasis, module folding and camera behave independently and predictably.
+It covers finding and expanding topics, View/Graph/Context/Depth, camera fitting,
+reading and study, notes, and browser-local personal data. It links to the
+illustrated [user guide](../../website/user-guide.html), retains the guided
+tutorial launch button, and points to Tools → Version history for release news.
 
-## Simpler view controls — NEW
+Keep it brief and omit New badges, release-specific changes, detailed layout
+editing, exhaustive control semantics and content-status announcements. The
+user guide owns that reference material. See [viewer behaviour](viewer.md) for
+the design model.
 
-**View** chooses **Graph**, **Details** or **Both**, preserving your selection,
-zoom and opened sections.
-
-**Graph** chooses how the map is presented:
-
-- **Overview** — the whole map in foreground, with coloured relationships.
-- **Context + background** — the selected context stands out; the rest is subdued.
-- **Context only** — just the selection and its context.
-
-Selecting an object never changes Graph mode automatically. Context filters the
-eligible relationships in either whole-map mode; its depth still determines
-the context used for fitting and expansion.
-
-## Guided tutorials
-
-Choose **Start guided tutorial** here, or use **Tools → Tutorials** for an
-interface orientation or a short physics route. Physics routes cover
-**Why mass has rest energy** and **Why moving
-clocks record less time**, including a light-clock argument and worked examples.
-PhysicsKG operates the viewer and points to each target; use **Back**,
-**Next step** and **Exit** to control playback. You can scroll and zoom Details,
-select text, use Contents and open clarifications while reading. Wide equations
-marked ↔ can be scrolled sideways. **Explore from here**
-temporarily returns control to you and hides the tutorial card; **Continue with tutorial** restores the view at
-which you left the route while preserving any study activity. Tutorials can also be
-launched by a direct `?tutorial=<tutorial-id>` link. Select a route under
-**Tools → Tutorials** to find its **Direct link to this tutorial**, which you
-can open, bookmark or copy to share.
-
-## Start with the map
-
-The viewer opens with modules folded and SR-5 Field Dynamics and Radiation selected.
-Context + background emphasises its 2-hop Derivation across the wider map.
-
-- Click a module to read its introduction.
-- Use the `+` in a folded module's top-right corner to reveal its concepts; use
-  the `−` on an expanded module's boundary to fold it again.
-- Use **Search** to find a concept or module.
-- Selection is always retained, even when you click empty graph space.
-- The floating **‹ ›** buttons retrace concept/module selections,
-  without changing the context rule or camera framing choice.
-
-## Choose relationships and surroundings
-
-**Context** filters whole-graph relationships and chooses
-which relationships are followed:
-
-- **Connections** — every immediate relationship.
-- **Prerequisites** — ideas needed beforehand.
-- **Derivation** — what the selection is derived or constructed from.
-- **Foundations** — derivation, construction and prerequisites together.
-- **Uses** — ideas that depend on or use the selection.
-
-Choose one hop, two hops, three hops or the complete transitive chain.
-
-A selected concept inside a folded module appears within the module. Use the
-offered actions to expand its module or any folded part of its context. Context
-counts, expansion and fitting remain useful in every Graph mode.
-In Graph-only view on phones, the context-status row names the selection;
-tap its name to open Details. Expansion actions take priority over the count.
-
-## Move, read and edit
-
-Pan and zoom freely; selection pans only enough to reveal an off-screen item.
-**Show in graph** in Derived from or Where this is used sets its context and
-depth, switches Details-only to Both, and fits the context without expanding
-modules. **Full tree** follows the complete chain.
-**Frame** chooses what **Fit** does: reveal the selection or frame the selection,
-context or whole displayed graph. In any Graph mode, fitting a selected context changes the button to
-**Fit++**; press it to draw the visible context nodes closer along their graph
-connections without changing a saved layout. Navigating away restores their
-positions. Pinch or Ctrl/Cmd-wheel over details to magnify its text and graphics
-without changing the graph camera.
-
-Details contain explanations, graphics, relationships and questions. Open or close
-individual sections as you read. A block's
-checkbox records a blue read tick; completing every block marks its concept or
-module. A green title tick means that every study question is currently correct.
-Use a block's speech-bubble `+`, then choose a paragraph, to add a note; a filled
-bubble means notes are already present. The bubble beside the concept/module title
-adds a top-level personal note. Notes open for reading: use **Edit** to change them,
-**Insert maths** for an example formula, then **Done**. Personal notes do not affect
-completion ticks. **Next** at the foot of a concept follows
-the reading sequence through SR, MATHS and GR. Back and Forward retrace selections.
-
-Dragging is locked while browsing. Enable **Tools → Layouts → Edit personal
-layout** to save moved nodes in this browser. After Fit++, represented context
-nodes can instead be adjusted temporarily; navigating away restores them.
-
-## Clarifications and notes — NEW
-
-Unfold built-in clarifications for extra reasoning and algebra. Add your own notes
-after a paragraph or as a top-level block; read and fold them like other content.
-Use **Edit**, **Insert maths** and **Done** to write notes with formulas.
-
-## Personal data
-
-Personal layouts, notes, study-question attempts and results, and blue reading
-ticks are stored together in this browser. **Tools → Personal data** downloads
-them as one portable ZIP of readable CSV files. Import that archive in another
-browser and choose **Merge** to combine work or **Replace** to restore the
-exported snapshot. Optionally sign in with a Google account to synchronise this
-data through Google Drive across browsers and devices. Connection performs an
-immediate sync; subsequent changes sync automatically while connected, with the
-last successful time shown. Google may eventually require reconnection. None of
-these actions changes authored graph content.
-
-If Google authorization expires during an automatic sync, personal changes stay
-safe in this browser. **Sync paused** opens Personal data, where you can choose
-**Reconnect** or **Disconnect**. Disconnect dismisses the notice and stops sync
-attempts, including offline. Reconnecting later merges local changes with Drive.
-
-## Study
-
-Open a concept's **Study Questions** block to answer questions. Answers appear
-after an attempt or **I don't know**. All current questions offer answer choices
-and mark automatically, including calculations. Worked feedback explains the
-answer. Green ticks and red crosses record the latest result. Tap an **Incorrect** badge to retry with the answer hidden; previous
-attempts remain recorded until the next submission updates the result.
-**Tools → Study** lists attempts and links to each question. Progress is
-stored locally and is included in the Personal data archive. By default the
-graph shows discreet blue reading-complete and green questions-complete ticks
-on concepts and folded modules; one **Tools → Study** option hides both.
-
-## Content status
-
-Covers Special Relativity and General Relativity.
-
-**Manifolds and Coordinates exposition enhanced with motivating example.**
-
-**Enhanced historical context:** selected concepts now explain how key
-ideas developed, who contributed, and how their physical meaning changed.
+Quick Start appears on first use, can be dismissed, and is reopened from the K
+logo or Tools. Preserve its accessible dialog, tutorial launch and dismissal
+behaviour when editing its text.

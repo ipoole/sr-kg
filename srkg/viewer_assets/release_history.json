@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.2", "date": "2026-11-08", "summary": "Preview: Shorter Quick Start focused on getting started, with the user guide and Version history providing further detail."},
   {"version": "4.6.1", "date": "2026-11-08", "summary": "Preview: Illustrated user guide with desktop and phone examples, available from the homepage and Quick Start."},
   {"version": "4.6.0", "date": "2026-11-08", "summary": "Clearer graph overviews, improved guided tutorials content with scrolling and zooming permitted in details view, and better equation layouts"},
   {"version": "4.5.1", "date": "2026-11-06", "summary": "Automatically marked study questions, clearer GR derivations and tangent/cotangent examples, and refined graph context controls."},

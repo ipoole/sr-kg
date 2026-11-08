@@ -2472,8 +2472,10 @@ def test_context_controls_group_semantics_and_default_fit_target(browser_graph):
 
 
 @pytest.mark.browser
-def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
+@pytest.mark.parametrize('width', [1280, 390])
+def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph, width):
     page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 900})
 
     page.evaluate("""() => localStorage.removeItem("srkg.splash.dismissed.v1")""")
     page.reload(wait_until="domcontentloaded")
@@ -2482,6 +2484,7 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     dialog = page.locator("#kg_splash_dialog")
     assert dialog.get_attribute("open") is not None
     assert dialog.locator("#kg_splash_title").is_visible()
+    assert dialog.locator("#kg_splash_title").bounding_box()['y'] >= dialog.bounding_box()['y']
     assert dialog.locator(".kg-splash-brand-mark").is_visible()
     sections = dialog.locator(".kg-splash-feature-grid section")
     assert sections.count() > 0
@@ -2504,8 +2507,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph):
     page.wait_for_selector("#kg_controls", state="attached")
     assert page.locator("#kg_splash_dialog[open]").count() == 0
 
+    if not page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
     page.locator("#kg_features_button").click()
     assert page.locator("#kg_splash_dialog[open]").count() == 1
+    assert dialog.locator("#kg_splash_title").bounding_box()['y'] >= dialog.bounding_box()['y']
     assert page.locator("#kg_features_button").inner_text() == "Quick start"
 
     page.locator("#kg_splash_dismiss").click()
