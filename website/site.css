@@ -384,3 +384,64 @@ code {
     gap: 10px;
   }
 }
+
+/* The guide is a reading page; screenshot links expose the full-size images. */
+.guide-page {
+  font-size: 1.08rem;
+  max-width: 1040px;
+  padding-bottom: 64px;
+  padding-top: 36px;
+}
+
+.guide-page h1 {
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  margin-bottom: 32px;
+  max-width: none;
+}
+
+.guide-page h2 {
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+  line-height: 1.2;
+  margin: 52px 0 18px;
+  scroll-margin-top: 24px;
+}
+
+.guide-page li + li { margin-top: 8px; }
+
+.guide-contents {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 32px 0;
+  padding: 20px 24px;
+}
+
+.guide-contents h2 { font-family: inherit; font-size: 1.1rem; font-weight: 700; line-height: 1.4; margin: 0 0 12px; }
+.guide-contents ol { columns: 2; margin: 0; padding-left: 24px; }
+.guide-contents li { break-inside: avoid; }
+
+.guide-page table { border-collapse: collapse; margin: 24px 0; width: 100%; }
+.guide-page th,
+.guide-page td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+.guide-page th { background: #eaf3f6; }
+.guide-page code { overflow-wrap: anywhere; }
+
+.guide-figure {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 32px 0;
+  overflow: hidden;
+}
+
+.guide-figure > a { display: block; }
+.guide-figure img { display: block; height: auto; width: 100%; }
+.guide-figure figcaption { color: var(--muted); font-size: 0.94rem; padding: 16px 20px; }
+.guide-phone-figure { margin-left: auto; margin-right: auto; max-width: 430px; }
+
+@media (max-width: 600px) {
+  .guide-contents ol { columns: 1; }
+  .guide-page { font-size: 1rem; }
+  .guide-page th,
+  .guide-page td { padding: 8px; }
+}

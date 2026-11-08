@@ -7,7 +7,8 @@ import tarfile
 import pytest
 
 from srkg.site_deployment import (
-    SITE_FILES, assemble, digest, extract_verified, make_package, read_package, safe_path,
+    GUIDE_FILES, SITE_FILES, assemble, digest, extract_verified, make_package, read_package, safe_path,
+    validate_site,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ def source(tmp_path):
     root = tmp_path / 'repo'
     (root / 'website').mkdir(parents=True)
     for name in SITE_FILES:
+        (root / 'website' / name).parent.mkdir(parents=True, exist_ok=True)
         (root / 'website' / name).write_bytes((ROOT / 'website' / name).read_bytes())
     (root / 'output').mkdir()
     (root / 'output/interactive_graph.html').write_bytes((ROOT / 'output/interactive_graph.html').read_bytes())
@@ -43,6 +45,9 @@ def test_packaging_preserves_bytes_and_is_reproducible(source, tmp_path):
     assert checksum == again
     actual, manifest = read_package(first, checksum)
     assert actual['output/PhysicsKG.html'] == viewer.read_bytes()
+    assert actual['user-guide.html'] == (root / 'website/user-guide.html').read_bytes()
+    for screenshot in (root / 'website/guide').glob('*.png'):
+        assert actual[f'guide/{screenshot.name}'] == screenshot.read_bytes()
     assert actual['output/lib/bindings/utils.js'] == (root / 'lib/bindings/utils.js').read_bytes()
     assert manifest['source_commit'] == SHA
     assert manifest['files']['output/PhysicsKG.html'] == digest(viewer.read_bytes())
@@ -75,6 +80,29 @@ def test_alternating_release_and_preview_updates_preserve_other_channel(source, 
 def test_preview_cannot_accidentally_bootstrap_empty_release(source):
     with pytest.raises(ValueError, match='previous'):
         assemble(*source, 'preview')
+
+
+def test_guide_preview_preserves_a_release_without_the_guide(source, tmp_path):
+    root, viewer = source
+    previous = assemble(root, viewer, 'release')
+    for name in GUIDE_FILES:
+        previous.pop(name)
+    previous['index.html'] = b'<html>Earlier public homepage</html>'
+    # Existing deployment archives remain readable as website features grow.
+    path, checksum = package(tmp_path, previous)
+    previous, _ = read_package(path, checksum)
+    preview = assemble(root, viewer, 'preview', previous)
+    assert {k: v for k, v in preview.items() if not k.startswith('preview/')} == previous
+    for name in (*GUIDE_FILES, 'site.css', 'physicskg-logo-120.png'):
+        assert preview[f'preview/{name}'] == (root / 'website' / name).read_bytes()
+
+
+def test_guide_preview_requires_its_images(source):
+    previous = assemble(*source, 'release')
+    preview = assemble(*source, 'preview', previous)
+    preview.pop('preview/guide/phone-both.png')
+    with pytest.raises(ValueError, match='Broken local link'):
+        validate_site(preview)
 
 
 def test_broken_local_dependencies_fail_packaging(source):

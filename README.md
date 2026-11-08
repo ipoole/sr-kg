@@ -6,7 +6,8 @@ study around Theoretical Minimum level, with an ambition to support a wider
 range of backgrounds.
 
 The published [PhysicsKG home page](https://physicskg.org/) introduces the atlas
-and links to its [privacy policy](https://physicskg.org/privacy.html).
+and links to its [user guide](https://physicskg.org/user-guide.html) and
+[privacy policy](https://physicskg.org/privacy.html).
 
 The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
 nine supporting mathematics concepts.
@@ -45,7 +46,7 @@ in `srkg/viewer_assets`. Increment the icon URL version when replacing the artwo
 Locally opened viewer HTML retains embedded icons.
 Packaging places website sources at the deployed root, preserving their public URLs.
 Public pages declare their preferred `https://physicskg.org/` addresses with
-canonical links. `sitemap.xml` lists the four public pages and is advertised in
+canonical links. `sitemap.xml` lists the public pages and is advertised in
 `robots.txt`; submit `https://physicskg.org/sitemap.xml` in Google Search Console
 after publishing it. Keep the sitemap aligned with changes to public page URLs.
 The published interface tour can be launched directly at
@@ -168,7 +169,9 @@ GitHub does not regenerate the viewer. See [Artefact deployment](docs/design/art
 for packaging, upload, explicit publication and rollback commands. Pushing source
 to main alone no longer publishes the website.
 
-Website sources live only in `website/`; the tracked legacy URL page is
+Website sources live only in `website/`; the illustrated user guide is maintained
+directly in [website/user-guide.html](website/user-guide.html), with screenshots
+in `website/guide/`. The tracked legacy URL page is
 `output/interactive_graph.html`. Generated viewers remain locally in ignored
 `output/*.html`, and local packages belong in ignored `.deployment/`.
 

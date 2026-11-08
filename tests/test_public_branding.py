@@ -31,6 +31,7 @@ def test_public_pages_and_viewer_declare_preferred_https_urls():
         ("index.html", "https://physicskg.org/"),
         ("privacy.html", "https://physicskg.org/privacy.html"),
         ("terms.html", "https://physicskg.org/terms.html"),
+        ("user-guide.html", "https://physicskg.org/user-guide.html"),
     ):
         assert _canonical_urls(_page(page)) == [url]
     viewer = inject_controls("<html><head></head><body></body></html>", {}, {}, "Title")
@@ -45,6 +46,7 @@ def test_sitemap_lists_only_preferred_public_pages_and_is_discoverable():
         "https://physicskg.org/output/PhysicsKG.html",
         "https://physicskg.org/privacy.html",
         "https://physicskg.org/terms.html",
+        "https://physicskg.org/user-guide.html",
     ])
     assert "Sitemap: https://physicskg.org/sitemap.xml" in _page("robots.txt").splitlines()
 
