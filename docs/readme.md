@@ -15,10 +15,11 @@
   [nested-explanations Maths pilot design](design/nested_explanations_design.md)
   and its domain-owned teaching draft explore recursively shared content. The
   [minimum schema](design/nested_explanations_schema.md) implements the Python
-  source/loading contracts; renderer integration remains pending. The
+  source/loading contracts; the [shared reader](design/nested_explanations_renderer.md)
+  is implemented on synthetic content before Maths conversion. The
   earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
   the Field equations experiment and deferred graph reading highlights. These are
-  design drafts, not implemented viewer behaviour. The
+  teaching/design drafts, rather than converted production content. The
   [study-question design](design/study.md) defines marking, attempts, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable

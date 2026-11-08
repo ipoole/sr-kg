@@ -102,7 +102,7 @@ function kgCreateDetailsView(options) {
 
   function typesetInfoPanel(options) {
     options = options || {};
-    var panel = document.getElementById("info_panel");
+    var panel = options.element || document.getElementById("info_panel");
     schedulePanelContentRefit();
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([panel]).catch(function(err) {

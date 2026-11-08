@@ -1,7 +1,8 @@
 # Nested explanations: minimum schema
 
-Stage 2, 8 November 2026. The Python loader/model contract is implemented;
-viewer rendering and production content conversion remain stages 3–4. The
+Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
+stage 3 adds the [shared reader](nested_explanations_renderer.md) on synthetic
+content. Production content conversion remains stage 4. The
 [design](nested_explanations_design.md) and [Maths draft](../../domains/math/docs/nested_explanations_pilot.md)
 provide the intended reading experience. This document specifies storage and
 identity, not a second content format or renderer.
@@ -109,10 +110,11 @@ Reference parts contain only their slot, target ID, fallback label and hook;
 they do not contain recursively copied source bodies. Native placement/order
 still comes from the existing concept/module block lists. Existing native viewer
 payloads retain their previous shape unless new optional fields are supplied.
-Stage 3 will connect the normalised registry to the common viewer renderer;
-this stage does not publish a changed reader.
-That integration should send one body representation per source, rather than
-shipping both raw prose and a second fully parsed copy to the browser.
+The shared reader indexes these native records and uses the same recursive model.
+Its wire representation retains each verbatim body once, preserving existing
+note anchors. The extended browser text parser normalises it on rendering;
+cross-language tests check agreement with the Python model. The parsed registry
+is available to Python callers without shipping a second copy of every body.
 
 ## Source identity versus occurrence identity
 
@@ -171,6 +173,6 @@ Tests cover brace-aware nesting and equations, legacy normalisation, malformed
 new syntax, duplicate slots/sources, statement requirements, heterogeneous and
 module-owned sources, Graphic locators, cycles versus sibling reuse, occurrence
 keys, mixed-column domain loading and strict selected-domain isolation. Existing
-KB content and concept edges remain unchanged. Browser interaction, native versus
-borrowed presentation, personal-state preservation through rerenders, and rendered
-graphic lookup are tested when the renderer is implemented in stage 3.
+KB content and concept edges remain unchanged. Stage-3 tests cover browser
+interaction, native versus borrowed presentation, personal-state preservation
+through rerenders and rendered graphic lookup; see the reader document above.

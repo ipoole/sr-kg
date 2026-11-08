@@ -3759,3 +3759,28 @@
         position: static;
         flex: 0 0 1.5em;
     }
+
+    /* Shared statements remain in the argument; explanations are quiet disclosures. */
+    #info_panel .kg-shared-reference { margin: 0.45em 0; }
+    #info_panel .kg-content-statement { margin: 0 0 0.35em; }
+    #info_panel .kg-shared-source {
+        color: #586776;
+        font-size: 0.75em;
+        font-weight: 400;
+    }
+    #info_panel .kg-shared-unavailable {
+        color: #586776;
+        margin: 0.45em 0;
+    }
+    #info_panel .kg-shared-unavailable small { display: block; }
+    #info_panel .kg-content-return {
+        background: transparent;
+        border: 0;
+        color: #174ea6;
+        cursor: pointer;
+        font: inherit;
+        padding: 0;
+        text-decoration: underline;
+    }
+    #info_panel .kg-shared-figure { margin: 0.4em 0; }
+    #info_panel .kg-content-inline[open] { padding: 0.45em 0.55em; }

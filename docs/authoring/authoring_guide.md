@@ -219,6 +219,13 @@ Use `derivation` for the reasoning itself; “Derived from” lists supporting c
 Personal notes are not authored blocks and do not affect completion. Nested
 disclosures have no independent block IDs, read ticks or tutorial targets yet.
 
+For shared explanations, give the source block a short `statement` and insert
+`\explain{slot}{block_id}{target label}{local question}` in the borrowing body.
+Use `\explanation{slot}{title}{body}` for named local nesting. Keep IDs and slots
+stable, and keep statements as short as reasonably possible. Sources can be of
+different kinds. See the [minimum schema](../design/nested_explanations_schema.md);
+the first production conversion is the Maths pilot.
+
 ## Study Questions
 
 Write 3 to 6 progressively ordered questions per concept, with no more than

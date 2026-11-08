@@ -123,7 +123,15 @@
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
 
-        var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash});
+        var sharedExplanations;
+        var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash,
+          reference: function(reference, context) { return sharedExplanations.renderReference(reference, context); },
+          disclosure: function(context) { return sharedExplanations.disclosure(context); }
+        });
+        sharedExplanations = kgCreateSharedExplanations({
+          markup: contentMarkup, concepts: conceptData, modules: moduleData,
+          typeset: function(element) { typesetInfoPanel({element: element}); }
+        });
         var escapeHtml = contentMarkup.escapeHtml;
         var cssAttributeValueEscape = contentMarkup.cssAttributeValueEscape;
         var skipOptionalDetailWhitespace = contentMarkup.skipOptionalDetailWhitespace;
@@ -1628,15 +1636,8 @@
             var block = findNextOptionalDetailBlock(raw, cursor);
             if (!block) { break; }
 
-            var summaryStart = skipOptionalDetailWhitespace(
-              raw,
-              block.start + "\\optional_details".length
-            );
-            var summary = parseBracedArgument(raw, summaryStart);
-            if (summary) {
-              var title = summary.value;
-              if (title) { titles.push(title); }
-            }
+            var title = block.args[block.name === "optional_details" ? 0 : block.name === "explanation" ? 1 : 3];
+            if (title) { titles.push(title); }
             cursor = block.end;
           }
           return titles;
@@ -1650,7 +1651,7 @@
             return {
               key: kind, title: kind.charAt(0).toUpperCase() + kind.slice(1),
               text: blocks.filter(function(block) { return block.kind === kind; })
-                .map(function(block) { return block.body; }).join("\n\n")
+                .map(function(block) { return [block.statement, block.body].filter(Boolean).join("\n"); }).join("\n\n")
             };
           });
         }
@@ -1686,7 +1687,8 @@
           misconception: {label: "Common trap", mode: "folded", note: true},
           warning: {label: "Careful", mode: "folded", note: true},
           historical_note: {label: "Context", mode: "folded", note: true},
-          summary: {label: "Takeaway", mode: "inline"}
+          summary: {label: "Takeaway", mode: "inline"},
+          graphic: {label: "Graphic", mode: "inline"}
         });
 
         var edgeRelationPolicy = Object.freeze({
@@ -1778,7 +1780,9 @@
                 sequence: Number(block.sequence || 0),
                 kind: String(block.kind || ""),
                 title: String(block.title || ""),
-                body: String(block.body || "")
+                body: String(block.body || ""),
+                statement: String(block.statement || ""),
+                graphic: String(block.graphic || "")
               };
             })
             .filter(function(block) {
@@ -1810,6 +1814,12 @@
         function renderOwnerContentBlock(ownerType, ownerId, block) {
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
+          var context = sharedExplanations.rootContext(block.block_id, contentAnchorId(ownerId, title));
+          var graphic = sharedExplanations.nativeGraphic(block.block_id);
+          if (graphic) {
+            graphic += renderNotesAtAnchor(ownerType, ownerId, "Graphic", 0, "",
+              noteAnchorSpecs("", "graphic", "Graphic", "")[0]);
+          }
           return contentMarkup.renderContentUnit({
             origin: "authored", level: "block", anchorId: contentAnchorId(ownerId, title),
             contentBlockId: block.block_id,
@@ -1826,7 +1836,8 @@
                 html: renderContentBlockReadToggle(block.block_id, title)}
             ],
             bodyClass: "content-block-body",
-            bodyHtml: renderNoteAnchoredBody(ownerType, ownerId, title, block.block_id, "", block.body)
+            bodyHtml: sharedExplanations.nativeStatement(block.block_id) + graphic +
+              renderNoteAnchoredBody(ownerType, ownerId, title, block.block_id, "", block.body, context)
           });
         }
 
@@ -1836,7 +1847,7 @@
 
         function conceptTocItems(conceptId, concept, studyQuestions, conceptReferences) {
           var items = [];
-          if (conceptGraphicSvg(concept)) {
+          if (conceptGraphicSvg(concept) && !sharedExplanations.hasGraphicBlock(concept)) {
             items.push({
               id: contentAnchorId(conceptId, "Graphic"),
               title: "Graphic"
@@ -2709,7 +2720,7 @@
 
         function moduleTocItems(moduleId, module) {
           var items = [];
-          if (module.svg_detail || module.svg_icon) {
+          if ((module.svg_detail || module.svg_icon) && !sharedExplanations.hasGraphicBlock(module)) {
             items.push({
               id: contentAnchorId(moduleId, "Graphic"),
               title: "Module graphic"
@@ -2824,6 +2835,7 @@
         }
 
         function renderModuleGraphic(moduleId, module) {
+          if (sharedExplanations.hasGraphicBlock(module)) { return ""; }
           var svgDetail = module.svg_detail || module.svg_icon || "";
           if (!svgDetail) { return ""; }
           var caption = module.svg_detail_caption || module.svg_icon_caption || "";
@@ -2856,6 +2868,7 @@
           var module = getModule(moduleId);
           if (!module) { return; }
           var panel = document.getElementById("info_panel");
+          sharedExplanations.beginPage("module", moduleId, panel);
           var tocItems = moduleTocItems(moduleId, module);
           detailsView.setItems(tocItems);
 
@@ -2874,6 +2887,7 @@
           var previousModuleId = panel.getAttribute("data-module-id") || "";
           var moduleChanged = previousModuleId !== String(moduleId);
           replaceTypesetContent(panel, html);
+          sharedExplanations.afterRender(panel);
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -2888,6 +2902,7 @@
         }
 
         function renderConceptGraphic(conceptId, concept) {
+          if (sharedExplanations.hasGraphicBlock(concept)) { return ""; }
           var svgDetail = conceptGraphicSvg(concept);
           if (!svgDetail) { return ""; }
 
@@ -2939,7 +2954,7 @@
           cancelNotePlacement();
           if (block.tagName === "DETAILS") { block.open = true; }
           var lines = Array.from(block.querySelectorAll(".concept-line")).filter(function(line) {
-            return !line.closest(".user-note");
+            return !line.closest(".user-note, .kg-content-inline, .kg-shared-reference, .kg-content-statement");
           });
           if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
             var blockNoteButton = block.querySelector(".kg-add-note");
@@ -3292,7 +3307,8 @@
             if (!command) { cursor += 1; continue; }
             var name = command[1];
             cursor += command[0].length;
-            var arity = /^(frac|dfrac|tfrac|overset|underset|cref|optional_details)$/.test(name) ? 2 :
+            var arity = name === "explain" ? 4 : name === "explanation" ? 3 :
+              /^(frac|dfrac|tfrac|overset|underset|cref|optional_details)$/.test(name) ? 2 :
               /^(sqrt|text|textrm|mathrm|mathbf|mathit|mathcal|mathbb|operatorname|hat|bar|vec)$/.test(name) ? 1 : 0;
             var args = [];
             for (var i = 0; i < arity; i++) {
@@ -3307,6 +3323,8 @@
               else if (name === "sqrt") { output += "sqrt(" + args[0] + ")"; }
               else if (name === "cref") { output += args[0]; }
               else if (name === "optional_details") { output += args[0] + ": " + args[1]; }
+              else if (name === "explanation") { output += args[1] + ": " + args[2]; }
+              else if (name === "explain") { output += args[2] + ": " + args[3]; }
               else if (name === "overset" || name === "underset") { output += args[1] + " (" + args[0] + ")"; }
               else { output += args[0]; }
             } else if (symbols[name]) { output += symbols[name]; }
@@ -3345,7 +3363,7 @@
           moduleContentBlocks(module).forEach(function(block) {
             fields.push({
               name: block.title || contentBlockKindLabel(block.kind),
-              value: block.body || ""
+              value: [block.statement, block.body].filter(Boolean).join("\n")
             });
           });
           moduleMemberIds(module).forEach(function(conceptId) {
@@ -4497,6 +4515,7 @@
           detailsView.setItems(tocItems);
 
           var panel = document.getElementById("info_panel");
+          sharedExplanations.beginPage("concept", nodeId, panel);
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
           html += renderConceptGraphic(nodeId, concept);
@@ -4549,6 +4568,7 @@
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           replaceTypesetContent(panel, html);
+          sharedExplanations.afterRender(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -6257,6 +6277,17 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          var explanationReturn = e.target.closest(".kg-content-return");
+          if (explanationReturn) {
+            e.preventDefault();
+            var explanationAncestor = document.getElementById(explanationReturn.getAttribute("data-content-return-id"));
+            if (explanationAncestor) {
+              scrollInfoPanelTargetBelowStickyToc(explanationAncestor, {immediate: true});
+              var explanationHeading = explanationAncestor.querySelector(":scope > summary");
+              if (explanationHeading) { explanationHeading.focus({preventScroll: true}); }
+            }
+            return;
+          }
           var nextConceptButton = e.target.closest(".concept-next-button");
           if (nextConceptButton) {
             e.preventDefault();
@@ -6657,6 +6688,7 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            sharedExplanations.toggled(e.target);
             if (
               e.target.classList.contains("user-note")
             ) {

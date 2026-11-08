@@ -382,6 +382,10 @@ function kgCreateNotesController(options) {
   function noteCountForBlock(targetType, targetId, blockId, sectionKey) {
     blockId = String(blockId || "");
     sectionKey = String(sectionKey || "");
+    var owner = (targetType === "module" ? getModule(targetId) : getConcept(targetId)) || {};
+    var wrapsGraphic = blockId && (owner.content_blocks || []).some(function(block) {
+      return block.block_id === blockId && block.graphic === "detail";
+    });
     return userNotesState.notes.filter(function(note) {
       if (note.placement === "owner" || note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
         return false;
@@ -389,7 +393,7 @@ function kgCreateNotesController(options) {
       var resolved = resolveNoteAnchor(note);
       if (!resolved) { return false; }
       return blockId
-        ? resolved.blockId === blockId
+        ? resolved.blockId === blockId || (wrapsGraphic && resolved.sectionKey === "graphic")
         : resolved.sectionKey === sectionKey;
     }).length;
   }
@@ -577,7 +581,7 @@ function kgCreateNotesController(options) {
     return html;
   }
 
-  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text) {
+  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text, context) {
     var blocks = splitConceptBlocks(String(text || ""));
     var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
     var html = renderNotesAtAnchor(
@@ -585,7 +589,8 @@ function kgCreateNotesController(options) {
     );
     blocks.forEach(function(textBlock, index) {
       html += '<div class="concept-line">' +
-        (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+        (textBlock.text ? renderConceptText(textBlock.text, Object.assign({}, context,
+          {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";
       html += renderNotesAtAnchor(
         targetType,

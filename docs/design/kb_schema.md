@@ -194,8 +194,9 @@ The [minimum nested-explanations schema](nested_explanations_schema.md) adds
 `\explain{slot}{block_id}{target label}{hook}` for borrowing a canonical statement
 and explanation. Both normalise with existing blocks into one recursive source
 model. Slots distinguish occurrences, not new personal-data records. The loader
-validates these additions; their viewer rendering is the next implementation
-stage. Existing tables/content need no conversion to load.
+validates these additions; the [shared reader](nested_explanations_renderer.md)
+implements them on a synthetic fixture before production-content conversion.
+Existing tables/content need no conversion to load or render.
 
 ## modules.csv
 
@@ -480,6 +481,8 @@ Text fields may contain:
 | `\[ ... \]` | Display MathJax. |
 | `\cref{label}{concept_id}` | Concept link when loaded; plain authored label otherwise. |
 | `\optional_details{title}{body}` | Fold-down optional detail inside a section. |
+| `\explanation{slot}{title}{body}` | Named, recursive local explanation in a block body. |
+| `\explain{slot}{block_id}{target label}{hook}` | Borrow a source's short statement and foldable explanation; a missing external domain retains the label/hook. |
 
 Validation checks balanced braces, MathJax delimiters, supported custom macro
 syntax, and whether `\cref` targets exist within their loaded namespaces.
