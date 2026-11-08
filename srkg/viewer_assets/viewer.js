@@ -111,6 +111,7 @@
         var notePlacementPointerStart = null;
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
+        var panelContentRefreshPending = false;
 
         var derivedFromFullTreeEnabled = false;
         var backlinksFullTreeEnabled = false;
@@ -181,6 +182,7 @@
           content: contentModel, markup: contentMarkup, writeStorage: safeLocalStorageSet,
           onSave: function() { schedulePersonalDataAutoSync(); },
           onContentChange: refreshActiveConcept, onSummariesChange: refreshNodeTooltips,
+          onGeometryChange: schedulePanelContentRefit,
           onReveal: function(target) { scrollInfoPanelTargetBelowStickyToc(target, {immediate: true}); }
         });
         var setNotesStatus = notesController.setNotesStatus;
@@ -4671,8 +4673,16 @@
         }
 
         function schedulePanelContentRefresh() {
+          if (panelContentRefreshPending) { return; }
+          panelContentRefreshPending = true;
           requestAnimationFrame(function() {
+            panelContentRefreshPending = false;
             detailsView.compactGraphicSpacing();
+            detailsView.refreshEquationOverflow();
+            if (guidedTutorial) {
+              guidedTutorial.refreshReadingControls();
+              refreshTutorialPointerPosition();
+            }
             updateNodeLabelPositions();
           });
         }

@@ -266,6 +266,9 @@ def test_tutorial_hides_the_previous_pointer_during_step_preparation(browser_gra
 
 def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph):
     page = _open_tutorial(repo_browser_graph, "rest-energy-to-sr-foundations")
+    frame_index = page.evaluate("""() => tutorialData
+      .find(t => t.tutorial_id === 'rest-energy-to-sr-foundations')
+      .steps.findIndex(s => s.step_id === 'expose-the-foundations')""")
     page.locator("#kg_tutorial_start").click()
     page.wait_for_function("() => !kgTutorialPlaybackSnapshot().transitioning")
     page.locator("#kg_tutorial_next").click()
@@ -279,7 +282,7 @@ def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph)
         "() => !kgTutorialPlaybackSnapshot().transitioning && kgTutorialPlaybackSnapshot().stepIndex === 1",
         timeout=30000,
     )
-    for step_index in range(2, 7):
+    for step_index in range(2, frame_index + 1):
         page.locator("#kg_tutorial_next").click()
         page.wait_for_function(
             "index => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -296,8 +299,9 @@ def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph)
 
     page.locator("#kg_tutorial_next").click()
     page.wait_for_function(
-        "() => !kgTutorialPlaybackSnapshot().transitioning && "
-        "kgTutorialPlaybackSnapshot().stepIndex === 7"
+        "index => !kgTutorialPlaybackSnapshot().transitioning && "
+        "kgTutorialPlaybackSnapshot().stepIndex === index",
+        arg=frame_index + 1,
     )
     pointer = page.evaluate("kgTutorialPointerSnapshot()")
     assert pointer["target"] == "graph:concept:sr.momentum_four_vector"
@@ -349,8 +353,11 @@ def test_guided_playback_blocks_viewer_interaction_centrally(browser_graph):
     ) == "pointer"
 
 
-def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_graph):
+@pytest.mark.parametrize("viewport", [(1280, 900), (390, 844)])
+def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_graph, viewport):
+    browser_graph.page.set_viewport_size({"width": viewport[0], "height": viewport[1]})
     page = _open_tutorial(browser_graph)
+    workspace_bottom = page.locator("#kg_workspace").bounding_box()["y"] + page.locator("#kg_workspace").bounding_box()["height"]
     page.locator("#kg_tutorial_start").click()
     page.wait_for_function(
         "() => !kgTutorialPlaybackSnapshot().transitioning && "
@@ -361,7 +368,11 @@ def test_explore_here_releases_interaction_and_resume_restores_the_step(browser_
 
     page.locator("#kg_tutorial_explore").click()
     assert page.evaluate("kgTutorialPlaybackSnapshot().exploring") is True
-    assert page.locator("#kg_tutorial_explore").inner_text() == "Resume tutorial"
+    assert page.locator("#kg_tutorial_explore").is_visible()
+    for selector in ["#kg_tutorial_commentary", "#kg_tutorial_back", "#kg_tutorial_next", "#kg_tutorial_exit"]:
+        assert page.locator(selector).is_hidden()
+    assert not page.locator("body").evaluate("el => el.classList.contains('kg-tutorial-phone-docked')")
+    page.wait_for_function("bottom => Math.abs(document.querySelector('#kg_workspace').getBoundingClientRect().bottom - bottom) < 2", arg=workspace_bottom)
     assert not page.locator("#kg_app_header").evaluate("el => el.inert")
     assert page.locator("#kg_tutorial_pointer").is_hidden()
 
@@ -399,6 +410,7 @@ def test_details_step_spotlights_the_whole_authored_block(browser_graph):
     block = page.locator('[data-content-block-id="1.1.definition"]')
     assert block.evaluate("el => el.classList.contains('kg-tutorial-block-spotlight')")
     assert page.locator(".kg-tutorial-block-spotlight").count() == 1
+    page.wait_for_function("() => Number(getComputedStyle(document.querySelector('#kg_tutorial_pointer')).opacity) <= 0.15")
 
     page.locator("#kg_tutorial_explore").click()
     assert page.locator(".kg-tutorial-block-spotlight").count() == 0
@@ -446,12 +458,16 @@ def test_tutorial_card_remains_operable_above_mobile_search(browser_graph):
 
 def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, repo_browser_output):
     page = repo_browser_graph.page
+    page.set_viewport_size({"width": 390, "height": 844})
     page.goto(repo_browser_output.as_uri(), wait_until="domcontentloaded")
     page.wait_for_function("() => typeof kgExecuteViewerCommand === 'function'")
+    page.evaluate("kgExecuteViewerCommand({command:'set-view',value:'details'})")
     for concept, blocks in {
         "sr.momentum_four_vector": ["work_energy", "kinetic_limit"],
-        "sr.mass_energy_equivalence": ["three_energies", "systems", "heated_box", "heating_calculation"],
+        "sr.mass_energy_equivalence": ["three_energies", "systems", "heated_box", "heating_calculation", "light_emission", "light_inertia"],
         "sr.time_dilation": ["light_clock_setup", "light_clock_derivation", "worked_comparison", "interval_derivation", "reciprocal"],
+        "sr.proper_time": ["rate"],
+        "sr.lorentz_transformations": ["boost_formula", "interval_condition", "interval_check"],
     }.items():
         page.evaluate(
             "id => kgExecuteViewerCommand({command: 'select', target: 'concept:' + id})",
@@ -461,6 +477,9 @@ def test_revised_physics_equations_render_with_real_mathjax(repo_browser_graph, 
             block = page.locator(f'[data-content-block-id="{concept}.{block_id}"]')
             block.locator("mjx-container").first.wait_for(state="attached")
             assert block.locator("mjx-merror, [data-mjx-error]").count() == 0
+            assert block.locator('mjx-container[display="true"]').evaluate_all(
+                "elements => elements.every(e => !e.clientWidth || e.scrollWidth <= e.clientWidth + 2)"
+            ), block_id
 
 
 @pytest.mark.browser_full  # Dynamic fixture lookup bypasses automatic fixture classification.
@@ -479,6 +498,32 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
         assert page.locator("#kg_tutorial_error").is_hidden(), (step["step_id"], page.locator("#kg_tutorial_error").inner_text())
         assert page.evaluate("kgViewerStateSnapshot().selection.type") != "none"
         selection = page.evaluate("kgViewerStateSnapshot().selection")
+        if tutorial_id != "using-physicskg":
+            final_action = (step.get("actions") or [step])[-1]["action"]
+            if final_action["command"] in {
+                "open-details-block", "open-details-graphic", "open-details-relationship", "open-study-questions"
+            }:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "details", step["step_id"]
+            elif final_action["command"] in {"fit", "select"}:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "graph", step["step_id"]
+        if tutorial_id == "using-physicskg":
+            graph_steps = {
+                "see-the-whole-map", "overview-across-subjects", "return-to-one-module", "select-a-module",
+                "choose-the-pane", "choose-graph-emphasis", "reveal-the-concepts",
+                "preview-a-concept", "select-a-concept", "choose-connections",
+                "show-the-context", "frame-the-result", "preview-a-relationship",
+                "return-to-the-map", "show-the-derivation-in-graph", "show-a-derivation-tree",
+            }
+            if step["step_id"] in graph_steps:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "graph", step["step_id"]
+            if step["step_id"] == "overview-across-subjects":
+                presentation = page.evaluate("kgCaptureTutorialPresentation()")
+                assert presentation["displayScope"] == "overview"
+                assert presentation["contextRule"]["preset"] == "derivation"
+                for module_id, representation in presentation["moduleRepresentation"].items():
+                    assert representation == ("expanded" if module_id.startswith(("sr.", "math.")) else "folded")
+            if step["step_id"] in {"inspect-details", "inspect-a-derivation-tree"}:
+                assert page.evaluate("kgCaptureTutorialPresentation().view") == "details"
         if tutorial_id == "using-physicskg" and step["step_id"] == "select-a-module":
             assert selection != previous_selection
         if tutorial_id == "using-physicskg" and step["step_id"] == "show-a-derivation-tree":
@@ -510,3 +555,69 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
     restored = page.evaluate("kgCaptureTutorialPresentation()")
     for key in ("selection", "contextRule", "displayScope", "view", "moduleRepresentation", "details"):
         assert restored[key] == baseline[key], key
+
+
+@pytest.mark.parametrize('width', [1280, 390])
+def test_guided_details_allow_reading_without_navigation_or_hover(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 932})
+    _open_tutorial(browser_graph)
+    page.locator('#kg_tutorial_start').click()
+    page.wait_for_function('!kgTutorialPlaybackSnapshot().transitioning')
+    panel = page.locator('#info_panel')
+    assert not panel.evaluate('e=>e.inert')
+    before = page.evaluate('kgPersonalData.getSnapshot()')
+    selection = page.evaluate('kgViewerStateSnapshot().selection')
+    clarification = page.locator('#info_panel details.optional-detail').first
+    clarification.locator(':scope > summary').click()
+    assert clarification.evaluate('e=>e.open')
+    link = clarification.locator('.concept-link').first
+    link.hover(force=True)
+    assert page.locator('#kg_concept_preview').is_hidden()
+    link.click(force=True)
+    assert page.evaluate('kgViewerStateSnapshot().selection') == selection
+    checkbox = panel.locator('.content-block-read-toggle').first
+    assert checkbox.is_disabled()
+    checkbox.click(force=True)
+    assert page.evaluate('kgPersonalData.getSnapshot()') == before
+    initial_font = panel.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')
+    graph_scale = page.evaluate('network.getScale()')
+    panel.evaluate('''e=>e.dispatchEvent(new WheelEvent('wheel', {
+      bubbles:true, cancelable:true, ctrlKey:true, deltaY:-100
+    }))''')
+    assert panel.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') > initial_font
+    wheel_font = panel.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')
+    panel.evaluate('''panel=>{
+      function touches(distance) {
+        return [0,1].map(i=>new Touch({identifier:i, target:panel,
+          clientX:100+i*distance, clientY:200}));
+      }
+      panel.dispatchEvent(new TouchEvent('touchstart', {
+        bubbles:true, cancelable:true, touches:touches(100)}));
+      panel.dispatchEvent(new TouchEvent('touchmove', {
+        bubbles:true, cancelable:true, touches:touches(150)}));
+      panel.dispatchEvent(new TouchEvent('touchend', {
+        bubbles:true, cancelable:true, touches:[]}));
+    }''')
+    assert panel.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') > wheel_font
+    assert page.evaluate('network.getScale()') == pytest.approx(graph_scale)
+    panel.evaluate('''e=>{
+      e.querySelector('.concept-sticky-header').insertAdjacentHTML('afterend',
+        '<p id="tutorial-select-text">Readable tutorial paragraph.</p>' +
+        '<mjx-container id="tutorial-wide-equation" display="true"><svg style="width:1400px;height:40px"></svg></mjx-container>');
+      window.dispatchEvent(new Event('resize'));
+    }''')
+    page.locator('#tutorial-select-text').dblclick(position={'x':40,'y':10})
+    assert page.evaluate('getSelection().toString().length') > 0
+    equation = page.locator('#tutorial-wide-equation')
+    equation.scroll_into_view_if_needed()
+    box = equation.bounding_box()
+    page.mouse.move(box['x'] + box['width']/2, box['y'] + box['height']/2)
+    page.mouse.wheel(160, 0)
+    page.wait_for_function('document.querySelector("#tutorial-wide-equation").scrollLeft > 0')
+    old_top = panel.evaluate('e=>e.scrollTop')
+    page.mouse.wheel(0, 160)
+    page.wait_for_function('top=>document.querySelector("#info_panel").scrollTop>top', arg=old_top)
+    assert page.evaluate('kgViewerStateSnapshot().selection') == selection
+    page.locator('#kg_tutorial_explore').click()
+    assert not checkbox.is_disabled()

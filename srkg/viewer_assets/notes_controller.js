@@ -51,6 +51,8 @@ function kgCreateNotesController(options) {
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([replacement]).catch(function(error) {
         console.warn("Note mathematics could not be rendered", error);
+      }).then(function() {
+        if (options.onGeometryChange) { options.onGeometryChange(); }
       });
     }
     var focus = replacement.querySelector(focusSelector || ":scope > summary");

@@ -93,6 +93,11 @@ CSV quoting is separate. Quote a complete field containing a comma, newline, or
 double quote, and double embedded CSV quotes. Do not add backslashes to repair
 CSV structure.
 
+Author display maths for phone widths: split lists of equations and long
+calculation chains into meaningful lines with `aligned`. MathJax 3 does not
+automatically wrap them. The viewer marks remaining horizontal overflow with
+↔, but scrolling should be a fallback rather than a required derivation step.
+
 After editing equations:
 
 1. run the real-data tests to catch column and escaping errors;

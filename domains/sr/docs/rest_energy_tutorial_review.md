@@ -64,3 +64,28 @@ This route does not prove universal energy conservation from the SR postulates,
 derive microscopic heating dynamics, or introduce relativistic mass. Automatic
 route generation and tutorial recording remain deferred. Time dilation is the
 next content/tutorial pass, after review of this route.
+
+## Review: explaining inertia rather than restating the result
+
+The first heated-box visit now poses the experimental question rather than
+substituting retained heat into the relation being explained. Before returning
+to that puzzle, the route reads two new blocks based on Einstein's 1905
+light-emission argument. Equal opposite pulses remove energy without recoil;
+energy conservation in two frames and the low-speed kinetic-energy coefficient
+then identify a change of inertial mass. The Lorentz transformation of light
+energy is stated as physical input. This argument establishes mass/energy
+changes; it is distinguished from the full four-momentum rest-energy relation.
+
+Checked the original English translation reproduced in Charles Nash's
+Introduction to Relativity, chapter 8 (PDF pages 114–116):
+https://www.pks.mpg.de/~haque/maynooth_MP352/MP352_CharlesNash_Notes.pdf
+The source is linked through the existing Einstein 1905 bibliography entry.
+
+## Route review: assume Lorentz transformations
+
+The route now has 29 cards rather than 40. It assumes Lorentz transformations
+and removes the postulate and interval/proper-time detour. The light-emission
+setup and inertia argument follow the heated-box question immediately, giving
+the intuition an early payoff. The later four-momentum/work discussion retains
+the distinction between geometry and physical energy. Graph cards use a bounded
+two-hop Derivation context rather than retracing the full prerequisite tree.

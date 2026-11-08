@@ -78,8 +78,9 @@ Physics routes include **Why mass has rest energy** and **Why moving clocks
 record less time**. Each introduction offers a direct launch link to bookmark
 or share; the time-dilation route uses `?tutorial=time-dilation`.
 During playback PhysicsKG performs the actions; use **Back**, **Next step** and **Exit** to
-control playback. **Explore from here** temporarily releases the viewer for
-free investigation; **Resume tutorial** restores the saved tutorial view
+control playback. Details remains available for scrolling, text zoom, Contents
+and clarifications. **Explore from here** temporarily releases the viewer for
+free investigation with only a small return button; **Continue with tutorial** restores the saved tutorial view
 without undoing notes or study progress.
 
 See [Viewer behaviour](docs/design/viewer.md) for details presentation, navigation and

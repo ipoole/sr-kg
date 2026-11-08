@@ -12,6 +12,56 @@ function kgCreateDetailsView(options) {
   function restoreTarget(id) { activeConceptSectionTargetId = id || null; }
 
   var graphicSpacingMeasurements = new WeakMap();
+  var equationAccessibility = new WeakMap();
+
+  function refreshEquationOverflow() {
+    var equations = Array.from(document.querySelectorAll('#info_panel mjx-container[display="true"]'));
+    equations.forEach(function(equation) {
+      var wrapper = equation.parentElement;
+      if (!wrapper.classList.contains("kg-equation-scroll")) {
+        wrapper = document.createElement("div");
+        wrapper.className = "kg-equation-scroll";
+        equation.before(wrapper);
+        wrapper.appendChild(equation);
+        var hint = document.createElement("span");
+        hint.className = "kg-equation-scroll-hint";
+        hint.textContent = "↔";
+        hint.hidden = true;
+        hint.setAttribute("aria-hidden", "true");
+        wrapper.appendChild(hint);
+      }
+    });
+    // Batch layout reads before visual updates, including after a zoom or resize.
+    var overflow = equations.map(function(equation) {
+      var width = equation.clientWidth;
+      return width > 0 && equation.scrollWidth > width + 2;
+    });
+    equations.forEach(function(equation, index) {
+      var wrapper = equation.parentElement, overflowing = overflow[index];
+      var saved = equationAccessibility.get(equation);
+      // Only update the DOM when overflow changes; preserve MathJax's own
+      // accessibility attributes while temporarily making wide maths focusable.
+      if (overflowing === Boolean(saved)) { return; }
+      wrapper.classList.toggle("kg-equation-overflow", overflowing);
+      wrapper.querySelector(".kg-equation-scroll-hint").hidden = !overflowing;
+      if (overflowing) {
+        var original = {};
+        ["tabindex", "role", "aria-label"].forEach(function(name) {
+          original[name] = equation.getAttribute(name);
+        });
+        equationAccessibility.set(equation, original);
+        equation.setAttribute("tabindex", "0");
+        equation.setAttribute("role", "region");
+        equation.setAttribute("aria-label", "Wide equation; scroll horizontally to read the rest");
+      } else {
+        Object.keys(saved).forEach(function(name) {
+          if (saved[name] === null) { equation.removeAttribute(name); }
+          else { equation.setAttribute(name, saved[name]); }
+        });
+        equationAccessibility.delete(equation);
+      }
+    });
+  }
 
   function compactGraphicSpacing() {
     document.querySelectorAll("#info_panel .concept-graphic").forEach(function(graphic) {
@@ -259,6 +309,7 @@ function kgCreateDetailsView(options) {
   return {
     replaceTypesetContent: replaceTypesetContent,
     compactGraphicSpacing: compactGraphicSpacing,
+    refreshEquationOverflow: refreshEquationOverflow,
     typesetInfoPanel: typesetInfoPanel,
     openTargetForToc: openTargetForToc,
     scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,

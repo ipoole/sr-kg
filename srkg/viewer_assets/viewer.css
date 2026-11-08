@@ -804,6 +804,23 @@
       .kg-tutorial-narration[hidden] {
         display: none;
       }
+      .kg-tutorial-narration.kg-exploring {
+        background: none;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        transform: none;
+        width: auto;
+      }
+      .kg-tutorial-narration.kg-exploring > :not(.kg-tutorial-actions):not(.kg-tutorial-error),
+      .kg-tutorial-narration.kg-exploring .kg-tutorial-actions > :not(#kg_tutorial_explore) {
+        display: none;
+      }
+      .kg-tutorial-narration.kg-exploring .kg-tutorial-actions { margin: 0; }
+      .kg-tutorial-narration.kg-exploring #kg_tutorial_explore {
+        box-shadow: 0 1px 5px rgba(15, 23, 42, 0.18);
+        min-height: 32px;
+      }
       .kg-tutorial-narration-meta {
         align-items: baseline;
         color: #28536b;
@@ -835,15 +852,6 @@
           z-index: 11000; background: #f7f2ff; color: #57367b;
           padding: 24px; text-align: center; font: 18px/1.5 Arial, sans-serif;
         }
-      }
-      .kg-tutorial-explore-status {
-        color: #28536b;
-        font-size: 0.92em;
-        font-style: italic;
-        margin-top: 5px;
-      }
-      .kg-tutorial-explore-status[hidden] {
-        display: none;
       }
       .kg-tutorial-error {
         background: #fff0f0;
@@ -906,6 +914,7 @@
         overflow: visible;
         width: 28px;
       }
+      .kg-tutorial-pointer.kg-settled { opacity: 0.12; }
       .kg-tutorial-pointer path {
         fill: #fff;
         stroke: #17658f;
@@ -952,6 +961,11 @@
       body.kg-tutorial-active .kg-tutorial-narration button:not(:disabled) {
         cursor: pointer !important;
       }
+      body.kg-tutorial-active #info_panel,
+      body.kg-tutorial-active #info_panel * { cursor: text !important; }
+      body.kg-tutorial-active #info_panel summary,
+      body.kg-tutorial-active #info_panel .concept-toc-link { cursor: pointer !important; }
+      body.kg-tutorial-active #info_panel [aria-disabled="true"] { cursor: not-allowed !important; }
       body.kg-tutorial-active #kg_context_notice[data-kind="context-contracted"] {
         display: none;
       }
@@ -1119,7 +1133,7 @@
 
         font-family: Arial, sans-serif;
         font-size: __INFO_PANEL_FONT_SIZE_PX__px;
-        touch-action: pan-y;
+        touch-action: pan-x pan-y;
 
         box-shadow: none;
 
@@ -1154,7 +1168,10 @@
     #info_panel .concept-sticky-header {
         background: rgba(255,255,255,0.96);
         border-bottom: 1px solid #ddd;
+        box-sizing: border-box;
         margin: 0 -16px 0.75em;
+        max-height: 45%;
+        overflow-y: auto;
         padding: 8px 16px 9px;
         position: sticky;
         top: 0;
@@ -2621,6 +2638,26 @@
         max-width: 100%;
         padding: 4px 0;
     }
+
+    #info_panel .kg-equation-scroll {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 100%;
+        position: relative;
+    }
+    #info_panel .kg-equation-overflow > mjx-container { text-align: left; }
+    #info_panel .kg-equation-scroll-hint {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 3px;
+        color: #526779;
+        font: 16px/1 Arial, sans-serif;
+        padding: 2px 4px;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    #info_panel .kg-equation-scroll-hint[hidden] { display: none; }
 
     #info_panel strong {
         font-weight: 700;

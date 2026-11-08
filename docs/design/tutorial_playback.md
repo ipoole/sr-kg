@@ -95,15 +95,25 @@ It contains:
 - one short heading and commentary;
 - **Back**, **Next step**, **Explore from here** and **Exit**.
 
+After a demonstrated action, the arrow becomes highly transparent so it does not
+obscure reading; the block highlight remains visible.
+
 The stable card is preferable to commentary which jumps between targets. The
 pointer supplies the spatial connection. On a narrow phone the card occupies
 a dedicated strip at the bottom of the screen, below both panes. The workspace
 reserves its measured height, keeping the existing graph-row sizing and leaving
-the remaining area for Details. The strip remains available during
-Explore; Exit restores the normal workspace. Desktop narration remains an
+the remaining area for Details. Explore removes the strip and releases its
+reserved space, leaving only a small Continue with tutorial button over the
+workspace. Exit restores the normal workspace. Desktop narration remains an
 overlay, with Fit and Reveal accounting for its occupied space. The interface
 tutorial expands and fits its module within one card. When the graph is hidden,
 desktop narration is anchored to the workspace rather than the absent pane.
+
+Author graph demonstrations in Graph only view so the canvas remains useful on
+phones. Use Details for reading; Both can briefly explain the connection between
+the panes, then return to Graph before framing or contracting the result. The
+interface route demonstrates Overview with SR and Maths expanded and GR folded,
+using Derivation links before zooming into an individual module.
 
 The temporary Fit++ arrangement notice is suppressed during guided playback,
 when manual dragging is unavailable. It reappears during Explore.
@@ -162,15 +172,21 @@ than trying to define an inverse for every command.
 It also cancels tutorial highlights and pointer animation. Authored, personal
 and temporary layout coordinates are never modified by a route.
 
-Playback is deliberately guided: ordinary viewer interaction is blocked while
-a route is active, leaving Back, Next step, Explore from here and Exit as the
-available controls.
-This avoids implying that a learner must guess which control to operate.
+Playback is deliberately guided. Details permits vertical and horizontal
+scrolling, text selection, Contents links, disclosure toggles and its existing
+pinch/Ctrl-wheel text zoom. Other navigation, graph gestures, hover previews,
+notes editing, reading ticks and study answers remain locked until Explore.
+The header and graph controls remain inert; Details uses a central event policy
+and restores the original enabled/tab state of its controls after playback.
+Pointer geometry follows reading scroll and zoom, with Details highlights clipped
+to the reading pane. Text zoom remains a reader preference across steps.
+Back, Next step and Exit control the route; the learner need not guess an action.
 
 **Explore from here** snapshots the current tutorial checkpoint, removes the
-interaction lock and hides tutorial emphasis while leaving the narration card
-available. The learner may navigate, search and change any presentation
-control. **Resume tutorial** restores Selection, Context, Display, module
+interaction lock and hides tutorial emphasis and narration. Only a small
+**Continue with tutorial** button remains; no narration space is reserved. The
+learner may navigate, search and change any presentation
+control. **Continue with tutorial** restores Selection, Context, Display, module
 representations, Details and Camera to the saved checkpoint. Notes, question
 attempts, reading marks and other personal data created while exploring remain.
 
