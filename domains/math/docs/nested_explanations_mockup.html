@@ -19,12 +19,13 @@
     .source { font-size: 12px; color: #647780; margin-left: .6em; font-weight: 400; }
     .reference { margin: 12px 0 25px; }
     details { margin: 12px 0 22px; }
-    summary { color: #285a85; cursor: pointer; font-size: .94em; font-weight: 600; line-height: 1.5; }
+    summary { color: #3d535f; cursor: pointer; font-size: .94em; font-weight: 600; line-height: 1.5; }
     summary:hover { text-decoration: underline; }
     summary:focus-visible, button:focus-visible { outline: 2px solid #285a85; outline-offset: 4px; }
     details[open] { border: 1px solid #c5cfd4; border-radius: 6px; padding: 14px 18px 0; }
     details[open] > summary { color: inherit; margin-bottom: 18px; }
-    .statement { margin-bottom: 8px; }
+    .statement { margin-bottom: 8px; color: #1458b0; }
+    .statement-key { color: #1458b0; }
     .statement p:last-child { margin-bottom: 8px; }
     .result { border-left: 3px solid #628594; padding-left: 18px; margin: 22px 0; }
     .math-scroll { overflow-x: auto; max-width: 100%; }
@@ -56,9 +57,10 @@
 </head>
 <body><main>
 <header>
-<span class="eyebrow">PhysicsKG · reading prototype 4.6.4 · MATHS-1.6</span>
+<span class="eyebrow">PhysicsKG · reading prototype 4.6.5 · MATHS-1.6</span>
 <h1>Temperature, motion and covectors</h1>
 <p class="intro">A teaching prototype for Cotangent space. Read the short argument first, or open explanations wherever you want more detail. Opening an explanation keeps your place; shared explanations have independent fold states.</p>
+<p class="intro">Each main subheading represents a proposed top-level block. <span class="statement-key">Blue text identifies a borrowed statement</span>; its supporting explanation opens below it.</p>
 <details><summary>The scientists and their terrain</summary>
 <p>Our scientists study a bumpy two-dimensional ground surface, measuring temperature and motion along the ground. Each scientist anchors a rigid flat board to a small patch, tangent at its reference point. Nearby ground points receive coordinates by a smooth, one-to-one projection onto the board’s grid. The board labels the ground; it does not flatten it.</p>
 <p>Their grids can have different orientations and scales, even oblique axes. On overlaps they agree smooth conversions between coordinates. The boards are a practical way to imagine local charts, not a requirement that every surface have one global grid.</p>
