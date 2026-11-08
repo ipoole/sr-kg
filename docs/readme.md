@@ -12,9 +12,11 @@
   [guided tutorial design](design/tutorial_playback.md) describes semantic
   routes, grouped actions, direct launch links and presentation restoration.
   Current physics routes cover rest energy and time dilation. The
-  [nested-explanations paper prototype](design/nested_explanations_paper_prototype.md)
-  explores shared explanations and graph reading highlights; it is a discussion
-  draft, not implemented viewer behaviour. The
+  [nested-explanations Maths pilot design](design/nested_explanations_design.md)
+  and its domain-owned teaching draft explore recursively shared content. The
+  earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
+  the Field equations experiment and deferred graph reading highlights. These are
+  design drafts, not implemented viewer behaviour. The
   [study-question design](design/study.md) defines marking, attempts, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable
