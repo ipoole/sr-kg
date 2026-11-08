@@ -17,6 +17,7 @@ import pandas as pd
 
 from srkg.kb import KnowledgeBase, load_knowledge_base, resolve_knowledge_base_paths
 from srkg.data import concept_domain
+from srkg.content_units import build_content_registry
 from srkg.edges import build_edge_colour_map, enrich_edge_key_with_colours
 from srkg.html_injection import inject_controls
 from srkg.layout import build_flat_positions
@@ -173,6 +174,7 @@ def filter_knowledge_base_by_domains(
         for _, row in filtered_nodes.iterrows()
         if concept_domain(row)
     }
+    content_units = build_content_registry(filtered_concepts, filtered_modules, domains=available_domains)
 
     return KnowledgeBase(
         paths=kb.paths,
@@ -183,6 +185,8 @@ def filter_knowledge_base_by_domains(
         modules=filtered_modules,
         published_layout=kb.published_layout,
         tutorials=tutorials_for_domains(kb.tutorials, available_domains),
+        content_units=content_units,
+        build_warnings=content_units.warnings,
     )
 
 

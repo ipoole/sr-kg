@@ -1,6 +1,12 @@
 # Nested explanations: design for the Maths pilot
 
-Stage 1, 8 November 2026. Working design for review before schema definition.
+Stage 1, 8 November 2026. Reviewed design for the Maths pilot.
+
+Stage 2 now defines the [minimum schema](nested_explanations_schema.md) and its
+Python loading/model contracts. Viewer rendering and content conversion remain
+pending. The reviewed choices below are accepted. Keep statements as short as
+reasonably possible, retaining only essential qualifications.
+
 No runtime or authored-data changes are made by this document. It incorporates
 the discussion following the [Field equations paper prototype](nested_explanations_paper_prototype.md)
 and [text mock-up](nested_explanations_mockup.html). Where they differ, this
@@ -185,11 +191,12 @@ or changing unrelated content to silence the diagnostics.
 
 ## 7. Stage boundaries and review gate
 
-Stage 1 settles this experience and the teaching draft. Stage 2 defines the
+Stage 1 settled this experience and the teaching draft. Stage 2 defines the
 storage representation, identity/reference contracts, normalisation, validation,
 cycle handling and compatibility. Stage 3 implements the renderer on synthetic
 data. Stage 4 applies the draft to selected Maths content. Stages 5–6 verify and
-publish a Maths-only review viewer. All runtime work remains pending.
+publish a Maths-only review viewer. The Python source/loading contracts are now
+implemented; renderer and production-content work remain pending.
 
 The demonstration succeeds if a reader can explain the role of a covector, work
 the temperature-rate example, investigate both supporting branches and return
@@ -198,7 +205,7 @@ not several copies maintained in step. Deepest mathematical exposition is not a
 requirement; differentiability, linearity and the chain rule may be explicit
 borrowed foundations.
 
-Before stage 2, review these choices:
+The following review choices were accepted before stage 2:
 
 1. Is the short folded argument useful and honest about its assumptions?
 2. Are native blocks directly readable without an extra disclosure layer?
@@ -208,6 +215,6 @@ Before stage 2, review these choices:
 5. Is source attribution sufficient to explain reuse without exposing editorial
    machinery to the learner?
 
-The representation of Graphic units and the precise reference-role vocabulary
-are intentionally open schema questions. They do not justify separate renderers
-or type-homogeneous traversal paths.
+The stage-2 schema wraps an owner's registered detail illustration as a Graphic
+unit and uses the local hook to express purpose without a reference-role enum.
+Neither requires separate renderers or type-homogeneous traversal paths.

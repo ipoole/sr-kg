@@ -412,3 +412,60 @@ def test_faulty_unselected_data_or_graphics_do_not_affect_an_independent_build(t
     assert load_knowledge_base(tmp_path,domains=["molbio"]).missing_domains == ()
     with pytest.raises(KnowledgeBaseLoadError):
         load_knowledge_base(tmp_path,domains=["optics"])
+
+
+def test_shared_content_loads_across_domains_without_changing_edges(tmp_path):
+    math = write_domain(tmp_path, 'math', body=r'\explain{source}{sr.alpha.definition}{SR definition}{Why?}')
+    sr = write_domain(tmp_path, 'sr')
+    frame = pd.read_csv(sr / 'content_blocks.csv')
+    frame['statement'] = 'A short borrowed result.'
+    frame.to_csv(sr / 'content_blocks.csv', index=False)
+    kb = load_knowledge_base(tmp_path, include_graphics=False)
+    assert kb.edges_df.empty  # A scoped explanation is not a new concept dependency.
+    assert len(kb.content_units) == 2
+    assert kb.content_units['math.alpha.definition'].statement == ''
+    assert kb.concept('math.alpha').content_blocks[0].statement == ''  # No NaN from mixed columns.
+    assert kb.content_units['sr.alpha.definition'].statement == 'A short borrowed result.'
+    assert kb.content_unit_data()['math.alpha.definition']['parts'][0]['target_id'] == 'sr.alpha.definition'
+    # Explicit subset loading must not even open the other domain's manifest.
+    (sr / 'domain.yaml').write_text('deliberately unreadable: [broken')
+    subset = load_knowledge_base(tmp_path, domains=['math'], include_graphics=False)
+    assert set(subset.content_units) == {'math.alpha.definition'}
+    assert subset.missing_domains == ('sr',)
+    assert subset.build_warnings[0].kind == 'content-reference'
+    ref = subset.content_units['math.alpha.definition'].parts[0]
+    assert subset.content_units.resolve(ref).state == 'unavailable'
+    assert ref.target_label == 'SR definition'
+
+
+def test_loaded_domain_missing_block_is_an_error_even_if_concept_exists(tmp_path):
+    write_domain(tmp_path, 'math', body=r'\explain{missing}{sr.alpha.typo}{SR result}{Why?}')
+    write_domain(tmp_path, 'sr')
+    with pytest.raises(KnowledgeBaseLoadError, match='sr.alpha.typo.*unresolved'):
+        load_knowledge_base(tmp_path, include_graphics=False)
+
+
+def test_new_optional_fields_and_named_children_reach_the_common_model(tmp_path):
+    directory = write_domain(tmp_path, 'math', body=r'\explanation{why}{Why?}{Local maths: \(x^2\).}')
+    frame = pd.read_csv(directory / 'content_blocks.csv')
+    frame['statement'] = r'\(x\) is a coordinate.'
+    frame['graphic'] = ''
+    frame.to_csv(directory / 'content_blocks.csv', index=False)
+    kb = load_knowledge_base(tmp_path, include_graphics=False)
+    block = kb.concepts[0].content_blocks[0]
+    unit = kb.content_units[block.block_id]
+    assert unit.source_id == block.block_id  # Notes/read marks retain their native source ID.
+    assert unit.statement == block.statement
+    assert unit.parts[0].slot == 'why'
+    assert unit.parts[0].parts[0].text == r'Local maths: \(x^2\).'
+
+
+def test_statement_concept_references_obey_selected_domain_policy(tmp_path):
+    directory = write_domain(tmp_path, 'math')
+    frame = pd.read_csv(directory / 'content_blocks.csv')
+    frame['statement'] = r'Uses \cref{SR}{sr.alpha}.'
+    frame.to_csv(directory / 'content_blocks.csv', index=False)
+    subset = load_knowledge_base(tmp_path, domains=['math'], include_graphics=False)
+    assert subset.missing_domains == ('sr',)
+    assert subset.build_warnings[0].kind == 'prose-reference'
+    assert subset.content_units['math.alpha.definition'].statement == frame.loc[0, 'statement']

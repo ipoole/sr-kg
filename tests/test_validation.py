@@ -193,6 +193,17 @@ def test_load_validation_issues_from_root_reports_content_block_text_errors(tmp_
     }
 
 
+def test_statements_are_checked_as_separate_math_fragments(tmp_path):
+    _write_root_kb(tmp_path, content_body=r"A closed expression \(x+y\).")
+    path = tmp_path / "content_blocks.csv"
+    frame = pd.read_csv(path)
+    frame["statement"] = r"An unclosed expression \(x+y"
+    frame.to_csv(path, index=False)
+    issues = load_validation_issues_from_root(tmp_path)
+    assert any(issue.code == "math-delimiter" and "statement" in issue.location
+               for issue in issues)
+
+
 def test_load_validation_issues_from_root_warns_when_crefs_and_edges_do_not_match(tmp_path):
     _write_root_kb(tmp_path, content_body="Beta mentions no other concepts.")
 

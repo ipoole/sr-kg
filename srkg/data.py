@@ -151,6 +151,8 @@ def build_content_blocks_from_df(content_blocks_df: pd.DataFrame) -> list[Conten
             kind=kind,
             title=str(row.get("title", "")).strip(),
             body=body,
+            statement=_optional_content_text(row, "statement"),
+            graphic=_optional_content_text(row, "graphic"),
         ))
     return sorted(blocks, key=lambda block: (block.concept_id, block.sequence, block.block_id))
 
@@ -174,8 +176,16 @@ def build_module_content_blocks_from_df(
             kind=kind,
             title=str(row.get("title", "")).strip(),
             body=body,
+            statement=_optional_content_text(row, "statement"),
+            graphic=_optional_content_text(row, "graphic"),
         ))
     return sorted(blocks, key=lambda block: (block.module_id, block.sequence, block.block_id))
+
+
+def _optional_content_text(row, column):
+    """A domain may omit a column that another domain has already adopted."""
+    value = row.get(column, "")
+    return "" if pd.isna(value) else str(value).strip()
 
 
 def build_module_supports_from_df(

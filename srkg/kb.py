@@ -40,6 +40,7 @@ from srkg.table_validation import (
     validate_modules,
 )
 from srkg.domain_references import BuildWarning
+from srkg.content_units import ContentRegistry, build_content_registry
 from srkg.data import (
     build_concepts,
     concept_domain,
@@ -115,6 +116,7 @@ class KnowledgeBase:
     tutorials: tuple[Tutorial, ...] = ()
     domain_packages: tuple = ()
     build_warnings: tuple[BuildWarning, ...] = ()
+    content_units: ContentRegistry = field(default_factory=ContentRegistry)
 
     @property
     def missing_domains(self) -> tuple[str, ...]:
@@ -192,6 +194,10 @@ class KnowledgeBase:
     def tutorial_data(self) -> list[dict[str, object]]:
         """Return validated tutorial routes in their browser representation."""
         return [tutorial.to_viewer_data() for tutorial in self.tutorials]
+
+    def content_unit_data(self) -> dict[str, dict[str, object]]:
+        """Canonical recursive sources; renderer integration follows separately."""
+        return self.content_units.to_viewer_data()
 
 
 def load_knowledge_base(
@@ -357,6 +363,10 @@ def _assemble_knowledge_base(
         for _, row in nodes_df.iterrows()
         if concept_domain(row)
     }
+    content_units = build_content_registry(concepts, modules,
+        domains=({package.id for package in domain_packages} or known_domains))
+    warnings = reference_warnings if reference_warnings is not None else []
+    warnings.extend(content_units.warnings)
     try:
         tutorials = []
         for source in tutorial_paths if tutorial_paths is not None else [paths.tutorials]:
@@ -393,6 +403,8 @@ def _assemble_knowledge_base(
         modules=modules,
         published_layout=published_layout,
         tutorials=tutorials,
+        content_units=content_units,
+        build_warnings=tuple(warnings),
     )
 
 

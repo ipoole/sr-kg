@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class MacroCall:
-    """A parsed two-argument macro call."""
+    """A parsed macro call with its original source span."""
 
     name: str
-    args: tuple[str, str]
+    args: tuple[str, ...]
     start: int
     end: int
 
@@ -16,6 +16,13 @@ def parse_two_arg_macro_calls(
     text: str,
     name: str,
 ) -> tuple[list[MacroCall], list[str]]:
+    return parse_macro_calls(text, name, 2)
+
+
+def parse_macro_calls(
+    text: str, name: str, argument_count: int,
+) -> tuple[list[MacroCall], list[str]]:
+    """Read a fixed-arity macro without interpreting mathematics in its arguments."""
     calls: list[MacroCall] = []
     issues: list[str] = []
     macro = "\\" + name
@@ -29,16 +36,17 @@ def parse_two_arg_macro_calls(
             pos = after
             continue
         try:
-            first_start = _skip_whitespace(text, after)
-            arg1, first_end = _parse_braced_arg(text, first_start)
-            second_start = _skip_whitespace(text, first_end)
-            arg2, second_end = _parse_braced_arg(text, second_start)
+            end = after
+            args = []
+            for _ in range(argument_count):
+                arg, end = _parse_braced_arg(text, _skip_whitespace(text, end))
+                args.append(arg)
         except ValueError as exc:
             issues.append(str(exc))
             pos = after
             continue
-        calls.append(MacroCall(name=name, args=(arg1, arg2), start=start, end=second_end))
-        pos = second_end
+        calls.append(MacroCall(name=name, args=tuple(args), start=start, end=end))
+        pos = end
     return calls, issues
 
 

@@ -144,6 +144,8 @@ semantic `kind`, not display instructions.
 | `kind` | Yes | Semantic block kind. See the allowed values below. |
 | `title` | Yes | Short editorial title for this block. The viewer may use it as a heading, folded-section handle, search label, or local contents entry. |
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
+| `statement` | No | Brief explicitly authored reusable result/contribution. Required when borrowed through `\explain`; empty for unconverted blocks. |
+| `graphic` | No | `detail` for a `graphic` block wrapping its owner's registered detail SVG and caption; empty otherwise. |
 
 Allowed `kind` values:
 
@@ -165,6 +167,7 @@ Allowed `kind` values:
 | `warning` | A caveat, domain restriction, or notation trap. |
 | `historical_note` | Historical context about discovery, attribution, or influence. |
 | `summary` | A concise recap of the main result or takeaway. |
+| `graphic` | An addressable explanation wrapping its owner's registered detail graphic. |
 
 Example stable block IDs:
 
@@ -185,6 +188,14 @@ stable block IDs and reading-completion semantics. Personal notes live only in t
 [personal-data profile](personal_data.md), with optional paragraph (`anchor`) or
 concept/module (`owner`) placement; they are not rows in these authored tables.
 Nested optional disclosures do not yet have independent IDs or read ticks.
+
+The [minimum nested-explanations schema](nested_explanations_schema.md) adds
+`\explanation{slot}{title}{body}` for named local explanations and
+`\explain{slot}{block_id}{target label}{hook}` for borrowing a canonical statement
+and explanation. Both normalise with existing blocks into one recursive source
+model. Slots distinguish occurrences, not new personal-data records. The loader
+validates these additions; their viewer rendering is the next implementation
+stage. Existing tables/content need no conversion to load.
 
 ## modules.csv
 
@@ -253,6 +264,8 @@ instead of `concept_id`.
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
 
 Every module must currently have at least one module content block.
+The same optional `statement` and `graphic` columns and nested-content rules
+apply to module blocks as to concept blocks.
 
 ## tutorials.yaml
 

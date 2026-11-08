@@ -14,6 +14,8 @@
   Current physics routes cover rest energy and time dilation. The
   [nested-explanations Maths pilot design](design/nested_explanations_design.md)
   and its domain-owned teaching draft explore recursively shared content. The
+  [minimum schema](design/nested_explanations_schema.md) implements the Python
+  source/loading contracts; renderer integration remains pending. The
   earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
   the Field equations experiment and deferred graph reading highlights. These are
   design drafts, not implemented viewer behaviour. The

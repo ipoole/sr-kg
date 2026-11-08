@@ -28,6 +28,7 @@ CONTENT_BLOCK_KIND_DESCRIPTIONS = {
     "warning": "A caveat, domain restriction, or notation trap.",
     "historical_note": "Historical context about discovery, attribution, or influence.",
     "summary": "A concise recap of the main result or takeaway.",
+    "graphic": "An addressable explanation wrapping its owner's registered detail graphic.",
 }
 CONTENT_BLOCK_KINDS = frozenset(CONTENT_BLOCK_KIND_DESCRIPTIONS)
 STUDY_QUESTION_COLUMNS = (

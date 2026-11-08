@@ -51,6 +51,7 @@ def format_build_warnings(warnings, *, example_limit=2) -> str:
     descriptions = {"edge": ("omitted edge", "omitted edges"),
                     "module-support": ("omitted support link", "omitted support links"),
                     "prose-reference": ("unlinked prose reference", "unlinked prose references"),
+                    "content-reference": ("unavailable shared explanation", "unavailable shared explanations"),
                     "tutorial": ("omitted tutorial", "omitted tutorials")}
     for domain in domains:
         entries = [warning for warning in warnings if warning.domain == domain]

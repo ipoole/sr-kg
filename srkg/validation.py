@@ -36,7 +36,7 @@ NODE_REQUIRED_COLUMNS = (
     "domain",
     "domain_title",
 )
-SUPPORTED_CUSTOM_MACROS = {"cref", "optional_details"}
+SUPPORTED_CUSTOM_MACROS = {"cref", "optional_details", "explanation", "explain"}
 CONTROL_CHARS = tuple(chr(code) for code in range(32) if chr(code) not in ("\r", "\n"))
 
 
@@ -296,7 +296,7 @@ def _validate_custom_macro_typos(text: str, location: str) -> list[ValidationIss
         name = match.group(1)
         if name in SUPPORTED_CUSTOM_MACROS:
             continue
-        if name.startswith("optional") or name.startswith("cref"):
+        if name.startswith(("optional", "cref", "explain")):
             issues.append(
                 _issue(
                     "warning",
@@ -471,23 +471,23 @@ def _validate_content_block_text(
 
     for concept in concepts:
         for block in concept.content_blocks:
-            location = f"content block {block.block_id}"
-            text = str(block.body)
-            issues.extend(_validate_control_characters(text, location))
-            issues.extend(_validate_backslash_end(text, location))
-            issues.extend(_validate_balanced_braces(text, location))
-            issues.extend(_validate_math_delimiters(text, location))
-            issues.extend(_validate_custom_macro_typos(text, location))
+            for field_name, text in (("body", block.body), ("statement", block.statement)):
+                location = f"content block {block.block_id}" + (" statement" if field_name == "statement" else "")
+                issues.extend(_validate_control_characters(text, location))
+                issues.extend(_validate_backslash_end(text, location))
+                issues.extend(_validate_balanced_braces(text, location))
+                issues.extend(_validate_math_delimiters(text, location))
+                issues.extend(_validate_custom_macro_typos(text, location))
 
-            cref_calls, cref_errors = _parse_two_arg_macro_calls(text, "cref", location)
-            issues.extend(cref_errors)
-            for call in cref_calls:
-                target = call.args[1].strip()
-                cref_pairs.add((concept.id, target))
-                cref_targets_by_node.setdefault(concept.id, set()).add(target)
+                cref_calls, cref_errors = _parse_two_arg_macro_calls(text, "cref", location)
+                issues.extend(cref_errors)
+                for call in cref_calls:
+                    target = call.args[1].strip()
+                    cref_pairs.add((concept.id, target))
+                    cref_targets_by_node.setdefault(concept.id, set()).add(target)
 
-            _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
-            issues.extend(optional_errors)
+                _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
+                issues.extend(optional_errors)
 
     for source, target in sorted(cref_pairs):
         if target not in node_ids and target.partition(".")[0] not in external_domains:
