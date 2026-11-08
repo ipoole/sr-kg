@@ -5,6 +5,10 @@ unchanged. This draft exercises the [working design](../../../docs/design/nested
 before schema work. Labels below identify proposed reusable pieces, not assigned
 new IDs or storage fields.
 
+A [readable HTML prototype](nested_explanations_mockup.html) presents the teaching
+argument with working disclosures, equations and the shared tangent-space graphic.
+It is a standalone review page, not a runtime implementation.
+
 ## 1. Audience, destination and scope
 
 The root is **MATHS-1.6 Cotangent space** (`math.cotangent_space`). The learner has

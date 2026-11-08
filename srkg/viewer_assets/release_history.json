@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.4", "date": "2026-11-08", "summary": "Preview: Maths teaching prototype with shared nested explanations; hosted viewers unchanged."},
   {"version": "4.6.3", "date": "2026-11-08", "summary": "Preview: Standalone text-only nested-explanations prototype; existing hosted viewer and guide retained."},
   {"version": "4.6.1", "date": "2026-11-08", "summary": "Illustrated user guide with desktop and phone examples, and a shorter Quick Start."},
   {"version": "4.6.0", "date": "2026-11-08", "summary": "Clearer graph overviews, improved guided tutorials content with scrolling and zooming permitted in details view, and better equation layouts"},

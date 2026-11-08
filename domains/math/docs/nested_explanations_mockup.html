@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Temperature, motion and covectors — Maths reading prototype</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fafbf9; color: #26333b; font: 19px/1.65 Georgia, serif; }
+    main { max-width: 850px; margin: auto; padding: 40px 28px 80px; }
+    header { border-bottom: 1px solid #d4dcdc; padding-bottom: 22px; margin-bottom: 30px; }
+    .eyebrow, .source, button, summary, h1, h2 { font-family: system-ui, sans-serif; }
+    .eyebrow { color: #60717b; font-size: 13px; letter-spacing: .06em; }
+    h1 { color: #183e51; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.2; margin: 12px 0; }
+    h2 { font-size: 1.25rem; line-height: 1.4; margin: 32px 0 16px; }
+    p { margin: 0 0 18px; }
+    .intro { font-size: 16px; color: #60717b; }
+    .source { font-size: 12px; color: #647780; margin-left: .6em; font-weight: 400; }
+    .reference { margin: 12px 0 25px; }
+    details { margin: 12px 0 22px; }
+    summary { color: #285a85; cursor: pointer; font-size: .94em; font-weight: 600; line-height: 1.5; }
+    summary:hover { text-decoration: underline; }
+    summary:focus-visible, button:focus-visible { outline: 2px solid #285a85; outline-offset: 4px; }
+    details[open] { border: 1px solid #c5cfd4; border-radius: 6px; padding: 14px 18px 0; }
+    details[open] > summary { color: inherit; margin-bottom: 18px; }
+    .statement { margin-bottom: 8px; }
+    .statement p:last-child { margin-bottom: 8px; }
+    .result { border-left: 3px solid #628594; padding-left: 18px; margin: 22px 0; }
+    .math-scroll { overflow-x: auto; max-width: 100%; }
+    mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; }
+    button { border: 1px solid #aebfc7; border-radius: 6px; background: white; color: #28516a; padding: 7px 12px; cursor: pointer; font-size: 14px; }
+    footer { border-top: 1px solid #d4dcdc; margin-top: 40px; padding-top: 18px; }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      main { padding: 24px 16px 60px; }
+      details[open] { padding: 12px 9px 0; }
+      .source { display: block; margin: 2px 0 0 16px; }
+    }
+    figure { margin: 18px 0; }
+    figure img { display: block; width: min(100%, 460px); height: auto; margin: auto; }
+    figcaption { font-size: .85em; line-height: 1.5; color: #60717b; }
+    a { color: #285a85; }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']],
+            macros: {coloneqq: '\\mathrel{:=}'}},
+      svg: {fontCache: 'global'},
+      startup: {typeset: false, pageReady: function () {
+        return MathJax.startup.defaultPageReady().then(function () { return MathJax.typesetPromise([document.querySelector('main')]); });
+      }}
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body><main>
+<header>
+<span class="eyebrow">PhysicsKG · reading prototype 4.6.4 · MATHS-1.6</span>
+<h1>Temperature, motion and covectors</h1>
+<p class="intro">A teaching prototype for Cotangent space. Read the short argument first, or open explanations wherever you want more detail. Opening an explanation keeps your place; shared explanations have independent fold states.</p>
+<details><summary>The scientists and their terrain</summary>
+<p>Our scientists study a bumpy two-dimensional ground surface, measuring temperature and motion along the ground. Each scientist anchors a rigid flat board to a small patch, tangent at its reference point. Nearby ground points receive coordinates by a smooth, one-to-one projection onto the board’s grid. The board labels the ground; it does not flatten it.</p>
+<p>Their grids can have different orientations and scales, even oblique axes. On overlaps they agree smooth conversions between coordinates. The boards are a practical way to imagine local charts, not a requirement that every surface have one global grid.</p>
+</details>
+<p class="intro">Assume smooth, time-independent temperature and a smooth probe route, with time measured in seconds. We are finding temperature change due to motion, not changes of weather at a fixed point.</p>
+</header>
+<noscript><p>This prototype needs JavaScript to insert shared explanations.</p></noscript>
+<article>
+<h2>A direction asks a question of the temperature field</h2>
+<p>Temperature gives one number \(T(p)\) at each ground point. But a probe’s next reading depends on how it moves from that point. Motion along an isotherm gives zero instantaneous change; another direction can give a positive or negative rate.</p>
+<p>At a point \(p\), a tangent vector \(v\) describes the probe’s instantaneous motion. We can describe what this vector does without choosing a grid:</p>
+<div data-source="tangent" data-question="How can a tangent vector measure change?"></div>
+<p>For our temperature field, the differential \(dT_p\) gives precisely that readout:</p>
+<div class="result">\[dT_p(v)\coloneqq v[T].\]</div>
+<p>At a fixed point this rule is linear in the tangent vector. A linear rule from \(T_pM\) to the scalars is a <strong>covector</strong>; the space of all those rules is the cotangent space \(T_p^*M\).</p>
+<details id="linearity"><summary>Why is the readout linear?</summary>
+<p>At a fixed point, tangent vectors act as directional-derivative operators. Their linear combinations act on a scalar function by</p>
+\[(a v+b w)[T]=a\,v[T]+b\,w[T].\]
+<p>Consequently \(dT_p(a v+b w)=a\,dT_p(v)+b\,dT_p(w)\), the required covector linearity. The scalars \(a,b\) here are numerical weights. This is linearity in the tangent vector at \(p\); temperature need not be a linear function throughout the patch.</p>
+<details><summary>Why is linearity at one point enough?</summary><p>A differential retains the first-order part of a smooth function at that point. Higher-order terms can matter over a finite journey without changing the linearity of this local first-order readout. Different points generally have different differentials.</p></details>
+</details>
+<p>This is one important source of covectors. It does not assert that every covector field over a region is the differential of one scalar field.</p>
+<h2>The same readout on a board’s grid</h2>
+<p>To calculate it, choose local coordinates \(x^1,x^2\). The coordinates label the same ground points that the probe visits:</p>
+<div data-source="chart" data-question="What does the board’s coordinate chart supply?"></div>
+<p>The coordinate basis vectors are \(\partial_1,\partial_2\). Their dual covectors \(dx^1,dx^2\) read the corresponding vector components:</p>
+\[\begin{aligned}dx^a(\partial_b)&\coloneqq\delta^a{}_b,\\dx^a(v)&=v^a.\end{aligned}\]
+<p>Write the temperature differential and the motion in these bases. At \(p\),</p>
+\[\begin{aligned}dT_p&=(\partial_aT)_p\,dx^a,\\v&=v^a\partial_a,\\dT_p(v)&=(\partial_aT)_p\,v^a.\end{aligned}\]
+<p>Here \(a\) is summed over 1 and 2. The last expression is the familiar chain-rule temperature rate \(dT(\gamma(t))/dt\), evaluated at the point being crossed.</p>
+<details id="pairing-algebra"><summary>Algebra: where does the component sum come from?</summary>
+<p>Apply the covector to the vector, using linearity and the dual-basis rule:</p>
+\[\begin{aligned}dT_p(v)&=(\partial_aT)_p\,dx^a(v^b\partial_b)\\&=(\partial_aT)_p\,v^b\delta^a{}_b\\&=(\partial_aT)_p\,v^a.\end{aligned}\]
+<p>The Kronecker delta selects matching components. No inner product or metric has entered the calculation.</p>
+</details>
+<h2>A measurement the scientists can compare</h2>
+<p>Suppose the local derivatives are \(\partial_1T=2\,\mathrm{K/m}\) and \(\partial_2T=-1\,\mathrm{K/m}\). The probe has coordinate rates \(v^1=0.5\,\mathrm{m/s}\) and \(v^2=0.2\,\mathrm{m/s}\). Its temperature rate is</p>
+\[\begin{aligned}dT_p(v)&=(2)(0.5)+(-1)(0.2)\\&=0.8\,\mathrm{K/s}.\end{aligned}\]
+<p>The probe is warming, even though one contribution is cooling. These are coordinate rates, not a claim that the probe’s physical speed is the Euclidean length of that component pair on an arbitrary board.</p>
+<details id="centimetres"><summary>Why does a centimetre grid give the same answer?</summary>
+<p>Relabel both coordinate axes from metres to centimetres. The numerical coordinate labels become 100 times larger, and the probe’s component rates become \(50\) and \(20\,\mathrm{cm/s}\). The temperature derivatives become \(0.02\) and \(-0.01\,\mathrm{K/cm}\). Hence</p>
+\[\begin{aligned}(0.02)(50)+(-0.01)(20)\\=0.8\,\mathrm{K/s}.\end{aligned}\]
+<p>The numerical changes compensate because both descriptions concern the same motion through the same temperature field. The result has units K/s; coordinate independence does not mean dimensionlessness.</p>
+<p>This instantaneous rate is exact under the stated assumptions. Using it to estimate a finite journey’s temperature change would be an approximation unless the rate stayed constant.</p>
+</details>
+<p>For intuition, think of \(dT_p\) as a linear readout attached to this point: give it a tangent vector and it returns that vector’s instantaneous temperature rate. It is a rule acting on arrows, not another arrow requiring a dot product.</p>
+<div data-source="graphic" data-question="Picture the local directions on the curved ground"></div>
+<p>No metric was needed to pair the differential with the motion. Asking instead for the direction of greatest temperature increase at a fixed physical speed would require a metric to define that speed.</p>
+</article>
+<footer><button id="fold-all" type="button">Fold all explanations</button>
+<p class="intro">Standalone teaching draft, not a change to the knowledge base or viewer. You can also compare the <a href="nested-explanations.html">Field equations prototype</a>.</p></footer>
+</main>
+<template id="tangent" data-owner="MATHS-1.5 Tangent space">
+<div data-statement><p>If \(\gamma(0)=p\) and \(v=\dot\gamma(0)\), then for a smooth scalar field \(f\),</p>
+\[v[f]\coloneqq\left.\frac{d}{dt}f(\gamma(t))\right|_{t=0}.\]
+<p>It is the instantaneous change of \(f\) along the motion represented by \(v\).</p></div>
+<div data-body><p>A smooth route through \(p\) supplies an instantaneous tangent vector there. Routes with the same first-order motion give the same directional readout on every smooth scalar field, even if they bend differently later. The temperature measurement therefore needs the tangent at the crossing, not the probe’s whole future path.</p>
+<p>A coordinate chart makes that readout calculable using coordinate rates:</p>
+<div data-source="chart" data-question="What does the board’s coordinate chart supply?"></div>
+<p>In that chart, the ordinary chain rule gives</p>
+\[\begin{aligned}v[f]&=v^1\partial_1f+v^2\partial_2f,\\v^a&=\frac{dx^a}{dt}.\end{aligned}\]
+<p>The chart supplies a way to calculate the readout. Changing it does not change the underlying motion or the scalar rate.</p>
+<div data-source="graphic" data-question="Picture the local directions on the curved ground"></div>
+</div></template>
+<template id="chart" data-owner="MATHS-1.2 Coordinate chart">
+<div data-statement><p>A coordinate chart assigns smooth local labels \((x^1,x^2)\) to a region of the surface. It changes the description of points and curves, not the points or the motion themselves. The labelling is one-to-one with a smooth inverse on the chosen patch.</p></div>
+<div data-body><p>Each scientist chooses a patch small enough that nearby ground points can be mapped smoothly and uniquely to the grid on the rigid board. Those two numbers let the scientist write temperature as a function of coordinates and record the probe’s track as \(x^a(t)\).</p>
+<p>The board is tangent at its reference point, not at every point in the patch. At another point, coordinate basis vectors follow the surface coordinate curves there. They are not the same fixed arrows drawn on the board. The ground can remain curved while its coordinates are well-defined.</p>
+<details><summary>Why do different boards still describe one motion?</summary><p>On an overlap the scientists have a smooth conversion \(y^b=y^b(x^1,x^2)\). Substituting the track \(x^a(t)\) gives the same route written as \(y^b(t)\). Its coordinate rates change by the chain rule; no ground point or physical trajectory has moved merely because its labels changed.</p></details>
+</div></template>
+<template id="graphic" data-owner="MATHS-1.5 Tangent space · Graphic">
+<div data-statement><p>Each ground point has a two-dimensional tangent space containing its possible instantaneous motions. The attached-plane picture is a visual aid for that local vector space, not a claim that the terrain is flat.</p></div>
+<div data-body><figure><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlLW5NXzFfNSI+Cjx0aXRsZSBpZD0idGl0bGUtbk1fMV81Ij5UYW5nZW50IHNwYWNlPC90aXRsZT4KPGRlZnM+Cgo8bWFya2VyIGlkPSJiYXNpc18yNjBfMTg0IiBtYXJrZXJXaWR0aD0iNSIgbWFya2VySGVpZ2h0PSI1IgogICAgICAgIHJlZlg9IjMiIHJlZlk9IjIuNSIgb3JpZW50PSJhdXRvIgogICAgICAgIG1hcmtlclVuaXRzPSJzdHJva2VXaWR0aCI+CiAgPHBhdGggZD0iTTAsMCBMMywyLjUgTDAsNSBaIiBmaWxsPSIjMjQ4YTNkIi8+CjwvbWFya2VyPgo8L2RlZnM+CjxwYXRoIGQ9Ik0xMTMuMTk5OTk5OTk5OTk5OTksMjczLjIgQzkxLjYsMjI1LjIgMjI0LjgsMjE1LjYgMzA3LjYsMjM4LjAgQzQ0MC44LDI3MC4wIDQwMS4yLDM3NC4wIDMxMS4yLDM3OC44IEMyMjQuOCwzOTQuOCA3Ny4yLDM3NC4wIDExMy4xOTk5OTk5OTk5OTk5OSwyNzMuMiBaIiBmaWxsPSIjZjNmOGZmIiBzdHJva2U9IiMxZjRmYmYiIHN0cm9rZS13aWR0aD0iNCIvPgo8cGF0aCBkPSJNMTE2LjgwMDAwMDAwMDAwMDAxLDI2Mi4wIEMxOTIuNCwyNDIuOCAzMDAuNCwyODEuMiAzNzkuNiwyNTguOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFiYmU4IiBzdHJva2Utd2lkdGg9IjIuNSIgb3BhY2l0eT0iMC40MiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMTYuODAwMDAwMDAwMDAwMDEsMjk0LjAgQzE5Mi40LDI3NC44IDMwMC40LDMxMy4yIDM3OS42LDI5MC44IiBmaWxsPSJub25lIiBzdHJva2U9IiNhYWJiZTgiIHN0cm9rZS13aWR0aD0iMi41IiBvcGFjaXR5PSIwLjQyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTExNi44MDAwMDAwMDAwMDAwMSwzMjYuMCBDMTkyLjQsMzA2LjggMzAwLjQsMzQ1LjIgMzc5LjYsMzIyLjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2FhYmJlOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIG9wYWNpdHk9IjAuNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTc4LjAsMjM4LjAgQzEzOC40LDI3Ni40IDIxNC4wLDMyMS4yIDE2My42LDM3NC4wIiBmaWxsPSJub25lIiBzdHJva2U9IiNhYWJiZTgiIHN0cm9rZS13aWR0aD0iMi41IiBvcGFjaXR5PSIwLjQyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTI1MC4wLDIzOC4wIEMyMTAuNCwyNzYuNCAyODYuMCwzMjEuMiAyMzUuNiwzNzQuMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFiYmU4IiBzdHJva2Utd2lkdGg9IjIuNSIgb3BhY2l0eT0iMC40MiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0zMjIuMCwyMzguMCBDMjgyLjQsMjc2LjQgMzU4LjAsMzIxLjIgMzA3LjYsMzc0LjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2FhYmJlOCIgc3Ryb2tlLXdpZHRoPSIyLjUiIG9wYWNpdHk9IjAuNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSIyNTAuMCIgY3k9IjMwMC4wIiByPSI5LjAiIGZpbGw9IiNkMjJmMmYiIHN0cm9rZT0iIzIyMjIyMiIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjI3MC4wIiB5PSIyOTQuMCIgZm9udC1zaXplPSIyOSIgZm9udC1mYW1pbHk9IlNUSVggVHdvIE1hdGgsIENhbWJyaWEgTWF0aCwgVGltZXMgTmV3IFJvbWFuLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmaWxsPSIjZDIyZjJmIj5wPC90ZXh0Pgo8cG9seWdvbiBwb2ludHM9IjE2Ni44LDEzMC4wIDQ0MC44LDEzMC4wIDM1My4yLDIzOC4wIDc5LjIsMjM4LjAiIGZpbGw9IiNmYmZiZmIiIHN0cm9rZT0iIzIyMjIyMiIgc3Ryb2tlLXdpZHRoPSI0IiBvcGFjaXR5PSIwLjkwIi8+CjxsaW5lIHgxPSIxNDUuMCIgeTE9IjE4NC4wIiB4Mj0iMzc3LjAiIHkyPSIxODQuMCIgc3Ryb2tlPSIjNTU1NTU1IiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9IjAuNTUiLz4KPGxpbmUgeDE9IjI4OS44IiB5MT0iMTUwLjAiIHgyPSIyMzAuMiIgeTI9IjIxOC4wIiBzdHJva2U9IiM1NTU1NTUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC41NSIvPgo8bGluZSB4MT0iMjYwLjAiIHkxPSIxODQuMCIgeDI9IjM0Ni4wIiB5Mj0iMTg0LjAiIHN0cm9rZT0iIzI0OGEzZCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG1hcmtlci1lbmQ9InVybCgjYmFzaXNfMjYwXzE4NCkiLz4KPGxpbmUgeDE9IjI2MC4wIiB5MT0iMTg0LjAiIHgyPSIzMTkuNiIgeTI9IjExNi4wIiBzdHJva2U9IiMyNDhhM2QiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBtYXJrZXItZW5kPSJ1cmwoI2Jhc2lzXzI2MF8xODQpIi8+Cjx0ZXh0IHg9IjM1Ni4wIiB5PSIxODguMCIgZm9udC1zaXplPSIyNiIgZm9udC1mYW1pbHk9IlNUSVggVHdvIE1hdGgsIENhbWJyaWEgTWF0aCwgVGltZXMgTmV3IFJvbWFuLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmaWxsPSIjMjQ4YTNkIj5l4oKBPC90ZXh0Pgo8dGV4dCB4PSIzMjYuMCIgeT0iMTA4LjAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtZmFtaWx5PSJTVElYIFR3byBNYXRoLCBDYW1icmlhIE1hdGgsIFRpbWVzIE5ldyBSb21hbiwgc2VyaWYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZmlsbD0iIzI0OGEzZCI+ZeKCgjwvdGV4dD4KPGxpbmUgeDE9IjI1MC4wIiB5MT0iMzAwLjAiIHgyPSIyNjAuMCIgeTI9IjIzNi4wIiBzdHJva2U9IiM1NTU1NTUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWRhc2hhcnJheT0iNiA3IiBvcGFjaXR5PSIwLjY4Ii8+Cjx0ZXh0IHg9IjM0Ni4wIiB5PSIxNDguMCIgZm9udC1zaXplPSIzNSIgZm9udC1mYW1pbHk9IlNUSVggVHdvIE1hdGgsIENhbWJyaWEgTWF0aCwgVGltZXMgTmV3IFJvbWFuLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmaWxsPSIjMjIyMjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UPHRzcGFuIGJhc2VsaW5lLXNoaWZ0PSJzdWIiIGZvbnQtc2l6ZT0iNjglIj5wPC90c3Bhbj5NPC90ZXh0Pgo8L3N2Zz4=" alt="A curved two-dimensional surface with a tangent plane attached at point p, containing two basis directions."><figcaption>For this two-dimensional manifold the tangent space \(T_pM\) is a two-dimensional local vector space at \(p\); its basis directions live in the attached plane.</figcaption></figure>
+<p>The flat board agrees with a tangent plane at its reference point only. Elsewhere the surface has its own tangent spaces. The surrounding three-dimensional picture helps visualisation; the mathematical definition does not require an embedding.</p></div></template>
+<script>
+  function insertSharedExplanations(container) {
+    Array.from(container.querySelectorAll('[data-source]')).forEach(function (use) {
+      var source = document.getElementById(use.dataset.source);
+      var fragment = source.content.cloneNode(true);
+      var statement = fragment.querySelector('[data-statement]');
+      statement.className = 'statement';
+      var body = fragment.querySelector('[data-body]');
+      insertSharedExplanations(body);
+      var explanation = document.createElement('details');
+      explanation.dataset.sharedSource = source.id;
+      var summary = document.createElement('summary');
+      summary.textContent = use.dataset.question;
+      var owner = document.createElement('span');
+      owner.className = 'source';
+      owner.textContent = source.dataset.owner;
+      summary.appendChild(owner);
+      explanation.append(summary, body);
+      use.className = 'reference';
+      use.replaceChildren(statement, explanation);
+      use.removeAttribute('data-source');
+    });
+  }
+  insertSharedExplanations(document.querySelector('article'));
+  document.getElementById('fold-all').addEventListener('click', function () {
+    document.querySelectorAll('main details').forEach(function (explanation) { explanation.open = false; });
+  });
+</script>
+</body>
+</html>
