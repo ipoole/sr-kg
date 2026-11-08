@@ -16,7 +16,8 @@
   and its domain-owned teaching draft explore recursively shared content. The
   [minimum schema](design/nested_explanations_schema.md) implements the Python
   source/loading contracts; the [shared reader](design/nested_explanations_renderer.md)
-  is implemented on synthetic content before Maths conversion. The
+  is implemented and used by the Maths pilot, whose draft records the actual
+  sources and preservation decisions. The
   earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
   the Field equations experiment and deferred graph reading highlights. These are
   teaching/design drafts, rather than converted production content. The

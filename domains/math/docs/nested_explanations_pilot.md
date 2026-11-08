@@ -1,13 +1,15 @@
 # Maths nested-explanations pilot: temperature, motion and covectors
 
-Stage 1 teaching draft, 8 November 2026. Runtime CSV, graphics and questions are
-unchanged. This draft exercises the [working design](../../../docs/design/nested_explanations_design.md)
-before schema work. Labels below identify proposed reusable pieces, not assigned
-new IDs or storage fields.
+Stage 1 teaching draft, 8 November 2026; implemented in the runtime CSV during
+stage 4. The draft below records the reviewed teaching argument, rather than
+mirroring every later wording change. Runtime CSV remains authoritative; §7
+records the actual sources and preservation decisions. See the
+[working design](../../../docs/design/nested_explanations_design.md).
 
 A [readable HTML prototype](nested_explanations_mockup.html) presents the teaching
 argument with working disclosures, equations and the shared tangent-space graphic.
-It is a standalone review page, not a runtime implementation.
+It remains a standalone review document; the actual viewer now uses the shared
+renderer and the authored units listed in §7.
 
 ## 1. Audience, destination and scope
 
@@ -319,3 +321,79 @@ The graph may continue to show the selected cotangent concept and its ordinary
 context. Opening the chart explanation must not add an edge or change the graph
 settings. Coordinate charts are needed by this coordinate calculation, not by
 every possible definition of tangent or cotangent space.
+
+## 7. Stage-4 implementation and preservation record
+
+The three main headings are **three existing native blocks**, ordered immediately
+after the Cotangent space overview. Their sequence is:
+
+| Reading purpose | Canonical block ID | Change |
+| --- | --- | --- |
+| A direction asks a temperature question | `math.cotangent_space.gradient_example` | Temperature differential, borrowed tangent result, local linearity and a deeper first-order clarification |
+| The readout on a board's grid | `math.cotangent_space.basis` | Borrowed chart result, dual basis, component pairing and local algebra |
+| A measurement scientists can compare | `math.cotangent_space.terrain_survey` | Worked velocity/temperature calculation, centimetre relabelling, shared illustration and metric caveat |
+
+Four supporting sources have short statements:
+
+- `math.tangent_space.directional_derivative`: the curve-based scalar rate;
+- `math.coordinate_chart.terrain_survey`: smooth local board labels;
+- `math.tangent_space.graphic`: the existing registered tangent-space illustration;
+- `math.m01_manifolds_and_coordinates.terrain_setup`: the existing module story,
+  optionally borrowed from the Cotangent space overview.
+
+The chart's **terrain example**, rather than its general definition, is the
+shared chart source. This keeps the board-specific explanation with its existing
+owner and leaves the general chart definition separate. The statement describes
+the labels briefly; projection, changing tangent planes and overlap conversion
+belong in its explanation. The tangent source uses that same source and the same
+Graphic unit as the root argument: neither is a copied paragraph/drawing.
+
+The graphic wrapper is the only new block, `math.tangent_space.graphic`. It
+replaces that concept's implicit graphic presentation and retains the registered
+SVG, icon and caption unchanged. Native and borrowed occurrences use the same
+asset. This illustration supplies geometric intuition, not a proof of covector
+linearity.
+
+### Identities and personal data
+
+Every previous block ID and owner is retained. No block is deleted, merged or
+moved to a different concept/module. Six existing bodies are revised: the chart
+terrain example, tangent directional derivative, and the Cotangent overview and
+three main argument blocks. Other existing bodies, including the covector
+definition, general readout, displacement example and dimensionless algebraic
+calculation, remain unchanged. Cotangent sequences are reordered; the numerical
+terrain calculation now has kind `worked_example`.
+
+The existing metre/centimetre **displacement** example remains distinct from the
+new velocity calculation: the former predicts kelvin to first order; the latter
+gives an instantaneous rate in kelvin per second. The new rate is 0.8 K/s on both
+grids. Coordinate rates are not presented as physical speed on an arbitrary grid.
+
+Stable native IDs preserve existing read/question records and block note targets.
+Paragraph notes in revised prose use the existing contextual recovery rules;
+records which cannot be matched remain stored under Notes needing placement.
+There is no new personal-data migration or forced retargeting of records.
+Unchanged-block notes and legacy graphic notes/read marks are exercised against
+the real Maths build in the browser tests. The new Graphic block has its own read
+mark, so full completion of Tangent space now includes this new unit.
+
+Concept IDs/numbering, module membership, layouts, edges, questions/options and
+registered graphic metadata/creators remain unchanged. Maths-2 content has no
+semantic changes; its rows merely receive empty optional columns in the shared
+Maths CSV. SR and GR files are untouched.
+
+### Sources and checks
+
+Tong's *General Relativity*, §2.2.1 and §2.3.1, support the tangent/covector
+framework already registered for those concepts. The chart now also cites
+§2.1.2. The [official HTML chapter](https://www.davidtong.org/teaching/general-relativity/grhtml/S2)
+was checked on 8 November 2026. The soil-survey narrative, units examples and
+numerical choices are original PhysicsKG teaching material.
+
+Build both `output/PhysicsKG.html` and `output/PhysicsKG_math.html` through the
+project environment. The latter loads only Maths; its missing-SR diagnostics
+come from unchanged worldline/coordinate-transform content, not this pilot.
+Structural tests check source sharing, short statements, local depth and reading
+order. Real-Maths browser checks exercise both branches, equations, reused SVGs,
+phone width and unchanged personal/graph state. Broader reader review and hosted
+preview publication remain stages 5–6.

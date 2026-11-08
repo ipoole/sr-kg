@@ -4,7 +4,7 @@ Stage 1, 8 November 2026. Reviewed design for the Maths pilot.
 
 Stage 2 now defines the [minimum schema](nested_explanations_schema.md) and its
 Python loading/model contracts. Stage 3 implements the [shared reader](nested_explanations_renderer.md)
-on synthetic content; production content conversion remains pending.
+on synthetic content; stage 4 now applies it to the selected Maths pilot blocks.
 The reviewed choices below are accepted. Keep statements as short as
 reasonably possible, retaining only essential qualifications.
 
@@ -197,8 +197,9 @@ storage representation, identity/reference contracts, normalisation, validation,
 cycle handling and compatibility. Stage 3 implements the renderer on synthetic
 data. Stage 4 applies the draft to selected Maths content. Stages 5–6 verify and
 publish a Maths-only review viewer. The Python source/loading contracts are now
-implemented, along with the stage-3 reader on synthetic content. Production
-content work remains pending.
+implemented, along with the stage-3 reader and stage-4 Maths content. The pilot
+document records actual source IDs and preservation decisions. Broader review
+and hosted Maths-only preview publication remain stages 5–6.
 
 The demonstration succeeds if a reader can explain the role of a covector, work
 the temperature-rate example, investigate both supporting branches and return

@@ -1,9 +1,10 @@
 # Nested explanations: shared reader
 
 Stage 3, 8 November 2026. Implemented and exercised on a synthetic teaching
-fixture; Maths authoring remains stage 4. This implements the [reviewed design](nested_explanations_design.md)
-and [minimum schema](nested_explanations_schema.md), without changing production
-concepts, edges or personal-data storage.
+fixture; stage 4 applies it to the real Maths pilot. This implements the
+[reviewed design](nested_explanations_design.md) and
+[minimum schema](nested_explanations_schema.md), without changing concept IDs,
+edges or personal-data storage.
 
 ## Data and rendering
 
@@ -98,5 +99,6 @@ and real MathJax typesetting after opening.
 
 There is no graph reading highlight, automatic navigation, nested completion,
 new nested note ownership, notation substitution or persistent learning journey.
-The standalone paper prototypes remain review documents; the actual Maths content
-will be converted against this shared reader in the next stage.
+The standalone paper prototypes remain review documents; the stage-4 Maths
+conversion and preservation record are in the
+[domain-owned pilot](../../domains/math/docs/nested_explanations_pilot.md#7-stage-4-implementation-and-preservation-record).

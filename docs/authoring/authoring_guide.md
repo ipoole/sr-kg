@@ -89,6 +89,8 @@ CSV is not a Python, JSON, or shell string literal. Use exactly one backslash:
 Never write doubled forms such as `\\(\\nabla_\\mu V^\\nu\\)`.
 MathJax will treat them as escaped text and may display raw notation.
 
+Inside `aligned`, use `\\` followed by whitespace or a newline to separate rows.
+
 CSV quoting is separate. Quote a complete field containing a comma, newline, or
 double quote, and double embedded CSV quotes. Do not add backslashes to repair
 CSV structure.

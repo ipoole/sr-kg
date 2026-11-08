@@ -18,18 +18,20 @@ def test_text_does_not_double_escape_latex_backslashes():
     module_content_blocks = _read_csv("module_content_blocks.csv")
 
     content_text = content_blocks.loc[
-        content_blocks["concept_id"].isin(concept_ids), ["title", "body"]
+        content_blocks["concept_id"].isin(concept_ids), ["title", "statement", "body"]
     ]
     question_text = study_questions.loc[
         study_questions["concept_id"].isin(concept_ids), ["prompt", "answer"]
     ]
     module_ids = set(modules.loc[modules["domain"].eq("math"), "module_id"])
     module_text = module_content_blocks.loc[
-        module_content_blocks["module_id"].isin(module_ids), ["title", "body"]
+        module_content_blocks["module_id"].isin(module_ids), ["title", "statement", "body"]
     ]
-    assert not content_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
-    assert not question_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
-    assert not module_text.apply(lambda column: column.str.contains(r"\\\\", regex=True)).any().any()
+    # A doubled command/delimiter is an escaping mistake. An aligned-equation
+    # row separator followed by whitespace is legitimate TeX, not escaping.
+    doubled_latex = r"\\\\(?=[A-Za-z]|\(|\)|\[|\])"
+    for text in (content_text, question_text, module_text):
+        assert not text.apply(lambda column: column.str.contains(doubled_latex, regex=True)).any().any()
 
 
 def test_module_titles_include_domain_and_module_number():

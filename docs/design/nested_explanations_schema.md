@@ -2,7 +2,7 @@
 
 Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
 stage 3 adds the [shared reader](nested_explanations_renderer.md) on synthetic
-content. Production content conversion remains stage 4. The
+content. Stage 4 applies it to the selected Maths pilot blocks. The
 [design](nested_explanations_design.md) and [Maths draft](../../domains/math/docs/nested_explanations_pilot.md)
 provide the intended reading experience. This document specifies storage and
 identity, not a second content format or renderer.
