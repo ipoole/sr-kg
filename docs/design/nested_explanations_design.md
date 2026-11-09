@@ -122,7 +122,9 @@ production use, without imposing a different model at each depth.
 No new nested notes, automatic reading marks, completion rules, bookmarks or
 cross-device reading-tree persistence are introduced in the pilot. Existing native
 top-level notes, read records and question IDs must remain valid. Borrowed units
-are read-only and gain no independent annotation/completion controls in this pass.
+show a read checkbox for their canonical source block, shared with its native
+page and all other occurrences. They gain no independent completion record or
+annotation controls in this pass.
 Do not copy personal records per occurrence or silently migrate their targets.
 Existing personal content remains personal; sharing authored units does not
 turn personal notes into publicly shared content.

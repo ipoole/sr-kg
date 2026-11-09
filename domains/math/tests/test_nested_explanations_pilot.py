@@ -58,3 +58,27 @@ def test_formal_algebra_and_intuition_stay_separate_with_local_depth(pilot):
     rate = pilot.content_units['math.cotangent_space.terrain_survey']
     assert any(isinstance(part, ContentExplanation) and part.slot == 'centimetres' for part in rate.parts)
     assert pilot.missing_domains == ('sr',)  # Existing non-pilot prose still refers to SR.
+
+
+def test_each_maths1_concept_has_a_shared_explanation_route(pilot):
+    concepts = ('manifold', 'coordinate_chart', 'coordinate_transformation',
+                'worldline', 'tangent_space', 'cotangent_space')
+    for concept in concepts:
+        units = [unit for id, unit in pilot.content_units.items()
+                 if id.startswith('math.' + concept + '.')]
+        assert any(list(references(unit.parts)) for unit in units)
+        assert any(unit.statement for unit in units)
+    # The chart/transition foundations terminate rather than recursively
+    # demanding the concept that borrowed them.
+    visiting, complete = set(), set()
+    def visit(id):
+        assert id not in visiting, f'Circular foundation route: {id}'
+        if id in complete:
+            return
+        visiting.add(id)
+        for reference in references(pilot.content_units[id].parts):
+            visit(reference.target_id)
+        visiting.remove(id)
+        complete.add(id)
+    for id in pilot.content_units:
+        visit(id)

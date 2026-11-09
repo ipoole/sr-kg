@@ -38,7 +38,8 @@ A borrowed occurrence shows the source's short statement in the enclosing
 argument and a quiet, initially folded question below it. Attribution identifies
 the owning concept/module and source block. Opening inserts the explanation
 without repeating the statement. The body uses the common disclosure, maths and
-graphic machinery but has no additional note/edit/read controls.
+graphic machinery. Its heading shares the source block's read control; there
+are no additional note/edit controls.
 
 Borrowed bodies are **lazy**: closed references do not construct their target's
 DOM or recurse through its dependencies. On first opening, that occurrence's body
@@ -82,7 +83,8 @@ Graphic units reuse the loaded owner's registered detail SVG/caption. Their
 explicit native block replaces the corresponding implicit graphic section,
 preventing a duplicate hero image. Legacy graphic-note placement remains available
 inside that native presentation, and its note bubble includes those existing
-graphic notes. Borrowed graphic occurrences are read-only.
+graphic notes. Borrowed graphic occurrences have the same canonical read tick
+as their native block, but no note controls.
 
 Every rendered instance namespaces its SVG IDs and local references, including
 accessible title/description links. Shared gradients, glyphs, markers and labels
@@ -102,3 +104,18 @@ new nested note ownership, notation substitution or persistent learning journey.
 The standalone paper prototypes remain review documents; the stage-4 Maths
 conversion and preservation record are in the
 [domain-owned pilot](../../domains/math/docs/nested_explanations_pilot.md#7-stage-4-implementation-and-preservation-record).
+
+## MATHS-1 extension and shared reading status
+
+All six MATHS-1 concepts now have short canonical statements and optional shared
+routes, using the same reader. Manifold, chart, transition/Jacobian and curve
+foundations extend the original temperature argument. Statements are blue
+(`#1458b0`) in both native and borrowed occurrences, including their mathematics.
+
+A borrowed heading uses the existing source-block read control. Its durable
+`data-read-block-id` identifies the source even inside another owner's block.
+Changing it updates every rendered copy, native completion and graph markers
+through the existing study controller, persistence and sync. Incoming data updates
+checkboxes in place without folding disclosures. No per-occurrence personal data
+is created. Opening a source does not mark it read. Local authored explanations
+still have no separate read record; notes on borrowed content remain deferred.

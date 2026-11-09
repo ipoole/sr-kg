@@ -225,7 +225,8 @@ For shared explanations, give the source block a short `statement` and insert
 `\explain{slot}{block_id}{target label}{local question}` in the borrowing body.
 Use `\explanation{slot}{title}{body}` for named local nesting. Keep IDs and slots
 stable, and keep statements as short as reasonably possible. Sources can be of
-different kinds. See the [minimum schema](../design/nested_explanations_schema.md);
+different kinds. Borrowed blocks share their source's read tick; local explanations
+have no independent reading status. See the [minimum schema](../design/nested_explanations_schema.md);
 the first production conversion is the Maths pilot.
 
 ## Study Questions

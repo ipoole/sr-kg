@@ -397,3 +397,22 @@ Structural tests check source sharing, short statements, local depth and reading
 order. Real-Maths browser checks exercise both branches, equations, reused SVGs,
 phone width and unchanged personal/graph state. Broader reader review and hosted
 preview publication remain stages 5–6.
+
+## MATHS-1 extension
+
+The remaining concepts now participate in shared reading paths: manifold structure,
+chart/inverse, coordinate transitions and Jacobians, and curves versus coordinate
+plots. Existing IDs, question records, module membership and graph edges remain
+unchanged. Tangent-vector construction borrows the probe route and Jacobian;
+worldline tangents borrow that construction. These dependencies terminate in
+local explanations rather than a prerequisite cycle. Maths-2 is unchanged.
+
+Statements remain short and are blue during this experiment. Borrowed source
+headings now expose the native read status and let readers update it in place.
+A read mark covers that canonical block, not all its borrowed prerequisites.
+Local algebra has no independent progress record. Notes remain native-only.
+
+Sources: Tong's official differential-geometry chapter, §§2.1.2 and 2.2.1,
+checked again for this pass. The terrain narrative and calculations are original.
+Phone/desktop tests traverse every MATHS-1 route, check maths and overflow, and
+exercise borrowed/native progress, persistence and module-source identity.

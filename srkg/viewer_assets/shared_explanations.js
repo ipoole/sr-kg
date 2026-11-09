@@ -96,6 +96,7 @@ function kgCreateSharedExplanations(options) {
         escape(ownerTitle + " · " + source.block.title) + '</span>',
       anchorId: entry.id, occurrenceKey: markup.occurrenceKey(child), slot: reference.slot,
       sourceId: reference.target_id, open: entry.open,
+      actions: [{position: "heading", html: options.readToggle(source.block.block_id, ownerTitle + " · " + source.block.title)}],
       bodyClass: "optional-detail-body kg-shared-body", bodyHtml: ""
     }) + '</div>';
   }
@@ -135,7 +136,9 @@ function kgCreateSharedExplanations(options) {
     var entry = entries.get(element.getAttribute("data-content-occurrence"));
     if (entry) { entry.open = element.open; }
     if (hydrate(element)) {
-      afterRender(document.getElementById("info_panel"));
+      // Hydrate only this subtree: another open sibling must receive its own
+      // toggle/typeset pass rather than being marked loaded outside this one.
+      afterRender(element);
       options.typeset(element);
     }
   }

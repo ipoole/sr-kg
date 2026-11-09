@@ -130,6 +130,7 @@
         });
         sharedExplanations = kgCreateSharedExplanations({
           markup: contentMarkup, concepts: conceptData, modules: moduleData,
+          readToggle: function(id, title) { return renderContentBlockReadToggle(id, title); },
           typeset: function(element) { typesetInfoPanel({element: element}); }
         });
         var escapeHtml = contentMarkup.escapeHtml;
@@ -6528,10 +6529,10 @@
         document.getElementById("info_panel").addEventListener("change", function(e) {
           var readToggle = e.target.closest(".content-block-read-toggle");
           if (readToggle) {
-            var contentBlock = readToggle.closest("[data-content-block-id]");
-            if (contentBlock) {
+            var blockId = readToggle.getAttribute("data-read-block-id");
+            if (blockId) {
               setContentBlockRead(
-                contentBlock.getAttribute("data-content-block-id"),
+                blockId,
                 readToggle.checked
               );
             }

@@ -81,7 +81,7 @@ def test_real_maths_argument_supports_both_reading_paths(maths_pilot_output, pla
         for picture in (picture1, picture2):
             picture.locator('.concept-graphic > svg').wait_for()
             picture.locator('.concept-graphic-caption mjx-container').first.wait_for()
-            assert picture.locator('.content-block-read-toggle,.kg-note-block-action').count() == 0
+            assert picture.locator('.kg-note-block-action').count() == 0
         linearity = argument.locator('details[data-content-slot="linearity"]')
         _open(linearity)
         _open(linearity.locator('details[data-content-slot="first-order"]'))
@@ -108,3 +108,57 @@ def test_real_maths_argument_supports_both_reading_paths(maths_pilot_output, pla
         source = _block(page, 'math.tangent_space.directional_derivative')
         assert source.locator(':scope > .content-block-body > .kg-content-statement').count() == 1
         assert source.locator(':scope > .content-block-body > .concept-line').count() > 0
+
+
+@pytest.mark.browser
+@pytest.mark.browser_full
+@pytest.mark.parametrize('width', [390, 1280], ids=['phone', 'desktop'])
+def test_maths1_shared_reading_controls_and_complete_routes(maths_pilot_output, playwright_browser, width):
+    api, browser = playwright_browser
+    with _open_browser_graph(api, browser, maths_pilot_output,
+                             {'viewport': {'width': width, 'height': 900}}) as graph:
+        page = graph.page
+        page.locator('#kg_view_select').select_option('details')
+        for concept in ('manifold', 'coordinate_chart', 'coordinate_transformation',
+                        'worldline', 'tangent_space', 'cotangent_space'):
+            graph.click_concept('math.' + concept)
+            # Deliberately traverse every route in this small authored DAG.
+            # Hydration is lazy, so reveal new children a layer at a time.
+            for _ in range(12):
+                closed = page.locator('#info_panel details.kg-content-framed:not([open])')
+                if not closed.count():
+                    break
+                closed.evaluate_all('els=>els.forEach(e=>e.open=true)')
+                page.wait_for_timeout(40)
+            else:
+                pytest.fail('Explanation routes did not terminate')
+            page.wait_for_function('''needle => !document.getElementById('info_panel').innerText.includes(needle)''', arg=r'\[')
+            assert page.locator('#info_panel mjx-merror,#info_panel [data-mjx-error]').count() == 0
+            assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1')
+            statements = page.locator('#info_panel .kg-content-statement')
+            assert statements.count() > 0
+            assert statements.first.evaluate('e=>getComputedStyle(e).color') == 'rgb(20, 88, 176)'
+        graph.click_concept('math.tangent_space')
+        graph.click_concept('math.cotangent_space')
+        tangent = _use(_block(page, 'math.cotangent_space.gradient_example'), 'tangent')
+        toggle = tangent.locator(':scope > summary .content-block-read-toggle')
+        assert not tangent.evaluate('e=>e.open')
+        toggle.check()
+        assert not tangent.evaluate('e=>e.open')
+        assert page.evaluate('kgContentReadProgress.isRead("math.tangent_space.directional_derivative")')
+        # Saved progress survives reload, and appears on the native page.
+        page.reload(wait_until='load')
+        graph.click_concept('math.tangent_space')
+        native = _block(page, 'math.tangent_space.directional_derivative').locator(
+            ':scope > summary .content-block-read-toggle')
+        assert native.is_checked()
+        native.uncheck()
+        graph.click_concept('math.cotangent_space')
+        toggle = _use(_block(page, 'math.cotangent_space.gradient_example'), 'tangent').locator(
+            ':scope > summary .content-block-read-toggle')
+        assert not toggle.is_checked()
+        # A borrowed module block uses its own durable source ID too.
+        survey = _use(_block(page, 'math.cotangent_space.overview'), 'survey')
+        survey.locator(':scope > summary .content-block-read-toggle').check()
+        assert page.evaluate('kgContentReadProgress.isRead("math.m01_manifolds_and_coordinates.terrain_setup")')
+        assert not graph.page_errors

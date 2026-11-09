@@ -103,7 +103,7 @@ def test_native_reading_and_independent_lazy_branches(shared_explanation_graph):
     assert first.get_attribute('id') != second.get_attribute('id')
     _open(left); _open(left)
     assert deeper.evaluate('e=>e.open')
-    assert first.locator('.content-block-read-toggle,.kg-note-block-action,.user-note-edit').count()==0
+    assert first.locator('.kg-note-block-action,.user-note-edit').count()==0
     assert not graph.page_errors
 
 
@@ -263,3 +263,33 @@ def test_lazy_explanations_typeset_real_maths(shared_explanation_output, playwri
         assert page.locator('mjx-merror,[data-mjx-error]').count() == 0
         assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1')
         assert not graph.page_errors
+
+
+@pytest.mark.browser
+def test_borrowed_read_marks_share_source_identity_and_preserve_reading(shared_explanation_graph):
+    page = shared_explanation_graph.page
+    _open(_reference(page, 'left'))
+    _open(_reference(page, 'right'))
+    copies = page.locator('.content-block-read-toggle[data-read-block-id="test.delta.definition"]')
+    copies.nth(1).wait_for()
+    assert copies.count() == 2
+    before = page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})')
+    copies.first.check()
+    assert copies.nth(1).is_checked()
+    assert page.evaluate('kgContentReadProgress.isRead("test.delta.definition")')
+    assert not page.evaluate('kgContentReadProgress.isRead("test.alpha.definition")')
+    assert not _reference(page, 'shared').first.evaluate('e=>e.open')
+    page.evaluate('kgContentReadProgress.setRead("test.delta.definition", false)')
+    assert not copies.first.is_checked()
+    copies.nth(1).focus()
+    page.keyboard.press('Space')
+    assert copies.first.is_checked()
+    assert page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})') == before
+    graph = shared_explanation_graph
+    graph.click_concept('test.delta')
+    native = page.locator('[data-content-block-id="test.delta.definition"] > summary .content-block-read-toggle')
+    assert native.is_checked()
+    native.uncheck()
+    graph.click_concept('test.alpha')
+    _open(_reference(page, 'left'))
+    assert not page.locator('.content-block-read-toggle[data-read-block-id="test.delta.definition"]').is_checked()

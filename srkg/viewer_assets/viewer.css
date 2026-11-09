@@ -3762,7 +3762,7 @@
 
     /* Shared statements remain in the argument; explanations are quiet disclosures. */
     #info_panel .kg-shared-reference { margin: 0.45em 0; }
-    #info_panel .kg-content-statement { margin: 0 0 0.35em; }
+    #info_panel .kg-content-statement { margin: 0 0 0.35em; color: #1458b0; }
     #info_panel .kg-shared-source {
         color: #586776;
         font-size: 0.75em;
@@ -3784,3 +3784,8 @@
     }
     #info_panel .kg-shared-figure { margin: 0.4em 0; }
     #info_panel .kg-content-inline[open] { padding: 0.45em 0.55em; }
+
+    #info_panel .kg-shared-explanation > summary {
+        position: relative;
+        padding-right: 1.6em;
+    }

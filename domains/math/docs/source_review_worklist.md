@@ -11,3 +11,8 @@ The nested-explanations pilot was checked against Tong's official HTML chapter
 on 8 November 2026: §2.1.2 for charts, §2.2.1 for tangent readouts and §2.3.1 for
 covectors/differentials. The soil survey, board projection and numerical units
 examples are original teaching material, not examples attributed to Tong.
+
+Rechecked on 9 November 2026 for the MATHS-1 extension: §2.1.2 supports the
+manifold/chart/transition material and §2.2.1 supports curves and tangents.
+The Jacobian examples apply the ordinary chain rule; no new source-specific
+historical claims are introduced.

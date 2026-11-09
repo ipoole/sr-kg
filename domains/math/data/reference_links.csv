@@ -2,3 +2,6 @@ source_type,source_id,reference_id,locator,note
 concept,math.tangent_space,tong.gr,§2.2.1 Tangent Vectors,Supports the vector/covector definitions and reciprocal transformation laws; the terrain unit calculations are original examples.
 concept,math.cotangent_space,tong.gr,§2.3.1 Covectors and One-Forms,Supports the vector/covector definitions and reciprocal transformation laws; the terrain unit calculations are original examples.
 concept,math.coordinate_chart,tong.gr,§2.1.2 Differentiable Manifolds,Supports smooth local charts and transitions; the board projection is an original teaching example.
+concept,math.manifold,tong.gr,§2.1.2 Differentiable Manifolds,Supports local Euclidean structure and compatible atlases; terrain narrative is original.
+concept,math.coordinate_transformation,tong.gr,§2.1.2 Differentiable Manifolds,Supports smooth transitions; Jacobian calculations follow the chain rule.
+concept,math.worldline,tong.gr,§2.2.1 Tangent Vectors,Supports curves and tangent construction; the surface-route versus spacetime-history example is original.

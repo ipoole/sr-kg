@@ -126,6 +126,9 @@ function kgCreateStudyController(options) {
   }
 
   function updateContentReadCompletionIndicators() {
+    document.querySelectorAll(".content-block-read-toggle[data-read-block-id]").forEach(function(toggle) {
+      toggle.checked = isRead(toggle.getAttribute("data-read-block-id"));
+    });
     document.querySelectorAll(".content-read-complete-indicator").forEach(
       function(indicator) {
         indicator.hidden = !contentOwnerReadComplete(
@@ -365,6 +368,7 @@ function kgCreateStudyController(options) {
   function renderContentBlockReadToggle(blockId, title) {
     var checked = contentReadProgressState.blocks[String(blockId || "")] === true;
     return '<input type="checkbox" class="content-block-read-toggle"' +
+      ' data-read-block-id="' + escapeHtml(blockId) + '"' +
       ' aria-label="Mark ' + escapeHtml(title) + ' as read"' +
       ' title="Mark as read"' +
       (checked ? " checked" : "") +
