@@ -1,5 +1,9 @@
 # Nested explanations: minimum schema
 
+**Design revision:** the [graph-aligned reading-tree design](nested_explanations_design.md)
+now proposes stricter graph/block contracts. This document records the existing
+implementation; it does not yet implement that revised model.
+
 Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
 stage 3 adds the [shared reader](nested_explanations_renderer.md) on synthetic
 content. Stage 4 applies it to the selected Maths pilot blocks. The

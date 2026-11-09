@@ -1,227 +1,369 @@
-# Nested explanations: design for the Maths pilot
+# Nested explanations: graph-aligned reading trees
 
-Stage 1, 8 November 2026. Reviewed design for the Maths pilot.
+Revised 9 November 2026 after review of the Maths prototype.
 
-Stage 2 now defines the [minimum schema](nested_explanations_schema.md) and its
-Python loading/model contracts. Stage 3 implements the [shared reader](nested_explanations_renderer.md)
-on synthetic content; stage 4 now applies it to the selected Maths pilot blocks.
-The reviewed choices below are accepted. Keep statements as short as
-reasonably possible, retaining only essential qualifications.
+**Status:** this document records the agreed direction and explicitly identifies
+open choices. It supersedes the earlier assumption that block borrowing and
+concept dependencies could remain loosely related. It does not change the
+runtime, schema or authored data by itself.
 
-No runtime or authored-data changes are made by this document. It incorporates
-the discussion following the [Field equations paper prototype](nested_explanations_paper_prototype.md)
-and [text mock-up](nested_explanations_mockup.html). Where they differ, this
-document takes precedence for subsequent work.
+The current v4.6.8 preview implements shared blocks, statements, recursive
+clarifications, canonical reading ticks and personal notes across all Maths
+concepts. Its arbitrary cross-concept borrowing and locally retitled disclosures
+do **not** yet enforce the graph/tree contract below. The three standard block
+roles, Definition previews and new restrictions on borrowing are also design
+directions, not claims about the current viewer. The
+[current schema](nested_explanations_schema.md) and
+[renderer record](nested_explanations_renderer.md) describe that implementation.
+The [Maths pilot](../../domains/math/docs/nested_explanations_pilot.md) and
+[Tensor Calculus review](../../domains/math/docs/tensor_calculus_teaching_review.md)
+record the existing content. Earlier paper prototypes remain historical experiments.
 
-The proposed teaching text and source audit are in the domain-owned
-[Maths pilot](../../domains/math/docs/nested_explanations_pilot.md).
-Read that first to judge the educational experience; use this document to assess
-the reusable structure and behaviour. Storage syntax and schema versioning are
-stage 2 work, not decided here.
+## 1. Purpose and vocabulary
 
-## 1. Purpose and first demonstration
+The graph is the learner's map of an argument's foundations. The reading tree
+lets the learner inspect those foundations without losing the enclosing argument.
+A reader can accept a supporting statement provisionally and continue, or unfold
+its support before continuing. Intuition and worked examples matter as well as
+formal reasoning.
 
-Enable a reader to accept a stated result and continue, or unfold its meaning,
-reasoning, example or graphic without leaving the enclosing argument. Different
-readers can investigate foundations first or revisit them after seeing their
-application. No traversal mode needs to be selected.
-
-The pilot is a real Maths-only build, centred on MATHS-1.6 Cotangent space:
-**How does a temperature field measure a direction of motion?** Tangent spaces
-and coordinate charts provide reusable supporting content. The terrain story
-supplies a continuous motivating setting, not separate unrelated examples.
-
-The first demonstration includes mixed content types, genuinely repeated shared
-content, a local clarification nested inside an explanation, a calculation and
-a shared graphic. It is not a conversion of all Maths content.
-
-## 2. Agreed content model
-
-A **content unit** has stable identity, an owning concept or module, a short
-title, a semantic type and content. A top-level unit is a **block**; a nested unit
-is an **explanation**. These are placement terms, not separate implementations.
-An explanation may be locally authored or refer to another independently owned
-unit. Local children can themselves contain local children or shared references.
-
-A unit intended for borrowing supplies an explicitly authored **statement**:
-what the reader can use without opening its explanation. It can contain equations
-or essential qualifications. It is not an extracted first sentence or a long
-replacement title. Some kinds, such as graphics and history, may use a statement
-that describes their contribution rather than asserting a theorem. We will test
-the terminology, not require every kind to imitate mathematical prose.
-
-The unit's **explanation** develops the statement. A content unit does not need
-to be borrowable merely because it exists. Unconverted blocks need no invented
-statement or new disclosure wrapper.
-
-For a Graphic, the explanation includes the graphic, its caption and any needed
-qualification. The pilot should wrap an existing registered SVG as addressable
-content, not copy its drawing into several blocks. Exact addressing belongs to
-the schema stage.
-
-### Native and borrowed presentation
-
-| Situation | Statement | Explanation |
-| --- | --- | --- |
-| Native block folded | Short title only; no statement-length heading | Hidden |
-| Native block open | Included once at the start, where supplied | Visible directly; locally nested clarifications can remain folded |
-| Borrowed occurrence folded | Visible in the enclosing prose | Folded below a short, locally appropriate question/title |
-| Borrowed occurrence open | Remains visible, without repetition | Visible beneath it, with source attribution |
-
-Opening a native block must not impose another click simply because it is
-shareable. Source content is shared; initial presentation depends on placement.
-Both presentations use the same content-unit machinery.
-
-Statement previews on hover/focus may be useful later. They are not part of the
-first demonstration and cannot become the only means of accessing a statement
-on touch devices.
-
-### Grammatical connections
-
-A reference occurrence supplies the **local hook**: why this material is needed
-here, and the question inviting expansion. The target supplies its canonical
-statement and explanation. A local bridge can follow the inserted material.
-
-Do not generate fluent prose by inserting titles into a universal sentence.
-Do not silently tailor a canonical statement by substitution. The Maths draft
-uses compatible notation and scopes its statements to the same surface setting;
-notation remapping and selectable statement variants are deferred.
-
-### Types and roles
-
-Explanatory paths are heterogeneous. A Derivation may borrow a Definition, use a
-Worked example and embed an Intuition or Graphic. The target type describes what
-that unit is; the reference's purpose describes its role in this argument.
-
-Retain existing meaningful types where possible, including Historical note;
-reserve Context for the viewer's existing context rule. Do not introduce separate
-“formal” and “intuition” reading modes. Any initial reference-role vocabulary must
-be justified by the pilot rather than made an exhaustive taxonomy in advance.
-
-## 3. Sharing, identity and transient state
-
-Separate **source identity** from **occurrence identity**. A shared unit is
-authored once, but each use is a distinct location in an unfolding page. The same
-source may appear twice through different branches, or natively and as an
-embedded explanation on the same concept page.
-
-Each occurrence has independent disclosure state, including the state of its
-children. Closing an ancestor hides the branch but preserves those states for
-reopening during the page visit. Reopening a parent must not synchronise its
-descendants with a sibling occurrence. Rendering and ordinary sync must not
-reset the current reading arrangement or scroll position.
-
-The tree of occurrences is generated from the reusable content network. A source
-already on the active ancestor chain is a recursive reference, not an invitation
-to expand indefinitely. Show its statement and a return reference instead. A
-source already open in a different branch is not a cycle and remains expandable.
-The concrete return control, identity format and validation rules need specification
-in stage 2. Resource/depth limits are implementation details to resolve before
-production use, without imposing a different model at each depth.
-
-No automatic reading marks, new completion rules, bookmarks or
-cross-device reading-tree persistence are introduced in the pilot. Existing native
-top-level notes, read records and question IDs must remain valid. Borrowed units
-show a read checkbox for their canonical source block, shared with its native
-page and all other occurrences. They gain no independent completion record or
-reading records. Notes now use the canonical source paragraph anchors in both
-native and borrowed presentations. Named local explanations use their source
-block ID and stable slot path; notes inside personal notes remain deferred.
-Do not copy personal records per occurrence or silently migrate their targets.
-Existing personal content remains personal; sharing authored units does not
-turn personal notes into publicly shared content.
-
-## 4. Interaction contract for the first demonstration
-
-| Action | Result |
+| Term | Meaning |
 | --- | --- |
-| Open a native block | Read its statement and explanation together |
-| Open a borrowed explanation | Reveal the target's explanation in place; retain its statement and surrounding prose |
-| Open a local Algebra / Why exactly? | Reveal the locally authored child using the same disclosure behaviour |
-| Open the same source through another branch | Create/use that occurrence's independent open state |
-| Close a parent | Hide the branch, retaining descendant state for this page visit |
-| Scroll or zoom Details | Ordinary reading; no interpretation of attention or understanding |
-| Activate a disclosure by keyboard | Same effects as pointer activation; retain focus on its heading |
-| Follow an ordinary concept link or select another graph node | Existing explicit navigation behaviour; a disclosure is not such a link |
+| Block | An independently owned content unit with a stable ID and semantic type |
+| Exposition | The authored argument or teaching text within a Derivation or Explanation block |
+| Statement | A short canonical contribution the reader may accept without unfolding its support |
+| Dependency branch | A cross-concept reading step justified by an actual concept edge |
+| Block inclusion | Reuse of another owned block; same-concept inclusion adds no graph hop |
+| Local clarification | Content authored inside its enclosing block, such as Algebra or Why exactly?; it may itself contain clarifications |
+| Edge justification | Why the source concept uses the target concept in this argument |
+| Occurrence | One appearance of a canonical source within a particular reading path |
 
-Native and borrowed content must support mathematics and accessible disclosures.
-Keep folded explanations compact. Avoid excessive cumulative indentation on
-phones, and retain the existing quiet folded / thin-bordered open styling.
-Expansion must not force an unrelated scroll or camera change. Content can extend
-below the viewport; preserve the user's place at the activation point where feasible.
+A block's title identifies it; its statement expresses its contribution; its body
+explains that contribution. Statements stay as short as reasonably possible,
+retaining essential assumptions. They are explicitly authored, not extracted from
+the first sentence or silently adapted by notation substitution.
 
-The pilot will use normal view controls, including Details-only on phones. It
-must not require simultaneous Graph and Details to make sense.
+## 2. Standard concept blocks and reading profiles
 
-## 5. Relationship to the concept graph
+**Agreed direction:** each concept provides Definition, Derivation and Explanation
+blocks, alongside optional supporting material such as intuition, examples,
+graphics and historical notes.
 
-The existing graph remains usable but **reading highlights are deferred**.
-Opening explanations in the pilot does not change Selection, Context rule, Graph
-mode, module representation, layout, camera or URL/history. No scroll tracking,
-automatic module expansion or new Graph mode is introduced.
+| Standard block | Purpose |
+| --- | --- |
+| Definition | What the concept means; canonical content for ordinary concept-reference previews |
+| Derivation | Succinct derivation/construction route for a reader reasonably familiar with the subject, including its starting assumptions |
+| Explanation | A more supportive exposition for a less experienced reader, with motivation, interpretation, examples and clarification |
 
-Block references identify contributions to particular explanations. Concept edges
-are the coarser authored relationships between ideas. A shared graphic or optional
-intuition is not automatically a prerequisite. A coordinate-based explanation of
-a tangent vector does not establish that tangent space intrinsically requires a
-coordinate chart. No concept edges are generated automatically from references.
+A primitive concept, definition or postulate can be a terminal foundation. Its
+Derivation must honestly identify that status rather than invent a proof. The
+precise presentation of such endpoints and migration of seed content remain to
+be designed. Three standard roles do not require three long blocks.
 
-Keep enough source/occurrence information for later graph integration: the owner
-of an explicitly opened explanation could receive a distinct reading highlight
-while Selection remains on the root concept. Local explanations retain their
-owner; closing the active branch would fall back to its visible ancestor. Folded,
-off-screen and excluded graph targets must not cause implicit axis changes.
-Those behaviours need a separate implementation and review stage.
+| Reading profile | Outgoing dependency edges | Normal continuation at a supporting concept |
+| --- | --- | --- |
+| Derivation | `DERIVES_FROM`, `CONSTRUCTED_FROM` | Its Derivation exposition |
+| Explanation | Those two plus `REQUIRES` — the Foundations set | Its Explanation exposition |
 
-## 6. Compatibility and domain boundaries
+The supporting Definition can establish what is being accepted at the transition.
+Other blocks supply material inside the relevant concept's exposition.
 
-There is one modified viewer and one common internal content model. Old blocks
-should map to it as title/type/body; new statements and references are optional
-capabilities. This is not a promise to support two parallel formats indefinitely.
-If simple compatibility is impractical, present a concrete mechanical migration
-before implementing it, preserving identities and personal data.
+Explanation is **not** generated merely by adding prerequisite branches to
+Derivation. Even when both profiles traverse exactly the same edges, their
+expositions may differ substantially: equations and assumptions in one;
+interpretation, examples and intermediate reasoning in the other. Sharing content
+is available where useful, not mandatory sentence-by-sentence reuse.
 
-Only Maths authored content is revised for the pilot. Shared loader/renderer work
-must still generate the unconverted SR and GR collection. Maths-only loading must
-not read or import those domains to resolve references.
+Only Derivation and Explanation blocks make inclusions of other owned blocks,
+local or cross-concept. Other block types do not call owned blocks. However,
+**any block may contain locally authored folded clarifications, recursively**.
+The restriction on owned-block calls also applies inside those clarifications.
+This distinction permits a Definition to explain a subtle phrase locally without
+turning it into a second dependency-tree entry point.
 
-Within Maths, unknown targets are authoring errors. References to excluded domains
-follow the existing missing-domain warning policy and cannot display a statement
-that was never loaded. Stage 2 must specify a readable source-side fallback using
-the local hook and target label, with no working expansion or hidden cross-domain
-lookup. The initial teaching argument contains no external-domain references.
-Other existing Maths content does reference SR. A Maths-only build can therefore
-still report the expected missing-SR warnings; those do not justify loading SR
-or changing unrelated content to silence the diagnostics.
+## 3. One dependency structure, two presentations
 
-## 7. Stage boundaries and review gate
+**Agreed contract:** the concept graph defines the reading tree. Exposition and
+edges are authored together; their agreement must be checked by construction.
 
-Stage 1 settled this experience and the teaching draft. Stage 2 defines the
-storage representation, identity/reference contracts, normalisation, validation,
-cycle handling and compatibility. Stage 3 implements the renderer on synthetic
-data. Stage 4 applies the draft to selected Maths content. Stages 5–6 verify and
-publish a Maths-only review viewer. The Python source/loading contracts are now
-implemented, along with the stage-3 reader and stage-4 Maths content. The pilot
-document records actual source IDs and preservation decisions. Broader review
-and hosted Maths-only preview publication remain stages 5–6.
+1. Every cross-concept dependency branch realises an actual graph edge permitted
+   by the chosen reading profile.
+2. Every eligible graph dependency has an explanatory realisation available
+   through that profile's entry point. Arbitrary individual blocks need not each
+   repeat the entire concept's support structure.
+3. Same-concept block inclusions and local clarifications add no concept hop.
+4. Multiple occurrences of one source remain one concept on the map.
+5. Ordinary cross-references are not counted as dependency-tree branches.
 
-The demonstration succeeds if a reader can explain the role of a covector, work
-the temperature-rate example, investigate both supporting branches and return
-without losing the argument. Shared content must really have one authored source,
-not several copies maintained in step. Deepest mathematical exposition is not a
-requirement; differentiability, linearity and the chain rule may be explicit
-borrowed foundations.
+For a given root, profile and graph depth, the tree's **available cross-concept
+branches**, projected onto concept nodes and edges, must match the corresponding
+Context subgraph. The learner need not open every available branch. The subset
+actually investigated can be highlighted later without redefining Context.
 
-The following review choices were accepted before stage 2:
+Use the existing graph traversal's node **and edge** sets. Do not independently
+reimplement hops as disclosure nesting or branch length: shared descendants can
+have several routes and different path lengths from the root.
 
-1. Is the short folded argument useful and honest about its assumptions?
-2. Are native blocks directly readable without an extra disclosure layer?
-3. Do repeated shared statements remain helpful rather than tiresome?
-4. Do the graphic and intuition clarify the same argument without pretending to
-   be its proof?
-5. Is source attribution sufficient to explain reuse without exposing editorial
-   machinery to the learner?
+The graph determines available supports. Authors select the supporting blocks,
+place the transitions in the argument and order them readably. A missing edge or
+missing explanatory realisation is an authoring diagnostic, not an invitation to
+silently add edges or manufacture prose. A development-only list of otherwise
+unplaced supports could expose gaps; whether to retain such a fallback is open.
 
-The stage-2 schema wraps an owner's registered detail illustration as a Graphic
-unit and uses the local hook to express purpose without a reference-role enum.
-Neither requires separate renderers or type-homogeneous traversal paths.
+### Dependency hierarchy
+
+`REQUIRES` is the broad learning-dependency relation. `DERIVES_FROM` and
+`CONSTRUCTED_FROM` are more specific forms and imply it. Store the strongest
+applicable dependency description rather than redundant copies within this
+family. The implication concerns the argument or construction presented, not
+every conceivable approach to the concept.
+
+Foundations already traverses the inclusive family. The current Prerequisites
+preset follows only explicit `REQUIRES`; bringing it into line with inclusive
+prerequisite semantics is future implementation work.
+
+`COMPONENT_OF`, `INSTANCE_OF` and `RELATED` do not automatically imply a learning
+prerequisite. Their role in explanatory traversal is unresolved; initially they
+remain outside these two profiles. A prerequisite and a taxonomic relationship
+are independent assertions, so the strongest-edge rule does not settle whether
+parallel edges from different families should be retained.
+
+### Intermediate concepts and alternatives
+
+Do not bypass a graph path simply because a deeper block is convenient to borrow.
+Preserve meaningful intermediate concepts, or review the graph and exposition
+together. Transitive pruning must not be undone by automatically adding a direct
+edge for every borrowed source.
+
+Keep both dependency edges when there are alternative arguments. The exposition
+must distinguish **joint supports** from **alternative routes**; it must not imply
+that the learner needs every alternative proof. Grouping, wording and eventually
+visual styling should make that distinction apparent. Storage and route-selection
+semantics are not yet decided. The available map/tree can offer alternatives
+without claiming that every displayed edge belongs to one chosen proof.
+
+## 4. How a supporting branch reads
+
+The purpose is: **if you understand and accept this statement, carry on;
+otherwise, the folded content explains it.** A heading should not be an enticing
+question whose answer the target block does not actually provide.
+
+The conceptual sequence is:
+
+1. Edge justification: why A uses B here.
+2. Canonical supporting statement supplied by B's relevant content.
+3. A folded, accurately titled explanation of that statement, with attribution.
+4. A local bridge back into A's argument where needed.
+
+These are semantic roles, not a requirement to display four separate boxes or
+labels. The exact placement of Definition versus a profile-specific statement
+at a concept transition still needs a worked prototype.
+
+Preserve the canonical title where possible. A local title variation must still
+identify what the explanation explains; contextual purpose belongs primarily in
+the connecting prose. Do not retitle a covector Definition as “What must remain
+unchanged when we relabel?”: the Definition does not establish coordinate
+invariance. “Covectors as linear readouts” accurately describes that support.
+
+The edge-specific note should supply the justification, rather than remain only
+hover information. Author it as grammatical, self-contained connecting prose
+with compatible notation and assumptions. Do not concatenate arbitrary titles
+and sentence fragments. An edge's general justification and a block-specific
+application may need distinction; their association with the same edge must
+remain explicit. The exact storage contract is open.
+
+### Same-concept inclusions
+
+**Agreed:** calls to other blocks of the same concept should also be folded and
+indented. They use the same source, statement, attribution and reading/note
+machinery. They remain within the current graph node and consume no hop. The
+same principle applies when an exposition includes its own Intuition, Example
+or Graphic block. This is distinct from a locally authored clarification, though
+both share disclosure rendering.
+
+Cross-concept supporting graphics/examples belong within the corresponding
+concept branch, not in an unexplained shortcut across the map.
+
+### Prototype colours
+
+**Required during prototype development:** distinguish both statements and edge
+justifications from ordinary exposition, and from each other. Keep statement
+text, including mathematics, blue (currently `#1458b0`). Use a distinct text colour
+for edge justification; a dark teal such as `#08776e` is a provisional candidate,
+not an approved final palette. Apply the distinction consistently to repeated
+occurrences. Do not use italics as the primary signal for mathematical text.
+
+Colour is an editorial aid here, not the only means of identifying the roles:
+placement, attribution and accessible descriptions must remain meaningful.
+Final cosmetic styling, including how to convey “optional support”, remains open.
+This document does not implement the new justification colour.
+
+## 5. Graph and reading-tree alignment
+
+**Required outcome:** whenever the graph is presented as the current reading
+map, its root Selection and Context edge set must match the reading tree's root
+and profile. A later reading-attention highlight identifies the current concept
+without moving the root Selection.
+
+**Open interaction choice:** starting a reading tree may explicitly establish
+Selection and Context, as Show in graph does. Candidate actions are “Read
+derivation” and “Read explanation”, or a Show in graph action attached to those
+blocks. Merely opening a block need not be the start command. Exact controls
+and when alignment begins are not decided.
+
+Once a tree is active, unfolding within it should retain the root and profile.
+Same-concept inclusions retain the highlighted concept; a dependency branch
+advances attention to its target. No implicit camera movement, layout change or
+module expansion follows merely from opening prose.
+
+If the user changes Selection or Context, the app must not silently leave an
+old tree paired with a different map. Options include explicitly reconfiguring
+or ending the active reading tree, or asking the user to resume its map. Which
+policy is simplest remains open. Uses, Related and arbitrary Custom contexts
+cannot silently be treated as foundational derivations.
+
+Graph mode, module representation and camera framing remain distinct controls.
+A supporting concept can be represented by its folded module; the map still needs
+a clear indication of where reading attention lies. Details-only reading on a
+phone remains valid: alignment must not require both panes to be visible.
+
+### Graph depth versus available reading
+
+It is not settled whether graph depth limits the available reading tree or only
+the portion currently mapped. Two candidates are:
+
+- Limit cross-concept expansion to the Context subgraph, show a clear boundary
+  marker, and offer an explicit action to extend depth in both views.
+- Let opening a deeper branch extend the mapped Context depth, with a clear
+  indication of that effect, instead of requiring a separate depth-change action.
+
+Both must prevent silent divergence. A boundary concept may retain its statement
+and local clarifications without exposing further unmapped dependency branches.
+Do not silently omit essential premises without indicating the depth boundary.
+Starting depth, automatic versus requested extension, and behaviour when the
+user reduces depth while branches are open all remain to be tested.
+
+## 6. Excessive visual depth
+
+**Open:** around six cumulative indentation levels will exhaust useful width,
+earlier on phones. This is a presentation problem separate from dependency hops
+and from parser/resource limits. Do not truncate a valid argument merely because
+its indentation is deep.
+
+Candidate solutions to prototype:
+
+| Approach | Benefit | Cost / question |
+| --- | --- | --- |
+| Cap cumulative indentation; use path markers or rails beyond the cap | Keeps the enclosing argument on one page | Deep parentage needs another clear cue |
+| Focus a deep branch at full available width, with a breadcrumb and Return | Gives equations and prose enough space | Must preserve and restore the enclosing reading state and position |
+| Reduce indentation increments with depth/viewport width | Small initial change | Does not solve arbitrary depth on its own |
+
+A plausible first experiment combines a modest indentation cap with an explicit
+full-width branch-focus action. This is a proposal, not an implementation decision.
+Logical ancestry, attribution, notes, independent fold state and eventual graph
+attention must remain correct whichever layout is chosen. Local clarifications
+consume visual depth but no concept hops. Never use indentation width to compute
+Context depth. Horizontal scrolling of the entire reading tree is not an adequate
+phone solution.
+
+## 7. Ordinary cross-references
+
+Definitions provide the canonical content for `\cref` mouseover/preview, with an
+equivalent touch/keyboard means of inspection. Inspecting a reference should not
+require leaving the enclosing exposition or change root Selection/Context.
+Concise Definition authoring and treatment of lengthy Definition clarifications
+in previews need review; avoid replacing a definition with an unrelated summary.
+
+**Provisional:** allow ordinary `\cref` references even when no direct graph edge
+connects the concepts. They can supply terminology, comparisons or excursions.
+They do not automatically assert a `RELATED` edge and are not dependency branches
+for tree/map matching. Following a link remains explicit navigation.
+
+The boundary needs authoring discipline: a required premise must not be hidden
+in an ordinary cross-reference to evade the dependency model. How strict
+validation should be, and whether readers need a visible distinction between
+support and excursion links, remain open.
+
+## 8. Pruning block types
+
+**Agreed goal:** reduce the current 17 types. The final vocabulary is **not yet
+agreed**, and this document does not remove types or migrate content.
+
+One candidate for discussion is the three core types plus Overview, Intuition,
+Example, Graphic and Historical note (eight in total). Under that proposal:
+
+- Worked example could become Example, with an informative title.
+- Result, Summary, Construction, Decomposition and Derivation step could become
+  appropriately placed Derivation/Explanation content or local clarifications.
+- Convention, Warning and Misconception might become explanatory content with
+  explicit titles or an appropriate presentation cue.
+
+These are possibilities, not prescribed conversions. Important warnings and
+assumptions must remain conspicuous. A reduced type list must still support
+useful authoring, previews and navigation, rather than simply move an equally
+large taxonomy into another field. Type migration must preserve meaningful
+block identities, notes, reading records and tutorial targets; do not mechanically
+merge existing blocks merely to reduce the number of type names.
+
+## 9. Sharing, persistence and domain boundaries
+
+Keep one shared renderer, separating semantic role, placement and capabilities.
+Native blocks show statement and body directly when opened; being reusable must
+not impose an extra native disclosure layer. Folded children stay compact and
+opened children retain the established quiet frame styling, subject to later
+cosmetic review.
+
+A source is authored once. Each occurrence has independent disclosure state.
+Closing a parent retains descendant state for the page visit. Rerenders, note
+editing and sync preserve the current tree and reading position. Repeated sources
+in sibling branches remain expandable; an active ancestor cycle needs an explicit
+return reference instead of unbounded expansion. Do not confuse visiting another
+block of the same concept with repeating the same source in a cycle.
+
+Read ticks and notes retain canonical source identity, not occurrence identity.
+Named local notes use the enclosing source block and stable slot path. Opening
+content never automatically marks it read. Personal content remains private;
+notes inside personal notes and persistent/synchronised reading paths are deferred.
+
+Keep old content valid while the new rules are prototyped, without maintaining
+parallel renderers. Identify nonconforming legacy content honestly rather than
+claiming it satisfies graph/tree matching. Migration, validation severity and new
+schema fields require a separate plan preserving existing identities.
+
+A domain-filtered build reads only selected packages. Missing external domains
+produce the established warnings and readable unavailable-support boundaries;
+never load excluded packages to resolve a reading branch. Map/tree guarantees
+must be stated for the loaded edition, with omitted external supports apparent.
+
+## 10. Next design exercise and review questions
+
+The [standalone HTML prototype](../../domains/math/docs/graph_aligned_reading_mockup.html)
+and its [review notes](../../domains/math/docs/graph_aligned_reading_review.md)
+now make this exercise concrete. They test proposals; they do not implement
+the revised schema in the viewer.
+
+Work through Tensor transformation law with its graph beside the exposition.
+Under the **current** edges, its transitive Derivation Context reaches Coordinate
+transformation, Coordinate chart and Manifold. Foundations additionally reaches
+Index notation, Tensor field, Cotangent space and Tangent space. Worldline is not
+in those supporting contexts merely because some prose mentions it.
+
+The current direct borrowing of a Cotangent definition is therefore not an
+appropriate one-hop Derivation branch. Decide what an experienced reader accepts,
+what becomes an ordinary reference, and how the fuller Explanation follows its
+actual dependency path. Map every transition to its edge justification and target
+blocks. Do not add shortcut edges merely to retain the current prose layout.
+
+Use that exercise to settle:
+
+1. The compact transition layout: edge justification, Definition/profile statement,
+   accurate folded title and optional same-concept supporting blocks.
+2. Starting a reading tree and keeping Selection/Context aligned after user changes.
+3. Depth boundaries and the presentation of deep branches on phones.
+4. Joint supports versus alternative routes.
+5. The boundary between ordinary references and explanatory dependencies.
+6. A genuinely smaller block-type vocabulary and a safe content migration.
+
+Only then revise storage/validation and implementation. The existing preview
+remains a useful content/rendering experiment, not evidence that the stronger
+semantic contract is already implemented.

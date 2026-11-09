@@ -1,5 +1,9 @@
 # Nested explanations: shared reader
 
+**Design revision:** the [graph-aligned reading-tree design](nested_explanations_design.md)
+now proposes stricter graph/block contracts. This document records the existing
+implementation; it does not yet implement that revised model.
+
 Stage 3, 8 November 2026. Implemented and exercised on a synthetic teaching
 fixture; stage 4 applies it to the real Maths pilot. This implements the
 [reviewed design](nested_explanations_design.md) and
