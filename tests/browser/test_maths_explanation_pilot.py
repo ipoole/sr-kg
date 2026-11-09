@@ -81,7 +81,7 @@ def test_real_maths_argument_supports_both_reading_paths(maths_pilot_output, pla
         for picture in (picture1, picture2):
             picture.locator('.concept-graphic > svg').wait_for()
             picture.locator('.concept-graphic-caption mjx-container').first.wait_for()
-            assert picture.locator('.kg-note-block-action').count() == 0
+            assert picture.locator(':scope > summary .kg-note-block-action').count() == 1
         linearity = argument.locator('details[data-content-slot="linearity"]')
         _open(linearity)
         _open(linearity.locator('details[data-content-slot="first-order"]'))

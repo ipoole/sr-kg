@@ -39,7 +39,7 @@ argument and a quiet, initially folded question below it. Attribution identifies
 the owning concept/module and source block. Opening inserts the explanation
 without repeating the statement. The body uses the common disclosure, maths and
 graphic machinery. Its heading shares the source block's read control; there
-are no additional note/edit controls.
+notes use the same source paragraph anchors as on its native page.
 
 Borrowed bodies are **lazy**: closed references do not construct their target's
 DOM or recurse through its dependencies. On first opening, that occurrence's body
@@ -84,7 +84,7 @@ explicit native block replaces the corresponding implicit graphic section,
 preventing a duplicate hero image. Legacy graphic-note placement remains available
 inside that native presentation, and its note bubble includes those existing
 graphic notes. Borrowed graphic occurrences have the same canonical read tick
-as their native block, but no note controls.
+as their native block, and share the same canonical notes.
 
 Every rendered instance namespaces its SVG IDs and local references, including
 accessible title/description links. Shared gradients, glyphs, markers and labels
@@ -100,7 +100,7 @@ same-page rebuilds, navigation reset, keyboard focus, phone width, parser parity
 and real MathJax typesetting after opening.
 
 There is no graph reading highlight, automatic navigation, nested completion,
-new nested note ownership, notation substitution or persistent learning journey.
+notes within personal notes, notation substitution or persistent learning journey.
 The standalone paper prototypes remain review documents; the stage-4 Maths
 conversion and preservation record are in the
 [domain-owned pilot](../../domains/math/docs/nested_explanations_pilot.md#7-stage-4-implementation-and-preservation-record).
@@ -118,7 +118,7 @@ Changing it updates every rendered copy, native completion and graph markers
 through the existing study controller, persistence and sync. Incoming data updates
 checkboxes in place without folding disclosures. No per-occurrence personal data
 is created. Opening a source does not mark it read. Local authored explanations
-still have no separate read record; notes on borrowed content remain deferred.
+still have no separate read record. Source notes are now available within borrowed content.
 
 ## Common source rendering
 
@@ -130,3 +130,23 @@ statement location and lazy loading; it does not select a second text renderer.
 Personal-note insertion is controlled by capability rather than a native-only
 body implementation. Local disclosures still use the common recursive content
 shell and mathematics renderer.
+
+## Personal notes in reading trees
+
+Native and borrowed source occurrences both enable annotation. Notes retain the
+canonical concept/module owner, source block ID and paragraph anchor; no reading
+occurrence is written into personal data. Existing source notes appear wherever
+that source is unfolded, including legacy graphic notes. Creating or deleting a
+note restores the current reading tree. Editing updates other visible copies
+without replacing the active editor or closing explanations. Only the occurrence
+where Edit was invoked contains an editor; occurrence identity is transient DOM
+state. Notes stay private and use the existing archive and sync paths.
+
+Named local explanations support the same paragraph renderer and note controls.
+Their anchor uses the enclosing source block ID plus the existing `sectionKey`
+field, encoded as `explanation:` followed by a JSON array of local slot names.
+The path restarts at each borrowed canonical source. Candidate discovery walks
+only that source's authored local explanations, never the shared dependency graph.
+Removed/renamed slots leave notes needing placement rather than retargeting them.
+Anonymous legacy disclosures and notes inside personal notes gain no new scope.
+No new personal-data fields or schema version are required.

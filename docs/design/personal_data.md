@@ -182,3 +182,13 @@ linked from the viewer's Personal data controls. It explains the browser-local
 record, portable archive, optional Drive transfer and deletion choices in
 user-facing language. Public OAuth configuration and release checks are recorded
 in [Google OAuth publication](google_oauth_publication.md).
+
+### Notes on shared explanations
+
+Reading-tree occurrences reuse the source owner's existing note record and
+paragraph anchors. A named local explanation uses its enclosing block ID and
+`sectionKey = explanation:<JSON slot array>`; this is a scoped anchor, not a
+new global content identity. The existing CSV/archive representation preserves
+both fields unchanged. Reading-occurrence paths and the active editor location
+are transient and never synchronised. Renamed/missing scopes retain notes for
+placement rather than attaching them to another paragraph.

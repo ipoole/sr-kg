@@ -126,6 +126,7 @@
         var sharedExplanations;
         var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash,
           reference: function(reference, context) { return sharedExplanations.renderReference(reference, context); },
+          explanation: function(part, context, state) { return sharedExplanations.local(part, context, state); },
           disclosure: function(context) { return sharedExplanations.disclosure(context); }
         });
         sharedExplanations = kgCreateSharedExplanations({
@@ -134,7 +135,7 @@
             var block = source.block, actions = [];
             if (capabilities.annotate) {
               actions.push({position: "heading", capability: "annotate", html:
-                renderNoteBlockAction(source.ownerType, source.ownerId, block.title, block.block_id, "", capabilities.trackRead)});
+                renderNoteBlockAction(source.ownerType, source.ownerId, block.title, block.block_id, source.sectionKey || "", capabilities.trackRead)});
             }
             if (capabilities.trackRead) {
               actions.push({position: "heading", capability: "trackRead", html:
@@ -146,10 +147,10 @@
             var block = source.block, html = "";
             if (block.graphic && capabilities.annotate) {
               html += renderNotesAtAnchor(source.ownerType, source.ownerId, "Graphic", 0, "",
-                noteAnchorSpecs("", "graphic", "Graphic", "")[0]);
+                noteAnchorSpecs("", "graphic", "Graphic", "")[0], context);
             }
             return html + renderNoteAnchoredBody(source.ownerType, source.ownerId,
-              block.title, block.block_id, "", block.body, context, capabilities);
+              block.title, block.block_id, source.sectionKey || "", block.body, context, capabilities);
           },
           typeset: function(element) { typesetInfoPanel({element: element}); }
         });
@@ -211,6 +212,7 @@
         var submitUnknownSelfAssessedQuestion = studyController.submitUnknownSelfAssessedQuestion;
         var renderContentBlockReadToggle = studyController.renderContentBlockReadToggle;
         var notesController = kgCreateNotesController({
+          typeset: function(element) { typesetInfoPanel({element: element}); },
           store: personalDataStore, storageKey: userNotesStorageKey,
           content: contentModel, markup: contentMarkup, writeStorage: safeLocalStorageSet,
           onSave: function() { schedulePersonalDataAutoSync(); },
@@ -2961,12 +2963,17 @@
         }
 
         function beginNotePlacement(action) {
-          var block = action && action.closest("#info_panel > [data-note-block]");
+          var block = action && action.closest("[data-note-block]");
           if (!block) { return; }
           cancelNotePlacement();
-          if (block.tagName === "DETAILS") { block.open = true; }
+          if (block.tagName === "DETAILS") {
+            block.open = true;
+            sharedExplanations.toggled(block);
+          }
           var lines = Array.from(block.querySelectorAll(".concept-line")).filter(function(line) {
-            return !line.closest(".user-note, .kg-content-inline, .kg-shared-reference, .kg-content-statement");
+            var inline = line.closest(".kg-content-inline");
+            return line.closest("[data-note-block]") === block && (!inline || inline === block) &&
+              !line.closest(".user-note, .kg-content-statement");
           });
           if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
             var blockNoteButton = block.querySelector(".kg-add-note");
@@ -6419,6 +6426,7 @@
                 contextAfter: addNoteButton.getAttribute("data-anchor-context-after") || ""
               }
             );
+            notesController.openEditor(createdNote.id, addNoteButton.getAttribute("data-note-occurrence") || "");
             refreshActiveConcept();
             if (enclosingSectionId) {
               var refreshedSection = document.getElementById(enclosingSectionId);
@@ -6477,7 +6485,7 @@
           var editNoteButton = e.target.closest(".user-note-edit");
           if (editNoteButton) {
             e.preventDefault();
-            notesController.editNote(editNoteButton.getAttribute("data-note-id"));
+            notesController.editNote(editNoteButton.getAttribute("data-note-id"), editNoteButton.closest("details.user-note"));
             return;
           }
 

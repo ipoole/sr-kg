@@ -163,7 +163,8 @@ function kgCreateContentMarkup(options) {
     context = context || {};
     return {origin: context.origin, rootId: context.rootId,
       steps: (context.steps || []).concat([[slot, targetId || ""]]),
-      ancestors: context.ancestors || []};
+      ancestors: context.ancestors || [], sourceId: targetId || context.sourceId,
+      localSlots: targetId ? [] : (context.localSlots || []).concat([slot])};
   }
 
   function occurrenceKey(context) {
@@ -218,6 +219,18 @@ function kgCreateContentMarkup(options) {
     return parts;
   }
 
+  function contentText(parts) {
+    return parts.map(function(part) {
+      if (part.type === "text") { return part.text; }
+      if (part.type === "reference") {
+        return "\\explain{" + part.slot + "}{" + part.target_id + "}{" + part.target_label + "}{" + part.hook + "}";
+      }
+      return "\\explanation{" + part.slot + "}{" + part.title + "}{" + contentText(part.parts) + "}";
+    }).join("");
+  }
+
+  function localScopeKey(slots) { return "explanation:" + JSON.stringify(slots); }
+
   function renderParts(parts, context, paragraphs) {
     return parts.map(function(part) {
       if (part.type === "text") {
@@ -234,6 +247,10 @@ function kgCreateContentMarkup(options) {
       }
       var child = childContext(context, slot);
       var state = options.disclosure ? options.disclosure(child) : {};
+      if (options.explanation && context && context.sourceId &&
+          child.localSlots.every(function(id) { return id.indexOf("~legacy-") === -1; })) {
+        return options.explanation(part, child, state);
+      }
       return renderContentUnit({
         className: "optional-detail", level: "inline", title: part.title,
         origin: context && context.origin,
@@ -396,7 +413,7 @@ function kgCreateContentMarkup(options) {
     renderFoldDown: renderFoldDown,
     renderContentUnit: renderContentUnit,
     parseContent: parseContent,
-    childContext: childContext,
+    childContext: childContext, contentText: contentText, localScopeKey: localScopeKey,
     occurrenceKey: occurrenceKey,
     renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,

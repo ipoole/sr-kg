@@ -103,7 +103,7 @@ def test_native_reading_and_independent_lazy_branches(shared_explanation_graph):
     assert first.get_attribute('id') != second.get_attribute('id')
     _open(left); _open(left)
     assert deeper.evaluate('e=>e.open')
-    assert first.locator('.kg-note-block-action,.user-note-edit').count()==0
+    assert first.locator(':scope > summary .kg-note-block-action').count()==1
     assert not graph.page_errors
 
 
@@ -293,3 +293,57 @@ def test_borrowed_read_marks_share_source_identity_and_preserve_reading(shared_e
     graph.click_concept('test.alpha')
     _open(_reference(page, 'left'))
     assert not page.locator('.content-block-read-toggle[data-read-block-id="test.delta.definition"]').is_checked()
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_notes_in_shared_sources_and_named_local_clarifications(shared_explanation_graph, width):
+    graph=shared_explanation_graph; page=graph.page
+    page.set_viewport_size({'width':width,'height':900})
+    page.locator('#kg_view_select').select_option('details')
+    if page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
+    _open(_reference(page,'left')); _open(_reference(page,'right'))
+    copies=_reference(page,'shared'); copies.nth(1).wait_for()
+    _open(copies.first); _open(copies.nth(1))
+    first,second=copies.first,copies.nth(1)
+    first.locator(':scope > summary .kg-note-block-action').click()
+    first.locator(':scope > .kg-shared-body > .concept-line').first.click()
+    page.locator('.user-note-title-input').fill('Shared observation')
+    page.locator('.user-note-body-input').fill(r'A remembered fact: \(x^2\).')
+    page.locator('.user-note-close').click()
+    assert first.locator('.user-note').count()==second.locator('.user-note').count()==1
+    assert 'remembered fact' in second.locator('.user-note').inner_text()
+    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].targetId')=='test.delta'
+    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].anchor.blockId')=='test.delta.definition'
+    second.locator('.user-note-edit').click()
+    assert page.locator('.user-note-body-input').count()==1
+    assert second.locator('.user-note-body-input').count()==1
+    page.locator('.user-note-body-input').fill('Edited from the other branch.')
+    assert 'Edited from the other branch' in first.locator('.user-note').inner_text()
+    page.locator('.user-note-close').click()
+    assert first.evaluate('e=>e.open') and second.evaluate('e=>e.open')
+    local=second.locator('[data-content-slot="deeper"]')
+    local.locator(':scope > summary .kg-note-block-action').click()
+    local.locator(':scope > .optional-detail-body > .concept-line').first.click()
+    page.locator('.user-note-title-input').fill('Local observation')
+    page.locator('.user-note-body-input').fill('This belongs to the named clarification.')
+    page.locator('.user-note-close').click()
+    assert page.locator('#info_panel .kg-unmatched-notes').count()==0
+    snapshot=page.evaluate('kgPersonalData.getSnapshot()')
+    assert len(snapshot['notes'])==2
+    assert snapshot['notes'][1]['anchor']['sectionKey'].startswith('explanation:')
+    # Archive round trip must preserve local scope without a new storage field.
+    page.evaluate('''() => {
+      const before=kgPersonalData.getSnapshot();
+      const restored=kgPersonalDataArchive.importBytes(kgPersonalDataArchive.exportBytes(before));
+      window.restoredAnchors=restored.notes.map(n=>n.anchor);
+    }''')
+    assert page.evaluate('restoredAnchors')==[n['anchor'] for n in snapshot['notes']]
+    graph.click_concept('test.delta')
+    native=page.locator('[data-content-block-id="test.delta.definition"]')
+    assert native.locator('.user-note').count()==2
+    assert page.locator('#info_panel .kg-unmatched-notes').count()==0
+    page.reload(wait_until='load'); graph.click_concept('test.delta')
+    assert native.locator('.user-note').count()==2
+    assert not graph.page_errors

@@ -29,7 +29,7 @@ function kgCreateSharedExplanations(options) {
   }
 
   function rootContext(sourceId, anchorId) {
-    return {origin: "authored", rootId: sourceId, steps: [],
+    return {origin: "authored", rootId: sourceId, sourceId: sourceId, localSlots: [], steps: [],
       ancestors: [{sourceId: sourceId, id: anchorId}]};
   }
 
@@ -108,10 +108,27 @@ function kgCreateSharedExplanations(options) {
         escape(ownerTitle + " · " + source.block.title) + '</span>',
       anchorId: entry.id, occurrenceKey: markup.occurrenceKey(child), slot: reference.slot,
       sourceId: reference.target_id, open: entry.open,
-      capabilities: {trackRead: true, annotate: false},
-      actions: actions(reference.target_id, {trackRead: true, annotate: false}, ownerTitle + " · " + source.block.title),
+      capabilities: {trackRead: true, annotate: true},
+      actions: actions(reference.target_id, {trackRead: true, annotate: true}, ownerTitle + " · " + source.block.title),
       bodyClass: "optional-detail-body kg-shared-body", bodyHtml: ""
     }) + '</div>';
+  }
+
+  function local(part, context, state) {
+    var source = sources[context.sourceId];
+    var localSource = Object.assign({}, source, {
+      sectionKey: markup.localScopeKey(context.localSlots),
+      block: Object.assign({}, source.block, {title: part.title,
+        body: markup.contentText(part.parts), graphic: ""})
+    });
+    var capabilities = {annotate: true, trackRead: false};
+    return markup.renderContentUnit({
+      origin: "authored", level: "inline", className: "optional-detail kg-local-explanation",
+      title: part.title, anchorId: state.id, occurrenceKey: markup.occurrenceKey(context),
+      slot: part.slot, open: state.open, capabilities: capabilities,
+      actions: options.actions(localSource, capabilities, part.title),
+      bodyClass: "optional-detail-body", bodyHtml: options.body(localSource, context, capabilities)
+    });
   }
 
   function hydrate(element) {
@@ -123,7 +140,7 @@ function kgCreateSharedExplanations(options) {
     var context = Object.assign({}, entry.context, {ancestors: entry.context.ancestors.concat([
       {sourceId: source.block.block_id, id: entry.id}
     ])});
-    element.querySelector(":scope > .kg-shared-body").innerHTML = body(source.block.block_id, context, {annotate: false});
+    element.querySelector(":scope > .kg-shared-body").innerHTML = body(source.block.block_id, context, {annotate: true});
     element.setAttribute("data-shared-loaded", "true");
     return true;
   }
@@ -161,6 +178,6 @@ function kgCreateSharedExplanations(options) {
   }
 
   return {beginPage: beginPage, afterRender: afterRender, toggled: toggled,
-    rootContext: rootContext, disclosure: disclosure, renderReference: renderReference,
+    rootContext: rootContext, disclosure: disclosure, renderReference: renderReference, local: local,
     nativeStatement: nativeStatement, body: body, actions: actions, hasGraphicBlock: hasGraphicBlock};
 }

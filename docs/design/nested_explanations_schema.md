@@ -81,7 +81,8 @@ concept edges.
 Each local explanation has a slot, short title and nonempty body. Its body may
 contain text, shared references and more local explanations. It inherits the
 source block's owner; it is not an independent global source or a separately
-persisted reading mark/note target. New local nesting is limited to 100 levels
+persisted reading mark. Named local note anchors use the enclosing block ID plus
+a slot path in the existing `sectionKey` field, not a new global block ID. New local nesting is limited to 100 levels
 so a pathological authored input produces a useful loading error.
 
 Existing `\optional_details{Title}{Body}` is normalised to the **same local

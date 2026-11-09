@@ -3789,3 +3789,8 @@
         position: relative;
         padding-right: 1.6em;
     }
+
+    #info_panel .kg-local-explanation > summary {
+        position: relative;
+        padding-right: 1.6em;
+    }

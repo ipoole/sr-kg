@@ -119,12 +119,14 @@ The concrete return control, identity format and validation rules need specifica
 in stage 2. Resource/depth limits are implementation details to resolve before
 production use, without imposing a different model at each depth.
 
-No new nested notes, automatic reading marks, completion rules, bookmarks or
+No automatic reading marks, new completion rules, bookmarks or
 cross-device reading-tree persistence are introduced in the pilot. Existing native
 top-level notes, read records and question IDs must remain valid. Borrowed units
 show a read checkbox for their canonical source block, shared with its native
 page and all other occurrences. They gain no independent completion record or
-annotation controls in this pass.
+reading records. Notes now use the canonical source paragraph anchors in both
+native and borrowed presentations. Named local explanations use their source
+block ID and stable slot path; notes inside personal notes remain deferred.
 Do not copy personal records per occurrence or silently migrate their targets.
 Existing personal content remains personal; sharing authored units does not
 turn personal notes into publicly shared content.
