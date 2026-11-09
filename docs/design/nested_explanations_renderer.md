@@ -150,3 +150,11 @@ only that source's authored local explanations, never the shared dependency grap
 Removed/renamed slots leave notes needing placement rather than retargeting them.
 Anonymous legacy disclosures and notes inside personal notes gain no new scope.
 No new personal-data fields or schema version are required.
+
+## Maths-2 teaching extension
+
+All nine Maths concepts now use the shared reader. The Tensor Calculus module
+adds tensor type/order, multilinear slots, component counts and worked metric,
+contraction and rescaling examples. Abstract-index subtleties are optional.
+The [domain teaching review](../../domains/math/docs/tensor_calculus_teaching_review.md)
+maps every existing Maths-2 question to supporting content and records scope.

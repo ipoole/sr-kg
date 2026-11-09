@@ -82,3 +82,22 @@ def test_each_maths1_concept_has_a_shared_explanation_route(pilot):
         complete.add(id)
     for id in pilot.content_units:
         visit(id)
+
+
+def test_maths2_builds_on_maths1_and_supplies_worked_tensor_basics(pilot):
+    targets = {}
+    for concept in ('tensor_field', 'index_notation', 'tensor_transformation_law'):
+        units = [unit for id, unit in pilot.content_units.items()
+                 if id.startswith('math.' + concept + '.')]
+        targets[concept] = {ref.target_id for unit in units for ref in references(unit.parts)}
+        assert targets[concept]
+    assert {'math.tangent_space.definition', 'math.cotangent_space.definition'} <= targets['tensor_field']
+    assert 'math.tensor_field.rank' in targets['index_notation']
+    assert 'math.coordinate_transformation.jacobian' in targets['tensor_transformation_law']
+    for id in ('math.tensor_field.rank', 'math.tensor_field.slots',
+               'math.tensor_field.metric_example', 'math.tensor_transformation_law.rescaling'):
+        assert id in pilot.content_units
+    # Questions keep their identities/progress, while their prerequisite text
+    # is now present rather than relying on unexplained rank/slot terminology.
+    for concept in ('tensor_field', 'index_notation', 'tensor_transformation_law'):
+        assert len(pilot.concept('math.' + concept).study_questions) == 4

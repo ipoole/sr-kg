@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.8", "date": "2026-11-09", "summary": "Preview: Notes throughout shared explanations and a fuller GR-oriented introduction to tensors in MATHS-2."},
   {"version": "4.6.7", "date": "2026-11-09", "summary": "Preview: Shared reading ticks, blue statements and nested explanations across MATHS-1."},
   {"version": "4.6.6", "date": "2026-11-09", "summary": "Preview: Maths reader with shared nested explanations, temperature readouts and reusable graphics."},
   {"version": "4.6.5", "date": "2026-11-08", "summary": "Preview: Maths reading prototype distinguishes borrowed statements in blue and clarifies block boundaries."},

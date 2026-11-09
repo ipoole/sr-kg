@@ -57,7 +57,7 @@ The tangent lies in the tangent space at the event being crossed. It is not a fi
 math.worldline.timelike_null,math.worldline,40,convention,Timelike and null cases,"Massive particles and physical clocks follow timelike worldlines. Light follows null worldlines. Spacelike curves can appear in diagrams, but they do not represent the history of a material object or signal.",,
 math.tangent_space.graphic,math.tangent_space,1,graphic,Local tangent directions,"The attached plane pictures the vector space \(T_pM\), not a claim that the terrain is flat. The board agrees with a tangent plane at its reference point only; other ground points have their own tangent spaces. The surrounding three-dimensional drawing helps visualisation but is not required by the mathematical definition.","At each surface point, possible instantaneous motions form a two-dimensional tangent space.",detail
 math.tangent_space.overview,math.tangent_space,5,overview,Possible directions at one point,"A curved manifold has no single global vector space in which every arrow naturally lives. Instead each point \(p\) has its own tangent space \(T_pM\): the vector space of possible instantaneous directions through that point. Velocities, directional derivatives, infinitesimal displacements, and tangents to \cref{Worldlines}{math.worldline} are all tangent vectors.",,
-math.tangent_space.definition,math.tangent_space,10,definition,Definition,"The tangent space \(T_pM\) at \(p\) is the vector space of tangent vectors based at that one point. It has the same dimension as the manifold near \(p\). Coordinates provide a basis \(\partial/\partial x^\mu|_p\), but the space and its vectors do not depend on which coordinates are chosen.",,
+math.tangent_space.definition,math.tangent_space,10,definition,Definition,"The tangent space \(T_pM\) at \(p\) is the vector space of tangent vectors based at that one point. It has the same dimension as the manifold near \(p\). Coordinates provide a basis \(\partial/\partial x^\mu|_p\), but the space and its vectors do not depend on which coordinates are chosen.",The tangent space \(T_pM\) contains the vectors based at \(p\) and has the manifold's dimension.,
 math.tangent_space.curves,math.tangent_space,20,construction,From curves to tangent vectors,"Choose a smooth curve with \(\gamma(0)=p\). Its derivative at the crossing is a tangent vector. Different curves may share this vector even if they bend differently after leaving \(p\).
 \explain{route}{math.worldline.terrain_survey}{The mobile probe's surface route}{What curve are the scientists measuring?}
 In coordinates the components are \(v^i=dx^i/dt|_0\). The parameter sets their scale; a change of coordinate labels changes the components, not the underlying vector.
@@ -119,7 +119,7 @@ dT_p(v)&=(\partial_iT)_p\,dx^i(v^j\partial_j)\\
 &=(\partial_iT)_p\,v^i.
 \end{aligned}\]
 The Kronecker delta selects matching components. No dot product or metric has entered the calculation.}
-More generally, \(\omega=\omega_i dx^i\) is the coordinate expansion of a covector. The matching dual-basis normalisation is dimensionless; that does not make every physical pairing dimensionless.",,
+More generally, \(\omega=\omega_i dx^i\) is the coordinate expansion of a covector. The matching dual-basis normalisation is dimensionless; that does not make every physical pairing dimensionless.","The dual basis selects vector components: \(dx^i(v)=v^i\), so \(\omega(v)=\omega_i v^i\) needs no metric.",
 math.cotangent_space.terrain_survey,math.cotangent_space,30,worked_example,A measurement scientists can compare,"Suppose the local temperature derivatives are \(\partial_1T=2\,\mathrm{K/m}\) and \(\partial_2T=-1\,\mathrm{K/m}\). The probe has coordinate rates \(v^1=0.5\,\mathrm{m/s}\) and \(v^2=0.2\,\mathrm{m/s}\). Its instantaneous temperature rate is
 \[\begin{aligned}
 dT_p(v)&=(2)(0.5)\,\mathrm{K/s}\\
@@ -150,18 +150,107 @@ math.cotangent_space.worked_example,math.cotangent_space,60,worked_example,A dir
 math.cotangent_space.level_curve_example,math.cotangent_space,70,example,Contours and zero change,"On a contour map, a tangent direction along a contour produces no first-order change in height, so the height differential evaluates to zero on it. A direction crossing several contours produces a nonzero reading. Calling the differential a perpendicular arrow uses a metric to convert it to a vector; the covector itself is the rule assigning these rates.",,
 math.cotangent_space.physical_examples,math.cotangent_space,80,example,Why covectors appear in physics,"A wave phase \(\phi\) has covector \(d\phi\), which measures phase change along any spacetime direction. In mechanics a momentum one-form pairs with an infinitesimal displacement or velocity to make a scalar contribution to work or action. These pairings explain why lower-index objects arise naturally rather than merely as vectors with altered notation.",,
 math.cotangent_space.metric_warning,math.cotangent_space,90,warning,Do not assume the metric too soon,"Tangent vectors and covectors are distinct before a metric is chosen. A nondegenerate metric supplies an additional map between them, written as lowering or raising an index. Familiar Euclidean pictures quietly use this map when they draw a gradient covector as an ordinary perpendicular arrow; the cotangent space itself does not depend on it.",,
-math.tensor_field.overview,math.tensor_field,5,overview,Tensors varying over spacetime,A tensor field assigns a tensor to each point of a manifold. GR uses tensor fields because equations must be meaningful under arbitrary smooth coordinate changes rather than only Lorentz transformations between inertial frames.,,
-math.tensor_field.definition,math.tensor_field,10,definition,Definition,A tensor field is a smoothly varying assignment of multilinear maps or tensor products of \cref{Tangent spaces}{math.tangent_space} and \cref{Cotangent spaces}{math.cotangent_space} to points of a manifold. Scalar fields and vector fields are low-rank examples.,,
-math.tensor_field.pointwise,math.tensor_field,20,explanation,Point-by-point objects,"The word field means that the object is assigned point by point. In GR the metric, stress-energy, and curvature are not single global arrays; they are geometric objects that can vary from event to event.",,
-math.tensor_field.examples,math.tensor_field,30,example,"Scalars, vectors, and higher tensors",A scalar field assigns one number to each point. A vector field assigns a tangent vector. Higher-rank tensor fields have several vector or covector slots and can represent objects such as the spacetime metric or stress-energy tensor.,,
-math.tensor_field.not_component_array,math.tensor_field,40,misconception,Not just an array of components,"A tensor field has components in a chosen chart, but it is not merely that component array. Under a \cref{Coordinate transformation}{math.coordinate_transformation}, the components change in a controlled way while the underlying geometric object remains the same.",,
-math.index_notation.overview,math.index_notation,5,overview,Indices as bookkeeping,"Index notation compresses tensor statements, but an index can play two roles. It can record the abstract type of tensor slot, or it can label a numerical component after a coordinate basis has been chosen.",,
-math.index_notation.definition,math.index_notation,10,definition,Definition,Abstract index notation writes objects such as \(T^a{}_b\) to show tensor type and contractions without choosing coordinates. Component index notation writes objects such as \(T^\mu{}_\nu\) for the components of that tensor in a selected coordinate system or frame.,,
-math.index_notation.component_indices,math.index_notation,20,convention,Component indices,"This atlas usually uses Greek indices such as \(\mu,\nu,\alpha,\beta\) for spacetime components. Unless otherwise stated, these indices range over the spacetime coordinates of the chart being used.",,
-math.index_notation.summation,math.index_notation,30,convention,Repeated and free indices,A repeated upper/lower index pair is summed over. A free index must appear consistently on both sides of an equation. A repeated index is a dummy label: it can be renamed without changing the meaning of the expression.,,
-math.index_notation.not_coordinates_only,math.index_notation,40,misconception,Indexed need not mean coordinate-bound,"An equation can be coordinate-independent even when it is written using indices. The test is not whether indices appear, but whether the objects and contractions have the right tensor transformation behaviour.",,
-math.tensor_transformation_law.overview,math.tensor_transformation_law,5,overview,Components that transform correctly,The tensor transformation law is the rule that tells how component arrays change when coordinates change. It is what lets a tensor equation keep the same geometric meaning in different charts.,,
-math.tensor_transformation_law.definition,math.tensor_transformation_law,10,definition,Definition,A tensor transformation law gives one Jacobian factor for each index when moving between coordinates. Contravariant indices transform with derivatives of the new coordinates with respect to the old; covariant indices transform with derivatives of the old coordinates with respect to the new.,,
-math.tensor_transformation_law.vector_covector,math.tensor_transformation_law,20,construction,Vector and covector cases,"For a vector, \[ V'^\mu \coloneqq \frac{\partial x'^\mu}{\partial x^\nu}V^\nu. \] For a covector, \[ \omega'_\mu \coloneqq \frac{\partial x^\nu}{\partial x'^\mu}\omega_\nu. \] These are the simplest examples of the rule.",,
-math.tensor_transformation_law.higher_rank,math.tensor_transformation_law,30,construction,One factor per index,A higher-rank tensor receives one transformation factor for each index. The index positions are not decoration: they record which Jacobian or inverse-Jacobian factors are needed.,,
-math.tensor_transformation_law.not_invariant_components,math.tensor_transformation_law,40,misconception,Not unchanged components,Tensorial does not mean the components stay numerically unchanged. It means the components change by the proper rule so that contractions and equations describe the same geometric statement.,,
+math.tensor_field.overview,math.tensor_field,5,overview,Tensors varying over spacetime,"GR describes spacetime geometry and matter using quantities attached to every event. Scalars, vectors and covectors are the first examples; tensors extend their coordinate-independent meaning to quantities with several inputs or indices. Begin with what a tensor does at one point, then let that object vary smoothly from point to point.",,
+math.tensor_field.definition,math.tensor_field,10,definition,Definition,"A tensor field assigns a tensor of a fixed type smoothly to each point in a region. A tensor at one point is a geometric object, not merely a table of numbers. Its components describe it in a chosen basis; changing the basis changes those components in a prescribed way.
+\explain{vectors}{math.tangent_space.definition}{Tangent vectors at a point}{Recall the space of possible vector inputs}
+\explain{covectors}{math.cotangent_space.definition}{Covectors at a point}{Recall a linear readout of a vector}
+A scalar field assigns one number, a vector field assigns one tangent vector, and a covector field assigns one linear readout at each point. Higher-order tensors extend these constructions to several slots.",A tensor field assigns a fixed-type tensor smoothly to each point; its components depend on the chosen local basis.,
+math.tensor_field.pointwise,math.tensor_field,20,explanation,Point-by-point objects,"At a terrain point \(p\), the temperature \(T(p)\), grass-growth vector \(G_p\) and differential \(dT_p\) are different kinds of object. A smooth field supplies the appropriate object at every point. In a smooth local basis its component functions vary smoothly.
+A tensor contraction is performed at one point. For example, pairing \(dT_p\) with \(G_p\) produces a scalar there. Repeating the pairing throughout a region produces a scalar field.
+\explanation{contraction}{Calculate one pointwise pairing}{Suppose \(\omega_i=(2,-1)\) and \(V^i=(3,4)\) in a two-dimensional basis. The natural pairing is
+\[\omega_i V^i=2(3)+(-1)(4)=2.\]
+These numbers are dimensionless in this algebraic example. The matching upper/lower index is summed. Physical pairings can carry units, and this pairing needs no metric.}
+Vectors at different points belong to different tangent spaces. A field does not by itself give a rule for comparing or transporting them.",,
+math.tensor_field.examples,math.tensor_field,30,example,"Scalars, vectors, and higher tensors","In the terrain survey, temperature is an order-zero scalar field, grass growth an order-one vector field, and the temperature differential an order-one covector field.
+For GR, the metric \(g_{\mu\nu}\) and covariant stress-energy tensor \(T_{\mu\nu}\) have type \((0,2)\). The Riemann curvature tensor in the form \(R^\rho{}_{\sigma\mu\nu}\) has type \((1,3)\) and total order four. Its many components describe one geometric object, not many unrelated scalar fields.
+A metric can raise or lower indices, producing related tensors of different type. For example \(T^{\mu\nu}\) is a raised form of \(T_{\mu\nu}\); raising is additional metric-dependent structure, not a change of coordinate labels.",,
+math.tensor_field.not_component_array,math.tensor_field,40,misconception,Not just an array of components,"A component array describes a tensor only together with its basis and transformation behaviour. Two charts can assign different arrays to the same field if those arrays obey the tensor transformation law throughout their overlap. Equal array sizes or constant entries do not establish that relation.
+\explain{labels}{math.coordinate_transformation.definition}{Changing coordinate labels}{What changes when the chart changes?}
+The transformation law will make this precise. Not every array of quantities with index labels transforms tensorially; the connection coefficients used later in GR are an important warning.\explain{rule}{math.tensor_transformation_law.definition}{The tensor transformation law}{How should the component arrays be related?}",,
+math.index_notation.overview,math.index_notation,5,overview,Indices as bookkeeping,"Indices let us calculate with components without writing out every sum. The practical skills are to recognise upper and lower indices, distinguish a summed label from an unsummed one, and check that an equation has the same free indices on both sides. Abstract-index notation is a useful later refinement, not a prerequisite for these calculations.",,
+math.index_notation.definition,math.index_notation,10,definition,Definition,"In a chosen coordinate basis, \(V^i\) lists a vector's components and \(\omega_i\) lists a covector's components. The superscript is an index, not a power: \(V^2\) means the second component here, whereas \((V^1)^2\) squares the first component.
+An expression such as \(A^i{}_{j}\) has two index slots. Fixing both labels selects one entry of its component matrix.
+\explain{type}{math.tensor_field.rank}{Tensor type and order}{What do the index positions tell us?}
+\explanation{abstract}{What changes in abstract-index notation?}{Abstract indices such as \(a,b\) describe the tensor's slots and contractions without choosing a numerical basis. Thus \(A^a{}_{b}\) describes a type-\((1,1)\) tensor. Component indices describe entries after a basis is chosen. Either notation can have free or dummy indices; the distinction is not curved versus flat space.}
+The calculations on this page use component indices unless explicitly stated otherwise.",Component indices label entries in a chosen basis; index position distinguishes vector-like and covector-like slots.,
+math.index_notation.component_indices,math.index_notation,20,convention,Component indices,"On the two-dimensional terrain use \(i,j=1,2\). In four-dimensional spacetime this atlas usually uses Greek indices \(\mu,\nu=0,1,2,3\). Always establish the range before expanding a sum.
+A four-vector therefore has four components, while a two-index spacetime array has 16 entries before symmetries. The number of values of an index records dimension; the number and positions of indices record tensor type.
+\explanation{power}{A component label versus a power}{In two dimensions, \(V^i=(3,4)\) means \(V^1=3\) and \(V^2=4\). The square of the second component is \((V^2)^2=16\). Superscripts can serve different roles, so parentheses matter.}",,
+math.index_notation.summation,math.index_notation,30,convention,Repeated and free indices,"A label repeated once upstairs and once downstairs in one term is summed over its range. In two dimensions,
+\[A^i B_i=A^1B_1+A^2B_2.\]
+For \(A^i=(2,-1)\) and \(B_i=(3,4)\), this is \(2(3)+(-1)(4)=2\). The repeated \(i\) is a dummy label: replacing it consistently by \(j\) changes nothing.
+\explanation{free}{What is a free index?}{A free index is not summed; it appears once in each term. The equation \(C^i=A^i+B^i\) represents one equation for every allowed \(i\). In two dimensions it means \(C^1=A^1+B^1\) and \(C^2=A^2+B^2\). Every term on both sides must have matching free labels and index positions.}
+\explanation{check}{Spot an invalid equation}{In \(T^{\mu\nu}=V^\mu\), the free index \(\nu\) appears only on the left, so the equation is incomplete. In contrast \(T^{\mu\nu}=V^\mu W^\nu\) has matching free indices. A dummy index should occur exactly twice in a term, once up and once down. Reusing it three times does not define an Einstein sum.}
+\explain{pairing}{math.cotangent_space.basis}{The covector/vector pairing}{Why does an upper/lower contraction have geometric meaning?}",A repeated upper/lower index is summed; free indices must match in every term of a tensor equation.,
+math.index_notation.not_coordinates_only,math.index_notation,40,misconception,Indexed need not mean coordinate-bound,"Using components does not make an equation coordinate-dependent in meaning. A correctly formed tensor equation remains true after a smooth change of chart. Conversely, matching free indices is necessary but does not prove that the objects in an equation are tensors.
+\explanation{raising}{Can an index simply be moved up or down?}{No. A metric is needed to lower a vector index:
+\[V_\mu=g_{\mu\nu}V^\nu.\]
+The free index \(\mu\) remains on both sides; \(\nu\) is summed. The inverse metric raises indices. Neither operation is the same as renaming a dummy index.}",,
+math.tensor_transformation_law.overview,math.tensor_transformation_law,5,overview,Components that transform correctly,"The scientists want their measurements to agree even when their component spreadsheets differ. Tensor transformation laws explain exactly how the components compensate for different coordinate bases. Start with a vector and a covector, test their scalar pairing, then use one transformation factor per index for higher-order tensors.",,
+math.tensor_transformation_law.definition,math.tensor_transformation_law,10,definition,Definition,"Write the two charts as \(x\) and \(y\). Define the Jacobian and its inverse by
+\[\begin{aligned}
+J^a{}_i&\coloneqq\frac{\partial y^a}{\partial x^i},\\
+K^i{}_a&\coloneqq\frac{\partial x^i}{\partial y^a}.
+\end{aligned}\]
+All quantities are evaluated at the same point in the overlap. An upper index receives a \(J\) factor, while a lower index receives a \(K\) factor. A nonlinear chart change makes these matrices position-dependent; the rule still holds point by point.
+\explain{jacobian}{math.coordinate_transformation.jacobian}{The Jacobian and inverse transition}{Where do these matrices come from?}
+\explain{first-cases}{math.tensor_transformation_law.vector_covector}{Vector and covector transformations}{Why do upper and lower indices use opposite factors?}",Each upper index transforms with the new-with-respect-to-old Jacobian; each lower index transforms with its inverse.,
+math.tensor_transformation_law.vector_covector,math.tensor_transformation_law,20,construction,Vector and covector cases,"For a vector the chain rule gives
+\[V_y^a=\frac{\partial y^a}{\partial x^i}V_x^i.\]
+For a covector the inverse factors give
+\[\omega^y_a=\frac{\partial x^i}{\partial y^a}\omega^x_i.\]
+Here the decorations \(x,y\) name the chart, not extra tensor indices. A label repeated once up and once down is summed.
+\explain{covector}{math.cotangent_space.definition}{A covector's linear readout}{What must remain unchanged when we relabel?}
+\explanation{why-inverse}{Derive the covector rule from the pairing}{The scalar readout must agree for every vector:
+\[\omega^y_a V_y^a=\omega^x_i V_x^i.\]
+Substitute the vector rule. Since this must hold for every \(V_x^i\),
+\[\omega^y_a\frac{\partial y^a}{\partial x^i}=\omega^x_i.\]
+Multiplying by the inverse Jacobian gives the displayed covector transformation. No metric entered the argument.}",Vector and covector components transform oppositely so their natural scalar pairing is unchanged.,
+math.tensor_transformation_law.higher_rank,math.tensor_transformation_law,30,construction,One factor per index,"For \(T^i{}_{jk}\), with one upper and two lower indices, there are three factors:
+\[T'^a{}_{bc}=J^a{}_i K^j{}_b K^k{}_c T^i{}_{jk}.\]
+The old indices \(i,j,k\) are summed. The new indices \(a,b,c\) are free and match the transformed component on the left. The formula uses the Jacobian \(J\) and its inverse \(K\) defined above.
+\explain{type}{math.tensor_field.rank}{Tensor type and total order}{Why exactly three factors?}
+\explain{first-cases}{math.tensor_transformation_law.vector_covector}{The one-index transformation rules}{Recover the rule for each individual slot}
+For a covariant two-index tensor, such as a metric,
+\[g'_{ab}=K^i{}_a K^j{}_b g_{ij}.\]
+This is how its entries adjust when the same geometric measurement is described by another chart.",,
+math.tensor_transformation_law.not_invariant_components,math.tensor_transformation_law,40,misconception,Not unchanged components,"Tensorial does not mean that every component remains numerically unchanged. It means the components transform by the rule appropriate to their index slots, so the underlying geometric object and its scalar measurements are unchanged at the same point.
+\explanation{cancel}{See the Jacobians cancel in a contraction}{Use \(V_y^a=J^a{}_j V_x^j\), \(\omega^y_a=K^i{}_a\omega^x_i\), and \(K^i{}_aJ^a{}_j=\delta^i{}_j\):
+\[\begin{aligned}
+\omega^y_a V_y^a&=\omega^x_i K^i{}_aJ^a{}_j V_x^j\\
+&=\omega^x_i\delta^i{}_j V_x^j\\
+&=\omega^x_j V_x^j.
+\end{aligned}\]
+This is pointwise coordinate independence, not a claim that the scalar has the same value at different manifold points.}
+Ordinary partial derivatives of tensor components generally introduce extra terms under nonlinear chart changes. GR uses a covariant derivative to correct for this; its construction is beyond this module.",,
+math.tensor_field.rank,math.tensor_field,15,definition,"Type, order and rank","Count the upper and lower indices in a component expression. A tensor of type \((r,s)\) has \(r\) upper and \(s\) lower indices; its total order, also called total rank here, is \(r+s\).
+A scalar has type \((0,0)\) and order zero. A vector \(V^\mu\) has type \((1,0)\); a covector \(\omega_\mu\) has type \((0,1)\). Both have order one, but they transform differently. A metric \(g_{\mu\nu}\) has type \((0,2)\) and order two. A mixed tensor \(A^\mu{}_{\nu}\) has type \((1,1)\) and order two.
+\explanation{count}{How many component entries are there?}{In \(n\) dimensions each index takes \(n\) values. An order-\(k\) tensor therefore has \(n^k\) entries before symmetries or constraints are used. A four-dimensional metric has \(4^2=16\) entries. Symmetry \(g_{\mu\nu}=g_{\nu\mu}\) leaves 4 diagonal and 6 off-diagonal values, hence 10 independent components.}
+\explanation{matrix-rank}{Is this the rank of a matrix?}{No. Matrix rank counts independent rows or columns of a linear map's array. Tensor order counts index slots. A zero matrix still represents an order-two tensor; its matrix rank is zero. Also, a tensor of order four can live on a two-dimensional manifold: order is not the dimension of the space.}","Type \((r,s)\) counts upper and lower indices; total tensor order (or total rank) is \(r+s\).",
+math.tensor_field.slots,math.tensor_field,25,explanation,What a tensor measures,"A covector accepts one vector and returns a scalar. A covariant order-two tensor \(B\), of type \((0,2)\), accepts two vectors and returns a scalar:
+\[B(V,W)=B_{ij}V^iW^j.\]
+It is linear in each vector separately. Holding \(W\) fixed makes \(B(V,W)\) a linear readout of \(V\); holding \(V\) fixed makes it a linear readout of \(W\).
+\explanation{multilinear}{Why separately linear, not jointly linear?}{For fixed \(W\),
+\[B(aV+bU,W)=aB(V,W)+bB(U,W).\]
+But scaling both inputs multiplies the result twice: \(B(2V,2W)=4B(V,W)\). This is bilinearity, not linearity in the pair treated as a single input.}
+More generally a tensor of type \((r,s)\), viewed as a scalar-valued multilinear map, accepts \(r\) covectors and \(s\) vectors. The upper indices are the slots paired with covectors; the lower indices pair with vectors.
+\explanation{vector-slot}{How can a vector be a tensor in this description?}{A vector \(V\) acts on a covector by returning \(\omega(V)\). Thus a type-\((1,0)\) tensor accepts one covector. A covector, of type \((0,1)\), accepts one vector. Neither identification requires a metric.}","A covariant order-two tensor is bilinear: it gives a scalar from two vectors, linearly in each input separately.",
+math.tensor_field.metric_example,math.tensor_field,35,worked_example,A metric gives a two-input measurement,"On a two-dimensional surface a metric pairs two tangent vectors. In a local basis suppose
+\[g_{ij}=\begin{pmatrix}4&0\\ 0&1\end{pmatrix}.\]
+Use dimensionless component values for this algebraic example. For \(V^i=(1,2)\),
+\[\begin{aligned}
+g(V,V)&=4(1)^2+1(2)^2\\
+&=8.
+\end{aligned}\]
+The answer is not \(1^2+2^2=5\): these coordinates are not a unit orthonormal grid. For a displacement with physical units, the metric pairing supplies squared length with the corresponding units.
+\explain{slots}{math.tensor_field.slots}{A tensor's two vector inputs}{Why is this a tensor rather than just a matrix?}
+For spacetime a Lorentzian metric supplies an interval rather than a positive squared length for every vector. The two-input tensor structure remains the same.",,
+math.tensor_transformation_law.rescaling,math.tensor_transformation_law,25,worked_example,One grid stretched by a factor of two,"Use numerical coordinate labels with \(x'=2x\). At one point let \(V^x=3\) and \(\omega_x=8\). Then
+\[\begin{aligned}
+V^{x'}&=2(3)=6,\\
+\omega_{x'}&=\tfrac12(8)=4.
+\end{aligned}\]
+The pairing is \(8(3)=24\) before relabelling and \(4(6)=24\) afterwards. The component values change while the readout stays fixed.
+\explanation{two-index}{What happens to a two-index tensor?}{If the same rescaling is applied to a one-dimensional coordinate, a covariant component \(B_{xx}\) receives two inverse factors:
+\[B_{x'x'}=\tfrac14 B_{xx}.\]
+A mixed component \(A^x{}_{x}\) receives one factor of two and one of a half, so it stays unchanged in this particular rescaling. This does not make every mixed component invariant under general changes of basis.}",,

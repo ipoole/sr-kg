@@ -113,14 +113,15 @@ def test_real_maths_argument_supports_both_reading_paths(maths_pilot_output, pla
 @pytest.mark.browser
 @pytest.mark.browser_full
 @pytest.mark.parametrize('width', [390, 1280], ids=['phone', 'desktop'])
-def test_maths1_shared_reading_controls_and_complete_routes(maths_pilot_output, playwright_browser, width):
+def test_maths_shared_reading_controls_and_complete_routes(maths_pilot_output, playwright_browser, width):
     api, browser = playwright_browser
     with _open_browser_graph(api, browser, maths_pilot_output,
                              {'viewport': {'width': width, 'height': 900}}) as graph:
         page = graph.page
         page.locator('#kg_view_select').select_option('details')
         for concept in ('manifold', 'coordinate_chart', 'coordinate_transformation',
-                        'worldline', 'tangent_space', 'cotangent_space'):
+                        'worldline', 'tangent_space', 'cotangent_space',
+                        'tensor_field', 'index_notation', 'tensor_transformation_law'):
             graph.click_concept('math.' + concept)
             # Deliberately traverse every route in this small authored DAG.
             # Hydration is lazy, so reveal new children a layer at a time.

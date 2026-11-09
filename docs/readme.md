@@ -18,6 +18,8 @@
   source/loading contracts; the [shared reader](design/nested_explanations_renderer.md)
   is implemented and used by the Maths pilot, whose draft records the actual
   sources and preservation decisions. The
+  [MATHS-2 teaching review](../domains/math/docs/tensor_calculus_teaching_review.md)
+  records the GR-oriented tensor introduction and question coverage. The
   earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
   the Field equations experiment and deferred graph reading highlights. These are
   teaching/design drafts, rather than converted production content. The

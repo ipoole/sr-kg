@@ -5,3 +5,6 @@ concept,math.coordinate_chart,tong.gr,§2.1.2 Differentiable Manifolds,Supports 
 concept,math.manifold,tong.gr,§2.1.2 Differentiable Manifolds,Supports local Euclidean structure and compatible atlases; terrain narrative is original.
 concept,math.coordinate_transformation,tong.gr,§2.1.2 Differentiable Manifolds,Supports smooth transitions; Jacobian calculations follow the chain rule.
 concept,math.worldline,tong.gr,§2.2.1 Tangent Vectors,Supports curves and tangent construction; the surface-route versus spacetime-history example is original.
+concept,math.tensor_field,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports type and total rank plus pointwise multilinear tensors; the component calculations and terrain examples are original.
+concept,math.index_notation,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports component slots and contractions; explicit dummy/free-index exercises are original teaching steps.
+concept,math.tensor_transformation_law,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports basis and component transformation rules; the one-dimensional rescaling is an original worked example.
