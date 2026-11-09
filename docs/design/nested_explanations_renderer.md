@@ -119,3 +119,14 @@ through the existing study controller, persistence and sync. Incoming data updat
 checkboxes in place without folding disclosures. No per-occurrence personal data
 is created. Opening a source does not mark it read. Local authored explanations
 still have no separate read record; notes on borrowed content remain deferred.
+
+## Common source rendering
+
+Native and borrowed units use the same source-body and heading-action factories.
+Both pass explicit `annotate` and `trackRead` capabilities. The body factory
+combines the registered graphic, legacy graphic-note location and the same
+paragraph renderer/anchor sequence. Placement affects the outer shell, title,
+statement location and lazy loading; it does not select a second text renderer.
+Personal-note insertion is controlled by capability rather than a native-only
+body implementation. Local disclosures still use the common recursive content
+shell and mathematics renderer.

@@ -130,7 +130,27 @@
         });
         sharedExplanations = kgCreateSharedExplanations({
           markup: contentMarkup, concepts: conceptData, modules: moduleData,
-          readToggle: function(id, title) { return renderContentBlockReadToggle(id, title); },
+          actions: function(source, capabilities, readLabel) {
+            var block = source.block, actions = [];
+            if (capabilities.annotate) {
+              actions.push({position: "heading", capability: "annotate", html:
+                renderNoteBlockAction(source.ownerType, source.ownerId, block.title, block.block_id, "", capabilities.trackRead)});
+            }
+            if (capabilities.trackRead) {
+              actions.push({position: "heading", capability: "trackRead", html:
+                renderContentBlockReadToggle(block.block_id, readLabel)});
+            }
+            return actions;
+          },
+          body: function(source, context, capabilities) {
+            var block = source.block, html = "";
+            if (block.graphic && capabilities.annotate) {
+              html += renderNotesAtAnchor(source.ownerType, source.ownerId, "Graphic", 0, "",
+                noteAnchorSpecs("", "graphic", "Graphic", "")[0]);
+            }
+            return html + renderNoteAnchoredBody(source.ownerType, source.ownerId,
+              block.title, block.block_id, "", block.body, context, capabilities);
+          },
           typeset: function(element) { typesetInfoPanel({element: element}); }
         });
         var escapeHtml = contentMarkup.escapeHtml;
@@ -1816,11 +1836,7 @@
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
           var context = sharedExplanations.rootContext(block.block_id, contentAnchorId(ownerId, title));
-          var graphic = sharedExplanations.nativeGraphic(block.block_id);
-          if (graphic) {
-            graphic += renderNotesAtAnchor(ownerType, ownerId, "Graphic", 0, "",
-              noteAnchorSpecs("", "graphic", "Graphic", "")[0]);
-          }
+          var capabilities = {annotate: true, trackRead: true, edit: false};
           return contentMarkup.renderContentUnit({
             origin: "authored", level: "block", anchorId: contentAnchorId(ownerId, title),
             contentBlockId: block.block_id,
@@ -1830,15 +1846,10 @@
             markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
             labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
               escapeHtml(policy.label) + '"></span>',
-            actions: [
-              {position: "heading", capability: "annotate",
-                html: renderNoteBlockAction(ownerType, ownerId, title, block.block_id, "", true)},
-              {position: "heading", capability: "trackRead",
-                html: renderContentBlockReadToggle(block.block_id, title)}
-            ],
+            actions: sharedExplanations.actions(block.block_id, capabilities),
             bodyClass: "content-block-body",
-            bodyHtml: sharedExplanations.nativeStatement(block.block_id) + graphic +
-              renderNoteAnchoredBody(ownerType, ownerId, title, block.block_id, "", block.body, context)
+            bodyHtml: sharedExplanations.nativeStatement(block.block_id) +
+              sharedExplanations.body(block.block_id, context, capabilities)
           });
         }
 

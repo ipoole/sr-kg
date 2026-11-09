@@ -581,25 +581,26 @@ function kgCreateNotesController(options) {
     return html;
   }
 
-  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text, context) {
+  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text, context, capabilities) {
+    var annotate = !capabilities || capabilities.annotate !== false;
     var blocks = splitConceptBlocks(String(text || ""));
     var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
-    var html = renderNotesAtAnchor(
+    var html = annotate ? renderNotesAtAnchor(
       targetType, targetId, sectionName, 0, "", specs[0]
-    );
+    ) : "";
     blocks.forEach(function(textBlock, index) {
       html += '<div class="concept-line">' +
         (textBlock.text ? renderConceptText(textBlock.text, Object.assign({}, context,
           {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";
-      html += renderNotesAtAnchor(
+      if (annotate) { html += renderNotesAtAnchor(
         targetType,
         targetId,
         sectionName,
         index + 1,
         String(textBlock.text || "").slice(0, 160),
         specs[index + 1]
-      );
+      ); }
     });
     return html;
   }

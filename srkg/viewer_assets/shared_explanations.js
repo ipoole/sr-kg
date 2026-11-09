@@ -68,6 +68,18 @@ function kgCreateSharedExplanations(options) {
       (caption ? '<figcaption class="concept-graphic-caption">' + markup.renderCaptionText(caption) + '</figcaption>' : "") + '</figure>';
   }
 
+  // Placement changes the shell, not the source body or its capabilities.
+  function actions(id, capabilities, readLabel) {
+    var source = sources[id];
+    return source ? options.actions(source, capabilities, readLabel || source.block.title) : [];
+  }
+
+  function body(id, context, capabilities) {
+    var source = sources[id];
+    if (!source) { return ""; }
+    return graphic(source) + options.body(source, context, capabilities);
+  }
+
   function renderReference(reference, context) {
     // Tooltips/preview summaries must not build a reading tree or gain controls.
     if (!context || !context.rootId) { return markup.renderConceptText(reference.target_label); }
@@ -96,7 +108,8 @@ function kgCreateSharedExplanations(options) {
         escape(ownerTitle + " · " + source.block.title) + '</span>',
       anchorId: entry.id, occurrenceKey: markup.occurrenceKey(child), slot: reference.slot,
       sourceId: reference.target_id, open: entry.open,
-      actions: [{position: "heading", html: options.readToggle(source.block.block_id, ownerTitle + " · " + source.block.title)}],
+      capabilities: {trackRead: true, annotate: false},
+      actions: actions(reference.target_id, {trackRead: true, annotate: false}, ownerTitle + " · " + source.block.title),
       bodyClass: "optional-detail-body kg-shared-body", bodyHtml: ""
     }) + '</div>';
   }
@@ -110,8 +123,7 @@ function kgCreateSharedExplanations(options) {
     var context = Object.assign({}, entry.context, {ancestors: entry.context.ancestors.concat([
       {sourceId: source.block.block_id, id: entry.id}
     ])});
-    element.querySelector(":scope > .kg-shared-body").innerHTML = graphic(source) +
-      markup.renderBodyLines(source.block.body, "", context);
+    element.querySelector(":scope > .kg-shared-body").innerHTML = body(source.block.block_id, context, {annotate: false});
     element.setAttribute("data-shared-loaded", "true");
     return true;
   }
@@ -144,12 +156,11 @@ function kgCreateSharedExplanations(options) {
   }
 
   function nativeStatement(id) { return sources[id] ? statement(sources[id]) : ""; }
-  function nativeGraphic(id) { return sources[id] ? graphic(sources[id]) : ""; }
   function hasGraphicBlock(owner) {
     return (owner.content_blocks || []).some(function(block) { return block.kind === "graphic"; });
   }
 
   return {beginPage: beginPage, afterRender: afterRender, toggled: toggled,
     rootContext: rootContext, disclosure: disclosure, renderReference: renderReference,
-    nativeStatement: nativeStatement, nativeGraphic: nativeGraphic, hasGraphicBlock: hasGraphicBlock};
+    nativeStatement: nativeStatement, body: body, actions: actions, hasGraphicBlock: hasGraphicBlock};
 }
