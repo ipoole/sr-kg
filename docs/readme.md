@@ -33,7 +33,9 @@
   belong in `domains/<id>/`; see [domain packages](design/domain_packages.md).
 - **Discussion** holds speculative ideas, not instructions for current behaviour.
   The [user experience review](discussion/user_experience_review.md) records
-  observed usability issues and proposed improvements.
+  observed usability issues and proposed improvements. The
+  [assets and learning journeys discussion](discussion/physicskg_assets_and_learning_journeys.md)
+  reconstructs the inventory behind the nested-explanations work.
 - [Issues](issues.md) tracks open content and implementation work.
 
 Update the relevant design document when behaviour or a contract changes.
