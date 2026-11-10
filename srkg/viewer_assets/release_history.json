@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.10", "date": "2026-11-10", "summary": "Preview: Algorithmic reading trees from self-contained blocks, with informative titles, ordered block kinds and boxed nesting; hosted viewers unchanged."},
   {"version": "4.6.9", "date": "2026-11-09", "summary": "Preview: Standalone graph-aligned reading prototype with derivation/explanation routes and deep-branch focus; hosted viewers unchanged."},
   {"version": "4.6.8", "date": "2026-11-09", "summary": "Preview: Notes throughout shared explanations and a fuller GR-oriented introduction to tensors in MATHS-2."},
   {"version": "4.6.7", "date": "2026-11-09", "summary": "Preview: Shared reading ticks, blue statements and nested explanations across MATHS-1."},

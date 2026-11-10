@@ -1,66 +1,65 @@
-# Graph-aligned reading: paper prototype
+# Generated reading trees: paper prototype
 
-9 November 2026 · standalone prototype 4.6.9.
+10 November 2026 · standalone prototype 4.6.10.
 
-Open [the HTML](graph_aligned_reading_mockup.html), or the hosted review page:
+Open [the HTML](graph_aligned_reading_mockup.html), or:
 https://physicskg.org/preview/graph-aligned-reading.html
 
-This is a teaching/interaction experiment for the
-[revised design](../../../docs/design/nested_explanations_design.md), not a viewer
-or schema implementation. It does not read or write personal data.
+This experiment supersedes the previous paper's authored per-profile exposition.
+The design document has deliberately not been revised yet. The actual Maths
+viewer, schema and domain data are unchanged; no personal data is read or saved.
 
-## What to review
+## Model to review
 
-The root is MATHS-2.3 Tensor transformation law. Derivation follows outgoing
-DERIVES_FROM/CONSTRUCTED_FROM edges; Explanation follows the Foundations family,
-including REQUIRES. The example currently has construction and prerequisite
-edges, with no DERIVES_FROM edges. It does not propose new graph edges.
+Every embedded concept owns self-contained blocks with a kind, meaningful title,
+short blue statement and body. Bodies can contain locally authored, nested
+clarifications, but never include another owned block. Ordinary references still
+preview Definitions without adding branches. These are paper texts, not a content
+migration. Existing prose has been regrouped into blocks; it is no longer split
+around recursive dependencies.
 
-The transitive Derivation map has four concepts and three edges: the root,
-Coordinate transformation, Coordinate chart and Manifold. Explanation has eight
-concepts and ten edges, adding Index notation, Tensor field, Cotangent space and
-Tangent space. Worldline is an ordinary reference, not a Foundations branch.
+The renderer takes an ordered list of block kinds and an edge filter:
 
-Embedded edge records are taken from the current Maths CSV. Teal connecting
-sentences propose revised edge justifications, stored separately by edge triple.
-The original notes remain available in map-edge tooltips. Definition/contribution
-statements are blue. These prototype texts are separately authored proposals;
-they have not replaced the live blocks or notes.
+- **Derivation:** Derivation blocks; DERIVES_FROM + CONSTRUCTED_FROM edges.
+- **Teaching:** Explanation, Intuition, Example blocks, in that order; the above
+  edges plus REQUIRES.
 
-The two expositions are separately authored. The succinct Derivation assumes
-vector/covector familiarity and reaches the Jacobian construction. Explanation
-also develops notation and tensor objects through their actual prerequisite
-paths. All supports shown in this example are joint supports; alternative proof
-styling remains for another exercise.
+Within a kind, authored block order is retained. Tensor transformation law has
+two Example blocks; Tangent space has an Intuition block. Each concept's first
+block of the first requested kind starts open. Remaining bodies start folded;
+every statement remains visible even when its body is closed. If the preferred
+kind is absent, the renderer says so and leaves other kinds folded. If no kinds
+match, dependencies still appear. Definition is available separately, not silently
+substituted for a missing Derivation or Explanation.
 
-## Interactions and deliberate limits
+A concept's blocks are followed by all eligible graph edges. Each contributes its
+teal justification and a folded concept branch with an informative block title
+and a separate kind badge. Opening that branch renders the same block-selection
+algorithm for the child. Thin rounded boxes express nesting. The extra concept
+branch is the recursive fold; opening it exposes the preferred block immediately.
+This is a prototype folding choice for review, not a change to the final design.
 
-- Profile and depth determine one available map/tree edge set. A branch's content
-  is created on first opening. Repeated sources have independent open state.
-- Opening a branch highlights its concept in amber. Root selection stays blue.
-  Same-concept Definition/Example/Algebra inclusions do not add graph hops.
-- At the map-depth boundary, an explicit action extends to the full tree. Profile
-  and depth changes currently rebuild/reset the tree. This reset is a prototype
-  simplification, not a proposed final preservation policy.
-- Capped indentation stops adding padding beyond three levels. Borders/path text
-  retain ancestry. Logical reading depth is not truncated.
-- The full-width option exposes a focus button inside open branches. Nested focus
-  and Return move the same DOM content, retaining the enclosing argument's open
-  branches. The source controls and map remain available.
-- An ordinary concept reference previews its Definition on hover, focus or tap;
-  Escape/Close dismisses it without changing the map or reading attention.
-- On phones the map starts folded to leave reading space. It can be opened.
+## Map and interactions
 
-Try the Explanation path through Index notation → Tensor field → Cotangent space
-→ Tangent space, then the tangent block's local clarifications. This exceeds six
-visual levels without changing the graph's shortest-distance hop calculation.
-Compare the indentation cap with full-width focus and return.
+The root remains MATHS-2.3. Derivation reaches four concepts/three edges; Teaching
+reaches eight concepts/ten edges. These are precisely the same existing Maths
+edges as before. Teal text proposes clearer justifications; original notes are
+retained in map tooltips. Neither graph data nor domain content has changed.
+
+Depth uses shortest graph distance. Boundaries offer explicit extension. Shared
+concepts can occur on several paths with independent open state; ancestor cycles
+stop. Alternative proofs await a concrete example. Opening a branch updates amber
+reading attention without changing the blue root selection.
+
+Capped indentation and full-width branch focus remain available. Focus/Return
+preserves the DOM and open states. Profile/depth changes deliberately reset the
+tree. Definition references support hover, keyboard focus and tap. The map starts
+folded on phones. No author chooses a reading route or inserts a dependency branch.
 
 ## Checks
 
-The focused browser exercise runs at 390 and 1280 pixels with real MathJax. It
-checks exact map/tree edge coverage after expansion, both profiles, the depth
-boundary, repeated sources, nested focus/return, reference previews without map
-changes, keyboard disclosure, equation rendering and page width. Original graph
-triples/notes are checked against the Maths CSV. The current viewer and earlier
-paper prototypes are preserved by publication.
+Focused browser checks at phone and desktop widths cover graph parity, generated
+branch coverage, preferred/secondary block folding, multiple blocks of one kind,
+missing kinds, cycles, independent repeated occurrences, local clarification boxes,
+focus/Return, keyboard use, MathJax rendering and horizontal page overflow.
+Publication preserves all other hosted pages, including the current viewer.
