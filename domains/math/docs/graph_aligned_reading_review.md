@@ -1,6 +1,6 @@
 # Concept details and generated reading trees: paper prototype
 
-11 November 2026 · standalone prototype 4.6.13.
+11 November 2026 · standalone prototype 4.6.14.
 
 Open [the HTML](graph_aligned_reading_mockup.html), or:
 https://physicskg.org/preview/graph-aligned-reading.html
@@ -41,13 +41,20 @@ remain available. Tensor transformation law has two Examples; Tangent space has
 an Intuition block.
 
 Stronger labelled concept containers distinguish sibling concepts and group their
-blocks and dependencies. Each edge introduces the support in a complete sentence,
-for example “MATHS-2.3 is constructed from MATHS-1.3 because:”, followed by its teal
-justification. This incoming relationship sits inside the destination occurrence’s
-container; a small “Why this concept?” legend sits on its upper border. The same
-canonical concept may have a different justification on another incoming path. Desktop includes concept names; phone layouts retain the codes.
-Concept branches have meaningful concept names rather than a generic block-kind
-heading. All dependency branches initially fold, with a blue statement preview.
+blocks and dependencies. A bold heading gives the full destination code/name
+first, including on phones. Its button is the disclosure control; the incoming
+justification remains visible directly below whether the body is open or closed.
+For example “MATHS-2.3 is constructed from this concept because:” precedes the teal
+justification. Desktop adds the source concept name; phones retain its code.
+The former “Why this concept?” border legend is removed. There is no separate
+Definition statement preview: it appears only in the owned Definition block,
+visible once the concept is opened. The child heading is not repeated inside.
+
+Native details retains occurrence folding state, controlled by the separate
+heading button with synchronised aria-expanded/aria-controls. The justification
+belongs to the incoming edge occurrence; another route to the same concept can
+supply a different justification. Cycle endpoints have a named heading without a
+disclosure button. All concept bodies start folded.
 
 ## Map and interactions
 
