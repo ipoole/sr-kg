@@ -90,3 +90,25 @@ Examples, exact graph parity at all depths, generated branch coverage, dependenc
 wording, full-width focus/Return, keyboard use, equation rendering and page width.
 The unit suite also passes. Publication preserves every other hosted file,
 including both existing viewers and the earlier paper prototypes.
+
+## Code and repeatable checks
+
+The prototype remains one HTML file, directly openable or hostable. Its labelled
+sections separate consolidated styles, the static page, the JSON fixture/recipe
+metadata and an encapsulated interaction script. Block bodies are authored once;
+Definition previews use those canonical blocks, with separate fallback text only
+for external references. Reading/focus state is centralised; rendering, map
+projection, MathJax lifecycle and event handlers have distinct helpers.
+
+`window.paper` exposes fixture/state inspection and `whenIdle()` for checks, while
+the interaction handlers remain private. The fast regression check requires no
+viewer build or network access and uses the project's existing browser fixture:
+
+```bash
+conda run -n sr-kg pytest -q tests/browser/test_reading_tree_prototype.py
+```
+
+Its two screen-width cases check graph parity, independent trees/occurrences,
+keyboard disclosure, cycles and nested focus/Return. It stubs MathJax; real-MathJax
+interaction checks were also run during the cleanup. Four before/after PNGs
+(folded page and supporting branch at phone/desktop widths) were byte-identical.
