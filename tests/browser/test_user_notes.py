@@ -57,7 +57,7 @@ def test_note_bubbles_replace_permanent_paragraph_controls(repo_browser_graph):
     assert page.locator("#info_panel .kg-add-note-row:visible").count() == 0
 
     repo_browser_graph.click_concept("math.manifold")
-    graphic = page.locator("#info_panel details.concept-figure")
+    graphic = page.locator('#info_panel > [data-content-block-id="math.manifold.graphic"]')
     assert graphic.locator(":scope > summary .kg-note-block-action").count() == 1
     study = page.locator("#info_panel details.study-questions")
     assert study.locator(":scope > summary .kg-note-block-action").count() == 1
@@ -150,7 +150,7 @@ def test_note_placement_supports_keyboard_and_multiple_notes(repo_browser_graph)
     bubble = overview.locator(":scope > summary .kg-note-block-action")
 
     bubble.click()
-    first_paragraph = overview.locator(".concept-line").first
+    first_paragraph = overview.locator(":scope > .content-block-body .concept-line").first
     assert first_paragraph.get_attribute("tabindex") == "0"
     assert first_paragraph.get_attribute("aria-label") == (
         "Place note after this paragraph"
@@ -179,7 +179,9 @@ def test_note_placement_supports_keyboard_and_multiple_notes(repo_browser_graph)
 @pytest.mark.browser
 def test_atomic_note_blocks_create_their_single_note_directly(repo_browser_graph):
     page = repo_browser_graph.page
-    repo_browser_graph.click_concept("math.manifold")
+    # Legacy standalone figures remain atomic; Maths figures now have ordinary
+    # authored bodies with paragraph-level annotations.
+    repo_browser_graph.click_concept("sr.spacetime_event")
 
     graphic = page.locator("#info_panel details.concept-figure")
     graphic.locator(":scope > summary .kg-note-block-action").click()
@@ -212,7 +214,7 @@ def test_touch_scroll_does_not_place_note(repo_browser_graph):
         '"math.m01_manifolds_and_coordinates.overview"]'
     )
     overview.locator(":scope > summary .kg-note-block-action").click()
-    first_paragraph = overview.locator(".concept-line").first
+    first_paragraph = overview.locator(":scope > .content-block-body .concept-line").first
     first_paragraph.evaluate(
         """element => {
           element.dispatchEvent(new PointerEvent('pointerdown', {
