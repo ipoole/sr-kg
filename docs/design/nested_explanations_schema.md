@@ -1,8 +1,10 @@
 # Nested explanations: minimum schema
 
-**Design revision:** the [graph-aligned reading-tree design](nested_explanations_design.md)
-now proposes stricter graph/block contracts. This document records the existing
-implementation; it does not yet implement that revised model.
+**Earlier implementation:** this records the block-borrowing pilot, retained
+while content is migrated. New authoring follows the agreed
+[blocks and generated reading-tree design](nested_explanations_design.md):
+self-contained blocks and graph-generated branches. Its implementation is next;
+this document does not claim those rules are already enforced.
 
 Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
 stage 3 adds the [shared reader](nested_explanations_renderer.md) on synthetic

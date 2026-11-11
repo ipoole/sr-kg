@@ -12,19 +12,18 @@
   [guided tutorial design](design/tutorial_playback.md) describes semantic
   routes, grouped actions, direct launch links and presentation restoration.
   Current physics routes cover rest energy and time dilation. The
-  [nested-explanations Maths pilot design](design/nested_explanations_design.md)
-  and its domain-owned teaching draft explore recursively shared content. The
-  [graph-aligned paper prototype](../domains/math/docs/graph_aligned_reading_mockup.html)
-  tests the revised relationship between exposition and dependency maps. The
-  [minimum schema](design/nested_explanations_schema.md) implements the Python
-  source/loading contracts; the [shared reader](design/nested_explanations_renderer.md)
-  is implemented and used by the Maths pilot, whose draft records the actual
-  sources and preservation decisions. The
+  [blocks and generated reading-tree design](design/nested_explanations_design.md)
+  records the agreed title/statement/body model, graph alignment and Reading
+  position, with Python pseudocode and prototype screenshots. The
+  [standalone paper prototype](../domains/math/docs/graph_aligned_reading_mockup.html)
+  exercises its presentation. The [minimum schema](design/nested_explanations_schema.md)
+  and [shared reader record](design/nested_explanations_renderer.md) describe the
+  earlier block-borrowing pilot, which awaits migration. Its
+  [Maths draft](../domains/math/docs/nested_explanations_pilot.md) and
   [MATHS-2 teaching review](../domains/math/docs/tensor_calculus_teaching_review.md)
-  records the GR-oriented tensor introduction and question coverage. The
-  earlier [paper prototype](design/nested_explanations_paper_prototype.md) records
-  the Field equations experiment and deferred graph reading highlights. These are
-  teaching/design drafts, rather than converted production content. The
+  retain content and preservation decisions. The earlier
+  [Field equations paper](design/nested_explanations_paper_prototype.md) is a
+  historical experiment, not the new authoring contract. The
   [study-question design](design/study.md) defines marking, attempts, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable
