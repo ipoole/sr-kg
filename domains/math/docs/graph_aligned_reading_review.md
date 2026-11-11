@@ -1,6 +1,6 @@
 # Generated reading trees: paper prototype
 
-10 November 2026 · standalone prototype 4.6.10.
+11 November 2026 · standalone prototype 4.6.11.
 
 Open [the HTML](graph_aligned_reading_mockup.html), or:
 https://physicskg.org/preview/graph-aligned-reading.html
@@ -35,7 +35,9 @@ substituted for a missing Derivation or Explanation.
 A concept's blocks are followed by all eligible graph edges. Each contributes its
 teal justification and a folded concept branch with an informative block title
 and a separate kind badge. Opening that branch renders the same block-selection
-algorithm for the child. Thin rounded boxes express nesting. The extra concept
+algorithm for the child. Each statement and its expandable title/body share one light block box. Stronger
+rounded concept containers, labelled by code and name, group the blocks and
+dependencies belonging to each concept and distinguish siblings. The extra concept
 branch is the recursive fold; opening it exposes the preferred block immediately.
 This is a prototype folding choice for review, not a change to the final design.
 
