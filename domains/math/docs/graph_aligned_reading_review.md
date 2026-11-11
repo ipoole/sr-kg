@@ -1,67 +1,78 @@
-# Generated reading trees: paper prototype
+# Concept details and generated reading trees: paper prototype
 
-11 November 2026 · standalone prototype 4.6.11.
+11 November 2026 · standalone prototype 4.6.12.
 
 Open [the HTML](graph_aligned_reading_mockup.html), or:
 https://physicskg.org/preview/graph-aligned-reading.html
 
-This experiment supersedes the previous paper's authored per-profile exposition.
-The design document has deliberately not been revised yet. The actual Maths
-viewer, schema and domain data are unchanged; no personal data is read or saved.
+The page mocks up MATHS-2.3 Tensor transformation law: local knowledge blocks,
+then a divider and two generated reading-tree cards. The design document has
+not been revised. Production viewer code, schema and Maths data are unchanged;
+no personal data is read or saved.
 
-## Model to review
+## Presentation
 
-Every embedded concept owns self-contained blocks with a kind, meaningful title,
-short blue statement and body. Bodies can contain locally authored, nested
-clarifications, but never include another owned block. Ordinary references still
-preview Definitions without adding branches. These are paper texts, not a content
-migration. Existing prose has been regrouped into blocks; it is no longer split
-around recursive dependencies.
+Every block has a kind, meaningful title, short blue statement and body. The
+statement and expandable title/body share one light box, tinted by kind using
+the real viewer's palette (including its pale label/mark colours for Definition
+and Explanation). Every body starts folded, including Definitions. Local
+clarifications can be nested, but a block body never calls another owned block.
+Ordinary references still preview Definitions.
 
-The renderer takes an ordered list of block kinds and an edge filter:
+The two reading-tree cards use the same statement/title/body arrangement, with
+separate tints, a stronger outline and restrained raised shadow. Their authored
+recipe metadata supplies a generic title and statement, with `{concept}` replaced
+by the root concept's name:
 
-- **Derivation:** Derivation blocks; DERIVES_FROM + CONSTRUCTED_FROM edges.
-- **Teaching:** Explanation, Intuition, Example blocks, in that order; the above
-  edges plus REQUIRES.
+- **Full derivation tree:** “Trace the derivation of {concept} through its
+  supporting concepts, recursively.” Selects Definition, Derivation; follows
+  DERIVES_FROM and CONSTRUCTED_FROM.
+- **Detailed teaching tree:** “Explore {concept} through definitions,
+  explanations, intuition and examples, following its foundational dependencies.”
+  Selects Definition, Explanation, Intuition, Example; also follows REQUIRES.
 
-Within a kind, authored block order is retained. Tensor transformation law has
-two Example blocks; Tangent space has an Intuition block. Each concept's first
-block of the first requested kind starts open. Remaining bodies start folded;
-every statement remains visible even when its body is closed. If the preferred
-kind is absent, the renderer says so and leaves other kinds folded. If no kinds
-match, dependencies still appear. Definition is available separately, not silently
-substituted for a missing Derivation or Explanation.
+Within a kind, authored block order is retained. There is no preferred-kind or
+first-block-open exception. A concept's selected blocks precede all eligible graph
+branches. Root blocks deliberately appear again inside each tree. A missing kind
+is simply absent; when no selected kinds exist, a notice appears and dependencies
+remain available. Tensor transformation law has two Examples; Tangent space has
+an Intuition block.
 
-A concept's blocks are followed by all eligible graph edges. Each contributes its
-teal justification and a folded concept branch with an informative block title
-and a separate kind badge. Opening that branch renders the same block-selection
-algorithm for the child. Each statement and its expandable title/body share one light block box. Stronger
-rounded concept containers, labelled by code and name, group the blocks and
-dependencies belonging to each concept and distinguish siblings. The extra concept
-branch is the recursive fold; opening it exposes the preferred block immediately.
-This is a prototype folding choice for review, not a change to the final design.
+Stronger labelled concept containers distinguish sibling concepts and group their
+blocks and dependencies. Each edge introduces the support in a complete sentence,
+for example “MATHS-2.3 is constructed from MATHS-1.3 because:”, followed by its teal
+justification. Desktop includes concept names; phone layouts retain the codes.
+Concept branches have meaningful concept names rather than a generic block-kind
+heading. All dependency branches initially fold, with a blue statement preview.
 
 ## Map and interactions
 
-The root remains MATHS-2.3. Derivation reaches four concepts/three edges; Teaching
-reaches eight concepts/ten edges. These are precisely the same existing Maths
-edges as before. Teal text proposes clearer justifications; original notes are
-retained in map tooltips. Neither graph data nor domain content has changed.
+Both reading-tree cards can stay open independently. Each has its own depth and
+open branches. Opening/using one changes the mock map to that tree's context but
+does not rebuild the other tree. Opening ordinary local content does not change
+the map context. The automatic map relationship is labelled as prototype behaviour;
+optional synchronisation with the production graph is not implemented here.
 
-Depth uses shortest graph distance. Boundaries offer explicit extension. Shared
-concepts can occur on several paths with independent open state; ancestor cycles
-stop. Alternative proofs await a concrete example. Opening a branch updates amber
-reading attention without changing the blue root selection.
+Derivation reaches four concepts/three edges; Teaching reaches eight concepts/ten
+edges. The edges are unchanged. Teal justifications propose clearer wording;
+original notes remain in map tooltips. No author chooses a reading route.
 
-Capped indentation and full-width branch focus remain available. Focus/Return
-preserves the DOM and open states. Profile/depth changes deliberately reset the
-tree. Definition references support hover, keyboard focus and tap. The map starts
-folded on phones. No author chooses a reading route or inserts a dependency branch.
+Depth uses shortest graph distance. Boundaries offer extension. Changing depth
+rebuilds only that tree. Repeated concepts have independent occurrences; ancestor
+cycles stop. Alternative proofs await a concrete example. Amber reading attention
+moves while the blue root selection remains fixed.
+
+Each tree's Fold supports button closes all its block, clarification and concept
+disclosures, without closing the outer card or affecting local content/the other
+tree. Capped indentation and full-width focus/Return preserve existing DOM and
+folds. Definition references support hover, keyboard focus and tap. The map starts
+folded on phones.
 
 ## Checks
 
-Focused browser checks at phone and desktop widths cover graph parity, generated
-branch coverage, preferred/secondary block folding, multiple blocks of one kind,
-missing kinds, cycles, independent repeated occurrences, local clarification boxes,
-focus/Return, keyboard use, MathJax rendering and horizontal page overflow.
-Publication preserves all other hosted pages, including the current viewer.
+Focused phone/desktop browser checks cover tinted boxed statements and titles,
+all-folded defaults, independent cards, Definition-first selection, multiple
+Examples, exact graph parity at all depths, generated branch coverage, dependency
+wording, full-width focus/Return, keyboard use, equation rendering and page width.
+The unit suite also passes. Publication preserves every other hosted file,
+including both existing viewers and the earlier paper prototypes.
