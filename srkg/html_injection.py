@@ -116,6 +116,7 @@ def inject_controls(
         "graph_presentation.js",
         "content_markup.js",
         "shared_explanations.js",
+        "reading_trees.js",
         "details_view.js",
         "study_controller.js",
         "notes_controller.js",

@@ -3,6 +3,14 @@ import csv
 import pytest
 
 
+def _reveal_note_parents(page):
+    """Inspect saved notes explicitly inside their now-folded authored blocks."""
+    page.locator('#info_panel .user-note').evaluate_all("""notes=>notes.forEach(note=>{
+        let parent=note.parentElement;
+        while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement;}
+    })""")
+
+
 def _hover_beta_node(page):
     point = page.evaluate(
         """() => {
@@ -263,17 +271,21 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     list_item = page.locator("#kg_notes_list .kg-note-list-item")
     assert list_item.get_attribute("data-target-type") == "concept"
     assert list_item.get_attribute("data-target-id") == "2.1"
+    _reveal_note_parents(page)
     assert "Check this derivation" in list_item.inner_text()
 
     note.locator(".user-note-close").click()
     note = page.locator("#info_panel details.user-note").first
     assert note.get_attribute("open") is not None
+    _reveal_note_parents(page)
     assert note.locator(".user-note-reading").inner_text() == "This should become an optional detail later."
+    _reveal_note_parents(page)
     assert note.locator("summary").inner_text() == "Check this derivation"
 
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
     assert page.locator("#info_panel .user-note-title-input").count() == 0
     assert page.locator("#info_panel .user-note-body-input").count() == 0
+    _reveal_note_parents(page)
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Check this derivation"
     )
@@ -281,6 +293,7 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     page.locator("#info_panel details.user-note summary").click()
     assert page.locator("#info_panel .user-note-body-input").count() == 0
     page.locator("#info_panel .user-note-edit").click()
+    _reveal_note_parents(page)
     assert page.locator("#info_panel .user-note-body-input").input_value() == (
         "This should become an optional detail later."
     )
@@ -295,6 +308,7 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
         """
     )
     browser_graph.click_concept("2.1")
+    _reveal_note_parents(page)
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Check this derivation"
     )
@@ -398,11 +412,13 @@ def test_user_notes_export_and_import_csv(browser_graph):
 
     page.locator("#kg_notes_import_input").set_input_files(str(import_path))
     browser_graph.click_concept("2.1")
+    _reveal_note_parents(page)
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Imported title"
     )
     page.locator("#info_panel details.user-note summary").click()
     assert page.locator("#info_panel .user-note-body-input").count() == 0
+    _reveal_note_parents(page)
     assert page.locator("#info_panel .user-note-reading").inner_text() == "Imported body"
 
 
@@ -516,6 +532,7 @@ def test_legacy_module_note_with_corrupted_context_recovers_by_paragraph(repo_br
     page.locator(module_selector).click()
 
     example = page.locator(example_selector)
+    _reveal_note_parents(page)
     assert example.locator("details.user-note summary").inner_text() == (
         "Recovered field note"
     )
@@ -580,6 +597,7 @@ def test_legacy_concept_note_csv_still_imports(browser_graph):
     page.locator("#kg_notes_import_input").set_input_files(str(import_path))
     browser_graph.click_concept("2.1")
 
+    _reveal_note_parents(page)
     assert page.locator("#info_panel details.user-note summary").inner_text() == "Legacy note"
     stored = page.evaluate(
         "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
@@ -611,6 +629,7 @@ def test_legacy_local_storage_note_is_loaded_and_migrated(browser_graph):
     page.wait_for_function("() => typeof network !== 'undefined'")
     browser_graph.click_concept("2.1")
 
+    _reveal_note_parents(page)
     assert page.locator("#info_panel details.user-note summary").inner_text() == (
         "Stored legacy note"
     )
@@ -626,6 +645,7 @@ def test_note_hooks_follow_optional_details_and_display_equations(mathjax_browse
     page = mathjax_browser_graph.page
 
     mathjax_browser_graph.click_concept("2.1")
+    page.locator("#info_panel > details.content-block").evaluate_all("es=>es.forEach(e=>e.open=true)")
     page.locator("#kg_notes_section summary").click()
     section = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     assert section.locator(".optional-detail").count() == 1
@@ -678,6 +698,7 @@ def test_note_uses_stable_block_id_across_section_rename(browser_graph):
 
     renamed = page.locator('#info_panel [data-content-block-id="2.1.definition"]')
     assert renamed.locator(":scope > summary .content-block-title-text").filter(has_text="Renamed definition").count() == 1
+    _reveal_note_parents(page)
     assert renamed.locator("details.user-note summary").inner_text() == "Stable definition note"
     assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
 
@@ -704,6 +725,7 @@ def test_note_context_survives_paragraph_insertion_and_splitting(browser_graph):
 
     explanation = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     note = explanation.locator("details.user-note")
+    _reveal_note_parents(page)
     assert note.locator("summary").inner_text() == "Context note"
     assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
 
@@ -781,6 +803,7 @@ def test_legacy_section_note_migrates_to_the_canonical_block(browser_graph):
     page.reload(wait_until='domcontentloaded')
     page.wait_for_function("() => typeof kgViewerStateSnapshot === 'function'")
     browser_graph.click_concept('2.1')
+    _reveal_note_parents(page)
     assert page.locator('#info_panel details.user-note summary').inner_text() == 'A legacy section note'
     anchor = page.evaluate("kgPersonalData.getSnapshot().notes.find(n => n.id === 'legacy-section-key').anchor")
     assert anchor['blockId'] == '2.1.definition'
@@ -824,12 +847,15 @@ def test_insert_maths_replaces_selection_and_persists(browser_graph):
     body.evaluate('el => { el.focus(); el.setSelectionRange(7, 14); }')
     page.get_by_role('button', name='Insert maths', exact=True).click()
     sample = r'\(\gamma = 1/\sqrt{1-v^2/c^2}\)'
+    _reveal_note_parents(page)
     assert body.input_value() == 'Before ' + sample + ' after'
     assert body.evaluate('el => [el.selectionStart, el.selectionEnd]') == [7 + len(sample)] * 2
     stored = page.evaluate('kgPersonalData.getSnapshot().notes[0].body')
+    _reveal_note_parents(page)
     assert stored == body.input_value()
     browser_graph.click_concept('1.1')
     browser_graph.click_concept('2.1')
+    _reveal_note_parents(page)
     assert page.locator('#info_panel .user-note-body-input').input_value() == stored
     page.locator('#info_panel .user-note-close').click()
     profile = page.evaluate('''() => kgPersonalDataArchive.importBytes(
@@ -1068,6 +1094,7 @@ def test_personal_and_authored_content_share_geometry_at_each_level(browser_grap
     owner.locator('.user-note-close').click()
     authored = page.locator('#info_panel [data-content-block-id="2.1.explanation"]')
     optional = authored.locator('.optional-detail[data-content-origin="authored"]')
+    authored.evaluate("e=>e.open=true")
     optional.locator(':scope > summary').click()
     geometry = '''el => {
       const s = getComputedStyle(el);

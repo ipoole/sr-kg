@@ -66,6 +66,8 @@ def shared_explanation_graph(shared_explanation_output, playwright_browser):
     output.write_text(_use_stub_mathjax(shared_explanation_output.read_text()))
     with _open_browser_graph(api, browser, output) as graph:
         graph.click_concept('test.alpha')
+        # These tests exercise legacy sharing inside an explicitly opened block.
+        graph.page.locator('#info_panel > details[data-content-block-id="test.alpha.definition"]').evaluate('e=>e.open=true')
         yield graph
 
 
@@ -74,6 +76,10 @@ def _reference(page, slot):
 
 
 def _open(disclosure):
+    disclosure.evaluate("""element => {
+        let parent=element.parentElement;
+        while(parent){ if(parent.tagName==='DETAILS')parent.open=true; parent=parent.parentElement; }
+    }""")
     disclosure.locator(':scope > summary').click()
 
 
@@ -84,7 +90,7 @@ def test_native_reading_and_independent_lazy_branches(shared_explanation_graph):
     root = page.locator('[data-content-block-id="test.alpha.definition"]')
     assert root.evaluate('e=>e.open')
     assert 'Root argument.' in root.inner_text()
-    assert root.locator(':scope > .content-block-body > .kg-content-statement').count()==1
+    assert root.locator(':scope > summary > .kg-content-statement').count()==1
     left, right = _reference(page, 'left'), _reference(page, 'right')
     assert left.count()==right.count()==1
     assert not left.evaluate('e=>e.open')
@@ -130,6 +136,7 @@ def test_native_source_and_graphic_have_no_extra_disclosure(shared_explanation_g
     graph.click_concept('test.gamma')
     page=graph.page
     native=page.locator('[data-content-block-id="test.gamma.definition"]')
+    native.evaluate('e=>e.open=true')
     assert 'Right explanation.' in native.inner_text()
     picture=page.locator('[data-content-block-id="test.gamma.picture"]')
     if not picture.evaluate('e=>e.open'): _open(picture)
@@ -219,6 +226,7 @@ def test_modules_can_borrow_and_supply_explanations(shared_explanation_graph):
     graph.open_control_section('kg_modules_section')
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
     native = page.locator('[data-content-block-id="test.m01_foundations.overview"]')
+    native.evaluate('e=>e.open=true')
     assert 'Module argument.' in native.inner_text()
     _open(_reference(page, 'delta'))
     _reference(page, 'delta').locator('[data-content-slot="deeper"]').wait_for()

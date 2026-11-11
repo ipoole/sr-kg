@@ -89,6 +89,13 @@ function kgCreateSharedExplanations(options) {
         ' — ' + markup.renderConceptText(reference.hook) +
         '<small>Explanation unavailable in this edition.</small></div>';
     }
+    // Unconverted authored borrowing must not create extra graph branches in a
+    // generated tree. Keep its contribution and an ordinary source preview.
+    if (context.readingTree) {
+      return '<div class="kg-reading-legacy-reference">' + statement(source) +
+        '<a href="#" class="concept-link" data-concept-id="' + escape(source.ownerId) +
+        '">' + escape(reference.target_label || source.block.title) + '</a></div>';
+    }
     var html = '<div class="kg-shared-reference">' + statement(source);
     var ancestor = (context.ancestors || []).slice().reverse().find(function(item) {
       return item.sourceId === reference.target_id;
@@ -125,9 +132,12 @@ function kgCreateSharedExplanations(options) {
     return markup.renderContentUnit({
       origin: "authored", level: "inline", className: "optional-detail kg-local-explanation",
       title: part.title, anchorId: state.id, occurrenceKey: markup.occurrenceKey(context),
+      sourceId: context.sourceId,
       slot: part.slot, open: state.open, capabilities: capabilities,
       actions: options.actions(localSource, capabilities, part.title),
-      bodyClass: "optional-detail-body", bodyHtml: options.body(localSource, context, capabilities)
+      bodyClass: "optional-detail-body", bodyHtml:
+        (options.readingFocus ? options.readingFocus(state.id, context) : "") +
+        options.body(localSource, context, capabilities)
     });
   }
 

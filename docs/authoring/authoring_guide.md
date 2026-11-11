@@ -5,8 +5,9 @@ starting a new authoring pass and revisit the relevant sections between modules.
 
 New/revised blocks follow the [reading-tree design](../design/folded_reading_trees_design.md):
 self-contained title, statement and body, connected by graph edges. The shared
-viewer migration is next. Legacy missing statements and block-borrowing calls
-remain loadable meanwhile; they are not patterns for new authoring.
+viewer supports this model; domain content migration is staged. Legacy missing
+statements and block-borrowing calls remain loadable meanwhile; they are not
+patterns for new authoring.
 
 ## Editorial Aim
 

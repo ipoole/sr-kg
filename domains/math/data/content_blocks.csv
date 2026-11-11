@@ -195,7 +195,7 @@ K^i{}_a&\coloneqq\frac{\partial x^i}{\partial y^a}.
 All quantities are evaluated at the same point in the overlap. An upper index receives a \(J\) factor, while a lower index receives a \(K\) factor. A nonlinear chart change makes these matrices position-dependent; the rule still holds point by point.
 \explain{jacobian}{math.coordinate_transformation.jacobian}{The Jacobian and inverse transition}{Where do these matrices come from?}
 \explain{first-cases}{math.tensor_transformation_law.vector_covector}{Vector and covector transformations}{Why do upper and lower indices use opposite factors?}",Each upper index transforms with the new-with-respect-to-old Jacobian; each lower index transforms with its inverse.,
-math.tensor_transformation_law.vector_covector,math.tensor_transformation_law,20,construction,Vector and covector cases,"For a vector the chain rule gives
+math.tensor_transformation_law.vector_covector,math.tensor_transformation_law,20,explanation,Vector and covector cases,"For a vector the chain rule gives
 \[V_y^a=\frac{\partial y^a}{\partial x^i}V_x^i.\]
 For a covector the inverse factors give
 \[\omega^y_a=\frac{\partial x^i}{\partial y^a}\omega^x_i.\]
@@ -206,14 +206,14 @@ Here the decorations \(x,y\) name the chart, not extra tensor indices. A label r
 Substitute the vector rule. Since this must hold for every \(V_x^i\),
 \[\omega^y_a\frac{\partial y^a}{\partial x^i}=\omega^x_i.\]
 Multiplying by the inverse Jacobian gives the displayed covector transformation. No metric entered the argument.}",Vector and covector components transform oppositely so their natural scalar pairing is unchanged.,
-math.tensor_transformation_law.higher_rank,math.tensor_transformation_law,30,construction,One factor per index,"For \(T^i{}_{jk}\), with one upper and two lower indices, there are three factors:
+math.tensor_transformation_law.higher_rank,math.tensor_transformation_law,30,derivation,One factor per index,"For \(T^i{}_{jk}\), with one upper and two lower indices, there are three factors:
 \[T'^a{}_{bc}=J^a{}_i K^j{}_b K^k{}_c T^i{}_{jk}.\]
 The old indices \(i,j,k\) are summed. The new indices \(a,b,c\) are free and match the transformed component on the left. The formula uses the Jacobian \(J\) and its inverse \(K\) defined above.
 \explain{type}{math.tensor_field.rank}{Tensor type and total order}{Why exactly three factors?}
 \explain{first-cases}{math.tensor_transformation_law.vector_covector}{The one-index transformation rules}{Recover the rule for each individual slot}
 For a covariant two-index tensor, such as a metric,
 \[g'_{ab}=K^i{}_a K^j{}_b g_{ij}.\]
-This is how its entries adjust when the same geometric measurement is described by another chart.",,
+This is how its entries adjust when the same geometric measurement is described by another chart.",Each tensor index contributes its own transformation factor.,
 math.tensor_transformation_law.not_invariant_components,math.tensor_transformation_law,40,misconception,Not unchanged components,"Tensorial does not mean that every component remains numerically unchanged. It means the components transform by the rule appropriate to their index slots, so the underlying geometric object and its scalar measurements are unchanged at the same point.
 \explanation{cancel}{See the Jacobians cancel in a contraction}{Use \(V_y^a=J^a{}_j V_x^j\), \(\omega^y_a=K^i{}_a\omega^x_i\), and \(K^i{}_aJ^a{}_j=\delta^i{}_j\):
 \[\begin{aligned}
@@ -222,7 +222,7 @@ math.tensor_transformation_law.not_invariant_components,math.tensor_transformati
 &=\omega^x_j V_x^j.
 \end{aligned}\]
 This is pointwise coordinate independence, not a claim that the scalar has the same value at different manifold points.}
-Ordinary partial derivatives of tensor components generally introduce extra terms under nonlinear chart changes. GR uses a covariant derivative to correct for this; its construction is beyond this module.",,
+Ordinary partial derivatives of tensor components generally introduce extra terms under nonlinear chart changes. GR uses a covariant derivative to correct for this; its construction is beyond this module.",Coordinate independence does not mean that tensor components stay fixed.,
 math.tensor_field.rank,math.tensor_field,15,definition,"Type, order and rank","Count the upper and lower indices in a component expression. A tensor of type \((r,s)\) has \(r\) upper and \(s\) lower indices; its total order, also called total rank here, is \(r+s\).
 A scalar has type \((0,0)\) and order zero. A vector \(V^\mu\) has type \((1,0)\); a covector \(\omega_\mu\) has type \((0,1)\). Both have order one, but they transform differently. A metric \(g_{\mu\nu}\) has type \((0,2)\) and order two. A mixed tensor \(A^\mu{}_{\nu}\) has type \((1,1)\) and order two.
 \explanation{count}{How many component entries are there?}{In \(n\) dimensions each index takes \(n\) values. An order-\(k\) tensor therefore has \(n^k\) entries before symmetries or constraints are used. A four-dimensional metric has \(4^2=16\) entries. Symmetry \(g_{\mu\nu}=g_{\nu\mu}\) leaves 4 diagonal and 6 off-diagonal values, hence 10 independent components.}
@@ -253,4 +253,4 @@ V^{x'}&=2(3)=6,\\
 The pairing is \(8(3)=24\) before relabelling and \(4(6)=24\) afterwards. The component values change while the readout stays fixed.
 \explanation{two-index}{What happens to a two-index tensor?}{If the same rescaling is applied to a one-dimensional coordinate, a covariant component \(B_{xx}\) receives two inverse factors:
 \[B_{x'x'}=\tfrac14 B_{xx}.\]
-A mixed component \(A^x{}_{x}\) receives one factor of two and one of a half, so it stays unchanged in this particular rescaling. This does not make every mixed component invariant under general changes of basis.}",,
+A mixed component \(A^x{}_{x}\) receives one factor of two and one of a half, so it stays unchanged in this particular rescaling. This does not make every mixed component invariant under general changes of basis.}",Components change while the scalar pairing remains unchanged.,

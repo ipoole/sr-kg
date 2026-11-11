@@ -1,10 +1,10 @@
 # Nested explanations: minimum schema
 
-**Earlier implementation:** this records the block-borrowing pilot, retained
-while content is migrated. New authoring follows the agreed
-[blocks and generated reading-tree design](folded_reading_trees_design.md):
-self-contained blocks and graph-generated branches. Its implementation is next;
-this document does not claim those rules are already enforced.
+**Storage compatibility:** these fields and macros remain loadable. New
+authoring follows the [generated reading-tree design](folded_reading_trees_design.md):
+self-contained blocks and graph-generated branches. The
+[shared implementation](folded_reading_trees_renderer.md) now supports that model;
+owned-block borrowing remains available only for existing content awaiting audit.
 
 Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
 stage 3 adds the [shared reader](folded_reading_trees_renderer.md) on synthetic

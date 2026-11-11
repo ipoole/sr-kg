@@ -569,6 +569,7 @@ def test_guided_details_allow_reading_without_navigation_or_hover(browser_graph,
     before = page.evaluate('kgPersonalData.getSnapshot()')
     selection = page.evaluate('kgViewerStateSnapshot().selection')
     clarification = page.locator('#info_panel details.optional-detail').first
+    clarification.evaluate("e=>{let p=e.parentElement;while(p){if(p.tagName==='DETAILS')p.open=true;p=p.parentElement;}}")
     clarification.locator(':scope > summary').click()
     assert clarification.evaluate('e=>e.open')
     link = clarification.locator('.concept-link').first

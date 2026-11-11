@@ -182,7 +182,8 @@ through callbacks rather than captured once at controller construction.
 | `layout_geometry.js`, `module_geometry.js` | Stateless collision/position helpers and module footprint geometry. |
 | `graph_presentation.js` | Canvas faces, outlines, completion ticks, SVG-image and fitted-label caches. |
 | `content_markup.js` | Escaping, references, optional-details markup and math-aware paragraph/caption/study rendering. |
-| `shared_explanations.js` | Canonical source lookup, lazy borrowed bodies, independent page-local reading paths, cycles and reused graphics. |
+| `shared_explanations.js` | Canonical block bodies/actions, local clarifications, namespaced graphics and legacy borrowing compatibility. |
+| `reading_trees.js` | Graph-generated recipes, lazy occurrence/focus state, canonical-source placement and opt-in reading-position synchronisation. |
 | `details_view.js` | Details replacement/MathJax lifecycle, contents selection and scroll state/timers. |
 | `notes_controller.js` | Notes state/editor identity, anchor recovery, rendering and CSV exchange. |
 | `study_controller.js` | Questions/read state and indexes, marking, completion caches and scorecard. |

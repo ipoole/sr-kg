@@ -133,7 +133,7 @@ function kgCreateContentMarkup(options) {
           (!action.capability || capabilities[action.capability] === true);
       }).map(function(action) { return action.html || ""; }).join("");
     }
-    var heading = '<span class="content-block-title-line">' +
+    var heading = (unit.statementHtml || "") + '<span class="content-block-title-line">' +
       (unit.markHtml || "") + '<span class="content-block-title-text">' +
       renderConceptText(unit.title || "") + '</span>' + (unit.labelHtml || "") + '</span>' +
       renderActions("heading");
@@ -164,7 +164,9 @@ function kgCreateContentMarkup(options) {
     return {origin: context.origin, rootId: context.rootId,
       steps: (context.steps || []).concat([[slot, targetId || ""]]),
       ancestors: context.ancestors || [], sourceId: targetId || context.sourceId,
-      localSlots: targetId ? [] : (context.localSlots || []).concat([slot])};
+      localSlots: targetId ? [] : (context.localSlots || []).concat([slot]),
+      readingTree: context.readingTree === true,
+      readingDepth: Number(context.readingDepth || 0) + 1};
   }
 
   function occurrenceKey(context) {

@@ -123,7 +123,7 @@
         var workspaceSplitterPointerId = null;
         var contextNoticeTimer = null;
 
-        var sharedExplanations;
+        var sharedExplanations, readingTrees;
         var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash,
           reference: function(reference, context) { return sharedExplanations.renderReference(reference, context); },
           explanation: function(part, context, state) { return sharedExplanations.local(part, context, state); },
@@ -131,6 +131,7 @@
         });
         sharedExplanations = kgCreateSharedExplanations({
           markup: contentMarkup, concepts: conceptData, modules: moduleData,
+          readingFocus: function(id, context) { return readingTrees ? readingTrees.focusButton(id, context) : ""; },
           actions: function(source, capabilities, readLabel) {
             var block = source.block, actions = [];
             if (capabilities.annotate) {
@@ -154,6 +155,30 @@
           },
           typeset: function(element) { typesetInfoPanel({element: element}); }
         });
+        readingTrees = kgCreateReadingTrees({
+          markup: contentMarkup, shared: sharedExplanations, concepts: conceptData,
+          edges: allEdges, relation: edgeRelation, blocks: conceptContentBlocks,
+          label: conceptTitleText,
+          context: function(id, rule) {
+            return computeViewerContext({type: "concept", id: id},
+              createContextRule(rule.preset, rule.depth));
+          },
+          renderBlock: function(id, block, placement) {
+            return renderOwnerContentBlock("concept", id, block, placement);
+          },
+          typeset: function(element) { typesetInfoPanel({element: element}); },
+          clearMath: function(element) { detailsView.clearMathTypesetting(element); },
+          onPosition: function() { if (initialGraphProjectionReady) { network.redraw(); } },
+          onSynchronise: function(id, rule) {
+            if (activeNodeId !== id) { return; }
+            resetContextFitInteraction();
+            viewerState.contextRule = createContextRule(rule.preset, rule.depth);
+            renderGraphFromViewerState();
+          }
+        });
+        window.kgReadingTrees = {snapshot: readingTrees.snapshot};
+        window.kgReadingMarkerSnapshot = readingMarkerSnapshot;
+
         var escapeHtml = contentMarkup.escapeHtml;
         var cssAttributeValueEscape = contentMarkup.cssAttributeValueEscape;
         var skipOptionalDetailWhitespace = contentMarkup.skipOptionalDetailWhitespace;
@@ -710,6 +735,11 @@
             replaceTypesetContent(nodeTooltip, conceptTooltipHtml(nodeId));
           } else {
             return;
+          }
+          var readingMarker = readingMarkerSnapshot();
+          if (readingMarker && String(nodeId) === String(readingMarker.nodeId)) {
+            nodeTooltip.insertAdjacentHTML("beforeend", '<div class="kg-reading-tooltip">Reading: ' +
+              escapeHtml(conceptTitleText(readingMarker.conceptId)) + '</div>');
           }
           nodeTooltip.style.display = "block";
           positionNodeTooltip(pointer);
@@ -1674,7 +1704,9 @@
             return {
               key: kind, title: kind.charAt(0).toUpperCase() + kind.slice(1),
               text: blocks.filter(function(block) { return block.kind === kind; })
-                .map(function(block) { return [block.statement, block.body].filter(Boolean).join("\n"); }).join("\n\n")
+                .filter(function(_block, index) { return kind !== "definition" || index === 0; })
+                .map(function(block) { return kind === "definition" ? block.body :
+                  [block.statement, block.body].filter(Boolean).join("\n"); }).join("\n\n")
             };
           });
         }
@@ -1834,24 +1866,30 @@
             renderNoteBlockAction(targetType, targetId, title, "", sectionKey, false);
         }
 
-        function renderOwnerContentBlock(ownerType, ownerId, block) {
+        function renderOwnerContentBlock(ownerType, ownerId, block, placement) {
+          placement = placement || {};
           var title = block.title || contentBlockKindLabel(block.kind);
           var policy = contentBlockPolicyFor(block.kind);
-          var context = sharedExplanations.rootContext(block.block_id, contentAnchorId(ownerId, title));
+          var anchor = placement.id || contentAnchorId(ownerId, title);
+          var context = placement.context || sharedExplanations.rootContext(block.block_id, anchor);
           var capabilities = {annotate: true, trackRead: true, edit: false};
           return contentMarkup.renderContentUnit({
-            origin: "authored", level: "block", anchorId: contentAnchorId(ownerId, title),
+            origin: "authored", level: "block", anchorId: anchor,
+            occurrenceKey: placement.reading ? contentMarkup.occurrenceKey(context) : null,
+            sourceId: placement.reading ? block.block_id : null,
+            statementHtml: sharedExplanations.nativeStatement(block.block_id),
             contentBlockId: block.block_id,
             capabilities: {annotate: true, trackRead: true, edit: false},
-            className: contentBlockClassName(block, policy) + (ownerType === "module" ? " module-content-block" : ""),
-            open: policy.mode !== "folded", title: title,
+            className: contentBlockClassName(block, policy) + " kg-statement-block" +
+              (placement.reading ? " kg-reading-block" : "") +
+              (ownerType === "module" ? " module-content-block" : ""),
+            open: false, title: title,
             markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
             labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
-              escapeHtml(policy.label) + '"></span>',
+              escapeHtml(contentBlockKindLabel(block.kind)) + '"></span>',
             actions: sharedExplanations.actions(block.block_id, capabilities),
             bodyClass: "content-block-body",
-            bodyHtml: sharedExplanations.nativeStatement(block.block_id) +
-              sharedExplanations.body(block.block_id, context, capabilities)
+            bodyHtml: sharedExplanations.body(block.block_id, context, capabilities)
           });
         }
 
@@ -2883,6 +2921,7 @@
           if (!module) { return; }
           var panel = document.getElementById("info_panel");
           sharedExplanations.beginPage("module", moduleId, panel);
+          readingTrees.beginPage(null, panel);
           var tocItems = moduleTocItems(moduleId, module);
           detailsView.setItems(tocItems);
 
@@ -3878,6 +3917,7 @@
         }
 
         function setViewerContextRule(rule) {
+          readingTrees.detach();
           resetContextFitInteraction();
           viewerState.contextRule = createContextRule(
             rule && rule.preset,
@@ -3888,6 +3928,7 @@
         }
 
         async function showRelationshipSectionInGraph(preset, fullTree) {
+          readingTrees.detach();
           var selected = JSON.stringify(viewerSelectionSnapshot());
           resetContextFitInteraction();
           viewerState.contextRule = createContextRule(
@@ -4507,6 +4548,10 @@
 
         function showConcept(nodeId, options) {
           options = options || {};
+          // Browsing the unfiltered search list is ordinary navigation, not a
+          // request to preserve scrolling for a text match that does not exist.
+          options.scrollToSearchMatch = Boolean(options.scrollToSearchMatch &&
+            searchDisplayText(options.searchQuery || "").trim());
           hideConceptPreview(true);
           var concept = getConcept(nodeId);
           if (!concept) {
@@ -4535,11 +4580,13 @@
 
           var panel = document.getElementById("info_panel");
           sharedExplanations.beginPage("concept", nodeId, panel);
+          readingTrees.beginPage(nodeId, panel);
           var html = "";
           html += renderConceptMasthead(nodeId, concept, tocItems);
           html += renderConceptGraphic(nodeId, concept);
           html += "<hr>";
           html += renderConceptContent(nodeId, concept);
+          html += readingTrees.render(nodeId);
           html += notesController.renderOwnerNotes("concept", nodeId);
           html += renderConceptDerivedFrom(nodeId);
           html += renderConceptBacklinks(nodeId);
@@ -4587,7 +4634,10 @@
           var previousPanelConceptId = panel.getAttribute("data-concept-id") || "";
           var conceptChanged = previousPanelConceptId !== String(nodeId);
           replaceTypesetContent(panel, html);
+          readingTrees.afterRender(panel);
           sharedExplanations.afterRender(panel);
+          readingTrees.restoreFocus();
+          readingTrees.restored(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
           panel.removeAttribute("data-module-id");
           if (conceptChanged && !options.scrollToSearchMatch) {
@@ -4744,7 +4794,7 @@
 
           var changed = activeNodeId !== (type === "concept" ? id : null) ||
             activeModuleId !== (type === "module" ? id : null);
-          if (changed) { resetContextFitInteraction(); }
+          if (changed) { readingTrees.detach(); resetContextFitInteraction(); }
           closeInspection();
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
@@ -5754,6 +5804,39 @@
           hideNodeTooltip();
         });
 
+        function readingMarkerSnapshot() {
+          var state = readingTrees.snapshot();
+          if (!state.synchronised || !state.position) { return null; }
+          var moduleId = moduleIdForConcept(state.position);
+          var represented = moduleId && selectedModuleIsFolded(moduleId)
+            ? moduleGraphNodeId(moduleId) : state.position;
+          var node = nodes.get(represented);
+          if (!node || node.hidden) { return null; }
+          return {conceptId: state.position, nodeId: represented, module: represented !== state.position};
+        }
+
+        function drawReadingMarker(ctx) {
+          var marker = readingMarkerSnapshot();
+          if (!marker) { return; }
+          var shape = visAdapter.nodeGeometry(marker.nodeId);
+          if (!shape || !Number.isFinite(shape.left) || !(shape.width > 0)) { return; }
+          var scale = network.getScale() || 1, gap = 5 / scale;
+          ctx.save();
+          ctx.strokeStyle = "#c08a13"; ctx.lineWidth = 3 / scale;
+          if (marker.module) {
+            graphPresentation.roundedRectPath(ctx, shape.left - gap, shape.top - gap,
+              shape.width + 2 * gap, shape.height + 2 * gap,
+              moduleCornerRadius(shape.width, shape.height) + gap);
+          } else {
+            ctx.beginPath();
+            var node = nodes.get(marker.nodeId), pos = network.getPositions([marker.nodeId])[marker.nodeId];
+            var radius = (Number(node.visualSize) || Number(node.size) || 18) *
+              (String(marker.nodeId) === String(activeNodeId) ? activeNodeRadiusScale : 1);
+            ctx.arc(pos.x, pos.y, radius + gap + 3, 0, Math.PI * 2);
+          }
+          ctx.stroke(); ctx.restore();
+        }
+
         function updateRenderedEdgeWidths() {
           var scale = network.getScale();
           if (!isFinite(scale) || scale <= 0) { return; }
@@ -5805,6 +5888,7 @@
           drawFoldedModuleGraphics(ctx);
           drawVisibleNodes(ctx);
           drawGraphCompletionMarkers(ctx);
+          drawReadingMarker(ctx);
           graphPresentation.drawExpandedModuleLabels(ctx, expandedModulesForFrame);
           updateNodeLabelPositions();
         });
@@ -6296,6 +6380,7 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          if (readingTrees.click(e)) { e.preventDefault(); return; }
           var explanationReturn = e.target.closest(".kg-content-return");
           if (explanationReturn) {
             e.preventDefault();
@@ -6546,6 +6631,7 @@
         });
 
         document.getElementById("info_panel").addEventListener("change", function(e) {
+          if (readingTrees.change(e)) { return; }
           var readToggle = e.target.closest(".content-block-read-toggle");
           if (readToggle) {
             var blockId = readToggle.getAttribute("data-read-block-id");
@@ -6708,6 +6794,7 @@
 
         document.getElementById("info_panel").addEventListener("toggle", function(e) {
           if (e.target && e.target.tagName === "DETAILS") {
+            readingTrees.toggled(e.target);
             sharedExplanations.toggled(e.target);
             if (
               e.target.classList.contains("user-note")

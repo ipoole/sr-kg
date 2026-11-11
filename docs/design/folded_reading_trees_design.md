@@ -4,10 +4,11 @@ Agreed design · 11 November 2026.
 
 **Status:** reviewed in the [standalone prototype](../../domains/math/docs/graph_aligned_reading_mockup.html)
 ([hosted](https://physicskg.org/preview/graph-aligned-reading.html), version 4.6.14).
-Implementation in the shared viewer is next, initially building Maths only.
-The [schema](folded_reading_trees_schema.md) and
-[renderer record](folded_reading_trees_renderer.md) describe the older borrowing
-pilot, not this design. The [authoring guide](../authoring/authoring_guide.md)
+The shared-viewer implementation is now on this branch, initially building Maths
+only. The full domain authoring audit is still pending.
+The [schema](folded_reading_trees_schema.md) retains storage/legacy compatibility;
+the [renderer record](folded_reading_trees_renderer.md) describes the shared
+implementation. The [authoring guide](../authoring/authoring_guide.md)
 defines the editorial rules.
 
 ## Knowledge is authored; reading trees are generated
@@ -178,10 +179,13 @@ When synchronisation is enabled explicitly:
   concept in its tooltip.
 - Do not move the camera, change layout, expand modules or mark content read.
 
-The prototype's map follows the last active tree automatically; this demonstrates
-alignment, not the final opt-in control. Before viewer implementation, settle its
-default and the detach/resume rule for manual Selection/Context changes. Never
-silently present a mismatched graph as the current reading map. Details-only
+The prototype's map follows the last active tree automatically. In the shared
+viewer each card instead has a **Synchronise graph** checkbox, initially off.
+Only one tree can synchronise at a time. Using the other tree without enabling
+its synchronisation, closing the synchronised card, or manually changing
+Selection/Context detaches it and removes the marker. Existing graph settings
+are not rolled back. Never silently present a mismatched graph as the current
+reading map. Details-only
 reading remains valid; opening an ordinary block does not activate a reading tree.
 
 ## Depth, persistence and migration

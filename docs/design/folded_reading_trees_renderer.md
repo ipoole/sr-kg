@@ -1,166 +1,69 @@
-# Nested explanations: shared reader
+# Folded reading trees: shared viewer implementation
 
-**Earlier implementation:** this records the block-borrowing pilot, retained
-while content is migrated. New authoring follows the agreed
-[blocks and generated reading-tree design](folded_reading_trees_design.md):
-self-contained blocks and graph-generated branches. Its implementation is next;
-this document does not claim those rules are already enforced.
+11 November 2026 · stage 3, initially reviewed in a Maths-only build.
 
-Stage 3, 8 November 2026. Implemented and exercised on a synthetic teaching
-fixture; stage 4 applies it to the real Maths pilot. This implemented the earlier
-borrowing pilot and its
-[minimum schema](folded_reading_trees_schema.md), without changing concept IDs,
-edges or personal-data storage.
+The [design](folded_reading_trees_design.md) defines the contract; the
+[schema record](folded_reading_trees_schema.md) describes the optional statement
+field and existing local/legacy syntax. Canonical authored CSV remains the source.
+The standalone paper is retained as a design experiment, not a second viewer.
 
-## Data and rendering
+## Shared block rendering
 
-Each source body travels in the generated HTML once, verbatim in its existing
-concept/module block record. This preserves paragraph-note contexts and avoids
-shipping a second parsed copy of the prose. Statements and Graphic locators are
-optional fields on those records.
+`viewer.js:renderOwnerContentBlock` adapts an owned block or a tree occurrence
+into `content_markup.js:renderContentUnit`. Title, kind, statement and actions
+stay visible in the folded summary; the body starts folded. Missing statements
+produce no empty placeholder and are never inferred from body text. Kind tints
+apply to the whole box. Local clarifications retain smaller, quiet headings.
 
-The Python loader normalises and validates sources/references before generation.
-The browser's `content_markup.js` adapter reads the same recursive text,
-explanation and reference model from the verbatim body. A browser test compares
-its parts directly with the Python parser, including nested braces and maths.
-This extends the existing browser text parser, needed for personal notes and
-question text as well, rather than introducing a separate legacy renderer.
-Ordinary text takes a fast path without constructing a content tree.
+Both placements use `shared_explanations.js` for the same source body, graphics,
+read toggle and note actions. Repeated SVGs have namespaced IDs. Canonical block
+IDs remain in read/notes records; occurrence IDs control DOM identity and folding.
+The first authored Definition supplies the concept preview.
 
-`shared_explanations.js` indexes native records by source block ID. It supplies
-reference resolution, occurrence state and graphic lookup to the common
-`content_markup.js` content-unit shell. It has no dependency on graph operations,
-personal-data mutation or source-domain names.
+`content_markup.js` carries reading context through named local clarifications.
+Named slots retain canonical local-note scope. A legacy owned-block call within
+a generated tree becomes a contribution/source preview, not another recursive
+branch. Native legacy sharing remains supported until its authoring migration.
+No edges or statements are inferred from those calls.
 
-## Native and borrowed occurrences
+## Reading-tree controller
 
-An open native block shows its optional statement, illustration and explanatory
-body directly. Existing kind policy controls its initial native fold state.
-Native block IDs, note actions and read checkboxes remain unchanged. The statement
-is separate from the annotated body, so adding it does not insert a new numbered
-paragraph anchor into that body's existing sequence.
+`reading_trees.js` owns recipe metadata, independent cards, lazy concept branches,
+depth and full-width focus. It receives the actual `computeViewerContext` result;
+its available edge IDs exactly match the shared Context algorithm for the loaded
+edition. Missing block kinds are skipped and ancestor cycles stop explicitly.
 
-A borrowed occurrence shows the source's short statement in the enclosing
-argument and a quiet, initially folded question below it. Attribution identifies
-the owning concept/module and source block. Opening inserts the explanation
-without repeating the statement. The body uses the common disclosure, maths and
-graphic machinery. Its heading shares the source block's read control; there
-notes use the same source paragraph anchors as on its native page.
+The controller captures open occurrences before a same-page refresh, rebuilds
+only previously opened paths, then lets the shared renderer restore block/local
+state. Programmatic restoration does not move Reading position or detach sync.
+Full-width focus moves the same DOM; note editing can rebuild and restore the
+focus path. Changing a tree's depth rebuilds only that tree. A first-level concept
+has no full-width action; deeper concepts/local clarifications can offer it.
 
-Borrowed bodies are **lazy**: closed references do not construct their target's
-DOM or recurse through its dependencies. On first opening, that occurrence's body
-is rendered and MathJax typesets the new subtree. Subsequent folding hides rather
-than destroys it. A parent can therefore be closed and reopened without losing
-its children's state. Two branches using one source remain independent.
+Each card has Depth, Synchronise graph and Fold supports. Synchronisation starts
+off. Enabling it keeps Selection at the root and sets the recipe's Context/depth,
+without changing Camera, Graph mode, View, module folds or layout. Only one card
+can synchronise. Manual selection/context changes, closing that card or reading
+in another unsynchronised tree detach the marker; the graph settings remain.
 
-Locally authored named explanations and legacy optional disclosures use the same
-content-unit shell. Named slots give stable page-local reading paths; legacy
-slots also include their paragraph position when native note rendering has split
-the body into paragraphs.
+Reading position follows the last opened/focused concept within the active tree.
+It is transient and does not mark content read. A steady amber outer ring is drawn
+after graph nodes, separately from selection styling. A folded module represents
+an enclosed reading position; its tooltip names the actual concept. No pulsing,
+automatic expansion or camera movement is used.
 
-## Page lifetime and refresh
+## Compatibility and review
 
-Occurrence keys follow the schema's JSON path encoding: root source, then local
-slots and shared target IDs. DOM IDs are separate, unique within the active page.
-The controller resets its reading paths when the owning concept/module changes.
-It keeps those paths when the same page is rebuilt, for example after adding a
-note. Native disclosure states are also retained on that same-page rebuild.
+Maths-only generation reads no excluded domain packages and retains the existing
+missing-domain warnings. There is no new personal-data storage format. Stable
+block IDs and named local slots preserve reading ticks, notes and sync identity.
 
-Restoring a page rebuilds only the branches the user previously opened. A closed
-parent still retains descendant state for a later reopening. Stale toggle events
-from detached DOM elements are ignored.
+The small demonstration adds three statements in Tensor transformation law and
+classifies its existing higher-order argument and vector/covector discussion as
+Derivation and Explanation. Their IDs and body prose are preserved. The rest of
+the Maths authoring audit, including removing old block calls, is stage 4.
 
-These states are transient. They are not exported or synchronised, and opening
-an explanation does not mark anything read. Existing notes, native read marks,
-question records and sync behaviour use their existing controllers/storage.
-
-## Cycles, unavailable sources and graphics
-
-The active occurrence's source-ancestor chain detects cycles. A back-reference
-shows the canonical statement and an **Already explained above** button which
-scrolls/focuses the relevant ancestor heading in Details. It changes neither URL
-nor graph state. Reusing a source on sibling branches is not a cycle.
-
-An excluded-domain reference retains its authored target label and local question,
-with a short unavailable notice. It has no working disclosure and cannot import
-an excluded package. Unknown loaded targets remain loader errors.
-
-Graphic units reuse the loaded owner's registered detail SVG/caption. Their
-explicit native block replaces the corresponding implicit graphic section,
-preventing a duplicate hero image. Legacy graphic-note placement remains available
-inside that native presentation, and its note bubble includes those existing
-graphic notes. Borrowed graphic occurrences have the same canonical read tick
-as their native block, and share the same canonical notes.
-
-Every rendered instance namespaces its SVG IDs and local references, including
-accessible title/description links. Shared gradients, glyphs, markers and labels
-therefore do not collide when the same picture appears several times. Existing
-Details zoom, caption spacing and equation-overflow handling apply to these units.
-
-## Regression coverage and limits
-
-The synthetic diamond fixture covers native direct reading, lazy first expansion,
-independent shared branches, local nesting, ancestor cycles, unavailable sources,
-module-owned sources, repeated SVG definitions, existing note/read persistence,
-same-page rebuilds, navigation reset, keyboard focus, phone width, parser parity
-and real MathJax typesetting after opening.
-
-There is no graph reading highlight, automatic navigation, nested completion,
-notes within personal notes, notation substitution or persistent learning journey.
-The standalone paper prototypes remain review documents; the stage-4 Maths
-conversion and preservation record are in the
-[domain-owned pilot](../../domains/math/docs/nested_explanations_pilot.md#7-stage-4-implementation-and-preservation-record).
-
-## MATHS-1 extension and shared reading status
-
-All six MATHS-1 concepts now have short canonical statements and optional shared
-routes, using the same reader. Manifold, chart, transition/Jacobian and curve
-foundations extend the original temperature argument. Statements are blue
-(`#1458b0`) in both native and borrowed occurrences, including their mathematics.
-
-A borrowed heading uses the existing source-block read control. Its durable
-`data-read-block-id` identifies the source even inside another owner's block.
-Changing it updates every rendered copy, native completion and graph markers
-through the existing study controller, persistence and sync. Incoming data updates
-checkboxes in place without folding disclosures. No per-occurrence personal data
-is created. Opening a source does not mark it read. Local authored explanations
-still have no separate read record. Source notes are now available within borrowed content.
-
-## Common source rendering
-
-Native and borrowed units use the same source-body and heading-action factories.
-Both pass explicit `annotate` and `trackRead` capabilities. The body factory
-combines the registered graphic, legacy graphic-note location and the same
-paragraph renderer/anchor sequence. Placement affects the outer shell, title,
-statement location and lazy loading; it does not select a second text renderer.
-Personal-note insertion is controlled by capability rather than a native-only
-body implementation. Local disclosures still use the common recursive content
-shell and mathematics renderer.
-
-## Personal notes in reading trees
-
-Native and borrowed source occurrences both enable annotation. Notes retain the
-canonical concept/module owner, source block ID and paragraph anchor; no reading
-occurrence is written into personal data. Existing source notes appear wherever
-that source is unfolded, including legacy graphic notes. Creating or deleting a
-note restores the current reading tree. Editing updates other visible copies
-without replacing the active editor or closing explanations. Only the occurrence
-where Edit was invoked contains an editor; occurrence identity is transient DOM
-state. Notes stay private and use the existing archive and sync paths.
-
-Named local explanations support the same paragraph renderer and note controls.
-Their anchor uses the enclosing source block ID plus the existing `sectionKey`
-field, encoded as `explanation:` followed by a JSON array of local slot names.
-The path restarts at each borrowed canonical source. Candidate discovery walks
-only that source's authored local explanations, never the shared dependency graph.
-Removed/renamed slots leave notes needing placement rather than retargeting them.
-Anonymous legacy disclosures and notes inside personal notes gain no new scope.
-No new personal-data fields or schema version are required.
-
-## Maths-2 teaching extension
-
-All nine Maths concepts now use the shared reader. The Tensor Calculus module
-adds tensor type/order, multilinear slots, component counts and worked metric,
-contraction and rescaling examples. Abstract-index subtleties are optional.
-The [domain teaching review](../../domains/math/docs/tensor_calculus_teaching_review.md)
-maps every existing Maths-2 question to supporting content and records scope.
+Focused checks live in `tests/browser/test_reading_trees.py`: graph parity,
+folded defaults, missing statements, independent cards, canonical notes/read
+ticks through full-width focus, explicit nonspatial synchronisation and detachment.
+Legacy sharing and real-Maths MathJax tests remain in their existing files.

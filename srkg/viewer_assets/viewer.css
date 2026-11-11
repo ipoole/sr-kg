@@ -3794,3 +3794,106 @@
         position: relative;
         padding-right: 1.6em;
     }
+
+/* Statements are part of the folded heading: one canonical block shell. */
+#info_panel .kg-statement-block > summary > .kg-content-statement {
+    display: block; font-weight: 400; color: #1458b0; margin: 0 0 0.45em;
+}
+#info_panel .kg-statement-block > summary .content-block-kind-mark { display: none; }
+#info_panel .kg-statement-block.content-block-definition {
+    --block-bg: #eff7fc; --block-border: #c8deed;
+}
+#info_panel .kg-statement-block.content-block-explanation {
+    --block-bg: #f5f7fa; --block-border: #d4dde6;
+}
+#info_panel .kg-local-explanation > summary {
+    font-size: 0.86em; font-weight: 500;
+}
+#info_panel .kg-reading-trees {
+    border-top: 2px solid #aebfc9; margin: 1.5em 0; padding-top: 0.7em;
+}
+#info_panel .kg-reading-trees > h3 { font-size: 1.05em; }
+#info_panel .kg-reading-tree {
+    background: #f0f4ff; border: 2px solid #b7c5e2; border-radius: 7px;
+    box-shadow: 0 3px 0 #cbd5e5, 0 6px 12px #25415a15;
+    padding: 0.65em; margin: 0 0 1.15em;
+}
+#info_panel .kg-reading-tree.kg-reading-teaching {
+    background: #edf8f6; border-color: #afcfc9;
+    box-shadow: 0 3px 0 #c8ded9, 0 6px 12px #25415a15;
+}
+#info_panel .kg-reading-tree > summary {
+    font-weight: 700; color: #405a91; cursor: pointer;
+}
+#info_panel .kg-reading-teaching > summary { color: #276e66; }
+#info_panel .kg-reading-tree > summary > .kg-content-statement {
+    display: block; font-weight: 400; color: inherit; margin-bottom: 0.4em;
+}
+#info_panel .kg-reading-badge {
+    font-size: 0.65em; font-weight: 400; margin-left: 0.3em;
+}
+#info_panel .kg-reading-tree-body { margin-top: 0.8em; }
+#info_panel .kg-reading-controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.45em;
+    font-size: 0.75em; margin-bottom: 1em;
+}
+#info_panel .kg-reading-controls label {
+    display: inline-flex; gap: 0.3em; align-items: center; margin: 0;
+}
+#info_panel .kg-reading-controls select,
+#info_panel .kg-reading-controls button { font-size: 1em; max-width: 100%; }
+#info_panel .kg-reading-position { flex-basis: 100%; color: #73530d; }
+#info_panel .kg-reading-position:empty { display: none; }
+#info_panel .kg-reading-concept-container {
+    border: 2px solid #9aaeb9; border-radius: 9px; background: white;
+    padding: 0.55em; margin: 1em 0; min-width: 0;
+}
+#info_panel .kg-reading-concept-title { margin: 0 0 0.55em; font-size: 1em; }
+#info_panel .kg-reading-concept-toggle {
+    display: grid; grid-template-columns: 0.65em minmax(0,1fr) auto;
+    gap: 0.3em; align-items: start; width: 100%; border: 0; background: transparent;
+    color: #24495f; font: inherit; font-weight: 700; padding: 0; text-align: left;
+}
+#info_panel .kg-reading-concept-toggle small { font-size: 0.6em; font-weight: 400; }
+#info_panel .justification { color: #08776e; margin: 0; }
+#info_panel .kg-reading-edge-intro { font-size: 0.75em; font-weight: 600; margin-bottom: 0.3em; }
+#info_panel .kg-reading-concept > summary[hidden] { display: none; }
+#info_panel .kg-reading-concept-body {
+    padding: 0.6em var(--reading-indent,0.2em) 0; margin-top: 0.6em;
+    border-top: 1px solid #d3dde2; min-width: 0;
+}
+#info_panel .kg-reading-focus-button { font-size: 0.7em; margin-bottom: 0.5em; }
+#info_panel .kg-reading-boundary, #info_panel .kg-reading-gap {
+    color: #6c5a2a; font-size: 0.85em; margin-top: 0.5em;
+}
+#info_panel .kg-reading-legacy-reference { font-size: 0.85em; color: #617383; }
+#info_panel.kg-reading-focus-active > :not(.concept-sticky-header):not(#kg-reading-focus) {
+    display: none !important;
+}
+#info_panel #kg-reading-focus { padding: 0.6em 0; }
+#info_panel .kg-reading-return { margin-bottom: 0.7em; }
+#info_panel .kg-reading-focus-host > .kg-reading-concept-body { padding: 0; border: 0; }
+@media (max-width: 700px) {
+    #info_panel .kg-reading-wide-name { display: none; }
+    #info_panel .kg-reading-tree, #info_panel .kg-reading-concept-container { padding: 0.45em; }
+}
+#info_panel .kg-statement-block > summary,
+#info_panel .kg-reading-tree > summary { list-style: none; }
+#info_panel .kg-statement-block > summary::-webkit-details-marker,
+#info_panel .kg-reading-tree > summary::-webkit-details-marker { display: none; }
+#info_panel .kg-statement-block > summary > .content-block-title-line::before,
+#info_panel .kg-reading-tree > summary > .content-block-title-line::before { content: "▸"; }
+#info_panel .kg-statement-block[open] > summary > .content-block-title-line::before,
+#info_panel .kg-reading-tree[open] > summary > .content-block-title-line::before { content: "▾"; }
+#info_panel .kg-reading-controls select { font-size: 16px; }
+#info_panel .kg-statement-block > summary > .content-block-title-line,
+#info_panel .kg-reading-tree > summary > .content-block-title-line {
+    display: block; position: relative; padding-left: 1em;
+}
+#info_panel .kg-statement-block > summary > .content-block-title-line::before,
+#info_panel .kg-reading-tree > summary > .content-block-title-line::before {
+    position: absolute; left: 0; top: 0;
+}
+#info_panel .kg-statement-block .content-block-kind-label {
+    display: inline-block; margin-left: 0.35em; vertical-align: middle;
+}

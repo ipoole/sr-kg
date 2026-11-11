@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.15", "date": "2026-11-11", "summary": "Preview: Maths-only viewer with statement-led blocks, generated derivation/teaching trees and optional graph reading-position synchronisation."},
   {"version": "4.6.14", "date": "2026-11-11", "summary": "Preview: Strong concept-first disclosure headings, persistent incoming justifications and no duplicated Definition previews in the standalone reading prototype; hosted viewers unchanged."},
   {"version": "4.6.13", "date": "2026-11-11", "summary": "Preview: Destination-contained edge justifications, quieter local clarifications and later full-width focus controls in the standalone reading prototype; hosted viewers unchanged."},
   {"version": "4.6.12", "date": "2026-11-11", "summary": "Preview: Concept details mock-up with kind-tinted folded blocks, independent derivation/teaching tree cards and clearer dependency justifications; hosted viewers unchanged."},

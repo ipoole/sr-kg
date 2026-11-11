@@ -11,7 +11,9 @@ def maths_pilot_output(tmp_path_factory):
 
 
 def _block(page, id):
-    return page.locator(f'#info_panel [data-content-block-id="{id}"]')
+    block = page.locator(f'#info_panel > [data-content-block-id="{id}"]')
+    block.evaluate('e=>e.open=true')
+    return block
 
 
 def _use(container, slot):
@@ -106,7 +108,7 @@ def test_real_maths_argument_supports_both_reading_paths(maths_pilot_output, pla
         assert _block(page, 'math.tangent_space.definition').locator(
             ':scope > summary .content-block-read-toggle').is_checked()
         source = _block(page, 'math.tangent_space.directional_derivative')
-        assert source.locator(':scope > .content-block-body > .kg-content-statement').count() == 1
+        assert source.locator(':scope > summary > .kg-content-statement').count() == 1
         assert source.locator(':scope > .content-block-body > .concept-line').count() > 0
 
 
