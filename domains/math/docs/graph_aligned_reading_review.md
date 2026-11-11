@@ -1,6 +1,6 @@
 # Concept details and generated reading trees: paper prototype
 
-11 November 2026 · standalone prototype 4.6.12.
+11 November 2026 · standalone prototype 4.6.13.
 
 Open [the HTML](graph_aligned_reading_mockup.html), or:
 https://physicskg.org/preview/graph-aligned-reading.html
@@ -17,6 +17,8 @@ statement and expandable title/body share one light box, tinted by kind using
 the real viewer's palette (including its pale label/mark colours for Definition
 and Explanation). Every body starts folded, including Definitions. Local
 clarifications can be nested, but a block body never calls another owned block.
+Clarifications have a smaller, subdued title and body, without a statement field
+or badge. Their former statement text is ordinary prose inside the body.
 Ordinary references still preview Definitions.
 
 The two reading-tree cards use the same statement/title/body arrangement, with
@@ -41,7 +43,9 @@ an Intuition block.
 Stronger labelled concept containers distinguish sibling concepts and group their
 blocks and dependencies. Each edge introduces the support in a complete sentence,
 for example “MATHS-2.3 is constructed from MATHS-1.3 because:”, followed by its teal
-justification. Desktop includes concept names; phone layouts retain the codes.
+justification. This incoming relationship sits inside the destination occurrence’s
+container; a small “Why this concept?” legend sits on its upper border. The same
+canonical concept may have a different justification on another incoming path. Desktop includes concept names; phone layouts retain the codes.
 Concept branches have meaningful concept names rather than a generic block-kind
 heading. All dependency branches initially fold, with a blue statement preview.
 
@@ -65,7 +69,10 @@ moves while the blue root selection remains fixed.
 Each tree's Fold supports button closes all its block, clarification and concept
 disclosures, without closing the outer card or affecting local content/the other
 tree. Capped indentation and full-width focus/Return preserve existing DOM and
-folds. Definition references support hover, keyboard focus and tap. The map starts
+folds. Full-width buttons start at nesting level two: the first supporting concept and
+first local clarification at the root have no button; deeper concepts and local
+clarifications can offer it. This is presentation depth, not shortest graph hops.
+Definition references support hover, keyboard focus and tap. The map starts
 folded on phones.
 
 ## Checks
