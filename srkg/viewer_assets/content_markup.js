@@ -343,6 +343,14 @@ function kgCreateContentMarkup(options) {
         });
       }
       cursor = next.end;
+      // A display equation already ends its paragraph. Its following line
+      // ending is structural; additional line endings still request spacers.
+      if (next.kind === "display-math") {
+        var followingBreak = findNextLineBreakBlock(raw, cursor);
+        if (followingBreak && followingBreak.start === cursor) {
+          cursor = followingBreak.end;
+        }
+      }
     }
 
     if (raw.length === 0) {
