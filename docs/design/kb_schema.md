@@ -147,6 +147,13 @@ semantic `kind`, not display instructions.
 | `statement` | No | Brief explicitly authored reusable result/contribution. Required when borrowed through `\explain`; empty for unconverted blocks. |
 | `graphic` | No | `detail` for a `graphic` block wrapping its owner's registered detail SVG and caption; empty otherwise. |
 
+The [authoring guide](../authoring/authoring_guide.md) requires explicit title,
+statement and body for new/revised blocks. An optional storage column preserves
+legacy compatibility; it does not make statements optional editorially. The
+[generated reading-tree design](nested_explanations_design.md) supersedes authored
+block borrowing for new work, while the current loader still accepts the earlier
+pilot syntax described below.
+
 Allowed `kind` values:
 
 | Kind | Meaning |
