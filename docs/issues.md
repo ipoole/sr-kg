@@ -51,6 +51,10 @@ Issue numbers are retained so existing references remain valid.
 7. Stop tracking question attempts; simplify study records and their presentation accordingly.
 8. Consider a Home button that restores the initial selection and view settings.
    Define which presentation settings it resets; preserve personal data.
+9. Consider a small bottom-right “Fold ↑” action on open blocks, clarifications and
+   reading-tree concepts, to avoid scrolling back to the heading on phones. Define
+   post-fold scrolling, descendant/Reading-position state and interaction with
+   full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
 
 ## 5. Notes enhancement and unification
 
