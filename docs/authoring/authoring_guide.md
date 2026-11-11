@@ -3,7 +3,7 @@
 Use this guide to produce consistent, efficient concept content. Read it before
 starting a new authoring pass and revisit the relevant sections between modules.
 
-New/revised blocks follow the [reading-tree design](../design/nested_explanations_design.md):
+New/revised blocks follow the [reading-tree design](../design/folded_reading_trees_design.md):
 self-contained title, statement and body, connected by graph edges. The shared
 viewer migration is next. Legacy missing statements and block-borrowing calls
 remain loadable meanwhile; they are not patterns for new authoring.
@@ -196,7 +196,7 @@ Clarifications have no independent block ID, read tick or tutorial target. Named
 slots anchor notes through the enclosing block; renaming/moving one may leave
 notes needing placement. Owned-block ticks and notes share canonical identity
 across occurrences. Personal notes do not affect completion. The
-[current storage contract](../design/nested_explanations_schema.md) documents
+[current storage contract](../design/folded_reading_trees_schema.md) documents
 syntax; its borrowing workflow is superseded by this guide.
 
 ## Cross-References And Edges

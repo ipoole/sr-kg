@@ -150,7 +150,7 @@ semantic `kind`, not display instructions.
 The [authoring guide](../authoring/authoring_guide.md) requires explicit title,
 statement and body for new/revised blocks. An optional storage column preserves
 legacy compatibility; it does not make statements optional editorially. The
-[generated reading-tree design](nested_explanations_design.md) supersedes authored
+[generated reading-tree design](folded_reading_trees_design.md) supersedes authored
 block borrowing for new work, while the current loader still accepts the earlier
 pilot syntax described below.
 
@@ -196,12 +196,12 @@ stable block IDs and reading-completion semantics. Personal notes live only in t
 concept/module (`owner`) placement; they are not rows in these authored tables.
 Nested optional disclosures do not yet have independent IDs or read ticks.
 
-The [minimum nested-explanations schema](nested_explanations_schema.md) adds
+The [minimum nested-explanations schema](folded_reading_trees_schema.md) adds
 `\explanation{slot}{title}{body}` for named local explanations and
 `\explain{slot}{block_id}{target label}{hook}` for borrowing a canonical statement
 and explanation. Both normalise with existing blocks into one recursive source
 model. Slots distinguish occurrences, not new personal-data records. The loader
-validates these additions; the [shared reader](nested_explanations_renderer.md)
+validates these additions; the [shared reader](folded_reading_trees_renderer.md)
 implements them on a synthetic fixture before production-content conversion.
 Existing tables/content need no conversion to load or render.
 

@@ -1,7 +1,7 @@
 # PhysicsKG assets and learning journeys
 
 Captured on 9 November 2026 from the conversation preceding the
-[nested-explanations work](../design/nested_explanations_design.md).
+[nested-explanations work](../design/folded_reading_trees_design.md).
 
 **Provenance:** this is a reconstruction of the inventory and ensuing discussion,
 not a verbatim transcript. The user's original three-part inventory and subsequent
@@ -131,8 +131,8 @@ for reading actions to silently change Context, Camera or the selected concept.
 The first prototype deliberately concentrated on the text.
 
 The subsequent accepted design and implementation are recorded in the
-[nested-explanations design](../design/nested_explanations_design.md),
-[minimum schema](../design/nested_explanations_schema.md) and
-[shared reader](../design/nested_explanations_renderer.md). This discussion note
+[nested-explanations design](../design/folded_reading_trees_design.md),
+[minimum schema](../design/folded_reading_trees_schema.md) and
+[shared reader](../design/folded_reading_trees_renderer.md). This discussion note
 preserves the broader inventory and motivation; those documents define the
 current contracts.

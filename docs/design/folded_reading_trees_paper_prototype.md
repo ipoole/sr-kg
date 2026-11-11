@@ -1,11 +1,11 @@
 # Nested explanations — paper prototype
 
-Historical exploration. The [Maths pilot design](nested_explanations_design.md)
+Historical exploration. The [Maths pilot design](folded_reading_trees_design.md)
 incorporates subsequent decisions, including direct reading of native blocks
 and mixed-type sharing. Use that document for the next implementation stages;
 the states below retain the original Field equations experiment.
 
-Read the [text-only HTML mock-up](nested_explanations_mockup.html) to explore the
+Read the [text-only HTML mock-up](folded_reading_trees_mockup.html) to explore the
 argument through working disclosures. The design states and proposed graph
 behaviour remain documented below.
 

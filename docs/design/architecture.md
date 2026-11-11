@@ -302,7 +302,7 @@ capabilities. Storage origin does not select a different presentation engine.
 Authored source bodies are transmitted once, verbatim to preserve note anchors;
 Python validates their recursive model and the browser normalises the same shape.
 Shared explanations are instantiated lazily, with page-local occurrence paths
-and no implicit graph changes. See the [shared reader](nested_explanations_renderer.md).
+and no implicit graph changes. See the [shared reader](folded_reading_trees_renderer.md).
 See [Content-unit model](notes_content_unification.md). The
 notes controller owns reading/editing state and targeted MathJax replacement;
 editing one note does not rebuild the Details pane. Personal notes never enter

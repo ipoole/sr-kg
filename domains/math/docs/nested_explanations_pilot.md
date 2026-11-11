@@ -4,9 +4,9 @@ Stage 1 teaching draft, 8 November 2026; implemented in the runtime CSV during
 stage 4. The draft below records the reviewed teaching argument, rather than
 mirroring every later wording change. Runtime CSV remains authoritative; §7
 records the actual sources and preservation decisions. See the
-[working design](../../../docs/design/nested_explanations_design.md).
+[working design](../../../docs/design/folded_reading_trees_design.md).
 
-A [readable HTML prototype](nested_explanations_mockup.html) presents the teaching
+A [readable HTML prototype](folded_reading_trees_mockup.html) presents the teaching
 argument with working disclosures, equations and the shared tangent-space graphic.
 It remains a standalone review document; the actual viewer now uses the shared
 renderer and the authored units listed in §7.

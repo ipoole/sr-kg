@@ -2,14 +2,14 @@
 
 **Earlier implementation:** this records the block-borrowing pilot, retained
 while content is migrated. New authoring follows the agreed
-[blocks and generated reading-tree design](nested_explanations_design.md):
+[blocks and generated reading-tree design](folded_reading_trees_design.md):
 self-contained blocks and graph-generated branches. Its implementation is next;
 this document does not claim those rules are already enforced.
 
 Stage 2, 8 November 2026. The Python loader/model contract is implemented, and
-stage 3 adds the [shared reader](nested_explanations_renderer.md) on synthetic
+stage 3 adds the [shared reader](folded_reading_trees_renderer.md) on synthetic
 content. Stage 4 applies it to the selected Maths pilot blocks. The
-[design](nested_explanations_design.md) and [Maths draft](../../domains/math/docs/nested_explanations_pilot.md)
+[design](folded_reading_trees_design.md) and [Maths draft](../../domains/math/docs/nested_explanations_pilot.md)
 provide the intended reading experience. This document specifies storage and
 identity, not a second content format or renderer.
 

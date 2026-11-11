@@ -5,8 +5,8 @@ Agreed design · 11 November 2026.
 **Status:** reviewed in the [standalone prototype](../../domains/math/docs/graph_aligned_reading_mockup.html)
 ([hosted](https://physicskg.org/preview/graph-aligned-reading.html), version 4.6.14).
 Implementation in the shared viewer is next, initially building Maths only.
-The [schema](nested_explanations_schema.md) and
-[renderer record](nested_explanations_renderer.md) describe the older borrowing
+The [schema](folded_reading_trees_schema.md) and
+[renderer record](folded_reading_trees_renderer.md) describe the older borrowing
 pilot, not this design. The [authoring guide](../authoring/authoring_guide.md)
 defines the editorial rules.
 
