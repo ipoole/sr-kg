@@ -1,5 +1,8 @@
 # Maths nested-explanations pilot: temperature, motion and covectors
 
+Historical working draft. See the [stage 4 audit](reading_tree_authoring_review.md)
+for the current self-contained blocks and graph-generated routes.
+
 Stage 1 teaching draft, 8 November 2026; implemented in the runtime CSV during
 stage 4. The draft below records the reviewed teaching argument, rather than
 mirroring every later wording change. Runtime CSV remains authoritative; §7

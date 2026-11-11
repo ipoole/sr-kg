@@ -1,5 +1,8 @@
 # MATHS-2: working tensor tools for GR
 
+Historical pilot record. The [stage 4 authoring audit](reading_tree_authoring_review.md)
+supersedes its borrowed-block implementation; the question coverage below remains useful.
+
 9 November 2026. Content pass addressing the open Tensor Calculus issue
 (currently Content item 1.3 in `docs/issues.md`; referred to as 3.1 in discussion).
 Runtime CSV is authoritative.

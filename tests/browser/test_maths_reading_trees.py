@@ -87,6 +87,11 @@ def test_maths_migration_preserves_canonical_notes_read_ticks_and_local_slots(
             section:'The same temperature change on two grids',
             anchor:{blockId:'math.cotangent_space.units_example',sectionKey:'',blockIndex:0},
             title:'Saved note',body:'A personal observation.',createdAt:now,updatedAt:now
+          }, {
+            id:'old-chart-graphic-note',targetType:'concept',targetId:'math.coordinate_chart',
+            conceptId:'math.coordinate_chart',placement:'anchor',section:'Graphic',
+            anchor:{blockId:'',sectionKey:'graphic',blockIndex:0},
+            title:'Saved graphic note',body:'A diagram observation.',createdAt:now,updatedAt:now
           }]);
           kgContentReadProgress.setRead('math.tangent_space.directional_derivative',true);
         }""")
@@ -114,4 +119,8 @@ def test_maths_migration_preserves_canonical_notes_read_ticks_and_local_slots(
         graph.click_concept('math.cotangent_space')
         assert _block(page, 'math.cotangent_space.units_example').locator(
             '.user-note[data-note-id="old-calculation-note"]').count() == 1
+        graph.click_concept('math.coordinate_chart')
+        graphic = _block(page, 'math.coordinate_chart.graphic')
+        assert graphic.locator('.user-note[data-note-id="old-chart-graphic-note"]').count() == 1
+        assert page.locator('#info_panel .concept-graphic').count() == 1
         assert not graph.page_errors

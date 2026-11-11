@@ -7,11 +7,6 @@ from srkg.content_units import ContentExplanation, ContentReference
 from srkg.kb import load_knowledge_base
 
 ROOT = Path(__file__).resolve().parents[3]
-MATHS1 = {'math.' + name for name in (
-    'manifold', 'coordinate_chart', 'coordinate_transformation',
-    'worldline', 'tangent_space', 'cotangent_space')}
-
-
 @pytest.fixture(scope='module')
 def maths():
     return load_knowledge_base(ROOT / 'data', domains=['math'], include_graphics=False)
@@ -26,8 +21,6 @@ def walk(parts):
 
 def test_migrated_blocks_have_three_levels_and_no_owned_block_calls(maths):
     for concept in maths.concepts:
-        if concept.id not in MATHS1:
-            continue
         blocks = maths.content_blocks_for(concept.id)
         assert {'definition', 'derivation', 'explanation'} <= {b.kind for b in blocks}
         for block in blocks:
@@ -37,6 +30,13 @@ def test_migrated_blocks_have_three_levels_and_no_owned_block_calls(maths):
                            for p in walk(maths.content_units[block.block_id].parts))
         definition = next(b for b in blocks if b.kind == 'definition')
         assert definition.block_id == concept.id + '.definition'
+        graphics = [b for b in blocks if b.kind == 'graphic']
+        assert len(graphics) == 1 and graphics[0].graphic == 'detail'
+    for module in maths.modules:
+        for block in maths.module_content_blocks_for(module.module_id):
+            assert block.statement and len(block.statement.split()) <= 30
+            assert not any(isinstance(p, ContentReference)
+                           for p in walk(maths.content_units[block.block_id].parts))
 
 
 def test_temperature_argument_retains_named_clarification_and_source_identity(maths):

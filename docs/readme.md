@@ -19,7 +19,9 @@
   exercises its presentation. The [minimum schema](design/folded_reading_trees_schema.md)
   records storage and legacy syntax; the
   [shared reader](design/folded_reading_trees_renderer.md) implements the new model.
-  Domain content is being migrated from the earlier block-borrowing pilot. Its
+  Domain content is being migrated from the earlier block-borrowing pilot; the
+  [Maths authoring audit](../domains/math/docs/reading_tree_authoring_review.md)
+  records the completed first domain. Its earlier
   [Maths draft](../domains/math/docs/nested_explanations_pilot.md) and
   [MATHS-2 teaching review](../domains/math/docs/tensor_calculus_teaching_review.md)
   retain content and preservation decisions. The earlier

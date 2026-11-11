@@ -8,3 +8,5 @@ concept,math.worldline,tong.gr,§2.2.1 Tangent Vectors,Supports curves and tange
 concept,math.tensor_field,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports type and total rank plus pointwise multilinear tensors; the component calculations and terrain examples are original.
 concept,math.index_notation,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports component slots and contractions; explicit dummy/free-index exercises are original teaching steps.
 concept,math.tensor_transformation_law,tong.gr,§2.3.3 Tensors and Tensor Fields,Supports basis and component transformation rules; the one-dimensional rescaling is an original worked example.
+content_block,math.coordinate_chart.construction,guillemin_haine.forms,Theorem 4.2.13 (p. 107),Supports the local inverse theorem used for the board projection; the terrain construction is an original example.
+content_block,math.tensor_field.multilinear_construction,guillemin_haine.forms,§1.3 Tensors (pp. 8–10),Supports covariant tensor products and the dual-basis expansion of multilinear maps.

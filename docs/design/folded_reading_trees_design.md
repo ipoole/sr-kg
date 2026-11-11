@@ -5,7 +5,8 @@ Agreed design · 11 November 2026.
 **Status:** reviewed in the [standalone prototype](../../domains/math/docs/graph_aligned_reading_mockup.html)
 ([hosted](https://physicskg.org/preview/graph-aligned-reading.html), version 4.6.14).
 The shared-viewer implementation is now on this branch, initially building Maths
-only. The full domain authoring audit is still pending.
+only. The [Maths authoring audit](../../domains/math/docs/reading_tree_authoring_review.md)
+is complete; SR migration is the next stage.
 The [schema](folded_reading_trees_schema.md) retains storage/legacy compatibility;
 the [renderer record](folded_reading_trees_renderer.md) describes the shared
 implementation. The [authoring guide](../authoring/authoring_guide.md)

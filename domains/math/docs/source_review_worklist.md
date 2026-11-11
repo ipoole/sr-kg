@@ -20,3 +20,10 @@ historical claims are introduced.
 The MATHS-2 revision was checked on 9 November 2026 against §2.3.3 (tensor type,
 total rank, component counts, fields and transformations), with §2.3.1 for
 pairings. The module's arithmetic examples and free-index exercises are original.
+
+Rechecked on 11 November 2026 for the graph-generated reading trees. Tong §§2.1–2.3
+supports the manifold, tangent, duality and tensor material. Guillemin and Haine's
+official MIT draft, *Differential Forms* (28 March 2018), Theorem 4.2.13 (p. 107)
+and §1.3 (pp. 8–10), supplies precise registered references for the chart's local
+inverse argument and the covariant tensor-product construction. These are
+mathematical supports, not sources for the original terrain narrative.

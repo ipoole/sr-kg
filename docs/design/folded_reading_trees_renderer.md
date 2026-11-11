@@ -58,10 +58,11 @@ Maths-only generation reads no excluded domain packages and retains the existing
 missing-domain warnings. There is no new personal-data storage format. Stable
 block IDs and named local slots preserve reading ticks, notes and sync identity.
 
-The small demonstration adds three statements in Tensor transformation law and
-classifies its existing higher-order argument and vector/covector discussion as
-Derivation and Explanation. Their IDs and body prose are preserved. The rest of
-the Maths authoring audit, including removing old block calls, is stage 4.
+The initial Tensor transformation law demonstration is now extended across
+Maths: every block has a statement, and every concept offers content for both
+recipes. The [stage 4 audit](../../domains/math/docs/reading_tree_authoring_review.md)
+records the self-contained bodies, removed owned-block calls and reviewed graph
+supports. Canonical block IDs and existing local clarification slots are retained.
 
 Focused checks live in `tests/browser/test_reading_trees.py`: graph parity,
 folded defaults, missing statements, independent cards, canonical notes/read
