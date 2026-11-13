@@ -18,7 +18,7 @@ def test_field_module_content_and_reading_routes(sr1_reading_output,playwright_b
   for owner in owners:
    graph.click_concept(owner)
    blocks=page.locator('#info_panel > .content-block')
-   assert blocks.locator(':scope > summary .kg-content-statement').count()==blocks.count()
+   assert blocks.locator(':scope > summary .kg-content-statement').count()==blocks.locator(':scope:not(.content-block-graphic)').count()
    blocks.evaluate_all('es=>es.forEach(e=>e.open=true)')
    page.locator('#info_panel .kg-local-explanation').evaluate_all('es=>es.forEach(e=>e.open=true)')
    page.wait_for_function('window.MathJax && typeof MathJax.typesetPromise==="function"')

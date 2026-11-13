@@ -2,14 +2,6 @@
 
 Issue numbers are retained so existing references remain valid.
 
-## 1. Content
-
-3. **MATHS-2 teaching review — implementation on `nested-explanations`.** Expanded tensor
-   type/rank, components, contractions and worked examples; put abstract-index detail
-   behind optional explanations. All existing study questions have supporting content.
-   Review the [teaching audit](../domains/math/docs/tensor_calculus_teaching_review.md)
-   and Maths-only preview before closing this issue.
-
 ## 2. Tutorials
 
 2. **Deferred — generated tutorials.** Explore generating prompts from a concept's derivation tree,
@@ -23,19 +15,20 @@ Issue numbers are retained so existing references remain valid.
 
 1. Create interactive graphic models with adjustable parameters, e.g. free fall near a black hole.
 2. Add a history-of-science view, where nodes are physicists and edges are influences.
-3. Graphics (static or dynamic) should not be restricted to one per concept, but be inserted in (or between) content blocks
-   wherever they can usefully illustrate a point.
+3. Allow distinct static or interactive graphics within or between content blocks,
+   rather than one illustration per concept.
 4. Enable community sharing of tutorials, layouts and notes.
 5. Extend to molecular biology (MolBio/MolBioKB); a possible collaborator is in mind.
    Domain separation is already implemented.
-6. Build a concept's derivation as a recursively foldable tree of explanations drawn
-   from its supporting concepts.
 7. **Optional tutorial narration.** Compare recorded/generated audio with device-generated speech
    (minimal download, but variable voices and mathematical pronunciation). Prefer separate audio
    files loaded per card; embedding Base64 audio preserves a single-file viewer but adds roughly
    6.4–12.8 MB per 20 minutes at 32–64 kbps. Consider Play/Pause, optional automatic playback,
-   stopping on card changes, offline availability and memory use on the old iPad.  I would consider voicing the naration myself rather than AI generate.
-8. We should add a symbols glossary, giving symbol,  name like "Lorenz factor" and a link to a definition.  These should be hyperlinked in all uses, issue is how to do that in a subdued way that doesn't distract - a very dark blue or brown perhaps.
+   stopping on card changes, offline availability and memory use on the old iPad.
+   Ian may record the narration himself.
+8. Add a symbols glossary giving each symbol, its name (e.g. Lorentz factor) and a
+   definition link. Explore unobtrusive inline links, perhaps dark blue or brown.
+9. Offer a dark view mode.
 
 ## 4. Misc. Issues
 
@@ -45,34 +38,18 @@ Issue numbers are retained so existing references remain valid.
    Verify personal-data continuity, Google sign-in/sync and export/import in standalone mode; offline changes must
    remain safe until sync is available. Test on both devices and retain ordinary browser use. Hosted icons and the
    landing-page installation tip are already implemented.
-6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question attempts,
+6. Safeguard personal data in subset-domain viewers (e.g. GR-only). Normal question answers,
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
-7. Stop tracking question attempts; simplify study records and their presentation accordingly.
-8. Consider a Home button that restores the initial selection and view settings.
-   Define which presentation settings it resets; preserve personal data.
-9. Consider a small bottom-right “Fold ↑” action on open blocks, clarifications and
-   reading-tree concepts, to avoid scrolling back to the heading on phones. Define
-   post-fold scrolling, descendant/Reading-position state and interaction with
-   full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
-10. When a block is folded the reading tick box should not be tickable; grey out it not already ticked but allow unticking if already ticked.
-11. <deleted>
-12. Add a Unfold/Fold all button to act on all blocks in a concept.
-13. Show paragraphs better in block bodies.  Use either a blank line in indented first line.
-14. We should review block background colours.
-15. I think the graphic block should be default open and there should be no text body, and I think no statement (but consider).  This takes us back to the published 4.6.1 appearance.  The caption text can can possibly be more expansive where that helps.
-16. For reading trees we need to decide, are blocks presented in the order as in the full concept, or the order given in the recipe?
-17. Teaching tree, Synchronize graph should probably force the graph into a good state - Context only and Fit.
 
 ## 5. Notes enhancement and unification
 
-1. Extend the shared foldable-content foundation to identifiable nested authored blocks when needed:
-   stable child IDs for annotations, tutorial targets and possibly independent reading progress.
-   Current optional disclosures and personal notes already share rendering; top-level personal notes,
-   mathematical reading/editing and SR-2.5's folded algebra clarifications are implemented.
-2. Consider recursive personal-content editing and generated derivation/explanation trees (see 3.6).
-   Define placement, depth/cycle limits, completion and sync semantics before exposing these features.
+1. Consider first-class nested authored blocks with stable child IDs, tutorial targets
+   and possibly independent reading progress. Existing local clarifications already
+   support scoped notes; distinguish this from new independently tracked blocks.
+2. Consider recursive personal-content editing. Generated reading trees are now implemented;
+   define placement, completion and sync semantics for further personal-content nesting.
    See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
 ## 6. Build artifacts, publishing and repository size

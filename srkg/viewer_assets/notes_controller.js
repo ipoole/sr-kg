@@ -613,10 +613,12 @@ function kgCreateNotesController(options) {
       targetType, targetId, sectionName, 0, "", specs[0], context
     ) : "";
     blocks.forEach(function(textBlock, index) {
+      if (!capabilities || !capabilities.hideProse) {
       html += '<div class="concept-line">' +
         (textBlock.text ? renderConceptText(textBlock.text, Object.assign({}, context,
           {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";
+      }
       if (annotate) { html += renderNotesAtAnchor(
         targetType,
         targetId,

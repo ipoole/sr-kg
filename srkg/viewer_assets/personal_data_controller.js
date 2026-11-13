@@ -157,7 +157,7 @@ function kgCreatePersonalDataController(options) {
     return [
       summary.notes + " note" + (summary.notes === 1 ? "" : "s"),
       summary.layout + " personal layout position" + (summary.layout === 1 ? "" : "s"),
-      summary.study + " study attempt record" + (summary.study === 1 ? "" : "s"),
+      summary.study + " question result" + (summary.study === 1 ? "" : "s"),
       summary.reading + " read mark" + (summary.reading === 1 ? "" : "s")
     ].join(", ");
   }

@@ -282,16 +282,21 @@ def test_borrowed_read_marks_share_source_identity_and_preserve_reading(shared_e
     copies.nth(1).wait_for()
     assert copies.count() == 2
     before = page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})')
-    copies.first.check()
-    assert copies.nth(1).is_checked()
+    assert copies.first.is_disabled()
+    _open(_reference(page, 'shared').first)
+    opened = _reference(page, 'shared').first
+    tick = opened.locator(':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    tick.check()
+    assert copies.evaluate_all('es=>es.every(e=>e.checked)')
     assert page.evaluate('kgContentReadProgress.isRead("test.delta.definition")')
     assert not page.evaluate('kgContentReadProgress.isRead("test.alpha.definition")')
-    assert not _reference(page, 'shared').first.evaluate('e=>e.open')
+    assert opened.evaluate('e=>e.open')
+    assert not _reference(page, 'shared').nth(1).evaluate('e=>e.open')
     page.evaluate('kgContentReadProgress.setRead("test.delta.definition", false)')
-    assert not copies.first.is_checked()
-    copies.nth(1).focus()
+    assert not tick.is_checked()
+    tick.focus()
     page.keyboard.press('Space')
-    assert copies.first.is_checked()
+    assert tick.is_checked()
     assert page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})') == before
     graph = shared_explanation_graph
     graph.click_concept('test.delta')

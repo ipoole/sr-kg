@@ -27,7 +27,7 @@ authored answers.
 For an automatic question:
 
 1. the learner selects one authored option or the viewer-supplied `?` option;
-2. **Check answer** records the attempt;
+2. **Check answer** updates the latest result;
 3. the selected and correct options are identified, and the explanation is
    shown.
 
@@ -39,11 +39,11 @@ For a self-assessed question:
 
 There is no separate **Try again** action. After an incorrect attempt the
 response controls remain available; a changed response followed by another
-submission is a new attempt. Rechecking an unchanged response must not create
-accidental duplicate attempts.
+submission updates the latest result. Rechecking an unchanged response must not
+create accidental duplicate submissions.
 
 Once attempted, the answer remains available. The most recent outcome is one
-of `correct`, `incorrect`, or `unknown`; attempt count is cumulative. The UI
+of `correct`, `incorrect`, or `unknown`; no attempt count or history is retained. The UI
 uses a green tick for correct and a red cross, supplemented by text, for the
 other outcomes. Feedback is deliberately restrained: it acknowledges success,
 encourages review after a miss, and treats “I don't know” as a useful choice.
@@ -55,14 +55,13 @@ Colour is never the only result cue: ticks or crosses always appear with text.
 ## Progress and scorecard
 
 Progress is local-first and keyed by stable `question_id`. Individual,
-timestamped attempt events make cross-browser archive merging lossless; the
-viewer derives the attempt count, latest outcome and latest-attempt time. It
-does not store the learner's typed answer. The Study control-panel section
+timestamped latest-result records merge independently by question. The newest
+result wins; reset records prevent earlier results from reappearing. The viewer
 lists attempted questions, newest first, and summarises the number currently
-correct out of the number attempted. Study events are included in the unified
+correct out of the number of available questions. Question results are included in the unified
 [personal-data archive](personal_data.md).
 
-Following a scorecard entry selects its concept, opens Full details and the
+Following a scorecard entry selects its concept, opens Details and the
 chosen question, and brings it into view. Progress can be reset per question or, with
 confirmation, in full.
 

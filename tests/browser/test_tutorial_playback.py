@@ -620,5 +620,18 @@ def test_guided_details_allow_reading_without_navigation_or_hover(browser_graph,
     page.mouse.wheel(0, 160)
     page.wait_for_function('top=>document.querySelector("#info_panel").scrollTop>top', arg=old_top)
     assert page.evaluate('kgViewerStateSnapshot().selection') == selection
+    checkbox.locator('xpath=ancestor::details[1]').evaluate('e=>e.open=true')
+    locked_bottom = checkbox.locator('xpath=ancestor::details[1]').locator(
+        ':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    locked_bottom.wait_for(state='attached')
+    assert locked_bottom.is_disabled()
     page.locator('#kg_tutorial_explore').click()
+    checkbox.locator('xpath=ancestor::details[1]').evaluate('e=>e.open=true')
+    page.wait_for_function("!document.querySelector('#info_panel .content-block-read-toggle').disabled")
     assert not checkbox.is_disabled()
+    bottom = checkbox.locator('xpath=ancestor::details[1]').locator(
+        ':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    assert bottom.get_attribute('aria-disabled') != 'true'
+    assert bottom.get_attribute('tabindex') != '-1'
+    bottom.focus()
+    assert bottom.evaluate('e=>e===document.activeElement')

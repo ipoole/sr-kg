@@ -2516,4 +2516,5 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph, width):
 
     page.locator("#kg_splash_dismiss").click()
     page.locator("#kg_brand_home").click()
-    assert page.locator("#kg_splash_dialog[open]").count() == 1
+    assert page.locator("#kg_splash_dialog[open]").count() == 0
+    assert page.locator("#kg_brand_home").get_attribute("aria-label") == "Restore starting view"

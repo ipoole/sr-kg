@@ -1,4 +1,6 @@
 [
+  {"version": "4.6.18", "date": "2026-11-13", "summary": "Preview: Matching read checkboxes at both ends of open blocks, title-first folded summaries and statements hidden while reading."},
+  {"version": "4.6.17", "date": "2026-11-13", "summary": "Preview: Revised Maths and SR teaching, richer block and reading-tree colours, bottom folding/read controls, Home reset and latest-only question results."},
   {"version": "4.6.16", "date": "2026-11-11", "summary": "Preview: Maths authoring revised throughout for self-contained statement-led blocks, graph-generated reading trees and clearer derivation supports."},
   {"version": "4.6.15", "date": "2026-11-11", "summary": "Preview: Maths-only viewer with statement-led blocks, generated derivation/teaching trees and optional graph reading-position synchronisation."},
   {"version": "4.6.14", "date": "2026-11-11", "summary": "Preview: Strong concept-first disclosure headings, persistent incoming justifications and no duplicated Definition previews in the standalone reading prototype; hosted viewers unchanged."},

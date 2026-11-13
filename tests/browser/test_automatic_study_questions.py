@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.browser
-def test_incorrect_badge_retries_without_erasing_attempts(browser_graph):
+def test_incorrect_badge_retries_without_erasing_latest_result(browser_graph):
     page = browser_graph.page
     question = _open_automatic_question(browser_graph)
     wrong = question.locator('input[value="2.2.q3.a"]')
@@ -27,7 +27,6 @@ def test_incorrect_badge_retries_without_erasing_attempts(browser_graph):
     question.locator('input[value="2.2.q3.a"]').check()
     question.locator('.study-check-answer').click()
     progress = page.evaluate("kgStudyProgress.getQuestion('2.2.q3')")
-    assert progress['attemptCount'] == 2
     assert progress['lastOutcome'] == 'incorrect'
     assert question.locator('.study-answer-body').is_visible()
 
@@ -81,9 +80,7 @@ def test_automatic_question_marks_answers_and_prevents_duplicate_submission(brow
     assert question.locator(".study-option-result").count() == 2
     assert question.locator(".study-answer-body").is_visible()
     assert check.is_disabled()
-    assert page.evaluate(
-        "() => window.kgStudyProgress.getQuestion('2.2.q3').attemptCount"
-    ) == 1
+    assert page.evaluate("kgStudyProgress.getQuestion('2.2.q3').lastOutcome") == "incorrect"
 
     correct.check()
     assert not check.is_disabled()
@@ -91,9 +88,7 @@ def test_automatic_question_marks_answers_and_prevents_duplicate_submission(brow
 
     assert question.locator(".study-question-feedback").is_visible()
     assert question.locator(".study-question-status").get_attribute("data-outcome") == "correct"
-    assert page.evaluate(
-        "() => window.kgStudyProgress.getQuestion('2.2.q3')"
-    )["attemptCount"] == 2
+    assert page.evaluate("kgStudyProgress.getQuestion('2.2.q3').lastOutcome") == "correct"
 
     question.locator(":scope > summary").click()
     assert not question.evaluate("element => element.open")

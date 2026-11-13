@@ -163,10 +163,10 @@ function kgCreateReadingTrees(options) {
       tree.entry = found;
       return tag("details", {id: found.id, "class": "kg-reading-tree kg-reading-" + recipe,
         "data-reading-entry": "tree", "data-reading-recipe": recipe, open: found.open},
-        tag("summary", {}, tag("span", {"class": "kg-content-statement"},
-          escape(recipes[recipe].statement.replace("{concept}", options.concepts[id].label || id))) +
-          tag("span", {"class": "content-block-title-line"}, escape(recipes[recipe].title) +
-            tag("small", {"class": "kg-reading-badge"}, "Reading tree"))) +
+        tag("summary", {}, tag("span", {"class": "content-block-title-line"}, escape(recipes[recipe].title) +
+            tag("small", {"class": "kg-reading-badge"}, "Reading tree")) +
+          tag("span", {"class": "kg-content-statement"},
+            escape(recipes[recipe].statement.replace("{concept}", options.concepts[id].label || id)))) +
         tag("div", {"class": "kg-reading-tree-body"}, controls(tree) +
           tag("div", {"class": "kg-reading-root"})));
     }).join("");
@@ -291,6 +291,14 @@ function kgCreateReadingTrees(options) {
     }
   }
   function leaveFocus(silent) { while (focusStack.length) { returnFocus(silent); } }
+  function prepareFold(target) {
+    var index = focusStack.findIndex(function(item) {
+      return item.targetId === target.id || target.contains(item.marker);
+    });
+    if (index >= 0) {
+      while (focusStack.length > index) { returnFocus(true); }
+    }
+  }
   function restoreFocus() {
     var saved = resumeFocus.slice(); resumeFocus = [];
     var savedPosition = position, savedRecipe = activeRecipe;
@@ -337,7 +345,11 @@ function kgCreateReadingTrees(options) {
     return false;
   }
   return {beginPage: beginPage, render: render, afterRender: afterRender, restored: restored, toggled: toggled,
-    restoreFocus: restoreFocus, focusButton: focusButton, click: click, change: change, detach: detach,
+    restoreFocus: restoreFocus, prepareFold: prepareFold, focusButton: focusButton, click: click, change: change, detach: detach,
+    reset: function() {
+      leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
+      entries.clear(); entryIds.clear(); trees = {}; resumeFocus = [];
+    },
     snapshot: function() { return {root: root, synchronised: synchronised, position: position,
       activeRecipe: activeRecipe, focusDepth: focusStack.length}; }};
 }

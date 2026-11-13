@@ -37,7 +37,7 @@ def test_study_scorecard_summarises_total_questions_and_read_concepts(browser_gr
     assert rows.nth(0).get_attribute("data-question-id") == "2.2.q3"
     assert "Correct" in rows.nth(0).inner_text()
     assert "Incorrect" in rows.nth(1).inner_text()
-    assert "1 attempt" in rows.nth(1).inner_text()
+    assert "attempt" not in rows.nth(1).inner_text()
 
     page.evaluate(
         """() => conceptData['2.2'].content_blocks.forEach(block =>

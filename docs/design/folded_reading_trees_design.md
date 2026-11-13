@@ -178,7 +178,9 @@ When synchronisation is enabled explicitly:
   from the existing selection outline by a small gap. Both can coexist.
 - If represented by a folded module, mark that module and identify the actual
   concept in its tooltip.
-- Do not move the camera, change layout, expand modules or mark content read.
+- Explicitly enabling synchronisation sets Context only, reveals context modules
+  and fits the context; Details-only becomes Both. Later Reading-position changes
+  leave the camera and folds alone. Neither action marks content read or saves layout.
 
 The prototype's map follows the last active tree automatically. In the shared
 viewer each card instead has a **Synchronise graph** checkbox, initially off.

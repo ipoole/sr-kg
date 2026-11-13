@@ -137,10 +137,10 @@ function kgCreateContentMarkup(options) {
           (!action.capability || capabilities[action.capability] === true);
       }).map(function(action) { return action.html || ""; }).join("");
     }
-    var heading = (unit.statementHtml || "") + '<span class="content-block-title-line">' +
+    var heading = '<span class="content-block-title-line">' +
       (unit.markHtml || "") + '<span class="content-block-title-text">' +
       renderConceptText(unit.title || "") + '</span>' + (unit.labelHtml || "") + '</span>' +
-      renderActions("heading");
+      (unit.statementHtml || "") + renderActions("heading");
     var body = unit.bodyHtml !== undefined ? unit.bodyHtml : renderBodyLines(unit.body || "", "", {origin: unit.origin});
     (unit.children || []).forEach(function(child) {
       // Children are explanations unless explicitly placed at block level. Their

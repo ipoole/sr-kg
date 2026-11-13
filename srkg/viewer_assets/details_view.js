@@ -13,6 +13,81 @@ function kgCreateDetailsView(options) {
 
   var graphicSpacingMeasurements = new WeakMap();
   var equationAccessibility = new WeakMap();
+  var foldFooters = new WeakMap(), foldTargets = new WeakMap();
+
+  function refreshFoldControls(scope) {
+    var panel = document.getElementById("info_panel");
+    scope = scope || panel;
+    if (!scope || !panel || !panel.contains(scope)) { return; }
+    var items = Array.from(scope.querySelectorAll("details"));
+    if (scope.matches("details")) { items.unshift(scope); }
+    items.forEach(function(item) {
+      if (item.closest(".concept-toc")) { return; }
+      var heading = item.querySelector(":scope > summary");
+      if (!heading) { return; }
+      var footer = foldFooters.get(item);
+      if (!footer) {
+        footer = document.createElement("div");
+        footer.className = "kg-content-footer";
+        footer.innerHTML = '<label class="kg-footer-read-slot"></label>' +
+          '<button type="button" class="kg-content-refold">Fold ↑</button>';
+        var title = heading.querySelector(".content-block-title-text, .content-block-title-line") || heading;
+        footer.querySelector("button").setAttribute("aria-label", "Fold " + title.textContent.trim());
+        foldFooters.set(item, footer); foldTargets.set(footer, item);
+      }
+      // Lazy hydration can replace a body; full-width focus merely moves it.
+      if (!footer.isConnected) {
+        var body = item.querySelector(":scope > .kg-content-body, :scope > .kg-reading-concept-body, :scope > .kg-reading-tree-body");
+        (body || item).appendChild(footer);
+      }
+      var slot = footer.querySelector(".kg-footer-read-slot");
+      var tick = heading.querySelector(".content-block-read-toggle");
+      if (tick && item.open && !slot.querySelector("input")) {
+        var bottomTick = tick.cloneNode(true);
+        bottomTick.removeAttribute("id");
+        // Do not clone the tutorial's temporary accessibility/focus lock.
+        bottomTick.removeAttribute("tabindex");
+        bottomTick.removeAttribute("aria-disabled");
+        slot.appendChild(bottomTick);
+      } else if (!item.open && slot.firstChild) {
+        slot.replaceChildren();
+      }
+    });
+  }
+
+  function foldFromFooter(event) {
+    var button = event.target.closest(".kg-content-refold");
+    if (!button) { return false; }
+    var item = foldTargets.get(button.closest(".kg-content-footer"));
+    if (!item) { return false; }
+    if (options.beforeFold) { options.beforeFold(item); }
+    var noteId = item.getAttribute("data-note-id"), occurrence = item.getAttribute("data-content-occurrence");
+    item.open = false;
+    refreshFoldControls(item);
+    requestAnimationFrame(function() {
+      // Folding an edited note replaces its shell after saving the draft.
+      if (!item.isConnected && noteId) {
+        item = Array.from(document.querySelectorAll("#info_panel .user-note")).find(function(note) {
+          return note.getAttribute("data-note-id") === noteId &&
+            note.getAttribute("data-content-occurrence") === occurrence;
+        });
+      }
+      if (!item || !item.isConnected) { return; }
+      var heading = item.classList.contains("kg-reading-concept")
+        ? item.parentElement.querySelector(":scope > .kg-reading-concept-title > button")
+        : item.querySelector(":scope > summary");
+      if (!heading) { return; }
+      var panel = document.getElementById("info_panel"), bounds = panel.getBoundingClientRect();
+      var sticky = panel.querySelector(".concept-sticky-header");
+      var top = sticky ? sticky.getBoundingClientRect().bottom : bounds.top;
+      var rect = heading.getBoundingClientRect();
+      if (rect.top < top + 8 || rect.bottom > bounds.bottom - 8) {
+        scrollInfoPanelTargetBelowStickyToc(heading, {immediate: true});
+      }
+      heading.focus({preventScroll: true});
+    });
+    return true;
+  }
 
   function refreshEquationOverflow() {
     var equations = Array.from(document.querySelectorAll('#info_panel mjx-container[display="true"]'));
@@ -103,6 +178,7 @@ function kgCreateDetailsView(options) {
   function typesetInfoPanel(options) {
     options = options || {};
     var panel = options.element || document.getElementById("info_panel");
+    refreshFoldControls(panel);
     schedulePanelContentRefit();
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([panel]).catch(function(err) {
@@ -312,6 +388,8 @@ function kgCreateDetailsView(options) {
   }
 
   return {
+    refreshFoldControls: refreshFoldControls,
+    foldFromFooter: foldFromFooter,
     clearMathTypesetting: clearMathTypesetting,
     replaceTypesetContent: replaceTypesetContent,
     compactGraphicSpacing: compactGraphicSpacing,

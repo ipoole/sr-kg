@@ -62,7 +62,7 @@ def test_real_maths_routes_equations_and_pane_bounds(maths_pilot_output, playwri
                         'tensor_field', 'index_notation', 'tensor_transformation_law'):
             id = 'math.' + concept
             graph.click_concept(id)
-            assert page.locator('#info_panel > .content-block[open]').count() == 0
+            assert page.locator('#info_panel > .content-block:not(.content-block-graphic)[open]').count() == 0
             # Open every real canonical body, including nested local clarifications.
             page.locator('#info_panel > .content-block').evaluate_all('es=>es.forEach(e=>e.open=true)')
             for recipe, preset in [('derivation', 'derivation'), ('teaching', 'foundations')]:

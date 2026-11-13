@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.browser
-def test_study_progress_records_latest_outcome_and_attempt_count(browser_graph):
+def test_study_progress_records_latest_outcome_without_count(browser_graph):
     page = browser_graph.page
 
     assert page.evaluate("() => window.kgStudyProgress.getState()") == {
@@ -22,12 +22,10 @@ def test_study_progress_records_latest_outcome_and_attempt_count(browser_graph):
     )
 
     assert first == {
-        "attemptCount": 1,
         "lastOutcome": "incorrect",
         "lastAttemptAt": "2026-09-30T09:00:00.000Z",
     }
     assert second == {
-        "attemptCount": 2,
         "lastOutcome": "correct",
         "lastAttemptAt": "2026-09-30T09:01:00.000Z",
     }
@@ -74,7 +72,6 @@ def test_study_progress_discards_malformed_and_unknown_stored_entries(browser_gr
         "version": 1,
         "questions": {
             "2.1.q1": {
-                "attemptCount": 3,
                 "lastOutcome": "unknown",
                 "lastAttemptAt": "2026-09-30T09:02:00.000Z",
             }
@@ -102,8 +99,8 @@ def test_study_progress_reset_operations_and_invalid_attempts(browser_graph):
     page.evaluate("() => window.kgStudyProgress.resetQuestion('2.1.q1')")
     assert page.evaluate("() => window.kgStudyProgress.getQuestion('2.1.q1')") is None
     assert page.evaluate("() => window.kgStudyProgress.getQuestion('2.2.q1')")[
-        "attemptCount"
-    ] == 1
+        "lastOutcome"
+    ] == "incorrect"
 
     page.evaluate("() => window.kgStudyProgress.resetAll()")
     assert page.evaluate("() => window.kgStudyProgress.getState().questions") == {}

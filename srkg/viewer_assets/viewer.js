@@ -62,11 +62,14 @@
 
         var activeNodeId = null;
         var activeModuleId = null;
-        var viewerState = {
-          contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
-          displayScope: DisplayScope.FULL,
-          view: "both"
-        };
+        function defaultViewerState() {
+          return {
+            contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
+            displayScope: DisplayScope.FULL,
+            view: "both"
+          };
+        }
+        var viewerState = defaultViewerState();
         var layoutEditModeEnabled = false;
 
         // Folded modules are a runtime graph projection; source concepts and edges stay unchanged.
@@ -170,11 +173,25 @@
           typeset: function(element) { typesetInfoPanel({element: element}); },
           clearMath: function(element) { detailsView.clearMathTypesetting(element); },
           onPosition: function() { if (initialGraphProjectionReady) { network.redraw(); } },
-          onSynchronise: function(id, rule) {
+          onSynchronise: async function(id, rule) {
             if (activeNodeId !== id) { return; }
             resetContextFitInteraction();
             viewerState.contextRule = createContextRule(rule.preset, rule.depth);
+            viewerState.displayScope = DisplayScope.CONTEXT;
+            updateGraphViewControls();
+            if (viewerState.view === "details") { setViewerView("both"); }
             renderGraphFromViewerState();
+            expandContextModules();
+            document.getElementById("kg_fit_select").value = "context";
+            updateGraphContextControls();
+            await nextAnimationFrames(2);
+            var reading = readingTrees.snapshot();
+            if (activeNodeId !== id || !reading.synchronised ||
+                viewerState.displayScope !== DisplayScope.CONTEXT ||
+                viewerState.contextRule.preset !== rule.preset ||
+                viewerState.contextRule.depth !== rule.depth) { return; }
+            clearContextFitPriming();
+            fitViewerTarget("context");
           }
         });
         window.kgReadingTrees = {snapshot: readingTrees.snapshot};
@@ -203,7 +220,8 @@
           moduleMemberIds: moduleMemberIds
         };
         var detailsView = kgCreateDetailsView({
-          markup: contentMarkup, content: contentModel, onContentChange: schedulePanelContentRefit
+          markup: contentMarkup, content: contentModel, onContentChange: schedulePanelContentRefit,
+          beforeFold: function(target) { readingTrees.prepareFold(target); }
         });
         var replaceTypesetContent = detailsView.replaceTypesetContent;
         var typesetInfoPanel = detailsView.typesetInfoPanel;
@@ -218,7 +236,8 @@
           content: contentModel, markup: contentMarkup,
           storageKeys: {study: studyProgressStorageKey, read: contentReadProgressStorageKey},
           writeStorage: safeLocalStorageSet, network: network, replaceContent: replaceTypesetContent,
-          onSave: function() { schedulePersonalDataAutoSync(); }
+          onSave: function() { schedulePersonalDataAutoSync(); },
+          readOnly: function() { return Boolean(guidedTutorial && guidedTutorial.isGuiding()); }
         });
         var renderContentReadCompletionIndicator = studyController.renderContentReadCompletionIndicator;
         var renderStudyQuestionCompletionIndicator = studyController.renderStudyQuestionCompletionIndicator;
@@ -1879,13 +1898,13 @@
             origin: "authored", level: "block", anchorId: anchor,
             occurrenceKey: placement.reading ? contentMarkup.occurrenceKey(context) : null,
             sourceId: placement.reading ? block.block_id : null,
-            statementHtml: sharedExplanations.nativeStatement(block.block_id),
+            statementHtml: block.kind === "graphic" ? "" : sharedExplanations.nativeStatement(block.block_id),
             contentBlockId: block.block_id,
             capabilities: {annotate: true, trackRead: true, edit: false},
             className: contentBlockClassName(block, policy) + " kg-statement-block" +
               (placement.reading ? " kg-reading-block" : "") +
               (ownerType === "module" ? " module-content-block" : ""),
-            open: false, title: title,
+            open: !placement.reading && block.kind === "graphic", title: title,
             markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
             labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
               escapeHtml(contentBlockKindLabel(block.kind)) + '"></span>',
@@ -1990,6 +2009,9 @@
           }
           html += "</div>";
           html += renderConceptToc(tocItems);
+          html += '<div class="kg-content-fold-controls" aria-label="Concept blocks">' +
+            '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
+            '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
           html += "</div>";
           return html;
         }
@@ -2943,6 +2965,7 @@
           var moduleChanged = previousModuleId !== String(moduleId);
           replaceTypesetContent(panel, html);
           sharedExplanations.afterRender(panel);
+          updateContentReadCompletionIndicators();
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -4665,6 +4688,7 @@
           replaceTypesetContent(panel, html);
           readingTrees.afterRender(panel);
           sharedExplanations.afterRender(panel);
+          updateContentReadCompletionIndicators();
           readingTrees.restoreFocus();
           readingTrees.restored(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
@@ -5354,7 +5378,8 @@
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
           presentation: {capture: captureTutorialPresentation, restore: restoreTutorialPresentation, replay: replayTutorialCommands},
           settle: nextAnimationFrames, hover: {hide: hideNodeTooltip, restore: restoreHoveredEdge},
-          workspace: {dismissSplash: dismissSplash, setControlsVisible: setControlsVisible},
+          workspace: {dismissSplash: dismissSplash, setControlsVisible: setControlsVisible,
+            refreshReadControls: updateContentReadCompletionIndicators},
           camera: graphCamera, details: detailsView, markup: contentMarkup
         });
         var refreshTutorialPointerPosition = guidedTutorial.refreshTutorialPointerPosition;
@@ -5509,6 +5534,36 @@
           var conceptId = Object.keys(conceptData).sort(compareConceptIds)[0];
           return conceptId ? {type: "concept", id: conceptId} : null;
         }
+
+        window.kgRestoreHome = async function() {
+          resetContextFitInteraction(); setLayoutEditingEnabled(false);
+          hideNodeTooltip(); restoreHoveredEdge();
+          readingTrees.reset(); sharedExplanations.reset();
+          hideConceptPreview(true); setSearchOpen(false); setControlsVisible(false);
+          var startingState = defaultViewerState();
+          viewerState.contextRule = startingState.contextRule;
+          viewerState.displayScope = startingState.displayScope;
+          applyWorkspaceSplit(50); setViewerView(startingState.view);
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            unfoldModule(moduleId);
+            preferredFoldedModules[String(moduleId)] = Boolean(getModule(moduleId).default_collapsed);
+          });
+          applyDefaultModuleFoldState();
+          selectDefaultViewerObject(); initialiseSelectionHistory();
+          var homeSelection = JSON.stringify(viewerSelectionSnapshot());
+          document.getElementById("kg_fit_select").value = "context";
+          await nextAnimationFrames(2);
+          if (homeSelection !== JSON.stringify(viewerSelectionSnapshot())) { return; }
+          graphCamera.cancelPendingRestore();
+          if (lastGraphRender && lastGraphRender.fitIds.length) {
+            fitNodesToAvailableRect(lastGraphRender.fitIds, {maxScale: 0.72, animation: false});
+          }
+          var status = document.getElementById("kg_status");
+          status.textContent = "Starting view restored";
+          setTimeout(function() {
+            if (status.textContent === "Starting view restored") { status.textContent = ""; }
+          }, 2500);
+        };
 
         function selectDefaultViewerObject() {
           var selection = defaultViewerSelection();
@@ -6441,6 +6496,7 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          if (detailsView.foldFromFooter(e)) { e.preventDefault(); return; }
           if (readingTrees.click(e)) { e.preventDefault(); return; }
           var explanationReturn = e.target.closest(".kg-content-return");
           if (explanationReturn) {
@@ -6691,6 +6747,16 @@
           showConceptPreview(link, {pinned: true});
         });
 
+        document.getElementById("info_panel").addEventListener("click", function(e) {
+          var button = e.target.closest("#kg_content_unfold_all, #kg_content_fold_all");
+          if (!button) { return; }
+          var panel = document.getElementById("info_panel");
+          panel.querySelectorAll(":scope > details.content-block").forEach(function(block) {
+            block.open = button.id === "kg_content_unfold_all";
+          });
+          updateContentReadCompletionIndicators();
+        });
+
         document.getElementById("info_panel").addEventListener("change", function(e) {
           if (readingTrees.change(e)) { return; }
           var readToggle = e.target.closest(".content-block-read-toggle");
@@ -6857,6 +6923,8 @@
           if (e.target && e.target.tagName === "DETAILS") {
             readingTrees.toggled(e.target);
             sharedExplanations.toggled(e.target);
+            detailsView.refreshFoldControls(e.target);
+            updateContentReadCompletionIndicators();
             if (
               e.target.classList.contains("user-note")
             ) {

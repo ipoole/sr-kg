@@ -24,6 +24,13 @@ def reading_tree_output(tmp_path_factory):
     blocks.loc[blocks.block_id == "1.1.definition", "body"] = (
         "First paragraph.\nSecond paragraph."
         r"\explanation{algebra}{A closer look}{Local reasoning.}")
+    # Deliberately interleave native kinds, including two Explanation blocks.
+    for suffix, kind, sequence in [('example', 'example', 1), ('intuition', 'intuition', 2),
+                                    ('explanation.first', 'explanation', 20),
+                                    ('explanation.second', 'explanation', 30)]:
+        blocks.loc[len(blocks)] = {'block_id': '3.1.' + suffix, 'concept_id': '3.1',
+            'sequence': sequence, 'kind': kind, 'title': suffix,
+            'body': 'Fixture teaching content.', 'statement': 'A fixture result.'}
     blocks.to_csv(root / "content_blocks.csv", index=False)
     output = _prepare_browser_output(root, root, "Reading-tree fixture")
     fast = root / "fast.html"
@@ -83,15 +90,19 @@ def test_blocks_and_graph_generated_routes(reading_graph, width):
 
 
 @pytest.mark.browser
-def test_reading_position_sync_is_explicit_and_nonspatial(reading_graph):
+def test_sync_prepares_context_then_reading_position_leaves_camera_alone(reading_graph):
     page = reading_graph.page
     card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
     card.locator(":scope > summary").click()
     page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute("id"))
-    camera = page.evaluate("({pos:network.getViewPosition(),scale:network.getScale(),folds:kgViewerStateSnapshot().selection})")
     card.locator(".kg-reading-sync").check()
+    page.wait_for_function("kgViewerStateSnapshot().displayScope==='context'")
+    page.wait_for_timeout(500)
+    camera = page.evaluate("({pos:network.getViewPosition(),scale:network.getScale(),folds:kgViewerStateSnapshot().selection})")
     assert page.evaluate("kgViewerStateSnapshot().contextRule.preset") == "foundations"
     assert page.evaluate("kgReadingTrees.snapshot().synchronised") == "teaching"
+    assert page.locator("#kg_display_scope_select").input_value() == "context"
+    assert page.locator("#kg_view_select").input_value() == "both"
     concept = card.locator('.kg-reading-concept-container[data-reading-concept="2.2"]').first
     _open_concept(concept)
     page.wait_for_function("kgReadingTrees.snapshot().position==='2.2'")
@@ -122,6 +133,7 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
             .every(e=>e.hasAttribute('data-reading-loaded'))""")
     copies = card.locator('[data-content-block-id="1.1.definition"]')
     assert copies.count() >= 2
+    copies.first.locator(":scope > summary").click()
     copies.first.locator(":scope > summary .content-block-read-toggle").check()
     assert copies.locator(":scope > summary .content-block-read-toggle").evaluate_all(
         "es=>es.every(e=>e.checked)")
@@ -151,3 +163,19 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
     assert native.locator(".user-note").count() == 1
     assert native.locator(":scope > summary .content-block-read-toggle").is_checked()
     assert not reading_graph.page_errors
+
+
+@pytest.mark.browser
+def test_recipe_orders_kinds_and_preserves_authored_order_within_kind(reading_graph):
+    page = reading_graph.page
+    card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
+    card.locator(':scope > summary').click()
+    page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute('id'))
+    expected = ['3.1.definition', '3.1.explanation.first', '3.1.explanation.second',
+                '3.1.intuition', '3.1.example']
+    assert page.locator('#info_panel > [data-content-block-id]').evaluate_all(
+        'es=>es.map(e=>e.dataset.contentBlockId)') == [
+        '3.1.example', '3.1.intuition', '3.1.definition',
+        '3.1.explanation.first', '3.1.explanation.second']
+    assert card.locator(':scope > .kg-reading-tree-body > .kg-reading-root > .kg-reading-block').evaluate_all(
+        'es=>es.map(e=>e.dataset.contentBlockId)') == expected

@@ -53,7 +53,7 @@ def test_inject_controls_adds_viewer_shell_and_escapes_title():
     assert '<span class="kg-product-tagline">An Atlas of Physics Knowledge</span>' in injected
     assert f'<span class="kg-product-version">v{PRODUCT_VERSION}</span>' in injected
     assert 'id="kg_brand_home"' in injected
-    assert 'aria-label="PhysicsKG — Quick Start"' in injected
+    assert 'aria-label="Restore starting view"' in injected
     assert 'class="kg-brand-mark" src="data:image/svg+xml;base64,' in injected
     assert 'class="kg-splash-brand-mark" src="data:image/svg+xml;base64,' in injected
     assert '<div id="kg_view_title">SR &lt;Graph&gt; &amp; Fields</div>' in injected

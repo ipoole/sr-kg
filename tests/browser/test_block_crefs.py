@@ -94,7 +94,9 @@ def test_advanced_kind_renders_locally_and_is_not_silently_added_to_recipes(bloc
         advanced = page.locator('#info_panel > .content-block-advanced')
         assert advanced.count() == 1 and not advanced.evaluate('e=>e.open')
         assert advanced.locator('.content-block-kind-label').get_attribute('data-label') == 'Advanced'
-        assert advanced.evaluate('e=>getComputedStyle(e).getPropertyValue("--block-accent").trim()') == '#4e5f91'
+        assert advanced.evaluate('e=>getComputedStyle(e).borderLeftColor') != page.locator(
+            '#info_panel > .content-block-definition'
+        ).evaluate('e=>getComputedStyle(e).borderLeftColor')
         advanced.locator(':scope > summary').click()
         assert advanced.evaluate('e=>e.open')
         for recipe in ('derivation','teaching'):
@@ -114,6 +116,7 @@ def test_block_reference_in_reading_tree_preserves_position_and_camera(block_cre
         card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
         _reveal_tree(page, card)
         card.locator('.kg-reading-sync').check()
+        page.wait_for_timeout(500)  # Explicit sync now fits before preview invariance is measured.
         block = card.locator('[data-content-block-id="2.1.explanation"]').first
         block.evaluate('e=>e.open=true')
         link = block.locator('a[data-block-id="2.2.intuition"]')
