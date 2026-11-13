@@ -3935,4 +3935,13 @@
 }
 #info_panel .content-block-read-toggle:disabled { opacity: 0.35; cursor: default; }
 .kg-content-fold-controls { display: flex; gap: 0.4em; margin-top: 0.3em; }
-.kg-content-fold-controls button { font: inherit; font-size: 0.75em; }
+.kg-content-fold-controls button {
+    font: inherit;
+    font-size: 0.75em;
+    padding: 0.3em 0.65em;
+    border: 1px solid #c5d2df;
+    border-radius: 5px;
+    background: #f7f9fc;
+    color: #28465b;
+    cursor: pointer;
+}

@@ -7,7 +7,7 @@ content and transient viewer state. It currently comprises:
 
 - notes;
 - personal concept positions and module anchors;
-- study-question attempts;
+- latest study-question results;
 - content-block read marks.
 
 Selection, context, camera, folded modules, open details, temporary Fit++ adjustments
@@ -81,17 +81,22 @@ position creates a tombstone. Records merge independently, so moving one node
 does not overwrite unrelated moves from another browser. The profile also
 records the published layout revision from which the overrides were made.
 
-### Study attempts
+### Question results
 
-Attempts are append-only events with a stable attempt ID, question ID, outcome,
-time, originating device ID and a positive `attempt_count`. New attempts have a
-count of one. Migration may create one event whose count represents several
-historical attempts because the old store retained only a total and latest
-outcome.
+Each question has one result: question ID, latest outcome (`correct`, `incorrect`
+or `unknown`), update time and originating device. A new answer replaces that
+question’s result; no attempt history, counts or typed responses are retained.
+Local writes advance beyond the observed question result/reset when timestamps
+would tie, so a fresh answer or reset is never lost. The newest timestamp wins on merge; equal timestamps use device ID then outcome
+as a deterministic tie-break. Unloaded-domain results remain untouched.
 
-Question and global reset events suppress earlier attempts. Attempts and reset
-events merge by stable ID; displayed totals and latest outcomes are derived.
-Typed free-text answers are not stored.
+Question and global reset events suppress earlier results, preventing stale
+cloud data or old archives from resurrecting cleared progress. Profile schema 2
+and archive format 2 replace attempt events with latest-result records. Loading
+schema-1 browser data or importing a schema-1 archive retains each question’s
+latest surviving result and discards its counts/history. Other personal data is
+unchanged. The local storage key remains stable for migration. Old viewers do
+not understand format-2 archives; use the current viewer for imports and sync.
 
 ### Reading progress
 
@@ -112,7 +117,7 @@ standard, unencrypted ZIP containing UTF-8 CSV files:
 | `manifest.csv` | schema version, profile ID and export metadata |
 | `notes.csv` | notes and deletion tombstones |
 | `layout.csv` | personal concept positions and module anchors |
-| `study_attempts.csv` | attempt events |
+| `study_results.csv` | latest result per question |
 | `study_resets.csv` | per-question and global reset events |
 | `reading_progress.csv` | checked and unchecked read records |
 

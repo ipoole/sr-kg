@@ -2,7 +2,7 @@
   "use strict";
 
   var FILES = [
-    "manifest.csv", "notes.csv", "layout.csv", "study_attempts.csv",
+    "manifest.csv", "notes.csv", "layout.csv", "study_results.csv",
     "study_resets.csv", "reading_progress.csv"
   ];
 
@@ -24,7 +24,7 @@
   function tablesFor(profile) {
     var manifest = [
       ["key", "value"],
-      ["schema_version", "1"],
+      ["schema_version", "2"],
       ["profile_id", profile.profileId],
       ["profile_created_at", profile.createdAt],
       ["profile_updated_at", profile.updatedAt],
@@ -56,14 +56,10 @@
         item.updatedAt, item.deletedAt, item.deviceId
       ]);
     });
-    var attempts = [[
-      "attempt_id", "question_id", "outcome", "attempted_at", "device_id", "attempt_count"
-    ]];
-    profile.studyAttempts.forEach(function(item) {
-      attempts.push([
-        item.id, item.questionId, item.outcome, item.attemptedAt,
-        item.deviceId, item.attemptCount
-      ]);
+    var results = [["question_id", "outcome", "updated_at", "device_id"]];
+    Object.keys(profile.studyResults).sort().forEach(function(id) {
+      var item = profile.studyResults[id];
+      results.push([id, item.outcome, item.updatedAt, item.deviceId]);
     });
     var resets = [["reset_id", "question_id", "reset_at", "device_id"]];
     profile.studyResets.forEach(function(item) {
@@ -78,7 +74,7 @@
       "manifest.csv": kgCsv.encode(manifest),
       "notes.csv": kgCsv.encode(notes),
       "layout.csv": kgCsv.encode(layout),
-      "study_attempts.csv": kgCsv.encode(attempts),
+      "study_results.csv": kgCsv.encode(results),
       "study_resets.csv": kgCsv.encode(resets),
       "reading_progress.csv": kgCsv.encode(reading)
     };
@@ -174,21 +170,23 @@
   }
 
   function profileFromTables(files) {
-    FILES.forEach(function(name) {
-      if (typeof files[name] !== "string") { throw new Error("Archive is missing " + name); }
-    });
     var manifestRows = records(files["manifest.csv"], ["key", "value"]), manifest = {};
     manifestRows.forEach(function(row) { manifest[row.key] = row.value; });
-    if (manifest.schema_version !== "1" || manifest.format !== "srkg-personal-data-csv") {
+    if (["1", "2"].indexOf(manifest.schema_version) < 0 || manifest.format !== "srkg-personal-data-csv") {
       throw new Error("Unsupported personal-data archive version");
     }
+    FILES.map(function(name) {
+      return manifest.schema_version === "1" && name === "study_results.csv" ? "study_attempts.csv" : name;
+    }).forEach(function(name) {
+      if (typeof files[name] !== "string") { throw new Error("Archive is missing " + name); }
+    });
     var profile = {
-      schemaVersion: 1,
+      schemaVersion: Number(manifest.schema_version),
       profileId: required(manifest.profile_id, "profile_id"),
       createdAt: validTime(manifest.profile_created_at, "profile_created_at"),
       updatedAt: validTime(manifest.profile_updated_at, "profile_updated_at"),
       notes: [], layout: {publishedRevision: "", records: {}},
-      studyAttempts: [], studyResets: [], readingProgress: {}
+      studyResults: {}, studyResets: [], readingProgress: {}
     };
     records(files["notes.csv"], ["note_id", "target_type", "target_id", "section", "updated_at"]).forEach(function(row) {
       var note = {
@@ -220,16 +218,24 @@
       profile.layout.records[item.objectType + ":" + item.objectId] = item;
       if (row.published_revision) { profile.layout.publishedRevision = row.published_revision; }
     });
-    records(files["study_attempts.csv"], ["attempt_id", "question_id", "outcome", "attempted_at", "attempt_count"]).forEach(function(row) {
-      var count = Number(row.attempt_count);
-      if (["correct", "incorrect", "unknown"].indexOf(row.outcome) === -1 ||
-          !Number.isInteger(count) || count < 1) { throw new Error("Invalid study attempt"); }
-      profile.studyAttempts.push({
-        id: required(row.attempt_id, "attempt_id"), questionId: required(row.question_id, "question_id"),
-        outcome: row.outcome, attemptedAt: validTime(row.attempted_at, "attempted_at"),
-        deviceId: row.device_id, attemptCount: count
+    if (manifest.schema_version === "1") {
+      profile.studyAttempts = [];
+      records(files["study_attempts.csv"], ["attempt_id", "question_id", "outcome", "attempted_at"]).forEach(function(row) {
+        if (["correct", "incorrect", "unknown"].indexOf(row.outcome) < 0) { throw new Error("Invalid question result"); }
+        profile.studyAttempts.push({
+          id: required(row.attempt_id, "attempt_id"), questionId: required(row.question_id, "question_id"),
+          outcome: row.outcome, attemptedAt: validTime(row.attempted_at, "attempted_at"), deviceId: row.device_id
+        });
       });
-    });
+    } else {
+      records(files["study_results.csv"], ["question_id", "outcome", "updated_at"]).forEach(function(row) {
+        if (["correct", "incorrect", "unknown"].indexOf(row.outcome) < 0) { throw new Error("Invalid question result"); }
+        var id = required(row.question_id, "question_id");
+        if (profile.studyResults[id]) { throw new Error("Duplicate question result"); }
+        profile.studyResults[id] = {questionId: id, outcome: row.outcome,
+          updatedAt: validTime(row.updated_at, "updated_at"), deviceId: row.device_id};
+      });
+    }
     records(files["study_resets.csv"], ["reset_id", "question_id", "reset_at"]).forEach(function(row) {
       profile.studyResets.push({
         id: required(row.reset_id, "reset_id"), questionId: required(row.question_id, "question_id"),
@@ -243,7 +249,7 @@
         updatedAt: validTime(row.updated_at, "updated_at"), deviceId: row.device_id
       };
     });
-    return profile;
+    return kgNormalizePersonalDataProfile(profile, new Date().toISOString());
   }
 
   function summary(profile) {
@@ -252,7 +258,7 @@
       layout: Object.keys(profile.layout.records).filter(function(key) {
         return !profile.layout.records[key].deletedAt;
       }).length,
-      study: profile.studyAttempts.length,
+      study: Object.keys(profile.studyResults).length,
       reading: Object.keys(profile.readingProgress).filter(function(key) {
         return profile.readingProgress[key].isRead;
       }).length

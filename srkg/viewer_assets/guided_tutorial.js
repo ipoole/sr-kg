@@ -69,6 +69,7 @@ function kgCreateGuidedTutorial(options) {
         readingControlAttributes.delete(control);
       }
     });
+    if (!active && options.workspace.refreshReadControls) { options.workspace.refreshReadControls(); }
   }
 
   function scheduleReadingPointerRefresh() {

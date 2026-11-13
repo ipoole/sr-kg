@@ -232,7 +232,8 @@
           content: contentModel, markup: contentMarkup,
           storageKeys: {study: studyProgressStorageKey, read: contentReadProgressStorageKey},
           writeStorage: safeLocalStorageSet, network: network, replaceContent: replaceTypesetContent,
-          onSave: function() { schedulePersonalDataAutoSync(); }
+          onSave: function() { schedulePersonalDataAutoSync(); },
+          readOnly: function() { return Boolean(guidedTutorial && guidedTutorial.isGuiding()); }
         });
         var renderContentReadCompletionIndicator = studyController.renderContentReadCompletionIndicator;
         var renderStudyQuestionCompletionIndicator = studyController.renderStudyQuestionCompletionIndicator;
@@ -5373,7 +5374,8 @@
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
           presentation: {capture: captureTutorialPresentation, restore: restoreTutorialPresentation, replay: replayTutorialCommands},
           settle: nextAnimationFrames, hover: {hide: hideNodeTooltip, restore: restoreHoveredEdge},
-          workspace: {dismissSplash: dismissSplash, setControlsVisible: setControlsVisible},
+          workspace: {dismissSplash: dismissSplash, setControlsVisible: setControlsVisible,
+            refreshReadControls: updateContentReadCompletionIndicators},
           camera: graphCamera, details: detailsView, markup: contentMarkup
         });
         var refreshTutorialPointerPosition = guidedTutorial.refreshTutorialPointerPosition;
@@ -5547,6 +5549,7 @@
           document.getElementById("kg_fit_select").value = "context";
           await nextAnimationFrames(2);
           if (homeSelection !== JSON.stringify(viewerSelectionSnapshot())) { return; }
+          graphCamera.cancelPendingRestore();
           if (lastGraphRender && lastGraphRender.fitIds.length) {
             fitNodesToAvailableRect(lastGraphRender.fitIds, {maxScale: 0.72, animation: false});
           }

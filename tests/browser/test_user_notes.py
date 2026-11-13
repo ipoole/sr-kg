@@ -978,6 +978,7 @@ def test_personal_notes_do_not_change_read_completion(browser_graph):
     graph = browser_graph
     page = graph.page
     graph.click_concept('2.2')
+    page.locator('#info_panel details.content-block').evaluate_all('es=>es.forEach(e=>e.open=true)')
     for checkbox in page.locator('#info_panel details.content-block > summary .content-block-read-toggle').all():
         checkbox.check()
     indicator = page.locator('#info_panel .concept-sticky-header .content-read-complete-indicator')
@@ -1199,7 +1200,7 @@ def test_delete_all_notes_confirms_and_syncs_deletions_only(browser_graph):
     after = page.evaluate('kgPersonalData.getSnapshot()')
     assert len(after['notes']) == 4
     assert all(note['deletedAt'] for note in after['notes'])
-    for key in ['layout', 'studyAttempts', 'studyResets', 'readingProgress']:
+    for key in ['layout', 'studyResults', 'studyResets', 'readingProgress']:
         assert after[key] == before[key]
     assert page.locator('#info_panel .user-note').count() == 0
     assert page.locator('#kg_notes_list .kg-note-list-item').count() == 0

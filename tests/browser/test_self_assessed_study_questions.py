@@ -21,7 +21,6 @@ def test_self_assessed_incorrect_badge_clears_only_presentation(browser_graph):
     question.locator('.study-self-check-answer').click()
     question.locator('.study-self-mark[data-outcome="correct"]').click()
     progress = page.evaluate("kgStudyProgress.getQuestion('2.1.q1')")
-    assert progress['attemptCount'] == 2
     assert progress['lastOutcome'] == 'correct'
     assert question.locator('button.study-question-status').count() == 0
 
@@ -73,7 +72,6 @@ def test_self_assessed_question_reveals_comparison_then_records_self_mark(browse
     progress = page.evaluate(
         "() => window.kgStudyProgress.getQuestion('2.1.q1')"
     )
-    assert progress["attemptCount"] == 1
     assert progress["lastOutcome"] == "correct"
     assert question.locator(".study-question-status").get_attribute("data-outcome") == "correct"
     assert question.locator(".study-question-feedback").is_visible()
@@ -103,7 +101,6 @@ def test_self_assessed_question_allows_another_changed_response(browser_graph):
     progress = page.evaluate(
         "() => window.kgStudyProgress.getQuestion('2.1.q1')"
     )
-    assert progress["attemptCount"] == 2
     assert progress["lastOutcome"] == "incorrect"
 
 

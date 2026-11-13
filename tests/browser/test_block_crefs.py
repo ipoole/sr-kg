@@ -114,6 +114,7 @@ def test_block_reference_in_reading_tree_preserves_position_and_camera(block_cre
         card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
         _reveal_tree(page, card)
         card.locator('.kg-reading-sync').check()
+        page.wait_for_timeout(500)  # Explicit sync now fits before preview invariance is measured.
         block = card.locator('[data-content-block-id="2.1.explanation"]').first
         block.evaluate('e=>e.open=true')
         link = block.locator('a[data-block-id="2.2.intuition"]')

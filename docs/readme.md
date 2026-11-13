@@ -32,7 +32,7 @@
   retain content and preservation decisions. The earlier
   [Field equations paper](design/folded_reading_trees_paper_prototype.md) is a
   historical experiment, not the new authoring contract. The
-  [study-question design](design/study.md) defines marking, attempts, progress,
+  [study-question design](design/study.md) defines marking, latest results, progress,
   and the authored question schema. [Personal data](design/personal_data.md)
   defines local notes, layouts, study and reading records, plus portable
   export/import and optional Google Drive synchronisation. The

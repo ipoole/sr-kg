@@ -621,4 +621,6 @@ def test_guided_details_allow_reading_without_navigation_or_hover(browser_graph,
     page.wait_for_function('top=>document.querySelector("#info_panel").scrollTop>top', arg=old_top)
     assert page.evaluate('kgViewerStateSnapshot().selection') == selection
     page.locator('#kg_tutorial_explore').click()
+    checkbox.locator('xpath=ancestor::details[1]').evaluate('e=>e.open=true')
+    page.wait_for_function("!document.querySelector('#info_panel .content-block-read-toggle').disabled")
     assert not checkbox.is_disabled()

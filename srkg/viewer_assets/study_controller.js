@@ -19,7 +19,7 @@ function kgCreateStudyController(options) {
   var studyQuestionIndex = buildStudyQuestionIndex(), contentBlockIndex = buildContentBlockIndex();
   var contentOwnerBlockIdsCache = {}, graphCompletionStateCache = null;
   var studyProgressState = loadStudyProgress(), contentReadProgressState = loadContentReadProgress();
-  var retryingQuestions = new Set(); // Local presentation state; never resets synced attempts.
+  var retryingQuestions = new Set(); // Local presentation state; never resets synced results.
   function reload() {
     studyProgressState = loadStudyProgress(); contentReadProgressState = loadContentReadProgress();
   }
@@ -129,7 +129,8 @@ function kgCreateStudyController(options) {
     document.querySelectorAll(".content-block-read-toggle[data-read-block-id]").forEach(function(toggle) {
       toggle.checked = isRead(toggle.getAttribute("data-read-block-id"));
       var block = toggle.closest("details.kg-content-unit");
-      toggle.disabled = !toggle.checked && Boolean(block && !block.open);
+      toggle.disabled = Boolean(options.readOnly && options.readOnly()) ||
+        (!toggle.checked && Boolean(block && !block.open));
     });
     document.querySelectorAll(".content-read-complete-indicator").forEach(
       function(indicator) {
@@ -202,7 +203,7 @@ function kgCreateStudyController(options) {
     var date = attemptedAt ? new Date(attemptedAt) : new Date();
     if (Number.isNaN(date.getTime())) { date = new Date(); }
     retryingQuestions.delete(questionId);
-    personalDataStore.addStudyAttempt(questionId, outcome, date.toISOString());
+    personalDataStore.setStudyResult(questionId, outcome, date.toISOString());
     studyProgressState = loadStudyProgress();
     saveStudyProgress();
     var entry = studyProgressState.questions[questionId];
@@ -342,7 +343,6 @@ function kgCreateStudyController(options) {
     resetAll.hidden = entries.length === 0;
     list.innerHTML = entries.map(function(entry) {
       var outcome = entry.progress.lastOutcome;
-      var attempts = entry.progress.attemptCount;
       var conceptLabel = conceptDisplayId(entry.conceptId) +
         (entry.concept.label ? " " + searchDisplayText(entry.concept.label) : "");
       var questionLabel = entry.questionNumber > 0
@@ -359,8 +359,7 @@ function kgCreateStudyController(options) {
         '<span class="kg-study-question-meta" data-outcome="' +
         escapeHtml(outcome) + '"><span aria-hidden="true">' +
         studyOutcomeIcon(outcome) + "</span> " +
-        escapeHtml(studyOutcomeText(outcome)) + " · " + attempts + " attempt" +
-        (attempts === 1 ? "" : "s") + "</span></button>" +
+        escapeHtml(studyOutcomeText(outcome)) + "</span></button>" +
         '<button type="button" class="kg-study-reset-question" data-question-id="' +
         escapeHtml(entry.questionId) + '" aria-label="Reset progress for ' +
         escapeHtml(conceptLabel) + '">Reset</button></div>';

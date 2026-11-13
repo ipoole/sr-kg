@@ -42,14 +42,14 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
             "manifest.csv",
             "notes.csv",
             "layout.csv",
-            "study_attempts.csv",
+            "study_results.csv",
             "study_resets.csv",
             "reading_progress.csv",
         }
         notes = list(csv.DictReader(io.TextIOWrapper(archive.open("notes.csv"))))
         layout = list(csv.DictReader(io.TextIOWrapper(archive.open("layout.csv"))))
         attempts = list(
-            csv.DictReader(io.TextIOWrapper(archive.open("study_attempts.csv")))
+            csv.DictReader(io.TextIOWrapper(archive.open("study_results.csv")))
         )
         reading = list(
             csv.DictReader(io.TextIOWrapper(archive.open("reading_progress.csv")))
@@ -66,7 +66,7 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
     page.locator("#kg_personal_data_import_input").set_input_files(str(archive_path))
     page.locator("#kg_personal_data_import_dialog[open]").wait_for()
     assert "1 note" in page.locator("#kg_personal_data_import_summary").inner_text()
-    assert "1 study attempt record" in page.locator(
+    assert "1 question result" in page.locator(
         "#kg_personal_data_import_summary"
     ).inner_text()
     page.locator("#kg_personal_data_import_apply").click()
@@ -76,7 +76,7 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
     )
     restored = page.evaluate("() => window.kgPersonalData.getSnapshot()")
     assert restored["layout"]["records"]["concept:2.1"]["x"] == 12
-    assert restored["studyAttempts"][0]["outcome"] == "correct"
+    assert restored["studyResults"]["2.1.q1"]["outcome"] == "correct"
     assert restored["readingProgress"]["2.1.definition"]["isRead"] is True
 
 

@@ -24,6 +24,13 @@ def reading_tree_output(tmp_path_factory):
     blocks.loc[blocks.block_id == "1.1.definition", "body"] = (
         "First paragraph.\nSecond paragraph."
         r"\explanation{algebra}{A closer look}{Local reasoning.}")
+    # Deliberately interleave native kinds, including two Explanation blocks.
+    for suffix, kind, sequence in [('example', 'example', 1), ('intuition', 'intuition', 2),
+                                    ('explanation.first', 'explanation', 20),
+                                    ('explanation.second', 'explanation', 30)]:
+        blocks.loc[len(blocks)] = {'block_id': '3.1.' + suffix, 'concept_id': '3.1',
+            'sequence': sequence, 'kind': kind, 'title': suffix,
+            'body': 'Fixture teaching content.', 'statement': 'A fixture result.'}
     blocks.to_csv(root / "content_blocks.csv", index=False)
     output = _prepare_browser_output(root, root, "Reading-tree fixture")
     fast = root / "fast.html"
@@ -164,8 +171,11 @@ def test_recipe_orders_kinds_and_preserves_authored_order_within_kind(reading_gr
     card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
     card.locator(':scope > summary').click()
     page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute('id'))
-    expected = page.evaluate("""()=>['definition','explanation','intuition','example'].flatMap(kind=>
-      conceptData['3.1'].content_blocks.filter(b=>b.kind===kind)
-        .sort((a,b)=>a.sequence-b.sequence||a.block_id.localeCompare(b.block_id)).map(b=>b.block_id))""")
+    expected = ['3.1.definition', '3.1.explanation.first', '3.1.explanation.second',
+                '3.1.intuition', '3.1.example']
+    assert page.locator('#info_panel > [data-content-block-id]').evaluate_all(
+        'es=>es.map(e=>e.dataset.contentBlockId)') == [
+        '3.1.example', '3.1.intuition', '3.1.definition',
+        '3.1.explanation.first', '3.1.explanation.second']
     assert card.locator(':scope > .kg-reading-tree-body > .kg-reading-root > .kg-reading-block').evaluate_all(
         'es=>es.map(e=>e.dataset.contentBlockId)') == expected

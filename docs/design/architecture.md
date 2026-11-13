@@ -274,7 +274,7 @@ private variables. See [Layout](layout.md) and [Modules](modules.md).
 ## Personal data and cloud boundary
 
 `personal_data.js` creates the versioned local-first profile/store, migrates
-legacy storage and merges snapshots. Notes, saved layout, study attempts/resets
+legacy storage and merges snapshots. Notes, saved layout, latest question results/resets
 and reading marks have stable identities and timestamps/deletion or reset records
 for merge behaviour. The working profile is JSON in browser localStorage;
 `personal_data_archive.js` exchanges a ZIP of readable CSV files. UI preferences

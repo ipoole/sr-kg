@@ -1,7 +1,7 @@
 (function(global) {
   "use strict";
 
-  var SCHEMA_VERSION = 1;
+  var SCHEMA_VERSION = 2;
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -32,7 +32,7 @@
       legacyMigratedAt: "",
       notes: [],
       layout: {publishedRevision: "", records: {}},
-      studyAttempts: [],
+      studyResults: {},
       studyResets: [],
       readingProgress: {}
     };
@@ -43,7 +43,7 @@
       profile && (
         profile.notes.length ||
         Object.keys(profile.layout.records).length ||
-        profile.studyAttempts.length ||
+        Object.keys(profile.studyResults).length ||
         profile.studyResets.length ||
         Object.keys(profile.readingProgress).length
       )
@@ -61,7 +61,7 @@
   }
 
   function normalizeProfile(value, now) {
-    if (!value || Number(value.schemaVersion) !== SCHEMA_VERSION) { return null; }
+    if (!value || [1, SCHEMA_VERSION].indexOf(Number(value.schemaVersion)) === -1) { return null; }
     var profile = createEmptyProfile(now);
     profile.profileId = String(value.profileId || profile.profileId);
     profile.createdAt = iso(value.createdAt, now);
@@ -75,13 +75,45 @@
       profile.layout.records = value.layout.records && typeof value.layout.records === "object"
         ? clone(value.layout.records) : {};
     }
-    profile.studyAttempts = Array.isArray(value.studyAttempts)
-      ? value.studyAttempts.filter(function(item) { return item && item.id; }).map(clone) : [];
+    var results = Number(value.schemaVersion) === 1
+      ? (Array.isArray(value.studyAttempts) ? value.studyAttempts : [])
+      : Object.keys(value.studyResults || {}).map(function(id) { return value.studyResults[id]; });
+    results.forEach(function(item) {
+      if (!item || !item.questionId || ["correct", "incorrect", "unknown"].indexOf(item.outcome) < 0) { return; }
+      var updatedAt = iso(item.updatedAt || item.attemptedAt, "");
+      if (!updatedAt) { return; }
+      var result = {questionId: String(item.questionId), outcome: String(item.outcome),
+        updatedAt: updatedAt, deviceId: String(item.deviceId || "")};
+      var current = profile.studyResults[result.questionId];
+      profile.studyResults[result.questionId] = current ? latestStudyResult(current, result) : result;
+    });
     profile.studyResets = Array.isArray(value.studyResets)
       ? value.studyResets.filter(function(item) { return item && item.id; }).map(clone) : [];
     profile.readingProgress = value.readingProgress && typeof value.readingProgress === "object"
       ? clone(value.readingProgress) : {};
+    pruneResetResults(profile);
     return profile;
+  }
+
+  function latestStudyResult(left, right) {
+    var delta = Date.parse(left.updatedAt) - Date.parse(right.updatedAt);
+    if (delta) { return delta > 0 ? left : right; }
+    return (left.deviceId + ":" + left.outcome) >= (right.deviceId + ":" + right.outcome) ? left : right;
+  }
+
+  function resetTime(profile, questionId) {
+    return profile.studyResets.reduce(function(latest, reset) {
+      return reset.questionId === "*" || reset.questionId === questionId
+        ? Math.max(latest, Date.parse(reset.resetAt) || 0) : latest;
+    }, 0);
+  }
+
+  function pruneResetResults(profile) {
+    Object.keys(profile.studyResults).forEach(function(id) {
+      if (Date.parse(profile.studyResults[id].updatedAt) <= resetTime(profile, id)) {
+        delete profile.studyResults[id];
+      }
+    });
   }
 
   function migrateLegacy(storage, keys, now, deviceId) {
@@ -124,14 +156,11 @@
     Object.keys(study && study.questions || {}).forEach(function(questionId) {
       var entry = study.questions[questionId] || {};
       var outcome = String(entry.lastOutcome || "");
-      var count = Number(entry.attemptCount);
       var attemptedAt = iso(entry.lastAttemptAt, "");
-      if (!attemptedAt || !Number.isInteger(count) || count < 1 ||
+      if (!attemptedAt ||
           ["correct", "incorrect", "unknown"].indexOf(outcome) === -1) { return; }
-      profile.studyAttempts.push({
-        id: randomId("attempt-"), questionId: questionId, outcome: outcome,
-        attemptedAt: attemptedAt, deviceId: deviceId, attemptCount: count
-      });
+      profile.studyResults[questionId] = {questionId: questionId, outcome: outcome,
+        updatedAt: attemptedAt, deviceId: deviceId};
     });
 
     var reading = parseObject(storage, keys.contentReadProgress);
@@ -157,8 +186,9 @@
       deviceId = randomId("device-");
       try { storage.setItem(deviceKey, deviceId); } catch (err) { /* local-only fallback */ }
     }
-    var profile = normalizeProfile(parseObject(storage, personalKey), now);
-    var migrated = false;
+    var stored = parseObject(storage, personalKey);
+    var profile = normalizeProfile(stored, now);
+    var migrated = Boolean(profile && Number(stored.schemaVersion) !== SCHEMA_VERSION);
     if (!profile) {
       profile = migrateLegacy(storage, keys, now, deviceId);
       migrated = true;
@@ -173,7 +203,14 @@
         return false;
       }
     }
-    if (migrated) { save(); }
+    if (migrated) {
+      save();
+      // Retire counts in the old projection too, including unloaded questions.
+      if (keys.studyProgress) {
+        try { storage.setItem(keys.studyProgress, JSON.stringify(studyState())); }
+        catch (err) { /* the canonical profile remains the source of truth */ }
+      }
+    }
 
     function activeNotes() {
       return profile.notes.filter(function(note) { return !note.deletedAt; }).map(clone);
@@ -260,47 +297,43 @@
       return save();
     }
 
-    function latestResetAt(questionId) {
-      var latest = 0;
-      profile.studyResets.forEach(function(reset) {
-        if (reset.questionId !== "*" && reset.questionId !== questionId) { return; }
-        latest = Math.max(latest, Date.parse(reset.resetAt) || 0);
-      });
-      return latest;
-    }
-
     function studyState(validQuestions) {
       var questions = {};
-      profile.studyAttempts.forEach(function(attempt) {
-        var questionId = String(attempt.questionId || "");
-        if (!questionId || (validQuestions && !validQuestions[questionId])) { return; }
-        var time = Date.parse(attempt.attemptedAt) || 0;
-        if (time <= latestResetAt(questionId)) { return; }
-        var entry = questions[questionId] || {attemptCount: 0, lastOutcome: "", lastAttemptAt: ""};
-        entry.attemptCount += Math.max(1, Number(attempt.attemptCount) || 1);
-        if (!entry.lastAttemptAt || time >= Date.parse(entry.lastAttemptAt)) {
-          entry.lastOutcome = String(attempt.outcome || "");
-          entry.lastAttemptAt = String(attempt.attemptedAt || "");
-        }
-        questions[questionId] = entry;
+      Object.keys(profile.studyResults).forEach(function(id) {
+        if (validQuestions && !validQuestions[id]) { return; }
+        var result = profile.studyResults[id];
+        questions[id] = {lastOutcome: result.outcome, lastAttemptAt: result.updatedAt};
       });
       return {version: 1, questions: questions};
     }
 
-    function addStudyAttempt(questionId, outcome, attemptedAt) {
-      profile.studyAttempts.push({
-        id: randomId("attempt-"), questionId: String(questionId), outcome: String(outcome),
-        attemptedAt: iso(attemptedAt, new Date().toISOString()),
-        deviceId: deviceId, attemptCount: 1
-      });
-      save();
+    function setStudyResult(questionId, outcome, updatedAt) {
+      questionId = String(questionId);
+      if (["correct", "incorrect", "unknown"].indexOf(outcome) < 0) { return false; }
+      var result = {questionId: questionId, outcome: outcome,
+        updatedAt: iso(updatedAt, new Date().toISOString()), deviceId: deviceId};
+      // Local answers follow the observed result/reset even within one clock
+      // tick. Imported records keep their original timestamps on merge.
+      var current = profile.studyResults[questionId];
+      result.updatedAt = new Date(Math.max(Date.parse(result.updatedAt),
+        resetTime(profile, questionId) + 1,
+        current ? Date.parse(current.updatedAt) + 1 : 0)).toISOString();
+      profile.studyResults[questionId] = result;
+      return save();
     }
 
     function resetStudy(questionId) {
+      var resetAt = Date.now();
+      Object.keys(profile.studyResults).forEach(function(id) {
+        if (!questionId || String(questionId) === id) {
+          resetAt = Math.max(resetAt, Date.parse(profile.studyResults[id].updatedAt));
+        }
+      });
       profile.studyResets.push({
         id: randomId("reset-"), questionId: questionId ? String(questionId) : "*",
-        resetAt: new Date().toISOString(), deviceId: deviceId
+        resetAt: new Date(resetAt + 1).toISOString(), deviceId: deviceId
       });
+      pruneResetResults(profile);
       save();
     }
 
@@ -361,8 +394,13 @@
       if (incoming.layout.publishedRevision) {
         profile.layout.publishedRevision = incoming.layout.publishedRevision;
       }
-      profile.studyAttempts = mergeById(profile.studyAttempts, incoming.studyAttempts);
+      Object.keys(incoming.studyResults).forEach(function(id) {
+        var current = profile.studyResults[id];
+        profile.studyResults[id] = current
+          ? latestStudyResult(current, incoming.studyResults[id]) : incoming.studyResults[id];
+      });
       profile.studyResets = mergeById(profile.studyResets, incoming.studyResets);
+      pruneResetResults(profile);
       Object.keys(incoming.readingProgress).forEach(function(blockId) {
         var current = profile.readingProgress[blockId];
         profile.readingProgress[blockId] = current
@@ -393,7 +431,8 @@
       getLayoutState: layoutState,
       replaceLayout: replaceLayout,
       getStudyState: studyState,
-      addStudyAttempt: addStudyAttempt,
+      setStudyResult: setStudyResult,
+      addStudyAttempt: setStudyResult, // Compatibility API; stores no history.
       resetStudy: resetStudy,
       getReadingState: readingState,
       setRead: setRead,
@@ -402,5 +441,6 @@
     };
   }
 
+  global.kgNormalizePersonalDataProfile = normalizeProfile;
   global.kgCreatePersonalDataStore = createStore;
 })(window);
