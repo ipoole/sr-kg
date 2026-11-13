@@ -100,3 +100,8 @@ content_block,gr.bianchi_identity.authored_3,tong.gr,§3.4,Derivation checked ag
 content_block,gr.einstein_tensor.authored_3,tong.gr,§3.4.1,Derivation checked against the primary lecture notes; use atlas conventions.
 content_block,gr.gravitational_waves.linearised_equation,tong.gr,§§5.1–5.2,"Weak-field derivation, translated to atlas conventions."
 content_block,gr.newtonian_limit.authored_3,tong.gr,§5.1.2,"Weak-field derivation, translated to atlas conventions."
+content_block,gr.coordinate_singularity.ingoing_cancellation,tong.gr,§6.1.3,Atlas signature and normalisations are stated locally.
+content_block,gr.perfect_fluid.rest_frame_construction,tong.gr,§4.5.4,Atlas signature and normalisations are stated locally.
+content_block,gr.einstein_field_equations.combined_variation,tong.gr,"§§4.1, 4.5.2",Atlas signature and normalisations are stated locally.
+content_block,gr.vacuum_field_equations.vacuum_reduction,tong.gr,§4.1,Atlas signature and normalisations are stated locally.
+content_block,gr.effective_potential_orbits.photon_capture,tong.gr,§1.3.5,Atlas signature and normalisations are stated locally.

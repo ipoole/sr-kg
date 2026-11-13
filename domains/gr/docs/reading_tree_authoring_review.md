@@ -14,7 +14,7 @@ no artwork regeneration is required.
 | GR-3 | Revised | Curvature commutator, contraction information loss, differential identity and full interior action variation. |
 | GR-4 | Revised | Rest-frame fluid construction, pressure work, matter response, coupled variation and explicit trace reversal. |
 | GR-5 | Revised | Distinct approximation regimes; crest counting, bending integral, precession resonance and constrained linear waves. |
-| GR-6 | Pending | Exact spherical solution, horizons and orbit dynamics. |
+| GR-6 | Revised | Horizon-crossing cancellation, causal escape, singular incompleteness, orbital stability and advanced photon capture. |
 
 ## Editorial decisions
 

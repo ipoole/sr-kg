@@ -7,7 +7,7 @@ from srkg.schema import AUTHORING_BLOCK_KINDS
 from srkg.content_units import ContentExplanation, ContentReference
 
 ROOT = Path(__file__).resolve().parents[3]
-REVIEWED_MODULE_COUNT = 5
+REVIEWED_MODULE_COUNT = 6
 BASELINE = json.loads((ROOT/'domains/gr/docs/reading_tree_authoring_baseline.json').read_text())
 
 
@@ -44,3 +44,22 @@ def test_reviewed_gr_units_retain_canonical_content_and_clarifications(kb):
         parts = kb.content_units[old['block_id']].parts
         paths = {path+(p.slot,) for p, path in walk(parts) if isinstance(p, ContentExplanation)}
         assert {tuple(p) for p in old['local_slots']} <= paths, old['block_id']
+
+
+def test_gr_foundation_graph_remains_acyclic(kb):
+    outgoing = {}
+    for edge in kb.edges_df.itertuples():
+        if edge.relation in {'DERIVES_FROM', 'CONSTRUCTED_FROM', 'REQUIRES'}:
+            outgoing.setdefault(edge.source, []).append(edge.target)
+    finished = set()
+
+    def visit(owner, ancestors):
+        assert owner not in ancestors, f'Cyclic support: {ancestors} -> {owner}'
+        if owner in finished:
+            return
+        for child in outgoing.get(owner, []):
+            visit(child, ancestors | {owner})
+        finished.add(owner)
+
+    for owner in kb.nodes_df['id']:
+        visit(owner, set())
