@@ -16,19 +16,35 @@ def _block(page, id):
     return block
 
 
-def _reveal_tree(page, card):
+def _reveal_tree(page, card, *, max_depth=12, unique_concepts=False):
     card.evaluate('e=>e.open=true')
     page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')",
                            arg=card.get_attribute('id'))
-    for _ in range(12):
+    seen = set()
+    for _ in range(max_depth):
         closed = card.locator('.kg-reading-concept:not([open])')
         if not closed.count():
             return
-        closed.evaluate_all('es=>es.forEach(e=>e.open=true)')
+        if unique_concepts:
+            # Cover every concept's outgoing edges without multiplying its
+            # canonical blocks along every converging path through a large DAG.
+            opened = closed.evaluate_all("""(es, seen) => {
+              const known = new Set(seen), opened = [];
+              es.forEach(e => {
+                const id = e.dataset.readingNode;
+                if (!known.has(id)) { known.add(id); opened.push(id); e.open = true; }
+              });
+              return opened;
+            }""", list(seen))
+            if not opened:
+                return
+            seen.update(opened)
+        else:
+            closed.evaluate_all('es=>es.forEach(e=>e.open=true)')
         page.wait_for_function("""selector=>[...document.querySelectorAll(selector)]
             .filter(e=>e.open).every(e=>e.hasAttribute('data-reading-loaded'))""",
             arg=f'#{card.get_attribute("id")} .kg-reading-concept')
-    pytest.fail('Maths reading route did not terminate')
+    pytest.fail(f'Reading route did not terminate within {max_depth} levels')
 
 
 @pytest.mark.browser

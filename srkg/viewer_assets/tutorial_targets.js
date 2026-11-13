@@ -273,7 +273,7 @@ function kgCreateTutorialTargets(options) {
     }
     if (target === "details:graphic") {
       return tutorialElementTarget(
-        document.querySelector("#info_panel .concept-figure"), "Details graphic"
+        document.querySelector("#info_panel > .content-block-graphic, #info_panel > .concept-figure"), "Details graphic"
       );
     }
     if (target === "details:derived-from-full-tree" || target === "details:where-used-full-tree") {

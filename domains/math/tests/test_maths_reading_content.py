@@ -76,3 +76,15 @@ def test_foundational_routes_are_explicit_and_acyclic(maths):
         complete.add(id)
     for concept in maths.concepts:
         visit(concept.id)
+
+
+@pytest.mark.parametrize('module_id', ['math.m01_manifolds_and_coordinates', 'math.m02_tensor_calculus'])
+def test_maths_uses_consolidated_kinds_without_hiding_core_definitions(maths, module_id):
+    from srkg.schema import AUTHORING_BLOCK_KINDS
+    module = maths.module(module_id)
+    ids = set(module.members)
+    assert all(block.kind in AUTHORING_BLOCK_KINDS for concept in maths.concepts if concept.id in ids
+               for block in concept.content_blocks)
+    assert all(block.kind in AUTHORING_BLOCK_KINDS for block in module.content_blocks)
+    assert maths.content_units['math.m01_manifolds_and_coordinates.curvature_preview'].kind == 'advanced'
+    assert maths.content_units['math.worldline.definition'].kind == 'definition'

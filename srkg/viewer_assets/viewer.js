@@ -125,6 +125,7 @@
 
         var sharedExplanations, readingTrees;
         var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash,
+          source: function(id) { return sharedExplanations ? sharedExplanations.source(id) : null; },
           reference: function(reference, context) { return sharedExplanations.renderReference(reference, context); },
           explanation: function(part, context, state) { return sharedExplanations.local(part, context, state); },
           disclosure: function(context) { return sharedExplanations.disclosure(context); }
@@ -1743,7 +1744,8 @@
           warning: {label: "Careful", mode: "folded", note: true},
           historical_note: {label: "Context", mode: "folded", note: true},
           summary: {label: "Takeaway", mode: "inline"},
-          graphic: {label: "Graphic", mode: "inline"}
+          graphic: {label: "Graphic", mode: "inline"},
+          advanced: {label: "Advanced", mode: "folded"}
         });
 
         var edgeRelationPolicy = Object.freeze({
@@ -3195,7 +3197,26 @@
           return cut.replace(/[.,;:]*$/, "") + "...";
         }
 
-        function conceptPreviewHtml(nodeId) {
+        function blockPreviewHtml(source) {
+          var block = source.block;
+          var ownerTitle = source.ownerType === "module" ? source.owner.title : conceptTitleText(source.ownerId);
+          return '<div data-preview-block-id="' + escapeHtml(block.block_id) + '">' +
+            '<div class="concept-preview-header"><div class="concept-preview-title">' +
+            renderTooltipText(block.title) + '</div>' +
+            '<button type="button" class="concept-preview-close" aria-label="Close preview">Close</button></div>' +
+            '<div class="concept-preview-module">' + renderTooltipText(ownerTitle) +
+            ' · ' + escapeHtml(contentBlockKindLabel(block.kind)) + '</div>' +
+            sharedExplanations.nativeStatement(block.block_id) +
+            contentMarkup.renderContentUnit({level: "inline", origin: "authored",
+              className: "kg-block-preview-body", title: "Read full block",
+              capabilities: {}, bodyHtml: ""}) +
+            '<div class="concept-preview-actions"><button type="button" class="concept-preview-go" data-block-id="' +
+            escapeHtml(block.block_id) + '">Go to block</button></div></div>';
+        }
+
+        function conceptPreviewHtml(nodeId, blockId) {
+          var source = blockId && sharedExplanations.source(blockId);
+          if (source) { return blockPreviewHtml(source); }
           var concept = getConcept(nodeId) || {};
           var owningModuleId = moduleIdForConcept(nodeId);
           var owningModule = owningModuleId ? getModule(owningModuleId) : null;
@@ -3299,15 +3320,23 @@
           options = options || {};
           if (!link) { return; }
           var id = link.getAttribute("data-concept-id");
-          if (!getConcept(id)) { return; }
+          var blockId = link.getAttribute("data-block-id");
+          var source = blockId && sharedExplanations.source(blockId);
+          if (!getConcept(id) && !source) { return; }
 
           cancelConceptPreviewHide();
           conceptPreviewPinned = Boolean(options.pinned);
-          conceptPreviewAnchor = link;
-          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id));
+          // Following another reference inside the preview replaces this one
+          // popup; retain its original, still-connected page anchor.
+          if (!conceptPreview.contains(link)) { conceptPreviewAnchor = link; }
+          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id, blockId));
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
-          positionConceptPreview(link);
-          applyTransientConceptHighlight(id);
+          conceptPreview.setAttribute("aria-label", source ? "Block preview: " + source.block.title : "Concept preview: " + conceptTitleText(id));
+          positionConceptPreview(conceptPreviewAnchor);
+          applyTransientConceptHighlight(source ? source.ownerId : id);
+          if (conceptPreviewPinned) {
+            conceptPreview.querySelector(".concept-preview-close").focus({preventScroll: true});
+          }
           scheduleConceptPreviewTypeset();
         }
 
@@ -5016,7 +5045,7 @@
               questions.open = true;
               scrollInfoPanelTargetBelowStickyToc(questions, {immediate: true});
             } else if (name === "open-details-graphic") {
-              var graphic = document.querySelector("#info_panel .concept-figure");
+              var graphic = document.querySelector("#info_panel > .content-block-graphic, #info_panel > .concept-figure");
               if (!graphic) { throw new Error("Details graphic is unavailable"); }
               if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
               graphic.open = true;
@@ -6316,6 +6345,22 @@
 
         conceptPreview.addEventListener("pointerenter", cancelConceptPreviewHide);
         conceptPreview.addEventListener("pointerleave", scheduleConceptPreviewHide);
+        function refreshConceptPreviewPosition() {
+          if (conceptPreviewAnchor && conceptPreview.style.display !== "none") {
+            positionConceptPreview(conceptPreviewAnchor);
+          }
+        }
+        conceptPreview.addEventListener("toggle", function(e) {
+          var detail = e.target;
+          if (detail.matches(".kg-block-preview-body") && detail.open && !detail.hasAttribute("data-preview-loaded")) {
+            var sourceId = detail.closest("[data-preview-block-id]").getAttribute("data-preview-block-id");
+            detail.querySelector(":scope > .kg-content-body").innerHTML = sharedExplanations.preview(sourceId);
+            detail.setAttribute("data-preview-loaded", "true");
+            scheduleConceptPreviewTypeset();
+          }
+          refreshConceptPreviewPosition();
+        }, true);
+        window.addEventListener("resize", refreshConceptPreviewPosition);
         conceptPreview.addEventListener("click", function(e) {
           var closeButton = e.target.closest(".concept-preview-close");
           if (closeButton) {
@@ -6324,13 +6369,29 @@
             return;
           }
 
+          // Once the reader starts interacting, keep the popup available
+          // until it is dismissed or an explicit navigation action is used.
+          conceptPreviewPinned = true;
+          conceptPreview.classList.add("concept-preview-pinned");
+          var reference = e.target.closest(".concept-link");
+          if (reference) {
+            e.preventDefault();
+            showConceptPreview(reference, {pinned: true});
+            return;
+          }
+
           var goButton = e.target.closest(".concept-preview-go");
           if (!goButton) { return; }
 
           e.preventDefault();
+          var source = sharedExplanations.source(goButton.getAttribute("data-block-id"));
           var id = goButton.getAttribute("data-concept-id");
           hideConceptPreview(true);
-          navigateToConcept(id, "Selected");
+          if (source) {
+            if (source.ownerType === "module") { focusModule(source.ownerId, "Selected"); }
+            else { navigateToConcept(source.ownerId, "Selected"); }
+            openTutorialDetailsBlock(source.block.block_id);
+          } else { navigateToConcept(id, "Selected"); }
         });
 
         document.getElementById("info_panel").addEventListener("pointerover", function(e) {
@@ -6626,7 +6687,7 @@
 
           e.preventDefault();
           var id = link.getAttribute("data-concept-id");
-          if (!getConcept(id)) { return; }
+          if (!getConcept(id) && !sharedExplanations.source(link.getAttribute("data-block-id"))) { return; }
           showConceptPreview(link, {pinned: true});
         });
 

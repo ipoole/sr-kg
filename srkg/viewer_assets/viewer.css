@@ -1387,6 +1387,7 @@
     #info_panel .concept-toc-link-misconception { --toc-accent: #bf2e2e; }
     #info_panel .concept-toc-link-historical_note { --toc-accent: #7251a4; }
     #info_panel .concept-toc-link-summary { --toc-accent: #4f6b2a; }
+    #info_panel .concept-toc-link-advanced { --toc-accent: #4e5f91; }
 
     #info_panel .concept-toc-link:hover,
     #info_panel .concept-toc-link:focus {
@@ -1508,6 +1509,7 @@
     #info_panel .content-block-misconception .content-block-kind-mark::before { content: "!"; }
     #info_panel .content-block-historical_note .content-block-kind-mark::before { content: "H"; }
     #info_panel .content-block-summary .content-block-kind-mark::before { content: "\2713"; }
+    #info_panel .content-block-advanced .content-block-kind-mark::before { content: "+"; }
 
     #info_panel .content-block-title-text {
         min-width: 0;
@@ -1923,6 +1925,17 @@
         --block-label-color: #573984;
         --block-mark-bg: #f3ebfa;
         --block-mark-color: #573984;
+    }
+
+    #info_panel .content-block-advanced {
+        --block-accent: #4e5f91;
+        --block-accent-dark: #39486f;
+        --block-bg: #f4f5fa;
+        --block-border: #ced4e6;
+        --block-label-bg: #e6eaf5;
+        --block-label-color: #39486f;
+        --block-mark-bg: #eceff7;
+        --block-mark-color: #39486f;
     }
 
     #info_panel .content-block-summary {
@@ -2675,6 +2688,7 @@
     }
 
     #kg_concept_preview {
+        box-sizing: border-box;
         background: #ffffff;
         border: 1px solid #aab5c4;
         border-radius: 7px;
@@ -2685,6 +2699,10 @@
         font-size: 13px;
         line-height: 1.35;
         max-width: min(360px, calc(100vw - 24px));
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
+        overflow: auto;
+        overflow-wrap: anywhere;
         padding: 10px 11px;
         position: fixed;
         z-index: 10002;
@@ -2710,6 +2728,18 @@
     #kg_concept_preview .concept-preview-excerpt {
         margin-top: 0.65em;
     }
+
+    #kg_concept_preview .kg-content-statement {
+        color: #245a92;
+        margin-top: 0.65em;
+    }
+    #kg_concept_preview .kg-block-preview-body { margin-top: 0.65em; }
+    #kg_concept_preview .kg-block-preview-body > summary { cursor: pointer; }
+    #kg_concept_preview .kg-content-body { font-size: 14px; line-height: 1.45; }
+    #kg_concept_preview .concept-line { margin-top: 0.5em; }
+    #kg_concept_preview .kg-shared-figure { margin: 0.5em 0; }
+    #kg_concept_preview .concept-graphic svg { width: 100%; height: auto; }
+    #kg_concept_preview mjx-container { max-width: 100%; overflow-x: auto; }
 
     #kg_concept_preview .concept-preview-actions {
         display: flex;

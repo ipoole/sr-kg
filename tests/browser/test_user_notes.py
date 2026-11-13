@@ -52,7 +52,8 @@ def test_note_bubbles_replace_permanent_paragraph_controls(repo_browser_graph):
     bubble = overview.locator(":scope > summary .kg-note-block-action")
     assert bubble.count() == 1
     assert bubble.get_attribute("data-note-state") == "empty"
-    assert bubble.get_attribute("aria-label") == "Add a note to Module overview"
+    title = overview.locator(":scope > summary .content-block-title-text").inner_text()
+    assert bubble.get_attribute("aria-label") == f"Add a note to {title}"
     assert overview.locator(":scope > summary .kg-note-bubble-glyph").inner_text() == "+"
     assert page.locator("#info_panel .kg-add-note-row:visible").count() == 0
 
@@ -171,17 +172,18 @@ def test_note_placement_supports_keyboard_and_multiple_notes(repo_browser_graph)
     overview.locator(".user-note-body-input").last.fill("Second body")
 
     assert overview.locator("details.user-note").count() == 2
+    title = overview.locator(":scope > summary .content-block-title-text").inner_text()
     assert bubble.get_attribute("aria-label") == (
-        "Notes present in Module overview; add another note"
+        f"Notes present in {title}; add another note"
     )
 
 
 @pytest.mark.browser
 def test_atomic_note_blocks_create_their_single_note_directly(repo_browser_graph):
     page = repo_browser_graph.page
-    # Legacy standalone figures remain atomic; Maths figures now have ordinary
-    # authored bodies with paragraph-level annotations.
-    repo_browser_graph.click_concept("sr.spacetime_event")
+    # Legacy standalone figures remain atomic; migrated Maths/SR-1 figures have
+    # ordinary authored bodies with paragraph-level annotations.
+    repo_browser_graph.click_concept("gr.metric_tensor")
 
     graphic = page.locator("#info_panel details.concept-figure")
     graphic.locator(":scope > summary .kg-note-block-action").click()

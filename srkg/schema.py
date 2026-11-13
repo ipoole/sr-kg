@@ -29,8 +29,14 @@ CONTENT_BLOCK_KIND_DESCRIPTIONS = {
     "historical_note": "Historical context about discovery, attribution, or influence.",
     "summary": "A concise recap of the main result or takeaway.",
     "graphic": "An addressable explanation wrapping its owner's registered detail graphic.",
+    "advanced": "Further treatment, application or consequence for readers ready for greater depth.",
 }
 CONTENT_BLOCK_KINDS = frozenset(CONTENT_BLOCK_KIND_DESCRIPTIONS)
+AUTHORING_BLOCK_KINDS = frozenset({
+    "definition", "derivation", "explanation", "intuition", "example",
+    "graphic", "convention", "warning", "historical_note", "advanced",
+})
+LEGACY_CONTENT_BLOCK_KINDS = CONTENT_BLOCK_KINDS - AUTHORING_BLOCK_KINDS
 STUDY_QUESTION_COLUMNS = (
     "question_id",
     "concept_id",

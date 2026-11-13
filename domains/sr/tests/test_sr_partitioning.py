@@ -20,6 +20,6 @@ def test_proposed_sr_partition_is_complete_cohesive_and_acyclic():
 
     assert candidate.module_count == 5
     assert candidate.module_sizes == (13, 6, 9, 13, 8)
-    assert candidate.internal_edge_count == 62
-    assert candidate.boundary_edge_count == 28
+    assert candidate.internal_edge_count == 70
+    assert candidate.boundary_edge_count == 34  # Genuine field-variation and source prerequisites.
     assert candidate.is_dag is True

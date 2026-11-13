@@ -156,6 +156,11 @@ pilot syntax described below.
 
 Allowed `kind` values:
 
+New authoring uses `definition`, `derivation`, `explanation`, `intuition`,
+`example`, `graphic`, `convention`, `warning`, `historical_note`, `advanced`.
+The other kinds below remain loadable for staged content migration. They are
+not automatically reclassified; reading recipes retain their explicit kind lists.
+
 | Kind | Meaning |
 | --- | --- |
 | `overview` | A short orientation block stating what the concept will do. |
@@ -175,6 +180,7 @@ Allowed `kind` values:
 | `historical_note` | Historical context about discovery, attribution, or influence. |
 | `summary` | A concise recap of the main result or takeaway. |
 | `graphic` | An addressable explanation wrapping its owner's registered detail graphic. |
+| `advanced` | Further treatment, application or consequence for greater depth or sophistication. |
 
 Example stable block IDs:
 
@@ -486,7 +492,7 @@ Text fields may contain:
 | --- | --- |
 | `\( ... \)` | Inline MathJax. |
 | `\[ ... \]` | Display MathJax. |
-| `\cref{label}{concept_id}` | Concept link when loaded; plain authored label otherwise. |
+| `\cref{label}{concept_or_block_id}` | Preview a concept's canonical Definition or a specific authored block. Plain authored label when its domain is unavailable. |
 | `\optional_details{title}{body}` | Fold-down optional detail inside a section. |
 | `\explanation{slot}{title}{body}` | Named, recursive local explanation in a block body. |
 | `\explain{slot}{block_id}{target label}{hook}` | Borrow a source's short statement and foldable explanation; a missing external domain retains the label/hook. |
@@ -494,6 +500,16 @@ Text fields may contain:
 Validation checks balanced braces, MathJax delimiters, supported custom macro
 syntax, and whether `\cref` targets exist within their loaded namespaces.
 Unloaded-namespace references are generator diagnostics rather than text errors.
+
+Block targets resolve through the canonical content registry, including module
+blocks, rather than by splitting an ID to guess an owner. A block preview shows
+the source title, kind and statement (when present), with a folded read-only body.
+It neither borrows content into a reading tree nor changes the selection, camera
+or Reading position. “Go to block” explicitly selects the source owner and opens
+the block. Existing concept previews retain their behaviour. Missing blocks in a
+loaded namespace are errors; graph consistency diagnostics use the owning
+concept, never invent block nodes or edges. Local clarification slots and personal
+notes are not independently targetable by this macro.
 
 ## Loader Guarantees
 

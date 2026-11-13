@@ -187,8 +187,8 @@ tutorials:
       target: details:block:sr.velocity_four_vector.fixed_norm
   - step_id: rebuild-four-momentum
     title: From motion to momentum
-    commentary: 'Read Components from four-velocity. Notice the momentum law and the question at the end: why call
-      the time component energy?'
+    commentary: Read the component construction from four-velocity. Notice the momentum law and the distinction
+      between a time component with energy units and its physical identification as energy.
     prepare:
     - command: select
       target: concept:sr.momentum_four_vector
@@ -208,8 +208,8 @@ tutorials:
       target: details:block:sr.momentum_four_vector.work_energy
   - step_id: check-the-slow-limit
     title: Recover familiar kinetic energy
-    commentary: Read the slow-speed check. Separate the part that becomes ordinary kinetic energy from the term
-      that remains at rest.
+    commentary: Read the slow-speed check. See how kinetic energy approaches the Newtonian expression, then note
+      why subtracting the energy at rest leaves its additive constant undetermined.
     action:
       command: open-details-block
       target: block:sr.momentum_four_vector.kinetic_limit
@@ -268,7 +268,7 @@ tutorials:
       target: control:fit
   - step_id: rest-frame-derivation
     title: Reconstruct the argument
-    commentary: Read the rest-frame derivation, then reconstruct the chain forward in your own words. Explore from
+    commentary: Read the rest-frame calculation, then reconstruct the chain forward in your own words. Explore from
       here if any link still feels abrupt.
     prepare:
     - command: set-view

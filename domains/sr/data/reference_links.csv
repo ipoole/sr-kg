@@ -128,5 +128,43 @@ content_block,sr.lorentz_invariance.historical_context,lorentz.1904,§4,
 content_block,sr.lorentz_invariance.historical_context,poincare.1905,Full note,
 content_block,sr.gauge_invariance.weyl_history,weyl.1929,Full paper,
 content_block,sr.electromagnetic_waves.hertz_history,hertz.1888,Full paper,
-content_block,sr.mass_energy_equivalence.light_emission,einstein.1905.mass_energy,Full paper,"Light-emission energy balances and low-speed inertia argument; checked against the English translation reproduced in Charles Nash, Introduction to Relativity, chapter 8."
-content_block,sr.mass_energy_equivalence.light_inertia,einstein.1905.mass_energy,Full paper,"Light-emission energy balances and low-speed inertia argument; checked against the English translation reproduced in Charles Nash, Introduction to Relativity, chapter 8."
+content_block,sr.mass_energy_equivalence.light_emission,einstein.1905.mass_energy,Full paper,Two-frame light-emission balances and low-speed inertia coefficient; rechecked 13 Nov 2026 against the Perrett–Jeffery translation hosted at Fourmilab.
+content_block,sr.mass_energy_equivalence.light_inertia,einstein.1905.mass_energy,Full paper,Two-frame light-emission balances and low-speed inertia coefficient; rechecked 13 Nov 2026 against the Perrett–Jeffery translation hosted at Fourmilab.
+content_block,sr.inertial_frames.reference_frame,einstein.1905.relativity,§1 Definition of Simultaneity,Supports local clocks and the light-signal synchronisation convention.
+content_block,sr.lorentz_transformations.why_linear,einstein.1905.relativity,§3 Coordinate/time transformations,Supports the explicit homogeneity assumption and common rod/clock setup.
+content_block,sr.lorentz_transformations.interval_condition,einstein.1905.relativity,§3 Coordinate/time transformations,Supports light-speed constraints and reciprocity/isotropy normalisation; the coefficient argument is authored in modern notation.
+content_block,sr.lorentz_transformations.interval_check,openstax.university_physics_3,§5.5 The Lorentz Transformation,Supports the boost and invariant-interval check; not used to assume the coefficients in advance.
+content_block,sr.metric_tensor.interval_contraction,openstax.university_physics_3,§5.5 The Lorentz Transformation,Supports the invariant quadratic form; the isotropy/coefficient construction is authored here.
+content_block,sr.principle_of_locality.finite_propagation,daskalopoulos.2009.diffusion,Properties of the Fundamental solution (PDF p. 9),"Supports the heat equation as a local differential model with instantaneous spreading, distinct from a relativistic causal law."
+content_block,sr.proper_time.rate,openstax.university_physics_3,§5.8 Relativistic Momentum,Proper-time chain rule and Lorentz factor; path integration is the authored extension.
+content_block,sr.momentum_four_vector.components,openstax.university_physics_3,§5.8 Relativistic Momentum,"Momentum law, proper-time construction and low-speed calibration."
+content_block,sr.momentum_four_vector.work_energy,openstax.university_physics_3,"§5.9, Kinetic Energy and the Ultimate Speed Limit",Fixed-mass work–energy relation; our vector-rate algebra is written out independently.
+content_block,sr.mass_energy_equivalence.from_momentum,openstax.university_physics_3,"§5.9, Relativistic Energy and Momentum",Mass-shell relation and rest-energy interpretation; physical conservation input kept explicit.
+content_block,sr.momentum_four_vector.energy_transformation,einstein.1905.relativity,"§8, Transformation of the Energy of Light Rays",Radiation energy transformation; modern four-vector notation is our formulation.
+content_block,sr.mass_energy_equivalence.trapped_light,openstax.university_physics_3,"§5.9, Stored Energy and Potential Energy",Internal energy contributes to mass; opposite-pulse illustration is authored.
+content_block,sr.action_principle.definition,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",General variational method; the staged algebra is authored here.
+content_block,sr.action_principle.fixed_endpoints,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",General variational method; the staged algebra is authored here.
+content_block,sr.euler_lagrange_equations.first_variation,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",General variational method; the staged algebra is authored here.
+content_block,sr.euler_lagrange_equations.integration_by_parts,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",General variational method; the staged algebra is authored here.
+content_block,sr.euler_lagrange_equations.arbitrary_variation,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",General variational method; the staged algebra is authored here.
+content_block,sr.hamiltonian_formalism.differential_derivation,tong.qft,§1.4 The Hamiltonian Formalism,Classical model and variational structure; notation and units stated in the authored block.
+content_block,sr.field_lagrangian.definition,tong.qft,§1.1 The Dynamics of Fields,Classical model and variational structure; notation and units stated in the authored block.
+content_block,sr.field_lagrangian.example_scalar,tong.qft,§1.1.1 The Klein–Gordon Equation,Classical model and variational structure; notation and units stated in the authored block.
+content_block,sr.field_equations.integration_by_parts,tong.qft,§1.1 The Dynamics of Fields,Classical model and variational structure; notation and units stated in the authored block.
+content_block,sr.field_tensor.antisymmetry,tong.qft,§6.1 Maxwell’s Equations and §6.1.1 Gauge Symmetry,Local potential identities and gauge freedom; explicit SI convention translated in the authored blocks.
+content_block,sr.field_tensor.homogeneous_hint,tong.qft,§6.1 Maxwell’s Equations and §6.1.1 Gauge Symmetry,Local potential identities and gauge freedom; explicit SI convention translated in the authored blocks.
+content_block,sr.gauge_invariance.cancellation,tong.qft,§6.1 Maxwell’s Equations and §6.1.1 Gauge Symmetry,Local potential identities and gauge freedom; explicit SI convention translated in the authored blocks.
+content_block,sr.lorenz_gauge.reaching_condition,tong.qft,§6.1 Maxwell’s Equations and §6.1.1 Gauge Symmetry,Local potential identities and gauge freedom; explicit SI convention translated in the authored blocks.
+content_block,sr.lorenz_gauge.maxwell_simplification,tong.qft,§6.1 Maxwell’s Equations and §6.1.1 Gauge Symmetry,Local potential identities and gauge freedom; explicit SI convention translated in the authored blocks.
+content_block,sr.em_stress_energy.formula,blaschke.2016.emt,"§3.3, Einstein–Hilbert tensor in Minkowski space",Metric-response construction and physical tensor; coefficients use the stated SI normalisation.
+content_block,sr.em_energy_density.tensor_component,blaschke.2016.emt,"§3.3, Einstein–Hilbert tensor in Minkowski space",Metric-response construction and physical tensor; coefficients use the stated SI normalisation.
+content_block,sr.poynting_vector.tensor_origin,blaschke.2016.emt,"§3.3, Einstein–Hilbert tensor in Minkowski space",Metric-response construction and physical tensor; coefficients use the stated SI normalisation.
+content_block,sr.noether_theorem.derivation_sketch,tong.qft,§1.3.1 Noether’s Theorem,Classical field calculation; the SI translation and intermediate reasoning are authored explicitly.
+content_block,sr.energy_momentum_tensor.noether_origin,tong.qft,§1.3.2 Translations and the Energy-Momentum Tensor,Classical field calculation; the SI translation and intermediate reasoning are authored explicitly.
+content_block,sr.maxwells_equations.lagrangian_derivation,tong.qft,§6.1 Maxwell’s Equations,Classical field calculation; the SI translation and intermediate reasoning are authored explicitly.
+content_block,sr.maxwells_equations.homogeneous_derivation,tong.qft,§6.1 Maxwell’s Equations,Classical field calculation; the SI translation and intermediate reasoning are authored explicitly.
+content_block,sr.energy_momentum_tensor.improvement,blaschke.2016.emt,§2.1.2 Superpotential terms and §2.2 Improvements,Local tensor representatives and the role of boundary conditions.
+content_block,sr.radiation_reaction.energy_balance,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
+content_block,sr.radiation_reaction.damping_intuition,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
+content_block,sr.radiation_reaction.not_simple_friction,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
+content_block,sr.radiation_reaction.effective_view,ekman.2021.reduction,Introduction and reduction-of-order formulation,Controlled approximation and its limitations; the simple nonrelativistic illustration is authored here.

@@ -469,3 +469,20 @@ def test_statement_concept_references_obey_selected_domain_policy(tmp_path):
     assert subset.missing_domains == ('sr',)
     assert subset.build_warnings[0].kind == 'prose-reference'
     assert subset.content_units['math.alpha.definition'].statement == frame.loc[0, 'statement']
+
+
+def test_cref_accepts_registered_blocks_without_creating_graph_nodes(tmp_path):
+    write_domain(tmp_path, 'optics', body=r'See \cref{the explanation}{matter.alpha.definition}.')
+    write_domain(tmp_path, 'matter')
+    kb = load_knowledge_base(tmp_path, include_graphics=False)
+    assert set(kb.nodes_df.id) == {'optics.alpha', 'matter.alpha'}
+    assert not kb.build_warnings
+    subset = load_knowledge_base(tmp_path, domains=['optics'], include_graphics=False)
+    assert {(w.kind, w.domain, w.target) for w in subset.build_warnings} == {
+        ('prose-reference', 'matter', 'matter.alpha.definition')}
+    p = tmp_path / 'domains/optics/content_blocks.csv'
+    frame = pd.read_csv(p)
+    frame.loc[0, 'body'] = r'\cref{missing local block}{optics.alpha.missing}'
+    frame.to_csv(p, index=False)
+    with pytest.raises(KnowledgeBaseLoadError, match='unresolved within loaded domain optics'):
+        load_knowledge_base(tmp_path, include_graphics=False)

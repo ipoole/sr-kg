@@ -145,9 +145,10 @@ def test_real_module_label_ink_stays_inside_boxes(shared_repo_browser_graph):
 
 @pytest.mark.browser
 def test_graphical_folded_module_places_rounded_landscape_above_smaller_text(
-    shared_repo_browser_graph,
+    clean_repo_browser_graph,
 ):
-    page = shared_repo_browser_graph.page
+    # A previous concept selection can replace the Maths label with its proxy.
+    page = clean_repo_browser_graph.page
     page.wait_for_function("""() => {
       const image = window.kgModuleGraphicImage &&
         window.kgModuleGraphicImage('sr.spacetime_foundations');

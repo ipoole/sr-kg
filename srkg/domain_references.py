@@ -25,9 +25,10 @@ class BuildWarning:
 
 class ReferenceResolver:
     """Resolve only loaded namespaces; never inspect other source packages."""
-    def __init__(self, domains, concepts, modules):
+    def __init__(self, domains, concepts, modules, blocks=()):
         self.domains = set(domains)
         self.known = {"concept": set(concepts), "module": set(modules)}
+        self.known["prose"] = self.known["concept"] | set(blocks)
         self.warnings: list[BuildWarning] = []
 
     def available(self, target, *, target_type="concept", kind, location, source=""):

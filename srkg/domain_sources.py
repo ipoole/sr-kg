@@ -179,7 +179,7 @@ def _resolve_targets(package, tables, resolver):
                 if errors:
                     raise KnowledgeBaseLoadError(errors[0] + ": " + location)
                 for call in calls:
-                    resolver.available(call.args[1], kind="prose-reference", location=location)
+                    resolver.available(call.args[1], target_type="prose", kind="prose-reference", location=location)
 
 
 def collection_tables(packages):
@@ -187,7 +187,10 @@ def collection_tables(packages):
     package_tables = [(package, read_domain_tables(package)) for package in packages]
     concept_ids = set().union(*(_ids(tables["nodes"], "id") for _, tables in package_tables))
     module_ids = set().union(*(_ids(tables.get("modules"), "module_id") for _, tables in package_tables))
-    resolver = ReferenceResolver([package.id for package in packages], concept_ids, module_ids)
+    block_ids = set().union(*(_ids(tables.get(role), "block_id")
+                             for _, tables in package_tables
+                             for role in ("content_blocks", "module_content_blocks")))
+    resolver = ReferenceResolver([package.id for package in packages], concept_ids, module_ids, block_ids)
     for package, tables in package_tables:
         _owned(package, tables)
         _resolve_targets(package, tables, resolver)

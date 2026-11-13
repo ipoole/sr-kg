@@ -53,7 +53,7 @@ annotation house style.
 | Notation | Meaning / Convention | Related Concepts |
 | --- | --- | --- |
 | \(\phi(x)\) | Scalar field value at event \(x\). | `sr.scalar_field` |
-| \(A^\mu(x)\), \(A_\mu(x)\) | Four-vector field components at event \(x\). | `sr.vector_field`, `sr.vector_potential` |
+| \(V^\mu(x)\), \(V_\mu(x)\) | Generic vector/covector field components at event \(x\). | Reserve \(A\) for the electromagnetic potential. |
 | \(\partial_\mu\) | Partial derivative with respect to spacetime coordinate \(x^\mu\), with convention-dependent signs/factors. | `sr.field_equations`, `sr.vector_potential` |
 | \(\partial^\mu\coloneqq\eta^{\mu\nu}\partial_\nu\) | Raised-index derivative. | With \(+---\) and \(c\overset{\text{units}}{=}1\), raising the derivative index flips the spatial signs. |
 | \(\Box=\partial_\mu\partial^\mu\) | D'Alembertian wave operator. | `sr.field_equations`, `sr.wave_equation`, `sr.lorenz_gauge` |
@@ -75,10 +75,11 @@ annotation house style.
 | Notation | Meaning / Convention | Related Concepts |
 | --- | --- | --- |
 | \(A_\mu\) | Electromagnetic four-potential in the convention used by the concept. | `sr.vector_potential` |
-| \(\Lambda\) | Gauge function. | `sr.gauge_invariance`, `sr.gauge_fixing` |
-| \(A_\mu\rightarrow A_\mu+\partial_\mu\Lambda\) | Gauge transformation in one common sign convention. | `sr.gauge_invariance` |
+| \(\chi\) | Preferred gauge-function symbol in revised SR content; legacy questions may use \(\Lambda\). | Avoid confusing it with the Lorentz matrix. |
+| \(A_\mu\rightarrow A_\mu+\partial_\mu\chi\) | Gauge transformation used in revised SR. | \(\phi' = \phi+\partial_t\chi\), \(\mathbf A'=\mathbf A-\nabla\chi\) with the stated SI potential. |
+| \(A^\mu=(\phi/c,\mathbf A)\), \(A_\mu=(\phi/c,-\mathbf A)\) | Revised SR SI convention with \(+---\), \(x^0=ct\). | Carry the coordinate/potential convention through every sign check. |
 | \(F_{\mu\nu}\) | Electromagnetic field tensor. | `sr.field_tensor`, `sr.electromagnetic_field` |
-| \(F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu\) | Field tensor constructed from the four-potential. | Signs/factors depend on convention. |
+| \(F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu\) | Local field tensor construction. | Revised SR uses \(F_{0i}=E_i/c\), \(F_{ij}=-\epsilon_{ijk}B_k\), \(\epsilon_{123}=+1\). |
 | \(F^\mu{}_\nu\) | Mixed-index field tensor, often used in the covariant Lorentz force law. | `sr.lorentz_force_law` |
 | \(\mathbf E\), \(\mathbf B\) | Electric and magnetic fields from a frame-dependent split of \(F_{\mu\nu}\). | `sr.electric_field`, `sr.magnetic_field` |
 | \(\epsilon_{ijk}\) | Three-dimensional Levi-Civita symbol. | Useful when mapping the spatial antisymmetric part of \(F_{\mu\nu}\) to \(\mathbf B\). |
@@ -88,7 +89,8 @@ annotation house style.
 | \(\partial_\mu A^\mu=0\) | Lorenz gauge condition. | `sr.lorenz_gauge` |
 | \(\epsilon_0\), \(\mu_0\) | SI electromagnetic constants. | Keep explicit in SI formulas; suppress only after stating a natural-unit convention. |
 | \(q\), \(e\) | Charge of a particle. | Prefer \(q\) for a general particle charge; use \(e\) only when the sign convention is clear. |
-| \(p_\mu-eA_\mu\) | Minimal-coupling combination in one common sign convention. | `sr.minimal_coupling` |
+| \(S_{\rm int}=-q\int A_\mu dx^\mu\) | Revised SR worldline coupling. | Gives \(q\mathbf A\cdot\mathbf v-q\phi\) in the time Lagrangian. |
+| \(\mathbf p_{\rm can}-q\mathbf A\) | Mechanical momentum in that coordinate-time convention. | Do not transfer the shorthand to an undefined covariant momentum. |
 
 ## Energy, Momentum, And Radiation
 
@@ -96,6 +98,7 @@ annotation house style.
 | --- | --- | --- |
 | \(T^{\mu\nu}\) | Energy-momentum / stress-energy tensor. | `sr.energy_momentum_tensor` |
 | \(T^{00}\) | Energy density component in a chosen frame. | `sr.em_energy_density`, `sr.em_stress_energy` |
+| \(cT^{i0}=S_i\), \(T^{0i}/c=g_i\) | SI flux and momentum-density readings when \(\partial_\mu T^{\mu\nu}\) is the balance convention. | A symmetric physical tensor gives \(\mathbf S=c^2\mathbf g\); a canonical tensor need not be symmetric. |
 | \(u_\mathrm{EM}\) | Electromagnetic energy density in ordinary three-vector notation. | `sr.em_energy_density` |
 | \(\mathbf S\) | Poynting vector / electromagnetic energy flux. | `sr.poynting_vector` |
 | \(\mathbf g=\mathbf S/c^2\) | Electromagnetic momentum density in SI units. | `sr.poynting_vector` |

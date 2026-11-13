@@ -38,12 +38,16 @@ function kgCreateContentMarkup(options) {
       }
       var targetId = target.value.trim();
       var labelHtml = escapeHtml(label.value);
-      if (!getConcept(targetId)) {
+      var source = !getConcept(targetId) && options.source ? options.source(targetId) : null;
+      if (!getConcept(targetId) && !source) {
         html += labelHtml;
       } else {
-        html += '<a href="' + escapeHtml(conceptHash(targetId)) +
-          '" class="concept-link" data-concept-id="' + escapeHtml(targetId) +
-          '" aria-haspopup="dialog" aria-controls="kg_concept_preview"><strong>' +
+        var ownerId = source ? source.ownerId : targetId;
+        var href = source && source.ownerType === "module" ? "#module-" + encodeURIComponent(ownerId) : conceptHash(ownerId);
+        html += '<a href="' + escapeHtml(href) +
+          '" class="concept-link" data-concept-id="' + escapeHtml(ownerId) + '"' +
+          (source ? ' data-block-id="' + escapeHtml(targetId) + '"' : "") +
+          ' aria-haspopup="dialog" aria-controls="kg_concept_preview"><strong>' +
           labelHtml + "</strong></a>";
       }
       cursor = target.end;

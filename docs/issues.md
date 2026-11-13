@@ -34,7 +34,8 @@ Issue numbers are retained so existing references remain valid.
    (minimal download, but variable voices and mathematical pronunciation). Prefer separate audio
    files loaded per card; embedding Base64 audio preserves a single-file viewer but adds roughly
    6.4–12.8 MB per 20 minutes at 32–64 kbps. Consider Play/Pause, optional automatic playback,
-   stopping on card changes, offline availability and memory use on the old iPad.
+   stopping on card changes, offline availability and memory use on the old iPad.  I would consider voicing the naration myself rather than AI generate.
+8. We should add a symbols glossary, giving symbol,  name like "Lorenz factor" and a link to a definition.  These should be hyperlinked in all uses, issue is how to do that in a subdued way that doesn't distract - a very dark blue or brown perhaps.
 
 ## 4. Misc. Issues
 
@@ -55,6 +56,14 @@ Issue numbers are retained so existing references remain valid.
    reading-tree concepts, to avoid scrolling back to the heading on phones. Define
    post-fold scrolling, descendant/Reading-position state and interaction with
    full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
+10. When a block is folded the reading tick box should not be tickable; grey out it not already ticked but allow unticking if already ticked.
+11. <deleted>
+12. Add a Unfold/Fold all button to act on all blocks in a concept.
+13. Show paragraphs better in block bodies.  Use either a blank line in indented first line.
+14. We should review block background colours.
+15. I think the graphic block should be default open and there should be no text body, and I think no statement (but consider).  This takes us back to the published 4.6.1 appearance.  The caption text can can possibly be more expansive where that helps.
+16. For reading trees we need to decide, are blocks presented in the order as in the full concept, or the order given in the recipe?
+17. Teaching tree, Synchronize graph should probably force the graph into a good state - Context only and Fit.
 
 ## 5. Notes enhancement and unification
 

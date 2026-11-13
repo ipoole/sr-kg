@@ -71,8 +71,11 @@ def validate_knowledge_base(kb: KnowledgeBase) -> list[ValidationIssue]:
         kb.edge_key,
         check_cref_edge_consistency=False,
     )
-    issues.extend(_validate_content_block_text(kb.concepts, kb.nodes_df, kb.edges_df, external_domains=kb.missing_domains))
-    issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df, external_domains=kb.missing_domains))
+    block_owners = {unit.source_id: unit.owner_id for unit in kb.content_units.values()}
+    issues.extend(_validate_content_block_text((*kb.concepts, *kb.modules), kb.nodes_df,
+        kb.edges_df, external_domains=kb.missing_domains, block_owners=block_owners))
+    issues.extend(_validate_study_question_text(kb.concepts, kb.nodes_df, kb.edges_df,
+        external_domains=kb.missing_domains, block_owners=block_owners))
     if kb.modules:
         issues.extend(_validate_module_structure(kb))
     return issues
@@ -462,16 +465,17 @@ def _validate_content_block_text(
     concepts,
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
-    *, external_domains=(),
+    *, external_domains=(), block_owners=None,
 ) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    block_owners = block_owners or {}
     node_ids = set(nodes_df["id"].astype(str).str.strip())
     cref_pairs: set[tuple[str, str]] = set()
-    cref_targets_by_node: dict[str, set[str]] = {}
 
     for concept in concepts:
+        owner_id = getattr(concept, "id", None) or concept.module_id
         for block in concept.content_blocks:
-            for field_name, text in (("body", block.body), ("statement", block.statement)):
+            for field_name, text in (("body", block.body), ("statement", block.statement), ("title", block.title)):
                 location = f"content block {block.block_id}" + (" statement" if field_name == "statement" else "")
                 issues.extend(_validate_control_characters(text, location))
                 issues.extend(_validate_backslash_end(text, location))
@@ -483,19 +487,18 @@ def _validate_content_block_text(
                 issues.extend(cref_errors)
                 for call in cref_calls:
                     target = call.args[1].strip()
-                    cref_pairs.add((concept.id, target))
-                    cref_targets_by_node.setdefault(concept.id, set()).add(target)
+                    cref_pairs.add((owner_id, target))
 
                 _, optional_errors = _parse_two_arg_macro_calls(text, "optional_details", location)
                 issues.extend(optional_errors)
 
     for source, target in sorted(cref_pairs):
-        if target not in node_ids and target.partition(".")[0] not in external_domains:
+        if target not in node_ids and target not in block_owners and target.partition(".")[0] not in external_domains:
             issues.append(
                 _issue(
                     "error",
                     "cref-target",
-                    f"\\cref target '{target}' is not a known concept id",
+                    f"\\cref target '{target}' is not a known concept or block id",
                     f"content block source {source}",
                 )
             )
@@ -503,10 +506,13 @@ def _validate_content_block_text(
     if any(issue.severity == "error" for issue in issues):
         return issues
 
-    issues.extend(_validate_cref_edge_consistency(nodes_df, edges_df,
-        {(source, target) for source, target in cref_pairs if target in node_ids},
-        {source: {target for target in targets if target in node_ids}
-         for source, targets in cref_targets_by_node.items()}))
+    # Only owning concepts participate in graph diagnostics, never blocks.
+    concept_pairs = {(source, block_owners.get(target, target)) for source, target in cref_pairs
+                     if source in node_ids and block_owners.get(target, target) in node_ids}
+    targets_by_owner: dict[str, set[str]] = {}
+    for source, target in concept_pairs:
+        targets_by_owner.setdefault(source, set()).add(target)
+    issues.extend(_validate_cref_edge_consistency(nodes_df, edges_df, concept_pairs, targets_by_owner))
     return issues
 
 
@@ -514,9 +520,10 @@ def _validate_study_question_text(
     concepts,
     nodes_df: pd.DataFrame,
     edges_df: pd.DataFrame,
-    *, external_domains=(),
+    *, external_domains=(), block_owners=None,
 ) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    block_owners = block_owners or {}
     node_ids = set(nodes_df["id"].astype(str).str.strip())
     cref_pairs: set[tuple[str, str]] = set()
     cref_targets_by_node: dict[str, set[str]] = {}
@@ -560,12 +567,12 @@ def _validate_study_question_text(
                 )
 
     for source, target in sorted(cref_pairs):
-        if target not in node_ids and target.partition(".")[0] not in external_domains:
+        if target not in node_ids and target not in block_owners and target.partition(".")[0] not in external_domains:
             issues.append(
                 _issue(
                     "error",
                     "cref-target",
-                    f"\\cref target '{target}' is not a known concept id",
+                    f"\\cref target '{target}' is not a known concept or block id",
                     f"study question source {source}",
                 )
             )

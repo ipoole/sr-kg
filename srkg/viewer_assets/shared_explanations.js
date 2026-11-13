@@ -187,7 +187,15 @@ function kgCreateSharedExplanations(options) {
     return (owner.content_blocks || []).some(function(block) { return block.kind === "graphic"; });
   }
 
+  function source(id) { return sources[id] || null; }
+  function preview(id) {
+    var found = source(id);
+    // Shared artwork/prose rendering, without notes, ticks or reading paths.
+    return found ? graphic(found) + markup.renderBodyLines(found.block.body) : "";
+  }
+
   return {beginPage: beginPage, afterRender: afterRender, toggled: toggled,
     rootContext: rootContext, disclosure: disclosure, renderReference: renderReference, local: local,
-    nativeStatement: nativeStatement, body: body, actions: actions, hasGraphicBlock: hasGraphicBlock};
+    nativeStatement: nativeStatement, body: body, actions: actions, hasGraphicBlock: hasGraphicBlock,
+    source: source, preview: preview};
 }

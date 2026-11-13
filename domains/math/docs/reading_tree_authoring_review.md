@@ -1,5 +1,49 @@
 # Maths reading-tree authoring audit
 
+## Completion follow-up — 13 November 2026
+
+### MATHS-1
+
+Reviewed all 49 concept blocks and five module blocks at exposition level 70,
+retaining their statements, source IDs and local clarification paths. Added
+selective block references to chart definitions, the coordinate Jacobian,
+directional derivatives and the dual-basis calculation. These previews do not
+change reading-tree branches. All blocks now use the consolidated kinds.
+
+Existing overview, construction and misconception blocks were classified by
+their actual explanatory purpose. The module's probe calculation is Derivation;
+its metric/curvature preview and the worldline's metric-based classification are
+Advanced, supplementary to the core smooth-coordinate treatment. Basis/component
+and units explanations now precede the examples that need them. No blocks were
+deleted or merged, and no prerequisites were silently moved into Advanced.
+
+The previous statement/dependency review remains valid. Questions, options,
+edges, membership, graphics, layouts and tutorials are unchanged. Unit checks,
+the four real-Maths phone/desktop browser checks and source/slot preservation
+checks pass. Maths-only validation reports zero errors and eight reviewed
+warnings, with the expected omitted-SR diagnostics. The local viewer includes
+SR and Maths; nothing was published.
+
+### MATHS-2
+
+Reviewed all 24 concept bodies and the module overview at level 70. Retained
+statements, source IDs and every named clarification path. Tensor slots now
+precede their multilinear construction. All module/concept blocks use the ten
+authoring kinds, with no deletions, merges or forced Advanced classification.
+
+The proofs explicitly combine tangent/cotangent pairing, dual-basis expansion,
+coordinate Jacobians and multilinearity. Block references offer those precise
+inputs or calculations; the original graph remains unchanged. Two new reference
+diagnostics point to transitive supporting concepts (index notation to cotangent,
+transformation law to tangent); they do not warrant shortcut dependency edges.
+
+The twelve questions, all options, SVGs, layout, memberships and tutorial targets
+are unchanged. Unit tests and nine focused Maths/reference browser checks pass.
+Maths-only validation has zero errors and ten reviewed warnings. A preservation
+check verifies every source ID and local clarification path across both modules.
+
+## Earlier statement and dependency review
+
 11 November 2026 · stage 4 on `nested-explanations`.
 Runtime CSV is authoritative. The paper prototypes remain design experiments.
 

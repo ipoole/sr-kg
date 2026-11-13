@@ -302,3 +302,31 @@ def test_load_validation_issues_from_root_reports_content_block_integrity(tmp_pa
             "content_blocks.csv references unknown concept id(s): missing",
         )
     ]
+
+
+def test_block_crefs_validate_in_prose_and_questions_and_resolve_to_owner(tmp_path):
+    _write_root_kb(tmp_path, content_body=r'Given \cref{the definition}{1.1.definition}.',
+                   question_prompt=r'Use \cref{the definition}{1.1.definition}.')
+    issues = load_validation_issues_from_root(tmp_path)
+    assert not issues
+    frame = pd.read_csv(tmp_path / 'content_blocks.csv')
+    frame.loc[1, 'body'] = r'\cref{missing block}{1.1.missing}'
+    frame.to_csv(tmp_path / 'content_blocks.csv', index=False)
+    assert any(i.code == 'cref-target' for i in load_validation_issues_from_root(tmp_path))
+
+
+def test_advanced_blocks_load_alongside_legacy_kinds(tmp_path):
+    from srkg.kb import load_knowledge_base
+    _write_root_kb(tmp_path, content_body='An existing explanation.')
+    path = tmp_path / 'content_blocks.csv'
+    frame = pd.read_csv(path)
+    extra = frame.iloc[1].copy()
+    extra['block_id'] = '2.1.advanced'
+    extra['kind'] = 'advanced'
+    extra['title'] = 'A deeper consequence'
+    extra['body'] = 'Further reasoning.'
+    frame.loc[0, 'kind'] = 'construction'  # An untouched legacy source stays valid.
+    pd.concat([frame, extra.to_frame().T], ignore_index=True).to_csv(path, index=False)
+    kb = load_knowledge_base(tmp_path, include_graphics=False)
+    assert kb.content_units['2.1.advanced'].kind == 'advanced'
+    assert kb.content_units['1.1.definition'].kind == 'construction'

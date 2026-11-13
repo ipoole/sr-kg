@@ -39,9 +39,12 @@ def test_em_density_and_flux_are_components_of_the_em_stress_energy_tensor():
         "sr.em_energy_density.tensor_component",
         "sr.poynting_vector.tensor_origin",
     ):
-        assert r"\cref{electromagnetic stress--energy tensor}{sr.em_stress_energy}" in blocks.loc[
-            block_id, "body"
-        ]
+        from srkg.text_macros import parse_macro_calls
+        calls, errors = parse_macro_calls(blocks.loc[block_id, "body"], "cref", 2)
+        assert not errors
+        # The source may point at the particular tensor argument, independent of its label.
+        assert any(call.args[1] == "sr.em_stress_energy" or
+                   call.args[1].startswith("sr.em_stress_energy.") for call in calls)
 
 
 def test_lorentz_maths_view_has_standard_boost_setup_context():

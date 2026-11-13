@@ -21,7 +21,12 @@
   [shared reader](design/folded_reading_trees_renderer.md) implements the new model.
   Domain content is being migrated from the earlier block-borrowing pilot; the
   [Maths authoring audit](../domains/math/docs/reading_tree_authoring_review.md)
-  records the completed first domain. Its earlier
+  records the completed first domain. The
+  [SR stage-1 inventory](../domains/sr/docs/reading_tree_authoring_audit.md)
+  records block coverage, argument/dependency review questions and preservation
+  inputs before the SR authoring pass; the
+  [SR module reviews](../domains/sr/docs/reading_tree_authoring_review.md)
+  record the completed SR-1 content and dependency changes. The earlier
   [Maths draft](../domains/math/docs/nested_explanations_pilot.md) and
   [MATHS-2 teaching review](../domains/math/docs/tensor_calculus_teaching_review.md)
   retain content and preservation decisions. The earlier
@@ -34,8 +39,10 @@
   [Google OAuth publication checklist](design/google_oauth_publication.md)
   records the public branding URLs and Console settings. [Release versioning](design/releases.md)
   defines the product version independently of data schema versions.
-- **Authoring** holds the shared [authoring guide](authoring/authoring_guide.md)
-  and notation conventions. Subject drafts, source worklists, fixtures and graphics
+- **Authoring** holds the concise [authoring guide](authoring/authoring_guide.md),
+  [exposition scale](authoring/exposition_style_scale.md),
+  [technical procedures](authoring/technical_reference.md) and notation conventions.
+  Subject drafts, source worklists, fixtures and graphics
   belong in `domains/<id>/`; see [domain packages](design/domain_packages.md).
 - **Discussion** holds speculative ideas, not instructions for current behaviour.
   The [user experience review](discussion/user_experience_review.md) records
