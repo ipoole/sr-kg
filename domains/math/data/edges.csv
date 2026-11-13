@@ -1,16 +1,17 @@
 source,target,relation,note
-math.coordinate_chart,math.manifold,CONSTRUCTED_FROM,Coordinate charts are local maps used to describe regions of a manifold.
+math.coordinate_chart,math.manifold,CONSTRUCTED_FROM,A chart labels an open region of a smooth manifold; the manifold supplies the points and compatible local structure.
 math.coordinate_transformation,math.manifold,RELATED,Smooth transition maps between charts are part of the manifold atlas structure.
-math.coordinate_transformation,math.coordinate_chart,CONSTRUCTED_FROM,Coordinate transformations are transition rules between overlapping coordinate charts.
+math.coordinate_transformation,math.coordinate_chart,CONSTRUCTED_FROM,The transition is the composition of one chart with the inverse of another on their overlap.
 math.worldline,sr.spacetime_event,RELATED,A worldline can be understood as a curve passing through ordered spacetime events.
-math.worldline,math.manifold,CONSTRUCTED_FROM,A worldline is a curve lying in the spacetime manifold.
+math.worldline,math.manifold,CONSTRUCTED_FROM,A worldline assigns each parameter value to a point of the spacetime manifold.
 math.tangent_space,math.worldline,RELATED,Worldline tangents are examples of tangent vectors at events.
-math.tangent_space,math.manifold,CONSTRUCTED_FROM,The tangent space is attached to a point of a manifold and supplies the local vector space.
-math.cotangent_space,math.tangent_space,CONSTRUCTED_FROM,The cotangent space is the dual vector space of linear maps on tangent vectors.
-math.tensor_field,math.tangent_space,CONSTRUCTED_FROM,Tensor fields are built from tangent and cotangent spaces assigned point by point.
-math.tensor_field,math.cotangent_space,CONSTRUCTED_FROM,Tensor fields are built from tangent and cotangent spaces assigned point by point.
+math.cotangent_space,math.tangent_space,CONSTRUCTED_FROM,The cotangent space is constructed as the vector-space dual of the tangent space at the same point.
+math.tensor_field,math.tangent_space,CONSTRUCTED_FROM,Vector factors and vector inputs of a tensor belong to the tangent space at the field point.
+math.tensor_field,math.cotangent_space,CONSTRUCTED_FROM,Covector factors and the natural vector/covector pairing supply the dual slots used to construct multilinear tensors.
 math.tensor_field,math.coordinate_transformation,RELATED,Tensor-field components change under coordinate transformations while the underlying geometric object remains the same.
-math.index_notation,math.tensor_field,REQUIRES,"Index notation records tensor type, component slots, and contractions."
-math.tensor_transformation_law,math.coordinate_transformation,CONSTRUCTED_FROM,The transformation law is built from the Jacobian factors of coordinate transformations.
-math.tensor_transformation_law,math.index_notation,REQUIRES,The law is stated compactly using upper and lower indices.
-math.tensor_transformation_law,math.tensor_field,REQUIRES,Tensor fields are recognised by the way their components transform.
+math.index_notation,math.tensor_field,REQUIRES,"Upper and lower index slots record the type of a tensor, while contraction pairs its vector-like and covector-like slots."
+math.tensor_transformation_law,math.coordinate_transformation,CONSTRUCTED_FROM,Differentiating the coordinate transition supplies the forward and inverse Jacobians used in each tensor index slot.
+math.tensor_transformation_law,math.index_notation,REQUIRES,The component rule uses upper/lower slots and distinguishes summed old indices from free new indices.
+math.tensor_transformation_law,math.tensor_field,CONSTRUCTED_FROM,Multilinearity of a tensor in its vector/covector inputs produces one basis-change factor for each index.
+math.tangent_space,math.coordinate_transformation,CONSTRUCTED_FROM,The invertible transition Jacobian makes equivalence of curve tangents and their vector-space operations independent of the chart.
+math.worldline,math.coordinate_chart,REQUIRES,"Local charts turn a worldline into coordinate functions, allowing its smoothness and changes of description to be understood."

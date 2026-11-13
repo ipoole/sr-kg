@@ -147,8 +147,6 @@ def test_concept_list_click_populates_details_and_hash(shared_browser_graph):
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
     assert "Applications" in page.locator("#info_panel .concept-module-chip").inner_text()
     assert "Layer" not in page.locator("#info_panel").inner_text()
-    assert "Beta definition" in page.locator("#info_panel").inner_text()
-    assert "Beta explains alpha." in page.locator("#info_panel").inner_text()
     assert page.locator('.kg-concept-item[data-concept-id="2.1"]').evaluate(
         "el => el.classList.contains('active')"
     )
@@ -167,7 +165,6 @@ def test_module_list_click_populates_details_and_focuses_graph(browser_graph):
 
     assert page.locator("#info_panel h2").inner_text() == "Foundations"
     panel_text = page.locator("#info_panel").inner_text()
-    assert "Start with Alpha as the foundation." in panel_text
     assert "Concepts" in panel_text
     assert "1.1 Alpha" in panel_text
     assert page.evaluate("() => window.location.hash") == "#module-test.m01_foundations"
@@ -1250,8 +1247,6 @@ def test_revised_concept_renders_ordered_content_blocks(shared_browser_graph):
     ).evaluate_all(
         "nodes => nodes.map(node => node.textContent)"
     ) == ["Definition", "Gamma intuition"]
-    assert "Gamma definition" in page.locator("#info_panel").inner_text()
-    assert "Gamma intuition body" in page.locator("#info_panel").inner_text()
 
 
 @pytest.mark.browser
@@ -1317,7 +1312,7 @@ def test_content_block_kind_policy_renders_labels_and_fold_state(shared_browser_
     labels = page.locator("#info_panel .content-block-kind-label").evaluate_all(
         "nodes => nodes.map(node => node.getAttribute('data-label'))"
     )
-    assert labels == ["Definition", "Think", "Careful", "Step", "Context"]
+    assert labels == ["Definition", "Intuition", "Warning", "Derivation Step", "Historical Note"]
     assert page.locator("#info_panel .content-block-definition").evaluate(
         "el => el.tagName"
     ) == "DETAILS"
@@ -1343,14 +1338,14 @@ def test_graphic_and_inline_content_sections_are_foldable(shared_browser_graph):
     assert definition.count() == 1
     assert intuition.count() == 1
     assert graphic.evaluate("el => el.open")
-    assert definition.evaluate("el => el.open")
-    assert intuition.evaluate("el => el.open")
+    assert not definition.evaluate("el => el.open")
+    assert not intuition.evaluate("el => el.open")
     assert graphic.locator(".concept-graphic svg").count() == 1
 
     definition.locator("summary").click()
 
-    assert not definition.evaluate("el => el.open")
-    assert not definition.locator(".content-block-body").is_visible()
+    assert definition.evaluate("el => el.open")
+    assert definition.locator(".content-block-body").is_visible()
 
 
 @pytest.mark.browser
@@ -1775,6 +1770,7 @@ def test_gr_covariant_derivative_equations_are_typeset(shared_repo_browser_graph
         + "#concept-gr.covariant_derivative",
         wait_until="domcontentloaded",
     )
+    page.locator("#info_panel > details.content-block").evaluate_all("es=>es.forEach(e=>e.open=true)")
     page.wait_for_function(
         "() => window.location.hash === '#concept-gr.covariant_derivative'"
     )
@@ -1941,6 +1937,7 @@ def test_optional_details_render_inline_and_can_contain_concept_links(browser_gr
     browser_graph.click_concept("2.1")
     optional = page.locator("#info_panel details.optional-detail")
     assert optional.count() == 1
+    page.locator("#info_panel .content-block-explanation").evaluate("e=>e.open=true")
     assert optional.locator("summary").inner_text() == "Why this matters"
     assert not optional.locator(".optional-detail-body").is_visible()
 
@@ -1962,6 +1959,7 @@ def test_concept_link_hover_shows_preview_without_navigating(browser_graph):
     page = browser_graph.page
 
     browser_graph.click_concept("2.1")
+    page.locator("#info_panel .content-block-explanation > summary").click()
     page.locator("#info_panel details.optional-detail summary").click()
     link = page.locator("#info_panel .optional-detail-body .concept-link")
 
@@ -1980,6 +1978,7 @@ def test_concept_link_preview_highlights_visible_graph_target(browser_graph):
     page.locator("#kg_context_preset_select").select_option("foundations")
 
     browser_graph.click_concept("2.1")
+    page.locator("#info_panel .content-block-explanation > summary").click()
     page.locator("#info_panel details.optional-detail summary").click()
     link = page.locator("#info_panel .optional-detail-body .concept-link")
 
@@ -2006,6 +2005,7 @@ def test_concept_link_preview_does_not_highlight_hidden_graph_target(browser_gra
 
     browser_graph.click_concept("2.1")
     page.locator("#kg_view_select").select_option("details")
+    page.locator("#info_panel .content-block-explanation > summary").click()
     page.locator("#info_panel details.optional-detail summary").click()
     page.locator("#info_panel .optional-detail-body .concept-link").click()
 

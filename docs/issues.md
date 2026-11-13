@@ -4,10 +4,11 @@ Issue numbers are retained so existing references remain valid.
 
 ## 1. Content
 
-3. Module MATHS-2 — Tensor Calculus needs more work. There is insufficient explanation to answer some questions.
-   Tensor rank needs more explanation, and more examples are needed generally. There is too much emphasis on
-   subtleties such as abstract versus component indices and not enough on the basics. Perhaps the module is trying
-   to be too general rather than concentrating on the tensor calculus needed in GR. Needs discussion.
+3. **MATHS-2 teaching review — implementation on `nested-explanations`.** Expanded tensor
+   type/rank, components, contractions and worked examples; put abstract-index detail
+   behind optional explanations. All existing study questions have supporting content.
+   Review the [teaching audit](../domains/math/docs/tensor_calculus_teaching_review.md)
+   and Maths-only preview before closing this issue.
 
 ## 2. Tutorials
 
@@ -50,6 +51,10 @@ Issue numbers are retained so existing references remain valid.
 7. Stop tracking question attempts; simplify study records and their presentation accordingly.
 8. Consider a Home button that restores the initial selection and view settings.
    Define which presentation settings it resets; preserve personal data.
+9. Consider a small bottom-right “Fold ↑” action on open blocks, clarifications and
+   reading-tree concepts, to avoid scrolling back to the heading on phones. Define
+   post-fold scrolling, descendant/Reading-position state and interaction with
+   full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
 
 ## 5. Notes enhancement and unification
 

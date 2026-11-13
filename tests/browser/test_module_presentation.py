@@ -52,6 +52,7 @@ def test_tangent_space_graphic_caption_typesets_its_math(shared_repo_browser_gra
     page = shared_repo_browser_graph.page
     shared_repo_browser_graph.click_concept("math.tangent_space")
 
+    page.locator('#info_panel > [data-content-block-id="math.tangent_space.graphic"]').evaluate("e=>e.open=true")
     caption = page.locator("#info_panel .concept-graphic-caption")
     caption.locator("mjx-container").first.wait_for()
     assert caption.locator("mjx-container").count() == 2

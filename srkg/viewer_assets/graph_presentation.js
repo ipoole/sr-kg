@@ -470,6 +470,7 @@ function kgCreateGraphPresentation(options) {
   }
 
   return {
+    roundedRectPath: roundedRectPath,
     expandedModuleLabelSnapshot: expandedModuleLabelSnapshot,
     drawExpandedModuleLabels: drawExpandedModuleLabels,
     drawVisibleNodes: drawVisibleNodes,

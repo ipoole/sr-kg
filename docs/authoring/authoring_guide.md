@@ -3,9 +3,15 @@
 Use this guide to produce consistent, efficient concept content. Read it before
 starting a new authoring pass and revisit the relevant sections between modules.
 
+New/revised blocks follow the [reading-tree design](../design/folded_reading_trees_design.md):
+self-contained title, statement and body, connected by graph edges. The shared
+viewer supports this model; domain content migration is staged. Legacy missing
+statements and block-borrowing calls remain loadable meanwhile; they are not
+patterns for new authoring.
+
 ## Editorial Aim
 
-Write a compact learning aid, not a dictionary entry. Each concept should:
+Write compact, reusable knowledge elements. Each concept should:
 
 - define the idea and explain why it is needed;
 - introduce equations in prose and state assumptions and conventions;
@@ -42,8 +48,9 @@ Semantic IDs and existing `math.` prefixes remain stable.
    notes, plus nearby prerequisite and descendant concepts.
 2. Check the [schema](../design/kb_schema.md), `notation_glossary.md`, and the relevant domain
    plan or exposition file.
-3. Define the scope boundary. Use `\cref{label}{id}` rather than re-teaching
-   material owned by another concept.
+3. Define the scope boundary and required supports. Record those supports as
+   graph edges; use `\cref{label}{id}` for useful terminology or excursions,
+   not to hide a premise from the dependency graph.
 4. Check `equality_annotation_style.md` for derivations with meaningful
    equality steps.
 5. Identify useful registered sources. Record uncertain locators in
@@ -89,6 +96,8 @@ CSV is not a Python, JSON, or shell string literal. Use exactly one backslash:
 Never write doubled forms such as `\\(\\nabla_\\mu V^\\nu\\)`.
 MathJax will treat them as escaped text and may display raw notation.
 
+Inside `aligned`, use `\\` followed by whitespace or a newline to separate rows.
+
 CSV quoting is separate. Quote a complete field containing a comma, newline, or
 double quote, and double embedded CSV quotes. Do not add backslashes to repair
 CSV structure.
@@ -118,32 +127,83 @@ Record non-blocking concerns under `Drafting Issues`. Route recurring source,
 notation, and edge concerns to their worklists. Fix an issue immediately only
 when it blocks coherent authoring or makes the KB misleading.
 
-Split the exposition into the smallest useful teaching units. Every block needs
-a stable ID, owner, numeric sequence, semantic kind, short title, and
-substantive body. The sequence should preserve the exposition's narrative.
+### Title, statement, body
 
-Use block kinds semantically, not as presentation instructions. In particular:
+Every new or revised block needs a stable ID, owner, numeric sequence, semantic
+kind and **three authored content levels**. The CSV `statement` column remains
+optional for legacy compatibility; it is an editorial requirement for new work.
 
-- `overview`: short orientation;
-- `result`: a central theorem, equation, or conclusion worth finding again;
-- `derivation_step`: a meaningful algebraic step;
-- `decomposition`: an explicit split into components or parts;
-- `convention`: notation, sign, units, coordinates, frame, or gauge; and
-- `warning`: a genuine trap, caveat, or limitation.
+| Level | Job |
+| --- | --- |
+| Title | Briefly identify what this block contains. Use a meaningful heading, not just “Explanation” or its kind. |
+| Statement | Express the useful result, definition or interpretation in as few words as reasonably possible. It stays visible when the body is folded. |
+| Body | Supply the reasoning, detail, interpretation, evidence or illustration that makes opening worthwhile. |
 
-Use `historical_note` selectively where history improves understanding or
-recognition. Explain the problem being addressed, the contribution made, and
-how the concept's meaning changed; do not write a detached mini-biography.
-Treat disputed priority and parallel contributions neutrally and support
-specific attributions with suitable sources.
+Write a short declarative statement, not a teaser, question or outline. Include
+essential assumptions. A compact formula can serve if its symbols and conditions
+are clear; keep calculation chains in the body. Author the statement explicitly:
+do not extract the first sentence or substitute a whole-concept summary.
 
-Repeated kinds are allowed. Avoid one large explanation block containing
-several separable teaching moves.
+For an `example` block:
+
+- **Title:** A grid rescaled by two.
+- **Statement:** Components change while the scalar pairing remains unchanged.
+- **Body:** Introduce numerical coordinate labels \(x'=2x\). Show
+  \(V^x=3\to V^{x'}=6\) and \(\omega_x=8\to\omega_{x'}=4\), then explain why
+  \(\omega_xV^x=8(3)=4(6)=24\).
+
+Bodies must work independently within their scope: introduce notation and
+conditions; avoid “the block above”. Do not re-teach the whole prerequisite field.
+A short Definition may suffice; a Derivation or Explanation that only paraphrases
+its statement needs revision, not padding. Keep the canonical title/statement/body
+unchanged across local and reading-tree occurrences.
+
+### Choose blocks by purpose
+
+Every concept has a Definition and usually a Derivation and an Explanation:
+
+- `definition`: precise meaning. Put the canonical definition of the whole concept
+  first if several Definition blocks exist; it supplies concept-reference previews.
+- `derivation`: a succinct argument/construction and its assumptions, for a reader
+  familiar with the field. Identify definitions, postulates or starting structure
+  honestly; do not invent proofs for primitive concepts.
+- `explanation`: meaning, motivation and intermediate reasoning for a less
+  experienced learner. It can differ substantially from the Derivation even when
+  both depend on the same concepts.
+
+Add `intuition`, `example`, `graphic`, or other supported kinds when they contribute
+something useful. Repeated kinds are allowed. Use kinds semantically, not to request
+visual styling. Existing kinds remain valid; vocabulary pruning is a separate task.
+Order blocks as useful local teaching units, not one oversized explanation.
+
+Use `historical_note` selectively. Explain the problem, contribution and change of
+understanding rather than writing a detached biography. Treat disputed priority
+and parallel contributions neutrally; source specific attributions.
+
+### Local clarifications and generated trees
+
+**Blocks never call other owned blocks**, even locally. Reading trees are
+generated from concept edges and selected block kinds, not authored routes.
+Do not add `\explain` calls. Audit legacy calls with the graph during migration,
+preserving IDs and useful reasoning.
+
+Local clarifications may nest. Prefer `\explanation{slot}{title}{body}` with stable
+named slots; legacy `\optional_details{Title}{Body}` remains valid. Keep the main
+exposition readable without opening optional algebra or “Why exactly?” details.
+Clarifications have title/body only: explanatory lead-ins are ordinary prose.
+They do not call owned blocks or add concept hops.
+
+Clarifications have no independent block ID, read tick or tutorial target. Named
+slots anchor notes through the enclosing block; renaming/moving one may leave
+notes needing placement. Owned-block ticks and notes share canonical identity
+across occurrences. Personal notes do not affect completion. The
+[current storage contract](../design/folded_reading_trees_schema.md) documents
+syntax; its borrowing workflow is superseded by this guide.
 
 ## Cross-References And Edges
 
 Add a `\cref` only when following it helps the learner. All targets must
-resolve.
+resolve in the full KB; selected-domain builds retain readable unavailable labels.
 
 Choose the sharpest defensible edge:
 
@@ -153,6 +213,22 @@ Choose the sharpest defensible edge:
 - `INSTANCE_OF`: an example or special case;
 - `REQUIRES`: prerequisite understanding; and
 - `RELATED`: a real connection with no sharper current type.
+
+`DERIVES_FROM` and `CONSTRUCTED_FROM` imply prerequisite understanding: do not
+also store a redundant `REQUIRES` edge for the same dependency. Taxonomic and
+`RELATED` edges do not imply prerequisites.
+
+Write each edge justification as a concise, self-contained sentence explaining
+why the source uses the destination. For example: “The component rule uses the
+Jacobian of the coordinate transition.” The viewer supplies the source/relation
+introduction; avoid fragments or a repeated “because”. This note appears at every
+incoming reading-tree occurrence, so do not assume a particular enclosing route.
+
+Derivation trees traverse `DERIVES_FROM` + `CONSTRUCTED_FROM`; Teaching also uses
+`REQUIRES`. Review content and these edges together. Do not add shortcut edges
+just because a deeper block would be convenient, or manufacture dependencies for
+ordinary cross-references. Alternative arguments need explicit justification;
+do not imply that all alternatives are jointly necessary.
 
 Use `RELATED` sparingly. Record concrete unresolved edge questions with the
 relevant concept draft. Prefer dependencies on earlier concepts and
@@ -211,13 +287,6 @@ tightening. Never invent a page or section reference from memory. Prefer stable
 section
 names; add page numbers when they improve precision. Keep rendered locators
 compact and record uncertainty in the link note.
-
-Fold optional algebra or clarification into `\optional_details{Title}{Body}` inside
-its relevant block; keep the main argument readable without opening it. These
-share disclosure/math rendering with personal notes, but remain authored content.
-Use `derivation` for the reasoning itself; “Derived from” lists supporting concepts.
-Personal notes are not authored blocks and do not affect completion. Nested
-disclosures have no independent block IDs, read ticks or tutorial targets yet.
 
 ## Study Questions
 
@@ -310,10 +379,13 @@ detail page. Small modules need not have graphics.
 Before finishing a concept or module, confirm:
 
 - scope, prose, notation, assumptions, and conventions are clear;
-- blocks are well-sized, semantically typed, and correctly ordered;
+- titles identify content, statements stand usefully when folded, and bodies add
+  substance; kinds and sequence match their purposes;
+- bodies have no owned-block calls; local clarifications and note slots are stable;
 - equations use single backslashes and render through MathJax;
 - CSV fields have the expected column count;
-- cross-references, edge endpoints, and references resolve;
+- cross-references, edge endpoints and references resolve; dependency justifications
+  explain the actual teaching/derivation support;
 - questions are progressive and varied;
 - module membership is correct;
 - icon/detail SVGs, accessible titles, designs, and captions are synchronized;

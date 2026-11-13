@@ -18,18 +18,24 @@ function kgCreateNotesController(options) {
   var safeLocalStorageSet = options.writeStorage;
   var schedulePersonalDataAutoSync = options.onSave;
   var refreshActiveConcept = options.onContentChange, refreshNodeTooltips = options.onSummariesChange;
-  var userNotesState = loadUserNotes(), editingNoteId = null;
+  var userNotesState = loadUserNotes(), editingNoteId = null, editingOccurrence = "";
   var openNotes = new Set();
   function reload() { userNotesState = loadUserNotes(); }
   function openNote(id) { openNotes.add(id); }
-  function openEditor(id) { editingNoteId = id; openNote(id); }
+  function noteOccurrence(id, context) { return "note:" + id + ":" + (context || ""); }
+  function noteContext(element, id) {
+    return (element.getAttribute("data-content-occurrence") || "").slice(noteOccurrence(id, "").length);
+  }
+  function openEditor(id, context) {
+    editingNoteId = id; editingOccurrence = noteOccurrence(id, context); openNote(id);
+  }
   function noteToggled(element) {
     if (!element.isConnected) { return; }
     var id = element.getAttribute("data-note-id");
     if (element.open) { openNotes.add(id); }
     else {
       openNotes.delete(id);
-      if (editingNoteId === id) {
+      if (editingNoteId === id && element.getAttribute("data-content-occurrence") === editingOccurrence) {
         syncUserNoteFromEditor(id);
         editingNoteId = null;
         replaceNoteElement(id);
@@ -37,39 +43,39 @@ function kgCreateNotesController(options) {
     }
   }
 
-  function replaceNoteElement(noteId, focusSelector) {
-    var note = findUserNote(noteId);
-    var element = Array.from(document.querySelectorAll("#info_panel details.user-note"))
-      .find(function(item) { return item.getAttribute("data-note-id") === noteId; });
-    if (!element) { return; }
-    if (window.MathJax && MathJax.typesetClear) { MathJax.typesetClear([element]); }
-    var holder = document.createElement("div");
-    holder.innerHTML = note ? renderUserNote(note) : "";
-    var replacement = holder.firstElementChild;
-    if (replacement) { element.replaceWith(replacement); }
-    else { element.remove(); return; }
-    if (window.MathJax && MathJax.typesetPromise) {
-      MathJax.typesetPromise([replacement]).catch(function(error) {
-        console.warn("Note mathematics could not be rendered", error);
-      }).then(function() {
-        if (options.onGeometryChange) { options.onGeometryChange(); }
-      });
+  function replaceNoteElement(noteId, focusSelector, skipEditor) {
+    var note = findUserNote(noteId), focus = null;
+    document.querySelectorAll("#info_panel details.user-note").forEach(function(element) {
+      if (element.getAttribute("data-note-id") !== noteId) { return; }
+      var key = element.getAttribute("data-content-occurrence");
+      if (skipEditor && key === editingOccurrence) { return; }
+      if (window.MathJax && MathJax.typesetClear) { MathJax.typesetClear([element]); }
+      var holder = document.createElement("div");
+      holder.innerHTML = note ? renderUserNote(note, noteContext(element, noteId)) : "";
+      var replacement = holder.firstElementChild;
+      if (!replacement) { element.remove(); return; }
+      replacement.open = element.open || (key === editingOccurrence && editingNoteId === noteId);
+      element.replaceWith(replacement);
+      options.typeset(replacement);
+      if (!skipEditor && key === editingOccurrence) {
+        focus = replacement.querySelector(focusSelector || ":scope > summary");
+      }
+    });
+    if (focus) {
+      focus.focus({preventScroll: true});
+      if (focusSelector === ".user-note-edit") { options.onReveal(focus.closest("details.user-note")); }
     }
-    var focus = replacement.querySelector(focusSelector || ":scope > summary");
-    if (focus) { focus.focus({preventScroll: true}); }
-    if (focusSelector === ".user-note-edit") { options.onReveal(replacement); }
   }
 
-  function editNote(id) {
+  function editNote(id, element) {
     if (!findUserNote(id)) { return; }
-    if (editingNoteId && editingNoteId !== id) {
+    if (editingNoteId) {
       var previous = editingNoteId;
       syncUserNoteFromEditor(previous);
       editingNoteId = null;
       replaceNoteElement(previous);
     }
-    editingNoteId = id;
-    openNote(id);
+    openEditor(id, element ? noteContext(element, id) : "");
     replaceNoteElement(id, ".user-note-body-input");
   }
 
@@ -173,6 +179,22 @@ function kgCreateNotesController(options) {
     return specs;
   }
 
+  function blockNoteAnchorCandidates(block) {
+    var title = block.title || contentBlockKindLabel(block.kind);
+    var result = noteAnchorSpecs(block.block_id, "", title, block.body);
+    function visit(parts, slots) {
+      parts.forEach(function(part) {
+        if (part.type !== "explanation" || part.slot.indexOf("~legacy-") === 0) { return; }
+        var path = slots.concat([part.slot]);
+        result = result.concat(noteAnchorSpecs(block.block_id, options.markup.localScopeKey(path),
+          part.title, options.markup.contentText(part.parts)));
+        visit(part.parts, path);
+      });
+    }
+    visit(options.markup.parseContent(block.body), []);
+    return result;
+  }
+
   function noteAnchorCandidates(targetType, targetId) {
     var candidates = [];
     if (targetType === "concept") {
@@ -182,9 +204,7 @@ function kgCreateNotesController(options) {
         candidates = candidates.concat(noteAnchorSpecs("", "graphic", "Graphic", ""));
       }
       conceptContentBlocks(concept).forEach(function(block) {
-        var specs = noteAnchorSpecs(
-          block.block_id, "", block.title || contentBlockKindLabel(block.kind), block.body
-        );
+        var specs = blockNoteAnchorCandidates(block);
         specs.forEach(function(candidate) { candidate.legacySectionKey = "legacy:" + block.kind; });
         candidates = candidates.concat(specs);
       });
@@ -200,9 +220,7 @@ function kgCreateNotesController(options) {
         candidates = candidates.concat(noteAnchorSpecs("", "graphic", "Graphic", ""));
       }
       moduleContentBlocks(module).forEach(function(block) {
-        candidates = candidates.concat(noteAnchorSpecs(
-          block.block_id, "", block.title || contentBlockKindLabel(block.kind), block.body
-        ));
+        candidates = candidates.concat(blockNoteAnchorCandidates(block));
       });
     }
     return candidates;
@@ -215,7 +233,7 @@ function kgCreateNotesController(options) {
     if (!blockId && !sectionKey) { return null; }
     var matches = noteAnchorCandidates(targetType, targetId).filter(function(candidate) {
       var sameScope = blockId
-        ? candidate.blockId === blockId
+        ? candidate.blockId === blockId && candidate.sectionKey === sectionKey
         : candidate.sectionKey === sectionKey;
       return sameScope && candidate.blockIndex === blockIndex;
     });
@@ -275,7 +293,9 @@ function kgCreateNotesController(options) {
     var scoped = [];
     if (anchor.blockId) {
       scoped = candidates.filter(function(candidate) {
-        return candidate.blockId === String(anchor.blockId);
+        return candidate.blockId === String(anchor.blockId) &&
+          candidate.sectionKey === (String(anchor.sectionKey || "").indexOf("legacy:") === 0
+            ? "" : String(anchor.sectionKey || ""));
       });
     } else if (anchor.sectionKey) {
       scoped = candidates.filter(function(candidate) {
@@ -382,6 +402,10 @@ function kgCreateNotesController(options) {
   function noteCountForBlock(targetType, targetId, blockId, sectionKey) {
     blockId = String(blockId || "");
     sectionKey = String(sectionKey || "");
+    var owner = (targetType === "module" ? getModule(targetId) : getConcept(targetId)) || {};
+    var wrapsGraphic = blockId && (owner.content_blocks || []).some(function(block) {
+      return block.block_id === blockId && block.graphic === "detail";
+    });
     return userNotesState.notes.filter(function(note) {
       if (note.placement === "owner" || note.targetType !== String(targetType) || note.targetId !== String(targetId)) {
         return false;
@@ -389,7 +413,8 @@ function kgCreateNotesController(options) {
       var resolved = resolveNoteAnchor(note);
       if (!resolved) { return false; }
       return blockId
-        ? resolved.blockId === blockId
+        ? (resolved.blockId === blockId && (!sectionKey || resolved.sectionKey === sectionKey)) ||
+          (wrapsGraphic && resolved.sectionKey === "graphic")
         : resolved.sectionKey === sectionKey;
     }).length;
   }
@@ -411,7 +436,7 @@ function kgCreateNotesController(options) {
   function renderOwnerNotes(targetType, targetId) {
     var notes = ownerNotes(targetType, targetId);
     return notes.length ? '<section class="kg-owner-notes" aria-label="Personal notes">' +
-      notes.map(renderUserNote).join("") + '</section>' : "";
+      notes.map(function(note) { return renderUserNote(note); }).join("") + '</section>' : "";
   }
 
   function createOwnerNote(targetType, targetId) {
@@ -519,8 +544,9 @@ function kgCreateNotesController(options) {
     }).join("");
   }
 
-  function renderUserNote(note) {
-    var editing = note.id === editingNoteId;
+  function renderUserNote(note, occurrence) {
+    var key = noteOccurrence(note.id, occurrence);
+    var editing = note.id === editingNoteId && key === editingOccurrence;
     var body;
     if (editing) {
       body = '<div class="user-note-editor">' +
@@ -542,7 +568,7 @@ function kgCreateNotesController(options) {
     }
     var topLevel = note.placement === "owner";
     return options.markup.renderContentUnit({
-      origin: "personal", id: note.id,
+      origin: "personal", id: note.id, occurrenceKey: key,
       capabilities: {edit: true, annotate: false, trackRead: false},
       level: topLevel ? "block" : "inline",
       className: "user-note" + (topLevel ? "" : " optional-detail"),
@@ -554,14 +580,15 @@ function kgCreateNotesController(options) {
     });
   }
 
-  function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec) {
+  function renderNotesAtAnchor(targetType, targetId, sectionName, anchorIndex, afterText, anchorSpec, context) {
+    var occurrence = options.markup.occurrenceKey(context);
     anchorSpec = anchorSpec || {
       blockId: "", sectionKey: "", section: String(sectionName),
       blockIndex: Number(anchorIndex), contextBefore: "", contextAfter: ""
     };
     var html = "";
     notesForAnchor(targetType, targetId, anchorSpec).forEach(function(note) {
-      html += renderUserNote(note);
+      html += renderUserNote(note, occurrence);
     });
     html += '<div class="kg-add-note-row">';
     html += '<button type="button" class="kg-add-note" data-section="' +
@@ -572,29 +599,32 @@ function kgCreateNotesController(options) {
       '" data-anchor-context-before="' + escapeHtml(anchorSpec.contextBefore || "") +
       '" data-anchor-context-after="' + escapeHtml(anchorSpec.contextAfter || "") +
       '" data-target-type="' + escapeHtml(targetType) +
+      '" data-note-occurrence="' + escapeHtml(occurrence) +
       '" data-target-id="' + escapeHtml(targetId) + '">+ note</button>';
     html += "</div>";
     return html;
   }
 
-  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text) {
+  function renderNoteAnchoredBody(targetType, targetId, sectionName, blockId, sectionKey, text, context, capabilities) {
+    var annotate = !capabilities || capabilities.annotate !== false;
     var blocks = splitConceptBlocks(String(text || ""));
     var specs = noteAnchorSpecs(blockId, sectionKey, sectionName, text);
-    var html = renderNotesAtAnchor(
-      targetType, targetId, sectionName, 0, "", specs[0]
-    );
+    var html = annotate ? renderNotesAtAnchor(
+      targetType, targetId, sectionName, 0, "", specs[0], context
+    ) : "";
     blocks.forEach(function(textBlock, index) {
       html += '<div class="concept-line">' +
-        (textBlock.text ? renderConceptText(textBlock.text) : "&nbsp;") +
+        (textBlock.text ? renderConceptText(textBlock.text, Object.assign({}, context,
+          {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";
-      html += renderNotesAtAnchor(
+      if (annotate) { html += renderNotesAtAnchor(
         targetType,
         targetId,
         sectionName,
         index + 1,
         String(textBlock.text || "").slice(0, 160),
-        specs[index + 1]
-      );
+        specs[index + 1], context
+      ); }
     });
     return html;
   }
@@ -670,6 +700,7 @@ function kgCreateNotesController(options) {
     });
     note.updatedAt = new Date().toISOString();
     saveUserNotes();
+    replaceNoteElement(noteId, null, true);
   }
 
   function noteEditorField(noteId, selector) {
@@ -694,6 +725,7 @@ function kgCreateNotesController(options) {
     note.body = body;
     note.updatedAt = new Date().toISOString();
     saveUserNotes();
+    replaceNoteElement(noteId, null, true);
     return note;
   }
 
@@ -863,7 +895,7 @@ function kgCreateNotesController(options) {
     revealNote: revealNote,
     findUserNote: findUserNote,
     renderNotesOverview: renderNotesOverview,
-    renderNotesAtAnchor: renderNotesAtAnchor,
+    renderNotesAtAnchor: renderNotesAtAnchor, openEditor: openEditor,
     renderNoteAnchoredBody: renderNoteAnchoredBody,
     renderUnmatchedNotes: renderUnmatchedNotes,
     createUserNote: createUserNote,

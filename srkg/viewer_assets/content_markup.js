@@ -100,6 +100,11 @@ function kgCreateContentMarkup(options) {
     if (options.noteBlock) {
       attrs += ' data-note-block="true"';
     }
+    if (options.occurrenceKey) {
+      attrs += ' data-content-occurrence="' + escapeHtml(options.occurrenceKey) + '"';
+    }
+    if (options.slot) { attrs += ' data-content-slot="' + escapeHtml(options.slot) + '"'; }
+    if (options.sourceId) { attrs += ' data-content-source-id="' + escapeHtml(options.sourceId) + '"'; }
     if (options.open) {
       attrs += " open";
     }
@@ -128,7 +133,7 @@ function kgCreateContentMarkup(options) {
           (!action.capability || capabilities[action.capability] === true);
       }).map(function(action) { return action.html || ""; }).join("");
     }
-    var heading = '<span class="content-block-title-line">' +
+    var heading = (unit.statementHtml || "") + '<span class="content-block-title-line">' +
       (unit.markHtml || "") + '<span class="content-block-title-text">' +
       renderConceptText(unit.title || "") + '</span>' + (unit.labelHtml || "") + '</span>' +
       renderActions("heading");
@@ -143,6 +148,7 @@ function kgCreateContentMarkup(options) {
       origin: unit.origin, level: level, anchorId: unit.anchorId,
       id: unit.id, contentBlockId: unit.contentBlockId,
       noteBlock: capabilities.annotate === true,
+      occurrenceKey: unit.occurrenceKey, slot: unit.slot, sourceId: unit.sourceId,
       open: unit.open,
       className: (unit.className || "") + " kg-content-framed" +
         (capabilities.edit ? " kg-content-editable" : "") +
@@ -153,80 +159,115 @@ function kgCreateContentMarkup(options) {
     });
   }
 
-  function renderOptionalDetail(summary, body, context) {
-    return renderContentUnit({
-      className: "optional-detail", level: "inline", title: summary,
-      origin: context && context.origin,
-      bodyClass: "optional-detail-body",
-      bodyHtml: renderConceptText(body, context)
+  function childContext(context, slot, targetId) {
+    context = context || {};
+    return {origin: context.origin, rootId: context.rootId,
+      steps: (context.steps || []).concat([[slot, targetId || ""]]),
+      ancestors: context.ancestors || [], sourceId: targetId || context.sourceId,
+      localSlots: targetId ? [] : (context.localSlots || []).concat([slot]),
+      readingTree: context.readingTree === true,
+      readingDepth: Number(context.readingDepth || 0) + 1};
+  }
+
+  function occurrenceKey(context) {
+    return context && context.rootId ? JSON.stringify([context.rootId].concat(context.steps || [])) : "";
+  }
+
+  // This browser adapter preserves the verbatim wire body (and note anchors),
+  // producing the same text/explanation/reference parts as the Python loader.
+  function findNextOptionalDetailBlock(text, cursor) {
+    var found = [];
+    [ ["optional_details", 2], ["explanation", 3], ["explain", 4] ].forEach(function(spec) {
+      var macro = "\\" + spec[0], search = cursor;
+      while (search < text.length) {
+        var start = text.indexOf(macro, search);
+        if (start === -1) { break; }
+        var end = start + macro.length;
+        if (/[A-Za-z0-9_]/.test(text.charAt(end))) { search = end; continue; }
+        var args = [], arg;
+        for (var i = 0; i < spec[1]; i++) {
+          arg = parseBracedArgument(text, skipOptionalDetailWhitespace(text, end));
+          if (!arg) { break; }
+          args.push(arg.value); end = arg.end;
+        }
+        if (args.length === spec[1]) {
+          found.push({kind: "optional", name: spec[0], args: args, start: start, end: end});
+          break;
+        }
+        search = start + macro.length;
+      }
     });
+    found.sort(function(a, b) { return a.start - b.start; });
+    return found[0] || null;
+  }
+
+  function parseContent(text) {
+    text = String(text || "");
+    var parts = [], cursor = 0, legacy = 0, call;
+    while ((call = findNextOptionalDetailBlock(text, cursor))) {
+      if (call.start > cursor) { parts.push({type: "text", text: text.slice(cursor, call.start)}); }
+      var args = call.args;
+      if (call.name === "explain") {
+        parts.push({type: "reference", slot: args[0].trim(), target_id: args[1].trim(),
+          target_label: args[2].trim(), hook: args[3].trim()});
+      } else {
+        var old = call.name === "optional_details";
+        parts.push({type: "explanation", slot: old ? "~legacy-" + (++legacy) : args[0].trim(),
+          title: args[old ? 0 : 1].trim(), parts: parseContent(args[old ? 1 : 2])});
+      }
+      cursor = call.end;
+    }
+    if (cursor < text.length) { parts.push({type: "text", text: text.slice(cursor)}); }
+    return parts;
+  }
+
+  function contentText(parts) {
+    return parts.map(function(part) {
+      if (part.type === "text") { return part.text; }
+      if (part.type === "reference") {
+        return "\\explain{" + part.slot + "}{" + part.target_id + "}{" + part.target_label + "}{" + part.hook + "}";
+      }
+      return "\\explanation{" + part.slot + "}{" + part.title + "}{" + contentText(part.parts) + "}";
+    }).join("");
+  }
+
+  function localScopeKey(slots) { return "explanation:" + JSON.stringify(slots); }
+
+  function renderParts(parts, context, paragraphs) {
+    return parts.map(function(part) {
+      if (part.type === "text") {
+        return paragraphs ? renderBodyLines(part.text, "", context) : renderSimpleConceptText(part.text);
+      }
+      if (part.type === "reference") {
+        return options.reference ? options.reference(part, context) : renderSimpleConceptText(part.target_label);
+      }
+      var slot = part.slot;
+      // Native note placement splits the original body into paragraph blocks.
+      // Anonymous legacy slots need that paragraph position to stay distinct.
+      if (slot.indexOf("~legacy-") === 0 && context && context.legacyPrefix) {
+        slot = context.legacyPrefix + slot;
+      }
+      var child = childContext(context, slot);
+      var state = options.disclosure ? options.disclosure(child) : {};
+      if (options.explanation && context && context.sourceId &&
+          child.localSlots.every(function(id) { return id.indexOf("~legacy-") === -1; })) {
+        return options.explanation(part, child, state);
+      }
+      return renderContentUnit({
+        className: "optional-detail", level: "inline", title: part.title,
+        origin: context && context.origin,
+        anchorId: state.id, occurrenceKey: occurrenceKey(child), slot: part.slot,
+        open: state.open, bodyClass: "optional-detail-body",
+        bodyHtml: renderParts(part.parts, child, true)
+      });
+    }).join("");
   }
 
   function renderConceptText(s, context) {
-    var text = String(s || "");
-    var macro = "\\optional_details";
-    var html = "";
-    var cursor = 0;
-
-    while (cursor < text.length) {
-      var macroIndex = text.indexOf(macro, cursor);
-      if (macroIndex === -1) {
-        html += renderSimpleConceptText(text.slice(cursor));
-        break;
-      }
-
-      html += renderSimpleConceptText(text.slice(cursor, macroIndex));
-      var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
-      var summary = parseBracedArgument(text, summaryStart);
-      if (!summary) {
-        html += renderSimpleConceptText(macro);
-        cursor = macroIndex + macro.length;
-        continue;
-      }
-
-      var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
-      var body = parseBracedArgument(text, bodyStart);
-      if (!body) {
-        html += renderSimpleConceptText(text.slice(macroIndex, summary.end));
-        cursor = summary.end;
-        continue;
-      }
-
-      html += renderOptionalDetail(summary.value, body.value, context);
-      cursor = body.end;
+    if (!/\\(?:optional_details|explanation|explain)\b/.test(String(s || ""))) {
+      return renderSimpleConceptText(s);
     }
-
-    return html;
-  }
-
-  function findNextOptionalDetailBlock(text, cursor) {
-    var macro = "\\optional_details";
-    var search = cursor;
-    while (search < text.length) {
-      var macroIndex = text.indexOf(macro, search);
-      if (macroIndex === -1) { return null; }
-
-      var summaryStart = skipOptionalDetailWhitespace(text, macroIndex + macro.length);
-      var summary = parseBracedArgument(text, summaryStart);
-      if (!summary) {
-        search = macroIndex + macro.length;
-        continue;
-      }
-
-      var bodyStart = skipOptionalDetailWhitespace(text, summary.end);
-      var body = parseBracedArgument(text, bodyStart);
-      if (!body) {
-        search = summary.end;
-        continue;
-      }
-
-      return {
-        kind: "optional",
-        start: macroIndex,
-        end: body.end
-      };
-    }
-    return null;
+    return renderParts(parseContent(s), context);
   }
 
   function findNextDisplayMathBlock(text, cursor) {
@@ -302,6 +343,14 @@ function kgCreateContentMarkup(options) {
         });
       }
       cursor = next.end;
+      // A display equation already ends its paragraph. Its following line
+      // ending is structural; additional line endings still request spacers.
+      if (next.kind === "display-math") {
+        var followingBreak = findNextLineBreakBlock(raw, cursor);
+        if (followingBreak && followingBreak.start === cursor) {
+          cursor = followingBreak.end;
+        }
+      }
     }
 
     if (raw.length === 0) {
@@ -319,9 +368,10 @@ function kgCreateContentMarkup(options) {
   function renderBodyLines(text, className, context) {
     var blocks = splitConceptBlocks(text);
     var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
-    blocks.forEach(function(block) {
+    blocks.forEach(function(block, index) {
       html += '<div class="concept-line">' +
-        (block.text ? renderConceptText(block.text, context) : "&nbsp;") +
+        (block.text ? renderConceptText(block.text, Object.assign({}, context,
+          {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";
     });
     html += "</div>";
@@ -372,6 +422,9 @@ function kgCreateContentMarkup(options) {
     parseBracedArgument: parseBracedArgument,
     renderFoldDown: renderFoldDown,
     renderContentUnit: renderContentUnit,
+    parseContent: parseContent,
+    childContext: childContext, contentText: contentText, localScopeKey: localScopeKey,
+    occurrenceKey: occurrenceKey,
     renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,
     findNextOptionalDetailBlock: findNextOptionalDetailBlock,

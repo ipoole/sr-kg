@@ -1,2 +1,3 @@
 reference_id,reference_type,citation,authors,title,year,url,note
 tong.gr,lecture,Tong GR,David Tong,General Relativity,2019,https://www.davidtong.org/pdfs/teaching/general-relativity/gr.pdf,"Definitions of tangent vectors, covectors and their coordinate transformations; numerical terrain and units examples are authored for PhysicsKG."
+guillemin_haine.forms,lecture,"Guillemin & Haine, Differential Forms",Victor Guillemin; Peter J. Haine,"Differential Forms (draft, 28 March 2018)",2018,https://math.mit.edu/classes/18.952/2018SP/files/18.952_book.pdf,Official MIT course draft; inverse function theorem for manifolds and multilinear tensor algebra.

@@ -151,6 +151,11 @@ def test_view_changes_preserve_camera_reading_state_and_layout(browser_graph, wi
         el.open = i % 2 === 0;
       });
     }""")
+    # Opening a recipe hydrates its first concept lazily on the toggle event.
+    # Capture the settled state, rather than racing that independent operation.
+    page.wait_for_function("""() => [...document.querySelectorAll(
+      '#info_panel .kg-reading-tree[open], #info_panel .kg-reading-concept[open]')]
+      .every(el => el.hasAttribute('data-reading-loaded'))""")
     before = page.evaluate("""() => ({
       camera:{position:network.getViewPosition(), scale:network.getScale()},
       sections:[...document.querySelectorAll('#info_panel details[id]')].map(el => [el.id, el.open]),

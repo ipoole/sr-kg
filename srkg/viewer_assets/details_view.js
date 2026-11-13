@@ -102,7 +102,7 @@ function kgCreateDetailsView(options) {
 
   function typesetInfoPanel(options) {
     options = options || {};
-    var panel = document.getElementById("info_panel");
+    var panel = options.element || document.getElementById("info_panel");
     schedulePanelContentRefit();
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([panel]).catch(function(err) {
@@ -180,6 +180,11 @@ function kgCreateDetailsView(options) {
     });
 
     if (scrollToMatch && firstMark) {
+      var ancestor = firstMark.parentElement;
+      while (ancestor && ancestor !== panel) {
+        if (ancestor.tagName === "DETAILS") { ancestor.open = true; }
+        ancestor = ancestor.parentElement;
+      }
       firstMark.scrollIntoView({block: "center", inline: "nearest"});
     }
   }
@@ -307,6 +312,7 @@ function kgCreateDetailsView(options) {
   }
 
   return {
+    clearMathTypesetting: clearMathTypesetting,
     replaceTypesetContent: replaceTypesetContent,
     compactGraphicSpacing: compactGraphicSpacing,
     refreshEquationOverflow: refreshEquationOverflow,

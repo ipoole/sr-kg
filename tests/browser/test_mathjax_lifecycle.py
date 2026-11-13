@@ -1,3 +1,13 @@
+def test_display_equation_line_ending_does_not_add_a_blank_paragraph(browser_graph):
+    for newline in ("\n", "\r\n", "\r"):
+        for blank_lines in (0, 1, 2):
+            source = "Before" + newline + r"\[x=1\]" + newline * (blank_lines + 1) + "After"
+            blocks = browser_graph.page.evaluate(
+                "text=>kgCreateContentMarkup({}).splitConceptBlocks(text)", source)
+            assert [b['kind'] for b in blocks if b['text']] == ['text', 'display-math', 'text']
+            assert sum(not b['text'] for b in blocks) == blank_lines
+
+
 def test_details_mathjax_is_cleared_before_content_is_replaced(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("2.1")

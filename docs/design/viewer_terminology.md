@@ -18,6 +18,15 @@ normally determines the main details content, the centre from which context is
 calculated, and the URL/history entry. Use **selected concept**, **selected
 module**; do not use *focus* as a synonym. Empty-space clicks retain selection.
 
+### Reading position (planned)
+
+The concept whose content was most recently opened or explicitly focused within
+an active reading tree. It is distinct from the root Selection and from hover.
+A **reading marker**, a steady amber outer ring, indicates it on the graph without
+moving the camera or expanding modules. If a folded module represents the concept,
+mark that module and identify the concept in its tooltip. See the
+[reading-tree design](folded_reading_trees_design.md) for synchronisation rules.
+
 ### Context rule
 
 The semantic question asked about the selection. A complete rule includes:

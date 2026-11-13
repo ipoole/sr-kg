@@ -144,6 +144,15 @@ semantic `kind`, not display instructions.
 | `kind` | Yes | Semantic block kind. See the allowed values below. |
 | `title` | Yes | Short editorial title for this block. The viewer may use it as a heading, folded-section handle, search label, or local contents entry. |
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
+| `statement` | No | Brief explicitly authored reusable result/contribution. Required when borrowed through `\explain`; empty for unconverted blocks. |
+| `graphic` | No | `detail` for a `graphic` block wrapping its owner's registered detail SVG and caption; empty otherwise. |
+
+The [authoring guide](../authoring/authoring_guide.md) requires explicit title,
+statement and body for new/revised blocks. An optional storage column preserves
+legacy compatibility; it does not make statements optional editorially. The
+[generated reading-tree design](folded_reading_trees_design.md) supersedes authored
+block borrowing for new work, while the current loader still accepts the earlier
+pilot syntax described below.
 
 Allowed `kind` values:
 
@@ -165,6 +174,7 @@ Allowed `kind` values:
 | `warning` | A caveat, domain restriction, or notation trap. |
 | `historical_note` | Historical context about discovery, attribution, or influence. |
 | `summary` | A concise recap of the main result or takeaway. |
+| `graphic` | An addressable explanation wrapping its owner's registered detail graphic. |
 
 Example stable block IDs:
 
@@ -185,6 +195,15 @@ stable block IDs and reading-completion semantics. Personal notes live only in t
 [personal-data profile](personal_data.md), with optional paragraph (`anchor`) or
 concept/module (`owner`) placement; they are not rows in these authored tables.
 Nested optional disclosures do not yet have independent IDs or read ticks.
+
+The [minimum nested-explanations schema](folded_reading_trees_schema.md) adds
+`\explanation{slot}{title}{body}` for named local explanations and
+`\explain{slot}{block_id}{target label}{hook}` for borrowing a canonical statement
+and explanation. Both normalise with existing blocks into one recursive source
+model. Slots distinguish occurrences, not new personal-data records. The loader
+validates these additions; the [shared reader](folded_reading_trees_renderer.md)
+implements them on a synthetic fixture before production-content conversion.
+Existing tables/content need no conversion to load or render.
 
 ## modules.csv
 
@@ -253,6 +272,8 @@ instead of `concept_id`.
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
 
 Every module must currently have at least one module content block.
+The same optional `statement` and `graphic` columns and nested-content rules
+apply to module blocks as to concept blocks.
 
 ## tutorials.yaml
 
@@ -467,6 +488,8 @@ Text fields may contain:
 | `\[ ... \]` | Display MathJax. |
 | `\cref{label}{concept_id}` | Concept link when loaded; plain authored label otherwise. |
 | `\optional_details{title}{body}` | Fold-down optional detail inside a section. |
+| `\explanation{slot}{title}{body}` | Named, recursive local explanation in a block body. |
+| `\explain{slot}{block_id}{target label}{hook}` | Borrow a source's short statement and foldable explanation; a missing external domain retains the label/hook. |
 
 Validation checks balanced braces, MathJax delimiters, supported custom macro
 syntax, and whether `\cref` targets exist within their loaded namespaces.

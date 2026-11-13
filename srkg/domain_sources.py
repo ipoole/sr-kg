@@ -168,7 +168,7 @@ def _resolve_targets(package, tables, resolver):
     for role, frame in tables.items():
         if frame is None:
             continue
-        for column in ("title", "body", "prompt", "answer", "text", "icon_caption", "detail_caption", "note"):
+        for column in ("title", "statement", "body", "prompt", "answer", "text", "icon_caption", "detail_caption", "note"):
             if column not in frame:
                 continue
             for index, text in frame[column].astype(str).items():

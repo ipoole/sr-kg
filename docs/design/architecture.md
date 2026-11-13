@@ -56,6 +56,7 @@ modules should not import it.
 | Normalise frames and construct typed concepts/modules and caption metadata | `data.py` |
 | Optional enrichment of records through the existing SVG registries | `graphic_enrichment.py` |
 | Typed content, module, question and reference records; viewer serialisation | `model.py` |
+| Normalise recursive content sources, validate shared references and distinguish source/occurrence identities | `content_units.py` |
 | Editorial/schema diagnostics exposed by `--validate` | `validation.py` |
 | Directed graph and module-boundary diagnostics, candidate partition analysis | `dag.py`, `module_diagnostics.py`, `module_partitioning.py` |
 | Module anchors, within-module topological ranks/positions, numbering proposals | `module_layout.py` |
@@ -181,6 +182,8 @@ through callbacks rather than captured once at controller construction.
 | `layout_geometry.js`, `module_geometry.js` | Stateless collision/position helpers and module footprint geometry. |
 | `graph_presentation.js` | Canvas faces, outlines, completion ticks, SVG-image and fitted-label caches. |
 | `content_markup.js` | Escaping, references, optional-details markup and math-aware paragraph/caption/study rendering. |
+| `shared_explanations.js` | Canonical block bodies/actions, local clarifications, namespaced graphics and legacy borrowing compatibility. |
+| `reading_trees.js` | Graph-generated recipes, lazy occurrence/focus state, canonical-source placement and opt-in reading-position synchronisation. |
 | `details_view.js` | Details replacement/MathJax lifecycle, contents selection and scroll state/timers. |
 | `notes_controller.js` | Notes state/editor identity, anchor recovery, rendering and CSV exchange. |
 | `study_controller.js` | Questions/read state and indexes, marking, completion caches and scorecard. |
@@ -297,6 +300,10 @@ Built-in blocks, personal blocks and nested explanations use the recursive
 and capability-filtered actions. Kind/origin supply colour themes; nesting supplies
 placement, and adapters explicitly supply editing/annotation/read-tracking
 capabilities. Storage origin does not select a different presentation engine.
+Authored source bodies are transmitted once, verbatim to preserve note anchors;
+Python validates their recursive model and the browser normalises the same shape.
+Shared explanations are instantiated lazily, with page-local occurrence paths
+and no implicit graph changes. See the [shared reader](folded_reading_trees_renderer.md).
 See [Content-unit model](notes_content_unification.md). The
 notes controller owns reading/editing state and targeted MathJax replacement;
 editing one note does not rebuild the Details pane. Personal notes never enter
