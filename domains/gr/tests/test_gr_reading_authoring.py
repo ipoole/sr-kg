@@ -7,7 +7,7 @@ from srkg.schema import AUTHORING_BLOCK_KINDS
 from srkg.content_units import ContentExplanation, ContentReference
 
 ROOT = Path(__file__).resolve().parents[3]
-REVIEWED_MODULE_COUNT = 1
+REVIEWED_MODULE_COUNT = 2
 BASELINE = json.loads((ROOT/'domains/gr/docs/reading_tree_authoring_baseline.json').read_text())
 
 

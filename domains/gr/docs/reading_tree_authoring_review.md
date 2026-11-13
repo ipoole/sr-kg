@@ -10,7 +10,7 @@ no artwork regeneration is required.
 | Module | Status | Main teaching work |
 | --- | --- | --- |
 | GR-1 | Revised | Operational free fall, metric measurement, local/global distinctions; statements, consolidated kinds and local clarifications. |
-| GR-2 | Pending | Connections, transport, motion and variational arguments. |
+| GR-2 | Revised | Connections and basis changes; explicit Levi-Civita, particle-action and deviation arguments with optional algebra. |
 | GR-3 | Pending | Curvature contractions, identities and gravitational action. |
 | GR-4 | Pending | Matter models, metric variation and field equations. |
 | GR-5 | Pending | Controlled approximations, observable tests and waves. |

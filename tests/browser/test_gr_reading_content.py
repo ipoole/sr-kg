@@ -12,7 +12,7 @@ def gr_reading_output(tmp_path_factory):
 
 @pytest.mark.browser
 @pytest.mark.browser_full
-@pytest.mark.parametrize('number', [1])
+@pytest.mark.parametrize('number', [1, 2])
 @pytest.mark.parametrize('width', [390, 1280], ids=['phone', 'desktop'])
 def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_browser, number, width):
     with (REPO_ROOT/'domains/gr/data/modules.csv').open() as f:
@@ -24,6 +24,7 @@ def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_brows
                              {'viewport': {'width': width, 'height': 900}}) as graph:
         page = graph.page
         page.locator('#kg_view_select').select_option('details')
+        overflows = []
         for owner in owners:
             graph.click_concept(owner)
             blocks = page.locator('#info_panel > .content-block')
@@ -35,6 +36,7 @@ def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_brows
             page.evaluate('MathJax.typesetPromise([document.getElementById("info_panel")])')
             assert not page.locator('#info_panel mjx-merror,#info_panel [data-mjx-error]').count(), owner
             assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1'), owner
-            assert blocks.locator('mjx-container[display="true"]').evaluate_all('es=>es.every(e=>!e.clientWidth||e.scrollWidth<=e.clientWidth+2)'), owner
+            overflows.extend((owner, text) for text in blocks.locator('mjx-container[display="true"]').evaluate_all('es=>es.filter(e=>e.clientWidth && e.scrollWidth>e.clientWidth+2).map(e=>e.textContent)'))
             assert page.locator('#info_panel .concept-graphic').count() == 1
+        assert not overflows, overflows
         assert not graph.page_errors
