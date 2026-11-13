@@ -13,7 +13,7 @@ no artwork regeneration is required.
 | GR-2 | Revised | Connections and basis changes; explicit Levi-Civita, particle-action and deviation arguments with optional algebra. |
 | GR-3 | Revised | Curvature commutator, contraction information loss, differential identity and full interior action variation. |
 | GR-4 | Revised | Rest-frame fluid construction, pressure work, matter response, coupled variation and explicit trace reversal. |
-| GR-5 | Pending | Controlled approximations, observable tests and waves. |
+| GR-5 | Revised | Distinct approximation regimes; crest counting, bending integral, precession resonance and constrained linear waves. |
 | GR-6 | Pending | Exact spherical solution, horizons and orbit dynamics. |
 
 ## Editorial decisions

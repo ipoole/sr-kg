@@ -98,3 +98,5 @@ content_block,gr.schwarzschild_metric.derivation,tong.gr,§6.1 The Schwarzschild
 content_block,gr.riemann_tensor.authored_3,tong.gr,§3.2.2,Derivation checked against the primary lecture notes; use atlas conventions.
 content_block,gr.bianchi_identity.authored_3,tong.gr,§3.4,Derivation checked against the primary lecture notes; use atlas conventions.
 content_block,gr.einstein_tensor.authored_3,tong.gr,§3.4.1,Derivation checked against the primary lecture notes; use atlas conventions.
+content_block,gr.gravitational_waves.linearised_equation,tong.gr,§§5.1–5.2,"Weak-field derivation, translated to atlas conventions."
+content_block,gr.newtonian_limit.authored_3,tong.gr,§5.1.2,"Weak-field derivation, translated to atlas conventions."
