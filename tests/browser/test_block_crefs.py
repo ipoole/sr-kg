@@ -94,7 +94,9 @@ def test_advanced_kind_renders_locally_and_is_not_silently_added_to_recipes(bloc
         advanced = page.locator('#info_panel > .content-block-advanced')
         assert advanced.count() == 1 and not advanced.evaluate('e=>e.open')
         assert advanced.locator('.content-block-kind-label').get_attribute('data-label') == 'Advanced'
-        assert advanced.evaluate('e=>getComputedStyle(e).getPropertyValue("--block-accent").trim()') == '#4e5f91'
+        assert advanced.evaluate('e=>getComputedStyle(e).borderLeftColor') != page.locator(
+            '#info_panel > .content-block-definition'
+        ).evaluate('e=>getComputedStyle(e).borderLeftColor')
         advanced.locator(':scope > summary').click()
         assert advanced.evaluate('e=>e.open')
         for recipe in ('derivation','teaching'):

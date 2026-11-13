@@ -162,18 +162,18 @@ def test_read_marks_notes_and_open_paths_survive_same_page_refresh(shared_explan
     deeper=_reference(page,'shared').locator('details[data-content-slot="deeper"]')
     _open(deeper)
     root=page.locator('[data-content-block-id="test.alpha.definition"]')
-    root.locator(':scope > summary .content-block-read-toggle').check()
+    root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').check()
     root.locator(':scope > summary .kg-note-block-action').click()
     root.locator(':scope > .content-block-body > .concept-line').first.click()
     page.locator('.user-note-body-input').fill('A note on this argument.')
     page.locator('.user-note-close').click()
     assert deeper.evaluate('e=>e.open')
-    assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
+    assert root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
     assert page.locator('#info_panel .kg-unmatched-notes').count()==0
     assert page.locator('#info_panel .user-note').count()==1
     graph.click_concept('test.beta'); graph.click_concept('test.alpha')
     assert not _reference(page,'left').evaluate('e=>e.open')  # New page visit.
-    assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
+    assert root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
 
 
 @pytest.mark.browser
@@ -284,17 +284,19 @@ def test_borrowed_read_marks_share_source_identity_and_preserve_reading(shared_e
     before = page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})')
     assert copies.first.is_disabled()
     _open(_reference(page, 'shared').first)
-    copies.first.check()
-    assert copies.nth(1).is_checked()
+    opened = _reference(page, 'shared').first
+    tick = opened.locator(':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    tick.check()
+    assert copies.evaluate_all('es=>es.every(e=>e.checked)')
     assert page.evaluate('kgContentReadProgress.isRead("test.delta.definition")')
     assert not page.evaluate('kgContentReadProgress.isRead("test.alpha.definition")')
-    assert _reference(page, 'shared').first.evaluate('e=>e.open')
+    assert opened.evaluate('e=>e.open')
     assert not _reference(page, 'shared').nth(1).evaluate('e=>e.open')
     page.evaluate('kgContentReadProgress.setRead("test.delta.definition", false)')
-    assert not copies.first.is_checked()
-    copies.nth(1).focus()
+    assert not tick.is_checked()
+    tick.focus()
     page.keyboard.press('Space')
-    assert copies.first.is_checked()
+    assert tick.is_checked()
     assert page.evaluate('({state:kgViewerStateSnapshot(),hash:location.hash})') == before
     graph = shared_explanation_graph
     graph.click_concept('test.delta')

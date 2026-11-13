@@ -134,8 +134,8 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
     copies = card.locator('[data-content-block-id="1.1.definition"]')
     assert copies.count() >= 2
     copies.first.locator(":scope > summary").click()
-    copies.first.locator(":scope > summary .content-block-read-toggle").check()
-    assert copies.locator(":scope > summary .content-block-read-toggle").evaluate_all(
+    copies.first.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").check()
+    assert copies.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").evaluate_all(
         "es=>es.every(e=>e.checked)")
     assert page.evaluate("kgContentReadProgress.isRead('1.1.definition')")
     branch = card.locator('.kg-reading-concept-container[data-reading-concept="1.1"]').first
@@ -161,7 +161,7 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
     reading_graph.click_concept("1.1")
     native = page.locator('#info_panel > [data-content-block-id="1.1.definition"]')
     assert native.locator(".user-note").count() == 1
-    assert native.locator(":scope > summary .content-block-read-toggle").is_checked()
+    assert native.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").is_checked()
     assert not reading_graph.page_errors
 
 

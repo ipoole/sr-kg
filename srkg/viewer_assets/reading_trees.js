@@ -291,6 +291,14 @@ function kgCreateReadingTrees(options) {
     }
   }
   function leaveFocus(silent) { while (focusStack.length) { returnFocus(silent); } }
+  function prepareFold(target) {
+    var index = focusStack.findIndex(function(item) {
+      return item.targetId === target.id || target.contains(item.marker);
+    });
+    if (index >= 0) {
+      while (focusStack.length > index) { returnFocus(true); }
+    }
+  }
   function restoreFocus() {
     var saved = resumeFocus.slice(); resumeFocus = [];
     var savedPosition = position, savedRecipe = activeRecipe;
@@ -337,7 +345,7 @@ function kgCreateReadingTrees(options) {
     return false;
   }
   return {beginPage: beginPage, render: render, afterRender: afterRender, restored: restored, toggled: toggled,
-    restoreFocus: restoreFocus, focusButton: focusButton, click: click, change: change, detach: detach,
+    restoreFocus: restoreFocus, prepareFold: prepareFold, focusButton: focusButton, click: click, change: change, detach: detach,
     reset: function() {
       leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
       entries.clear(); entryIds.clear(); trees = {}; resumeFocus = [];

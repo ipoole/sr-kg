@@ -217,7 +217,8 @@
           moduleMemberIds: moduleMemberIds
         };
         var detailsView = kgCreateDetailsView({
-          markup: contentMarkup, content: contentModel, onContentChange: schedulePanelContentRefit
+          markup: contentMarkup, content: contentModel, onContentChange: schedulePanelContentRefit,
+          beforeFold: function(target) { readingTrees.prepareFold(target); }
         });
         var replaceTypesetContent = detailsView.replaceTypesetContent;
         var typesetInfoPanel = detailsView.typesetInfoPanel;
@@ -6491,6 +6492,7 @@
         });
 
         document.getElementById("info_panel").addEventListener("click", function(e) {
+          if (detailsView.foldFromFooter(e)) { e.preventDefault(); return; }
           if (readingTrees.click(e)) { e.preventDefault(); return; }
           var explanationReturn = e.target.closest(".kg-content-return");
           if (explanationReturn) {
@@ -6917,6 +6919,7 @@
           if (e.target && e.target.tagName === "DETAILS") {
             readingTrees.toggled(e.target);
             sharedExplanations.toggled(e.target);
+            detailsView.refreshFoldControls(e.target);
             updateContentReadCompletionIndicators();
             if (
               e.target.classList.contains("user-note")

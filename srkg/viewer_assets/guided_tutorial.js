@@ -45,7 +45,7 @@ function kgCreateGuidedTutorial(options) {
     }
     readingPanelActive = active;
     panel.querySelectorAll('a, button, input, textarea, select, [contenteditable], [role="button"]').forEach(function(control) {
-      if (control.matches("a.concept-toc-link")) { return; }
+      if (control.matches("a.concept-toc-link, button.kg-content-refold")) { return; }
       var original = readingControlAttributes.get(control);
       if (active) {
         if (!original) {
@@ -264,7 +264,8 @@ function kgCreateGuidedTutorial(options) {
     if (details && !tutorialPlayback.transitioning) {
       if (["wheel", "touchstart", "touchmove", "pointerdown", "pointerup"].indexOf(event.type) !== -1) { return; }
       var interactive = element.closest('a, button, input, textarea, select, label, [contenteditable="true"], [role="button"]');
-      var readingAction = (!interactive && element.closest("summary")) || element.closest("a.concept-toc-link");
+      var readingAction = (!interactive && element.closest("summary")) ||
+        element.closest("a.concept-toc-link, button.kg-content-refold");
       if (event.type === "keydown" && (
         (!interactive && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", " "].indexOf(event.key) !== -1) ||
         (readingAction && (event.key === "Enter" || event.key === " "))
