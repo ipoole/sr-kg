@@ -170,11 +170,25 @@
           typeset: function(element) { typesetInfoPanel({element: element}); },
           clearMath: function(element) { detailsView.clearMathTypesetting(element); },
           onPosition: function() { if (initialGraphProjectionReady) { network.redraw(); } },
-          onSynchronise: function(id, rule) {
+          onSynchronise: async function(id, rule) {
             if (activeNodeId !== id) { return; }
             resetContextFitInteraction();
             viewerState.contextRule = createContextRule(rule.preset, rule.depth);
+            viewerState.displayScope = DisplayScope.CONTEXT;
+            updateGraphViewControls();
+            if (viewerState.view === "details") { setViewerView("both"); }
             renderGraphFromViewerState();
+            expandContextModules();
+            document.getElementById("kg_fit_select").value = "context";
+            updateGraphContextControls();
+            await nextAnimationFrames(2);
+            var reading = readingTrees.snapshot();
+            if (activeNodeId !== id || !reading.synchronised ||
+                viewerState.displayScope !== DisplayScope.CONTEXT ||
+                viewerState.contextRule.preset !== rule.preset ||
+                viewerState.contextRule.depth !== rule.depth) { return; }
+            clearContextFitPriming();
+            fitViewerTarget("context");
           }
         });
         window.kgReadingTrees = {snapshot: readingTrees.snapshot};
@@ -5514,6 +5528,34 @@
           var conceptId = Object.keys(conceptData).sort(compareConceptIds)[0];
           return conceptId ? {type: "concept", id: conceptId} : null;
         }
+
+        window.kgRestoreHome = async function() {
+          resetContextFitInteraction(); setLayoutEditingEnabled(false);
+          hideNodeTooltip(); restoreHoveredEdge();
+          readingTrees.reset(); sharedExplanations.reset();
+          hideConceptPreview(true); setSearchOpen(false); setControlsVisible(false);
+          viewerState.contextRule = createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS);
+          viewerState.displayScope = DisplayScope.FULL;
+          applyWorkspaceSplit(50); setViewerView("both");
+          moduleIdsWithMembers().forEach(function(moduleId) {
+            unfoldModule(moduleId);
+            preferredFoldedModules[String(moduleId)] = Boolean(getModule(moduleId).default_collapsed);
+          });
+          applyDefaultModuleFoldState();
+          selectDefaultViewerObject(); initialiseSelectionHistory();
+          var homeSelection = JSON.stringify(viewerSelectionSnapshot());
+          document.getElementById("kg_fit_select").value = "context";
+          await nextAnimationFrames(2);
+          if (homeSelection !== JSON.stringify(viewerSelectionSnapshot())) { return; }
+          if (lastGraphRender && lastGraphRender.fitIds.length) {
+            fitNodesToAvailableRect(lastGraphRender.fitIds, {maxScale: 0.72, animation: false});
+          }
+          var status = document.getElementById("kg_status");
+          status.textContent = "Starting view restored";
+          setTimeout(function() {
+            if (status.textContent === "Starting view restored") { status.textContent = ""; }
+          }, 2500);
+        };
 
         function selectDefaultViewerObject() {
           var selection = defaultViewerSelection();

@@ -83,15 +83,19 @@ def test_blocks_and_graph_generated_routes(reading_graph, width):
 
 
 @pytest.mark.browser
-def test_reading_position_sync_is_explicit_and_nonspatial(reading_graph):
+def test_sync_prepares_context_then_reading_position_leaves_camera_alone(reading_graph):
     page = reading_graph.page
     card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
     card.locator(":scope > summary").click()
     page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute("id"))
-    camera = page.evaluate("({pos:network.getViewPosition(),scale:network.getScale(),folds:kgViewerStateSnapshot().selection})")
     card.locator(".kg-reading-sync").check()
+    page.wait_for_function("kgViewerStateSnapshot().displayScope==='context'")
+    page.wait_for_timeout(500)
+    camera = page.evaluate("({pos:network.getViewPosition(),scale:network.getScale(),folds:kgViewerStateSnapshot().selection})")
     assert page.evaluate("kgViewerStateSnapshot().contextRule.preset") == "foundations"
     assert page.evaluate("kgReadingTrees.snapshot().synchronised") == "teaching"
+    assert page.locator("#kg_display_scope_select").input_value() == "context"
+    assert page.locator("#kg_view_select").input_value() == "both"
     concept = card.locator('.kg-reading-concept-container[data-reading-concept="2.2"]').first
     _open_concept(concept)
     page.wait_for_function("kgReadingTrees.snapshot().position==='2.2'")

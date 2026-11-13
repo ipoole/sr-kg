@@ -41,8 +41,9 @@ focus path. Changing a tree's depth rebuilds only that tree. A first-level conce
 has no full-width action; deeper concepts/local clarifications can offer it.
 
 Each card has Depth, Synchronise graph and Fold supports. Synchronisation starts
-off. Enabling it keeps Selection at the root and sets the recipe's Context/depth,
-without changing Camera, Graph mode, View, module folds or layout. Only one card
+off. Enabling it keeps Selection at the root, sets the recipe’s Context/depth,
+uses Context only, reveals its context modules and fits the context. Details-only
+view becomes Both so the map is visible; graph-only view stays unchanged. Only one card
 can synchronise. Manual selection/context changes, closing that card or reading
 in another unsynchronised tree detach the marker; the graph settings remain.
 
@@ -50,7 +51,7 @@ Reading position follows the last opened/focused concept within the active tree.
 It is transient and does not mark content read. A steady amber outer ring is drawn
 after graph nodes, separately from selection styling. A folded module represents
 an enclosed reading position; its tooltip names the actual concept. No pulsing,
-automatic expansion or camera movement is used.
+automatic expansion or camera movement follows subsequent Reading-position changes.
 
 Blocks are grouped in recipe-kind order; blocks of the same kind retain their
 authored sequence. The native concept view retains its full authored order.

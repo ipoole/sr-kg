@@ -338,6 +338,10 @@ function kgCreateReadingTrees(options) {
   }
   return {beginPage: beginPage, render: render, afterRender: afterRender, restored: restored, toggled: toggled,
     restoreFocus: restoreFocus, focusButton: focusButton, click: click, change: change, detach: detach,
+    reset: function() {
+      leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
+      entries.clear(); entryIds.clear(); trees = {}; resumeFocus = [];
+    },
     snapshot: function() { return {root: root, synchronised: synchronised, position: position,
       activeRecipe: activeRecipe, focusDepth: focusStack.length}; }};
 }

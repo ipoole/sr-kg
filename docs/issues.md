@@ -50,15 +50,12 @@ Issue numbers are retained so existing references remain valid.
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 7. Stop tracking question attempts; simplify study records and their presentation accordingly.
-8. Consider a Home button that restores the initial selection and view settings.
-   Define which presentation settings it resets; preserve personal data.
 9. Consider a small bottom-right “Fold ↑” action on open blocks, clarifications and
    reading-tree concepts, to avoid scrolling back to the heading on phones. Define
    post-fold scrolling, descendant/Reading-position state and interaction with
    full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
 11. <deleted>
 14. **Deferred:** review block background colours.
-17. Teaching tree, Synchronize graph should probably force the graph into a good state - Context only and Fit.
 
 ## 5. Notes enhancement and unification
 

@@ -195,7 +195,7 @@ function kgCreateSharedExplanations(options) {
     return found ? graphic(found) + markup.renderBodyLines(found.block.body) : "";
   }
 
-  return {beginPage: beginPage, afterRender: afterRender, toggled: toggled,
+  return {reset: function() { currentPage = ""; entries.clear(); nativeState.clear(); }, beginPage: beginPage, afterRender: afterRender, toggled: toggled,
     rootContext: rootContext, disclosure: disclosure, renderReference: renderReference, local: local,
     nativeStatement: nativeStatement, body: body, actions: actions, hasGraphicBlock: hasGraphicBlock,
     source: source, preview: preview};
