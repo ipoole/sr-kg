@@ -1,0 +1,1628 @@
+{
+  "blocks": [
+    {
+      "block_id": "gr.equivalence_principle.overview",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.definition",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.authored_3",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.authored_4",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.authored_5",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_inertial_frame.overview",
+      "owner": "gr.local_inertial_frame",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_inertial_frame.definition",
+      "owner": "gr.local_inertial_frame",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_inertial_frame.authored_3",
+      "owner": "gr.local_inertial_frame",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_inertial_frame.authored_4",
+      "owner": "gr.local_inertial_frame",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_inertial_frame.authored_5",
+      "owner": "gr.local_inertial_frame",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.freely_falling_observer.overview",
+      "owner": "gr.freely_falling_observer",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.freely_falling_observer.definition",
+      "owner": "gr.freely_falling_observer",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.freely_falling_observer.authored_3",
+      "owner": "gr.freely_falling_observer",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.freely_falling_observer.authored_4",
+      "owner": "gr.freely_falling_observer",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.freely_falling_observer.authored_5",
+      "owner": "gr.freely_falling_observer",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.tidal_gravity.overview",
+      "owner": "gr.tidal_gravity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.tidal_gravity.definition",
+      "owner": "gr.tidal_gravity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.tidal_gravity.authored_3",
+      "owner": "gr.tidal_gravity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.tidal_gravity.authored_4",
+      "owner": "gr.tidal_gravity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.tidal_gravity.authored_5",
+      "owner": "gr.tidal_gravity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.overview",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.definition",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.authored_3",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.authored_4",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.authored_5",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.overview",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.definition",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.from_sr_metric",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.line_element_preview",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.not_grid",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.inverse_metric.overview",
+      "owner": "gr.inverse_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.inverse_metric.definition",
+      "owner": "gr.inverse_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.inverse_metric.raising_indices",
+      "owner": "gr.inverse_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.inverse_metric.coordinate_dependence",
+      "owner": "gr.inverse_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.inverse_metric.not_new_geometry",
+      "owner": "gr.inverse_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.volume_element.overview",
+      "owner": "gr.volume_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.volume_element.definition",
+      "owner": "gr.volume_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.volume_element.why_needed",
+      "owner": "gr.volume_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.volume_element.determinant_role",
+      "owner": "gr.volume_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.volume_element.not_extra_matter",
+      "owner": "gr.volume_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.line_element.overview",
+      "owner": "gr.line_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.line_element.definition",
+      "owner": "gr.line_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.line_element.metric_use",
+      "owner": "gr.line_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.line_element.sr_limit",
+      "owner": "gr.line_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.line_element.not_global_distance",
+      "owner": "gr.line_element",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.proper_time.overview",
+      "owner": "gr.proper_time",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.proper_time.definition",
+      "owner": "gr.proper_time",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.proper_time.worldline_dependence",
+      "owner": "gr.proper_time",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.proper_time.sr_generalisation",
+      "owner": "gr.proper_time",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.proper_time.not_coordinate_time",
+      "owner": "gr.proper_time",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.null_curve.overview",
+      "owner": "gr.null_curve",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.null_curve.definition",
+      "owner": "gr.null_curve",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.null_curve.lightlike",
+      "owner": "gr.null_curve",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.null_curve.cone_boundary",
+      "owner": "gr.null_curve",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.null_curve.not_zero_motion",
+      "owner": "gr.null_curve",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.overview",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.definition",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.light_cones",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.local_to_global",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.not_picture_only",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_flatness.overview",
+      "owner": "gr.local_flatness",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_flatness.definition",
+      "owner": "gr.local_flatness",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_flatness.equivalence_principle",
+      "owner": "gr.local_flatness",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_flatness.curvature_remains",
+      "owner": "gr.local_flatness",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.local_flatness.not_global_flatness",
+      "owner": "gr.local_flatness",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_signature.overview",
+      "owner": "gr.metric_signature",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_signature.definition",
+      "owner": "gr.metric_signature",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_signature.alternative",
+      "owner": "gr.metric_signature",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_signature.units",
+      "owner": "gr.metric_signature",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_signature.warning",
+      "owner": "gr.metric_signature",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.overview",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.definition",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.authored_3",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.authored_4",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.authored_5",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.overview",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.definition",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.authored_3",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.authored_4",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.authored_5",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.overview",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.definition",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.authored_3",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.authored_4",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.authored_5",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_compatibility.overview",
+      "owner": "gr.metric_compatibility",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_compatibility.definition",
+      "owner": "gr.metric_compatibility",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_compatibility.authored_3",
+      "owner": "gr.metric_compatibility",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_compatibility.authored_4",
+      "owner": "gr.metric_compatibility",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_compatibility.authored_5",
+      "owner": "gr.metric_compatibility",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.overview",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.definition",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.authored_3",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.authored_4",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.authored_5",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.overview",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.definition",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.authored_3",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.authored_4",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.authored_5",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.overview",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.definition",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.authored_3",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.authored_4",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.authored_5",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_equation.overview",
+      "owner": "gr.geodesic_equation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_equation.definition",
+      "owner": "gr.geodesic_equation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_equation.authored_3",
+      "owner": "gr.geodesic_equation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_equation.authored_4",
+      "owner": "gr.geodesic_equation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_equation.authored_5",
+      "owner": "gr.geodesic_equation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_action.overview",
+      "owner": "gr.geodesic_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_action.definition",
+      "owner": "gr.geodesic_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_action.authored_3",
+      "owner": "gr.geodesic_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_action.authored_4",
+      "owner": "gr.geodesic_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_action.authored_5",
+      "owner": "gr.geodesic_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_velocity.overview",
+      "owner": "gr.four_velocity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_velocity.definition",
+      "owner": "gr.four_velocity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_velocity.authored_3",
+      "owner": "gr.four_velocity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_velocity.authored_4",
+      "owner": "gr.four_velocity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_velocity.authored_5",
+      "owner": "gr.four_velocity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_acceleration.overview",
+      "owner": "gr.four_acceleration",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_acceleration.definition",
+      "owner": "gr.four_acceleration",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_acceleration.authored_3",
+      "owner": "gr.four_acceleration",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_acceleration.authored_4",
+      "owner": "gr.four_acceleration",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.four_acceleration.authored_5",
+      "owner": "gr.four_acceleration",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_deviation.overview",
+      "owner": "gr.geodesic_deviation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_deviation.definition",
+      "owner": "gr.geodesic_deviation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_deviation.authored_3",
+      "owner": "gr.geodesic_deviation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_deviation.authored_4",
+      "owner": "gr.geodesic_deviation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic_deviation.authored_5",
+      "owner": "gr.geodesic_deviation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.overview",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.definition",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.authored_3",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.authored_4",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.authored_5",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.overview",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.definition",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.authored_3",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.authored_4",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.authored_5",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_scalar.overview",
+      "owner": "gr.ricci_scalar",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_scalar.definition",
+      "owner": "gr.ricci_scalar",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_scalar.authored_3",
+      "owner": "gr.ricci_scalar",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_scalar.authored_4",
+      "owner": "gr.ricci_scalar",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_scalar.authored_5",
+      "owner": "gr.ricci_scalar",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.overview",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.definition",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.authored_3",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.authored_4",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.authored_5",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.overview",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.definition",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.authored_3",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.authored_4",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.authored_5",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.overview",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.definition",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.authored_3",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.authored_4",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.authored_5",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.overview",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.definition",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.authored_3",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.authored_4",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.authored_5",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_tensor.overview",
+      "owner": "gr.stress_energy_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_tensor.definition",
+      "owner": "gr.stress_energy_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_tensor.authored_3",
+      "owner": "gr.stress_energy_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_tensor.authored_4",
+      "owner": "gr.stress_energy_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_tensor.authored_5",
+      "owner": "gr.stress_energy_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perfect_fluid.overview",
+      "owner": "gr.perfect_fluid",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perfect_fluid.definition",
+      "owner": "gr.perfect_fluid",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perfect_fluid.authored_3",
+      "owner": "gr.perfect_fluid",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perfect_fluid.authored_4",
+      "owner": "gr.perfect_fluid",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perfect_fluid.authored_5",
+      "owner": "gr.perfect_fluid",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.overview",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.definition",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.authored_3",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.authored_4",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.authored_5",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_conservation.overview",
+      "owner": "gr.covariant_conservation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_conservation.definition",
+      "owner": "gr.covariant_conservation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_conservation.authored_3",
+      "owner": "gr.covariant_conservation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_conservation.authored_4",
+      "owner": "gr.covariant_conservation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_conservation.authored_5",
+      "owner": "gr.covariant_conservation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equation_of_state.overview",
+      "owner": "gr.equation_of_state",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equation_of_state.definition",
+      "owner": "gr.equation_of_state",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equation_of_state.authored_3",
+      "owner": "gr.equation_of_state",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equation_of_state.authored_4",
+      "owner": "gr.equation_of_state",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equation_of_state.authored_5",
+      "owner": "gr.equation_of_state",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.overview",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.definition",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.authored_3",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.authored_4",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.authored_5",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.overview",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.definition",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.authored_3",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.authored_4",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.authored_5",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_variation.overview",
+      "owner": "gr.stress_energy_variation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_variation.definition",
+      "owner": "gr.stress_energy_variation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_variation.authored_3",
+      "owner": "gr.stress_energy_variation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_variation.authored_4",
+      "owner": "gr.stress_energy_variation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.stress_energy_variation.authored_5",
+      "owner": "gr.stress_energy_variation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.trace_reversed_equations.overview",
+      "owner": "gr.trace_reversed_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.trace_reversed_equations.definition",
+      "owner": "gr.trace_reversed_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.trace_reversed_equations.authored_3",
+      "owner": "gr.trace_reversed_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.trace_reversed_equations.authored_4",
+      "owner": "gr.trace_reversed_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.trace_reversed_equations.authored_5",
+      "owner": "gr.trace_reversed_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.vacuum_field_equations.overview",
+      "owner": "gr.vacuum_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.vacuum_field_equations.definition",
+      "owner": "gr.vacuum_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.vacuum_field_equations.authored_3",
+      "owner": "gr.vacuum_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.vacuum_field_equations.authored_4",
+      "owner": "gr.vacuum_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.vacuum_field_equations.authored_5",
+      "owner": "gr.vacuum_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_metric.overview",
+      "owner": "gr.weak_field_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_metric.definition",
+      "owner": "gr.weak_field_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_metric.authored_3",
+      "owner": "gr.weak_field_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_metric.authored_4",
+      "owner": "gr.weak_field_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_metric.authored_5",
+      "owner": "gr.weak_field_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.newtonian_limit.overview",
+      "owner": "gr.newtonian_limit",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.newtonian_limit.definition",
+      "owner": "gr.newtonian_limit",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.newtonian_limit.authored_3",
+      "owner": "gr.newtonian_limit",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.newtonian_limit.authored_4",
+      "owner": "gr.newtonian_limit",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.newtonian_limit.authored_5",
+      "owner": "gr.newtonian_limit",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.overview",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.definition",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.authored_3",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.authored_4",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.authored_5",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.overview",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.definition",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.authored_3",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.authored_4",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.authored_5",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.overview",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.definition",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.authored_3",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.authored_4",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.authored_5",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.post_newtonian_approximation.overview",
+      "owner": "gr.post_newtonian_approximation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.post_newtonian_approximation.definition",
+      "owner": "gr.post_newtonian_approximation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.post_newtonian_approximation.authored_3",
+      "owner": "gr.post_newtonian_approximation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.post_newtonian_approximation.authored_4",
+      "owner": "gr.post_newtonian_approximation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.post_newtonian_approximation.authored_5",
+      "owner": "gr.post_newtonian_approximation",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.overview",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.definition",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.tidal_strain",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.polarizations",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.sources",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.not_sound",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.overview",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.definition",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.derivation",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": [
+        [
+          "~legacy-1"
+        ]
+      ]
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.authored_3",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.authored_4",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.authored_5",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_radius.overview",
+      "owner": "gr.schwarzschild_radius",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_radius.definition",
+      "owner": "gr.schwarzschild_radius",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_radius.authored_3",
+      "owner": "gr.schwarzschild_radius",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_radius.authored_4",
+      "owner": "gr.schwarzschild_radius",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_radius.authored_5",
+      "owner": "gr.schwarzschild_radius",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.overview",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.definition",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.authored_3",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.authored_4",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.authored_5",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.overview",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.definition",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.authored_3",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.authored_4",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.authored_5",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.overview",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.definition",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.authored_3",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.authored_4",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.authored_5",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.effective_potential_orbits.overview",
+      "owner": "gr.effective_potential_orbits",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.effective_potential_orbits.definition",
+      "owner": "gr.effective_potential_orbits",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.effective_potential_orbits.authored_3",
+      "owner": "gr.effective_potential_orbits",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.effective_potential_orbits.authored_4",
+      "owner": "gr.effective_potential_orbits",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.effective_potential_orbits.authored_5",
+      "owner": "gr.effective_potential_orbits",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.einstein_1907",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.equivalence_principle.galileo_eotvos",
+      "owner": "gr.equivalence_principle",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.path_to_geometry",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravity_as_geometry.grossmann",
+      "owner": "gr.gravity_as_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.metric_tensor.historical_context",
+      "owner": "gr.metric_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.causal_structure.historical_context",
+      "owner": "gr.causal_structure",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connection.historical_context",
+      "owner": "gr.connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.christoffel_symbols.historical_context",
+      "owner": "gr.christoffel_symbols",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.covariant_derivative.historical_context",
+      "owner": "gr.covariant_derivative",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.torsion_free_connection.historical_context",
+      "owner": "gr.torsion_free_connection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.parallel_transport.historical_context",
+      "owner": "gr.parallel_transport",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.geodesic.historical_context",
+      "owner": "gr.geodesic",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.riemann_tensor.historical_context",
+      "owner": "gr.riemann_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.ricci_tensor.historical_context",
+      "owner": "gr.ricci_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_tensor.historical_context",
+      "owner": "gr.einstein_tensor",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.bianchi_identity.historical_context",
+      "owner": "gr.bianchi_identity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_invariants.historical_context",
+      "owner": "gr.curvature_invariants",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_hilbert_action.historical_context",
+      "owner": "gr.einstein_hilbert_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.energy_conditions.historical_context",
+      "owner": "gr.energy_conditions",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.november_1915",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.einstein_field_equations.einstein_hilbert",
+      "owner": "gr.einstein_field_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.static_universe",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.cosmological_constant.return",
+      "owner": "gr.cosmological_constant",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.einstein_prediction",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_redshift.pound_rebka",
+      "owner": "gr.gravitational_redshift",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.early_prediction",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.light_deflection.eclipse_1919",
+      "owner": "gr.light_deflection",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.perihelion_precession.historical_context",
+      "owner": "gr.perihelion_precession",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.einstein_prediction",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.reality_clarified",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.gravitational_waves.ligo_detection",
+      "owner": "gr.gravitational_waves",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_metric.historical_context",
+      "owner": "gr.schwarzschild_metric",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.from_singularity_to_horizon",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.event_horizon.black_hole_concept",
+      "owner": "gr.event_horizon",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.coordinate_singularity.historical_context",
+      "owner": "gr.coordinate_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.black_hole_singularity.historical_context",
+      "owner": "gr.black_hole_singularity",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.foundations_and_spacetime_geometry.overview",
+      "owner": "gr.foundations_and_spacetime_geometry",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.connections_transport_and_motion.overview",
+      "owner": "gr.connections_transport_and_motion",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.curvature_and_gravitational_action.overview",
+      "owner": "gr.curvature_and_gravitational_action",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.matter_and_einstein_equations.overview",
+      "owner": "gr.matter_and_einstein_equations",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.weak_field_and_classical_tests.overview",
+      "owner": "gr.weak_field_and_classical_tests",
+      "local_slots": []
+    },
+    {
+      "block_id": "gr.schwarzschild_geometry_and_black_holes.overview",
+      "owner": "gr.schwarzschild_geometry_and_black_holes",
+      "local_slots": []
+    }
+  ]
+}
