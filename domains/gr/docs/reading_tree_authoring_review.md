@@ -11,7 +11,7 @@ no artwork regeneration is required.
 | --- | --- | --- |
 | GR-1 | Revised | Operational free fall, metric measurement, local/global distinctions; statements, consolidated kinds and local clarifications. |
 | GR-2 | Revised | Connections and basis changes; explicit Levi-Civita, particle-action and deviation arguments with optional algebra. |
-| GR-3 | Pending | Curvature contractions, identities and gravitational action. |
+| GR-3 | Revised | Curvature commutator, contraction information loss, differential identity and full interior action variation. |
 | GR-4 | Pending | Matter models, metric variation and field equations. |
 | GR-5 | Pending | Controlled approximations, observable tests and waves. |
 | GR-6 | Pending | Exact spherical solution, horizons and orbit dynamics. |
@@ -32,3 +32,6 @@ no artwork regeneration is required.
 
 The baseline file records existing identities and clarification paths for
 regression checks. It is not a second copy of the exposition.
+
+GR-3 adds the genuine Einstein-tensor → Bianchi-identity derivation input.
+This is internal to the curvature module and preserves its acyclic ordering.

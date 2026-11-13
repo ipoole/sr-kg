@@ -130,3 +130,4 @@ gr.black_hole_singularity,gr.curvature_invariants,REQUIRES,Invariant curvature d
 gr.effective_potential_orbits,gr.schwarzschild_metric,CONSTRUCTED_FROM,The metric symmetries reduce geodesic motion to an effective radial problem.
 gr.effective_potential_orbits,gr.geodesic_equation,DERIVES_FROM,The radial potential form follows from Schwarzschild geodesics and conserved quantities.
 gr.effective_potential_orbits,gr.perihelion_precession,RELATED,The effective radial dynamics explains relativistic orbital precession.
+gr.einstein_tensor,gr.bianchi_identity,DERIVES_FROM,The contracted differential Bianchi identity fixes the half-trace term that makes the Einstein tensor divergence-free.

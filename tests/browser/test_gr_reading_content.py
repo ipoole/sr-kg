@@ -12,7 +12,7 @@ def gr_reading_output(tmp_path_factory):
 
 @pytest.mark.browser
 @pytest.mark.browser_full
-@pytest.mark.parametrize('number', [1, 2])
+@pytest.mark.parametrize('number', [1, 2, 3])
 @pytest.mark.parametrize('width', [390, 1280], ids=['phone', 'desktop'])
 def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_browser, number, width):
     with (REPO_ROOT/'domains/gr/data/modules.csv').open() as f:
