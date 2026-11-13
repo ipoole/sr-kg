@@ -52,6 +52,14 @@ after graph nodes, separately from selection styling. A folded module represents
 an enclosed reading position; its tooltip names the actual concept. No pulsing,
 automatic expansion or camera movement is used.
 
+Blocks are grouped in recipe-kind order; blocks of the same kind retain their
+authored sequence. The native concept view retains its full authored order.
+Unread folded blocks have disabled read controls; checked controls can be cleared
+while folded. This applies to every occurrence of the canonical block. Native
+graphics start open with image and caption only; their existing prose and note
+anchors remain in the KB, and saved notes still render. Reading occurrences stay
+folded. Concept Unfold/Fold all affects only native top-level blocks.
+
 ## Compatibility and review
 
 Maths-only generation reads no excluded domain packages and retains the existing

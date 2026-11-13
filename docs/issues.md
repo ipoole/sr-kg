@@ -56,13 +56,8 @@ Issue numbers are retained so existing references remain valid.
    reading-tree concepts, to avoid scrolling back to the heading on phones. Define
    post-fold scrolling, descendant/Reading-position state and interaction with
    full-width focus/Return before implementing; keep it unobtrusive and touch-friendly.
-10. When a block is folded the reading tick box should not be tickable; grey out it not already ticked but allow unticking if already ticked.
 11. <deleted>
-12. Add a Unfold/Fold all button to act on all blocks in a concept.
-13. Show paragraphs better in block bodies.  Use either a blank line in indented first line.
-14. We should review block background colours.
-15. I think the graphic block should be default open and there should be no text body, and I think no statement (but consider).  This takes us back to the published 4.6.1 appearance.  The caption text can can possibly be more expansive where that helps.
-16. For reading trees we need to decide, are blocks presented in the order as in the full concept, or the order given in the recipe?
+14. **Deferred:** review block background colours.
 17. Teaching tree, Synchronize graph should probably force the graph into a good state - Context only and Fit.
 
 ## 5. Notes enhancement and unification

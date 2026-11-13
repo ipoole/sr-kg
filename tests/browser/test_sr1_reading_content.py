@@ -26,9 +26,9 @@ def test_sr1_native_content_and_generated_routes(sr1_reading_output, playwright_
         page.locator('#kg_view_select').select_option('details')
         for owner in owners:
             graph.click_concept(owner)
-            assert page.locator('#info_panel > .content-block[open]').count() == 0
+            assert page.locator('#info_panel > .content-block:not(.content-block-graphic)[open]').count() == 0
             blocks = page.locator('#info_panel > .content-block')
-            assert blocks.locator(':scope > summary .kg-content-statement').count() == blocks.count()
+            assert blocks.locator(':scope > summary .kg-content-statement').count() == blocks.locator(':scope:not(.content-block-graphic)').count()
             blocks.evaluate_all('es=>es.forEach(e=>e.open=true)')
             page.locator('#info_panel .kg-local-explanation').evaluate_all('es=>es.forEach(e=>e.open=true)')
             page.wait_for_function('window.MathJax && typeof MathJax.typesetPromise==="function"')
@@ -82,3 +82,16 @@ def test_sr1_saved_figure_note_and_shared_read_tick(sr1_reading_output, playwrig
         assert not _block(page, 'sr.lorentz_transformations.definition').locator(
             ':scope > summary .content-block-read-toggle').is_checked()
         assert not graph.page_errors
+
+
+@pytest.mark.browser_full
+@pytest.mark.browser
+def test_native_graphic_is_open_and_caption_only(sr1_reading_output, playwright_browser):
+    api, browser = playwright_browser
+    with _open_browser_graph(api, browser, sr1_reading_output) as graph:
+        graph.click_concept('sr.spacetime_event')
+        graphic = _block(graph.page, 'sr.spacetime_event.graphic')
+        assert graphic.evaluate('e=>e.open')
+        assert graphic.locator(':scope > summary .kg-content-statement').count() == 0
+        assert graphic.locator('.kg-shared-figure').count() == 1
+        assert graphic.locator(':scope > .content-block-body > .concept-line').count() == 0

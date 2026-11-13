@@ -128,6 +128,8 @@ function kgCreateStudyController(options) {
   function updateContentReadCompletionIndicators() {
     document.querySelectorAll(".content-block-read-toggle[data-read-block-id]").forEach(function(toggle) {
       toggle.checked = isRead(toggle.getAttribute("data-read-block-id"));
+      var block = toggle.closest("details.kg-content-unit");
+      toggle.disabled = !toggle.checked && Boolean(block && !block.open);
     });
     document.querySelectorAll(".content-read-complete-indicator").forEach(
       function(indicator) {

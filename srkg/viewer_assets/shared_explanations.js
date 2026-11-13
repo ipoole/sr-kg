@@ -77,7 +77,8 @@ function kgCreateSharedExplanations(options) {
   function body(id, context, capabilities) {
     var source = sources[id];
     if (!source) { return ""; }
-    return graphic(source) + options.body(source, context, capabilities);
+    return graphic(source) + options.body(source, context,
+      Object.assign({}, capabilities, {hideProse: source.block.kind === "graphic"}));
   }
 
   function renderReference(reference, context) {

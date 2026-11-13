@@ -1879,13 +1879,13 @@
             origin: "authored", level: "block", anchorId: anchor,
             occurrenceKey: placement.reading ? contentMarkup.occurrenceKey(context) : null,
             sourceId: placement.reading ? block.block_id : null,
-            statementHtml: sharedExplanations.nativeStatement(block.block_id),
+            statementHtml: block.kind === "graphic" ? "" : sharedExplanations.nativeStatement(block.block_id),
             contentBlockId: block.block_id,
             capabilities: {annotate: true, trackRead: true, edit: false},
             className: contentBlockClassName(block, policy) + " kg-statement-block" +
               (placement.reading ? " kg-reading-block" : "") +
               (ownerType === "module" ? " module-content-block" : ""),
-            open: false, title: title,
+            open: !placement.reading && block.kind === "graphic", title: title,
             markHtml: '<span class="content-block-kind-mark" aria-hidden="true"></span>',
             labelHtml: '<span class="content-block-kind-label" aria-hidden="true" data-label="' +
               escapeHtml(contentBlockKindLabel(block.kind)) + '"></span>',
@@ -1990,6 +1990,9 @@
           }
           html += "</div>";
           html += renderConceptToc(tocItems);
+          html += '<div class="kg-content-fold-controls" aria-label="Concept blocks">' +
+            '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
+            '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
           html += "</div>";
           return html;
         }
@@ -2943,6 +2946,7 @@
           var moduleChanged = previousModuleId !== String(moduleId);
           replaceTypesetContent(panel, html);
           sharedExplanations.afterRender(panel);
+          updateContentReadCompletionIndicators();
           panel.removeAttribute("data-concept-id");
           panel.setAttribute("data-module-id", String(moduleId));
           if (moduleChanged) {
@@ -4665,6 +4669,7 @@
           replaceTypesetContent(panel, html);
           readingTrees.afterRender(panel);
           sharedExplanations.afterRender(panel);
+          updateContentReadCompletionIndicators();
           readingTrees.restoreFocus();
           readingTrees.restored(panel);
           panel.setAttribute("data-concept-id", String(nodeId));
@@ -6691,6 +6696,16 @@
           showConceptPreview(link, {pinned: true});
         });
 
+        document.getElementById("info_panel").addEventListener("click", function(e) {
+          var button = e.target.closest("#kg_content_unfold_all, #kg_content_fold_all");
+          if (!button) { return; }
+          var panel = document.getElementById("info_panel");
+          panel.querySelectorAll(":scope > details.content-block").forEach(function(block) {
+            block.open = button.id === "kg_content_unfold_all";
+          });
+          updateContentReadCompletionIndicators();
+        });
+
         document.getElementById("info_panel").addEventListener("change", function(e) {
           if (readingTrees.change(e)) { return; }
           var readToggle = e.target.closest(".content-block-read-toggle");
@@ -6857,6 +6872,7 @@
           if (e.target && e.target.tagName === "DETAILS") {
             readingTrees.toggled(e.target);
             sharedExplanations.toggled(e.target);
+            updateContentReadCompletionIndicators();
             if (
               e.target.classList.contains("user-note")
             ) {

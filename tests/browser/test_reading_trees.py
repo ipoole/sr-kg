@@ -122,6 +122,7 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
             .every(e=>e.hasAttribute('data-reading-loaded'))""")
     copies = card.locator('[data-content-block-id="1.1.definition"]')
     assert copies.count() >= 2
+    copies.first.locator(":scope > summary").click()
     copies.first.locator(":scope > summary .content-block-read-toggle").check()
     assert copies.locator(":scope > summary .content-block-read-toggle").evaluate_all(
         "es=>es.every(e=>e.checked)")
@@ -151,3 +152,16 @@ def test_reading_occurrences_share_progress_notes_and_preserve_focus(reading_gra
     assert native.locator(".user-note").count() == 1
     assert native.locator(":scope > summary .content-block-read-toggle").is_checked()
     assert not reading_graph.page_errors
+
+
+@pytest.mark.browser
+def test_recipe_orders_kinds_and_preserves_authored_order_within_kind(reading_graph):
+    page = reading_graph.page
+    card = page.locator('details.kg-reading-tree[data-reading-recipe="teaching"]')
+    card.locator(':scope > summary').click()
+    page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute('id'))
+    expected = page.evaluate("""()=>['definition','explanation','intuition','example'].flatMap(kind=>
+      conceptData['3.1'].content_blocks.filter(b=>b.kind===kind)
+        .sort((a,b)=>a.sequence-b.sequence||a.block_id.localeCompare(b.block_id)).map(b=>b.block_id))""")
+    assert card.locator(':scope > .kg-reading-tree-body > .kg-reading-root > .kg-reading-block').evaluate_all(
+        'es=>es.map(e=>e.dataset.contentBlockId)') == expected

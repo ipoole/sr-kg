@@ -3927,3 +3927,12 @@
 #info_panel .kg-statement-block .content-block-kind-label {
     display: inline-block; margin-left: 0.35em; vertical-align: middle;
 }
+
+/* Paragraph separation leaves canonical note anchors and source text intact. */
+#info_panel .kg-content-body .concept-line + .kg-add-note-row + .concept-line,
+#info_panel .kg-content-body .concept-line + .concept-line {
+    margin-top: 0.55em;
+}
+#info_panel .content-block-read-toggle:disabled { opacity: 0.35; cursor: default; }
+.kg-content-fold-controls { display: flex; gap: 0.4em; margin-top: 0.3em; }
+.kg-content-fold-controls button { font: inherit; font-size: 0.75em; }

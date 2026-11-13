@@ -1,4 +1,5 @@
 import pytest
+from playwright.sync_api import expect
 
 
 def _open_gamma_blocks(browser_graph):
@@ -24,6 +25,7 @@ def test_read_checkbox_toggles_and_persists_without_folding_block(browser_graph)
         '#info_panel details.content-block[data-content-block-id="2.2.definition"]'
     )
     checkbox = definition.locator(".content-block-read-toggle")
+    definition.locator(":scope > summary").click()
     was_open = definition.evaluate("element => element.open")
 
     checkbox.check()
@@ -58,6 +60,8 @@ def test_read_checkbox_is_keyboard_operable_and_visibly_blue(browser_graph):
         ":scope > summary .content-block-read-toggle"
     )
 
+    checkbox.locator("xpath=ancestor::details[1]/summary").click()
+    expect(checkbox).to_be_enabled()
     checkbox.focus()
     page.keyboard.press("Space")
 
@@ -77,6 +81,7 @@ def test_concept_header_tick_tracks_completion_of_all_its_blocks(browser_graph):
     assert indicator.get_attribute("role") == "img"
     assert indicator.get_attribute("aria-label") == "All content blocks read"
 
+    blocks.evaluate_all("es=>es.forEach(e=>e.open=true)")
     for index in range(blocks.count()):
         blocks.nth(index).locator(":scope > summary .content-block-read-toggle").check()
 
@@ -102,6 +107,7 @@ def test_module_header_tick_tracks_completion_of_its_own_blocks(browser_graph):
 
     assert checkbox.count() == 1
     assert indicator.is_hidden()
+    checkbox.locator("xpath=ancestor::details[1]/summary").click()
     checkbox.check()
     assert indicator.is_hidden()
     page.evaluate(
