@@ -131,3 +131,5 @@ gr.effective_potential_orbits,gr.schwarzschild_metric,CONSTRUCTED_FROM,The metri
 gr.effective_potential_orbits,gr.geodesic_equation,DERIVES_FROM,The radial potential form follows from Schwarzschild geodesics and conserved quantities.
 gr.effective_potential_orbits,gr.perihelion_precession,RELATED,The effective radial dynamics explains relativistic orbital precession.
 gr.einstein_tensor,gr.bianchi_identity,DERIVES_FROM,The contracted differential Bianchi identity fixes the half-trace term that makes the Einstein tensor divergence-free.
+gr.perfect_fluid,gr.stress_energy_tensor,REQUIRES,Rest-frame energy density and isotropic momentum flux determine the coefficients in the covariant perfect-fluid tensor.
+gr.cosmological_constant,gr.einstein_field_equations,REQUIRES,Moving the constant metric term across the field equation identifies its equivalent vacuum-energy source.
