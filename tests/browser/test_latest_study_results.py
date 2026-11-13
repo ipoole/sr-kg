@@ -79,7 +79,7 @@ def test_browser_profile_upgrades_in_place_and_keeps_other_collections(browser_g
     assert after['studyResults']['2.1.q1']['outcome'] == 'correct'
     for key in ['profileId','createdAt','notes','layout','readingProgress']:
         assert after[key] == before[key]
-    assert page.evaluate("JSON.parse(localStorage.getItem('srkg.personalData.v1')).schemaVersion") == 2
+    assert page.evaluate("JSON.parse(localStorage.getItem('srkg.personalData.v1')).studyResultsVersion") == 2
     assert 'attemptCount' not in page.evaluate("JSON.parse(localStorage.getItem('srkg.studyProgress.v1')).questions['2.1.q1']")
 
 
@@ -93,7 +93,7 @@ def test_old_csv_archive_keeps_latest_result_and_discards_counts(browser_graph):
     old = io.BytesIO()
     with zipfile.ZipFile(io.BytesIO(raw)) as current, zipfile.ZipFile(old, 'w', compression=zipfile.ZIP_STORED) as archive:
         for name in current.namelist():
-            if name == 'study_results.csv':
+            if name in ['study_results.csv', 'study_attempts.csv']:
                 continue
             body = current.read(name)
             if name == 'manifest.csv':
@@ -123,3 +123,26 @@ def test_answer_immediately_after_reset_is_not_lost_to_timestamp_tie(browser_gra
       kgStudyProgress.recordAttempt('2.1.q1','correct');
     }""")
     assert page.evaluate("kgStudyProgress.getQuestion('2.1.q1').lastOutcome") == 'correct'
+
+
+@pytest.mark.browser
+def test_shared_storage_envelope_remains_compatible_with_published_viewer(browser_graph):
+    page = browser_graph.page
+    wire = page.evaluate("""()=>{
+      kgStudyProgress.recordAttempt('2.1.q1','incorrect','2026-11-01T10:00:00Z');
+      kgStudyProgress.recordAttempt('2.1.q1','correct','2026-11-01T10:01:00Z');
+      return JSON.parse(localStorage.getItem('srkg.personalData.v1'));
+    }""")
+    assert wire['schemaVersion'] == 1
+    assert wire['studyResultsVersion'] == 2
+    assert len(wire['studyAttempts']) == 1
+    assert wire['studyAttempts'][0]['attemptCount'] == 1  # Single retained result, not a total.
+    assert wire['studyAttempts'][0]['outcome'] == 'correct'
+    # An older viewer strips unknown fields and appends a new answer.
+    wire.pop('studyResultsVersion')
+    wire['studyAttempts'].append({'id':'older-viewer-write','questionId':'2.1.q1',
+        'outcome':'incorrect','attemptedAt':'2026-11-02T10:00:00Z','deviceId':'old','attemptCount':1})
+    page.evaluate("value=>localStorage.setItem('srkg.personalData.v1',JSON.stringify(value))", wire)
+    page.reload(wait_until='load')
+    assert page.evaluate("kgStudyProgress.getQuestion('2.1.q1').lastOutcome") == 'incorrect'
+    assert len(page.evaluate("JSON.parse(localStorage.getItem('srkg.personalData.v1')).studyAttempts")) == 1

@@ -38,6 +38,21 @@
     };
   }
 
+  // Keep the shared storage/cloud envelope readable by the published viewer.
+  // A wire count of one denotes this single retained result, never a total.
+  function compatibleProfile(profile) {
+    var wire = Object.assign({}, profile);
+    wire.schemaVersion = 1;
+    wire.studyResultsVersion = 2;
+    wire.studyAttempts = Object.keys(profile.studyResults).sort().map(function(id) {
+      var result = profile.studyResults[id];
+      return {id: "result-" + id, questionId: id, outcome: result.outcome,
+        attemptedAt: result.updatedAt, deviceId: result.deviceId, attemptCount: 1};
+    });
+    delete wire.studyResults;
+    return wire;
+  }
+
   function hasPersonalRecords(profile) {
     return Boolean(
       profile && (
@@ -188,7 +203,7 @@
     }
     var stored = parseObject(storage, personalKey);
     var profile = normalizeProfile(stored, now);
-    var migrated = Boolean(profile && Number(stored.schemaVersion) !== SCHEMA_VERSION);
+    var migrated = Boolean(profile && Number(stored.studyResultsVersion) !== 2);
     if (!profile) {
       profile = migrateLegacy(storage, keys, now, deviceId);
       migrated = true;
@@ -197,7 +212,7 @@
     function save() {
       profile.updatedAt = new Date().toISOString();
       try {
-        storage.setItem(personalKey, JSON.stringify(profile));
+        storage.setItem(personalKey, JSON.stringify(compatibleProfile(profile)));
         return true;
       } catch (err) {
         return false;
@@ -442,5 +457,6 @@
   }
 
   global.kgNormalizePersonalDataProfile = normalizeProfile;
+  global.kgCompatiblePersonalDataProfile = compatibleProfile;
   global.kgCreatePersonalDataStore = createStore;
 })(window);

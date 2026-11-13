@@ -2,7 +2,7 @@
   "use strict";
 
   var FILES = [
-    "manifest.csv", "notes.csv", "layout.csv", "study_results.csv",
+    "manifest.csv", "notes.csv", "layout.csv", "study_attempts.csv",
     "study_resets.csv", "reading_progress.csv"
   ];
 
@@ -24,7 +24,8 @@
   function tablesFor(profile) {
     var manifest = [
       ["key", "value"],
-      ["schema_version", "2"],
+      ["schema_version", "1"],
+      ["study_model", "latest-result"],
       ["profile_id", profile.profileId],
       ["profile_created_at", profile.createdAt],
       ["profile_updated_at", profile.updatedAt],
@@ -56,10 +57,9 @@
         item.updatedAt, item.deletedAt, item.deviceId
       ]);
     });
-    var results = [["question_id", "outcome", "updated_at", "device_id"]];
-    Object.keys(profile.studyResults).sort().forEach(function(id) {
-      var item = profile.studyResults[id];
-      results.push([id, item.outcome, item.updatedAt, item.deviceId]);
+    var results = [["attempt_id", "question_id", "outcome", "attempted_at", "device_id", "attempt_count"]];
+    kgCompatiblePersonalDataProfile(profile).studyAttempts.forEach(function(item) {
+      results.push([item.id, item.questionId, item.outcome, item.attemptedAt, item.deviceId, 1]);
     });
     var resets = [["reset_id", "question_id", "reset_at", "device_id"]];
     profile.studyResets.forEach(function(item) {
@@ -74,7 +74,7 @@
       "manifest.csv": kgCsv.encode(manifest),
       "notes.csv": kgCsv.encode(notes),
       "layout.csv": kgCsv.encode(layout),
-      "study_results.csv": kgCsv.encode(results),
+      "study_attempts.csv": kgCsv.encode(results),
       "study_resets.csv": kgCsv.encode(resets),
       "reading_progress.csv": kgCsv.encode(reading)
     };
@@ -176,7 +176,7 @@
       throw new Error("Unsupported personal-data archive version");
     }
     FILES.map(function(name) {
-      return manifest.schema_version === "1" && name === "study_results.csv" ? "study_attempts.csv" : name;
+      return manifest.schema_version === "2" && name === "study_attempts.csv" ? "study_results.csv" : name;
     }).forEach(function(name) {
       if (typeof files[name] !== "string") { throw new Error("Archive is missing " + name); }
     });

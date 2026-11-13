@@ -91,12 +91,18 @@ would tie, so a fresh answer or reset is never lost. The newest timestamp wins o
 as a deterministic tie-break. Unloaded-domain results remain untouched.
 
 Question and global reset events suppress earlier results, preventing stale
-cloud data or old archives from resurrecting cleared progress. Profile schema 2
-and archive format 2 replace attempt events with latest-result records. Loading
-schema-1 browser data or importing a schema-1 archive retains each question’s
-latest surviving result and discards its counts/history. Other personal data is
-unchanged. The local storage key remains stable for migration. Old viewers do
-not understand format-2 archives; use the current viewer for imports and sync.
+cloud data or old archives from resurrecting cleared progress. The internal
+schema-2 model stores latest-result records. Loading schema-1 browser data or
+archives retains each question’s latest surviving result and discards counts
+and history. Other personal data is unchanged.
+
+The shared browser key and exported/cloud ZIP deliberately keep their
+schema-1 envelope readable by the published viewer. Each question is represented
+by one legacy-shaped row with `attempt_count=1`; that constant denotes the single
+retained result, not a cumulative count. `studyResultsVersion=2` identifies the
+browser projection, and `study_model=latest-result` identifies an export. This
+allows preview and public viewers to share personal data safely. Import also
+accepts the format-2 `study_results.csv` archives produced by development builds.
 
 ### Reading progress
 
@@ -117,7 +123,7 @@ standard, unencrypted ZIP containing UTF-8 CSV files:
 | `manifest.csv` | schema version, profile ID and export metadata |
 | `notes.csv` | notes and deletion tombstones |
 | `layout.csv` | personal concept positions and module anchors |
-| `study_results.csv` | latest result per question |
+| `study_attempts.csv` | one latest result per question; legacy-compatible column names |
 | `study_resets.csv` | per-question and global reset events |
 | `reading_progress.csv` | checked and unchecked read records |
 
