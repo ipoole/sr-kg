@@ -162,18 +162,18 @@ def test_read_marks_notes_and_open_paths_survive_same_page_refresh(shared_explan
     deeper=_reference(page,'shared').locator('details[data-content-slot="deeper"]')
     _open(deeper)
     root=page.locator('[data-content-block-id="test.alpha.definition"]')
-    root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').check()
+    root.locator(':scope > summary .content-block-read-toggle').check()
     root.locator(':scope > summary .kg-note-block-action').click()
     root.locator(':scope > .content-block-body > .concept-line').first.click()
     page.locator('.user-note-body-input').fill('A note on this argument.')
     page.locator('.user-note-close').click()
     assert deeper.evaluate('e=>e.open')
-    assert root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
+    assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
     assert page.locator('#info_panel .kg-unmatched-notes').count()==0
     assert page.locator('#info_panel .user-note').count()==1
     graph.click_concept('test.beta'); graph.click_concept('test.alpha')
     assert not _reference(page,'left').evaluate('e=>e.open')  # New page visit.
-    assert root.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
+    assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
 
 
 @pytest.mark.browser

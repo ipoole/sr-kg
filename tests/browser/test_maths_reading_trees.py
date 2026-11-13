@@ -127,10 +127,10 @@ def test_maths_migration_preserves_canonical_notes_read_ticks_and_local_slots(
         _reveal_tree(page, card)
         copies = card.locator('[data-content-block-id="math.tangent_space.directional_derivative"]')
         assert copies.count() > 0
-        copies.first.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').uncheck()
+        copies.first.locator(':scope > summary .content-block-read-toggle').uncheck()
         graph.click_concept('math.tangent_space')
         native = _block(page, 'math.tangent_space.directional_derivative')
-        assert not native.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
+        assert not native.locator(':scope > summary .content-block-read-toggle').is_checked()
         page.reload(wait_until='load')
         graph.click_concept('math.cotangent_space')
         assert _block(page, 'math.cotangent_space.units_example').locator(

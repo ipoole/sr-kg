@@ -7,19 +7,28 @@ from test_maths_reading_trees import _reveal_tree
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width', [390, 1280])
-def test_read_control_moves_with_folding_and_camera_stays_fixed(browser_graph, width):
+def test_matching_top_and_bottom_read_controls_share_one_record(browser_graph, width):
     page = browser_graph.page
     page.set_viewport_size({'width': width, 'height': 900})
     browser_graph.click_concept('2.2')
     page.locator('#kg_view_select').select_option('details')
     block = page.locator('[data-content-block-id="2.2.definition"]').first
-    tick = block.locator('.content-block-read-toggle')
+    tick = block.locator(':scope > summary .content-block-read-toggle')
     assert block.locator(':scope > summary .content-block-read-toggle').count() == 1
     page.wait_for_timeout(500)  # Settle the preceding pane/viewport resize, not the fold.
     camera = page.evaluate('({pos:network.getViewPosition(),scale:network.getScale()})')
     block.locator(':scope > summary').click()
     expect(block.locator(':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')).to_have_count(1)
+    expect(tick).to_be_visible()
+    bottom = block.locator(':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    appearance = 'e=>{const s=getComputedStyle(e);return [s.width,s.height,s.fontSize,s.borderRadius,s.borderWidth,s.backgroundColor,s.color]}'
+    assert tick.evaluate(appearance) == bottom.evaluate(appearance)
     tick.check()
+    expect(bottom).to_be_checked()
+    bottom.uncheck()
+    expect(tick).not_to_be_checked()
+    bottom.check()
+    expect(tick).to_be_checked()
     block.locator('.kg-content-footer').evaluate("e=>e.insertAdjacentHTML('beforebegin','<div style=\"height:1300px\"></div>')")
     block.locator(':scope > .kg-content-body > .kg-content-footer .kg-content-refold').click()
     expect(block).not_to_have_attribute('open', '')
@@ -95,3 +104,25 @@ def test_native_and_reading_occurrences_share_kind_colours(reading_graph):
     assert native.evaluate(appearance) == borrowed.evaluate(appearance)
     assert 'gradient' in card.evaluate('e=>getComputedStyle(e).backgroundImage')
     assert card.evaluate('e=>getComputedStyle(e).boxShadow') != 'none'
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_titles_precede_folded_statements_and_statements_hide_when_open(reading_graph, width):
+    page = reading_graph.page
+    page.set_viewport_size({'width': width, 'height': 950})
+    items = [page.locator('#info_panel > [data-content-block-id="3.1.definition"]')]
+    items += [page.locator(f'details.kg-reading-tree[data-reading-recipe="{kind}"]')
+              for kind in ['derivation', 'teaching']]
+    for item in items:
+        summary = item.locator(':scope > summary')
+        title = summary.locator(':scope > .content-block-title-line')
+        statement = summary.locator(':scope > .kg-content-statement')
+        expect(statement).to_be_visible()
+        assert title.bounding_box()['y'] + title.bounding_box()['height'] <= statement.bounding_box()['y'] + 1
+        summary.click()
+        expect(statement).to_be_hidden()
+        expect(title).to_be_visible()
+        summary.click()
+        expect(statement).to_be_visible()
+    assert not reading_graph.page_errors

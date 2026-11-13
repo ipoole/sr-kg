@@ -8,7 +8,7 @@ def test_folded_unread_blocks_require_opening_but_allow_clearing_read(browser_gr
     page = browser_graph.page
     browser_graph.click_concept('2.2')
     block = page.locator('[data-content-block-id="2.2.definition"]').first
-    tick = block.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
+    tick = block.locator(':scope > summary .content-block-read-toggle')
     assert not block.evaluate('e=>e.open')
     expect(tick).to_be_disabled()
     block.locator(':scope > summary').click()

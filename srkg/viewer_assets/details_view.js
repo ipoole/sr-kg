@@ -41,9 +41,14 @@ function kgCreateDetailsView(options) {
         (body || item).appendChild(footer);
       }
       var slot = footer.querySelector(".kg-footer-read-slot");
-      var tick = heading.querySelector(".content-block-read-toggle") || slot.querySelector("input");
-      var destination = item.open ? slot : heading;
-      if (tick && tick.parentElement !== destination) { destination.appendChild(tick); }
+      var tick = heading.querySelector(".content-block-read-toggle");
+      if (tick && item.open && !slot.querySelector("input")) {
+        var bottomTick = tick.cloneNode(true);
+        bottomTick.removeAttribute("id");
+        slot.appendChild(bottomTick);
+      } else if (!item.open && slot.firstChild) {
+        slot.replaceChildren();
+      }
     });
   }
 

@@ -12,8 +12,8 @@ def test_every_content_block_has_an_accessible_read_checkbox(browser_graph):
     blocks = _open_gamma_blocks(browser_graph)
 
     assert blocks.count() > 1
-    assert blocks.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").count() == blocks.count()
-    checkbox = blocks.first.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle")
+    assert blocks.locator(":scope > summary .content-block-read-toggle").count() == blocks.count()
+    checkbox = blocks.first.locator(":scope > summary .content-block-read-toggle")
     assert checkbox.get_attribute("aria-label") == "Mark Definition as read"
 
 
@@ -24,7 +24,7 @@ def test_read_checkbox_toggles_and_persists_without_folding_block(browser_graph)
     definition = page.locator(
         '#info_panel details.content-block[data-content-block-id="2.2.definition"]'
     )
-    checkbox = definition.locator(".content-block-read-toggle")
+    checkbox = definition.locator(":scope > summary .content-block-read-toggle")
     definition.locator(":scope > summary").click()
     was_open = definition.evaluate("element => element.open")
 
@@ -57,7 +57,7 @@ def test_read_checkbox_toggles_and_persists_without_folding_block(browser_graph)
 def test_read_checkbox_is_keyboard_operable_and_visibly_blue(browser_graph):
     page = browser_graph.page
     checkbox = _open_gamma_blocks(browser_graph).first.locator(
-        ":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle"
+        ":scope > summary .content-block-read-toggle"
     )
 
     checkbox.locator("xpath=ancestor::details[1]/summary").click()
@@ -83,13 +83,13 @@ def test_concept_header_tick_tracks_completion_of_all_its_blocks(browser_graph):
 
     blocks.evaluate_all("es=>es.forEach(e=>e.open=true)")
     for index in range(blocks.count()):
-        blocks.nth(index).locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").check()
+        blocks.nth(index).locator(":scope > summary .content-block-read-toggle").check()
 
     assert indicator.is_visible()
     assert indicator.inner_text() == "✓"
     assert indicator.locator('input, button, [role="checkbox"]').count() == 0
 
-    blocks.first.locator(":scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle").uncheck()
+    blocks.first.locator(":scope > summary .content-block-read-toggle").uncheck()
     assert indicator.is_hidden()
 
 
@@ -102,7 +102,7 @@ def test_module_header_tick_tracks_completion_of_its_own_blocks(browser_graph):
         '#info_panel .module-sticky-header .content-read-complete-indicator'
     )
     checkbox = page.locator(
-        '#info_panel details.module-content-block .content-block-read-toggle'
+        '#info_panel details.module-content-block > summary .content-block-read-toggle'
     )
 
     assert checkbox.count() == 1

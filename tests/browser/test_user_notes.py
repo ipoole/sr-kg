@@ -979,7 +979,7 @@ def test_personal_notes_do_not_change_read_completion(browser_graph):
     page = graph.page
     graph.click_concept('2.2')
     page.locator('#info_panel details.content-block').evaluate_all('es=>es.forEach(e=>e.open=true)')
-    for checkbox in page.locator('#info_panel details.content-block .content-block-read-toggle').all():
+    for checkbox in page.locator('#info_panel details.content-block > summary .content-block-read-toggle').all():
         checkbox.check()
     indicator = page.locator('#info_panel .concept-sticky-header .content-read-complete-indicator')
     assert indicator.is_visible()

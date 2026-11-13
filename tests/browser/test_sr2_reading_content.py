@@ -24,7 +24,7 @@ def test_sr2_content_equations_and_rest_energy_routes(sr1_reading_output, playwr
             graph.click_concept(owner)
             blocks = page.locator('#info_panel > .content-block')
             assert blocks.locator(':scope > summary .kg-content-statement').count() == blocks.locator(':scope:not(.content-block-graphic)').count()
-            assert blocks.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').count() == blocks.count()
+            assert blocks.locator(':scope > summary .content-block-read-toggle').count() == blocks.count()
             blocks.evaluate_all('es=>es.forEach(e=>e.open=true)')
             page.locator('#info_panel .kg-local-explanation').evaluate_all('es=>es.forEach(e=>e.open=true)')
             page.wait_for_function('window.MathJax && typeof MathJax.typesetPromise==="function"')
@@ -50,7 +50,7 @@ def test_sr2_content_equations_and_rest_energy_routes(sr1_reading_output, playwr
                 source = card.locator('[data-content-block-id="sr.momentum_four_vector.energy_transformation"]')
                 assert source.count() >= 1
                 source.first.locator(':scope > summary').click()
-                source.first.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').check()
+                source.first.locator(':scope > summary .content-block-read-toggle').check()
                 source.first.locator(':scope > summary').click(position={'x': 8, 'y': 8})
             card.locator('.kg-reading-block').evaluate_all('es=>es.forEach(e=>e.open=true)')
             page.locator('#info_panel .kg-local-explanation').evaluate_all('es=>es.forEach(e=>e.open=true)')

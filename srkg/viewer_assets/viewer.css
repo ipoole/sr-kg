@@ -3835,7 +3835,7 @@
 
 /* Statements are part of the folded heading: one canonical block shell. */
 #info_panel .kg-statement-block > summary > .kg-content-statement {
-    display: block; font-weight: 400; color: #1458b0; margin: 0 0 0.45em;
+    display: block; font-weight: 400; color: #1458b0; margin: 0.4em 0 0;
 }
 #info_panel .kg-statement-block > summary .content-block-kind-mark { display: none; }
 #info_panel .kg-local-explanation > summary {
@@ -3860,8 +3860,10 @@
 }
 #info_panel .kg-reading-teaching > summary { color: #205f57; }
 #info_panel .kg-reading-tree > summary > .kg-content-statement {
-    display: block; font-weight: 400; color: inherit; margin-bottom: 0.4em;
+    display: block; font-weight: 400; color: inherit; margin: 0.4em 0 0;
 }
+#info_panel .kg-statement-block[open] > summary > .kg-content-statement,
+#info_panel .kg-reading-tree[open] > summary > .kg-content-statement { display: none; }
 #info_panel .kg-reading-badge {
     font-size: 0.62em; font-weight: 700; margin-left: 0.4em;
     text-transform: uppercase; letter-spacing: 0.04em;
@@ -3952,7 +3954,7 @@
     cursor: pointer;
 }
 
-/* Shared end controls: one read input moves between folded heading and footer. */
+/* Both read controls share a canonical block ID and the same base styling. */
 #info_panel .kg-content-footer {
     display: flex;
     justify-content: flex-end;
@@ -3964,7 +3966,7 @@
 #info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em; margin: 0; }
 #info_panel .kg-footer-read-slot:empty { display: none; }
 #info_panel .kg-footer-read-slot .content-block-read-toggle {
-    position: relative; inset: auto; min-width: 26px; min-height: 26px;
+    position: relative; inset: auto;
 }
 #info_panel .kg-content-refold {
     font: inherit; font-size: 0.75em; color: #334f64;

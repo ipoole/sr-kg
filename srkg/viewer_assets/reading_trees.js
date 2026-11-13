@@ -163,10 +163,10 @@ function kgCreateReadingTrees(options) {
       tree.entry = found;
       return tag("details", {id: found.id, "class": "kg-reading-tree kg-reading-" + recipe,
         "data-reading-entry": "tree", "data-reading-recipe": recipe, open: found.open},
-        tag("summary", {}, tag("span", {"class": "kg-content-statement"},
-          escape(recipes[recipe].statement.replace("{concept}", options.concepts[id].label || id))) +
-          tag("span", {"class": "content-block-title-line"}, escape(recipes[recipe].title) +
-            tag("small", {"class": "kg-reading-badge"}, "Reading tree"))) +
+        tag("summary", {}, tag("span", {"class": "content-block-title-line"}, escape(recipes[recipe].title) +
+            tag("small", {"class": "kg-reading-badge"}, "Reading tree")) +
+          tag("span", {"class": "kg-content-statement"},
+            escape(recipes[recipe].statement.replace("{concept}", options.concepts[id].label || id)))) +
         tag("div", {"class": "kg-reading-tree-body"}, controls(tree) +
           tag("div", {"class": "kg-reading-root"})));
     }).join("");

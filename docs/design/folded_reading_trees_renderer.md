@@ -10,8 +10,9 @@ The standalone paper is retained as a design experiment, not a second viewer.
 ## Shared block rendering
 
 `viewer.js:renderOwnerContentBlock` adapts an owned block or a tree occurrence
-into `content_markup.js:renderContentUnit`. Title, kind, statement and actions
-stay visible in the folded summary; the body starts folded. Missing statements
+into `content_markup.js:renderContentUnit`. Title, kind and actions lead the
+summary, followed by the statement while folded. Opening hides the statement
+and shows the body. Missing statements
 produce no empty placeholder and are never inferred from body text. Kind tints
 apply to the whole box. Local clarifications retain smaller, quiet headings.
 
@@ -56,10 +57,11 @@ automatic expansion or camera movement follows subsequent Reading-position chang
 Blocks are grouped in recipe-kind order; blocks of the same kind retain their
 authored sequence. The native concept view retains its full authored order.
 Unread folded blocks have disabled read controls; checked controls can be cleared
-while folded. Each block has one read input: it moves to the bottom footer while
-open and returns to the heading while folded. End controls fold content back to
-its heading, preserving descendants and canonical progress. Folding a focused
-item first returns it to the enclosing reading view. This applies to every occurrence of the canonical block. Native
+while folded. The heading keeps its read checkbox; an identical checkbox appears
+in the bottom footer while open. Both use the same canonical record and update
+together. End controls fold content back to its heading, preserving descendants
+and canonical progress. Folding a focused item first returns it to the enclosing
+reading view. This applies to every occurrence of the canonical block. Native
 graphics start open with image and caption only; their existing prose and note
 anchors remain in the KB, and saved notes still render. Reading occurrences stay
 folded. Concept Unfold/Fold all affects only native top-level blocks.

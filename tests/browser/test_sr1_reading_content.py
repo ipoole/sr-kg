@@ -77,10 +77,10 @@ def test_sr1_saved_figure_note_and_shared_read_tick(sr1_reading_output, playwrig
         _reveal_tree(page, card)
         copies = card.locator('[data-content-block-id="sr.lorentz_transformations.definition"]')
         assert copies.count() > 0
-        copies.first.locator(':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').uncheck()
+        copies.first.locator(':scope > summary .content-block-read-toggle').uncheck()
         graph.click_concept('sr.lorentz_transformations')
         assert not _block(page, 'sr.lorentz_transformations.definition').locator(
-            ':scope > summary .content-block-read-toggle, :scope > .kg-content-body > .kg-content-footer .content-block-read-toggle').is_checked()
+            ':scope > summary .content-block-read-toggle').is_checked()
         assert not graph.page_errors
 
 
