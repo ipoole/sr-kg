@@ -22,7 +22,8 @@ function kgCreateDetailsView(options) {
     var items = Array.from(scope.querySelectorAll("details"));
     if (scope.matches("details")) { items.unshift(scope); }
     items.forEach(function(item) {
-      if (item.closest(".concept-toc")) { return; }
+      if (item.closest(".concept-toc") ||
+          item.matches('.kg-content-inline[data-content-origin="authored"]')) { return; }
       var heading = item.querySelector(":scope > summary");
       if (!heading) { return; }
       var footer = foldFooters.get(item);

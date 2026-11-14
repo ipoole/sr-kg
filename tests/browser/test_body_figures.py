@@ -55,6 +55,12 @@ def test_thumbnail_body_and_reading_tree_share_figure_without_duplicate_svg_ids(
         # Authored blank lines supply paragraph spacing; figure margins must
         # not add another line on either side of a standalone illustration.
         figure = unit.locator('.kg-body-figure').first
+        svg_box = figure.locator('svg').bounding_box()
+        available = figure.locator('.concept-graphic').bounding_box()['width']
+        assert svg_box['width'] <= available + 1
+        if width == 1280:
+            font = unit.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')
+            assert svg_box['width'] / font > 26
         before = unit.locator('.concept-line').filter(has_text='Before the figure.').first
         after = unit.locator('.concept-line').filter(has_text='After the figure.').first
         limit = before.evaluate('e=>parseFloat(getComputedStyle(e).lineHeight)') * 1.15
@@ -63,6 +69,7 @@ def test_thumbnail_body_and_reading_tree_share_figure_without_duplicate_svg_ids(
         assert figure.bounding_box()['y'] - (before.bounding_box()['y'] + before.bounding_box()['height']) <= limit
         assert after.bounding_box()['y'] - (figure.bounding_box()['y'] + figure.bounding_box()['height']) <= limit
         unit.locator('.kg-local-explanation > summary').click()
+        assert unit.locator('.kg-local-explanation .kg-content-footer').count() == 0
         assert unit.locator('.kg-local-explanation > summary').evaluate('e=>[getComputedStyle(e).fontSize,getComputedStyle(e).fontWeight]') == [unit.evaluate('e=>getComputedStyle(e).fontSize'), '700']
         assert unit.locator('.kg-body-figure').count() == 2
         ids = unit.locator('svg [id]').evaluate_all('es=>es.map(e=>e.id)')

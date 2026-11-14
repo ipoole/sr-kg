@@ -42,7 +42,6 @@ Issue numbers are retained so existing references remain valid.
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
-
 ## 5. Notes enhancement and unification
 
 1. Consider first-class nested authored blocks with stable child IDs, tutorial targets
