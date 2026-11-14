@@ -66,3 +66,18 @@ The sampled historical archive is also complete:
    other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
    depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
    (about 71% of reachable blob content); actual compressed savings need measurement.
+
+## 7. Issues prior to release v5.0.0
+1. **Done.** On a full size browser the PhysicsKG - an atlas ... title overlap with the Graph control.  Right justify it perhaps?
+2. **Deferred.** Keep Context + background as the default graph mode, including Home.
+   Reconsider the Overview-to-context journey separately; add no extra action or message now.
+3. In reading trees, default depth to 3 hops.
+4. In reading trees, remove "Fold supports" - it's confusing and of little use.
+5. Remove blue and green colours from statement and edge justification text; change to block default.
+6. Add to introductory tutorial a short demo of reading trees.
+7. Update the user guide
+8. Update Quick start
+9. Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text 
+   and graphics in content.  What else?
+10. Make a bit of a splash about v5.0.0 on the home page.
+ 

@@ -176,15 +176,12 @@
         font-family: Arial, sans-serif;
         font-size: 18px;
         font-weight: 700;
-        left: 50%;
         line-height: 1.2;
-        max-width: min(34vw, 460px);
+        margin-left: auto;
+        min-width: 0;
         overflow: hidden;
-        position: absolute;
-        text-align: center;
+        text-align: right;
         text-overflow: ellipsis;
-        top: 50%;
-        transform: translate(-50%, -50%);
         white-space: nowrap;
       }
       #kg_controls input {
@@ -3215,7 +3212,6 @@
         }
 
         #kg_view_title {
-            max-width: min(520px, 36vw);
             font-size: 15px;
         }
 
