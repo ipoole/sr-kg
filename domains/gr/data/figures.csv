@@ -1,0 +1,2 @@
+figure_id,svg_path,caption,alt
+gr.figure.constant_vector,graphics/figures/constant_vector.svg,"All blue arrows have the same direction and length. On the polar grid, the red radial and gold angular contributions change as their local directions turn.",The same two rightward blue arrows on Cartesian and polar grids. Their radial and angular decompositions differ on the polar grid.

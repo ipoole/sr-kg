@@ -123,6 +123,22 @@ See [study design](../design/study.md).
 
 ## Graphics
 
+Named body illustrations use an optional domain manifest entry
+`figures: data/figures.csv`. The CSV columns are `figure_id`, `svg_path`, `caption`
+and `alt`; the caption may be empty, and alt text is required. Paths are relative
+to the owning domain directory and must remain inside it. SVG files are authored
+assets, embedded in the generated viewer, with no runtime fetch. For example:
+`gr.figure.constant_vector,graphics/figures/constant_vector.svg,...`.
+
+Use `\figure{unchanged-arrow}{gr.figure.constant_vector}` within a body. Slots
+are stable and unique among the parent's figures/clarifications. The optional
+`preview_figure` column on concept/module blocks selects one main-body figure
+slot and requires a statement. It reuses the artwork without its caption in the
+folded heading. Existing blocks and canonical `graphic=detail` blocks are unchanged.
+Figures do not gain separate read ticks. Notes anchor after the figure paragraph;
+keep its slot stable. Missing figures within a loaded namespace are errors;
+excluded namespaces warn and display an unavailable illustration message.
+
 Keep the domain's creator, semantic-ID registry entry, design/captions CSV and
 specific test expectations in sync. Runtime dispatch uses semantic IDs;
 display IDs are for selecting/labelling review sheets. Generic tests discover

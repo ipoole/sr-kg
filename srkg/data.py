@@ -153,6 +153,7 @@ def build_content_blocks_from_df(content_blocks_df: pd.DataFrame) -> list[Conten
             body=body,
             statement=_optional_content_text(row, "statement"),
             graphic=_optional_content_text(row, "graphic"),
+            preview_figure=_optional_content_text(row, "preview_figure"),
         ))
     return sorted(blocks, key=lambda block: (block.concept_id, block.sequence, block.block_id))
 
@@ -178,6 +179,7 @@ def build_module_content_blocks_from_df(
             body=body,
             statement=_optional_content_text(row, "statement"),
             graphic=_optional_content_text(row, "graphic"),
+            preview_figure=_optional_content_text(row, "preview_figure"),
         ))
     return sorted(blocks, key=lambda block: (block.module_id, block.sequence, block.block_id))
 

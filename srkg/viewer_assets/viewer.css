@@ -3868,6 +3868,15 @@
 #info_panel .kg-statement-block > summary > .kg-content-statement {
     display: block; font-weight: 400; color: #1458b0; margin: 0.4em 0 0;
 }
+.kg-content-preview {
+    display: flex; justify-content: center; margin: 0.45em 0 0.15em;
+}
+.kg-content-preview > svg {
+    display: block; height: 120px; width: auto; max-width: 100%;
+    pointer-events: none;
+}
+details[open] > summary > .kg-content-preview { display: none; }
+.kg-body-figure { margin: 0.8em 0; }
 #info_panel .kg-statement-block > summary .content-block-kind-mark { display: none; }
 #info_panel .kg-local-explanation > summary {
     font-size: 0.86em; font-weight: 500;

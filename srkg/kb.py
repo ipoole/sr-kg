@@ -41,6 +41,7 @@ from srkg.table_validation import (
 )
 from srkg.domain_references import BuildWarning
 from srkg.content_units import ContentRegistry, build_content_registry
+from srkg.figures import load_figures
 from srkg.data import (
     build_concepts,
     concept_domain,
@@ -58,6 +59,7 @@ from srkg.model import Concept, ConceptSection, ContentBlock, Module, ModuleCont
 from srkg.tutorials import Tutorial, TutorialLoadError, load_tutorials
 
 DEFAULT_KB_FILES = {
+    "figures": "figures.csv",
     "nodes": "nodes.csv",
     "edges": "edges.csv",
     "edge_key": "edges_key.csv",
@@ -100,6 +102,7 @@ class KnowledgeBasePaths:
     tutorials: Path | None = None
     domains_root: Path | None = None
     layout_revision: str = ""
+    figures: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -117,6 +120,9 @@ class KnowledgeBase:
     domain_packages: tuple = ()
     build_warnings: tuple[BuildWarning, ...] = ()
     content_units: ContentRegistry = field(default_factory=ContentRegistry)
+
+    def figure_data(self):
+        return {key: value.to_viewer_data() for key, value in self.content_units.figures.items()}
 
     @property
     def missing_domains(self) -> tuple[str, ...]:
@@ -238,6 +244,7 @@ def _paths_from_manifest(root: Path, manifest: dict) -> KnowledgeBasePaths:
         references=_resolve_manifest_path(root, files["references"]),
         reference_links=_resolve_manifest_path(root, files["reference_links"]),
         graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("graphic_designs")),
+        figures=_resolve_existing_optional_manifest_path(root, files.get("figures")),
         module_graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("module_graphic_designs")),
         modules=_resolve_existing_optional_manifest_path(root, files.get("modules")),
         module_members=_resolve_existing_optional_manifest_path(root, files.get("module_members")),
@@ -272,15 +279,18 @@ def load_knowledge_base_from_paths(
 
 def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | None]:
     """Read one source package; also used by authoring/review tools."""
-    return {
+    tables = {
         role: _read_optional_csv(getattr(paths, role))
         for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials"}
     }
+    if tables['figures'] is not None:
+        tables['figures']['_asset_root'] = str(paths.root or paths.figures.parent)
+    return tables
 
 
 def _assemble_knowledge_base(
     paths, tables, *, include_graphics=True, reference_scopes=None,
-    tutorial_paths=None, published_layout=None, domain_packages=(), reference_warnings=None,
+    tutorial_paths=None, published_layout=None, domain_packages=(), reference_warnings=None, figures=None,
 ):
     """Apply common table contracts and construct one runtime model."""
     nodes_df = tables.get("nodes")
@@ -363,8 +373,10 @@ def _assemble_knowledge_base(
         for _, row in nodes_df.iterrows()
         if concept_domain(row)
     }
+    if figures is None:
+        figures = load_figures(tables.get('figures'), include_svg=include_graphics)
     content_units = build_content_registry(concepts, modules,
-        domains=({package.id for package in domain_packages} or known_domains))
+        domains=({package.id for package in domain_packages} or known_domains), figures=figures)
     warnings = reference_warnings if reference_warnings is not None else []
     warnings.extend(content_units.warnings)
     try:

@@ -2,6 +2,45 @@
 function kgCreateContentMarkup(options) {
   "use strict";
   var getConcept = options.concept, conceptHash = options.hash;
+  var figureSerial = 0;
+
+  // SVG definitions must be local even when the same source is shown in a
+  // folded thumbnail, a body, a preview and several reading-tree occurrences.
+  function scopedSvg(svg) {
+    var prefix = "kg-source-graphic-" + (++figureSerial) + "-", ids = new Map();
+    return svg.replace(/\bid=(["'])([^"']+)\1/g, function(_match, quote, id) {
+      ids.set(id, prefix + id); return "id=" + quote + prefix + id + quote;
+    }).replace(/url\(#([^)]*)\)/g, function(match, id) {
+      return ids.has(id) ? "url(#" + ids.get(id) + ")" : match;
+    }).replace(/\b((?:xlink:)?href)=(["'])#([^"']+)\2/g, function(match, attr, quote, id) {
+      return ids.has(id) ? attr + "=" + quote + "#" + ids.get(id) + quote : match;
+    }).replace(/\b(aria-labelledby|aria-describedby)=(["'])([^"']+)\2/g, function(_match, attr, quote, value) {
+      return attr + "=" + quote + value.split(/\s+/).map(function(id) { return ids.get(id) || id; }).join(" ") + quote;
+    });
+  }
+
+  function renderFigure(part, thumbnail) {
+    var asset = (options.figures || {})[part.figure_id];
+    if (!asset || !asset.svg) {
+      return thumbnail ? "" : '<p class="kg-shared-unavailable">Illustration unavailable in this edition.</p>';
+    }
+    var attrs = ' data-figure-id="' + escapeHtml(part.figure_id) + '" data-figure-slot="' + escapeHtml(part.slot) + '"';
+    var svg = scopedSvg(asset.svg).replace(/<svg\b/, '<svg aria-hidden="true" focusable="false"');
+    if (thumbnail) {
+      return '<span class="kg-content-preview" aria-hidden="true"' + attrs + '>' + svg + '</span>';
+    }
+    return '<figure class="kg-body-figure"' + attrs + '><div class="concept-graphic" role="img" aria-label="' +
+      escapeHtml(asset.alt) + '">' + svg + '</div>' +
+      (asset.caption ? '<figcaption class="concept-graphic-caption">' + renderCaptionText(asset.caption) + '</figcaption>' : '') + '</figure>';
+  }
+
+  function previewFigure(block) {
+    if (!block.preview_figure) { return ""; }
+    var part = parseContent(block.body).find(function(item) {
+      return item.type === "figure" && item.slot === block.preview_figure;
+    });
+    return part ? renderFigure(part, true) : "";
+  }
 
   function escapeHtml(s) {
     return String(s || "")
@@ -181,7 +220,7 @@ function kgCreateContentMarkup(options) {
   // producing the same text/explanation/reference parts as the Python loader.
   function findNextOptionalDetailBlock(text, cursor) {
     var found = [];
-    [ ["optional_details", 2], ["explanation", 3], ["explain", 4] ].forEach(function(spec) {
+    [ ["optional_details", 2], ["explanation", 3], ["explain", 4], ["figure", 2] ].forEach(function(spec) {
       var macro = "\\" + spec[0], search = cursor;
       while (search < text.length) {
         var start = text.indexOf(macro, search);
@@ -211,7 +250,9 @@ function kgCreateContentMarkup(options) {
     while ((call = findNextOptionalDetailBlock(text, cursor))) {
       if (call.start > cursor) { parts.push({type: "text", text: text.slice(cursor, call.start)}); }
       var args = call.args;
-      if (call.name === "explain") {
+      if (call.name === "figure") {
+        parts.push({type: "figure", slot: args[0].trim(), figure_id: args[1].trim()});
+      } else if (call.name === "explain") {
         parts.push({type: "reference", slot: args[0].trim(), target_id: args[1].trim(),
           target_label: args[2].trim(), hook: args[3].trim()});
       } else {
@@ -231,6 +272,9 @@ function kgCreateContentMarkup(options) {
       if (part.type === "reference") {
         return "\\explain{" + part.slot + "}{" + part.target_id + "}{" + part.target_label + "}{" + part.hook + "}";
       }
+      if (part.type === "figure") {
+        return "\\figure{" + part.slot + "}{" + part.figure_id + "}";
+      }
       return "\\explanation{" + part.slot + "}{" + part.title + "}{" + contentText(part.parts) + "}";
     }).join("");
   }
@@ -245,6 +289,7 @@ function kgCreateContentMarkup(options) {
       if (part.type === "reference") {
         return options.reference ? options.reference(part, context) : renderSimpleConceptText(part.target_label);
       }
+      if (part.type === "figure") { return renderFigure(part, false); }
       var slot = part.slot;
       // Native note placement splits the original body into paragraph blocks.
       // Anonymous legacy slots need that paragraph position to stay distinct.
@@ -268,7 +313,7 @@ function kgCreateContentMarkup(options) {
   }
 
   function renderConceptText(s, context) {
-    if (!/\\(?:optional_details|explanation|explain)\b/.test(String(s || ""))) {
+    if (!/\\(?:optional_details|explanation|explain|figure)\b/.test(String(s || ""))) {
       return renderSimpleConceptText(s);
     }
     return renderParts(parseContent(s), context);
@@ -420,6 +465,7 @@ function kgCreateContentMarkup(options) {
   }
 
   return {
+    scopedSvg: scopedSvg, previewFigure: previewFigure,
     escapeHtml: escapeHtml,
     cssAttributeValueEscape: cssAttributeValueEscape,
     skipOptionalDetailWhitespace: skipOptionalDetailWhitespace,

@@ -44,6 +44,7 @@ class ContentBlock:
     body: str
     statement: str = ""
     graphic: str = ""
+    preview_figure: str = ""
 
     def to_viewer_data(self) -> dict[str, object]:
         return {
@@ -55,6 +56,7 @@ class ContentBlock:
             "body": self.body,
             **({"statement": self.statement} if self.statement else {}),
             **({"graphic": self.graphic} if self.graphic else {}),
+            **({"preview_figure": self.preview_figure} if self.preview_figure else {}),
         }
 
 
@@ -70,6 +72,7 @@ class ModuleContentBlock:
     body: str
     statement: str = ""
     graphic: str = ""
+    preview_figure: str = ""
 
     def to_viewer_data(self) -> dict[str, object]:
         return {
@@ -81,6 +84,7 @@ class ModuleContentBlock:
             "body": self.body,
             **({"statement": self.statement} if self.statement else {}),
             **({"graphic": self.graphic} if self.graphic else {}),
+            **({"preview_figure": self.preview_figure} if self.preview_figure else {}),
         }
 
 

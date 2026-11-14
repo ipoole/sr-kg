@@ -146,6 +146,23 @@ semantic `kind`, not display instructions.
 | `body` | Yes | Main text body, including MathJax and supported custom macros. |
 | `statement` | No | Brief explicitly authored reusable result/contribution. Required when borrowed through `\explain`; empty for unconverted blocks. |
 | `graphic` | No | `detail` for a `graphic` block wrapping its owner's registered detail SVG and caption; empty otherwise. |
+| `preview_figure` | No | Main-body figure occurrence slot shown beneath the statement when folded; empty otherwise. Reuses that figure's SVG without its caption. Requires a statement. |
+
+Body content can contain `\figure{slot}{figure_id}` between paragraphs, including
+inside local clarifications. A figure is a content part, not a recursive block
+call or a new graph node. Only a main-body occurrence can supply a block preview.
+The full figure stays in its authored body position; the thumbnail disappears
+when the block opens. This applies equally to native blocks and reading-tree
+occurrences. Figures have no independent read marks.
+
+An optional domain-owned `figures.csv` registers `figure_id`, `svg_path`, `caption`
+and `alt`. IDs use the owning domain namespace. The SVG path is relative to the
+domain directory and cannot escape it; caption is optional and descriptive alt
+text is required. Assets are embedded once in the viewer's figure dictionary;
+each rendered occurrence scopes its internal SVG IDs independently. An absent
+loaded-domain figure is an error; an excluded namespace produces a warning and
+a readable placeholder. Concept icons and canonical detail graphics retain
+their existing registry and Graphic-block contracts.
 
 The [authoring guide](../authoring/authoring_guide.md) requires explicit title,
 statement and body for new/revised blocks. An optional storage column preserves

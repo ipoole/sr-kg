@@ -180,6 +180,12 @@ shallow. Answers should teach, not just repeat the correct option. Keep question
 and option IDs stable. See [technical details](technical_reference.md#study-questions).
 
 Graphics should contribute geometry, comparison or a memorable visual model.
+For a figure within prose, put `\figure{stable-slot}{domain.figure.id}` on its
+own paragraph. Register its SVG, caption and descriptive alt text in the domain's
+`figures.csv`. Set the block's optional `preview_figure` to that main-body slot
+to show the same SVG at reduced scale beneath its folded statement. Choose one
+recognisable preview; keep the caption with the full body figure. Figures may
+also occur inside local clarifications, but those are not block previews.
 Concepts need icons and useful detail variants; module graphics are optional
 chapter-like mnemonics. Keep drawings, captions, registry and tests synchronised;
 inspect rendering and legibility. See the [graphics workflow](technical_reference.md#graphics).

@@ -37,6 +37,15 @@ class ContentReference:
 
 
 @dataclass(frozen=True)
+class ContentFigure:
+    slot: str
+    figure_id: str
+
+    def to_viewer_data(self):
+        return {"type": "figure", "slot": self.slot, "figure_id": self.figure_id}
+
+
+@dataclass(frozen=True)
 class ContentExplanation:
     slot: str
     title: str
@@ -47,8 +56,8 @@ class ContentExplanation:
                 "parts": [part.to_viewer_data() for part in self.parts]}
 
 
-ContentPart = ContentText | ContentReference | ContentExplanation
-_MACROS = {"optional_details": 2, "explanation": 3, "explain": 4}
+ContentPart = ContentText | ContentReference | ContentExplanation | ContentFigure
+_MACROS = {"optional_details": 2, "explanation": 3, "explain": 4, "figure": 2}
 _SLOT = re.compile(r"[a-z][a-z0-9_-]*\Z")
 
 
@@ -104,7 +113,11 @@ def parse_content(text: str, location: str = "content", *,
             raise KnowledgeBaseLoadError(f"{location}: duplicate content slot {slot!r}")
         slots.add(slot)
         child_location = f"{location}/{slot}"
-        if call.name == "explain":
+        if call.name == "figure":
+            target = call.args[1].strip()
+            domain_namespace(target, child_location)
+            parts.append(ContentFigure(slot, target))
+        elif call.name == "explain":
             _, target, label, hook = call.args
             target = target.strip()
             domain_namespace(target, child_location)
@@ -135,6 +148,7 @@ class ContentUnit:
     statement: str
     parts: tuple[ContentPart, ...]
     graphic: str = ""
+    preview_figure: str = ""
 
     def to_viewer_data(self):
         data = {"source_id": self.source_id, "owner_type": self.owner_type,
@@ -144,6 +158,8 @@ class ContentUnit:
         if self.graphic:
             data["graphic"] = {"owner_type": self.owner_type, "owner_id": self.owner_id,
                                "variant": self.graphic}
+        if self.preview_figure:
+            data['preview_figure'] = self.preview_figure
         return data
 
 
@@ -169,7 +185,7 @@ class ReferenceResolution:
 
 class ContentRegistry(Mapping[str, ContentUnit]):
     """One source map with path-local cycle detection and no eager expansion."""
-    def __init__(self, units=(), *, domains=()):
+    def __init__(self, units=(), *, domains=(), figures=None):
         sources = {}
         for unit in units:
             if unit.source_id in sources:
@@ -177,8 +193,21 @@ class ContentRegistry(Mapping[str, ContentUnit]):
             sources[unit.source_id] = unit
         self._sources = MappingProxyType(sources)
         self.domains = frozenset(domains)
+        self.figures = MappingProxyType(dict(figures or {}))
         warnings = []
         for unit in sources.values():
+            if unit.preview_figure and (not unit.statement or not any(
+                isinstance(part, ContentFigure) and part.slot == unit.preview_figure for part in unit.parts
+            )):
+                raise KnowledgeBaseLoadError(f'{unit.source_id}: preview figure needs a statement and a main-body figure slot')
+            for figure, path in _figures(unit.parts):
+                location = f"content block {unit.source_id}/{'/'.join(path)}"
+                namespace = domain_namespace(figure.figure_id, location)
+                if namespace not in self.domains:
+                    warnings.append(BuildWarning('figure-reference', namespace,
+                        figure.figure_id, location, unit.source_id))
+                elif figure.figure_id not in self.figures:
+                    raise KnowledgeBaseLoadError(f'{location}: unresolved figure {figure.figure_id}')
             for reference, path in _references(unit.parts):
                 location = f"content block {unit.source_id}/{'/'.join(path)}"
                 namespace = domain_namespace(reference.target_id, location)
@@ -221,7 +250,15 @@ def _references(parts, path=()):
             yield from _references(part.parts, path + (part.slot,))
 
 
-def build_content_registry(concepts, modules, *, domains) -> ContentRegistry:
+def _figures(parts, path=()):
+    for part in parts:
+        if isinstance(part, ContentFigure):
+            yield part, path + (part.slot,)
+        elif isinstance(part, ContentExplanation):
+            yield from _figures(part.parts, path + (part.slot,))
+
+
+def build_content_registry(concepts, modules, *, domains, figures=None) -> ContentRegistry:
     """Normalise existing concept and module blocks through one source contract."""
     units = []
     for owner_type, owners, key in [('concept', concepts, 'id'), ('module', modules, 'module_id')]:
@@ -236,5 +273,6 @@ def build_content_registry(concepts, modules, *, domains) -> ContentRegistry:
                     # Existing editorial validation reports malformed legacy
                     # macros alongside other text errors, rather than failing
                     # loading before it can collect those diagnostics.
-                    parse_content(block.body, location, _legacy_errors_as_text=True), block.graphic))
-    return ContentRegistry(units, domains=domains)
+                    parse_content(block.body, location, _legacy_errors_as_text=True), block.graphic,
+                    block.preview_figure))
+    return ContentRegistry(units, domains=domains, figures=figures)

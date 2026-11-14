@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 490" width="800" height="490">
+<title>One constant vector field on Cartesian and polar grids</title>
+<defs>
+<marker id="v-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2056b5"/></marker>
+<marker id="r-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#be493e"/></marker>
+<marker id="t-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b88412"/></marker>
+</defs>
+<g font-family="Arial, sans-serif" fill="#253849">
+<rect x="12" y="14" width="376" height="412" rx="16" fill="#f7faff" stroke="#d0d9e4"/>
+<rect x="412" y="14" width="376" height="412" rx="16" fill="#fffdf6" stroke="#d0d9e4"/>
+<text x="200" y="55" text-anchor="middle" font-size="29">Cartesian grid</text>
+<text x="600" y="55" text-anchor="middle" font-size="29">Polar grid</text>
+<line x1="65.00" y1="100.00" x2="65.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="105.00" y1="100.00" x2="105.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="145.00" y1="100.00" x2="145.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="185.00" y1="100.00" x2="185.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="225.00" y1="100.00" x2="225.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="265.00" y1="100.00" x2="265.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="305.00" y1="100.00" x2="305.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="345.00" y1="100.00" x2="345.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="115.00" x2="350.00" y2="115.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="155.00" x2="350.00" y2="155.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="195.00" x2="350.00" y2="195.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="235.00" x2="350.00" y2="235.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="275.00" x2="350.00" y2="275.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="315.00" x2="350.00" y2="315.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="55.00" y1="355.00" x2="350.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<path d="M515 355 A45 45 0 0 0 470 310" fill="none" stroke="#d5dfe9" stroke-width="2"/>
+<path d="M560 355 A90 90 0 0 0 470 265" fill="none" stroke="#d5dfe9" stroke-width="2"/>
+<path d="M605 355 A135 135 0 0 0 470 220" fill="none" stroke="#d5dfe9" stroke-width="2"/>
+<path d="M650 355 A180 180 0 0 0 470 175" fill="none" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="470.00" y1="355.00" x2="655.00" y2="355.00" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="470.00" y1="355.00" x2="630.21" y2="262.50" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="470.00" y1="355.00" x2="562.50" y2="194.79" stroke="#d5dfe9" stroke-width="2"/>
+<line x1="470.00" y1="355.00" x2="470.00" y2="170.00" stroke="#d5dfe9" stroke-width="2"/>
+<circle cx="205.95" cy="291.61" r="6" fill="#253849"/><text x="185.95" y="318.61" font-size="25">P</text>
+<line x1="205.95" y1="291.61" x2="285.95" y2="291.61" stroke="#2056b5" stroke-width="5" marker-end="url(#v-arrow)"/>
+<circle cx="605.95" cy="291.61" r="6" fill="#253849"/><text x="585.95" y="318.61" font-size="25">P</text>
+<line x1="605.95" y1="291.61" x2="685.95" y2="291.61" stroke="#2056b5" stroke-width="5" marker-end="url(#v-arrow)"/>
+<line x1="605.95" y1="291.61" x2="671.66" y2="260.97" stroke="#be493e" stroke-width="4" marker-end="url(#r-arrow)"/>
+<line x1="671.66" y1="260.97" x2="685.95" y2="291.61" stroke="#b88412" stroke-width="4" marker-end="url(#t-arrow)"/>
+<circle cx="133.39" cy="219.05" r="6" fill="#253849"/><text x="113.39" y="246.05" font-size="25">Q</text>
+<line x1="133.39" y1="219.05" x2="213.39" y2="219.05" stroke="#2056b5" stroke-width="5" marker-end="url(#v-arrow)"/>
+<circle cx="533.39" cy="219.05" r="6" fill="#253849"/><text x="513.39" y="246.05" font-size="25">Q</text>
+<line x1="533.39" y1="219.05" x2="613.39" y2="219.05" stroke="#2056b5" stroke-width="5" marker-end="url(#v-arrow)"/>
+<line x1="533.39" y1="219.05" x2="547.68" y2="188.41" stroke="#be493e" stroke-width="4" marker-end="url(#r-arrow)"/>
+<line x1="547.68" y1="188.41" x2="613.39" y2="219.05" stroke="#b88412" stroke-width="4" marker-end="url(#t-arrow)"/>
+<text x="200" y="395" text-anchor="middle" font-size="25">Same components at P and Q</text>
+<text x="600" y="395" text-anchor="middle" font-size="25">Different component directions</text>
+<line x1="120" y1="456" x2="178" y2="456" stroke="#2056b5" stroke-width="5" marker-end="url(#v-arrow)"/>
+<text x="200" y="465" font-size="28" fill="#2056b5">The blue vector itself is unchanged.</text>
+</g></svg>
