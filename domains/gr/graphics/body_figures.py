@@ -193,13 +193,37 @@ def momentum_flux():
     return _svg('Opposing particle streams cancel bulk momentum but add momentum flux',body,defs)
 
 
+def clock_signals():
+    defs=('<marker id="signal-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+          'markerWidth="6" markerHeight="6" orient="auto">'
+          f'<path d="M0 0L10 5L0 10Z" fill="{GOLD}"/></marker>')
+    body=[_text(450,42,'Count pulses using each local clock',30),
+          _text(240,92,'A: lower potential',27),_text(660,92,'B: higher potential',27),
+          _line(240,130,240,435,colour='#879bad',width=3),
+          _line(660,130,660,435,colour='#879bad',width=3),
+          _line(92,432,92,160,colour=MUTED,width=3),_text(92,142,'t',27,MUTED),
+          _text(240,461,'fewer clock ticks',24,BLUE),_text(660,461,'more clock ticks',24,BLUE)]
+    # One fixed static-coordinate travel time: equal emission intervals give
+    # equal arrival intervals in t. Clock ticks have deliberately exaggerated
+    # proper-time rates 1 and 3/2, so the frequency ratio in this sketch is 2/3.
+    for i in range(5):body.append(_line(225,200+50*i,255,200+50*i,width=3))
+    for i in range(7):body.append(_line(645,140+(100/3)*i,675,140+(100/3)*i,width=3))
+    for y in [400,300,200]:
+        body += [_line(240,y,660,y-60,colour=GOLD,width=4,extra='marker-end="url(#signal-arrow)"'),
+                 _circle(240,y,7,GOLD),_circle(660,y-60,7,GOLD)]
+    body += [_text(450,510,'The same pulse intervals span more receiver clock ticks.',25),
+             _text(450,549,'Lower received frequency; the clock-rate difference is exaggerated.',23,MUTED)]
+    return _svg('Stationary clocks compare the same light pulses with different proper-time rates',body,defs)
+
+
 def write_assets():
     output = Path(__file__).with_name('figures')
     output.mkdir(exist_ok=True)
     for name, build in {'tidal_constellation': tidal_constellation,
                         'spherical_transport': spherical_transport,
                         'tidal_trace': tidal_trace,
-                        'momentum_flux': momentum_flux}.items():
+                        'momentum_flux': momentum_flux,
+                        'clock_signals': clock_signals}.items():
         (output/(name+'.svg')).write_text(build(), encoding='utf-8')
 
 

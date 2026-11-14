@@ -132,3 +132,17 @@ not a claim that two beams alone constitute an isotropic perfect fluid.
 
 Validation remains at zero errors/216 warnings. All 784 unit tests and the GR-4
 phone/desktop cases pass; the figure has been inspected at both sizes.
+
+## Extension: GR-5
+
+Three new Intuitions explain pulse counting, local/geodesic light propagation
+versus distant bending, and the mismatch of radial/angular orbital cycles.
+The existing wave Intuition now distinguishes freely falling masses from a rigid
+hoop and coordinate motion from measured strain; its canonical graphic remains
+suitable. The clock-signal figure belongs to a worked **Example**, retaining the
+old block ID while adding a 100 m, approximately −1.1×10⁻¹⁴ frequency-shift
+calculation. The figure explicitly exaggerates clock rates, preserves equal
+static-coordinate pulse intervals and is not a local light-speed diagram.
+
+Validation: zero errors/216 warnings; 784 unit tests and the GR-5 phone/desktop
+cases pass. Source locators checked against Tong's current chapter headings.
