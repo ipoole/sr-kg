@@ -1,10 +1,11 @@
 # GR Drafting Issues
 
 The existing 56 GR concepts have completed full authoring. Runtime CSV carries
-the text; the [notation glossary](../../../docs/authoring/notation_glossary.md#general-relativity)
+the text. The [reading-tree authoring review](reading_tree_authoring_review.md)
+records the statement, explanation and local-clarification revision. The [notation glossary](../../../docs/authoring/notation_glossary.md#general-relativity)
 records the conventions that future changes must preserve.
 
-- Gravitational waves are now seeded in GR-5. Cosmology and advanced tools
+- Gravitational waves are included in GR-5. Cosmology and advanced tools
   remain deferred; see the [concept plan](general_relativity_concept_plan.md).
 - Supporting mathematics exposition and source work is retained in
   [the drafts](gr_concept_expositions.md).

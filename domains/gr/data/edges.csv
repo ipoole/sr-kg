@@ -7,8 +7,8 @@ gr.local_inertial_frame,sr.inertial_frames,REQUIRES,It generalises the SR inerti
 gr.local_inertial_frame,math.tangent_space,REQUIRES,A local inertial frame is naturally understood in the tangent-space approximation at an event.
 gr.freely_falling_observer,gr.local_inertial_frame,REQUIRES,Free-fall observers supply the physical laboratories used to define local inertial frames.
 gr.tidal_gravity,gr.freely_falling_observer,CONSTRUCTED_FROM,Tidal gravity is observed through the relative motion of neighbouring freely falling observers.
-gr.gravity_as_geometry,gr.equivalence_principle,DERIVES_FROM,The equivalence principle motivates replacing gravitational force by local inertial motion in curved geometry.
-gr.gravity_as_geometry,gr.tidal_gravity,DERIVES_FROM,Tidal gravity marks the part of gravity that cannot be transformed away locally and therefore points to curvature.
+gr.gravity_as_geometry,gr.equivalence_principle,REQUIRES,Universal local free fall motivates a geometric description; it does not uniquely derive a metric theory or its field equations.
+gr.gravity_as_geometry,gr.tidal_gravity,REQUIRES,Persistent relative acceleration distinguishes intrinsic gravitational curvature from a coordinate acceleration that can be removed locally.
 gr.gravity_as_geometry,sr.metric_tensor,REQUIRES,Treating gravity as geometry requires the metric idea already introduced in flat spacetime.
 gr.metric_tensor,math.tensor_field,INSTANCE_OF,"The metric is a symmetric rank-(0,2) tensor field on spacetime."
 gr.metric_tensor,sr.metric_tensor,RELATED,The GR metric generalises the fixed Minkowski metric to a spacetime-dependent measuring field.
@@ -59,7 +59,7 @@ gr.four_velocity,sr.velocity_four_vector,RELATED,It generalises SR four-velocity
 gr.four_acceleration,gr.four_velocity,CONSTRUCTED_FROM,Four-acceleration is the covariant derivative of four-velocity along the worldline.
 gr.four_acceleration,gr.covariant_derivative,REQUIRES,Its definition uses covariant differentiation.
 gr.geodesic_deviation,gr.geodesic,CONSTRUCTED_FROM,The equation compares neighbouring geodesics.
-gr.geodesic_deviation,gr.tidal_gravity,DERIVES_FROM,It gives the mathematical expression of relative tidal acceleration.
+gr.geodesic_deviation,gr.tidal_gravity,REQUIRES,The tidal comparison supplies the physical question quantified by deviation; the mathematical proof additionally uses the Riemann commutator.
 gr.riemann_tensor,gr.connection,DERIVES_FROM,Riemann curvature is built from the connection and its derivatives.
 gr.riemann_tensor,gr.covariant_derivative,DERIVES_FROM,It measures the commutator of covariant derivatives.
 gr.riemann_tensor,gr.parallel_transport,RELATED,Closed-loop transport detects Riemann curvature.
@@ -130,3 +130,7 @@ gr.black_hole_singularity,gr.curvature_invariants,REQUIRES,Invariant curvature d
 gr.effective_potential_orbits,gr.schwarzschild_metric,CONSTRUCTED_FROM,The metric symmetries reduce geodesic motion to an effective radial problem.
 gr.effective_potential_orbits,gr.geodesic_equation,DERIVES_FROM,The radial potential form follows from Schwarzschild geodesics and conserved quantities.
 gr.effective_potential_orbits,gr.perihelion_precession,RELATED,The effective radial dynamics explains relativistic orbital precession.
+gr.einstein_tensor,gr.bianchi_identity,DERIVES_FROM,The contracted differential Bianchi identity fixes the half-trace term that makes the Einstein tensor divergence-free.
+gr.perfect_fluid,gr.stress_energy_tensor,REQUIRES,Rest-frame energy density and isotropic momentum flux determine the coefficients in the covariant perfect-fluid tensor.
+gr.cosmological_constant,gr.einstein_field_equations,REQUIRES,Moving the constant metric term across the field equation identifies its equivalent vacuum-energy source.
+gr.perfect_fluid,gr.covariant_conservation,REQUIRES,Projecting the total fluid conservation law along its four-velocity yields energy balance and perpendicular projection yields pressure acceleration.
