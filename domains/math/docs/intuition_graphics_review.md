@@ -60,4 +60,17 @@ a versioned MATHS preview for review before starting SR authoring.
 
 ## Progress
 
-Inventory complete. MATHS-1 and MATHS-2 authoring next.
+Inventory complete. MATHS-1 adds two Intuitions (local/global labels and stationary
+histories), extends the existing directional-derivative Intuition with a concrete
+curve comparison, and enriches the covector readout with a nonzero differential
+and critical-point qualification. The two body figures sit in the chart Example
+and cotangent Intuition. Domain registration is independent of GR/SR assets.
+
+All 784 unit tests pass. Both real-data maths phone/desktop equation/reading-tree
+cases pass. The annotation regression's former “one image anywhere” assertion is
+updated to check one **canonical** graphic, allowing the intended body figure.
+Legacy graphic notes, scalar-calculation notes and shared read ticks are retained.
+Full/folded SVGs inspected at both widths. Validation remains zero errors and the
+existing 216 full-viewer warnings.
+
+MATHS-2 authoring is next.

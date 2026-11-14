@@ -138,5 +138,6 @@ def test_maths_migration_preserves_canonical_notes_read_ticks_and_local_slots(
         graph.click_concept('math.coordinate_chart')
         graphic = _block(page, 'math.coordinate_chart.graphic')
         assert graphic.locator('.user-note[data-note-id="old-chart-graphic-note"]').count() == 1
-        assert page.locator('#info_panel .concept-graphic').count() == 1
+        # Body figures supplement the canonical graphic without replacing it.
+        assert page.locator('#info_panel > .content-block-graphic .concept-graphic').count() == 1
         assert not graph.page_errors
