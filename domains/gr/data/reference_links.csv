@@ -120,3 +120,6 @@ content_block,gr.einstein_field_equations.joint_solution,tong.gr,§4.5.2 The Ein
 content_block,gr.gravitational_redshift.pulse_tick_rates,tong.gr,§1.2.5 Gravitational Time Dilation,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.
 content_block,gr.light_deflection.local_ray_global_route,tong.gr,§1.3.5 Light Bending,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.
 content_block,gr.perihelion_precession.two_orbital_cycles,tong.gr,§1.3.3 Planetary Orbits in General Relativity,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.
+content_block,gr.event_horizon.causal_boundary,tong.gr,§6.1.3 Eddington-Finkelstein Coordinates,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.
+content_block,gr.coordinate_singularity.map_and_journey,tong.gr,§6.1.3 Eddington-Finkelstein Coordinates,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.
+content_block,gr.effective_potential_orbits.radial_budget,tong.gr,§1.3.3 Planetary Orbits in General Relativity; §1.3.5 Light Bending,Teaching interpretation; retain the atlas convention bundle and the assumptions stated in the block.

@@ -216,6 +216,41 @@ def clock_signals():
     return _svg('Stationary clocks compare the same light pulses with different proper-time rates',body,defs)
 
 
+def horizon_cones():
+    """Local radial null directions in ingoing Kerr-Schild time T=v-r.
+
+    For c=1, dr/dT=-1 or (r-2m)/(r+2m). Use one scale for both
+    displayed coordinates; these are tangent cones, not finite ray histories.
+    """
+    defs=('<marker id="null-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+          'markerWidth="6" markerHeight="6" orient="auto">'
+          f'<path d="M0 0L10 5L0 10Z" fill="{BLUE}"/></marker>')
+    body=[_text(450,43,'Future light directions across a horizon',30),
+          '<rect x="75" y="135" width="345" height="310" fill="#f4eee7"/>',
+          '<rect x="420" y="135" width="440" height="310" fill="#f5faff"/>',
+          _line(420,135,420,445,colour=GOLD,width=3,extra='stroke-dasharray="8 7"'),
+          _text(230,107,'Inside: r = m',26), _text(420,107,'r = 2m',26,GOLD),
+          _text(780,107,'Outside: r = 4m',26),
+          _line(60,430,60,180,colour=MUTED,width=3),_text(60,160,'T',27,MUTED)]
+    for radius in [1,2,4]:
+        x,y=60+180*radius,390
+        dt=.6
+        outgoing=(radius-2)/(radius+2)
+        left=(x-180*dt,y-180*dt)
+        right=(x+180*dt*outgoing,y-180*dt)
+        body += [f'<polygon points="{x},{y} {left[0]},{left[1]} {right[0]},{right[1]}" fill="#d3e3f7"/>',
+                 _line(x,y,*left,width=4,extra='marker-end="url(#null-arrow)"'),
+                 _line(x,y,*right,width=4,extra='marker-end="url(#null-arrow)"'),
+                 _circle(x,y,6,INK)]
+    body += [_line(100,460,860,460,colour=MUTED,width=3),
+             _line(860,460,845,452,colour=MUTED,width=3),
+             _line(860,460,845,468,colour=MUTED,width=3),
+             _text(450,493,'Increasing areal radius r →',26,MUTED),
+             _text(450,528,'Regular time T = v − r; c = 1',25),
+             _text(450,552,'Local cones, not long ray paths; their drawn tilt is coordinate-dependent.',21,MUTED)]
+    return _svg('Future radial light cones outside, on and inside the Schwarzschild future horizon',body,defs)
+
+
 def write_assets():
     output = Path(__file__).with_name('figures')
     output.mkdir(exist_ok=True)
@@ -223,7 +258,8 @@ def write_assets():
                         'spherical_transport': spherical_transport,
                         'tidal_trace': tidal_trace,
                         'momentum_flux': momentum_flux,
-                        'clock_signals': clock_signals}.items():
+                        'clock_signals': clock_signals,
+                        'horizon_cones': horizon_cones}.items():
         (output/(name+'.svg')).write_text(build(), encoding='utf-8')
 
 

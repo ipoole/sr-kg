@@ -1030,3 +1030,30 @@ In the weak Schwarzschild correction, the body must travel slightly more than on
 It is helpful to keep two counts: inward-and-outward radial cycles, and turns around the centre. Neither count is strange on its own; precession appears because their ratio is no longer exactly one. This avoids imagining that an extra push rotates an otherwise fixed ellipse at every point.
 
 The conservative test-body model can have this advance with constant energy and angular momentum. Radiation-driven inspiral is a separate effect. Other bodies and a nonspherical source can also cause precession, so an observed advance must be compared with all relevant contributions before attributing the remainder to GR.","Perihelion advance is a mismatch between radial and angular cycles, not a loss of orbital energy.",,
+gr.event_horizon.causal_boundary,gr.event_horizon,15,intuition,The future points inward,"Imagine choosing a future direction from inside a light cone. Outside a Schwarzschild black hole there are both inward-going and outward-going light directions. A massive observer's allowed future directions lie between the null boundaries, so an outward journey can be possible there.
+
+At the future horizon, the outward null direction runs along the horizon itself. Inside it, even the locally outward edge of the future cone points towards smaller areal radius. Moving to larger radius would require leaving the allowed future cone; firing a more powerful rocket cannot make that direction causal.
+
+\figure{future-cones}{gr.figure.horizon_cones}
+
+The cone's drawn tilt depends on the coordinates. Here the time coordinate is regular across the horizon, so the picture does not mistake the breakdown of Schwarzschild time for a physical barrier. There is no material surface that an infaller must hit, and a large black hole can have small local tidal effects at crossing.
+
+This is a picture of the known Schwarzschild future horizon. A general event horizon is defined by eventual escape to the distant future, not by a universal local tilt test. The figure illustrates the causal meaning of this particular boundary; it does not provide an instrument that locates every horizon from measurements at one event.
+
+\explanation{regular-cone-slopes}{Check the directions in the diagram}{Set \(c=1\), \(m=GM/c^2\) and \(f=1-2m/r\). The \cref{ingoing-coordinate calculation}{gr.event_horizon.authored_3} has radial part \(ds^2=f\,dv^2-2\,dv\,dr\). Introduce \(T=v-r\), which is a regular time coordinate across the future horizon. The ingoing null family has \(dv=0\), giving \(dr/dT=-1\). The outgoing family has \(dr/dv=f/2\), so
+\[\frac{dr}{dT}=\frac{r-2m}{r+2m}.\]
+At \(r=4m,2m,m\), this slope is respectively \(1/3,0,-1/3\), while the ingoing slope stays negative. Both future radial boundaries therefore point to decreasing \(r\) inside. These are coordinate slopes, not locally measured light speeds; angular directions are suppressed in the picture.}","Inside Schwarzschild’s future horizon, every future-directed causal path moves towards smaller areal radius.",,future-cones
+gr.coordinate_singularity.map_and_journey,gr.coordinate_singularity,15,intuition,The chart ends before the journey does,"Longitude gives a useful warning: meridians meet at a pole, so a longitude-based grid fails to distinguish directions there even though the ground need not contain a physical defect. Changing the map does not repair the ground; it repairs our description of it.
+
+At the Schwarzschild future horizon, the familiar exterior time coordinate has a comparable limitation. Its divergence does not mean that a falling observer's clock must stop. A horizon-crossing chart describes that observer continuing through a region with a smooth nondegenerate metric.
+
+The analogy is a starting point, not the test. To establish that a suspected singularity is removable, we actually construct the regular extension and check its metric. The \cref{cancellation of the radial divergence}{gr.coordinate_singularity.ingoing_cancellation} does this for the horizon. Finite values of a few chosen scalars alone would not be a sufficient proof.
+
+Changing coordinates also does not remove the horizon's causal role. An infaller can cross it smoothly and still be unable to send a future signal back out. Nor does this repair Schwarzschild's central curvature divergence. A failing chart, an escape boundary and a breakdown of the classical geometry are different issues.",A coordinate description can fail at a boundary that a freely falling observer crosses smoothly.,,
+gr.effective_potential_orbits.radial_budget,gr.effective_potential_orbits,15,intuition,Read a radial budget at fixed angular momentum,"Fix a timelike particle's angular momentum and draw its effective potential against radius. Now imagine a horizontal line at its conserved squared energy. The vertical gap between the line and the curve gives \((dr/d\tau)^2\), the squared change of areal radius per unit proper time. This is not a local observer's measured three-speed.
+
+Where the curve lies above the energy line, the proposed radial motion would require a negative square, so that region is forbidden. At an ordinary crossing the radial rate reaches zero and can reverse: this is a turning point. Two suitable crossings bound radial oscillation between closest and farthest approach.
+
+A circular orbit needs more than a single crossing. The radial acceleration must also vanish, so the potential must be stationary there. A local minimum gives restoring radial behaviour for a small perturbation at fixed angular momentum; a maximum gives an unstable balance. The \cref{circular-orbit calculation}{gr.effective_potential_orbits.authored_4} supplies the Schwarzschild radii.
+
+The particle is not literally rolling over a landscape in an extra spatial dimension. The curve reorganises the geodesic equation after using symmetry. Change the angular momentum, or switch to a null ray, and the effective potential changes too.","At fixed angular momentum, the gap between squared energy and effective potential determines the squared radial rate.",,

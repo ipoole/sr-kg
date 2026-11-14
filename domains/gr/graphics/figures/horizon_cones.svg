@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Future radial light cones outside, on and inside the Schwarzschild future horizon</title>
+<defs><marker id="null-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2056b5"/></marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.00" y="43.00" text-anchor="middle" font-size="30" fill="#273d50">Future light directions across a horizon</text>
+<rect x="75" y="135" width="345" height="310" fill="#f4eee7"/>
+<rect x="420" y="135" width="440" height="310" fill="#f5faff"/>
+<line x1="420.00" y1="135.00" x2="420.00" y2="445.00" stroke="#b56d12" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 7"/>
+<text x="230.00" y="107.00" text-anchor="middle" font-size="26" fill="#273d50">Inside: r = m</text>
+<text x="420.00" y="107.00" text-anchor="middle" font-size="26" fill="#b56d12">r = 2m</text>
+<text x="780.00" y="107.00" text-anchor="middle" font-size="26" fill="#273d50">Outside: r = 4m</text>
+<line x1="60.00" y1="430.00" x2="60.00" y2="180.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<text x="60.00" y="160.00" text-anchor="middle" font-size="27" fill="#617487">T</text>
+<polygon points="240,390 132.0,282.0 204.0,282.0" fill="#d3e3f7"/>
+<line x1="240.00" y1="390.00" x2="132.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<line x1="240.00" y1="390.00" x2="204.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<circle cx="240.00" cy="390.00" r="6" fill="#273d50"/>
+<polygon points="420,390 312.0,282.0 420.0,282.0" fill="#d3e3f7"/>
+<line x1="420.00" y1="390.00" x2="312.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<line x1="420.00" y1="390.00" x2="420.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<circle cx="420.00" cy="390.00" r="6" fill="#273d50"/>
+<polygon points="780,390 672.0,282.0 816.0,282.0" fill="#d3e3f7"/>
+<line x1="780.00" y1="390.00" x2="672.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<line x1="780.00" y1="390.00" x2="816.00" y2="282.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#null-arrow)"/>
+<circle cx="780.00" cy="390.00" r="6" fill="#273d50"/>
+<line x1="100.00" y1="460.00" x2="860.00" y2="460.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="860.00" y1="460.00" x2="845.00" y2="452.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="860.00" y1="460.00" x2="845.00" y2="468.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<text x="450.00" y="493.00" text-anchor="middle" font-size="26" fill="#617487">Increasing areal radius r →</text>
+<text x="450.00" y="528.00" text-anchor="middle" font-size="25" fill="#273d50">Regular time T = v − r; c = 1</text>
+<text x="450.00" y="552.00" text-anchor="middle" font-size="21" fill="#617487">Local cones, not long ray paths; their drawn tilt is coordinate-dependent.</text>
+</g>
+</svg>

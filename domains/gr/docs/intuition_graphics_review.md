@@ -146,3 +146,17 @@ static-coordinate pulse intervals and is not a local light-speed diagram.
 
 Validation: zero errors/216 warnings; 784 unit tests and the GR-5 phone/desktop
 cases pass. Source locators checked against Tong's current chapter headings.
+
+## Extension: GR-6
+
+Three new Intuitions explain the future horizon's causal restriction, chart
+failure versus a continuing infaller, and radial motion at fixed angular momentum.
+The horizon figure uses regular time T=v−r, with radial null slopes −1 and
+(r−2m)/(r+2m), so its cone directions are calculated rather than guessed.
+The body explicitly limits the picture to the Schwarzschild future horizon:
+it is not a universal local event-horizon detector. Its optional calculation
+extends the concept's existing ingoing-coordinate derivation, retaining that
+source's clarification and the established graph structure.
+
+All 784 unit tests and the GR-6 phone/desktop cases pass. Artwork inspected at
+both widths; final label adjustments keep the bottom caption inside the SVG.
