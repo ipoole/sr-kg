@@ -204,3 +204,16 @@ ending after a figure is retained invisibly for positional note compatibility.
 Footer read controls follow Fold and align with heading controls even at maximum
 details text zoom. Focused browser checks exercise both read controls, paragraph
 spacing, shared note typography and retained figure/paragraph note anchors.
+
+## Completion checks
+
+Preview v4.6.22: 784 unit tests, 351 fast browser cases and 94 full-content browser
+cases pass, including all GR concepts at both widths, generated reading routes,
+personal notes, touch interaction and the three guided tutorials. Validation
+reports zero errors and the existing 216 editorial warnings. Every new figure
+has been visually inspected as full artwork and in folded/open phone and desktop
+blocks. The horizon slopes also satisfy the regular radial metric by direct
+substitution; the 100 m example gives −1.09×10⁻¹⁴ before rounding.
+
+Generated output remains ignored. Publication uses the exact local build and
+retains the public release while updating only the hosted preview.
