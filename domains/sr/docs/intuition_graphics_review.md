@@ -162,3 +162,23 @@ checks before its separate commit. All nine SR illustrations were inspected as
 full artwork and in folded/open blocks at both widths. The drawing helpers are
 SR-owned, deterministic and independent of MATHS/GR artwork. One crowded action
 label was moved during review; no additional renderer or recipe was needed.
+
+## Completion checks
+
+Preview v4.6.24 passes all 784 unit tests and 445 browser cases (351 fast,
+94 full-content), including the three guided tutorials on phone and desktop.
+The SR-only build has zero errors, reports only the excluded MATHS namespace,
+and includes all nine SR body figures without cross-domain artwork dependencies.
+The full build has zero errors and the same 216 editorial warnings.
+
+The full run caught an overbroad clarification-footer exclusion: local
+clarifications omit the footer, while legacy borrowed authored blocks retain
+read/fold controls. The source acknowledgement also has its own semantic class,
+separate from the creator credit. Both regressions pass. A reading-tree test now
+waits for the native disclosure toggle event before checking synchronisation,
+instead of racing that event. No extra reading-state behaviour was introduced.
+
+The nine SVGs regenerate byte-identically. The tested full viewer is about
+3.61 MB, roughly 68 KB larger than v4.6.23. Generated output remains ignored.
+The exact local build is packaged for the hosted preview, preserving the public
+release; source remains on the feature branch for review.

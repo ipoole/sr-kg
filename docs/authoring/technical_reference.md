@@ -174,7 +174,12 @@ conda run -n sr-kg python tools/generate_pyvis.py --data-root data --dag-report-
 conda run -n sr-kg python tools/generate_pyvis.py --data-root data --module-report-only
 conda run -n sr-kg python tools/generate_pyvis.py --data-root data --domains sr math --out output/PhysicsKG.html
 conda run -n sr-kg python tools/show_graphics.py 'SR-1.*'
+conda run -n sr-kg python -m domains.sr.graphics.body_figures
 ```
+
+The SR, MATHS (`domains.math`) and GR domains each own their `body_figures`
+module; run the corresponding module after changing those drawing helpers.
+The generator embeds the resulting registered SVG files rather than redrawing them.
 
 Validation errors block generation; review warnings editorially. `--validate`
 checks before building; `--validation-strict` treats warnings as failures.

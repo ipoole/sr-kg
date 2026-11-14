@@ -23,7 +23,7 @@ function kgCreateDetailsView(options) {
     if (scope.matches("details")) { items.unshift(scope); }
     items.forEach(function(item) {
       if (item.closest(".concept-toc") ||
-          item.matches('.kg-content-inline[data-content-origin="authored"]')) { return; }
+          item.matches('.kg-content-inline[data-content-origin="authored"]:not(.kg-shared-explanation)')) { return; }
       var heading = item.querySelector(":scope > summary");
       if (!heading) { return; }
       var footer = foldFooters.get(item);
