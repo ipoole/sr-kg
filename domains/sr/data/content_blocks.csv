@@ -1012,7 +1012,11 @@ Consequently the division of entries changes even though the field itself was no
 sr.electromagnetic_field.lorentz_mixing,sr.electromagnetic_field,40,explanation,An explicit pair of electric–magnetic boost rules,"For \(S'\) moving along positive \(x\) at speed \(v\), the tensor boost rule gives, for example,
 \[ \begin{aligned}E'_y&=\gamma(E_y-vB_z),\\ B'_z&=\gamma(B_z-vE_y/c^2).\end{aligned} \]
 The factor \(c^2\) keeps the SI units consistent. These relations follow by transforming both indices of \(F\) and then reading its new electric and magnetic entries.
-Thus a field that has only \(E_y\) in one frame generally has a magnetic component in the boosted frame. Not every field can be made purely electric or purely magnetic: invariant combinations of the components restrict such possibilities.",A boost can produce \(E'_y=\gamma(E_y-vB_z)\) and \(B'_z=\gamma(B_z-vE_y/c^2)\).,,
+Thus a field that has only \(E_y\) in one frame generally has a magnetic component in the boosted frame. Not every field can be made purely electric or purely magnetic: invariant combinations of the components restrict such possibilities.
+
+As a simple check, take \(E_y=E_0\), \(\mathbf B=0\), and \(v=0.6c\). Then \(\gamma=1.25\), so the new readings are \(E'_y=1.25E_0\) and \(cB'_z=-0.75E_0\). The sign of \(B'_z\) specifies its direction. The combination \(E^2-c^2B^2\) remains \(E_0^2\), since \(1.25^2-0.75^2=1\). This is one field at one event described by two observers, not two different experiments. In a real finite apparatus, the sources and boundary fields must also be transformed.
+
+\figure{observer-readings}{sr.figure.observer_field_split}",A boost can produce \(E'_y=\gamma(E_y-vB_z)\) and \(B'_z=\gamma(B_z-vE_y/c^2)\).,,observer-readings
 sr.electromagnetic_field.locality,sr.electromagnetic_field,50,explanation,A local physical field,"The field is assigned at each event. A charge responds to the field at its own location, while Maxwell's equations describe the connection between field variation and sources.
 For the standard initial-value problem, disturbances propagate consistently with the light cone. This is a property of Maxwell dynamics and its allowed data, not a consequence of merely attaching a local value to every event. Static and instantaneous-looking solution formulas must still be interpreted with their assumptions and boundary conditions.",Field strength and its local differential equations replace an instantaneous distant-force description.,,
 sr.electromagnetic_field.energy_momentum_preview,sr.electromagnetic_field,60,example,The field participates in energy–momentum accounting,"A light pulse can deposit energy and push on an absorbing surface even where no material carrier travels with it. Static electric and magnetic configurations can also store energy.
@@ -1092,7 +1096,18 @@ sr.gauge_invariance.cancellation,sr.gauge_invariance,20,derivation,Deriving the 
 The last equality uses commuting mixed partial derivatives for a smooth local gauge function. Thus the cancellation is a property of antisymmetric differentiation, not an additional Maxwell equation imposed on \(\chi\).
 Field-strength terms in an action are therefore unchanged exactly. Couplings to charged matter require their own boundary or matter-transformation check; that does not follow solely by inspecting the free field term.","The added Hessian is symmetric, so antisymmetrising it gives zero.",,
 sr.gauge_invariance.redundancy,sr.gauge_invariance,30,intuition,"Many descriptions, one field","Think of several labels attached to one physical configuration. Changing the label is not a disturbance sent through space; it is a different way to describe what is already there.
-A gauge function makes this comparison local, since its gradient can vary from event to event. The analogy is about redundancy, not about declaring every change of a field variable unphysical. Only the specified gauge-related changes belong to the same equivalence class.",Gauge-related potentials are different representatives of one local field.,,
+A gauge function makes this comparison local, since its gradient can vary from event to event. The analogy is about redundancy, not about declaring every change of a field variable unphysical. Only the specified gauge-related changes belong to the same equivalence class.
+
+A concrete static example is a uniform magnetic field \(\mathbf B=B\hat{\mathbf z}\), with zero electric field. Two spatial potentials representing it are
+\[\begin{aligned}
+\mathbf A_1&=(-By/2,\,Bx/2,\,0),\\
+\mathbf A_2&=(0,\,Bx,\,0).
+\end{aligned}\]
+Their arrows look different, but taking the curl gives the same \(B\hat{\mathbf z}\). The potential arrows are therefore not the magnetic field lines. Both scalar potentials can be zero here, since the choices are time independent.
+
+\explanation{uniform_field_gauge}{Checking the gauge function and signs}{Our covariant convention is \(A'_\mu=A_\mu+\partial_\mu\chi\), with \(A_\mu=(\phi/c,-\mathbf A)\). Therefore the spatial rule is \(\mathbf A'=\mathbf A-\nabla\chi\). Taking \(\chi=-Bxy/2\) maps \(\mathbf A_1\) to \(\mathbf A_2\). Also, \(\partial_x A_y-\partial_y A_x\) is \(B/2-(-B/2)=B\) for the first and \(B-0=B\) for the second. The example is local; it assumes no boundary restriction that would forbid this gauge change.}
+
+\figure{same-curl}{sr.figure.gauge_representatives}",Gauge-related potentials are different representatives of one local field.,,same-curl
 sr.gauge_invariance.not_observable,sr.gauge_invariance,40,warning,Not every change in \(A_\mu\) is physical,"Adding a pure gradient can alter every potential component while leaving \(F\) unchanged. A detector responding to local electromagnetic forces does not register that as a new field.
 Conversely, an arbitrary change of potential is not generally pure gauge and can change the field strength. Gauge invariance is a precise equivalence relation, not permission to change the model freely.",A change in the written potential need not be a change in physical field strength.,,
 sr.gauge_invariance.observable_focus,sr.gauge_invariance,50,explanation,Observable quantities,"The field tensor and its electric/magnetic readings determine local classical electromagnetic forces. Individual gauge-dependent potential components do not have this direct status.

@@ -111,3 +111,13 @@ Euler–Lagrange argument. A second figure illustrates the field-density
 Explanation, explicitly marking the one-space-plus-time picture and continuum
 limit. It does not treat neighbouring field samples as independent systems.
 The original derivations and all existing clarification scopes are retained.
+
+## SR-4 completed
+
+All thirteen concepts already have useful Intuition coverage. Retained those
+mental models rather than adding duplicates. Enriched the observer-split
+Explanation with an explicit 0.6c SI calculation and a body figure. Enriched the
+gauge-redundancy Intuition with two concrete potentials, a same-curl figure and
+an optional sign check consistent with A_mu=(phi/c,-A). The Poynting-pressure
+Example remains useful without another picture; canonical field graphics stay.
+Observer changes and gauge changes are explicitly different operations.

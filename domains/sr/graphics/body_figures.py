@@ -139,9 +139,55 @@ def field_action_cells():
     return canvas('Sampling a trial scalar-field history to approximate its local action integral',body)
 
 
+def observer_field_split():
+    defs = [_arrow_marker('electric', colour=BLUE, size=6)]
+    body = [text(450,43,'One field, different electric and magnetic readings',29)]
+    for left, frame, length in [(20,'S',135),(460,'S′ moving at +0.6c',168.75)]:
+        cx, cy = left+160, 325
+        body += [_rect(left,80,420,390,rx=18,fill='#f8fbff',stroke='#cfdaea'),
+                 text(left+210,122,frame,28),
+                 line(cx-45,cy,cx+120,cy,MUTED,1.5),line(cx,cy+20,cx,cy-185,MUTED,1.5),
+                 line(cx,cy,cx,cy-length,BLUE,6,marker_end='url(#electric)'),
+                 text(cx+30,cy-length+10,'E' if left==20 else 'E′',30,BLUE,anchor='start'),
+                 text(left+210,413,'E = E₀; B = 0' if left==20 else 'E′ = 1.25E₀; cB′ = −0.75E₀',25)]
+        if left==460:
+            bx,by=left+315,240
+            body += [_circle(bx,by,24,fill='none',stroke=GOLD,stroke_width=3),
+                     line(bx-12,by-12,bx+12,by+12,GOLD,3),line(bx-12,by+12,bx+12,by-12,GOLD,3),
+                     text(bx,by+64,'B′ into page',22,GOLD)]
+        body += [text(cx+124,cy+28,'x′' if left==460 else 'x',23,MUTED),
+                 text(cx-24,cy-187,'y′' if left==460 else 'y',23,MUTED)]
+    body += [text(450,530,'Both descriptions: E² − c²B² = E₀²',29)]
+    return canvas('Electric and magnetic field readings under a transverse Lorentz boost',body,defs)
+
+
+def gauge_representatives():
+    defs=[_arrow_marker('potential',colour=BLUE,size=5)]
+    body=[text(450,43,'Different potentials, the same magnetic field',30)]
+    for left,formula in [(20,'A₁ = (−By/2, Bx/2, 0)'),(460,'A₂ = (0, Bx, 0)')]:
+        cx,cy=left+210,285
+        body += [_rect(left,80,420,390,rx=18,fill='#f8fbff',stroke='#cfdaea'),
+                 text(cx,124,formula,27),line(cx-150,cy,cx+150,cy,MUTED,1),
+                 line(cx,cy+115,cx,cy-115,MUTED,1)]
+        for x in [-1,0,1]:
+            for y in [-1,0,1]:
+                px,py=cx+85*x,cy-75*y
+                vx,vy=(-y/2,x/2) if left==20 else (0,x)
+                body.append(_circle(px,py,3,fill=BLUE))
+                if vx or vy:
+                    body.append(line(px,py,px+48*vx,py-48*vy,BLUE,3,marker_end='url(#potential)'))
+        for dx,dy in [(-155,-95),(155,-95),(-155,95),(155,95)]:
+            px,py=cx+dx,cy+dy
+            body += [_circle(px,py,13,fill='none',stroke=GOLD,stroke_width=2),_circle(px,py,3,fill=GOLD)]
+        body.append(text(cx,440,'curl A = B ẑ',28,GOLD))
+    body += [text(450,530,'Blue: potential arrows. Gold: magnetic field out of the page.',25)]
+    return canvas('Two gauge-related vector potentials with the same uniform magnetic field',body,defs)
+
+
 BUILDERS = {'interval_components': interval_components, 'rod_slices': rod_slices,
             'emission_energy': emission_energy,
-            'varied_histories': varied_histories, 'field_action_cells': field_action_cells}
+            'varied_histories': varied_histories, 'field_action_cells': field_action_cells,
+            'observer_field_split': observer_field_split, 'gauge_representatives': gauge_representatives}
 
 
 def write_assets():
