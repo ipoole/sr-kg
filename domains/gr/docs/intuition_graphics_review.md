@@ -106,3 +106,17 @@ Final pilot checks: all 784 unit tests, 351 fast browser cases and 94 full-conte
 browser cases pass. After making the inset's two arrows equal in drawn length,
 the final unit suite and GR-2 phone/desktop checks pass again. The ignored viewer
 is rebuilt for preview v4.6.21. GR-3 to GR-6 remain planned for after pilot review.
+
+## Extension: GR-3
+
+Two new Intuitions explain local loop experiments and shape versus volume.
+The Ricci-scalar and Bianchi candidates are consolidated into their existing
+Explanations: both already had effective qualitative arguments, so another
+folded unit would repeat them. Their bodies now emphasise the concrete zero-R
+counterexample and the difference between an identity and a physical field law.
+The trace/tidal-map figure sits in the Ricci **Explanation**, not its Intuition.
+It shows all three spatial coefficients and labels these as instantaneous maps,
+avoiding a false claim that zero Ricci preserves volume for all time.
+
+Validation: zero errors, 216 existing warnings; 784 unit tests and both GR-3
+phone/desktop content cases pass. Full and folded artwork inspected at both widths.

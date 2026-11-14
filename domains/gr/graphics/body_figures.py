@@ -145,11 +145,37 @@ def spherical_transport():
     return _svg('Parallel transport around a spherical octant returns a vector rotated by ninety degrees', body, defs)
 
 
+def tidal_trace():
+    """Compare eigenvalues of two local spatial relative-acceleration maps."""
+    marker = ('<marker id="trace-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+              'markerWidth="6" markerHeight="6" orient="auto">'
+              f'<path d="M0 0L10 5L0 10Z" fill="{BLUE}"/></marker>')
+    body=[_text(450,42,'What a trace keeps — and what it loses',30)]
+    for x,title,values,footer in [(20,'Overall focusing',[-1,-1,-1],'Trace = −3'),
+                                  (460,'Trace-free tides',[2,-1,-1],'Trace = 0')]:
+        cx=x+210
+        body += [f'<rect x="{x}" y="70" width="420" height="410" rx="18" fill="#f7faff" stroke="#d1dce8"/>',
+                 _text(cx,112,title,28)]
+        for i,value in enumerate(values):
+            y=180+95*i
+            body += [_text(x+36,y+7,'xyz'[i],25,MUTED), _circle(cx,y,5,INK),
+                     _circle(cx-65,y,7),_circle(cx+65,y,7),
+                     _text(x+380,y+7,f'{value:+d}'.replace('-','−'),25,BLUE)]
+            for side in [-1,1]:
+                body.append(_line(cx+65*side,y,cx+(65+value*23)*side,y,
+                                  extra='marker-end="url(#trace-arrow)"'))
+        body.append(_text(cx,449,footer,28,BLUE))
+    body += [_text(450,518,'Each row: relative acceleration along one spatial axis',25,MUTED),
+             _text(450,552,'Arbitrary common units; these are instantaneous maps, not histories.',22,MUTED)]
+    return _svg('A nonzero trace-free tidal map can stretch and squeeze without a trace',body,marker)
+
+
 def write_assets():
     output = Path(__file__).with_name('figures')
     output.mkdir(exist_ok=True)
     for name, build in {'tidal_constellation': tidal_constellation,
-                        'spherical_transport': spherical_transport}.items():
+                        'spherical_transport': spherical_transport,
+                        'tidal_trace': tidal_trace}.items():
         (output/(name+'.svg')).write_text(build(), encoding='utf-8')
 
 

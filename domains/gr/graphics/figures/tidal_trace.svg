@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>A nonzero trace-free tidal map can stretch and squeeze without a trace</title>
+<defs><marker id="trace-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2056b5"/></marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.00" y="42.00" text-anchor="middle" font-size="30" fill="#273d50">What a trace keeps — and what it loses</text>
+<rect x="20" y="70" width="420" height="410" rx="18" fill="#f7faff" stroke="#d1dce8"/>
+<text x="230.00" y="112.00" text-anchor="middle" font-size="28" fill="#273d50">Overall focusing</text>
+<text x="56.00" y="187.00" text-anchor="middle" font-size="25" fill="#617487">x</text>
+<circle cx="230.00" cy="180.00" r="5" fill="#273d50"/>
+<circle cx="165.00" cy="180.00" r="7" fill="#2056b5"/>
+<circle cx="295.00" cy="180.00" r="7" fill="#2056b5"/>
+<text x="400.00" y="187.00" text-anchor="middle" font-size="25" fill="#2056b5">−1</text>
+<line x1="165.00" y1="180.00" x2="188.00" y2="180.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="295.00" y1="180.00" x2="272.00" y2="180.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="56.00" y="282.00" text-anchor="middle" font-size="25" fill="#617487">y</text>
+<circle cx="230.00" cy="275.00" r="5" fill="#273d50"/>
+<circle cx="165.00" cy="275.00" r="7" fill="#2056b5"/>
+<circle cx="295.00" cy="275.00" r="7" fill="#2056b5"/>
+<text x="400.00" y="282.00" text-anchor="middle" font-size="25" fill="#2056b5">−1</text>
+<line x1="165.00" y1="275.00" x2="188.00" y2="275.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="295.00" y1="275.00" x2="272.00" y2="275.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="56.00" y="377.00" text-anchor="middle" font-size="25" fill="#617487">z</text>
+<circle cx="230.00" cy="370.00" r="5" fill="#273d50"/>
+<circle cx="165.00" cy="370.00" r="7" fill="#2056b5"/>
+<circle cx="295.00" cy="370.00" r="7" fill="#2056b5"/>
+<text x="400.00" y="377.00" text-anchor="middle" font-size="25" fill="#2056b5">−1</text>
+<line x1="165.00" y1="370.00" x2="188.00" y2="370.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="295.00" y1="370.00" x2="272.00" y2="370.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="230.00" y="449.00" text-anchor="middle" font-size="28" fill="#2056b5">Trace = −3</text>
+<rect x="460" y="70" width="420" height="410" rx="18" fill="#f7faff" stroke="#d1dce8"/>
+<text x="670.00" y="112.00" text-anchor="middle" font-size="28" fill="#273d50">Trace-free tides</text>
+<text x="496.00" y="187.00" text-anchor="middle" font-size="25" fill="#617487">x</text>
+<circle cx="670.00" cy="180.00" r="5" fill="#273d50"/>
+<circle cx="605.00" cy="180.00" r="7" fill="#2056b5"/>
+<circle cx="735.00" cy="180.00" r="7" fill="#2056b5"/>
+<text x="840.00" y="187.00" text-anchor="middle" font-size="25" fill="#2056b5">+2</text>
+<line x1="605.00" y1="180.00" x2="559.00" y2="180.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="735.00" y1="180.00" x2="781.00" y2="180.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="496.00" y="282.00" text-anchor="middle" font-size="25" fill="#617487">y</text>
+<circle cx="670.00" cy="275.00" r="5" fill="#273d50"/>
+<circle cx="605.00" cy="275.00" r="7" fill="#2056b5"/>
+<circle cx="735.00" cy="275.00" r="7" fill="#2056b5"/>
+<text x="840.00" y="282.00" text-anchor="middle" font-size="25" fill="#2056b5">−1</text>
+<line x1="605.00" y1="275.00" x2="628.00" y2="275.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="735.00" y1="275.00" x2="712.00" y2="275.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="496.00" y="377.00" text-anchor="middle" font-size="25" fill="#617487">z</text>
+<circle cx="670.00" cy="370.00" r="5" fill="#273d50"/>
+<circle cx="605.00" cy="370.00" r="7" fill="#2056b5"/>
+<circle cx="735.00" cy="370.00" r="7" fill="#2056b5"/>
+<text x="840.00" y="377.00" text-anchor="middle" font-size="25" fill="#2056b5">−1</text>
+<line x1="605.00" y1="370.00" x2="628.00" y2="370.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<line x1="735.00" y1="370.00" x2="712.00" y2="370.00" stroke="#2056b5" stroke-width="4" stroke-linecap="round" marker-end="url(#trace-arrow)"/>
+<text x="670.00" y="449.00" text-anchor="middle" font-size="28" fill="#2056b5">Trace = 0</text>
+<text x="450.00" y="518.00" text-anchor="middle" font-size="25" fill="#617487">Each row: relative acceleration along one spatial axis</text>
+<text x="450.00" y="552.00" text-anchor="middle" font-size="22" fill="#617487">Arbitrary common units; these are instantaneous maps, not histories.</text>
+</g>
+</svg>
