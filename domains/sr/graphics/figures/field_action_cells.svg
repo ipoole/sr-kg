@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Sampling a trial scalar-field history to approximate its local action integral</title>
+<defs></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.0" y="43.0" font-size="30" fill="#293f51" text-anchor="middle">A field history contributes throughout spacetime</text>
+<text x="260.0" y="102.0" font-size="26" fill="#293f51" text-anchor="middle">One spatial dimension; c = 1</text>
+<line x1="75.0" y1="425.0" x2="465.0" y2="425.0" stroke="#63788a" stroke-width="2" stroke-linecap="round"/>
+<line x1="75.0" y1="425.0" x2="75.0" y2="145.0" stroke="#63788a" stroke-width="2" stroke-linecap="round"/>
+<text x="482.0" y="433.0" font-size="27" fill="#63788a" text-anchor="middle">x</text>
+<text x="57.0" y="140.0" font-size="27" fill="#63788a" text-anchor="middle">t</text>
+<rect x="100.0" y="155.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="132.5" cy="185.0" r="4.0" fill="#2056b5"/>
+<rect x="100.0" y="215.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="132.5" cy="245.0" r="4.0" fill="#2056b5"/>
+<rect x="100.0" y="275.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="132.5" cy="305.0" r="4.0" fill="#2056b5"/>
+<rect x="100.0" y="335.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="132.5" cy="365.0" r="4.0" fill="#2056b5"/>
+<rect x="165.0" y="155.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="197.5" cy="185.0" r="4.0" fill="#2056b5"/>
+<rect x="165.0" y="215.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="197.5" cy="245.0" r="4.0" fill="#2056b5"/>
+<rect x="165.0" y="275.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="197.5" cy="305.0" r="4.0" fill="#2056b5"/>
+<rect x="165.0" y="335.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="197.5" cy="365.0" r="4.0" fill="#2056b5"/>
+<rect x="230.0" y="155.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="262.5" cy="185.0" r="4.0" fill="#2056b5"/>
+<rect x="230.0" y="215.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="262.5" cy="245.0" r="4.0" fill="#2056b5"/>
+<rect x="230.0" y="275.0" width="65.0" height="60.0" rx="0.0" fill="#f7e5c8" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="262.5" cy="305.0" r="4.0" fill="#2056b5"/>
+<rect x="230.0" y="335.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="262.5" cy="365.0" r="4.0" fill="#2056b5"/>
+<rect x="295.0" y="155.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="327.5" cy="185.0" r="4.0" fill="#2056b5"/>
+<rect x="295.0" y="215.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="327.5" cy="245.0" r="4.0" fill="#2056b5"/>
+<rect x="295.0" y="275.0" width="65.0" height="60.0" rx="0.0" fill="#f7e5c8" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="327.5" cy="305.0" r="4.0" fill="#2056b5"/>
+<rect x="295.0" y="335.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="327.5" cy="365.0" r="4.0" fill="#2056b5"/>
+<rect x="360.0" y="155.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="392.5" cy="185.0" r="4.0" fill="#2056b5"/>
+<rect x="360.0" y="215.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="392.5" cy="245.0" r="4.0" fill="#2056b5"/>
+<rect x="360.0" y="275.0" width="65.0" height="60.0" rx="0.0" fill="#edf6ee" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="392.5" cy="305.0" r="4.0" fill="#2056b5"/>
+<rect x="360.0" y="335.0" width="65.0" height="60.0" rx="0.0" fill="#e4eef9" stroke="#abbdd0" stroke-width="1"/>
+<circle cx="392.5" cy="365.0" r="4.0" fill="#2056b5"/>
+<line x1="262.0" y1="305.0" x2="327.0" y2="305.0" stroke="#ae6b16" stroke-width="5" stroke-linecap="round"/>
+<text x="270.0" y="475.0" font-size="23" fill="#ae6b16" text-anchor="middle">A spatial difference uses neighbours</text>
+<rect x="530.0" y="125.0" width="350.0" height="350.0" rx="18.0" fill="#f8fbff" stroke="#cfdaea"/>
+<text x="705.0" y="179.0" font-size="27" fill="#293f51" text-anchor="middle">Local contribution</text>
+<text x="705.0" y="232.0" font-size="34" fill="#2056b5" text-anchor="middle">ℒ × Δt Δx</text>
+<text x="705.0" y="307.0" font-size="27" fill="#293f51" text-anchor="middle">Add over all cells</text>
+<text x="705.0" y="359.0" font-size="31" fill="#2056b5" text-anchor="middle">S ≈ Σ ℒ Δt Δx</text>
+<text x="705.0" y="430.0" font-size="23" fill="#63788a" text-anchor="middle">per unit transverse area</text>
+<text x="450.0" y="535.0" font-size="25" fill="#293f51" text-anchor="middle">The grid is a calculation aid, not a physical spacetime lattice.</text>
+</g>
+</svg>

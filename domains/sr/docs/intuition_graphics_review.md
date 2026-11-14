@@ -102,3 +102,12 @@ its kinetic-energy inference and named/anonymous clarifications are preserved.
 The light-box Intuition, four-vector analogy and worldline-tangent treatment
 already contribute distinct useful mental models and are retained. No new
 prerequisite, question, tutorial target or physical convention is introduced.
+
+## SR-3 completed
+
+Enriched the existing nearby-histories Intuition with an exactly calculable free
+particle variation and body figure. Added a local-push Intuition for the
+Euler–Lagrange argument. A second figure illustrates the field-density
+Explanation, explicitly marking the one-space-plus-time picture and continuum
+limit. It does not treat neighbouring field samples as independent systems.
+The original derivations and all existing clarification scopes are retained.

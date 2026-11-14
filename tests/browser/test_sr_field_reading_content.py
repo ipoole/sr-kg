@@ -26,7 +26,7 @@ def test_field_module_content_and_reading_routes(sr1_reading_output,playwright_b
    assert not page.locator('#info_panel mjx-merror,#info_panel [data-mjx-error]').count(),owner
    assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1'),owner
    assert blocks.locator('mjx-container[display="true"]').evaluate_all('es=>es.every(e=>!e.clientWidth||e.scrollWidth<=e.clientWidth+2)'),owner
-   assert page.locator('#info_panel .concept-graphic').count()==1
+   assert page.locator('#info_panel > .content-block-graphic .concept-graphic').count()==1
   graph.click_concept(root)
   for recipe,preset in [('derivation','derivation'),('teaching','foundations')]:
    card=page.locator(f'details.kg-reading-tree[data-reading-recipe="{recipe}"]')
