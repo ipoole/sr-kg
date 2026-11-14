@@ -1,4 +1,5 @@
 [
+  {"version": "4.6.23", "date": "2026-11-14", "summary": "Preview: Clearer Maths intuition with illustrated coordinate charts, covector readouts and tensor component changes."},
   {"version": "4.6.22", "date": "2026-11-14", "summary": "Preview: GR intuition and illustrations throughout, with consistent notes and tidier reading controls."},
   {"version": "4.6.21", "date": "2026-11-14", "summary": "Preview: More GR-1 and GR-2 intuition, with illustrated tidal motion and parallel transport."},
   {"version": "4.6.20", "date": "2026-11-14", "summary": "Preview: Graphics within content blocks, with recognition thumbnails when folded and a covariant-derivative example."},

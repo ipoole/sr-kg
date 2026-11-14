@@ -90,3 +90,17 @@ All 784 unit tests and four real-Maths phone/desktop reading/annotation cases pa
 Full and folded artwork inspected at both widths. Full-viewer validation still
 reports zero errors and 216 existing warnings. Complete-suite preview verification
 follows; SR remains an inventory only, pending review of this MATHS batch.
+
+## Completion checks
+
+Preview v4.6.23: 784 unit tests, 351 fast browser cases and 94 full-content browser
+cases pass. The full lane covers Maths-only trees and annotations, all other
+domains and the guided tutorials. Validation reports zero errors and 216 existing
+warnings. The local build is the exact HTML packaged for preview publication;
+the public release is retained.
+
+The contour readouts independently give 0.8 K/s and zero, and both component
+descriptions in the rescaling figure give 24. All three figures were inspected
+as full artwork and as folded/open phone and desktop blocks. MATHS-1 and MATHS-2
+are committed separately. The SR inventory is source documentation, with no SR
+runtime-content changes made in this batch.
