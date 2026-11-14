@@ -81,4 +81,10 @@ edges and all established annotation identities should remain unchanged.
 
 ## Progress
 
-Inventory complete; GR-1 and GR-2 pilot authoring next. GR-3 to GR-6 remain planned.
+Inventory complete. GR-1 adds the floor/ball, particle-constellation and
+shrinking-laboratory Intuitions; its existing rubber-sheet block now offers a
+positive clock-and-path mental model. The tidal SVG and folded preview have
+been inspected at phone and desktop widths. All 784 unit tests and the two
+GR-1 full-content browser cases pass; validation retains zero errors.
+
+GR-2 pilot authoring is next. GR-3 to GR-6 remain planned.
