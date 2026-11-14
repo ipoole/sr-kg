@@ -564,7 +564,7 @@ function kgCreateNotesController(options) {
         escapeHtml(note.id) + '">Delete</button>' +
         '<span class="user-note-saved">Saved locally</span></div></div>';
     } else {
-      body = options.markup.renderBodyLines(note.body || "", "user-note-reading", {origin: "personal"});
+      body = options.markup.renderBodyLines(note.body || "", "concept-body user-note-reading", {origin: "personal"});
     }
     var topLevel = note.placement === "owner";
     return options.markup.renderContentUnit({

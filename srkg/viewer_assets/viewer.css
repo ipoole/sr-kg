@@ -4004,10 +4004,10 @@ details[open] > summary > .kg-content-preview { display: none; }
     margin-top: 0.65em;
 }
 #info_panel details:not([open]) > .kg-content-footer { display: none; }
-#info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em 0.1em; margin: 0; }
+#info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em 0; margin: 0; }
 #info_panel .kg-footer-read-slot:empty { display: none; }
 #info_panel .kg-footer-read-slot .content-block-read-toggle {
-    position: relative; inset: auto;
+    position: relative; inset: auto; right: 0.1em;
 }
 #info_panel .kg-content-refold {
     font: inherit; font-size: 0.75em; color: #334f64;

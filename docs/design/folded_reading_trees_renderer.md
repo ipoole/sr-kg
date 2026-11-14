@@ -14,7 +14,8 @@ into `content_markup.js:renderContentUnit`. Title, kind and actions lead the
 summary, followed by the statement while folded. Opening hides the statement
 and shows the body. Missing statements
 produce no empty placeholder and are never inferred from body text. Kind tints
-apply to the whole box. Local clarifications retain smaller, quiet headings.
+apply to the whole box. Local clarifications and personal notes use the same
+full-size bold headings and normal body typography, with colour identifying origin.
 
 Both placements use `shared_explanations.js` for the same source body, graphics,
 read toggle and note actions. Repeated SVGs have namespaced IDs. Canonical block

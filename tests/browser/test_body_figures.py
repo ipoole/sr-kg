@@ -22,7 +22,7 @@ def figure_output(tmp_path_factory):
     for row in rows:
         if row['block_id'] == '2.1.explanation':
             row.update(statement='The vector is unchanged.', preview_figure='vector',
-                       body='Before the figure.\n\n'+r'\figure{vector}{test.figure.arrow}'+'\n\nAfter the figure.\n\n'+
+                       body='First paragraph.\n\nBefore the figure.\n\n'+r'\figure{vector}{test.figure.arrow}'+'\n\nAfter the figure.\n\n'+
                        r'\explanation{local}{A closer look}{Local prose.\figure{local-vector}{test.figure.arrow}}')
     with p.open('w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=fields); w.writeheader(); w.writerows(rows)
@@ -58,6 +58,8 @@ def test_thumbnail_body_and_reading_tree_share_figure_without_duplicate_svg_ids(
         before = unit.locator('.concept-line').filter(has_text='Before the figure.').first
         after = unit.locator('.concept-line').filter(has_text='After the figure.').first
         limit = before.evaluate('e=>parseFloat(getComputedStyle(e).lineHeight)') * 1.15
+        first = unit.locator('.concept-line').filter(has_text='First paragraph.').first
+        assert before.bounding_box()['y'] - (first.bounding_box()['y'] + first.bounding_box()['height']) <= limit
         assert figure.bounding_box()['y'] - (before.bounding_box()['y'] + before.bounding_box()['height']) <= limit
         assert after.bounding_box()['y'] - (figure.bounding_box()['y'] + figure.bounding_box()['height']) <= limit
         unit.locator('.kg-local-explanation > summary').click()

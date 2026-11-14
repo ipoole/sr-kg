@@ -105,7 +105,7 @@ Source IDs and named clarification paths are retained. Rebuild the new SVGs with
 Final pilot checks: all 784 unit tests, 351 fast browser cases and 94 full-content
 browser cases pass. After making the inset's two arrows equal in drawn length,
 the final unit suite and GR-2 phone/desktop checks pass again. The ignored viewer
-is rebuilt for preview v4.6.21. GR-3 to GR-6 remain planned for after pilot review.
+was rebuilt for pilot preview v4.6.21. The subsequent module pass is recorded below.
 
 ## Extension: GR-3
 
@@ -160,3 +160,47 @@ source's clarification and the established graph structure.
 
 All 784 unit tests and the GR-6 phone/desktop cases pass. Artwork inspected at
 both widths; final label adjustments keep the bottom caption inside the SVG.
+
+## Cross-module review
+
+| Module | Intuition blocks after review | Registered body figures |
+| --- | ---: | ---: |
+| GR-1 | 4 | 1 |
+| GR-2 | 4 | 2 |
+| GR-3 | 2 | 1 |
+| GR-4 | 4 | 1 |
+| GR-5 | 4 | 1 |
+| GR-6 | 3 | 1 |
+
+GR now has 400 blocks, including 21 Intuitions, and seven body figures (the vector
+demo plus six additions). Across the pass, 17 Intuition blocks were added; the
+rubber-sheet, spherical-transport and wave Intuitions were improved in place.
+The two unneeded extra Intuitions in GR-3 were consolidated into existing
+Explanations. No new block kinds or reading-tree recipes were introduced.
+
+The figures sit in four Intuitions, two Explanations and one Example. The latter
+placements let diagrams support interpretation or calculation directly, without
+reclassifying content merely to provide artwork. Canonical graphics/icons remain
+unchanged. The six module overviews still describe the scope correctly.
+
+Review checks: each new block states its physical setup and the limits of its
+analogy; bodies add a mental experiment rather than merely restating statements.
+Expansivity remains near 70. Clarifications carry optional algebra rather than
+necessary hidden premises. Native order leads from opening explanation to the
+new intuition and then formal treatment; Teaching-tree copies remain standalone
+when recipes group kinds differently. Cross-references identify the particular
+calculation or qualification; none manufacture a new graph dependency.
+
+Edges, questions/options and module overviews are byte-for-byte unchanged from
+the pilot baseline. Existing block IDs and named clarification slots remain
+available; the domain baseline regression checks their retention. New body
+figures reuse their SVG for the folded recognition preview, with stable slots,
+descriptive alternatives and independent SVG identifiers at each occurrence.
+
+The reading-layout cleanup gives personal and built-in clarification titles
+matching full-size bold text, while bodies share the same normal typography and
+line spacing. Authored blank lines supply paragraph spacing; the structural line
+ending after a figure is retained invisibly for positional note compatibility.
+Footer read controls follow Fold and align with heading controls even at maximum
+details text zoom. Focused browser checks exercise both read controls, paragraph
+spacing, shared note typography and retained figure/paragraph note anchors.

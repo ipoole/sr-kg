@@ -40,13 +40,15 @@ being pruned in this change.
 
 ## One block presentation, two reading recipes
 
-A block's statement and expandable title/body share a pale box tinted by kind.
-The statement stays visible; **all bodies start folded**. The kind is a badge,
+A block's title, folded statement and expandable body share a pale box tinted by kind.
+The folded title precedes the statement; opening hides the statement and any
+recognition thumbnail. **All bodies start folded**. The kind is a badge,
 not a substitute for a meaningful title. Opening must reward the reader with
 reasoning, interpretation, detail or illustration beyond the statement.
 
-Local clarifications are quieter: smaller, subdued titles, no statement or badge;
-ordinary body prose appears on opening. Statements are blue and edge
+Local clarifications omit the folded frame, statement and badge; their titles
+use the same full-size bold type as personal notes, with colour identifying origin.
+Ordinary body prose appears on opening. Statements are blue and edge
 justifications teal during development. Structure and labels also identify them.
 
 A concept details page shows its owned blocks, then a visual divider and reading
@@ -200,8 +202,9 @@ shortest graph hops.
 
 ![Block body with a local clarification](images/reading_trees/block_and_clarification.png)
 
-*The block's statement remains blue. The clarification has a smaller title and
-ordinary prose, without a second formal statement or badge.*
+*Prototype illustration of a block and local clarification. The current renderer
+hides the block statement while open and uses full-size bold clarification titles,
+with ordinary body prose and no second formal statement or badge.*
 
 Use one renderer for owned blocks and tree occurrences. Read ticks and notes
 belong to canonical source blocks and appear consistently in every occurrence;
