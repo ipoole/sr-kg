@@ -23,6 +23,12 @@ def test_matching_top_and_bottom_read_controls_share_one_record(browser_graph, w
     bottom = block.locator(':scope > .kg-content-body > .kg-content-footer .content-block-read-toggle')
     appearance = 'e=>{const s=getComputedStyle(e);return [s.width,s.height,s.fontSize,s.borderRadius,s.borderWidth,s.backgroundColor,s.color]}'
     assert tick.evaluate(appearance) == bottom.evaluate(appearance)
+    panel = page.locator('#info_panel')
+    original_size = panel.evaluate('e=>e.style.fontSize')
+    for size in [original_size, '40px']:
+        panel.evaluate('(e,size)=>e.style.fontSize=size', size)
+        assert abs(tick.bounding_box()['x'] - bottom.bounding_box()['x']) < 1
+    panel.evaluate('(e,size)=>e.style.fontSize=size', original_size)
     tick.check()
     expect(bottom).to_be_checked()
     bottom.uncheck()
@@ -89,7 +95,8 @@ def test_folding_a_synchronised_tree_detaches_only_the_reading_marker(reading_gr
     button.focus()
     button.press('Enter')
     expect(card).not_to_have_attribute('open', '')
-    assert page.evaluate('kgReadingTrees.snapshot().synchronised') is None
+    # The native details toggle event is delivered after its open state changes.
+    page.wait_for_function('kgReadingTrees.snapshot().synchronised === null')
     assert page.evaluate('({view:kgViewerStateSnapshot(),camera:network.getViewPosition(),scale:network.getScale()})') == before
 
 

@@ -15,8 +15,8 @@ Issue numbers are retained so existing references remain valid.
 
 1. Create interactive graphic models with adjustable parameters, e.g. free fall near a black hole.
 2. Add a history-of-science view, where nodes are physicists and edges are influences.
-3. Allow distinct static or interactive graphics within or between content blocks,
-   rather than one illustration per concept.
+3. Extend the implemented static body figures to interactive models within content
+   blocks, with an appropriate folded preview and phone/slow-device behaviour.
 4. Enable community sharing of tutorials, layouts and notes.
 5. Extend to molecular biology (MolBio/MolBioKB); a possible collaborator is in mind.
    Domain separation is already implemented.

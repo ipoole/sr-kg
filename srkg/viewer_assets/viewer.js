@@ -1,5 +1,6 @@
       /* Runtime data injected by srkg.html_injection. */
       var conceptData = __CONCEPT_DATA__;
+      var figureData = __FIGURE_DATA__;
       var moduleData = __MODULE_DATA__;
       var publishedLayout = __PUBLISHED_LAYOUT__;
       var tutorialData = __TUTORIAL_DATA__;
@@ -128,6 +129,7 @@
 
         var sharedExplanations, readingTrees;
         var contentMarkup = kgCreateContentMarkup({concept: getConcept, hash: conceptHash,
+          figures: figureData,
           source: function(id) { return sharedExplanations ? sharedExplanations.source(id) : null; },
           reference: function(reference, context) { return sharedExplanations.renderReference(reference, context); },
           explanation: function(part, context, state) { return sharedExplanations.local(part, context, state); },

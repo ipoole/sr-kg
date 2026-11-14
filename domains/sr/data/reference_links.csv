@@ -128,7 +128,7 @@ content_block,sr.lorentz_invariance.historical_context,lorentz.1904,§4,
 content_block,sr.lorentz_invariance.historical_context,poincare.1905,Full note,
 content_block,sr.gauge_invariance.weyl_history,weyl.1929,Full paper,
 content_block,sr.electromagnetic_waves.hertz_history,hertz.1888,Full paper,
-content_block,sr.mass_energy_equivalence.light_emission,einstein.1905.mass_energy,Full paper,Two-frame light-emission balances and low-speed inertia coefficient; rechecked 13 Nov 2026 against the Perrett–Jeffery translation hosted at Fourmilab.
+content_block,sr.mass_energy_equivalence.light_emission,einstein.1905.mass_energy,Full paper,Two-frame light-emission balances and low-speed inertia coefficient; rechecked 13 Nov 2026 against the Perrett–Jeffery translation hosted at Fourmilab. Symmetric radiation emission and kinetic-energy comparison; the numerical Doppler ledger is an original illustration.
 content_block,sr.mass_energy_equivalence.light_inertia,einstein.1905.mass_energy,Full paper,Two-frame light-emission balances and low-speed inertia coefficient; rechecked 13 Nov 2026 against the Perrett–Jeffery translation hosted at Fourmilab.
 content_block,sr.inertial_frames.reference_frame,einstein.1905.relativity,§1 Definition of Simultaneity,Supports local clocks and the light-signal synchronisation convention.
 content_block,sr.lorentz_transformations.why_linear,einstein.1905.relativity,§3 Coordinate/time transformations,Supports the explicit homogeneity assumption and common rod/clock setup.
@@ -168,3 +168,17 @@ content_block,sr.radiation_reaction.energy_balance,steane.2015.radiation,"§II, 
 content_block,sr.radiation_reaction.damping_intuition,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
 content_block,sr.radiation_reaction.not_simple_friction,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
 content_block,sr.radiation_reaction.effective_view,ekman.2021.reduction,Introduction and reduction-of-order formulation,Controlled approximation and its limitations; the simple nonrelativistic illustration is authored here.
+content_block,sr.principle_of_locality.relay_picture,ttm.sr_cf,10.2.1 Locality,Original teaching illustration of the referenced principles.
+content_block,sr.spacetime_interval.fixed_pair,ttm.sr_cf,1.5.3 Spacetime Interval,Original teaching illustration of the referenced principles.
+content_block,sr.lorentz_transformations.clock_slices,ttm.sr_cf,1.3 General Lorentz Transformation,Original teaching illustration of the referenced principles.
+content_block,sr.length_contraction.measurement,openstax.university_physics_3,§5.4 Length Contraction,Original teaching illustration of the referenced principles.
+content_block,sr.proper_time.two_clock_histories,penrose.rtr,§18.3 Lorentzian orthogonality; the clock paradox,Clock-history interpretation; the 0.6c reunion calculation is an original illustration.
+content_block,sr.action_principle.histories,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",Fixed-endpoint variations; the explicit sine-bump calculation and drawing are original.
+content_block,sr.euler_lagrange_equations.local_pushes,sussman_wisdom.sicm,"Chapter 1, Stationary Action and Lagrange Equations",Independent interior variations and the local Euler–Lagrange equation.
+content_block,sr.field_lagrangian.why_density,tong.qft,§1.1 The Dynamics of Fields,Action density and spacetime integration; the sampled-history picture is original.
+content_block,sr.electromagnetic_field.lorentz_mixing,tong.em,§5.3.2 The Electromagnetic Tensor,SI boost rules; the local 0.6c comparison is an original numerical illustration.
+content_block,sr.gauge_invariance.redundancy,tong.em,§5.3.1 Gauge Invariance and Relativity,Gauge redundancy and covariant sign conventions; the two explicit uniform-field representatives and drawing are original.
+content_block,sr.noether_theorem.sideways_symmetry,tong.qft,§1.3.1 Noether’s Theorem,Variational symmetry and conserved currents; the nonrelativistic trough is an original elementary illustration.
+content_block,sr.maxwells_equations.constraints_and_evolution,ttm.sr_cf,8.2.7 Maxwell's Equations: Tensor Form,"Divergence constraints, curl evolution and current compatibility."
+content_block,sr.wave_equation.moving_pattern,ttm.sr_cf,10.1 Electromagnetic Waves,Wave operator and propagation; the one-dimensional arbitrary-profile substitution is stated with its scalar and electromagnetic limits.
+content_block,sr.charge_conservation.local_meaning,ttm.sr_cf,8.2.6 Conservation of Charge,Continuity and regional flux; the 3 A / 5 A ledger is an original numerical illustration.

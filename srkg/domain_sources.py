@@ -59,7 +59,7 @@ def discover_domains(paths, *, domains=None) -> tuple[DomainPackage, ...]:
         # Package metadata must stay within its owning directory.
         for role in ("nodes", "edges", "content_blocks", "study_questions", "study_question_options",
                      "references", "reference_links", "graphic_designs", "module_graphic_designs",
-                     "modules", "module_members", "module_supports", "module_content_blocks", "layout", "tutorials"):
+                     "modules", "module_members", "module_supports", "module_content_blocks", "layout", "tutorials", "figures"):
             file = getattr(package_paths, role)
             if file is not None and not file.resolve().is_relative_to(manifest_path.parent.resolve()):
                 raise KnowledgeBaseLoadError(f"{manifest_path}: {role} escapes the owning domain directory")
@@ -109,6 +109,7 @@ def _ids(frame, column):
 def _owned(package, tables):
     """Check storage ownership before global referential validation."""
     identity_columns = {"nodes": "id", "modules": "module_id",
+                        "figures": "figure_id",
                         "content_blocks": "block_id", "module_content_blocks": "block_id",
                         "study_questions": "question_id", "study_question_options": "option_id"}
     for role, column in identity_columns.items():
@@ -234,13 +235,15 @@ def _tutorial_files(paths, packages):
 
 def load_collection(paths, *, domains=None, include_graphics=True):
     from srkg.kb import _assemble_knowledge_base
+    from srkg.figures import load_figures
     selected = discover_domains(paths, domains=domains)
     try:
         tables, scopes, resolver = collection_tables(selected)
         kb = _assemble_knowledge_base(paths, tables, include_graphics=False,
             reference_scopes=scopes, tutorial_paths=_tutorial_files(paths, selected),
             reference_warnings=resolver.warnings,
-            published_layout=_layouts(paths, selected, tables), domain_packages=selected)
+            published_layout=_layouts(paths, selected, tables), domain_packages=selected,
+            figures=load_figures(tables.get('figures'), include_svg=include_graphics))
         for package in selected:
             if package.initial_selection:
                 kind, separator, target = package.initial_selection.partition(":")

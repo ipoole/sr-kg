@@ -2654,6 +2654,12 @@
         width: var(--kg-details-graphic-width, 100%);
     }
 
+    #info_panel .kg-body-figure .concept-graphic > svg {
+        max-height: 21.6667em;
+        max-width: min(100%, 27.4444em);
+        width: calc(var(--kg-details-graphic-width, 100%) * 1.3);
+    }
+
     #info_panel .module-graphic > svg {
         aspect-ratio: 8 / 5;
         margin: 0 0 0.35rem;
@@ -3868,9 +3874,18 @@
 #info_panel .kg-statement-block > summary > .kg-content-statement {
     display: block; font-weight: 400; color: #1458b0; margin: 0.4em 0 0;
 }
+.kg-content-preview {
+    display: flex; justify-content: center; margin: 0.45em 0 0.15em;
+}
+.kg-content-preview > svg {
+    display: block; height: 120px; width: auto; max-width: 100%;
+    pointer-events: none;
+}
+details[open] > summary > .kg-content-preview { display: none; }
+.kg-body-figure { margin: 0; }
 #info_panel .kg-statement-block > summary .content-block-kind-mark { display: none; }
 #info_panel .kg-local-explanation > summary {
-    font-size: 0.86em; font-weight: 500;
+    font-size: 1em; font-weight: 700;
 }
 #info_panel .kg-reading-trees {
     border-top: 2px solid #aebfc9; margin: 1.5em 0; padding-top: 0.7em;
@@ -3970,11 +3985,9 @@
     display: inline-block; margin-left: 0.35em; vertical-align: middle;
 }
 
-/* Paragraph separation leaves canonical note anchors and source text intact. */
-#info_panel .kg-content-body .concept-line + .kg-add-note-row + .concept-line,
-#info_panel .kg-content-body .concept-line + .concept-line {
-    margin-top: 0.55em;
-}
+/* Authored blank lines supply spacing. Keep structural figure breaks in the
+   DOM for existing note anchors without displaying an extra empty line. */
+#info_panel .concept-line.kg-structural-break { display: none; }
 #info_panel .content-block-read-toggle:disabled { opacity: 0.35; cursor: default; }
 .kg-content-fold-controls { display: flex; gap: 0.4em; margin-top: 0.3em; }
 .kg-content-fold-controls button {
@@ -3997,10 +4010,10 @@
     margin-top: 0.65em;
 }
 #info_panel details:not([open]) > .kg-content-footer { display: none; }
-#info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em; margin: 0; }
+#info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em 0; margin: 0; }
 #info_panel .kg-footer-read-slot:empty { display: none; }
 #info_panel .kg-footer-read-slot .content-block-read-toggle {
-    position: relative; inset: auto;
+    position: relative; inset: auto; right: 0.1em;
 }
 #info_panel .kg-content-refold {
     font: inherit; font-size: 0.75em; color: #334f64;

@@ -5,6 +5,7 @@ sequence: 30
 module_palette: module_palette.json
 graphics: graphics.registry
 files:
+  figures: data/figures.csv
   nodes: data/nodes.csv
   edges: data/edges.csv
   content_blocks: data/content_blocks.csv

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Tidal deformation of a released particle constellation</title>
+<defs><marker id="tidal-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b56d12"/></marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.00" y="45.00" text-anchor="middle" font-size="30" fill="#273d50">One freely falling laboratory</text>
+<rect x="20" y="70" width="420" height="330" rx="20" fill="#f7faff" stroke="#d4e0ec" stroke-width="2"/>
+<rect x="460" y="70" width="420" height="330" rx="20" fill="#f7faff" stroke="#d4e0ec" stroke-width="2"/>
+<text x="230.00" y="112.00" text-anchor="middle" font-size="25" fill="#273d50">Released at rest together</text>
+<text x="670.00" y="112.00" text-anchor="middle" font-size="25" fill="#273d50">A short time later</text>
+<circle cx="230" cy="252" r="88" fill="none" stroke="#acb9c9" stroke-width="2" stroke-dasharray="7 7"/>
+<circle cx="230.00" cy="252.00" r="6" fill="#273d50"/>
+<circle cx="670" cy="252" r="88" fill="none" stroke="#acb9c9" stroke-width="2" stroke-dasharray="7 7"/>
+<circle cx="670.00" cy="252.00" r="6" fill="#273d50"/>
+<ellipse cx="670" cy="252" rx="123.19999999999999" ry="70.4" fill="none" stroke="#bcd0e6" stroke-width="2"/>
+<circle cx="318.00" cy="252.00" r="8" fill="#2056b5"/>
+<circle cx="793.20" cy="252.00" r="8" fill="#2056b5"/>
+<circle cx="292.23" cy="314.23" r="8" fill="#2056b5"/>
+<circle cx="757.12" cy="301.78" r="8" fill="#2056b5"/>
+<circle cx="230.00" cy="340.00" r="8" fill="#2056b5"/>
+<circle cx="670.00" cy="322.40" r="8" fill="#2056b5"/>
+<circle cx="167.77" cy="314.23" r="8" fill="#2056b5"/>
+<circle cx="582.88" cy="301.78" r="8" fill="#2056b5"/>
+<circle cx="142.00" cy="252.00" r="8" fill="#2056b5"/>
+<circle cx="546.80" cy="252.00" r="8" fill="#2056b5"/>
+<circle cx="167.77" cy="189.77" r="8" fill="#2056b5"/>
+<circle cx="582.88" cy="202.22" r="8" fill="#2056b5"/>
+<circle cx="230.00" cy="164.00" r="8" fill="#2056b5"/>
+<circle cx="670.00" cy="181.60" r="8" fill="#2056b5"/>
+<circle cx="292.23" cy="189.77" r="8" fill="#2056b5"/>
+<circle cx="757.12" cy="202.22" r="8" fill="#2056b5"/>
+<line x1="318.00" y1="252.00" x2="360.24" y2="252.00" stroke="#b56d12" stroke-width="4" stroke-linecap="round" marker-end="url(#tidal-arrow)"/>
+<line x1="142.00" y1="252.00" x2="99.76" y2="252.00" stroke="#b56d12" stroke-width="4" stroke-linecap="round" marker-end="url(#tidal-arrow)"/>
+<line x1="230.00" y1="340.00" x2="230.00" y2="311.84" stroke="#b56d12" stroke-width="4" stroke-linecap="round" marker-end="url(#tidal-arrow)"/>
+<line x1="230.00" y1="164.00" x2="230.00" y2="192.16" stroke="#b56d12" stroke-width="4" stroke-linecap="round" marker-end="url(#tidal-arrow)"/>
+<text x="230.00" y="435.00" text-anchor="middle" font-size="24" fill="#b56d12">Arrows: relative acceleration</text>
+<text x="670.00" y="435.00" text-anchor="middle" font-size="24" fill="#2056b5">Radial stretch, transverse squeeze</text>
+<line x1="320.00" y1="482.00" x2="580.00" y2="482.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="320.00" y1="482.00" x2="333.00" y2="474.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="320.00" y1="482.00" x2="333.00" y2="490.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="580.00" y1="482.00" x2="567.00" y2="474.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<line x1="580.00" y1="482.00" x2="567.00" y2="490.00" stroke="#617487" stroke-width="3" stroke-linecap="round" />
+<text x="450.00" y="518.00" text-anchor="middle" font-size="25" fill="#617487">Radial direction — common fall removed</text>
+</g>
+</svg>

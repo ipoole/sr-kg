@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Temperature contours and two tangent velocities give different covector readouts at one point</title>
+<defs>
+<marker id="velocity-v" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#2056b5"/>
+</marker>
+<marker id="velocity-w" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#ae6b16"/>
+</marker><clipPath id="contour-window"><rect x="35" y="105" width="480" height="340"/></clipPath></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.0" y="42.0" font-size="30" fill="#293f51" text-anchor="middle">A temperature differential reads a direction</text>
+<rect x="20.0" y="80.0" width="510.0" height="385.0" rx="18.0" fill="#f8fcfa" stroke="#cedfd6"/>
+<rect x="550.0" y="80.0" width="330.0" height="385.0" rx="18.0" fill="#f7faff" stroke="#cedbec"/>
+<g clip-path="url(#contour-window)">
+<line x1="-10.0" y1="390.0" x2="542.0" y2="-714.0" stroke="#438774" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="-10.0" y1="630.0" x2="542.0" y2="-474.0" stroke="#438774" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="-10.0" y1="870.0" x2="542.0" y2="-234.0" stroke="#438774" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="-10.0" y1="1110.0" x2="542.0" y2="6.0" stroke="#438774" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="-10.0" y1="1350.0" x2="542.0" y2="246.0" stroke="#438774" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<text x="119.0" y="132.0" font-size="23" fill="#438774" text-anchor="middle">T₀−2</text>
+<text x="239.0" y="132.0" font-size="23" fill="#438774" text-anchor="middle">T₀−1</text>
+<text x="359.0" y="132.0" font-size="23" fill="#438774" text-anchor="middle">T₀</text>
+<text x="479.0" y="132.0" font-size="23" fill="#438774" text-anchor="middle">T₀+1</text>
+<line x1="86.0" y1="390.0" x2="494.0" y2="390.0" stroke="#63788a" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="230.0" y1="438.0" x2="230.0" y2="126.0" stroke="#63788a" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="230.0" y1="390.0" x2="350.0" y2="342.0" stroke="#2056b5" stroke-width="5" stroke-linecap="round" marker-end="url(#velocity-v)"/>
+<line x1="230.0" y1="390.0" x2="302.0" y2="246.0" stroke="#ae6b16" stroke-width="5" stroke-linecap="round" marker-end="url(#velocity-w)"/>
+<circle cx="230.0" cy="390.0" r="7.0" fill="#bd443e"/>
+<text x="212.0" y="415.0" font-size="27" fill="#bd443e" text-anchor="middle">p</text>
+<text x="368.0" y="335.0" font-size="31" fill="#2056b5" text-anchor="middle">v</text>
+<text x="316.0" y="235.0" font-size="31" fill="#ae6b16" text-anchor="middle">w</text>
+<text x="497.0" y="411.0" font-size="24" fill="#63788a" text-anchor="middle">x¹</text>
+<text x="211.0" y="117.0" font-size="24" fill="#63788a" text-anchor="middle">x²</text>
+<text x="715.0" y="122.0" font-size="26" fill="#293f51" text-anchor="middle">At the same point p</text>
+<text x="715.0" y="166.0" font-size="24" fill="#293f51" text-anchor="middle">derivatives: (2, −1) K/m</text>
+<text x="715.0" y="220.0" font-size="26" fill="#2056b5" text-anchor="middle">v = (0.5, 0.2) m/s</text>
+<text x="715.0" y="262.0" font-size="30" fill="#2056b5" text-anchor="middle">dT(v) = 0.8 K/s</text>
+<text x="715.0" y="327.0" font-size="26" fill="#ae6b16" text-anchor="middle">w = (0.3, 0.6) m/s</text>
+<text x="715.0" y="369.0" font-size="30" fill="#ae6b16" text-anchor="middle">dT(w) = 0</text>
+<text x="715.0" y="426.0" font-size="24" fill="#63788a" text-anchor="middle">w follows an isotherm</text>
+<text x="450.0" y="507.0" font-size="23" fill="#293f51" text-anchor="middle">Crossing contours changes T; following one gives zero first-order change.</text>
+<text x="450.0" y="548.0" font-size="22" fill="#63788a" text-anchor="middle">A local coordinate picture: no metric or steepest-direction arrow is assumed.</text>
+</g>
+</svg>

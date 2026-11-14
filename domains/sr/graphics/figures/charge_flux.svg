@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Charge accumulation in a fixed region balances incoming and outgoing currents</title>
+<defs>
+<marker id="incoming" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#2056b5"/>
+</marker>
+<marker id="outgoing" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#ae6b16"/>
+</marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.0" y="43.0" font-size="32" fill="#293f51" text-anchor="middle">More charge leaves than enters</text>
+<rect x="245.0" y="135.0" width="410.0" height="230.0" rx="18.0" fill="#f8fbff" stroke="#63788a" stroke-width="2"/>
+<text x="450.0" y="182.0" font-size="28" fill="#293f51" text-anchor="middle">Fixed region</text>
+<text x="450.0" y="247.0" font-size="36" fill="#293f51" text-anchor="middle">10 C → 8 C</text>
+<text x="450.0" y="301.0" font-size="26" fill="#293f51" text-anchor="middle">after one second</text>
+<line x1="50.0" y1="250.0" x2="225.0" y2="250.0" stroke="#2056b5" stroke-width="6" stroke-linecap="round" marker-end="url(#incoming)"/>
+<line x1="675.0" y1="250.0" x2="850.0" y2="250.0" stroke="#ae6b16" stroke-width="6" stroke-linecap="round" marker-end="url(#outgoing)"/>
+<text x="130.0" y="204.0" font-size="29" fill="#2056b5" text-anchor="middle">3 A in</text>
+<text x="770.0" y="204.0" font-size="29" fill="#ae6b16" text-anchor="middle">5 A out</text>
+<text x="450.0" y="408.0" font-size="25" fill="#63788a" text-anchor="middle">No charge flux through the other faces</text>
+<text x="450.0" y="474.0" font-size="32" fill="#293f51" text-anchor="middle">dQ/dt = 3 − 5 = −2 C/s</text>
+<text x="450.0" y="531.0" font-size="25" fill="#293f51" text-anchor="middle">Positive net outward current means decreasing enclosed charge.</text>
+</g>
+</svg>

@@ -1,0 +1,267 @@
+"""Rebuild the GR teaching figures registered in data/figures.csv.
+
+Run with: conda run -n sr-kg python -m domains.gr.graphics.body_figures
+These are body illustrations, not replacements for concept icons or graphics.
+"""
+from html import escape
+from math import cos, pi, sin, sqrt
+from pathlib import Path
+
+BLUE = '#2056b5'
+GOLD = '#b56d12'
+INK = '#273d50'
+MUTED = '#617487'
+
+
+def _text(x, y, value, size=26, colour=INK, anchor='middle'):
+    return (f'<text x="{x:.2f}" y="{y:.2f}" text-anchor="{anchor}" '
+            f'font-size="{size}" fill="{colour}">{escape(value)}</text>')
+
+
+def _line(x1, y1, x2, y2, colour=BLUE, width=4, extra=''):
+    return (f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}" '
+            f'stroke="{colour}" stroke-width="{width}" stroke-linecap="round" {extra}/>')
+
+
+def _circle(x, y, radius=8, colour=BLUE):
+    return f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{radius}" fill="{colour}"/>'
+
+
+def _svg(title, body, defs=''):
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" '
+            'width="900" height="560">\n<title>'+escape(title)+'</title>\n'
+            '<defs>'+defs+'</defs>\n<g font-family="Arial, sans-serif">\n'+
+            '\n'.join(body)+'\n</g>\n</svg>\n')
+
+
+def tidal_constellation():
+    """Short-time point-mass tides in a comoving lab; show one spatial slice.
+
+    With eps = GM dt²/(2 r³), displacements scale as x(1+2 eps),
+    y(1-eps). The laboratory is small compared with r; eps is exaggerated.
+    """
+    marker = ('<marker id="tidal-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+              'markerWidth="6" markerHeight="6" orient="auto">'
+              f'<path d="M0 0L10 5L0 10Z" fill="{GOLD}"/></marker>')
+    body = [_text(450, 45, 'One freely falling laboratory', 30)]
+    for left in (20, 460):
+        body.append(f'<rect x="{left}" y="70" width="420" height="330" rx="20" '
+                    'fill="#f7faff" stroke="#d4e0ec" stroke-width="2"/>')
+    body += [_text(230, 112, 'Released at rest together', 25),
+             _text(670, 112, 'A short time later', 25)]
+    radius, eps, cy = 88, .2, 252
+    for cx in (230, 670):
+        body.append(f'<circle cx="{cx}" cy="{cy}" r="{radius}" fill="none" '
+                    'stroke="#acb9c9" stroke-width="2" stroke-dasharray="7 7"/>')
+        body.append(_circle(cx, cy, 6, INK))
+    body.append(f'<ellipse cx="670" cy="{cy}" rx="{radius*(1+2*eps)}" '
+                f'ry="{radius*(1-eps)}" fill="none" stroke="#bcd0e6" stroke-width="2"/>')
+    for i in range(8):
+        angle = i*pi/4
+        dx, dy = radius*cos(angle), radius*sin(angle)
+        body.append(_circle(230+dx, cy+dy))
+        body.append(_circle(670+dx*(1+2*eps), cy+dy*(1-eps)))
+    # On the initial cloud, arrows show differential acceleration relative
+    # to its centre, not the inward gravitational acceleration of the lab.
+    for dx, dy in [(radius, 0), (-radius, 0), (0, radius), (0, -radius)]:
+        body.append(_line(230+dx, cy+dy, 230+dx*1.48, cy+dy*.68,
+                          colour=GOLD, extra='marker-end="url(#tidal-arrow)"'))
+    body += [_text(230, 435, 'Arrows: relative acceleration', 24, GOLD),
+             _text(670, 435, 'Radial stretch, transverse squeeze', 24, BLUE),
+             _line(320, 482, 580, 482, colour=MUTED, width=3),
+             _line(320, 482, 333, 474, colour=MUTED, width=3),
+             _line(320, 482, 333, 490, colour=MUTED, width=3),
+             _line(580, 482, 567, 474, colour=MUTED, width=3),
+             _line(580, 482, 567, 490, colour=MUTED, width=3),
+             _text(450, 518, 'Radial direction — common fall removed', 25, MUTED)]
+    return _svg('Tidal deformation of a released particle constellation', body, marker)
+
+
+def spherical_transport():
+    """Orthographic view of an octant and its parallel-transported vector.
+
+    A=(1,0,0), N=(0,0,1), B=(0,1,0). The initial vector +z becomes
+    -x on A→N, stays -x on N→B and becomes +y on B→A. At A the
+    initial/returned vectors are perpendicular, although projection skews angles.
+    """
+    green = '#33816c'
+    defs = ('<radialGradient id="sphere-shade" cx="35%" cy="28%" r="75%">'
+            '<stop offset="0" stop-color="#ffffff"/>'
+            '<stop offset="1" stop-color="#dbe7f3"/></radialGradient>')
+    for name, colour in [('route', green), ('initial', BLUE), ('returned', GOLD)]:
+        defs += (f'<marker id="{name}-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+                 'markerWidth="6" markerHeight="6" orient="auto">'
+                 f'<path d="M0 0L10 5L0 10Z" fill="{colour}"/></marker>')
+
+    def project(v, scale=195):
+        x, y, z = v
+        return (325+scale*(y-x)/sqrt(2), 275+scale*(x+y-2*z)/sqrt(6))
+
+    def tangent(p, v, colour=BLUE, marker='initial', length=65):
+        start = project(p)
+        end = project(tuple(p[i]+length/195*v[i] for i in range(3)))
+        return _line(*start, *end, colour=colour, width=5,
+                     extra=f'marker-end="url(#{marker}-arrow)"')
+
+    legs = [
+        (lambda t: (cos(t), 0, sin(t)), lambda t: (-sin(t), 0, cos(t))),
+        (lambda t: (0, sin(t), cos(t)), lambda t: (-1, 0, 0)),
+        (lambda t: (sin(t), cos(t), 0), lambda t: (-cos(t), sin(t), 0)),
+    ]
+    body = [_text(450, 45, 'One arrow, three geodesic legs', 30),
+            '<circle cx="325" cy="275" r="195" fill="url(#sphere-shade)" '
+            'stroke="#9cafc3" stroke-width="2"/>']
+    # Each leg is a quarter great circle; all three are on the visible hemisphere.
+    outline = []
+    for position, _vector in legs:
+        outline.extend(project(position(i*pi/80)) for i in range(41))
+    points = ' '.join(f'{x:.2f},{y:.2f}' for x, y in outline)
+    body.append(f'<polygon points="{points}" fill="#c9e9df" fill-opacity=".7"/>')
+    for position, vector in legs:
+        points = ' '.join(f'{x:.2f},{y:.2f}' for x, y in
+                          (project(position(i*pi/80)) for i in range(41)))
+        body.append(f'<polyline points="{points}" fill="none" stroke="{green}" stroke-width="4"/>')
+        a, b = project(position(.48*pi/2)), project(position(.56*pi/2))
+        body.append(_line(*a, *b, colour=green, width=4,
+                          extra='marker-end="url(#route-arrow)"'))
+        body.append(tangent(position(.27*pi/2), vector(.27*pi/2)))
+    for label, p, dx, dy in [('A', (1,0,0), -24, 30), ('N', (0,0,1), 0, -18),
+                              ('B', (0,1,0), 24, 30)]:
+        x,y = project(p)
+        body += [_circle(x,y,6,INK), _text(x+dx,y+dy,label,27)]
+    body += [tangent((1,0,0),(0,0,1)),
+             tangent((1,0,0),(0,1,0),GOLD,'returned'),
+             '<rect x="625" y="120" width="255" height="325" rx="18" '
+             'fill="#fffdf6" stroke="#d9d5c9" stroke-width="2"/>',
+             _text(752,158,'Compare at A',27),
+             _text(752,189,'in its tangent plane',23,MUTED),
+             _line(696,342,696,242,width=5,extra='marker-end="url(#initial-arrow)"'),
+             _line(696,342,796,342,colour=GOLD,width=5,extra='marker-end="url(#returned-arrow)"'),
+             _text(696,225,'start',23,BLUE), _text(795,379,'return',23,GOLD),
+             '<path d="M696 322H716V342" fill="none" stroke="#85909b" stroke-width="2"/>',
+             _text(752,420,'90° rotation',27),
+             _text(325,510,'A → N → B → A',31,green),
+             _text(450,550,'Direction changes on return; the arrow keeps its length.',24,MUTED)]
+    return _svg('Parallel transport around a spherical octant returns a vector rotated by ninety degrees', body, defs)
+
+
+def tidal_trace():
+    """Compare eigenvalues of two local spatial relative-acceleration maps."""
+    marker = ('<marker id="trace-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+              'markerWidth="6" markerHeight="6" orient="auto">'
+              f'<path d="M0 0L10 5L0 10Z" fill="{BLUE}"/></marker>')
+    body=[_text(450,42,'What a trace keeps — and what it loses',30)]
+    for x,title,values,footer in [(20,'Overall focusing',[-1,-1,-1],'Trace = −3'),
+                                  (460,'Trace-free tides',[2,-1,-1],'Trace = 0')]:
+        cx=x+210
+        body += [f'<rect x="{x}" y="70" width="420" height="410" rx="18" fill="#f7faff" stroke="#d1dce8"/>',
+                 _text(cx,112,title,28)]
+        for i,value in enumerate(values):
+            y=180+95*i
+            body += [_text(x+36,y+7,'xyz'[i],25,MUTED), _circle(cx,y,5,INK),
+                     _circle(cx-65,y,7),_circle(cx+65,y,7),
+                     _text(x+380,y+7,f'{value:+d}'.replace('-','−'),25,BLUE)]
+            for side in [-1,1]:
+                body.append(_line(cx+65*side,y,cx+(65+value*23)*side,y,
+                                  extra='marker-end="url(#trace-arrow)"'))
+        body.append(_text(cx,449,footer,28,BLUE))
+    body += [_text(450,518,'Each row: relative acceleration along one spatial axis',25,MUTED),
+             _text(450,552,'Arbitrary common units; these are instantaneous maps, not histories.',22,MUTED)]
+    return _svg('A nonzero trace-free tidal map can stretch and squeeze without a trace',body,marker)
+
+
+def momentum_flux():
+    defs=''
+    for name,colour in [('right',BLUE),('left',GOLD)]:
+        defs += (f'<marker id="flux-{name}" viewBox="0 0 10 10" refX="9" refY="5" '
+                 'markerWidth="6" markerHeight="6" orient="auto">'
+                 f'<path d="M0 0L10 5L0 10Z" fill="{colour}"/></marker>')
+    body=[_text(450,43,'Zero bulk flow does not mean zero pressure',29),
+          '<rect x="75" y="80" width="750" height="350" rx="20" fill="#f8fbff" stroke="#d1dce8"/>',
+          _text(450,116,'Equal populations crossing an imaginary face',24,MUTED),
+          '<rect x="444" y="140" width="12" height="260" fill="#81bba9" fill-opacity=".5"/>',
+          _line(450,140,450,400,colour='#33816c',width=2,extra='stroke-dasharray="7 6"'),
+          _text(450,174,'Positive momentum moving right',25,BLUE),
+          _line(190,222,700,222,width=5,extra='marker-end="url(#flux-right)"'),
+          _text(450,380,'Negative momentum moving left',25,GOLD),
+          _line(710,322,200,322,colour=GOLD,width=5,extra='marker-end="url(#flux-left)"')]
+    for x in [215,295,375]:body.append(_circle(x,222,10))
+    for x in [525,605,685]:body.append(_circle(x,322,10,GOLD))
+    body += [_text(450,477,'Both streams have qₓvₓ > 0',30),
+             _text(450,520,'Opposite momentum densities cancel; diagonal stress adds.',24,MUTED),
+             _text(450,551,'One spatial direction shown; an isotropic gas populates all directions.',21,MUTED)]
+    return _svg('Opposing particle streams cancel bulk momentum but add momentum flux',body,defs)
+
+
+def clock_signals():
+    defs=('<marker id="signal-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+          'markerWidth="6" markerHeight="6" orient="auto">'
+          f'<path d="M0 0L10 5L0 10Z" fill="{GOLD}"/></marker>')
+    body=[_text(450,42,'Count pulses using each local clock',30),
+          _text(240,92,'A: lower potential',27),_text(660,92,'B: higher potential',27),
+          _line(240,130,240,435,colour='#879bad',width=3),
+          _line(660,130,660,435,colour='#879bad',width=3),
+          _line(92,432,92,160,colour=MUTED,width=3),_text(92,142,'t',27,MUTED),
+          _text(240,461,'fewer clock ticks',24,BLUE),_text(660,461,'more clock ticks',24,BLUE)]
+    # One fixed static-coordinate travel time: equal emission intervals give
+    # equal arrival intervals in t. Clock ticks have deliberately exaggerated
+    # proper-time rates 1 and 3/2, so the frequency ratio in this sketch is 2/3.
+    for i in range(5):body.append(_line(225,200+50*i,255,200+50*i,width=3))
+    for i in range(7):body.append(_line(645,140+(100/3)*i,675,140+(100/3)*i,width=3))
+    for y in [400,300,200]:
+        body += [_line(240,y,660,y-60,colour=GOLD,width=4,extra='marker-end="url(#signal-arrow)"'),
+                 _circle(240,y,7,GOLD),_circle(660,y-60,7,GOLD)]
+    body += [_text(450,510,'The same pulse intervals span more receiver clock ticks.',25),
+             _text(450,549,'Lower received frequency; the clock-rate difference is exaggerated.',23,MUTED)]
+    return _svg('Stationary clocks compare the same light pulses with different proper-time rates',body,defs)
+
+
+def horizon_cones():
+    """Local radial null directions in ingoing Kerr-Schild time T=v-r.
+
+    For c=1, dr/dT=-1 or (r-2m)/(r+2m). Use one scale for both
+    displayed coordinates; these are tangent cones, not finite ray histories.
+    """
+    defs=('<marker id="null-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+          'markerWidth="6" markerHeight="6" orient="auto">'
+          f'<path d="M0 0L10 5L0 10Z" fill="{BLUE}"/></marker>')
+    body=[_text(450,43,'Future light directions across a horizon',30),
+          '<rect x="75" y="135" width="345" height="310" fill="#f4eee7"/>',
+          '<rect x="420" y="135" width="440" height="310" fill="#f5faff"/>',
+          _line(420,135,420,445,colour=GOLD,width=3,extra='stroke-dasharray="8 7"'),
+          _text(230,107,'Inside: r = m',26), _text(420,107,'r = 2m',26,GOLD),
+          _text(780,107,'Outside: r = 4m',26),
+          _line(60,430,60,180,colour=MUTED,width=3),_text(60,160,'T',27,MUTED)]
+    for radius in [1,2,4]:
+        x,y=60+180*radius,390
+        dt=.6
+        outgoing=(radius-2)/(radius+2)
+        left=(x-180*dt,y-180*dt)
+        right=(x+180*dt*outgoing,y-180*dt)
+        body += [f'<polygon points="{x},{y} {left[0]},{left[1]} {right[0]},{right[1]}" fill="#d3e3f7"/>',
+                 _line(x,y,*left,width=4,extra='marker-end="url(#null-arrow)"'),
+                 _line(x,y,*right,width=4,extra='marker-end="url(#null-arrow)"'),
+                 _circle(x,y,6,INK)]
+    body += [_line(100,460,860,460,colour=MUTED,width=3),
+             _line(860,460,845,452,colour=MUTED,width=3),
+             _line(860,460,845,468,colour=MUTED,width=3),
+             _text(450,493,'Increasing areal radius r →',26,MUTED),
+             _text(450,528,'Regular time T = v − r; c = 1',25),
+             _text(450,552,'Local cones, not long ray paths; their drawn tilt is coordinate-dependent.',21,MUTED)]
+    return _svg('Future radial light cones outside, on and inside the Schwarzschild future horizon',body,defs)
+
+
+def write_assets():
+    output = Path(__file__).with_name('figures')
+    output.mkdir(exist_ok=True)
+    for name, build in {'tidal_constellation': tidal_constellation,
+                        'spherical_transport': spherical_transport,
+                        'tidal_trace': tidal_trace,
+                        'momentum_flux': momentum_flux,
+                        'clock_signals': clock_signals,
+                        'horizon_cones': horizon_cones}.items():
+        (output/(name+'.svg')).write_text(build(), encoding='utf-8')
+
+
+if __name__ == '__main__':
+    write_assets()

@@ -3,7 +3,7 @@ function kgCreateSharedExplanations(options) {
   "use strict";
   var markup = options.markup, escape = markup.escapeHtml;
   var sources = Object.create(null), currentPage = "", entries = new Map();
-  var nativeState = new Map(), nextId = 0, graphicSerial = 0;
+  var nativeState = new Map(), nextId = 0;
 
   function index(owners, type) {
     Object.keys(owners).forEach(function(id) {
@@ -41,8 +41,8 @@ function kgCreateSharedExplanations(options) {
   }
 
   function statement(source) {
-    return source.block.statement
-      ? markup.renderBodyLines(source.block.statement, "kg-content-statement") : "";
+    return (source.block.statement
+      ? markup.renderBodyLines(source.block.statement, "kg-content-statement") : "") + markup.previewFigure(source.block);
   }
 
   function graphic(source) {
@@ -50,18 +50,7 @@ function kgCreateSharedExplanations(options) {
     var owner = source.owner;
     var svg = owner.svg_detail || owner.svg_icon || "";
     if (!svg) { return '<p class="kg-shared-unavailable">Illustration unavailable in this edition.</p>'; }
-    // A shared illustration may occur several times in one document. Its SVG
-    // definitions/labels must remain local to that occurrence.
-    var prefix = "kg-source-graphic-" + (++graphicSerial) + "-", ids = new Map();
-    svg = svg.replace(/\bid=(["'])([^"']+)\1/g, function(_match, quote, id) {
-      ids.set(id, prefix + id); return "id=" + quote + prefix + id + quote;
-    }).replace(/url\(#([^)]*)\)/g, function(match, id) {
-      return ids.has(id) ? "url(#" + ids.get(id) + ")" : match;
-    }).replace(/\b((?:xlink:)?href)=(["'])#([^"']+)\2/g, function(match, attr, quote, id) {
-      return ids.has(id) ? attr + "=" + quote + "#" + ids.get(id) + quote : match;
-    }).replace(/\b(aria-labelledby|aria-describedby)=(["'])([^"']+)\2/g, function(_match, attr, quote, value) {
-      return attr + "=" + quote + value.split(/\s+/).map(function(id) { return ids.get(id) || id; }).join(" ") + quote;
-    });
+    svg = markup.scopedSvg(svg);
     var moduleClass = source.ownerType === "module" ? " module-graphic" : "";
     var caption = owner.svg_detail_caption || owner.svg_icon_caption || "";
     return '<figure class="kg-shared-figure"><div class="concept-graphic' + moduleClass + '">' + svg + '</div>' +

@@ -22,15 +22,16 @@ function kgCreateDetailsView(options) {
     var items = Array.from(scope.querySelectorAll("details"));
     if (scope.matches("details")) { items.unshift(scope); }
     items.forEach(function(item) {
-      if (item.closest(".concept-toc")) { return; }
+      if (item.closest(".concept-toc") ||
+          item.matches('.kg-content-inline[data-content-origin="authored"]:not(.kg-shared-explanation)')) { return; }
       var heading = item.querySelector(":scope > summary");
       if (!heading) { return; }
       var footer = foldFooters.get(item);
       if (!footer) {
         footer = document.createElement("div");
         footer.className = "kg-content-footer";
-        footer.innerHTML = '<label class="kg-footer-read-slot"></label>' +
-          '<button type="button" class="kg-content-refold">Fold ↑</button>';
+        footer.innerHTML = '<button type="button" class="kg-content-refold">Fold ↑</button>' +
+          '<label class="kg-footer-read-slot"></label>';
         var title = heading.querySelector(".content-block-title-text, .content-block-title-line") || heading;
         footer.querySelector("button").setAttribute("aria-label", "Fold " + title.textContent.trim());
         foldFooters.set(item, footer); foldTargets.set(footer, item);

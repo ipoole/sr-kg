@@ -37,7 +37,7 @@ def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_brows
             assert not page.locator('#info_panel mjx-merror,#info_panel [data-mjx-error]').count(), owner
             assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1'), owner
             overflows.extend((owner, text) for text in blocks.locator('mjx-container[display="true"]').evaluate_all('es=>es.filter(e=>e.clientWidth && e.scrollWidth>e.clientWidth+2).map(e=>e.textContent)'))
-            assert page.locator('#info_panel .concept-graphic').count() == 1
+            assert page.locator('#info_panel > .content-block-graphic .concept-graphic').count() == 1
         assert not overflows, overflows
         assert not graph.page_errors
 

@@ -143,6 +143,15 @@ mobile-emulation and real-MathJax coverage:
 conda run -n sr-kg pytest -q tests/browser
 ```
 
+## Sources and acknowledgements
+
+David Tong's [General Relativity lectures](https://www.damtp.cam.ac.uk/user/tong/gr/grhtml/)
+are the principal mathematical reference for the recent MATHS and GR revisions.
+The viewer's per-concept References give source and section details, including
+references attached to individual blocks. The terrain-survey narrative, numerical
+teaching examples, graphics and reading-tree presentation are developed for PhysicsKG.
+Other sources are credited in the relevant concepts, including those used for SR.
+
 ## Documentation
 
 - [Documentation index](docs/readme.md): where guidance, drafts and discussion live.

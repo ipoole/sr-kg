@@ -12,6 +12,7 @@ files:
   study_question_options: data/study_question_options.csv
   references: data/references.csv
   reference_links: data/reference_links.csv
+  figures: data/figures.csv
   graphic_designs: data/concept_graphic_designs.csv
   module_graphic_designs: data/module_graphic_designs.csv
   modules: data/modules.csv

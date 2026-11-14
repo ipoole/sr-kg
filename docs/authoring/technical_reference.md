@@ -123,6 +123,24 @@ See [study design](../design/study.md).
 
 ## Graphics
 
+Named body illustrations use an optional domain manifest entry
+`figures: data/figures.csv`. The CSV columns are `figure_id`, `svg_path`, `caption`
+and `alt`; the caption may be empty, and alt text is required. Paths are relative
+to the owning domain directory and must remain inside it. SVG files are authored
+assets, embedded in the generated viewer, with no runtime fetch. For example:
+`gr.figure.constant_vector,graphics/figures/constant_vector.svg,...`.
+
+Use `\figure{unchanged-arrow}{gr.figure.constant_vector}` within a body. Slots
+are stable and unique among the parent's figures/clarifications. The optional
+`preview_figure` column on concept/module blocks selects one main-body figure
+slot and requires a statement. It reuses the artwork without its caption in the
+folded heading. Existing blocks and canonical `graphic=detail` blocks are unchanged.
+Expanded body figures scale with Details text zoom and are capped by the available
+content width. Folded recognition previews keep their small fixed height.
+Figures do not gain separate read ticks. Notes anchor after the figure paragraph;
+keep its slot stable. Missing figures within a loaded namespace are errors;
+excluded namespaces warn and display an unavailable illustration message.
+
 Keep the domain's creator, semantic-ID registry entry, design/captions CSV and
 specific test expectations in sync. Runtime dispatch uses semantic IDs;
 display IDs are for selecting/labelling review sheets. Generic tests discover
@@ -156,7 +174,12 @@ conda run -n sr-kg python tools/generate_pyvis.py --data-root data --dag-report-
 conda run -n sr-kg python tools/generate_pyvis.py --data-root data --module-report-only
 conda run -n sr-kg python tools/generate_pyvis.py --data-root data --domains sr math --out output/PhysicsKG.html
 conda run -n sr-kg python tools/show_graphics.py 'SR-1.*'
+conda run -n sr-kg python -m domains.sr.graphics.body_figures
 ```
+
+The SR, MATHS (`domains.math`) and GR domains each own their `body_figures`
+module; run the corresponding module after changing those drawing helpers.
+The generator embeds the resulting registered SVG files rather than redrawing them.
 
 Validation errors block generation; review warnings editorially. `--validate`
 checks before building; `--validation-strict` treats warnings as failures.

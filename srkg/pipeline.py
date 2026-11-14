@@ -174,7 +174,9 @@ def filter_knowledge_base_by_domains(
         for _, row in filtered_nodes.iterrows()
         if concept_domain(row)
     }
-    content_units = build_content_registry(filtered_concepts, filtered_modules, domains=available_domains)
+    content_units = build_content_registry(filtered_concepts, filtered_modules, domains=available_domains,
+        figures={key: value for key, value in kb.content_units.figures.items()
+                 if key.partition('.')[0] in available_domains})
 
     return KnowledgeBase(
         paths=kb.paths,
@@ -264,6 +266,7 @@ def generate_viewer_from_kb(
         published_layout=published_layout.to_viewer_data(),
         tutorial_data=kb.tutorial_data(),
         domain_data=kb.domain_data(),
+        figure_data=kb.figure_data(),
         google_drive_client_id=google_drive_client_id,
     )
     output_file.write_text(html_text, encoding="utf-8")

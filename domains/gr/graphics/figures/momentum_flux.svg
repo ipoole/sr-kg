@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Opposing particle streams cancel bulk momentum but add momentum flux</title>
+<defs><marker id="flux-right" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2056b5"/></marker><marker id="flux-left" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b56d12"/></marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.00" y="43.00" text-anchor="middle" font-size="29" fill="#273d50">Zero bulk flow does not mean zero pressure</text>
+<rect x="75" y="80" width="750" height="350" rx="20" fill="#f8fbff" stroke="#d1dce8"/>
+<text x="450.00" y="116.00" text-anchor="middle" font-size="24" fill="#617487">Equal populations crossing an imaginary face</text>
+<rect x="444" y="140" width="12" height="260" fill="#81bba9" fill-opacity=".5"/>
+<line x1="450.00" y1="140.00" x2="450.00" y2="400.00" stroke="#33816c" stroke-width="2" stroke-linecap="round" stroke-dasharray="7 6"/>
+<text x="450.00" y="174.00" text-anchor="middle" font-size="25" fill="#2056b5">Positive momentum moving right</text>
+<line x1="190.00" y1="222.00" x2="700.00" y2="222.00" stroke="#2056b5" stroke-width="5" stroke-linecap="round" marker-end="url(#flux-right)"/>
+<text x="450.00" y="380.00" text-anchor="middle" font-size="25" fill="#b56d12">Negative momentum moving left</text>
+<line x1="710.00" y1="322.00" x2="200.00" y2="322.00" stroke="#b56d12" stroke-width="5" stroke-linecap="round" marker-end="url(#flux-left)"/>
+<circle cx="215.00" cy="222.00" r="10" fill="#2056b5"/>
+<circle cx="295.00" cy="222.00" r="10" fill="#2056b5"/>
+<circle cx="375.00" cy="222.00" r="10" fill="#2056b5"/>
+<circle cx="525.00" cy="322.00" r="10" fill="#b56d12"/>
+<circle cx="605.00" cy="322.00" r="10" fill="#b56d12"/>
+<circle cx="685.00" cy="322.00" r="10" fill="#b56d12"/>
+<text x="450.00" y="477.00" text-anchor="middle" font-size="30" fill="#273d50">Both streams have qₓvₓ &gt; 0</text>
+<text x="450.00" y="520.00" text-anchor="middle" font-size="24" fill="#617487">Opposite momentum densities cancel; diagonal stress adds.</text>
+<text x="450.00" y="551.00" text-anchor="middle" font-size="21" fill="#617487">One spatial direction shown; an isotropic gas populates all directions.</text>
+</g>
+</svg>

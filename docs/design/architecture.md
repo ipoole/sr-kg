@@ -57,6 +57,7 @@ modules should not import it.
 | Optional enrichment of records through the existing SVG registries | `graphic_enrichment.py` |
 | Typed content, module, question and reference records; viewer serialisation | `model.py` |
 | Normalise recursive content sources, validate shared references and distinguish source/occurrence identities | `content_units.py` |
+| Load domain-local named SVG assets and their captions/alt text for body figures | `figures.py` |
 | Editorial/schema diagnostics exposed by `--validate` | `validation.py` |
 | Directed graph and module-boundary diagnostics, candidate partition analysis | `dag.py`, `module_diagnostics.py`, `module_partitioning.py` |
 | Module anchors, within-module topological ranks/positions, numbering proposals | `module_layout.py` |
@@ -302,6 +303,12 @@ placement, and adapters explicitly supply editing/annotation/read-tracking
 capabilities. Storage origin does not select a different presentation engine.
 Authored source bodies are transmitted once, verbatim to preserve note anchors;
 Python validates their recursive model and the browser normalises the same shape.
+Named figures are another content part: `\figure{slot}{figure_id}` resolves a
+domain-owned `figures.csv` asset embedded in the viewer. An optional block
+`preview_figure` selects a main-body occurrence for a caption-free, 120px-high
+folded thumbnail. The same asset renders at normal size in the body, including
+within local clarifications and reading trees. SVG ID scoping is shared with
+canonical concept/module graphics; figures introduce no separate completion state.
 Shared explanations are instantiated lazily, with page-local occurrence paths
 and no implicit graph changes. See the [shared reader](folded_reading_trees_renderer.md).
 See [Content-unit model](notes_content_unification.md). The
