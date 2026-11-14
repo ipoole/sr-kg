@@ -102,4 +102,7 @@ overviews changed. The module overviews remain consistent with these additions.
 Source IDs and named clarification paths are retained. Rebuild the new SVGs with
 `conda run -n sr-kg python -m domains.gr.graphics.body_figures`.
 
-GR-3 to GR-6 remain planned. Full pilot browser verification and preview follow.
+Final pilot checks: all 784 unit tests, 351 fast browser cases and 94 full-content
+browser cases pass. After making the inset's two arrows equal in drawn length,
+the final unit suite and GR-2 phone/desktop checks pass again. The ignored viewer
+is rebuilt for preview v4.6.21. GR-3 to GR-6 remain planned for after pilot review.
