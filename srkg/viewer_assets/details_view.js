@@ -29,8 +29,8 @@ function kgCreateDetailsView(options) {
       if (!footer) {
         footer = document.createElement("div");
         footer.className = "kg-content-footer";
-        footer.innerHTML = '<label class="kg-footer-read-slot"></label>' +
-          '<button type="button" class="kg-content-refold">Fold ↑</button>';
+        footer.innerHTML = '<button type="button" class="kg-content-refold">Fold ↑</button>' +
+          '<label class="kg-footer-read-slot"></label>';
         var title = heading.querySelector(".content-block-title-text, .content-block-title-line") || heading;
         footer.querySelector("button").setAttribute("aria-label", "Fold " + title.textContent.trim());
         foldFooters.set(item, footer); foldTargets.set(footer, item);

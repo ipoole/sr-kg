@@ -392,6 +392,15 @@ function kgCreateContentMarkup(options) {
         });
       }
       cursor = next.end;
+      // A standalone figure ends a paragraph too. Retain its structural line
+      // ending as an invisible slot so legacy positional note anchors survive.
+      if (next.kind === "optional" && next.name === "figure") {
+        var figureBreak = findNextLineBreakBlock(raw, cursor);
+        if (figureBreak && figureBreak.start === cursor) {
+          blocks.push({kind: "text", text: "", structural: true});
+          cursor = figureBreak.end;
+        }
+      }
       // A display equation already ends its paragraph. Its following line
       // ending is structural; additional line endings still request spacers.
       if (next.kind === "display-math") {
@@ -418,7 +427,7 @@ function kgCreateContentMarkup(options) {
     var blocks = splitConceptBlocks(text);
     var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
     blocks.forEach(function(block, index) {
-      html += '<div class="concept-line">' +
+      html += '<div class="concept-line' + (block.structural ? ' kg-structural-break' : '') + '">' +
         (block.text ? renderConceptText(block.text, Object.assign({}, context,
           {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
         "</div>";

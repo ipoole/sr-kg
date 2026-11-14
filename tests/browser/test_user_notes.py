@@ -1114,6 +1114,9 @@ def test_personal_and_authored_content_share_geometry_at_each_level(browser_grap
     }'''
     assert owner.evaluate(geometry) == authored.evaluate(geometry)
     assert inline.evaluate(geometry) == optional.evaluate(geometry)
+    typography = "el=>{const s=getComputedStyle(el);return [s.fontSize,s.fontWeight]}"
+    assert inline.locator(':scope > summary').evaluate(typography) == optional.locator(':scope > summary').evaluate(typography)
+    assert optional.locator(':scope > summary').evaluate(typography) == [optional.evaluate('el=>getComputedStyle(el).fontSize'), '700']
     for explanation in [inline, optional]:
         assert explanation.evaluate('el => getComputedStyle(el).backgroundColor') == 'rgba(0, 0, 0, 0)'
         assert explanation.evaluate('''el => {
