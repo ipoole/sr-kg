@@ -181,11 +181,11 @@ def test_note_placement_supports_keyboard_and_multiple_notes(repo_browser_graph)
 @pytest.mark.browser
 def test_atomic_note_blocks_create_their_single_note_directly(repo_browser_graph):
     page = repo_browser_graph.page
-    # Legacy standalone figures remain atomic; migrated Maths/SR-1 figures have
-    # ordinary authored bodies with paragraph-level annotations.
+    # Canonical Graphic blocks are caption-only atomic targets, as are
+    # study-question sections. Keep their notes attached to the block identity.
     repo_browser_graph.click_concept("gr.metric_tensor")
 
-    graphic = page.locator("#info_panel details.concept-figure")
+    graphic = page.locator('#info_panel [data-content-block-id="gr.metric_tensor.graphic"]')
     graphic.locator(":scope > summary .kg-note-block-action").click()
     assert graphic.get_attribute("data-note-placement") is None
     assert graphic.locator("details.user-note").count() == 1
@@ -194,6 +194,11 @@ def test_atomic_note_blocks_create_their_single_note_directly(repo_browser_graph
     graphic_title.fill("Graphic note")
     graphic.locator(".user-note-body-input").fill("Review the manifold graphic.")
     graphic.locator(".user-note-close").click()
+    repo_browser_graph.click_concept("gr.line_element")
+    repo_browser_graph.click_concept("gr.metric_tensor")
+    graphic = page.locator('#info_panel [data-content-block-id="gr.metric_tensor.graphic"]')
+    assert graphic.locator("details.user-note > summary").inner_text() == "Graphic note"
+    assert page.locator("#info_panel .kg-unmatched-notes").count() == 0
 
     study = page.locator("#info_panel details.study-questions")
     study.locator(":scope > summary .kg-note-block-action").click()

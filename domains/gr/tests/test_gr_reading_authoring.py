@@ -1,4 +1,5 @@
 """Reviewed GR units retain annotation identities and have usable reading-tree content."""
+import csv
 import json
 from pathlib import Path
 import pytest
@@ -7,7 +8,6 @@ from srkg.schema import AUTHORING_BLOCK_KINDS
 from srkg.content_units import ContentExplanation, ContentReference
 
 ROOT = Path(__file__).resolve().parents[3]
-REVIEWED_MODULE_COUNT = 6
 BASELINE = json.loads((ROOT/'domains/gr/docs/reading_tree_authoring_baseline.json').read_text())
 
 
@@ -24,11 +24,9 @@ def kb():
 
 
 def test_reviewed_gr_units_retain_canonical_content_and_clarifications(kb):
-
     # Read membership from the source tables, independent of viewer ordering.
-    import csv
     with (ROOT/'domains/gr/data/modules.csv').open() as f:
-        reviewed = [r['module_id'] for r in csv.DictReader(f)][:REVIEWED_MODULE_COUNT]
+        reviewed = [r['module_id'] for r in csv.DictReader(f)]
     owners = {owner for module in reviewed for owner in kb.module(module).members}
     for owner in owners:
         blocks = kb.content_blocks_for(owner)
@@ -38,6 +36,9 @@ def test_reviewed_gr_units_retain_canonical_content_and_clarifications(kb):
             assert block.kind in AUTHORING_BLOCK_KINDS, block.block_id
             assert block.title and block.statement and block.body, block.block_id
             assert not any(isinstance(p, ContentReference) for p, _ in walk(kb.content_units[block.block_id].parts))
+    for module in reviewed:
+        assert all(b.statement and b.kind in AUTHORING_BLOCK_KINDS
+                   for b in kb.module_content_blocks_for(module))
     for old in BASELINE['blocks']:
         if old['owner'] not in owners | set(reviewed):
             continue
@@ -61,5 +62,5 @@ def test_gr_foundation_graph_remains_acyclic(kb):
             visit(child, ancestors | {owner})
         finished.add(owner)
 
-    for owner in kb.nodes_df['id']:
+    for owner in kb.nodes_df.loc[kb.nodes_df['domain'].eq('gr'), 'id']:
         visit(owner, set())

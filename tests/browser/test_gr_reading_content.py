@@ -40,3 +40,26 @@ def test_gr_module_math_and_canonical_blocks(gr_reading_output, playwright_brows
             assert page.locator('#info_panel .concept-graphic').count() == 1
         assert not overflows, overflows
         assert not graph.page_errors
+
+
+@pytest.mark.browser
+@pytest.mark.browser_full
+@pytest.mark.parametrize('root', ['gr.einstein_field_equations', 'gr.gravitational_waves', 'gr.effective_potential_orbits'])
+def test_gr_reading_routes_follow_registered_dependencies(gr_reading_output, playwright_browser, root):
+    from test_maths_reading_trees import _reveal_tree
+    api, browser = playwright_browser
+    with _open_browser_graph(api, browser, gr_reading_output) as graph:
+        page = graph.page
+        page.locator('#kg_view_select').select_option('details')
+        graph.click_concept(root)
+        for recipe, preset in [('derivation', 'derivation'), ('teaching', 'foundations')]:
+            card = page.locator(f'details.kg-reading-tree[data-reading-recipe="{recipe}"]')
+            _reveal_tree(page, card, max_depth=page.evaluate('Object.keys(conceptData).length'),
+                         unique_concepts=True)
+            expected = page.evaluate('(a)=>kgComputeContext({type:"concept",id:a.root},{preset:a.preset,depth:"transitive"})',
+                                    {'root': root, 'preset': preset})
+            actual = card.locator('[data-reading-edge]').evaluate_all('es=>[...new Set(es.map(e=>e.dataset.readingEdge))]')
+            assert set(actual) == set(expected['edgeIds'])
+            assert not card.locator('.kg-reading-block[open]').count()
+            card.evaluate('e=>e.open=false')
+        assert not graph.page_errors

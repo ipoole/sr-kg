@@ -136,14 +136,14 @@ def test_text_does_not_double_escape_latex_backslashes():
     module_content_blocks = _read_csv("module_content_blocks.csv")
 
     content_text = content_blocks.loc[
-        content_blocks["concept_id"].isin(concept_ids), ["title", "body"]
+        content_blocks["concept_id"].isin(concept_ids), ["title", "statement", "body"]
     ]
     question_text = study_questions.loc[
         study_questions["concept_id"].isin(concept_ids), ["prompt", "answer"]
     ]
     module_ids = set(modules.loc[modules["domain"].eq("gr"), "module_id"])
     module_text = module_content_blocks.loc[
-        module_content_blocks["module_id"].isin(module_ids), ["title", "body"]
+        module_content_blocks["module_id"].isin(module_ids), ["title", "statement", "body"]
     ]
     # Aligned equations legitimately use a double-backslash row break followed
     # by whitespace. Doubled commands/delimiters remain an authoring defect.
