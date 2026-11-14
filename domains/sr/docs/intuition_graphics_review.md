@@ -93,3 +93,12 @@ clock-network simultaneity. Two body figures show the interval calculation and
 rod endpoint choices; the latter belongs in the measurement Explanation.
 Both use an explicit 0.6c boost and consistent +--- numbers. Existing proofs,
 questions, named clarification slots, references and tutorial targets remain.
+
+## SR-2 completed
+
+Added a two-clock reunion Intuition with a stated ideal turnaround limit. The
+existing opposite-pulse emission Intuition gains a Doppler-energy ledger figure;
+its kinetic-energy inference and named/anonymous clarifications are preserved.
+The light-box Intuition, four-vector analogy and worldline-tangent treatment
+already contribute distinct useful mental models and are retained. No new
+prerequisite, question, tutorial target or physical convention is introduced.

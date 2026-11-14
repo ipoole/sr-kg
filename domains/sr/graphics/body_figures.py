@@ -69,7 +69,30 @@ def rod_slices():
     return canvas('Two simultaneity slices select different endpoint events on a moving rod', body)
 
 
-BUILDERS = {'interval_components': interval_components, 'rod_slices': rod_slices}
+def emission_energy():
+    defs = [_arrow_marker('pulse-left', colour=BLUE, size=6),
+            _arrow_marker('pulse-right', colour=GOLD, size=6)]
+    body = [text(450, 43, 'Light leaves without a kick', 32)]
+    for left, header, eleft, eright, total in [
+            (20, 'Body rest frame S', 'L / 2', 'L / 2', 'Energy out: L'),
+            (460, 'S′: boost at −0.6c', 'L / 4', 'L', 'Energy out: 1.25L')]:
+        cx = left+210
+        body += [_rect(left, 80, 420, 350, rx=18, fill='#f8fbff', stroke='#cfdaea'),
+                 text(cx, 125, header, 28),
+                 _rect(cx-37, 202, 74, 74, rx=12, fill='#e7edf4', stroke=MUTED, stroke_width=2),
+                 text(cx, 248, 'body', 22),
+                 line(cx-58, 239, left+40, 239, BLUE, 5, marker_end='url(#pulse-left)'),
+                 line(cx+58, 239, left+380, 239, GOLD, 5, marker_end='url(#pulse-right)'),
+                 text(left+82, 194, eleft, 32, BLUE), text(left+338, 194, eright, 32, GOLD),
+                 text(cx, 330, total, 30),
+                 text(cx, 387, 'No change in body velocity', 24, MUTED)]
+    body += [text(450, 482, 'Extra loss in S′ is lost kinetic energy: 0.25L.', 28),
+             text(450, 530, 'Same emission; different observers’ energy accounts.', 25, MUTED)]
+    return canvas('Opposite light pulses have different total energies in two inertial frames', body, defs)
+
+
+BUILDERS = {'interval_components': interval_components, 'rod_slices': rod_slices,
+            'emission_energy': emission_energy}
 
 
 def write_assets():

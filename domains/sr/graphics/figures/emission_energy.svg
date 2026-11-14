@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Opposite light pulses have different total energies in two inertial frames</title>
+<defs>
+<marker id="pulse-left" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#2056b5"/>
+</marker>
+<marker id="pulse-right" markerWidth="6" markerHeight="6"
+        refX="4" refY="3.0" orient="auto"
+        markerUnits="strokeWidth">
+  <path d="M0,0 L4,3.0 L0,6 Z" fill="#ae6b16"/>
+</marker></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.0" y="43.0" font-size="32" fill="#293f51" text-anchor="middle">Light leaves without a kick</text>
+<rect x="20.0" y="80.0" width="420.0" height="350.0" rx="18.0" fill="#f8fbff" stroke="#cfdaea"/>
+<text x="230.0" y="125.0" font-size="28" fill="#293f51" text-anchor="middle">Body rest frame S</text>
+<rect x="193.0" y="202.0" width="74.0" height="74.0" rx="12.0" fill="#e7edf4" stroke="#63788a" stroke-width="2"/>
+<text x="230.0" y="248.0" font-size="22" fill="#293f51" text-anchor="middle">body</text>
+<line x1="172.0" y1="239.0" x2="60.0" y2="239.0" stroke="#2056b5" stroke-width="5" stroke-linecap="round" marker-end="url(#pulse-left)"/>
+<line x1="288.0" y1="239.0" x2="400.0" y2="239.0" stroke="#ae6b16" stroke-width="5" stroke-linecap="round" marker-end="url(#pulse-right)"/>
+<text x="102.0" y="194.0" font-size="32" fill="#2056b5" text-anchor="middle">L / 2</text>
+<text x="358.0" y="194.0" font-size="32" fill="#ae6b16" text-anchor="middle">L / 2</text>
+<text x="230.0" y="330.0" font-size="30" fill="#293f51" text-anchor="middle">Energy out: L</text>
+<text x="230.0" y="387.0" font-size="24" fill="#63788a" text-anchor="middle">No change in body velocity</text>
+<rect x="460.0" y="80.0" width="420.0" height="350.0" rx="18.0" fill="#f8fbff" stroke="#cfdaea"/>
+<text x="670.0" y="125.0" font-size="28" fill="#293f51" text-anchor="middle">S′: boost at −0.6c</text>
+<rect x="633.0" y="202.0" width="74.0" height="74.0" rx="12.0" fill="#e7edf4" stroke="#63788a" stroke-width="2"/>
+<text x="670.0" y="248.0" font-size="22" fill="#293f51" text-anchor="middle">body</text>
+<line x1="612.0" y1="239.0" x2="500.0" y2="239.0" stroke="#2056b5" stroke-width="5" stroke-linecap="round" marker-end="url(#pulse-left)"/>
+<line x1="728.0" y1="239.0" x2="840.0" y2="239.0" stroke="#ae6b16" stroke-width="5" stroke-linecap="round" marker-end="url(#pulse-right)"/>
+<text x="542.0" y="194.0" font-size="32" fill="#2056b5" text-anchor="middle">L / 4</text>
+<text x="798.0" y="194.0" font-size="32" fill="#ae6b16" text-anchor="middle">L</text>
+<text x="670.0" y="330.0" font-size="30" fill="#293f51" text-anchor="middle">Energy out: 1.25L</text>
+<text x="670.0" y="387.0" font-size="24" fill="#63788a" text-anchor="middle">No change in body velocity</text>
+<text x="450.0" y="482.0" font-size="28" fill="#293f51" text-anchor="middle">Extra loss in S′ is lost kinetic energy: 0.25L.</text>
+<text x="450.0" y="530.0" font-size="25" fill="#63788a" text-anchor="middle">Same emission; different observers’ energy accounts.</text>
+</g>
+</svg>

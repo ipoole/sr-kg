@@ -34,7 +34,7 @@ def test_sr2_content_equations_and_rest_energy_routes(sr1_reading_output, playwr
             assert page.locator('#info_panel').evaluate('e=>e.scrollWidth<=e.clientWidth+1'), owner
             assert blocks.locator('mjx-container[display="true"]').evaluate_all(
                 'es=>es.every(e=>!e.clientWidth||e.scrollWidth<=e.clientWidth+2)'), owner
-            assert page.locator('#info_panel .concept-graphic').count() == 1
+            assert page.locator('#info_panel > .content-block-graphic .concept-graphic').count() == 1
         graph.click_concept('sr.mass_energy_equivalence')
         for recipe, preset in [('derivation', 'derivation'), ('teaching', 'foundations')]:
             card = page.locator(f'details.kg-reading-tree[data-reading-recipe="{recipe}"]')
