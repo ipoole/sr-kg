@@ -120,3 +120,15 @@ avoiding a false claim that zero Ricci preserves volume for all time.
 
 Validation: zero errors, 216 existing warnings; 784 unit tests and both GR-3
 phone/desktop content cases pass. Full and folded artwork inspected at both widths.
+
+## Extension: GR-4
+
+Four new Intuitions compare equal densities with different flows, microscopic
+motion with fluid rest, local balance with global energy, and joint matter/metric
+solutions. The new opposing-stream figure belongs to the stress-energy
+**Explanation**. Both streams contribute positive diagonal momentum flux even
+though their momentum densities cancel; the drawing is explicitly one-axis,
+not a claim that two beams alone constitute an isotropic perfect fluid.
+
+Validation remains at zero errors/216 warnings. All 784 unit tests and the GR-4
+phone/desktop cases pass; the figure has been inspected at both sizes.

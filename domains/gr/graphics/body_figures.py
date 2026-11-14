@@ -170,12 +170,36 @@ def tidal_trace():
     return _svg('A nonzero trace-free tidal map can stretch and squeeze without a trace',body,marker)
 
 
+def momentum_flux():
+    defs=''
+    for name,colour in [('right',BLUE),('left',GOLD)]:
+        defs += (f'<marker id="flux-{name}" viewBox="0 0 10 10" refX="9" refY="5" '
+                 'markerWidth="6" markerHeight="6" orient="auto">'
+                 f'<path d="M0 0L10 5L0 10Z" fill="{colour}"/></marker>')
+    body=[_text(450,43,'Zero bulk flow does not mean zero pressure',29),
+          '<rect x="75" y="80" width="750" height="350" rx="20" fill="#f8fbff" stroke="#d1dce8"/>',
+          _text(450,116,'Equal populations crossing an imaginary face',24,MUTED),
+          '<rect x="444" y="140" width="12" height="260" fill="#81bba9" fill-opacity=".5"/>',
+          _line(450,140,450,400,colour='#33816c',width=2,extra='stroke-dasharray="7 6"'),
+          _text(450,174,'Positive momentum moving right',25,BLUE),
+          _line(190,222,700,222,width=5,extra='marker-end="url(#flux-right)"'),
+          _text(450,380,'Negative momentum moving left',25,GOLD),
+          _line(710,322,200,322,colour=GOLD,width=5,extra='marker-end="url(#flux-left)"')]
+    for x in [215,295,375]:body.append(_circle(x,222,10))
+    for x in [525,605,685]:body.append(_circle(x,322,10,GOLD))
+    body += [_text(450,477,'Both streams have qₓvₓ > 0',30),
+             _text(450,520,'Opposite momentum densities cancel; diagonal stress adds.',24,MUTED),
+             _text(450,551,'One spatial direction shown; an isotropic gas populates all directions.',21,MUTED)]
+    return _svg('Opposing particle streams cancel bulk momentum but add momentum flux',body,defs)
+
+
 def write_assets():
     output = Path(__file__).with_name('figures')
     output.mkdir(exist_ok=True)
     for name, build in {'tidal_constellation': tidal_constellation,
                         'spherical_transport': spherical_transport,
-                        'tidal_trace': tidal_trace}.items():
+                        'tidal_trace': tidal_trace,
+                        'momentum_flux': momentum_flux}.items():
         (output/(name+'.svg')).write_text(build(), encoding='utf-8')
 
 
