@@ -121,3 +121,13 @@ gauge-redundancy Intuition with two concrete potentials, a same-curl figure and
 an optional sign check consistent with A_mu=(phi/c,-A). The Poynting-pressure
 Example remains useful without another picture; canonical field graphics stay.
 Observer changes and gauge changes are explicitly different operations.
+
+## SR-5 completed
+
+Added three Intuitions: a translation-invariant trough illustrating Noether,
+Maxwell constraints versus evolution, and arbitrary smooth travelling profiles
+rather than plane waves alone. Added a trough figure and a signed charge-flux
+ledger in the existing continuity Intuition. Retained the strong four-current,
+complete-system energy–momentum, wave-triad and averaged radiation-reaction
+mental models. The trough is explicitly nonrelativistic and does not equate
+variational symmetry with a merely symmetric drawing.

@@ -184,10 +184,42 @@ def gauge_representatives():
     return canvas('Two gauge-related vector potentials with the same uniform magnetic field',body,defs)
 
 
+def translation_symmetry():
+    from math import pi,sin
+    body=[text(450,43,'A sideways shift leaves this model unchanged',30)]
+    for left,shift,header in [(20,0,'One trial history'),(460,55,'Shift the whole history')]:
+        body += [_rect(left,80,420,365,rx=18,fill='#f8fbff',stroke='#cfdaea'),text(left+210,123,header,26)]
+        for y in [170,210,250,290,330,370]:
+            body.append(_rect(left+20,y,380,40,fill='#eaf1f8' if y in [170,370] else '#f5f8fc',stroke='none'))
+        points=[(left+45+shift+240*t,285-75*sin(2*pi*t)) for t in [i/80 for i in range(81)]]
+        body += [_polyline(points,fill='none',stroke=BLUE,stroke_width=4),
+                 _circle(*points[0],6,fill=RED),_circle(*points[-1],6,fill=RED),
+                 text(left+210,429,'Same V(y), no x dependence',24,MUTED)]
+    body += [text(450,491,'∂L/∂x = 0  ⇒  pₓ = mẋ is constant',29,BLUE),
+             text(450,535,'The transverse force changes pᵧ; horizontal momentum stays fixed.',24)]
+    return canvas('Translation symmetry of a particle model with a transverse harmonic potential',body)
+
+
+def charge_flux():
+    defs=[_arrow_marker('incoming',colour=BLUE,size=6),_arrow_marker('outgoing',colour=GOLD,size=6)]
+    body=[text(450,43,'More charge leaves than enters',32),
+          _rect(245,135,410,230,rx=18,fill='#f8fbff',stroke=MUTED,stroke_width=2),
+          text(450,182,'Fixed region',28),text(450,247,'10 C → 8 C',36),
+          text(450,301,'after one second',26),
+          line(50,250,225,250,BLUE,6,marker_end='url(#incoming)'),
+          line(675,250,850,250,GOLD,6,marker_end='url(#outgoing)'),
+          text(130,204,'3 A in',29,BLUE),text(770,204,'5 A out',29,GOLD),
+          text(450,408,'No charge flux through the other faces',25,MUTED),
+          text(450,474,'dQ/dt = 3 − 5 = −2 C/s',32),
+          text(450,531,'Positive net outward current means decreasing enclosed charge.',25)]
+    return canvas('Charge accumulation in a fixed region balances incoming and outgoing currents',body,defs)
+
+
 BUILDERS = {'interval_components': interval_components, 'rod_slices': rod_slices,
             'emission_energy': emission_energy,
             'varied_histories': varied_histories, 'field_action_cells': field_action_cells,
-            'observer_field_split': observer_field_split, 'gauge_representatives': gauge_representatives}
+            'observer_field_split': observer_field_split, 'gauge_representatives': gauge_representatives,
+            'translation_symmetry': translation_symmetry, 'charge_flux': charge_flux}
 
 
 def write_assets():
