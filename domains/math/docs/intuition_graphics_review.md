@@ -73,4 +73,20 @@ Legacy graphic notes, scalar-calculation notes and shared read ticks are retaine
 Full/folded SVGs inspected at both widths. Validation remains zero errors and the
 existing 216 full-viewer warnings.
 
-MATHS-2 authoring is next.
+MATHS-2 adds three Intuitions: tensors as local multi-input rules, free versus
+contracted index questions, and compensating descriptions. The rescaling Example
+now illustrates an unchanged tangent arrow, a halved basis unit and reciprocal
+covector components preserving the scalar pairing. Its title says “Double the
+labels” rather than implying that a physical grid or vector was stretched.
+Two small pre-existing grammatical errors in the slots/index exposition are fixed.
+
+The domain now has 78 blocks, eight Intuitions and three body figures (two in
+Examples, one in Intuition). All 73 prior IDs/kinds and all named clarification
+paths are retained. Edges, questions/options, module overviews and membership are
+byte-for-byte unchanged from the baseline. A Maths-only load contains exactly the
+three Maths figure assets and retains only the existing missing-SR diagnostics.
+
+All 784 unit tests and four real-Maths phone/desktop reading/annotation cases pass.
+Full and folded artwork inspected at both widths. Full-viewer validation still
+reports zero errors and 216 existing warnings. Complete-suite preview verification
+follows; SR remains an inventory only, pending review of this MATHS batch.

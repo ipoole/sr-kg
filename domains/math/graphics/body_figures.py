@@ -111,9 +111,31 @@ def contour_readout():
     return canvas('Temperature contours and two tangent velocities give different covector readouts at one point',body,defs)
 
 
+def reciprocal_components():
+    defs=[_arrow_marker('same-vector',colour=BLUE,size=6)]
+    body=[text(450,42,'Change the component numbers, keep the readout',30)]
+    for left,origin,divisions,header,omega in [(20,100,3,'x coordinates',8),
+                                             (460,540,6,'x′ = 2x coordinates',4)]:
+        centre=left+210
+        body += [_rect(left,75,420,415,rx=18,fill='#f7faff',stroke='#ccdced'),
+                 text(centre,118,header,28),text(centre,176,'V',36,BLUE),
+                 line(origin,210,origin+270,210,width=6,marker_end='url(#same-vector)'),
+                 _circle(origin,210,7,fill=RED),text(origin-20,229,'p',27,RED),
+                 line(origin,285,origin+270,285,MUTED,2)]
+        for i in range(divisions+1):
+            x=origin+270*i/divisions
+            body += [line(x,277,x,293,MUTED,2),text(x,324,str(i),25,MUTED)]
+        body += [text(centre,375,f'vector component: {divisions}',27,BLUE),
+                 text(centre,420,('ωₓ = ' if divisions==3 else 'ωₓ′ = ')+str(omega),30,GOLD),
+                 text(centre,464,f'ω(V) = {omega} × {divisions} = 24',28)]
+    body += [text(450,528,'The new basis unit is half as large; its covector readout halves too.',24,MUTED)]
+    return canvas('The same vector and covector pairing under a one-dimensional coordinate rescaling',body,defs)
+
+
 def write_assets():
     output=Path(__file__).with_name('figures');output.mkdir(exist_ok=True)
-    for name,build in {'overlapping_charts':overlapping_charts,'contour_readout':contour_readout}.items():
+    for name,build in {'overlapping_charts':overlapping_charts,'contour_readout':contour_readout,
+                       'reciprocal_components':reciprocal_components}.items():
         (output/(name+'.svg')).write_text(build(),encoding='utf-8')
 
 
