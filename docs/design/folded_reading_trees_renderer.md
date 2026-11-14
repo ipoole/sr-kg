@@ -42,7 +42,7 @@ Full-width focus moves the same DOM; note editing can rebuild and restore the
 focus path. Changing a tree's depth rebuilds only that tree. A first-level concept
 has no full-width action; deeper concepts/local clarifications can offer it.
 
-Each card has Depth, Synchronise graph and Fold supports. Synchronisation starts
+Each card has Depth and Synchronise graph. Synchronisation starts
 off. Enabling it keeps Selection at the root, sets the recipe’s Context/depth,
 uses Context only, reveals its context modules and fits the context. Details-only
 view becomes Both so the map is visible; graph-only view stays unchanged. Only one card

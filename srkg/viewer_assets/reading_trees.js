@@ -153,7 +153,6 @@ function kgCreateReadingTrees(options) {
         depths.map(function(item) { return tag("option", {value: item[0], selected: tree.depth === item[0]}, item[1]); }).join(""))) +
       tag("label", {}, tag("input", {type: "checkbox", "class": "kg-reading-sync",
         "data-reading-recipe": tree.recipe, checked: synchronised === tree.recipe}) + " Synchronise graph") +
-      tag("button", {type: "button", "data-reading-fold": tree.recipe}, "Fold supports") +
       tag("span", {"class": "kg-reading-position", "data-reading-recipe": tree.recipe, "aria-live": "polite"}));
   }
   function render(id) {
@@ -323,13 +322,6 @@ function kgCreateReadingTrees(options) {
       var tree = trees[button.getAttribute("data-reading-extend")];
       setDepth(tree, "transitive");
       document.getElementById(tree.entry.id).querySelector("select").value = "transitive";
-      return true;
-    }
-    button = event.target.closest("[data-reading-fold]");
-    if (button) {
-      leaveFocus(true);
-      var card = document.getElementById(trees[button.getAttribute("data-reading-fold")].entry.id);
-      card.querySelectorAll("details").forEach(function(item) { item.open = false; });
       return true;
     }
     return false;
