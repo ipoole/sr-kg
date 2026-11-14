@@ -635,7 +635,7 @@ Stationarity is the dynamical postulate. Differentiating and integrating by part
 sr.action_principle.histories,sr.action_principle,20,intuition,Compare nearby histories,"A useful picture is to draw one candidate trajectory and gently push a short section sideways, leaving its endpoints alone. Re-evaluate the action for this slightly changed curve.
 For a stationary path, the change has no term linear in the size of that push, whichever smooth allowed push we choose. Quadratic and higher-order changes may remain. This is the path version of a function having zero slope, with many possible directions of variation instead of just one.
 
-For a concrete nonrelativistic example, take a free particle with \(L=\tfrac12m\dot q^2\), moving from \(q=0\) to \(q=d\) in a fixed time \(T\). The straight path has constant velocity. Adding a smooth sine-shaped bump changes the action only quadratically in its amplitude, as the figure illustrates.
+For a concrete nonrelativistic example, take a free particle with \(L=\tfrac12m\dot q^2\), moving from \(q=0\) to \(q=d\) in a fixed time \(T>0\), with \(d>0\). The straight path has constant velocity. Adding a smooth sine-shaped bump changes the action only quadratically in its amplitude, as the figure illustrates.
 
 \explanation{free_particle_bump}{Checking this particular family}{Choose \(q_a(t)=dt/T+a\sin(\pi t/T)\) for \(0\leq t\leq T\). The endpoint positions stay fixed. Integrating \(\tfrac12m\dot q_a^2\) gives \[S(a)=\frac{md^2}{2T}+\frac{m\pi^2a^2}{4T}.\] The cross term integrates to zero, so there is no term linear in \(a\). This checks one family of variations; the action principle requires stationarity for every allowed smooth variation.}
 

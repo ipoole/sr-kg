@@ -131,3 +131,34 @@ ledger in the existing continuity Intuition. Retained the strong four-current,
 complete-system energy–momentum, wave-triad and averaged radiation-reaction
 mental models. The trough is explicitly nonrelativistic and does not equate
 variational symmetry with a merely symmetric drawing.
+
+## Cross-module review
+
+SR now has 545 concept blocks, including 41 Intuitions: eight additions to the
+537-block/33-Intuition baseline. Nine body figures supplement the 49 canonical
+concept graphics. Three figures sit in Explanations (rod measurement, field
+contributions, observer mixing); six sit in Intuitions. MATHS contributes three
+further body figures, two in Examples and one in Intuition. There is no need to
+relabel blocks or alter the Teaching recipe to expose them.
+
+Checked new statements against their titles and bodies, native sequence against
+kind-grouped Teaching copies, and physical assumptions against neighbouring
+arguments and questions. The original mental models remain where they add a
+distinct contribution; new prose supplies reasoning rather than a second teaser.
+Local clarifications hold optional algebra, not missing premises. Reference links
+credit source principles and distinguish the original numerical examples/artwork.
+The gauge example follows the existing lowered-potential sign convention; the
+free-particle variation is explicitly nonrelativistic; the pulse diagram compares
+the same emission in two frames; flux values count signed charge.
+
+All old SR and MATHS block IDs and kinds are retained. Nodes, edges, module
+membership, questions and options are byte-for-byte unchanged from `acc9bc7`.
+The domain regression checks retain existing clarification paths. No tutorial
+action or target has been changed. Rendering uses the existing shared native/
+reading-tree path, with one embedded asset reused for preview and body.
+
+Each module passed all 784 unit tests and its real-data phone/desktop reading
+checks before its separate commit. All nine SR illustrations were inspected as
+full artwork and in folded/open blocks at both widths. The drawing helpers are
+SR-owned, deterministic and independent of MATHS/GR artwork. One crowded action
+label was moved during review; no additional renderer or recipe was needed.

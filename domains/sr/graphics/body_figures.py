@@ -4,6 +4,7 @@ Rebuild: conda run -n sr-kg python -m domains.sr.graphics.body_figures
 """
 from html import escape
 from pathlib import Path
+from math import pi, sin
 from srkg.svg_graphics.primitives import _arrow_marker, _circle, _line, _path, _polyline, _rect, _text
 
 BLUE = '#2056b5'
@@ -92,7 +93,6 @@ def emission_energy():
 
 
 def varied_histories():
-    from math import pi, sin
     body = [text(450, 43, 'Nearby paths, no first-order action change', 30)]
     for left in (20, 460):
         body.append(_rect(left, 80, 420, 390, rx=18, fill='#f8fbff', stroke='#cfdaea'))
@@ -112,7 +112,7 @@ def varied_histories():
              _polyline([graph(a,1+pi*pi*a*a/2) for a in [-.38+i*.76/80 for i in range(81)]],
                        fill='none',stroke=BLUE,stroke_width=4),
              _circle(*graph(0,1),7,fill=RED),text(670,445,'0',23,MUTED),
-             text(795,445,'a / d',25,MUTED),text(715,335,'zero slope',25,BLUE),
+             text(795,445,'a / d',25,MUTED),text(670,180,'zero slope',25,BLUE),
              text(450,530,'A free-particle example: a minimum here, not a general minimum rule.',24)]
     return canvas('Smooth fixed-endpoint variations around a straight free-particle history',body)
 
@@ -185,7 +185,6 @@ def gauge_representatives():
 
 
 def translation_symmetry():
-    from math import pi,sin
     body=[text(450,43,'A sideways shift leaves this model unchanged',30)]
     for left,shift,header in [(20,0,'One trial history'),(460,55,'Shift the whole history')]:
         body += [_rect(left,80,420,365,rx=18,fill='#f8fbff',stroke='#cfdaea'),text(left+210,123,header,26)]

@@ -22,7 +22,7 @@
 <circle cx="670.0" cy="380.5" r="7.0" fill="#bd443e"/>
 <text x="670.0" y="445.0" font-size="23" fill="#63788a" text-anchor="middle">0</text>
 <text x="795.0" y="445.0" font-size="25" fill="#63788a" text-anchor="middle">a / d</text>
-<text x="715.0" y="335.0" font-size="25" fill="#2056b5" text-anchor="middle">zero slope</text>
+<text x="670.0" y="180.0" font-size="25" fill="#2056b5" text-anchor="middle">zero slope</text>
 <text x="450.0" y="530.0" font-size="24" fill="#293f51" text-anchor="middle">A free-particle example: a minimum here, not a general minimum rule.</text>
 </g>
 </svg>

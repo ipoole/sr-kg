@@ -135,6 +135,8 @@ are stable and unique among the parent's figures/clarifications. The optional
 `preview_figure` column on concept/module blocks selects one main-body figure
 slot and requires a statement. It reuses the artwork without its caption in the
 folded heading. Existing blocks and canonical `graphic=detail` blocks are unchanged.
+Expanded body figures scale with Details text zoom and are capped by the available
+content width. Folded recognition previews keep their small fixed height.
 Figures do not gain separate read ticks. Notes anchor after the figure paragraph;
 keep its slot stable. Missing figures within a loaded namespace are errors;
 excluded namespaces warn and display an unavailable illustration message.
