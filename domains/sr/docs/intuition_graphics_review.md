@@ -84,3 +84,12 @@ assets are changed by this inventory commit.
 Read the guide and review full bodies, questions and references before each SR
 module; commit each separately, inspect phone/desktop equations and artwork,
 then review the complete reading experience and publish tested previews.
+
+## SR-1 completed
+
+Retained the existing light-clock, flash, laboratory and cone treatments. Added
+Intuitions for locality versus propagation, fixed-event interval comparison and
+clock-network simultaneity. Two body figures show the interval calculation and
+rod endpoint choices; the latter belongs in the measurement Explanation.
+Both use an explicit 0.6c boost and consistent +--- numbers. Existing proofs,
+questions, named clarification slots, references and tutorial targets remain.

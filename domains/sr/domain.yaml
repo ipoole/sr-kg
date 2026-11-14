@@ -9,6 +9,7 @@ files:
   nodes: data/nodes.csv
   edges: data/edges.csv
   content_blocks: data/content_blocks.csv
+  figures: data/figures.csv
   study_questions: data/study_questions.csv
   study_question_options: data/study_question_options.csv
   references: data/references.csv

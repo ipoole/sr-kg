@@ -168,3 +168,7 @@ content_block,sr.radiation_reaction.energy_balance,steane.2015.radiation,"§II, 
 content_block,sr.radiation_reaction.damping_intuition,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
 content_block,sr.radiation_reaction.not_simple_friction,steane.2015.radiation,"§II, An Energy Paradox",Near-field storage and Schott energy; do not identify instantaneous mechanical loss with far-zone radiation alone.
 content_block,sr.radiation_reaction.effective_view,ekman.2021.reduction,Introduction and reduction-of-order formulation,Controlled approximation and its limitations; the simple nonrelativistic illustration is authored here.
+content_block,sr.principle_of_locality.relay_picture,ttm.sr_cf,10.2.1 Locality,Original teaching illustration of the referenced principles.
+content_block,sr.spacetime_interval.fixed_pair,ttm.sr_cf,1.5.3 Spacetime Interval,Original teaching illustration of the referenced principles.
+content_block,sr.lorentz_transformations.clock_slices,ttm.sr_cf,1.3 General Lorentz Transformation,Original teaching illustration of the referenced principles.
+content_block,sr.length_contraction.measurement,openstax.university_physics_3,§5.4 Length Contraction,Original teaching illustration of the referenced principles.

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+<title>Two simultaneity slices select different endpoint events on a moving rod</title>
+<defs></defs>
+<g font-family="Arial, sans-serif">
+<text x="450.0" y="43.0" font-size="30" fill="#293f51" text-anchor="middle">A length measurement chooses an event pair</text>
+<text x="300.0" y="95.0" font-size="25" fill="#293f51" text-anchor="middle">Rod at rest in S′; moving at 0.6c in S</text>
+<line x1="85.0" y1="430.0" x2="241.0" y2="170.0" stroke="#63788a" stroke-width="4" stroke-linecap="round"/>
+<line x1="293.0" y1="430.0" x2="449.0" y2="170.0" stroke="#63788a" stroke-width="4" stroke-linecap="round"/>
+<line x1="65.5" y1="430.0" x2="475.0" y2="430.0" stroke="#2056b5" stroke-width="3" stroke-linecap="round"/>
+<line x1="85.0" y1="430.0" x2="475.0" y2="196.0" stroke="#ae6b16" stroke-width="3" stroke-linecap="round"/>
+<circle cx="85.0" cy="430.0" r="8.0" fill="#bd443e"/>
+<text x="65.0" y="462.0" font-size="27" fill="#bd443e" text-anchor="middle">A</text>
+<circle cx="293.0" cy="430.0" r="8.0" fill="#bd443e"/>
+<text x="293.0" y="462.0" font-size="27" fill="#bd443e" text-anchor="middle">B</text>
+<circle cx="410.0" cy="235.0" r="8.0" fill="#bd443e"/>
+<text x="432.0" y="225.0" font-size="27" fill="#bd443e" text-anchor="middle">C</text>
+<text x="250.0" y="490.0" font-size="25" fill="#2056b5" text-anchor="middle">A–B: simultaneous in S</text>
+<text x="350.0" y="148.0" font-size="25" fill="#ae6b16" text-anchor="middle">A–C: simultaneous in S′</text>
+<rect x="540.0" y="95.0" width="340.0" height="365.0" rx="18.0" fill="#f8fbff" stroke="#cfdaea"/>
+<text x="710.0" y="148.0" font-size="28" fill="#ae6b16" text-anchor="middle">Rest length</text>
+<text x="710.0" y="190.0" font-size="33" fill="#ae6b16" text-anchor="middle">L₀ = 4 m</text>
+<text x="710.0" y="260.0" font-size="25" fill="#2056b5" text-anchor="middle">Moving-frame length</text>
+<text x="710.0" y="305.0" font-size="33" fill="#2056b5" text-anchor="middle">L = 3.2 m</text>
+<text x="710.0" y="380.0" font-size="27" fill="#293f51" text-anchor="middle">γ = 1.25</text>
+<text x="710.0" y="422.0" font-size="29" fill="#293f51" text-anchor="middle">L = L₀ / γ</text>
+<text x="450.0" y="535.0" font-size="25" fill="#293f51" text-anchor="middle">Different simultaneity slices, not a mechanically squashed rod.</text>
+</g>
+</svg>
