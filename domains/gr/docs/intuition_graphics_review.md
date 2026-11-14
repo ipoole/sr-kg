@@ -6,8 +6,8 @@ than another proof or a second copy of each concept's Explanation.
 
 ## Editorial inventory
 
-There are 56 concepts, four Intuition blocks (including the GR-2.3 demo), and
-many useful Examples. The following 23 targets are a selective working list,
+At the start there were 56 concepts, four Intuition blocks (including the GR-2.3
+demo), and many useful Examples. The following 23 targets are a selective working list,
 not a requirement to add 23 blocks. Existing intuitions are marked **review**;
 the others are candidates for new blocks or improvements to existing material.
 Keep examples that teach a calculation as Examples. Concepts absent from this
@@ -87,4 +87,19 @@ positive clock-and-path mental model. The tidal SVG and folded preview have
 been inspected at phone and desktop widths. All 784 unit tests and the two
 GR-1 full-content browser cases pass; validation retains zero errors.
 
-GR-2 pilot authoring is next. GR-3 to GR-6 remain planned.
+GR-2 adds the coasting-orbit and two-capsule Intuitions. Its existing spherical
+transport block now follows a specific arrow through all three legs, with an
+optional quarter-turn check. The new figure projects the actual great-circle
+route and transported tangents; an unskewed tangent-plane inset shows the 90°
+return angle. The constant-arrow demo is retained, with a small terminology fix.
+The two GR-2 phone/desktop cases and all 784 unit tests pass; validation still
+reports zero errors and the existing 216 warnings.
+
+The pilot adds five blocks, revises two existing Intuitions, and adds two body
+figures. GR now has nine Intuition blocks, eight in GR-1/GR-2 and the existing
+wave Intuition in GR-5. No edges, questions, canonical graphics or module
+overviews changed. The module overviews remain consistent with these additions.
+Source IDs and named clarification paths are retained. Rebuild the new SVGs with
+`conda run -n sr-kg python -m domains.gr.graphics.body_figures`.
+
+GR-3 to GR-6 remain planned. Full pilot browser verification and preview follow.

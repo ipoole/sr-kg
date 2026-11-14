@@ -4,7 +4,7 @@ Run with: conda run -n sr-kg python -m domains.gr.graphics.body_figures
 These are body illustrations, not replacements for concept icons or graphics.
 """
 from html import escape
-from math import cos, pi, sin
+from math import cos, pi, sin, sqrt
 from pathlib import Path
 
 BLUE = '#2056b5'
@@ -77,10 +77,79 @@ def tidal_constellation():
     return _svg('Tidal deformation of a released particle constellation', body, marker)
 
 
+def spherical_transport():
+    """Orthographic view of an octant and its parallel-transported vector.
+
+    A=(1,0,0), N=(0,0,1), B=(0,1,0). The initial vector +z becomes
+    -x on A→N, stays -x on N→B and becomes +y on B→A. At A the
+    initial/returned vectors are perpendicular, although projection skews angles.
+    """
+    green = '#33816c'
+    defs = ('<radialGradient id="sphere-shade" cx="35%" cy="28%" r="75%">'
+            '<stop offset="0" stop-color="#ffffff"/>'
+            '<stop offset="1" stop-color="#dbe7f3"/></radialGradient>')
+    for name, colour in [('route', green), ('initial', BLUE), ('returned', GOLD)]:
+        defs += (f'<marker id="{name}-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+                 'markerWidth="6" markerHeight="6" orient="auto">'
+                 f'<path d="M0 0L10 5L0 10Z" fill="{colour}"/></marker>')
+
+    def project(v, scale=195):
+        x, y, z = v
+        return (325+scale*(y-x)/sqrt(2), 275+scale*(x+y-2*z)/sqrt(6))
+
+    def tangent(p, v, colour=BLUE, marker='initial', length=65):
+        start = project(p)
+        end = project(tuple(p[i]+length/195*v[i] for i in range(3)))
+        return _line(*start, *end, colour=colour, width=5,
+                     extra=f'marker-end="url(#{marker}-arrow)"')
+
+    legs = [
+        (lambda t: (cos(t), 0, sin(t)), lambda t: (-sin(t), 0, cos(t))),
+        (lambda t: (0, sin(t), cos(t)), lambda t: (-1, 0, 0)),
+        (lambda t: (sin(t), cos(t), 0), lambda t: (-cos(t), sin(t), 0)),
+    ]
+    body = [_text(450, 45, 'One arrow, three geodesic legs', 30),
+            '<circle cx="325" cy="275" r="195" fill="url(#sphere-shade)" '
+            'stroke="#9cafc3" stroke-width="2"/>']
+    # Each leg is a quarter great circle; all three are on the visible hemisphere.
+    outline = []
+    for position, _vector in legs:
+        outline.extend(project(position(i*pi/80)) for i in range(41))
+    points = ' '.join(f'{x:.2f},{y:.2f}' for x, y in outline)
+    body.append(f'<polygon points="{points}" fill="#c9e9df" fill-opacity=".7"/>')
+    for position, vector in legs:
+        points = ' '.join(f'{x:.2f},{y:.2f}' for x, y in
+                          (project(position(i*pi/80)) for i in range(41)))
+        body.append(f'<polyline points="{points}" fill="none" stroke="{green}" stroke-width="4"/>')
+        a, b = project(position(.48*pi/2)), project(position(.56*pi/2))
+        body.append(_line(*a, *b, colour=green, width=4,
+                          extra='marker-end="url(#route-arrow)"'))
+        body.append(tangent(position(.27*pi/2), vector(.27*pi/2)))
+    for label, p, dx, dy in [('A', (1,0,0), -24, 30), ('N', (0,0,1), 0, -18),
+                              ('B', (0,1,0), 24, 30)]:
+        x,y = project(p)
+        body += [_circle(x,y,6,INK), _text(x+dx,y+dy,label,27)]
+    body += [tangent((1,0,0),(0,0,1)),
+             tangent((1,0,0),(0,1,0),GOLD,'returned'),
+             '<rect x="625" y="120" width="255" height="325" rx="18" '
+             'fill="#fffdf6" stroke="#d9d5c9" stroke-width="2"/>',
+             _text(752,158,'Compare at A',27),
+             _text(752,189,'in its tangent plane',23,MUTED),
+             _line(696,342,696,242,width=5,extra='marker-end="url(#initial-arrow)"'),
+             _line(696,342,812,342,colour=GOLD,width=5,extra='marker-end="url(#returned-arrow)"'),
+             _text(696,225,'start',23,BLUE), _text(805,379,'return',23,GOLD),
+             '<path d="M696 322H716V342" fill="none" stroke="#85909b" stroke-width="2"/>',
+             _text(752,420,'90° rotation',27),
+             _text(325,510,'A → N → B → A',31,green),
+             _text(450,550,'Direction changes on return; the arrow keeps its length.',24,MUTED)]
+    return _svg('Parallel transport around a spherical octant returns a vector rotated by ninety degrees', body, defs)
+
+
 def write_assets():
     output = Path(__file__).with_name('figures')
     output.mkdir(exist_ok=True)
-    for name, build in {'tidal_constellation': tidal_constellation}.items():
+    for name, build in {'tidal_constellation': tidal_constellation,
+                        'spherical_transport': spherical_transport}.items():
         (output/(name+'.svg')).write_text(build(), encoding='utf-8')
 
 
