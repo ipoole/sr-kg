@@ -83,3 +83,7 @@ Focused checks live in `tests/browser/test_reading_trees.py`: graph parity,
 folded defaults, missing statements, independent cards, canonical notes/read
 ticks through full-width focus, explicit nonspatial synchronisation and detachment.
 Legacy sharing and real-Maths MathJax tests remain in their existing files.
+
+Reading trees initially use three hops. Recipe depth choices persist across concept
+navigation within the session; Home restores the defaults. Full tree remains an
+explicit option, and a boundary offers extension when further support exists.

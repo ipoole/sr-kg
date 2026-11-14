@@ -71,7 +71,7 @@ The sampled historical archive is also complete:
 1. **Done.** On a full size browser the PhysicsKG - an atlas ... title overlap with the Graph control.  Right justify it perhaps?
 2. **Deferred.** Keep Context + background as the default graph mode, including Home.
    Reconsider the Overview-to-context journey separately; add no extra action or message now.
-3. In reading trees, default depth to 3 hops.
+3. **Done.** In reading trees, default depth to 3 hops.
 4. In reading trees, remove "Fold supports" - it's confusing and of little use.
 5. Remove blue and green colours from statement and edge justification text; change to block default.
 6. Add to introductory tutorial a short demo of reading trees.

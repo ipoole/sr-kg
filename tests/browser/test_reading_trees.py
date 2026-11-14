@@ -53,6 +53,23 @@ def _open_concept(element):
 
 
 @pytest.mark.browser
+def test_initial_depth_and_session_recipe_choice(reading_graph):
+    page = reading_graph.page
+    card = page.locator('[data-reading-recipe="teaching"].kg-reading-tree')
+    card.locator(':scope > summary').click()
+    depth = card.locator('[data-reading-depth]')
+    assert depth.input_value() == 'three-hops'
+    depth.select_option('one-hop')
+    reading_graph.click_concept('2.1')
+    reading_graph.click_concept('3.1')
+    card.locator(':scope > summary').click()
+    assert depth.input_value() == 'one-hop'
+    other = page.locator('[data-reading-recipe="derivation"].kg-reading-tree')
+    other.locator(':scope > summary').click()
+    assert other.locator('[data-reading-depth]').input_value() == 'three-hops'
+
+
+@pytest.mark.browser
 @pytest.mark.parametrize("width", [390, 1280])
 def test_blocks_and_graph_generated_routes(reading_graph, width):
     page = reading_graph.page
@@ -66,6 +83,7 @@ def test_blocks_and_graph_generated_routes(reading_graph, width):
         assert not card.evaluate("e=>e.open")
         card.locator(":scope > summary").click()
         page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute("id"))
+        card.locator("[data-reading-depth]").select_option("transitive")
         for _ in range(12):
             closed = card.locator(".kg-reading-concept:not([open])")
             if not closed.count():

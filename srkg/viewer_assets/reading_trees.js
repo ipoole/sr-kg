@@ -4,7 +4,7 @@ function kgCreateReadingTrees(options) {
   "use strict";
   var escape = options.markup.escapeHtml;
   var recipes = {
-    derivation: {title: "Full derivation tree", preset: "derivation",
+    derivation: {title: "Derivation tree", preset: "derivation",
       statement: "Trace the derivation of {concept} through its supporting concepts, recursively.",
       kinds: ["definition", "derivation"], relations: ["DERIVES_FROM", "CONSTRUCTED_FROM"]},
     teaching: {title: "Detailed teaching tree", preset: "foundations",
@@ -14,6 +14,7 @@ function kgCreateReadingTrees(options) {
   };
   var root = null, entries = new Map(), entryIds = new Map(), quietToggles = new WeakMap(), serial = 0, trees = {};
   var synchronised = null, position = null, activeRecipe = null;
+  var preferredDepths = {};
   var focusStack = [], resumeFocus = [];
   var blockOwners = {};
   Object.keys(options.concepts).forEach(function(id) {
@@ -158,7 +159,7 @@ function kgCreateReadingTrees(options) {
   function render(id) {
     if (!root || root !== id) { return ""; }
     var cards = Object.keys(recipes).map(function(recipe) {
-      var tree = trees[recipe] || (trees[recipe] = {recipe: recipe, depth: "transitive", plan: null});
+      var tree = trees[recipe] || (trees[recipe] = {recipe: recipe, depth: preferredDepths[recipe] || "three-hops", plan: null});
       var found = entry([root, recipe, "tree"], {kind: "tree", tree: tree});
       tree.entry = found;
       return tag("details", {id: found.id, "class": "kg-reading-tree kg-reading-" + recipe,
@@ -237,6 +238,7 @@ function kgCreateReadingTrees(options) {
   function setDepth(tree, depth) {
     leaveFocus(true);
     options.shared.beginPage("concept", root, document.getElementById("info_panel"));
+    preferredDepths[tree.recipe] = depth;
     tree.depth = depth; tree.plan = null;
     var element = document.getElementById(tree.entry.id);
     options.clearMath(element.querySelector(".kg-reading-root"));
@@ -348,7 +350,7 @@ function kgCreateReadingTrees(options) {
     restoreFocus: restoreFocus, prepareFold: prepareFold, focusButton: focusButton, click: click, change: change, detach: detach,
     reset: function() {
       leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
-      entries.clear(); entryIds.clear(); trees = {}; resumeFocus = [];
+      entries.clear(); entryIds.clear(); trees = {}; preferredDepths = {}; resumeFocus = [];
     },
     snapshot: function() { return {root: root, synchronised: synchronised, position: position,
       activeRecipe: activeRecipe, focusDepth: focusStack.length}; }};

@@ -57,7 +57,7 @@ tints and restrained shadows to distinguish generated views from knowledge block
 
 | Recipe | Ordered block kinds | Outgoing edges |
 | --- | --- | --- |
-| **Full derivation tree** | Definition, Derivation | `DERIVES_FROM`, `CONSTRUCTED_FROM` |
+| **Derivation tree** | Definition, Derivation | `DERIVES_FROM`, `CONSTRUCTED_FROM` |
 | **Detailed teaching tree** | Definition, Explanation, Intuition, Example | Those two plus `REQUIRES` (Foundations) |
 
 Recipe statements:
