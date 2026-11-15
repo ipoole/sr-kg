@@ -10,11 +10,13 @@ and links to its [user guide](https://physicskg.org/user-guide.html) and
 [privacy policy](https://physicskg.org/privacy.html).
 
 The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
-nine supporting mathematics concepts.
+nine supporting mathematics concepts. All three domains now have developed teaching
+expositions, including worked derivations, physical intuition, examples, illustrations
+and study questions. The collection continues to be reviewed and extended.
 
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,
-relationship exploration and a unified personal-data profile for notes, layouts,
+relationship exploration, graph-generated reading trees and a unified personal-data profile for notes, layouts,
 study progress and reading marks. Self-paced guided tutorials operate the live
 viewer with an animated semantic pointer; routes can also be launched directly
 with `?tutorial=<tutorial-id>`.

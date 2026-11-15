@@ -81,3 +81,6 @@ The sampled historical archive is also complete:
    and graphics in content.  What else?
 10. **Done.** Make a bit of a splash about v5.0.0 on the home page.
  
+
+Content status updated: all three domains have developed teaching expositions,
+with continuing review and extension; GR is no longer described as seed-level.
