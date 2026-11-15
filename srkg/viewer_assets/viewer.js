@@ -357,7 +357,7 @@
           selectedConceptId: function() { return activeNodeId; }, readLabels: function() { return nodeLabelEls; },
           labels: {activeRadiusScale: activeNodeRadiusScale, fontSize: nodeLabelFontSize, hideBelowPx: kgNodeLabelConfig.hideBelowPx},
           revealSelection: revealViewerSelection, onControlsChange: updateGraphViewControls,
-          onPositionsChange: updateNodeLabelPositions, notice: showContextNotice,
+          onPositionsChange: updateNodeLabelPositions, notice: showTransientContextNotice,
           fixedObstacles: function() {
             return expandedModuleOutlineSnapshot().map(function(box) {
               return {left: box.left, right: box.right, top: box.contentBottom,
@@ -517,6 +517,7 @@
 
         function showTransientContextNotice(message, kind, duration) {
           showContextNotice(message, kind);
+          if (!message) { return; }
           contextNoticeTimer = setTimeout(function() {
             var notice = document.getElementById("kg_context_notice");
             if (notice && notice.getAttribute("data-kind") === kind) {
@@ -559,7 +560,7 @@
           Object.keys(affectedModules).forEach(function(moduleId) {
             refreshModuleFootprintGeometry(moduleId);
           });
-          showContextNotice(
+          showTransientContextNotice(
             "Personal layout updated — saved in this browser.",
             "personal-layout"
           );

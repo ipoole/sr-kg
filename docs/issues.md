@@ -43,7 +43,7 @@ Issue numbers are retained so existing references remain valid.
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 7. **Done.** Date format in version history is dd.mm.yyyy; source dates remain ISO.
-8. When layout editing is enabled and a layout change made, the yellow warning persists.  It should vanish, perhaps when you navigate away, or whatever is convenient.
+8. **Done.** Personal-layout and Fit++ notices expire after roughly three seconds; editing and the temporary arrangement remain active.
 9. When running tutorials, statements with maths seem to come out raw.
 10. Viewer needs to link to acknowledgments and match remark re Susskind.
 

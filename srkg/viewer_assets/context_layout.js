@@ -8,9 +8,9 @@ function kgCreateContextLayout(options) {
   var cameraAnimationEnabled = graphCamera.cameraAnimationEnabled;
   var revealViewerSelection = options.revealSelection;
   var updateGraphViewControls = options.onControlsChange, updateNodeLabelPositions = options.onPositionsChange;
-  var showContextNotice = options.notice;
+  var showNotice = options.notice;
   function showTemporaryNotice() {
-    showContextNotice("Temporary draggable layout", "context-contracted");
+    showNotice("Temporary draggable layout", "context-contracted");
   }
 
   var activeNodeRadiusScale = options.labels.activeRadiusScale, nodeLabelFontSize = options.labels.fontSize;
@@ -107,7 +107,7 @@ function kgCreateContextLayout(options) {
     contextContractionState = null;
     var notice = document.getElementById("kg_context_notice");
     if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-      showContextNotice("", "context-contracted");
+      showNotice("", "context-contracted");
     }
     updateGraphViewControls();
     updateNodeLabelPositions();
@@ -133,7 +133,7 @@ function kgCreateContextLayout(options) {
       contextContractionState = null;
       var notice = document.getElementById("kg_context_notice");
       if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-        showContextNotice("", "context-contracted");
+        showNotice("", "context-contracted");
       }
       updateGraphViewControls();
     }
