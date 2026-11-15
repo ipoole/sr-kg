@@ -219,4 +219,8 @@ def test_tutorial_reading_actions_and_checkpoint_preserve_the_reading_path(readi
     assert card.evaluate('e=>e.open')
     assert card.locator('.kg-reading-concept[data-reading-node="2.2"]').first.evaluate('e=>e.open')
     assert page.evaluate('kgReadingTrees.snapshot().synchronised') is None
+    command(command='select', target='concept:2.1')
+    command(command='open-reading-tree', recipe='teaching', target='concept:1.1', synchronise=True)
+    page.wait_for_timeout(100)
+    assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == '1.1'
     assert not reading_graph.page_errors

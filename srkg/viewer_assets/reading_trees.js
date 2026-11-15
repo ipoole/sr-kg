@@ -355,7 +355,7 @@ function kgCreateReadingTrees(options) {
       target.open = true; entryIds.get(target.id).open = true;
       hydrate(target); afterRender(target); visit(tree, node);
     }
-    restored(card);
+    restored(document.getElementById("info_panel"));
     if (sync === true) { await synchronise(tree); }
     return node ? target.parentElement : card;
   }
