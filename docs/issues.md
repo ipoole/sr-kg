@@ -79,5 +79,5 @@ The sampled historical archive is also complete:
 8. **Done.** Update Quick start
 9. **Done.** Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text 
    and graphics in content.  What else?
-10. Make a bit of a splash about v5.0.0 on the home page.
+10. **Done.** Make a bit of a splash about v5.0.0 on the home page.
  
