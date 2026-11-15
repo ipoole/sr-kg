@@ -76,7 +76,7 @@ The sampled historical archive is also complete:
 5. **Done.** Remove blue and green colours from statement and edge justification text; change to block default.
 6. **Done.** Add to introductory tutorial a short demo of reading trees.
 7. **Done.** Update the user guide
-8. Update Quick start
+8. **Done.** Update Quick start
 9. Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text 
    and graphics in content.  What else?
 10. Make a bit of a splash about v5.0.0 on the home page.
