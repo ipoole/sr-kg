@@ -1126,7 +1126,7 @@
         border: 0;
         border-radius: 0;
 
-        padding: 14px 16px;
+        padding: 0 16px 14px;
 
         font-family: Arial, sans-serif;
         font-size: __INFO_PANEL_FONT_SIZE_PX__px;
@@ -1163,7 +1163,7 @@
     }
 
     #info_panel .concept-sticky-header {
-        background: rgba(255,255,255,0.96);
+        background: #fff;
         border-bottom: 1px solid #ddd;
         box-sizing: border-box;
         margin: 0 -16px 0.75em;
@@ -3287,7 +3287,7 @@
             max-height: min(48vh, 360px);
             max-width: none;
             overflow-y: auto;
-            padding: 10px;
+            padding: 0 10px 10px;
             right: max(8px, env(safe-area-inset-right));
             top: auto;
             width: auto;
@@ -3480,7 +3480,7 @@
             height: 100%;
             left: auto;
             max-height: none;
-            padding: 10px;
+            padding: 0 10px 10px;
             position: static;
             right: auto;
             top: auto;

@@ -47,7 +47,7 @@ Issue numbers are retained so existing references remain valid.
 9. **Done.** Tutorial reading-tree expansion typesets newly inserted statements before framing them; restored reading paths retain rendered maths.
 10. **Done.** Quick Start links to acknowledgments and software credits, including the Susskind/Friedman and Tong acknowledgments.
 11. **Done.** Google sync preserves the current Fit++ arrangement, including manual moves. Navigating away restores the latest merged saved layout.
-12. Also on iPhone, v8.0.0, with views both, there is a narrow gap between the details masthead and the graph view above where you can see the details view scrolling.  Ie the masthead seems floating of the details view, not quite butting up with the graph view.
+12. **Done.** Concept and module mastheads sit flush with the top of the details viewport and have an opaque background, preventing scrolling content from showing above or through them.
 
 ## 5. Notes enhancement and unification
 
