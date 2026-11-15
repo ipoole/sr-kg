@@ -1,4 +1,4 @@
-      :root { --kg-header-height: 52px; }
+      :root { --kg-header-height: 52px; --kg-prose-color: #212529; }
       /* Workspace controls form one stable row, independently of pane widths. */
       html,
       body {
@@ -2772,7 +2772,7 @@
     }
 
     #kg_concept_preview .kg-content-statement {
-        color: #245a92;
+        color: var(--kg-prose-color);
         margin-top: 0.65em;
     }
     #kg_concept_preview .kg-block-preview-body { margin-top: 0.65em; }
@@ -3833,7 +3833,7 @@
 
     /* Shared statements remain in the argument; explanations are quiet disclosures. */
     #info_panel .kg-shared-reference { margin: 0.45em 0; }
-    #info_panel .kg-content-statement { margin: 0 0 0.35em; color: #1458b0; }
+    #info_panel .kg-content-statement { margin: 0 0 0.35em; color: var(--kg-prose-color); }
     #info_panel .kg-shared-source {
         color: #586776;
         font-size: 0.75em;
@@ -3868,7 +3868,7 @@
 
 /* Statements are part of the folded heading: one canonical block shell. */
 #info_panel .kg-statement-block > summary > .kg-content-statement {
-    display: block; font-weight: 400; color: #1458b0; margin: 0.4em 0 0;
+    display: block; font-weight: 400; color: var(--kg-prose-color); margin: 0.4em 0 0;
 }
 .kg-content-preview {
     display: flex; justify-content: center; margin: 0.45em 0 0.15em;
@@ -3902,7 +3902,7 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 #info_panel .kg-reading-teaching > summary { color: #205f57; }
 #info_panel .kg-reading-tree > summary > .kg-content-statement {
-    display: block; font-weight: 400; color: inherit; margin: 0.4em 0 0;
+    display: block; font-weight: 400; color: var(--kg-prose-color); margin: 0.4em 0 0;
 }
 #info_panel .kg-statement-block[open] > summary > .kg-content-statement,
 #info_panel .kg-reading-tree[open] > summary > .kg-content-statement { display: none; }
@@ -3938,7 +3938,7 @@ details[open] > summary > .kg-content-preview { display: none; }
     color: #24495f; font: inherit; font-weight: 700; padding: 0; text-align: left;
 }
 #info_panel .kg-reading-concept-toggle small { font-size: 0.6em; font-weight: 400; }
-#info_panel .justification { color: #08776e; margin: 0; }
+#info_panel .justification { color: var(--kg-prose-color); margin: 0; }
 #info_panel .kg-reading-edge-intro { font-size: 0.75em; font-weight: 600; margin-bottom: 0.3em; }
 #info_panel .kg-reading-concept > summary[hidden] { display: none; }
 #info_panel .kg-reading-concept-body {

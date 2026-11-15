@@ -73,7 +73,7 @@ The sampled historical archive is also complete:
    Reconsider the Overview-to-context journey separately; add no extra action or message now.
 3. **Done.** In reading trees, default depth to 3 hops.
 4. **Done.** In reading trees, remove "Fold supports" - it's confusing and of little use.
-5. Remove blue and green colours from statement and edge justification text; change to block default.
+5. **Done.** Remove blue and green colours from statement and edge justification text; change to block default.
 6. Add to introductory tutorial a short demo of reading trees.
 7. Update the user guide
 8. Update Quick start
