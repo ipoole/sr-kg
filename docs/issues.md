@@ -42,6 +42,10 @@ Issue numbers are retained so existing references remain valid.
    reading ticks and sync preserve unloaded-domain records, but “Reset all study progress” currently
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
+7. Date format in version history should be dd.mm.yyyy
+8. When layout editing is enabled and a layout change made, the yellow warning persists.  It should vanish, perhaps when you navigate away, or whatever is convenient.
+9. When running tutorials, statements with maths seem to come out raw.
+10. Viewer needs to link to acknowledgments and match remark re Susskind.
 
 ## 5. Notes enhancement and unification
 
@@ -52,17 +56,3 @@ Issue numbers are retained so existing references remain valid.
    define placement, completion and sync semantics for further personal-content nesting.
    See [Notes and authored content](design/notes_content_unification.md) for the implemented rules and scope.
 
-## 6. Build artifacts, publishing and repository size
-
-Publishing, hosted previews and website source consolidation are complete:
-[deployment results](design/artefact_deployment_completion.md).
-The sampled historical archive is also complete:
-[inventory](published_viewers.csv) and [archive notes](published_viewers.md).
-
-4. Back up the repository and remove historical generated viewer files
-   (including former filenames) using `git-filter-repo`. Audit all branches and tags, including preview branches,
-   so they do not retain the old objects; preserve the current small legacy redirect. Coordinate the history rewrite
-   and force-push explicitly, then reclaim local storage and verify a fresh clone. Commit IDs will change,
-   other working copies should be recloned, and old GitHack links may cease to work. GitHub storage reclamation
-   depends on its garbage collection. Initial audit found 134 viewer versions totalling 193.5 MiB uncompressed
-   (about 71% of reachable blob content); actual compressed savings need measurement.

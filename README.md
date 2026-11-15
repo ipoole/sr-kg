@@ -197,4 +197,6 @@ in `website/guide/`. The tracked legacy URL page is
 For remote review use `https://physicskg.org/preview/PhysicsKG.html` instead of
 GitHack. Release updates preserve the preview; preview updates preserve the
 release. Both URLs share browser personal data and Google authorization.
-Historical generated files remain in Git history pending a separate cleanup.
+Historical generated files are deliberately retained in Git history: the measured
+compressed saving did not justify rewriting it. See the
+[storage assessment](docs/published_viewers.md#history-retention-decision).
