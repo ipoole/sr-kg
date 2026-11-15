@@ -307,3 +307,84 @@ def test_google_drive_provider_creates_named_zip_when_cloud_copy_is_absent(brows
     assert create["method"] == "POST"
     assert "uploadType=multipart" in create["url"]
     assert create["contentType"].startswith("multipart/related; boundary=")
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('folded', [False, True], ids=['concepts', 'folded-module'])
+def test_sync_preserves_fitpp_but_navigation_uses_latest_saved_layout(browser_graph, folded):
+    from test_viewport_refit import _fit_then_contract, _close_tools_overlay
+
+    page = browser_graph.page
+    page.set_viewport_size({'width': 390, 'height': 844})
+    module_id = 'test.m02_applications'
+    if folded:
+        browser_graph.open_control_section('kg_modules_section')
+        page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
+        _close_tools_overlay(page)
+        page.locator('[data-module-fold-state="folded"]').click()
+    browser_graph.click_concept('3.1')
+    page.locator('#kg_context_preset_select').select_option('foundations')
+    page.locator('#kg_context_depth_select').select_option('two-hops')
+    page.locator('#kg_display_scope_select').select_option('context')
+    if not page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
+    browser_graph.open_control_section('kg_personal_data_section')
+    page.evaluate("""() => {
+        kgCloudSyncConfig.googleDriveClientId = 'test-client';
+        window.kgCreateGoogleDriveAuthorizer = () => ({
+            connect: () => Promise.resolve(), token: () => 'test-token', disconnect: () => {}
+        });
+        window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+        window.kgCreatePersonalDataSyncEngine = () => ({
+            synchronize: () => new Promise(resolve => { window.__finishSync = resolve; })
+        });
+        kgInitialiseGoogleDriveSync();
+    }""")
+    page.locator('#kg_cloud_sync_connect').click()
+    page.wait_for_function("typeof window.__finishSync === 'function'")
+    _close_tools_overlay(page)
+    _fit_then_contract(page)
+    ids = page.evaluate('Object.keys(kgContextContractionSnapshot().depthByNode)')
+    compact = page.evaluate('ids=>network.getPositions(ids)', ids)
+    canonical = page.evaluate('kgGlobalLayoutSnapshot()')
+    camera = page.evaluate('({position:network.getViewPosition(),scale:network.getScale()})')
+
+    # A sync with no layout changes must leave even an untouched Fit++ alone.
+    page.evaluate('window.__finishSync({})')
+    page.wait_for_function("document.getElementById('kg_cloud_sync_status').textContent.includes('Last synced')")
+    assert page.evaluate('ids=>network.getPositions(ids)', ids) == compact
+    assert page.evaluate('kgGlobalLayoutSnapshot()') == canonical
+    assert page.evaluate('({position:network.getViewPosition(),scale:network.getScale()})') == camera
+
+    # A later sync may change the base layout, but not the current arrangement.
+    page.evaluate("""() => {
+        network.moveNode('1.1', 777, 888);
+        network.emit('dragEnd', {nodes:['1.1']});
+        window.__finishSync = null;
+        kgSchedulePersonalDataAutoSync(0);
+    }""")
+    compact = page.evaluate('ids=>network.getPositions(ids)', ids)
+    page.wait_for_function("typeof window.__finishSync === 'function'")
+    page.evaluate("""moduleId => {
+        kgPersonalData.replaceLayout({schema_version:1, published_revision:publishedLayout.revision,
+            concepts:{'1.1':{x:4000,y:5000}},
+            modules:{[moduleId]:{anchor:{x:6000,y:7000}}}});
+        window.__finishSync({});
+    }""", module_id)
+    page.wait_for_function('kgGlobalLayoutSnapshot().concepts["1.1"].x === 4000')
+    assert page.evaluate('ids=>network.getPositions(ids)', ids) == compact
+    assert page.evaluate('kgContextContractionSnapshot().active')
+    assert page.evaluate('kgLayoutDraggingEnabled()')
+    assert page.evaluate('({position:network.getViewPosition(),scale:network.getScale()})') == camera
+    saved = page.evaluate('kgGlobalLayoutSnapshot()')
+    assert saved['concepts']['1.1'] == {'x': 4000, 'y': 5000}
+    assert saved['modules'][module_id]['anchor'] == {'x': 6000, 'y': 7000}
+
+    browser_graph.click_concept('2.1')
+    assert not page.evaluate('kgContextContractionSnapshot().active')
+    restored = page.evaluate('ids=>network.getPositions(ids)', ids)
+    for node_id in ids:
+        expected = (page.evaluate('id=>kgModuleFootprint(id)', module_id)
+                    if node_id.startswith('module::') else saved['concepts'][node_id])
+        assert restored[node_id]['x'] == pytest.approx(expected['x'], abs=1)
+        assert restored[node_id]['y'] == pytest.approx(expected['y'], abs=1)

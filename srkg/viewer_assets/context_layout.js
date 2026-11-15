@@ -58,6 +58,26 @@ function kgCreateContextLayout(options) {
     });
     showTemporaryNotice();
   }
+  function preserveDuringLayoutReload(reload) {
+    var state = contextContractionState;
+    var positions = state ? network.getPositions(Object.keys(state.finalPositions)) : null;
+    reload();
+    if (!state) { return; }
+    // Sync changes the base, not this temporary display. Restore the latest
+    // merged positions on navigation, preserving even a drag still in progress.
+    Object.keys(state.restorePositions).forEach(function(id) {
+      var position = underlyingContextNodePosition(id);
+      if (validLayoutPosition(position)) { state.restorePositions[id] = copyLayoutPosition(position); }
+    });
+    Object.keys(positions).forEach(function(id) {
+      var position = positions[id];
+      if (nodes.get(id) && validLayoutPosition(position)) {
+        network.moveNode(id, position.x, position.y);
+        state.finalPositions[id] = copyLayoutPosition(position);
+      }
+    });
+    updateNodeLabelPositions();
+  }
   function snapshot() {
     return {primed: Boolean(contextFitPrimedKey), active: isActive(),
       anchorId: contextContractionState ? contextContractionState.anchorId : null,
@@ -424,6 +444,7 @@ function kgCreateContextLayout(options) {
     canMove: canMove,
     recordDrag: recordDrag,
     capture: capture,
+    preserveDuringLayoutReload: preserveDuringLayoutReload,
     restoreCheckpoint: restoreCheckpoint,
     snapshot: snapshot
   };

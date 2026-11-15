@@ -292,7 +292,10 @@
           store: personalDataStore, clientId: function() { return kgCloudSyncConfig.googleDriveClientId; },
           flushLayout: function() { writePersonalLayoutNow(); },
           onMerged: function() {
-            globalLayoutStore.reload(); applyGlobalLayoutPositions(); updateLayoutControls();
+            contextLayout.preserveDuringLayoutReload(function() {
+              globalLayoutStore.reload(); applyGlobalLayoutPositions();
+            });
+            updateLayoutControls();
             notesController.reload(); studyController.reload(); refreshNodeTooltips();
             renderNotesOverview(); renderStudyScorecard(); updateContentReadCompletionIndicators();
             if (network && network.redraw) { network.redraw(); }

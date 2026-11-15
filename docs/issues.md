@@ -46,6 +46,8 @@ Issue numbers are retained so existing references remain valid.
 8. **Done.** Personal-layout and Fit++ notices expire after roughly three seconds; editing and the temporary arrangement remain active.
 9. **Done.** Tutorial reading-tree expansion typesets newly inserted statements before framing them; restored reading paths retain rendered maths.
 10. **Done.** Quick Start links to acknowledgments and software credits, including the Susskind/Friedman and Tong acknowledgments.
+11. **Done.** Google sync preserves the current Fit++ arrangement, including manual moves. Navigating away restores the latest merged saved layout.
+12. Also on iPhone, v8.0.0, with views both, there is a narrow gap between the details masthead and the graph view above where you can see the details view scrolling.  Ie the masthead seems floating of the details view, not quite butting up with the graph view.
 
 ## 5. Notes enhancement and unification
 
