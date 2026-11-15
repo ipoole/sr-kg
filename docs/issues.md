@@ -75,7 +75,7 @@ The sampled historical archive is also complete:
 4. **Done.** In reading trees, remove "Fold supports" - it's confusing and of little use.
 5. **Done.** Remove blue and green colours from statement and edge justification text; change to block default.
 6. **Done.** Add to introductory tutorial a short demo of reading trees.
-7. Update the user guide
+7. **Done.** Update the user guide
 8. Update Quick start
 9. Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text 
    and graphics in content.  What else?
