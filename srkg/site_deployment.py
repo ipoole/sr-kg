@@ -23,7 +23,7 @@ BASE_SITE_FILES = (
 )
 GUIDE_FILES = (
     'user-guide.html', 'guide/overview.png', 'guide/module-details.png',
-    'guide/clarifications-notes.png', 'guide/phone-both.png',
+    'guide/clarifications-notes.png', 'guide/phone-both.png', 'guide/reading-tree.png',
 )
 SITE_FILES = BASE_SITE_FILES + GUIDE_FILES
 PREVIEW_SITE_FILES = GUIDE_FILES + (

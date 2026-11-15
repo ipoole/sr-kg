@@ -631,6 +631,11 @@ def _wait_for_browser_graph_ready(playwright_api, page) -> None:
           document.querySelector("#kg_node_labels")
         """
     )
+    # Startup frames the graph after two animation frames. Tests that set their
+    # own camera must wait for that work, rather than race it on a busy worker.
+    page.evaluate(
+        "() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))"
+    )
     try:
         if page.locator("#kg_splash_dialog[open]").count() == 0:
             return

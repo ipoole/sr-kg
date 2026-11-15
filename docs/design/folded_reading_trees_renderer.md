@@ -42,7 +42,7 @@ Full-width focus moves the same DOM; note editing can rebuild and restore the
 focus path. Changing a tree's depth rebuilds only that tree. A first-level concept
 has no full-width action; deeper concepts/local clarifications can offer it.
 
-Each card has Depth, Synchronise graph and Fold supports. Synchronisation starts
+Each card has Depth and Synchronise graph. Synchronisation starts
 off. Enabling it keeps Selection at the root, sets the recipe’s Context/depth,
 uses Context only, reveals its context modules and fits the context. Details-only
 view becomes Both so the map is visible; graph-only view stays unchanged. Only one card
@@ -83,3 +83,13 @@ Focused checks live in `tests/browser/test_reading_trees.py`: graph parity,
 folded defaults, missing statements, independent cards, canonical notes/read
 ticks through full-width focus, explicit nonspatial synchronisation and detachment.
 Legacy sharing and real-Maths MathJax tests remain in their existing files.
+
+Reading trees initially use three hops. Recipe depth choices persist across concept
+navigation within the session; Home restores the defaults. Full tree remains an
+explicit option, and a boundary offers extension when further support exists.
+
+Guided tutorial checkpoints capture transient tree occurrences, depth preferences,
+reading position and full-width focus. Restoring a checkpoint rebuilds the same
+occurrence identities without changing canonical notes or read records. The
+introductory tutorial uses a semantic open-reading-tree command; it does not
+change Selection to move the reading marker.

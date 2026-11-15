@@ -7,7 +7,8 @@ in the [schema](../design/kb_schema.md); project test/build instructions belong 
 ## Domain ownership and identifiers
 
 Tables, bibliography and source-owned edges live in `domains/<id>/data/`;
-graphics and their registry in `graphics/`; layouts/tutorials alongside them;
+graphics creators, semantic-ID registry and SVG assets in `graphics/`;
+figure metadata and captions in `data/`; layouts/tutorials alongside them;
 drafts, review notes and source worklists in `docs/`; domain-specific tests in
 `tests/`. Shared drawing primitives belong in `srkg/svg_graphics/`. Do not edit
 another domain or a shared ID list to add domain content.
@@ -123,7 +124,9 @@ See [study design](../design/study.md).
 
 ## Graphics
 
-Named body illustrations use an optional domain manifest entry
+### Body illustrations
+
+Register body illustrations under `files` in the domain manifest as
 `figures: data/figures.csv`. The CSV columns are `figure_id`, `svg_path`, `caption`
 and `alt`; the caption may be empty, and alt text is required. Paths are relative
 to the owning domain directory and must remain inside it. SVG files are authored
@@ -140,6 +143,8 @@ content width. Folded recognition previews keep their small fixed height.
 Figures do not gain separate read ticks. Notes anchor after the figure paragraph;
 keep its slot stable. Missing figures within a loaded namespace are errors;
 excluded namespaces warn and display an unavailable illustration message.
+
+### Concept and module graphics
 
 Keep the domain's creator, semantic-ID registry entry, design/captions CSV and
 specific test expectations in sync. Runtime dispatch uses semantic IDs;
@@ -179,6 +184,8 @@ conda run -n sr-kg python -m domains.sr.graphics.body_figures
 
 The SR, MATHS (`domains.math`) and GR domains each own their `body_figures`
 module; run the corresponding module after changing those drawing helpers.
+The shared `_body_svg` helper supplies their landscape canvas; each domain retains
+its own figure builders, registry, captions and output assets.
 The generator embeds the resulting registered SVG files rather than redrawing them.
 
 Validation errors block generation; review warnings editorially. `--validate`

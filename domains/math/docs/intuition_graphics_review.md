@@ -1,5 +1,9 @@
 # MATHS intuition and body-figure review
 
+Review record: starting inventories and subsequent completed passes are recorded
+below. Use the [shared authoring guide](../../../docs/authoring/authoring_guide.md)
+for current rules and the domain CSV tables for current content.
+
 14 November 2026 · baseline `acc9bc7` · branch `graphics-within-blocks`.
 
 ## Inventory and decisions

@@ -1,7 +1,8 @@
-"""Low-level SVG drawing primitives for concept graphics."""
+"""Low-level SVG drawing primitives for concept graphics and body illustrations."""
 
 from __future__ import annotations
 
+from html import escape
 from math import cos, radians, sin
 
 SIZE = 512
@@ -127,6 +128,13 @@ def _svg(node_id: str, title: str, body: list[str], defs: list[str] | None = Non
     )
 
 
+def _body_svg(title: str, body: list[str], defs: list[str] | tuple[str, ...] | str = ()) -> str:
+    """Wrap a landscape body illustration; all domains share this canvas."""
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">\n'
+            '<title>' + escape(title) + '</title>\n<defs>' + ''.join(defs) + '</defs>\n'
+            '<g font-family="Arial, sans-serif">\n' + '\n'.join(body) + '\n</g>\n</svg>\n')
+
+
 def _tick(x: float, y: float, angle_degrees: float, length: float, **kwargs: object) -> str:
     """Draw a small tick centred at a point and rotated by angle."""
     a = radians(angle_degrees)
@@ -161,5 +169,6 @@ __all__ = [
     '_arrow_marker',
     '_dot_marker',
     '_svg',
+    '_body_svg',
     '_tick',
 ]

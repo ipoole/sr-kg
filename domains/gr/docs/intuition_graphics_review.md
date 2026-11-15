@@ -1,5 +1,9 @@
 # GR intuition and body-figure pass
 
+Review record: starting inventories and subsequent completed passes are recorded
+below. Use the [shared authoring guide](../../../docs/authoring/authoring_guide.md)
+for current rules and the domain CSV tables for current content.
+
 14 November 2026. This follows the GR teaching revision and the body-figure
 demonstration in GR-2.3. It adds qualitative ways into difficult ideas, rather
 than another proof or a second copy of each concept's Explanation.

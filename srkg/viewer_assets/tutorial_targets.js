@@ -249,6 +249,19 @@ function kgCreateTutorialTargets(options) {
         "Search result " + ((getModule(searchModuleId) || {}).title || searchModuleId)
       );
     }
+    if (/^details:reading-(tree|sync|concept):/.test(target)) {
+      var readingParts = target.split(":"), recipeName = readingParts[2];
+      var readingCard = document.querySelector('.kg-reading-tree[data-reading-recipe="' + cssAttributeValueEscape(recipeName) + '"]');
+      if (!readingCard) { return null; }
+      var readingElement;
+      if (readingParts[1] === "reading-tree") { readingElement = readingCard.querySelector(":scope > summary"); }
+      else if (readingParts[1] === "reading-sync") { readingElement = readingCard.querySelector(".kg-reading-sync").closest("label"); }
+      else {
+        var support = readingCard.querySelector('[data-reading-concept="' + cssAttributeValueEscape(readingParts.slice(3).join(":")) + '"]');
+        readingElement = support && support.querySelector(":scope > .kg-reading-concept-title");
+      }
+      return tutorialElementTarget(readingElement, "Reading tree " + recipeName);
+    }
     if (target.indexOf("details:block:") === 0) {
       var blockId = target.slice("details:block:".length);
       var block = document.querySelector(

@@ -1,5 +1,9 @@
 # SR intuition and body-figure inventory
 
+Review record: starting inventories and subsequent completed passes are recorded
+below. Use the [shared authoring guide](../../../docs/authoring/authoring_guide.md)
+for current rules and the domain CSV tables for current content.
+
 14 November 2026 · baseline `acc9bc7` · authoring deferred until MATHS review.
 
 The inventory covers all 49 concepts and their current block-kind/title coverage,

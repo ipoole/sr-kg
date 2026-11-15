@@ -1,5 +1,19 @@
 import pytest
 
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [900, 1280, 1920])
+def test_desktop_header_title_never_overlaps_controls(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 1000})
+    title = page.locator('#kg_view_title')
+    title.evaluate("e=>e.textContent='PhysicsKG — An Atlas of Physics Knowledge '.repeat(3)")
+    box = title.bounding_box()
+    controls = page.locator('#kg_app_header .kg-shell-control').all()
+    assert all(c.bounding_box()['x'] + c.bounding_box()['width'] <= box['x'] for c in controls)
+    assert box['x'] + box['width'] <= width
+    assert page.locator('#kg_app_header').evaluate('e=>e.scrollWidth<=e.clientWidth')
+
 pytestmark = pytest.mark.browser
 
 

@@ -65,9 +65,9 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert not page.locator("#kg_notes_section").evaluate("el => el.open")
     assert not page.locator("#kg_search_section").evaluate("el => el.open")
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
-    assert page.evaluate("() => nodes.length") == 4
-    assert page.evaluate("() => edges.length") == 6
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.evaluate("nodes.get().filter(node => !node.isOverviewAnchor).length") == 4
+    assert page.evaluate("edges.get().filter(edge => !edge.isModuleEdge).length") == 6
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
     assert page.locator("#kg_view_select").input_value() == "both"
     assert page.locator("#kg_view_select option").evaluate_all(
         "options => options.map(option => option.value)"
@@ -114,8 +114,7 @@ def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph
 def test_node_hover_tooltip_typesets_mathjax(mathjax_browser_graph):
     page = mathjax_browser_graph.page
     page.locator("#kg_display_scope_select").select_option("overview")
-    page.locator("#kg_fit_select").select_option("displayed")
-    page.locator("#kg_fit_apply").click()
+    page.evaluate("kgExecuteViewerCommand({command:'fit',value:'displayed'})")
 
     point = page.evaluate(
         """() => {
@@ -251,6 +250,7 @@ def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph)
 @pytest.mark.browser
 def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
     module_node_id = "module::test.m02_applications"
 
     browser_graph.open_control_section("kg_modules_section")
@@ -382,6 +382,7 @@ def test_expand_context_is_offered_for_context_represented_by_other_folded_modul
 @pytest.mark.browser
 def test_expand_context_is_offered_for_selected_folded_module(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
@@ -621,6 +622,7 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
 @pytest.mark.browser
 def test_module_controls_can_collapse_and_expand_all_modules(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator("#kg_modules_collapse_all").click()
@@ -707,6 +709,7 @@ def test_module_controls_are_disabled_when_graph_is_hidden(browser_graph):
 @pytest.mark.browser
 def test_folded_module_corner_control_expands_it(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
     module_node_id = "module::test.m02_applications"
 
     browser_graph.open_control_section("kg_modules_section")
@@ -1501,6 +1504,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     page.set_viewport_size({"width": 390, "height": 800})
     page.goto(browser_graph.output_path.as_uri() + "?phone-header", wait_until="domcontentloaded")
     page.wait_for_selector("#kg_workspace")
+    page.locator("#kg_display_scope_select").select_option("full")
 
     header = page.locator("#kg_app_header").bounding_box()
     workspace = page.locator("#kg_workspace").bounding_box()
@@ -1559,7 +1563,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     )
     assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
     assert page.locator("#kg_clear_selection").count() == 0
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit context"
+    assert page.locator("#kg_fit_apply").get_attribute("data-fit-action") == "fit"
 
 
 @pytest.mark.browser
@@ -1593,7 +1597,6 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     ids = [
         "kg_context_preset_select",
         "kg_context_depth_select",
-        "kg_fit_select",
         "kg_fit_apply",
     ]
     boxes = [page.locator(f"#{control_id}").bounding_box() for control_id in ids]
@@ -1601,12 +1604,10 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     assert max(centres) - min(centres) <= 2
     assert all(box["x"] >= 0 and box["x"] + box["width"] <= 390 for box in boxes)
     visible_labels = page.locator(".kg-graph-context-controls .kg-group-label")
-    assert visible_labels.count() == 2
+    assert visible_labels.count() == 1
     assert visible_labels.nth(0).inner_text() == "Context"
-    assert visible_labels.nth(1).inner_text() == "Frame"
     assert visible_labels.nth(0).is_visible()
-    assert visible_labels.nth(1).is_visible()
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
+    assert page.locator("#kg_fit_apply").is_visible()
 
     summary = page.locator("#kg_context_summary")
     assert "Foundations" not in summary.inner_text()
@@ -1704,11 +1705,10 @@ def test_default_startup_honours_domain_metadata_with_two_hop_derivation(shared_
     module_id = page.evaluate('kgViewerConfig.domains.find(item => item.initialSelection).initialSelection.split(":")[1]')
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": module_id}
     assert page.locator("#info_panel").get_attribute("data-module-id") == module_id
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
     assert page.locator("#kg_context_preset_select").input_value() == "derivation"
     assert page.locator("#kg_context_depth_select").input_value() == "two-hops"
     assert page.locator("#kg_view_select").input_value() == "both"
-    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator(".kg-concept-item.active").count() == 0
 
 
@@ -2464,9 +2464,8 @@ def test_context_controls_group_semantics_and_default_fit_target(browser_graph):
     assert groups.nth(1).get_attribute("aria-label") == "Camera framing"
     assert groups.nth(0).locator("#kg_context_preset_select").count() == 1
     assert groups.nth(0).locator("#kg_context_depth_select").count() == 1
-    assert groups.nth(1).locator("#kg_fit_select").count() == 1
+    assert groups.nth(1).locator("select").count() == 0
     assert groups.nth(1).locator("#kg_fit_apply").count() == 1
-    assert page.locator("#kg_fit_select").input_value() == "context"
 
 
 

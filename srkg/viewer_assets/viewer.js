@@ -66,7 +66,7 @@
         function defaultViewerState() {
           return {
             contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
-            displayScope: DisplayScope.FULL,
+            displayScope: DisplayScope.OVERVIEW,
             view: "both"
           };
         }
@@ -184,7 +184,7 @@
             if (viewerState.view === "details") { setViewerView("both"); }
             renderGraphFromViewerState();
             expandContextModules();
-            document.getElementById("kg_fit_select").value = "context";
+
             updateGraphContextControls();
             await nextAnimationFrames(2);
             var reading = readingTrees.snapshot();
@@ -3864,12 +3864,6 @@
           setResponsiveOptionLabels("kg_view_select", {
             both: ["Both", "Both"], graph: ["Graph", "Graph"], details: ["Details", "Details"]
           }, compact);
-          setResponsiveOptionLabels("kg_fit_select", {
-            reveal: ["Reveal selection", "Reveal"],
-            selection: ["Fit selection", "Selection"],
-            context: ["Fit context", "Context"],
-            displayed: ["Fit displayed graph", "All"]
-          }, compact);
           var expandSelected = document.getElementById("kg_expand_selected_module");
           if (expandSelected) {
             expandSelected.textContent = compact
@@ -3991,7 +3985,7 @@
           );
           if (viewerState.view === "details") { setViewerView("both"); }
           renderGraphFromViewerState();
-          document.getElementById("kg_fit_select").value = "context";
+
           updateGraphContextControls();
           await nextAnimationFrames(2);
           if (selected !== JSON.stringify(viewerSelectionSnapshot()) ||
@@ -4847,9 +4841,12 @@
             return;
           }
 
+          var showConceptContext = type === "concept" &&
+            viewerState.displayScope === DisplayScope.OVERVIEW && !options.preserveGraphMode;
+          if (showConceptContext) { viewerState.displayScope = DisplayScope.FULL; }
           var changed = activeNodeId !== (type === "concept" ? id : null) ||
             activeModuleId !== (type === "module" ? id : null);
-          if (changed) { readingTrees.detach(); resetContextFitInteraction(); }
+          if (changed || showConceptContext) { readingTrees.detach(); resetContextFitInteraction(); }
           closeInspection();
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
@@ -4863,6 +4860,7 @@
           updateSelectedConceptHeader(activeNodeId);
           setActiveConceptItem(activeNodeId);
           setActiveModuleItem(activeModuleId);
+          if (showConceptContext) { updateGraphViewControls(); }
           renderGraphFromViewerState();
 
           if (type === "concept") {
@@ -5062,6 +5060,21 @@
               fitViewerTarget(commandEnumValue(
                 command, "value", ["reveal", "selection", "context", "displayed"]
               ));
+            } else if (name === "open-reading-tree") {
+              var recipe = commandEnumValue(command, "recipe", ["derivation", "teaching"]);
+              var readingNode = null;
+              if (command.target !== undefined) {
+                readingNode = commandTargetId(command.target, "concept:", "concept");
+                if (!getConcept(readingNode)) { throw new Error("Unknown concept: " + readingNode); }
+              }
+              var readingDepth = command.depth === undefined ? null : commandEnumValue(
+                command, "depth", ["one-hop", "two-hops", "three-hops", "transitive"]);
+              if (command.synchronise !== undefined && typeof command.synchronise !== "boolean") {
+                throw new Error("open-reading-tree requires a synchronise boolean");
+              }
+              if (!detailsAreVisible()) { setViewerView("both"); }
+              var readingTarget = await readingTrees.openForTutorial(recipe, readingNode, readingDepth, command.synchronise);
+              if (!command.synchronise) { scrollInfoPanelTargetBelowStickyToc(readingTarget, {immediate: true}); }
             } else if (name === "open-details-block") {
               openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"));
             } else if (name === "open-study-questions") {
@@ -5205,6 +5218,7 @@
             view: viewerState.view,
             moduleRepresentation: moduleRepresentation,
             details: tutorialDetailsSnapshot(),
+            reading: readingTrees.capture(),
             contextFit: contextLayout.capture(),
             search: tutorialSearchSnapshot(),
             workspaceSplitPercent: workspaceSplitPercent,
@@ -5269,11 +5283,12 @@
             : snapshot.displayScope;
           restoreTutorialModuleRepresentations(snapshot.moduleRepresentation || {});
 
+          readingTrees.restore(snapshot.reading);
           var selection = snapshot.selection || {type: "none", id: null};
           if (selection.type === "concept" && getConcept(selection.id)) {
             await executeViewerCommand(
               {command: "select", target: "concept:" + selection.id},
-              {origin: "tutorial"}
+              {origin: "tutorial", selectionOptions: {preserveGraphMode: true}}
             );
           } else if (selection.type === "module" && getModule(selection.id)) {
             await executeViewerCommand(
@@ -5553,7 +5568,7 @@
           applyDefaultModuleFoldState();
           selectDefaultViewerObject(); initialiseSelectionHistory();
           var homeSelection = JSON.stringify(viewerSelectionSnapshot());
-          document.getElementById("kg_fit_select").value = "context";
+
           await nextAnimationFrames(2);
           if (homeSelection !== JSON.stringify(viewerSelectionSnapshot())) { return; }
           graphCamera.cancelPendingRestore();
@@ -5570,7 +5585,7 @@
         function selectDefaultViewerObject() {
           var selection = defaultViewerSelection();
           if (!selection) { return; }
-          selectViewerObject(selection.type, selection.id, null, {skipHistory: true});
+          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true});
           var state = selection.type === "module"
             ? {objectType: "module", moduleId: selection.id}
             : {objectType: "concept", nodeId: selection.id};
@@ -6176,13 +6191,10 @@
             customTraversals: viewerState.contextRule.customTraversals
           }, {origin: "user"});
         });
-        document.getElementById("kg_fit_select").addEventListener("change", function() {
-          clearContextFitPriming();
-        });
         document.getElementById("kg_fit_apply").addEventListener("click", function() {
           executeViewerCommand({
             command: "fit",
-            value: document.getElementById("kg_fit_select").value
+            value: "context"
           }, {origin: "user"});
         });
         document.getElementById("kg_custom_context_apply").addEventListener("click", function() {

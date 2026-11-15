@@ -1,7 +1,7 @@
 # Source review worklist
 
 Verified locators belong in `../data/reference_links.csv`. Follow the shared
-[authoring guide](../../../docs/authoring/authoring_guide.md#references).
+[reference guidance](../../../docs/authoring/technical_reference.md#bibliography).
 
 - Radiation reaction now has precise introductory support below. A complete self-force derivation still needs a specified charge model and controlled approximation; it is outside the current treatment.
 - Add page-level precision where an existing section locator is too broad.

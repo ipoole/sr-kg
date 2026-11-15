@@ -1,6 +1,6 @@
 name: sr-kg
 domains_root: ../domains
-layout_revision: "7"
+layout_revision: "8"
 files:
   edge_key: edges_key.csv
   tutorials: tutorials.yaml

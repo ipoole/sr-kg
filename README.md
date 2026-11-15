@@ -10,11 +10,13 @@ and links to its [user guide](https://physicskg.org/user-guide.html) and
 [privacy policy](https://physicskg.org/privacy.html).
 
 The current data contains 49 SR/classical-field concepts, 56 GR concepts, and
-nine supporting mathematics concepts.
+nine supporting mathematics concepts. All three domains now have developed teaching
+expositions, including worked derivations, physical intuition, examples, illustrations
+and study questions. The collection continues to be reviewed and extended.
 
 The project turns CSV source data into an interactive HTML viewer with searchable
 concepts, mathematical teaching content, study questions, foldable topic modules,
-relationship exploration and a unified personal-data profile for notes, layouts,
+relationship exploration, graph-generated reading trees and a unified personal-data profile for notes, layouts,
 study progress and reading marks. Self-paced guided tutorials operate the live
 viewer with an animated semantic pointer; routes can also be launched directly
 with `?tutorial=<tutorial-id>`.
@@ -55,7 +57,11 @@ The published interface tour can be launched directly at
 ## Study with the viewer
 
 **View** chooses Graph, Details or Both. **Graph** chooses Overview, Context +
-background or Context only. Overview shows internal concept edges and summarises cross-module connections at module boundaries, including expanded modules. Selection is always retained; startup selects SR-5 with 2-hop Derivation and Context + background.
+background or Context only. Overview shows internal concept edges and summarises
+cross-module connections at module boundaries, including expanded modules.
+Selection is always retained; startup and Home select SR-5 with 2-hop Derivation
+in Overview. Selecting a concept in Overview switches to Context + background;
+selecting or expanding a module keeps Overview.
 The Context rule remains available for fitting and expansion in every graph mode.
 Show in graph fits its context automatically without unfolding modules.
 
@@ -69,7 +75,8 @@ All current questions mark automatically, including calculations; choose
 “I don't know” to reveal an answer without guessing. Clear ticks and crosses
 show the latest result, and optional graph ticks summarise reading and question
 completion. Use **Context** and **Depth** to choose related material, and
-**Frame** to choose what Fit brings into view; it defaults to Context.
+**Fit context** to bring that context into view; press again for Fit++ when a
+compact arrangement is available.
 The responsive viewer is tuned for phones and reduces costly rendering,
 animation and eager content work on older or slower devices.
 

@@ -166,6 +166,7 @@ than trying to define an inverse for every command.
 - Display scope;
 - every module's folded or expanded representation;
 - Details mode, active block and details scroll position;
+- reading-tree depth choices, open occurrences, full-width focus and reading position/synchronisation;
 - workspace split;
 - camera centre and scale.
 
@@ -269,11 +270,12 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | `expand-context-modules` | none | expand only folded modules representing the current context |
 | `fit` | `reveal`, `selection`, `context`, `displayed` | existing Fit operation |
 | `open-details-block` | stable block ID | open and scroll to authored block |
+| `open-reading-tree` | recipe; optional concept target, depth and synchronise flag | open a tree or an available support occurrence; optionally synchronise its graph |
 | `open-study-questions` | none | open and scroll to the selected concept's questions without attempting them |
 | `open-details-graphic` | none | open and scroll to the selected concept's graphic |
 | `open-details-relationship` | `derived-from` or `where-used` | open and frame a relationship section |
 | `set-relationship-full-tree` | relationship section and boolean `full_tree` | set the section's Full tree checkbox and refresh its contents |
-| `show-relationship-in-graph` | Context preset and full-tree flag | sets context/depth, shows Both if necessary, selects Frame Context and fits after resizing; does not expand or contract |
+| `show-relationship-in-graph` | Context preset and full-tree flag | sets context/depth, shows Both if necessary, fits the context after resizing; does not expand or contract |
 | `show-graph-concept-hover` | concept ID | show the normal graph-hover preview without selecting |
 | `show-graph-edge-hover` | source, relation and target concept IDs | emphasise and preview one visible edge |
 | `show-tools-section` | stable section name | open Tools and the named section |
@@ -298,6 +300,8 @@ Pointer targets must also be semantic:
 - `graph:edge:<source-id>|<RELATION>|<target-id>`;
 - `search:concept:<concept-id>` or `search:module:<module-id>`;
 - `details:block:<block-id>`;
+- `details:reading-tree:<recipe>`, `details:reading-sync:<recipe>`;
+- `details:reading-concept:<recipe>:<concept-id>`;
 - `details:derived-from-show-graph`, `details:where-used-show-graph`;
 - `details:derived-from-full-tree`, `details:where-used-full-tree`;
 - `details:heading`, `details:contents`, `details:graphic`, `details:study-questions`;

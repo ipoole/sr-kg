@@ -20,6 +20,7 @@ def _reveal_tree(page, card, *, max_depth=12, unique_concepts=False):
     card.evaluate('e=>e.open=true')
     page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')",
                            arg=card.get_attribute('id'))
+    card.locator('[data-reading-depth]').select_option('transitive')
     seen = set()
     for _ in range(max_depth):
         closed = card.locator('.kg-reading-concept:not([open])')

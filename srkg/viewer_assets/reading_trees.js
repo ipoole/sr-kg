@@ -4,7 +4,7 @@ function kgCreateReadingTrees(options) {
   "use strict";
   var escape = options.markup.escapeHtml;
   var recipes = {
-    derivation: {title: "Full derivation tree", preset: "derivation",
+    derivation: {title: "Derivation tree", preset: "derivation",
       statement: "Trace the derivation of {concept} through its supporting concepts, recursively.",
       kinds: ["definition", "derivation"], relations: ["DERIVES_FROM", "CONSTRUCTED_FROM"]},
     teaching: {title: "Detailed teaching tree", preset: "foundations",
@@ -14,6 +14,7 @@ function kgCreateReadingTrees(options) {
   };
   var root = null, entries = new Map(), entryIds = new Map(), quietToggles = new WeakMap(), serial = 0, trees = {};
   var synchronised = null, position = null, activeRecipe = null;
+  var preferredDepths = {}, pendingCheckpoint = null;
   var focusStack = [], resumeFocus = [];
   var blockOwners = {};
   Object.keys(options.concepts).forEach(function(id) {
@@ -66,12 +67,30 @@ function kgCreateReadingTrees(options) {
   }
   function synchronise(tree) {
     synchronised = tree.recipe; activeRecipe = tree.recipe; position = position || root;
-    options.onSynchronise(root, treeRule(tree));
+    var ready = options.onSynchronise(root, treeRule(tree));
     updateControls(); options.onPosition();
+    return ready;
   }
   function beginPage(id, panel) {
     resumeFocus = focusStack.map(function(item) { return item.targetId; });
     leaveFocus(true);
+    if (pendingCheckpoint && pendingCheckpoint.root === id) {
+      var saved = pendingCheckpoint; pendingCheckpoint = null;
+      root = id; serial = saved.serial; entries.clear(); entryIds.clear(); trees = {};
+      preferredDepths = Object.assign({}, saved.depthChoices);
+      Object.keys(saved.depths).forEach(function(recipe) {
+        trees[recipe] = {recipe: recipe, depth: saved.depths[recipe], plan: null};
+      });
+      saved.entries.forEach(function(record) {
+        var found = Object.assign({}, record[1]), recipe = found.recipe;
+        delete found.recipe; found.tree = trees[recipe];
+        entries.set(record[0], found); entryIds.set(found.id, found);
+        if (found.kind === "tree") { trees[recipe].entry = found; }
+      });
+      synchronised = saved.synchronised; position = saved.position;
+      activeRecipe = saved.activeRecipe; resumeFocus = saved.focus.slice();
+      return;
+    }
     if (root !== id) {
       detach(); root = id; entries.clear(); entryIds.clear(); serial = 0; trees = {};
       position = null; activeRecipe = null; resumeFocus = [];
@@ -152,13 +171,12 @@ function kgCreateReadingTrees(options) {
         depths.map(function(item) { return tag("option", {value: item[0], selected: tree.depth === item[0]}, item[1]); }).join(""))) +
       tag("label", {}, tag("input", {type: "checkbox", "class": "kg-reading-sync",
         "data-reading-recipe": tree.recipe, checked: synchronised === tree.recipe}) + " Synchronise graph") +
-      tag("button", {type: "button", "data-reading-fold": tree.recipe}, "Fold supports") +
       tag("span", {"class": "kg-reading-position", "data-reading-recipe": tree.recipe, "aria-live": "polite"}));
   }
   function render(id) {
     if (!root || root !== id) { return ""; }
     var cards = Object.keys(recipes).map(function(recipe) {
-      var tree = trees[recipe] || (trees[recipe] = {recipe: recipe, depth: "transitive", plan: null});
+      var tree = trees[recipe] || (trees[recipe] = {recipe: recipe, depth: preferredDepths[recipe] || "three-hops", plan: null});
       var found = entry([root, recipe, "tree"], {kind: "tree", tree: tree});
       tree.entry = found;
       return tag("details", {id: found.id, "class": "kg-reading-tree kg-reading-" + recipe,
@@ -237,6 +255,7 @@ function kgCreateReadingTrees(options) {
   function setDepth(tree, depth) {
     leaveFocus(true);
     options.shared.beginPage("concept", root, document.getElementById("info_panel"));
+    preferredDepths[tree.recipe] = depth;
     tree.depth = depth; tree.plan = null;
     var element = document.getElementById(tree.entry.id);
     options.clearMath(element.querySelector(".kg-reading-root"));
@@ -305,6 +324,41 @@ function kgCreateReadingTrees(options) {
     saved.forEach(function(id) { focus(id, true); });
     position = savedPosition; activeRecipe = savedRecipe; updateControls();
   }
+  function capture() {
+    document.querySelectorAll(".kg-reading-trees details, #kg-reading-focus details").forEach(function(element) {
+      var found = entryIds.get(element.id);
+      if (found) { found.open = element.open; }
+    });
+    var depths = {}, records = [];
+    Object.keys(trees).forEach(function(recipe) { depths[recipe] = trees[recipe].depth; });
+    entries.forEach(function(found, key) {
+      var record = Object.assign({}, found, {recipe: JSON.parse(key)[1]});
+      delete record.tree; records.push([key, record]);
+    });
+    return {root: root, serial: serial, depthChoices: Object.assign({}, preferredDepths),
+      depths: depths, entries: records, synchronised: synchronised, position: position,
+      activeRecipe: activeRecipe, focus: focusStack.map(function(item) { return item.targetId; })};
+  }
+  async function openForTutorial(recipe, node, depth, sync) {
+    var tree = trees[recipe];
+    if (!tree) { throw new Error("Reading tree is unavailable: " + recipe); }
+    var card = document.getElementById(tree.entry.id), target = card;
+    card.open = true; tree.entry.open = true; hydrate(card); afterRender(card);
+    if (depth && depth !== tree.depth) {
+      setDepth(tree, depth); card.querySelector("[data-reading-depth]").value = depth;
+    }
+    if (node) {
+      target = Array.from(card.querySelectorAll(".kg-reading-concept")).find(function(item) {
+        return item.getAttribute("data-reading-node") === node;
+      });
+      if (!target) { throw new Error("Reading support is unavailable: " + node); }
+      target.open = true; entryIds.get(target.id).open = true;
+      hydrate(target); afterRender(target); visit(tree, node);
+    }
+    restored(document.getElementById("info_panel"));
+    if (sync === true) { await synchronise(tree); }
+    return node ? target.parentElement : card;
+  }
   function click(event) {
     var toggle = event.target.closest("[data-reading-toggle]");
     if (toggle) {
@@ -323,13 +377,6 @@ function kgCreateReadingTrees(options) {
       document.getElementById(tree.entry.id).querySelector("select").value = "transitive";
       return true;
     }
-    button = event.target.closest("[data-reading-fold]");
-    if (button) {
-      leaveFocus(true);
-      var card = document.getElementById(trees[button.getAttribute("data-reading-fold")].entry.id);
-      card.querySelectorAll("details").forEach(function(item) { item.open = false; });
-      return true;
-    }
     return false;
   }
   function change(event) {
@@ -346,9 +393,11 @@ function kgCreateReadingTrees(options) {
   }
   return {beginPage: beginPage, render: render, afterRender: afterRender, restored: restored, toggled: toggled,
     restoreFocus: restoreFocus, prepareFold: prepareFold, focusButton: focusButton, click: click, change: change, detach: detach,
+    capture: capture, restore: function(checkpoint) { pendingCheckpoint = checkpoint || null; },
+    openForTutorial: openForTutorial,
     reset: function() {
       leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
-      entries.clear(); entryIds.clear(); trees = {}; resumeFocus = [];
+      entries.clear(); entryIds.clear(); trees = {}; preferredDepths = {}; pendingCheckpoint = null; resumeFocus = [];
     },
     snapshot: function() { return {root: root, synchronised: synchronised, position: position,
       activeRecipe: activeRecipe, focusDepth: focusStack.length}; }};

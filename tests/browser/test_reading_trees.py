@@ -53,6 +53,23 @@ def _open_concept(element):
 
 
 @pytest.mark.browser
+def test_initial_depth_and_session_recipe_choice(reading_graph):
+    page = reading_graph.page
+    card = page.locator('[data-reading-recipe="teaching"].kg-reading-tree')
+    card.locator(':scope > summary').click()
+    depth = card.locator('[data-reading-depth]')
+    assert depth.input_value() == 'three-hops'
+    depth.select_option('one-hop')
+    reading_graph.click_concept('2.1')
+    reading_graph.click_concept('3.1')
+    card.locator(':scope > summary').click()
+    assert depth.input_value() == 'one-hop'
+    other = page.locator('[data-reading-recipe="derivation"].kg-reading-tree')
+    other.locator(':scope > summary').click()
+    assert other.locator('[data-reading-depth]').input_value() == 'three-hops'
+
+
+@pytest.mark.browser
 @pytest.mark.parametrize("width", [390, 1280])
 def test_blocks_and_graph_generated_routes(reading_graph, width):
     page = reading_graph.page
@@ -66,6 +83,7 @@ def test_blocks_and_graph_generated_routes(reading_graph, width):
         assert not card.evaluate("e=>e.open")
         card.locator(":scope > summary").click()
         page.wait_for_function("id=>document.getElementById(id).hasAttribute('data-reading-loaded')", arg=card.get_attribute("id"))
+        card.locator("[data-reading-depth]").select_option("transitive")
         for _ in range(12):
             closed = card.locator(".kg-reading-concept:not([open])")
             if not closed.count():
@@ -179,3 +197,47 @@ def test_recipe_orders_kinds_and_preserves_authored_order_within_kind(reading_gr
         '3.1.explanation.first', '3.1.explanation.second']
     assert card.locator(':scope > .kg-reading-tree-body > .kg-reading-root > .kg-reading-block').evaluate_all(
         'es=>es.map(e=>e.dataset.contentBlockId)') == expected
+
+
+@pytest.mark.browser
+def test_tutorial_reading_actions_and_checkpoint_preserve_the_reading_path(reading_graph):
+    page = reading_graph.page
+    def command(**values):
+        return page.evaluate('(c)=>kgExecuteViewerCommand(c,{origin:"tutorial"})', values)
+    command(command='open-reading-tree', recipe='teaching', depth='three-hops')
+    command(command='open-reading-tree', recipe='teaching', target='concept:2.2')
+    assert page.evaluate('kgReadingTrees.snapshot().position') == '2.2'
+    saved = page.evaluate('kgCaptureTutorialPresentation()')
+    command(command='open-reading-tree', recipe='teaching', synchronise=True)
+    assert page.evaluate('kgReadingTrees.snapshot().synchronised') == 'teaching'
+    assert page.evaluate('kgViewerStateSnapshot().selection.id') == '3.1'
+    assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == '2.2'
+    command(command='select', target='concept:1.1')
+    page.evaluate('(s)=>kgRestoreTutorialPresentation(s)', saved)
+    assert page.evaluate('kgCaptureTutorialPresentation().reading') == saved['reading']
+    card = page.locator('.kg-reading-tree[data-reading-recipe="teaching"]')
+    assert card.evaluate('e=>e.open')
+    assert card.locator('.kg-reading-concept[data-reading-node="2.2"]').first.evaluate('e=>e.open')
+    assert page.evaluate('kgReadingTrees.snapshot().synchronised') is None
+    command(command='select', target='concept:2.1')
+    command(command='open-reading-tree', recipe='teaching', target='concept:1.1', synchronise=True)
+    page.wait_for_timeout(100)
+    assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == '1.1'
+    assert not reading_graph.page_errors
+
+
+@pytest.mark.browser
+def test_tutorial_checkpoint_restores_full_width_reading(reading_graph):
+    from test_maths_reading_trees import _reveal_tree
+    page = reading_graph.page
+    card = page.locator('.kg-reading-tree[data-reading-recipe="teaching"]')
+    _reveal_tree(page, card)
+    branch = card.locator('[data-reading-concept="1.1"]').first
+    branch.locator(':scope > details > .kg-reading-concept-body > .kg-reading-focus-button').click()
+    saved = page.evaluate('kgCaptureTutorialPresentation()')
+    assert saved['reading']['focus']
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'concept:2.1'},{origin:'tutorial'})")
+    page.evaluate('(s)=>kgRestoreTutorialPresentation(s)', saved)
+    assert page.locator('#info_panel').evaluate('e=>e.classList.contains("kg-reading-focus-active")')
+    assert page.evaluate('kgCaptureTutorialPresentation().reading') == saved['reading']
+    assert not reading_graph.page_errors

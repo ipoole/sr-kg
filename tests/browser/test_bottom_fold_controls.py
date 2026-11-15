@@ -126,6 +126,7 @@ def test_titles_precede_folded_statements_and_statements_hide_when_open(reading_
         title = summary.locator(':scope > .content-block-title-line')
         statement = summary.locator(':scope > .kg-content-statement')
         expect(statement).to_be_visible()
+        assert statement.evaluate('e=>getComputedStyle(e).color') == page.locator('#info_panel').evaluate('e=>getComputedStyle(e).color')
         assert title.bounding_box()['y'] + title.bounding_box()['height'] <= statement.bounding_box()['y'] + 1
         summary.click()
         expect(statement).to_be_hidden()

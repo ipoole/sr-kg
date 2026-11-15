@@ -69,37 +69,25 @@ function kgCreateContextLayout(options) {
     var lastGraphRender = options.renderedGraph();
     var button = document.getElementById("kg_fit_apply");
     if (!button) { return; }
-    var fitSelect = document.getElementById("kg_fit_select");
-    var target = fitSelect ? fitSelect.value : "context";
     var selection = viewerSelectionSnapshot();
-    var hasTarget = false;
-    if (target === "reveal" || target === "selection") {
-      hasTarget = selection.type !== "none" &&
-        selectionRepresentationNodeIds(selection).length > 0;
-    } else if (target === "displayed") {
-      hasTarget = Boolean(lastGraphRender && lastGraphRender.fitIds.length > 0);
-    } else {
-      hasTarget = selection.type !== "none" && representedNodeIds(
-        lastGraphRender ? lastGraphRender.contextNodeIds : []
-      ).length > 0;
-    }
+    var hasTarget = selection.type !== "none" && representedNodeIds(
+      lastGraphRender ? lastGraphRender.contextNodeIds : []
+    ).length > 0;
     var primed = hasTarget && Boolean(contextFitPrimedKey);
     button.disabled = !hasTarget;
-    button.textContent = primed ? "Fit++" : "Fit";
+    button.textContent = primed ? "Fit++" : "Fit context";
     button.setAttribute("data-fit-action", primed ? "contract" : "fit");
     button.setAttribute(
       "aria-label",
       !hasTarget
-        ? "No available objects to fit"
-        : primed ? "Temporarily contract and fit this context" : "Fit selected target"
+        ? "No context available to fit"
+        : primed ? "Temporarily contract and fit this context" : "Fit context"
     );
     button.title = !hasTarget
-      ? (target === "displayed"
-        ? "Nothing is displayed to fit"
-        : "Select a concept or module to use this frame")
+      ? "No context is available to fit"
       : primed
         ? "Temporarily compact the context around the selection, then fit it into view. Navigate away to restore the layout."
-        : "Adjust the camera to the chosen frame. Fitting the context enables Fit++.";
+        : "Fit the selected context into view. Press again for a temporary compact arrangement.";
     document.getElementById("kg_fit_help").textContent = button.title;
   }
 

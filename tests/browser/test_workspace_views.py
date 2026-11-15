@@ -82,19 +82,27 @@ def test_pane_choice_is_independent_of_graph_scope(browser_graph, view, scope):
     assert page.locator("#kg_details_pane").is_visible()
 
 
-def test_selection_is_permanent_and_does_not_choose_graph_mode(browser_graph):
+def test_overview_stays_for_modules_but_concept_selection_reveals_context(browser_graph):
     page = browser_graph.page
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": "test.m01_foundations"}
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator("#kg_fit_select").input_value() == "context"
-    assert page.locator("#kg_clear_selection").count() == 0
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'module:test.m02_applications'})")
+    for state in ['expanded', 'folded']:
+        page.evaluate("s=>kgExecuteViewerCommand({command:'set-module-representation',target:'module:test.m02_applications',value:s})",state)
+        assert page.locator("#kg_display_scope_select").input_value() == 'overview'
     browser_graph.click_concept("2.2")
     assert page.locator("#kg_display_scope_select").input_value() == "full"
+    page.locator("#kg_display_scope_select").select_option('overview')
+    browser_graph.click_concept('2.2')  # Reselecting the same concept is still an explicit selection.
+    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    page.locator("#kg_display_scope_select").select_option('context')
+    browser_graph.click_concept('1.1')
+    assert page.locator("#kg_display_scope_select").input_value() == "context"
     page.evaluate("network.emit('click', {nodes:[], edges:[], pointer:{DOM:{x:1,y:1}}})")
-    assert page.evaluate("kgViewerStateSnapshot().selection.id") == "2.2"
+    assert page.evaluate("kgViewerStateSnapshot().selection.id") == "1.1"
     page.goto(page.url.split("#")[0] + "#concept-missing")
     page.wait_for_function("typeof kgViewerStateSnapshot === 'function'")
-    assert page.evaluate("kgViewerStateSnapshot().selection.id") == "test.m01_foundations"
+    assert page.evaluate("kgViewerStateSnapshot().selection.id") == 'test.m01_foundations'
 
 
 def test_hidden_graph_updates_before_returning_to_both(browser_graph):
@@ -107,6 +115,29 @@ def test_hidden_graph_updates_before_returning_to_both(browser_graph):
     assert page.evaluate("kgViewerStateSnapshot().selection.id") == "2.2"
 
 
+
+def test_home_can_select_a_default_concept_without_leaving_overview(browser_graph):
+    page = browser_graph.page
+    page.evaluate("kgViewerConfig.domains=[{initialSelection:'concept:2.1'}]")
+    browser_graph.click_concept('2.2')
+    page.evaluate('kgRestoreHome()')
+    assert page.evaluate('kgViewerStateSnapshot().selection.id') == '2.1'
+    assert page.locator('#kg_display_scope_select').input_value() == 'overview'
+    browser_graph.click_concept('2.1')
+    assert page.locator('#kg_display_scope_select').input_value() == 'full'
+
+
+def test_tutorial_checkpoint_restores_an_explicit_concept_overview(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept('2.2')
+    page.locator('#kg_display_scope_select').select_option('overview')
+    saved = page.evaluate('kgCaptureTutorialPresentation()')
+    browser_graph.click_concept('2.1')
+    page.evaluate('(s)=>kgRestoreTutorialPresentation(s)', saved)
+    assert page.evaluate('kgViewerStateSnapshot().selection.id') == '2.2'
+    assert page.locator('#kg_display_scope_select').input_value() == 'overview'
+
+
 @pytest.mark.parametrize("width", [320, 390, 1280])
 def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_graph, width):
     page = browser_graph.page
@@ -116,7 +147,6 @@ def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_gra
     before = page.evaluate("kgCaptureTutorialPresentation().moduleRepresentation")
     page.evaluate("kgExecuteViewerCommand({command:'show-relationship-in-graph',preset:'derivation',full_tree:true})")
     assert page.locator("#kg_view_select").input_value() == "both"
-    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.evaluate("kgViewerStateSnapshot().contextRule.depth") == "transitive"
     assert page.evaluate("kgCaptureTutorialPresentation().moduleRepresentation") == before
     assert page.evaluate("kgContextContractionSnapshot().active") is False
@@ -126,18 +156,19 @@ def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_gra
 
 
 @pytest.mark.parametrize("scope", ["overview", "full", "context"])
-@pytest.mark.parametrize("frame", ["reveal", "selection", "context", "displayed"])
-def test_frame_choices_have_targets_with_permanent_selection(browser_graph, scope, frame):
+def test_single_fit_context_action_preserves_selection_and_layout(browser_graph, scope):
     page = browser_graph.page
     browser_graph.click_concept("2.2")
     page.locator("#kg_display_scope_select").select_option(scope)
-    page.locator("#kg_fit_select").select_option(frame)
-    assert page.locator("#kg_fit_apply").is_enabled()
+    assert page.locator("#kg_fit_select").count() == 0
+    button = page.locator("#kg_fit_apply")
+    assert button.is_enabled()
+    assert button.get_attribute('data-fit-action') == 'fit'
     before = page.evaluate("kgGlobalLayoutSnapshot()")
-    page.locator("#kg_fit_apply").click()
+    button.click()
     assert page.evaluate("kgViewerStateSnapshot().selection.id") == "2.2"
     assert page.evaluate("kgGlobalLayoutSnapshot()") == before
-    assert page.locator("#kg_fit_apply").text_content() == ("Fit++" if frame == "context" else "Fit")
+    assert button.get_attribute('data-fit-action') == 'contract'
 
 
 @pytest.mark.parametrize("width", [390, 1280])

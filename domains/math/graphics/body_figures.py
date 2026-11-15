@@ -5,6 +5,7 @@ Rebuild with: conda run -n sr-kg python -m domains.math.graphics.body_figures
 from html import escape
 from math import cos, pi, sin
 from pathlib import Path
+from srkg.svg_graphics.primitives import _body_svg as canvas
 from srkg.svg_graphics.primitives import (
     _arrow_marker, _circle, _line, _path, _polyline, _rect, _text,
 )
@@ -23,12 +24,6 @@ def text(x,y,label,size=27,colour=INK,anchor='middle'):
 
 def line(x1,y1,x2,y2,colour=BLUE,width=3,**attrs):
     return _line(x1,y1,x2,y2,stroke=colour,stroke_width=width,stroke_linecap='round',**attrs)
-
-
-def canvas(title,body,defs=()):
-    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">\n'
-            '<title>'+escape(title)+'</title>\n<defs>'+''.join(defs)+'</defs>\n'
-            '<g font-family="Arial, sans-serif">\n'+'\n'.join(body)+'\n</g>\n</svg>\n')
 
 
 def overlapping_charts():

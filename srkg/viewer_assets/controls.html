@@ -18,8 +18,8 @@
       <div class="kg-shell-control kg-shell-graph-control">
         <label for="kg_display_scope_select">Graph</label>
         <select id="kg_display_scope_select" class="kg-canvas-select" aria-label="Graph display scope">
-          <option value="overview">Overview</option>
-          <option value="full" selected>Context + background</option>
+          <option value="overview" selected>Overview</option>
+          <option value="full">Context + background</option>
           <option value="context">Context only</option>
         </select>
       </div>
@@ -156,16 +156,8 @@
             </select>
           </div>
           <div class="kg-context-control-group" aria-label="Camera framing">
-            <label for="kg_fit_select" class="kg-group-label">Frame</label>
-            <span id="kg_frame_help" class="kg-visually-hidden">Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.</span>
-            <select id="kg_fit_select" class="kg-canvas-select" aria-label="Fit target" aria-describedby="kg_frame_help" title="Choose what Fit brings into view. Reveal moves only when needed; other choices frame the selection, context or displayed graph.">
-              <option value="reveal">Reveal selection</option>
-              <option value="selection">Fit selection</option>
-              <option value="context" selected>Fit context</option>
-              <option value="displayed">Fit displayed graph</option>
-            </select>
             <span id="kg_fit_help" class="kg-visually-hidden"></span>
-            <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit</button>
+            <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit context</button>
           </div>
         </div>
         <div class="kg-context-meta-row">
@@ -261,7 +253,7 @@
           <span>__PRODUCT_TAGLINE__</span>
         </div>
       </div>
-      <p>Explore Special Relativity, General Relativity and supporting mathematics. Modules group related concepts; select one to start reading, or take the guided tutorial below.</p>
+      <p>Study Special Relativity, General Relativity and supporting mathematics through developed explanations, derivations, intuition, illustrations and questions. The collection continues to be reviewed and extended. Select a module to start reading, or take the guided tutorial below.</p>
       <div class="kg-splash-feature-grid">
         <section>
           <h3>Find a topic</h3>
@@ -283,6 +275,7 @@
           <h3>Read and practise</h3>
           <ul>
             <li>Open or fold Details blocks; use Contents to jump between them. Pinch or Ctrl/Cmd-wheel to enlarge Details.</li>
+            <li>Reading trees below a concept bring supporting explanations into the same page. Synchronise graph shows your reading position.</li>
             <li>Answer Study Questions and use blue checkboxes to mark blocks read.</li>
             <li>A speech-bubble + adds a personal note.</li>
           </ul>

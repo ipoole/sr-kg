@@ -200,7 +200,7 @@ class ContentRegistry(Mapping[str, ContentUnit]):
                 isinstance(part, ContentFigure) and part.slot == unit.preview_figure for part in unit.parts
             )):
                 raise KnowledgeBaseLoadError(f'{unit.source_id}: preview figure needs a statement and a main-body figure slot')
-            for figure, path in _figures(unit.parts):
+            for figure, path in _parts_of_type(unit.parts, ContentFigure):
                 location = f"content block {unit.source_id}/{'/'.join(path)}"
                 namespace = domain_namespace(figure.figure_id, location)
                 if namespace not in self.domains:
@@ -208,7 +208,7 @@ class ContentRegistry(Mapping[str, ContentUnit]):
                         figure.figure_id, location, unit.source_id))
                 elif figure.figure_id not in self.figures:
                     raise KnowledgeBaseLoadError(f'{location}: unresolved figure {figure.figure_id}')
-            for reference, path in _references(unit.parts):
+            for reference, path in _parts_of_type(unit.parts, ContentReference):
                 location = f"content block {unit.source_id}/{'/'.join(path)}"
                 namespace = domain_namespace(reference.target_id, location)
                 if namespace not in self.domains:
@@ -242,20 +242,13 @@ class ContentRegistry(Mapping[str, ContentUnit]):
         return {source_id: unit.to_viewer_data() for source_id, unit in self.items()}
 
 
-def _references(parts, path=()):
+def _parts_of_type(parts, part_type, path=()):
+    """Visit matching parts with their stable path through local clarifications."""
     for part in parts:
-        if isinstance(part, ContentReference):
+        if isinstance(part, part_type):
             yield part, path + (part.slot,)
         elif isinstance(part, ContentExplanation):
-            yield from _references(part.parts, path + (part.slot,))
-
-
-def _figures(parts, path=()):
-    for part in parts:
-        if isinstance(part, ContentFigure):
-            yield part, path + (part.slot,)
-        elif isinstance(part, ContentExplanation):
-            yield from _figures(part.parts, path + (part.slot,))
+            yield from _parts_of_type(part.parts, part_type, path + (part.slot,))
 
 
 def build_content_registry(concepts, modules, *, domains, figures=None) -> ContentRegistry:

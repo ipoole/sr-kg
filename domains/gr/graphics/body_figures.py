@@ -6,6 +6,7 @@ These are body illustrations, not replacements for concept icons or graphics.
 from html import escape
 from math import cos, pi, sin, sqrt
 from pathlib import Path
+from srkg.svg_graphics.primitives import _body_svg as _svg
 
 BLUE = '#2056b5'
 GOLD = '#b56d12'
@@ -25,13 +26,6 @@ def _line(x1, y1, x2, y2, colour=BLUE, width=4, extra=''):
 
 def _circle(x, y, radius=8, colour=BLUE):
     return f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{radius}" fill="{colour}"/>'
-
-
-def _svg(title, body, defs=''):
-    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" '
-            'width="900" height="560">\n<title>'+escape(title)+'</title>\n'
-            '<defs>'+defs+'</defs>\n<g font-family="Arial, sans-serif">\n'+
-            '\n'.join(body)+'\n</g>\n</svg>\n')
 
 
 def tidal_constellation():
