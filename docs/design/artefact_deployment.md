@@ -48,7 +48,9 @@ The illustrated guide is also previewed at `https://physicskg.org/preview/user-g
 with its own styles, branding assets and screenshots. Its Home, atlas and policy links
 lead to the public site; the guide itself and its images remain under `/preview/`.
 Preview packaging copies these source files unchanged and does not update public pages.
-Validation remains compatible with older packages that predate the guide.
+Acknowledgments and their accompanying third-party licence texts are included
+in both channels too. These pages are optional when reading older archives, so
+updates and rollbacks remain compatible with packages that predate them.
 
 A preview update replaces only `preview/`; a release update replaces the public
 website while retaining `preview/`. Both require the last successful complete

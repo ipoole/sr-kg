@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="The teaching sources and open-source software that help make PhysicsKG possible.">
+  <title>Acknowledgments — PhysicsKG</title>
+  <link rel="canonical" href="https://physicskg.org/acknowledgments.html">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg?v=1">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="site-header site-shell">
+    <a class="brand" href="https://physicskg.org/" aria-label="PhysicsKG home">
+      <img src="physicskg-logo-120.png" alt=""><span>PhysicsKG</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="user-guide.html">User guide</a>
+      <a class="button" href="https://physicskg.org/output/PhysicsKG.html">Open the atlas</a>
+    </nav>
+  </header>
+
+  <main class="privacy-page site-shell acknowledgments-page">
+    <h1>Acknowledgments</h1>
+    <p>PhysicsKG is created by <a href="https://www.linkedin.com/in/ipoole/">Ian Poole</a>,
+      with AI assistance via OpenAI Codex. It builds on the work of teachers,
+      researchers and open-source contributors.</p>
+
+    <h2>Teaching sources</h2>
+    <p>The SR material owes much of its overall structure and progression to
+      Leonard Susskind and Art Friedman’s <cite>Special Relativity and Classical
+      Field Theory</cite>, volume II of <cite>The Theoretical Minimum</cite>.</p>
+    <p>David Tong’s <a href="https://www.damtp.cam.ac.uk/user/tong/gr/grhtml/">General
+      Relativity lectures</a> are a principal mathematical reference for the MATHS
+      and GR content. His quantum field theory lectures also inform parts of the
+      SR field-theory treatment. PhysicsKG’s concept References credit these and
+      other sources, with section details where available.</p>
+    <p>The teaching examples, artwork and reading-tree presentation are developed
+      for PhysicsKG.</p>
+
+    <h2>Open-source software</h2>
+    <ul>
+      <li><a href="https://www.mathjax.org/">MathJax</a> typesets the mathematics
+        in the viewer — Apache License 2.0.</li>
+      <li><a href="https://visjs.github.io/vis-network/">vis-network</a> draws the
+        interactive graph — available under the MIT or Apache 2.0 licence.</li>
+      <li><a href="https://pyvis.readthedocs.io/">PyVis</a> generates the graph’s
+        HTML foundation and supplies browser helpers — BSD 3-Clause.</li>
+      <li><a href="https://getbootstrap.com/">Bootstrap</a> supplies base styling
+        for the viewer — MIT.</li>
+      <li><a href="https://tom-select.js.org/">Tom Select</a> is included among
+        the legacy bundled assets — Apache License 2.0.</li>
+    </ul>
+
+    <h2>Building and testing</h2>
+    <p>The authoring and build tools use Python,
+      <a href="https://networkx.org/">NetworkX</a>,
+      <a href="https://pandas.pydata.org/">pandas</a>,
+      <a href="https://numpy.org/">NumPy</a>,
+      <a href="https://jinja.palletsprojects.com/">Jinja2</a> and
+      <a href="https://pyyaml.org/">PyYAML</a>. Automated checks use
+      <a href="https://pytest.org/">pytest</a> and
+      <a href="https://playwright.dev/python/">Playwright</a>.</p>
+
+    <h2>Licences and notices</h2>
+    <p>Each third-party project retains its own copyright and licence.
+      <a href="third-party-notices.txt">Licence texts and copyright notices</a>
+      accompany the software credits above.</p>
+  </main>
+
+  <footer class="site-footer site-shell">
+    <span>PhysicsKG — An Atlas of Physics Knowledge</span>
+    <span><a href="https://physicskg.org/">Home</a> · <a href="user-guide.html">User guide</a> · <a href="https://physicskg.org/privacy.html">Privacy</a> · <a href="https://physicskg.org/terms.html">Terms</a></span>
+  </footer>
+</body>
+</html>

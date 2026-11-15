@@ -7,7 +7,7 @@ import tarfile
 import pytest
 
 from srkg.site_deployment import (
-    GUIDE_FILES, SITE_FILES, assemble, digest, extract_verified, make_package, read_package, safe_path,
+    ACKNOWLEDGMENT_FILES, GUIDE_FILES, SITE_FILES, assemble, digest, extract_verified, make_package, read_package, safe_path,
     validate_site,
 )
 
@@ -46,6 +46,8 @@ def test_packaging_preserves_bytes_and_is_reproducible(source, tmp_path):
     actual, manifest = read_package(first, checksum)
     assert actual['output/PhysicsKG.html'] == viewer.read_bytes()
     assert actual['user-guide.html'] == (root / 'website/user-guide.html').read_bytes()
+    for name in ACKNOWLEDGMENT_FILES:
+        assert actual[name] == (root / 'website' / name).read_bytes()
     for screenshot in (root / 'website/guide').glob('*.png'):
         assert actual[f'guide/{screenshot.name}'] == screenshot.read_bytes()
     assert actual['output/lib/bindings/utils.js'] == (root / 'lib/bindings/utils.js').read_bytes()
@@ -82,18 +84,21 @@ def test_preview_cannot_accidentally_bootstrap_empty_release(source):
         assemble(*source, 'preview')
 
 
-def test_guide_preview_preserves_a_release_without_the_guide(source, tmp_path):
+def test_preview_preserves_a_release_without_optional_pages(source, tmp_path):
     root, viewer = source
     previous = assemble(root, viewer, 'release')
-    for name in GUIDE_FILES:
+    for name in (*GUIDE_FILES, *ACKNOWLEDGMENT_FILES):
         previous.pop(name)
-    previous['index.html'] = b'<html>Earlier public homepage</html>'
+    # Earlier pages contain no navigation links to these newer pages.
+    for name in previous:
+        if name.endswith('.html'):
+            previous[name] = b'<html><body>Earlier website</body></html>'
     # Existing deployment archives remain readable as website features grow.
     path, checksum = package(tmp_path, previous)
     previous, _ = read_package(path, checksum)
     preview = assemble(root, viewer, 'preview', previous)
     assert {k: v for k, v in preview.items() if not k.startswith('preview/')} == previous
-    for name in (*GUIDE_FILES, 'site.css', 'physicskg-logo-120.png'):
+    for name in (*GUIDE_FILES, *ACKNOWLEDGMENT_FILES, 'site.css', 'physicskg-logo-120.png'):
         assert preview[f'preview/{name}'] == (root / 'website' / name).read_bytes()
 
 
@@ -103,6 +108,13 @@ def test_guide_preview_requires_its_images(source):
     preview.pop('preview/guide/phone-both.png')
     with pytest.raises(ValueError, match='Broken local link'):
         validate_site(preview)
+
+
+def test_acknowledgments_cannot_lose_its_licence_texts(source):
+    files = assemble(*source, 'release')
+    files.pop('third-party-notices.txt')
+    with pytest.raises(ValueError, match='Broken local link'):
+        validate_site(files)
 
 
 def test_broken_local_dependencies_fail_packaging(source):

@@ -158,6 +158,9 @@ The viewer's per-concept References give source and section details, including
 references attached to individual blocks. The terrain-survey narrative, numerical
 teaching examples, graphics and reading-tree presentation are developed for PhysicsKG.
 Other sources are credited in the relevant concepts, including those used for SR.
+The website [Acknowledgments](website/acknowledgments.html) also credits the
+software projects; [third-party notices](website/third-party-notices.txt) retain
+the accompanying licence texts.
 
 ## Documentation
 

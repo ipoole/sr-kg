@@ -43,6 +43,7 @@ def test_sitemap_lists_only_preferred_public_pages_and_is_discoverable():
     urls = [node.text for node in sitemap.findall("{*}url/{*}loc")]
     assert sorted(urls) == sorted([
         "https://physicskg.org/",
+        "https://physicskg.org/acknowledgments.html",
         "https://physicskg.org/output/PhysicsKG.html",
         "https://physicskg.org/privacy.html",
         "https://physicskg.org/terms.html",

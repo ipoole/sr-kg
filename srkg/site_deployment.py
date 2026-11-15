@@ -25,8 +25,10 @@ GUIDE_FILES = (
     'user-guide.html', 'guide/overview.png', 'guide/module-details.png',
     'guide/clarifications-notes.png', 'guide/phone-both.png', 'guide/reading-tree.png',
 )
-SITE_FILES = BASE_SITE_FILES + GUIDE_FILES
-PREVIEW_SITE_FILES = GUIDE_FILES + (
+# Optional in older archives; include them in every newly assembled channel.
+ACKNOWLEDGMENT_FILES = ('acknowledgments.html', 'third-party-notices.txt')
+SITE_FILES = BASE_SITE_FILES + GUIDE_FILES + ACKNOWLEDGMENT_FILES
+PREVIEW_SITE_FILES = GUIDE_FILES + ACKNOWLEDGMENT_FILES + (
     'site.css', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
     'physicskg-logo-120.png',
 )
