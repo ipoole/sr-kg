@@ -30,7 +30,7 @@ def test_viewer_state_snapshot_adapts_existing_selection_and_scope(browser_graph
             "depth": "two-hops",
             "customTraversals": [],
         },
-        "displayScope": "full",
+        "displayScope": "overview",
         "view": "both",
     }
 
@@ -437,6 +437,8 @@ def test_overview_summarises_boundaries_independently_of_folding(browser_graph):
     canvas = page.locator('#mynetwork canvas').bounding_box()
     page.mouse.click(canvas['x'] + point['x'], canvas['y'] + point['y'])
     assert page.evaluate('() => kgViewerStateSnapshot().selection.id') == '2.1'
+    assert page.locator('#kg_display_scope_select').input_value() == 'full'
+    page.locator('#kg_display_scope_select').select_option('overview')
     page.locator('#kg_context_preset_select').select_option('prerequisites')
     assert page.evaluate("""() => edges.get().filter(e => !e.hidden && e.isModuleEdge)
       .map(e => e.relationCounts)""") == [{'REQUIRES': 1}]

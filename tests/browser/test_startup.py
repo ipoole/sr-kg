@@ -65,9 +65,9 @@ def test_generated_viewer_boots_and_initializes_in_browser(shared_browser_graph)
     assert not page.locator("#kg_notes_section").evaluate("el => el.open")
     assert not page.locator("#kg_search_section").evaluate("el => el.open")
     assert page.locator("#kg_view_title").inner_text() == "Browser Harness"
-    assert page.evaluate("() => nodes.length") == 4
-    assert page.evaluate("() => edges.length") == 6
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.evaluate("nodes.get().filter(node => !node.isOverviewAnchor).length") == 4
+    assert page.evaluate("edges.get().filter(edge => !edge.isModuleEdge).length") == 6
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
     assert page.locator("#kg_view_select").input_value() == "both"
     assert page.locator("#kg_view_select option").evaluate_all(
         "options => options.map(option => option.value)"
@@ -250,6 +250,7 @@ def test_module_focussed_mode_keeps_members_and_boundary_concepts(browser_graph)
 @pytest.mark.browser
 def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
     module_node_id = "module::test.m02_applications"
 
     browser_graph.open_control_section("kg_modules_section")
@@ -381,6 +382,7 @@ def test_expand_context_is_offered_for_context_represented_by_other_folded_modul
 @pytest.mark.browser
 def test_expand_context_is_offered_for_selected_folded_module(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
@@ -620,6 +622,7 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
 @pytest.mark.browser
 def test_module_controls_can_collapse_and_expand_all_modules(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator("#kg_modules_collapse_all").click()
@@ -706,6 +709,7 @@ def test_module_controls_are_disabled_when_graph_is_hidden(browser_graph):
 @pytest.mark.browser
 def test_folded_module_corner_control_expands_it(browser_graph):
     page = browser_graph.page
+    page.locator("#kg_display_scope_select").select_option("full")
     module_node_id = "module::test.m02_applications"
 
     browser_graph.open_control_section("kg_modules_section")
@@ -1500,6 +1504,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     page.set_viewport_size({"width": 390, "height": 800})
     page.goto(browser_graph.output_path.as_uri() + "?phone-header", wait_until="domcontentloaded")
     page.wait_for_selector("#kg_workspace")
+    page.locator("#kg_display_scope_select").select_option("full")
 
     header = page.locator("#kg_app_header").bounding_box()
     workspace = page.locator("#kg_workspace").bounding_box()
@@ -1700,7 +1705,7 @@ def test_default_startup_honours_domain_metadata_with_two_hop_derivation(shared_
     module_id = page.evaluate('kgViewerConfig.domains.find(item => item.initialSelection).initialSelection.split(":")[1]')
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": module_id}
     assert page.locator("#info_panel").get_attribute("data-module-id") == module_id
-    assert page.locator("#kg_display_scope_select").input_value() == "full"
+    assert page.locator("#kg_display_scope_select").input_value() == "overview"
     assert page.locator("#kg_context_preset_select").input_value() == "derivation"
     assert page.locator("#kg_context_depth_select").input_value() == "two-hops"
     assert page.locator("#kg_view_select").input_value() == "both"

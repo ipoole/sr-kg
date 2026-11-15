@@ -66,7 +66,7 @@
         function defaultViewerState() {
           return {
             contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
-            displayScope: DisplayScope.FULL,
+            displayScope: DisplayScope.OVERVIEW,
             view: "both"
           };
         }
@@ -4841,9 +4841,12 @@
             return;
           }
 
+          var showConceptContext = type === "concept" &&
+            viewerState.displayScope === DisplayScope.OVERVIEW && !options.preserveGraphMode;
+          if (showConceptContext) { viewerState.displayScope = DisplayScope.FULL; }
           var changed = activeNodeId !== (type === "concept" ? id : null) ||
             activeModuleId !== (type === "module" ? id : null);
-          if (changed) { readingTrees.detach(); resetContextFitInteraction(); }
+          if (changed || showConceptContext) { readingTrees.detach(); resetContextFitInteraction(); }
           closeInspection();
           clearTransientConceptHighlight({skipEdgeRestore: true});
           restoreHoveredEdge();
@@ -4857,6 +4860,7 @@
           updateSelectedConceptHeader(activeNodeId);
           setActiveConceptItem(activeNodeId);
           setActiveModuleItem(activeModuleId);
+          if (showConceptContext) { updateGraphViewControls(); }
           renderGraphFromViewerState();
 
           if (type === "concept") {
@@ -5284,7 +5288,7 @@
           if (selection.type === "concept" && getConcept(selection.id)) {
             await executeViewerCommand(
               {command: "select", target: "concept:" + selection.id},
-              {origin: "tutorial"}
+              {origin: "tutorial", selectionOptions: {preserveGraphMode: true}}
             );
           } else if (selection.type === "module" && getModule(selection.id)) {
             await executeViewerCommand(
@@ -5581,7 +5585,7 @@
         function selectDefaultViewerObject() {
           var selection = defaultViewerSelection();
           if (!selection) { return; }
-          selectViewerObject(selection.type, selection.id, null, {skipHistory: true});
+          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true});
           var state = selection.type === "module"
             ? {objectType: "module", moduleId: selection.id}
             : {objectType: "concept", nodeId: selection.id};
