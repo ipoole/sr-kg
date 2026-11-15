@@ -9,6 +9,7 @@ in ``srkg/viewer_assets`` so CSS and JavaScript can be reviewed independently.
 import base64
 import json
 import re
+from datetime import date
 from pathlib import Path
 from html import escape as html_escape
 
@@ -213,10 +214,11 @@ def _release_history_html() -> str:
     for entry in entries:
         version = html_escape(entry["version"])
         published = html_escape(entry["date"])
+        display_date = date.fromisoformat(entry["date"]).strftime("%d.%m.%Y")
         summary = html_escape(entry["summary"])
         items.append(
             f'<li><strong>v{version}</strong> '
-            f'<time datetime="{published}">{published}</time><p>{summary}</p></li>'
+            f'<time datetime="{published}">{display_date}</time><p>{summary}</p></li>'
         )
     return '<ol class="kg-release-history">' + "".join(items) + '</ol>'
 
