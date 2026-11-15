@@ -224,3 +224,20 @@ def test_tutorial_reading_actions_and_checkpoint_preserve_the_reading_path(readi
     page.wait_for_timeout(100)
     assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == '1.1'
     assert not reading_graph.page_errors
+
+
+@pytest.mark.browser
+def test_tutorial_checkpoint_restores_full_width_reading(reading_graph):
+    from test_maths_reading_trees import _reveal_tree
+    page = reading_graph.page
+    card = page.locator('.kg-reading-tree[data-reading-recipe="teaching"]')
+    _reveal_tree(page, card)
+    branch = card.locator('[data-reading-concept="1.1"]').first
+    branch.locator(':scope > details > .kg-reading-concept-body > .kg-reading-focus-button').click()
+    saved = page.evaluate('kgCaptureTutorialPresentation()')
+    assert saved['reading']['focus']
+    page.evaluate("kgExecuteViewerCommand({command:'select',target:'concept:2.1'},{origin:'tutorial'})")
+    page.evaluate('(s)=>kgRestoreTutorialPresentation(s)', saved)
+    assert page.locator('#info_panel').evaluate('e=>e.classList.contains("kg-reading-focus-active")')
+    assert page.evaluate('kgCaptureTutorialPresentation().reading') == saved['reading']
+    assert not reading_graph.page_errors
