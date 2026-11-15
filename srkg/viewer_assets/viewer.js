@@ -116,9 +116,11 @@
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
         var panelContentRefreshPending = false;
-        var userGuideLink = document.getElementById("kg_user_guide_link");
-        if (userGuideLink && window.location.pathname.indexOf("/preview/") === 0) {
-          userGuideLink.href = "https://physicskg.org/preview/user-guide.html";
+        if (window.location.pathname.indexOf("/preview/") === 0) {
+          [["kg_user_guide_link", "user-guide.html"],
+            ["kg_acknowledgments_link", "acknowledgments.html"]].forEach(function(link) {
+            document.getElementById(link[0]).href = "https://physicskg.org/preview/" + link[1];
+          });
         }
 
         var derivedFromFullTreeEnabled = false;

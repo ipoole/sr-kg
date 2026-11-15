@@ -2496,6 +2496,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph, width):
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
 
+    acknowledgments = dialog.locator("#kg_acknowledgments_link")
+    assert acknowledgments.get_attribute("href") == "https://physicskg.org/acknowledgments.html"
+    assert acknowledgments.get_attribute("target") == "_blank"
+    assert "noopener" in acknowledgments.get_attribute("rel").split()
+
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"
     grid_box = page.locator(".kg-splash-feature-grid").bounding_box()

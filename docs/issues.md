@@ -45,7 +45,7 @@ Issue numbers are retained so existing references remain valid.
 7. **Done.** Date format in version history is dd.mm.yyyy; source dates remain ISO.
 8. **Done.** Personal-layout and Fit++ notices expire after roughly three seconds; editing and the temporary arrangement remain active.
 9. When running tutorials, statements with maths seem to come out raw.
-10. Viewer needs to link to acknowledgments and match remark re Susskind.
+10. **Done.** Quick Start links to acknowledgments and software credits, including the Susskind/Friedman and Tong acknowledgments.
 
 ## 5. Notes enhancement and unification
 
