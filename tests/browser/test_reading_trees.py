@@ -197,3 +197,26 @@ def test_recipe_orders_kinds_and_preserves_authored_order_within_kind(reading_gr
         '3.1.explanation.first', '3.1.explanation.second']
     assert card.locator(':scope > .kg-reading-tree-body > .kg-reading-root > .kg-reading-block').evaluate_all(
         'es=>es.map(e=>e.dataset.contentBlockId)') == expected
+
+
+@pytest.mark.browser
+def test_tutorial_reading_actions_and_checkpoint_preserve_the_reading_path(reading_graph):
+    page = reading_graph.page
+    def command(**values):
+        return page.evaluate('(c)=>kgExecuteViewerCommand(c,{origin:"tutorial"})', values)
+    command(command='open-reading-tree', recipe='teaching', depth='three-hops')
+    command(command='open-reading-tree', recipe='teaching', target='concept:2.2')
+    assert page.evaluate('kgReadingTrees.snapshot().position') == '2.2'
+    saved = page.evaluate('kgCaptureTutorialPresentation()')
+    command(command='open-reading-tree', recipe='teaching', synchronise=True)
+    assert page.evaluate('kgReadingTrees.snapshot().synchronised') == 'teaching'
+    assert page.evaluate('kgViewerStateSnapshot().selection.id') == '3.1'
+    assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == '2.2'
+    command(command='select', target='concept:1.1')
+    page.evaluate('(s)=>kgRestoreTutorialPresentation(s)', saved)
+    assert page.evaluate('kgCaptureTutorialPresentation().reading') == saved['reading']
+    card = page.locator('.kg-reading-tree[data-reading-recipe="teaching"]')
+    assert card.evaluate('e=>e.open')
+    assert card.locator('.kg-reading-concept[data-reading-node="2.2"]').first.evaluate('e=>e.open')
+    assert page.evaluate('kgReadingTrees.snapshot().synchronised') is None
+    assert not reading_graph.page_errors

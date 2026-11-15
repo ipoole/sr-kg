@@ -87,3 +87,9 @@ Legacy sharing and real-Maths MathJax tests remain in their existing files.
 Reading trees initially use three hops. Recipe depth choices persist across concept
 navigation within the session; Home restores the defaults. Full tree remains an
 explicit option, and a boundary offers extension when further support exists.
+
+Guided tutorial checkpoints capture transient tree occurrences, depth preferences,
+reading position and full-width focus. Restoring a checkpoint rebuilds the same
+occurrence identities without changing canonical notes or read records. The
+introductory tutorial uses a semantic open-reading-tree command; it does not
+change Selection to move the reading marker.

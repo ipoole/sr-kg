@@ -316,3 +316,14 @@ def test_load_tutorials_returns_empty_tuple_when_file_is_absent(tmp_path):
     )
 
     assert tutorials == ()
+
+
+@pytest.mark.parametrize('recipe,target,depth', [('teaching','sr.alpha','three-hops'), ('derivation','gr.beta','transitive')])
+def test_reading_tree_action_validation(tmp_path, recipe, target, depth):
+    action = f'{{command: open-reading-tree, recipe: {recipe}, target: "concept:{target}", depth: {depth}, synchronise: true}}'
+    path = _write_tutorials(tmp_path/'reading.yaml', _sequence_route('[{action: '+action+', pointer: {target: "details:reading-tree:'+recipe+'"}}]'))
+    routes = load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)
+    assert routes[0].steps[0].actions[0]['action']['synchronise'] is True
+    path.write_text(path.read_text().replace('recipe: '+recipe, 'recipe: unknown'))
+    with pytest.raises(TutorialLoadError):
+        load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)

@@ -22,6 +22,7 @@ TUTORIAL_COMMANDS = frozenset({
     "expand-context-modules",
     "fit",
     "open-details-block",
+    "open-reading-tree",
     "open-study-questions",
     "open-details-graphic",
     "open-details-relationship",
@@ -55,6 +56,7 @@ TOOLS_SECTIONS = frozenset({
     "personal-data",
     "notes",
 })
+READING_TREE_RECIPES = frozenset({"derivation", "teaching"})
 DETAILS_RELATIONSHIP_SECTIONS = frozenset({"derived-from", "where-used"})
 TUTORIAL_EDGE_RELATIONS = frozenset({
     "REQUIRES",
@@ -317,6 +319,14 @@ def _validate_command(command: dict[str, object], *, context: str, concept_ids: 
         _enum(command, 'value', MODULE_REPRESENTATIONS, context)
     elif name == 'fit':
         _enum(command, 'value', FIT_TARGETS, context)
+    elif name == 'open-reading-tree':
+        _enum(command, 'recipe', READING_TREE_RECIPES, context)
+        if 'target' in command:
+            _validate_prefixed_known(_required_text(command, 'target', context), 'concept:', concept_ids, 'concept', context, references=references)
+        if 'depth' in command:
+            _enum(command, 'depth', CONTEXT_DEPTHS, context)
+        if 'synchronise' in command and not isinstance(command['synchronise'], bool):
+            raise TutorialLoadError(f'{context}.synchronise must be a boolean')
     elif name == 'open-details-block':
         target = _required_text(command, 'target', context)
         _validate_prefixed_known(target, 'block:', block_ids, 'block', context, references=references)
@@ -377,6 +387,17 @@ def _validate_pointer_target(target: str, *, context: str, concept_ids: set[str]
     if target.startswith('search:module:'):
         module_id = target.removeprefix('search:module:')
         _require_target(module_id, module_ids, 'module', context, references)
+        return
+    if target.startswith(('details:reading-tree:', 'details:reading-sync:', 'details:reading-concept:')):
+        parts = target.split(':', 3)
+        if parts[2] not in READING_TREE_RECIPES:
+            raise TutorialLoadError(f'{context} has unknown reading recipe: {parts[2]}')
+        if parts[1] == 'reading-concept':
+            if len(parts) != 4:
+                raise TutorialLoadError(f'{context} requires a reading concept')
+            _require_target(parts[3], concept_ids, 'concept', context, references)
+        elif len(parts) != 3:
+            raise TutorialLoadError(f'{context} has an invalid reading target')
         return
     if target.startswith('details:block:'):
         block_id = target.removeprefix('details:block:')

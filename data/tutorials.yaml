@@ -310,6 +310,51 @@ tutorials:
       value: context
     pointer:
       target: control:fit
+  - step_id: open-a-reading-tree
+    title: Follow explanations without leaving the page
+    commentary: Reading trees gather the original content of supporting concepts beneath your selected topic.
+      The Teaching tree includes definitions, explanations, intuition and examples. It starts at three hops;
+      you can choose a smaller depth or extend to Full tree.
+    prepare:
+    - command: select
+      target: concept:sr.mass_energy_equivalence
+    - command: set-view
+      value: details
+    action:
+      command: open-reading-tree
+      recipe: teaching
+      depth: three-hops
+    pointer:
+      target: details:reading-tree:teaching
+  - step_id: open-a-reading-support
+    title: Read a supporting concept in place
+    commentary: Four-momentum supports the mass-energy argument. The text explains why the connection matters,
+      and the expanded concept offers its own blocks. These are the original blocks, so reading marks and personal
+      notes are shared wherever you encounter them. Explore from here lets you open any block for yourself.
+    action:
+      command: open-reading-tree
+      recipe: teaching
+      target: concept:sr.momentum_four_vector
+    pointer:
+      target: details:reading-concept:teaching:sr.momentum_four_vector
+  - step_id: locate-your-reading-on-the-graph
+    title: Keep your place on the map
+    commentary: Synchronise graph sets the tree's context and depth, reveals its concepts and fits them.
+      Mass-energy equivalence remains selected. The amber ring marks four-momentum, where we are reading.
+      Opening further supports moves that ring without moving the selection or camera.
+    actions:
+    - action:
+        command: open-reading-tree
+        recipe: teaching
+        synchronise: true
+      pointer:
+        target: details:reading-sync:teaching
+      pause_ms: 1200
+    - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: graph:concept:sr.momentum_four_vector
   - step_id: continue-your-study
     title: Continue your study
     commentary: Tools contains study questions, reading progress, notes, layouts and portable personal data. This

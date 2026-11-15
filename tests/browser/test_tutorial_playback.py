@@ -513,6 +513,7 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
                 "preview-a-concept", "select-a-concept", "choose-connections",
                 "show-the-context", "frame-the-result", "preview-a-relationship",
                 "return-to-the-map", "show-the-derivation-in-graph", "show-a-derivation-tree",
+                "locate-your-reading-on-the-graph",
             }
             if step["step_id"] in graph_steps:
                 assert page.evaluate("kgCaptureTutorialPresentation().view") == "graph", step["step_id"]
@@ -522,8 +523,18 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
                 assert presentation["contextRule"]["preset"] == "derivation"
                 for module_id, representation in presentation["moduleRepresentation"].items():
                     assert representation == ("expanded" if module_id.startswith(("sr.", "math.")) else "folded")
-            if step["step_id"] in {"inspect-details", "inspect-a-derivation-tree"}:
+            if step["step_id"] in {"inspect-details", "inspect-a-derivation-tree", "open-a-reading-tree", "open-a-reading-support"}:
                 assert page.evaluate("kgCaptureTutorialPresentation().view") == "details"
+            if step["step_id"] == "locate-your-reading-on-the-graph":
+                assert selection['id'] == 'sr.mass_energy_equivalence'
+                assert page.evaluate('kgReadingMarkerSnapshot().conceptId') == 'sr.momentum_four_vector'
+            if step['step_id'] == 'open-a-reading-support':
+                checkpoint = page.evaluate('kgCaptureTutorialPresentation()')
+                page.locator('#kg_tutorial_explore').click()
+                page.evaluate("kgExecuteViewerCommand({command:'select',target:'concept:sr.proper_time'})")
+                page.locator('#kg_tutorial_explore').click()
+                page.wait_for_function('!kgTutorialPlaybackSnapshot().transitioning')
+                assert page.evaluate('kgCaptureTutorialPresentation().reading') == checkpoint['reading']
         if tutorial_id == "using-physicskg" and step["step_id"] == "select-a-module":
             assert selection != previous_selection
         if tutorial_id == "using-physicskg" and step["step_id"] == "show-a-derivation-tree":

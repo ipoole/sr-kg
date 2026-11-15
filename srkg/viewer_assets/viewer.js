@@ -5062,6 +5062,21 @@
               fitViewerTarget(commandEnumValue(
                 command, "value", ["reveal", "selection", "context", "displayed"]
               ));
+            } else if (name === "open-reading-tree") {
+              var recipe = commandEnumValue(command, "recipe", ["derivation", "teaching"]);
+              var readingNode = null;
+              if (command.target !== undefined) {
+                readingNode = commandTargetId(command.target, "concept:", "concept");
+                if (!getConcept(readingNode)) { throw new Error("Unknown concept: " + readingNode); }
+              }
+              var readingDepth = command.depth === undefined ? null : commandEnumValue(
+                command, "depth", ["one-hop", "two-hops", "three-hops", "transitive"]);
+              if (command.synchronise !== undefined && typeof command.synchronise !== "boolean") {
+                throw new Error("open-reading-tree requires a synchronise boolean");
+              }
+              if (!detailsAreVisible()) { setViewerView("both"); }
+              var readingTarget = await readingTrees.openForTutorial(recipe, readingNode, readingDepth, command.synchronise);
+              if (!command.synchronise) { scrollInfoPanelTargetBelowStickyToc(readingTarget, {immediate: true}); }
             } else if (name === "open-details-block") {
               openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"));
             } else if (name === "open-study-questions") {
@@ -5205,6 +5220,7 @@
             view: viewerState.view,
             moduleRepresentation: moduleRepresentation,
             details: tutorialDetailsSnapshot(),
+            reading: readingTrees.capture(),
             contextFit: contextLayout.capture(),
             search: tutorialSearchSnapshot(),
             workspaceSplitPercent: workspaceSplitPercent,
@@ -5269,6 +5285,7 @@
             : snapshot.displayScope;
           restoreTutorialModuleRepresentations(snapshot.moduleRepresentation || {});
 
+          readingTrees.restore(snapshot.reading);
           var selection = snapshot.selection || {type: "none", id: null};
           if (selection.type === "concept" && getConcept(selection.id)) {
             await executeViewerCommand(
