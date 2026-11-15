@@ -86,7 +86,6 @@ def test_selection_is_permanent_and_does_not_choose_graph_mode(browser_graph):
     page = browser_graph.page
     assert page.evaluate("kgViewerStateSnapshot().selection") == {"type": "module", "id": "test.m01_foundations"}
     assert page.locator("#kg_display_scope_select").input_value() == "full"
-    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator("#kg_clear_selection").count() == 0
     browser_graph.click_concept("2.2")
     assert page.locator("#kg_display_scope_select").input_value() == "full"
@@ -116,7 +115,6 @@ def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_gra
     before = page.evaluate("kgCaptureTutorialPresentation().moduleRepresentation")
     page.evaluate("kgExecuteViewerCommand({command:'show-relationship-in-graph',preset:'derivation',full_tree:true})")
     assert page.locator("#kg_view_select").input_value() == "both"
-    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.evaluate("kgViewerStateSnapshot().contextRule.depth") == "transitive"
     assert page.evaluate("kgCaptureTutorialPresentation().moduleRepresentation") == before
     assert page.evaluate("kgContextContractionSnapshot().active") is False
@@ -126,18 +124,19 @@ def test_show_in_graph_fits_context_without_unfolding_or_contracting(browser_gra
 
 
 @pytest.mark.parametrize("scope", ["overview", "full", "context"])
-@pytest.mark.parametrize("frame", ["reveal", "selection", "context", "displayed"])
-def test_frame_choices_have_targets_with_permanent_selection(browser_graph, scope, frame):
+def test_single_fit_context_action_preserves_selection_and_layout(browser_graph, scope):
     page = browser_graph.page
     browser_graph.click_concept("2.2")
     page.locator("#kg_display_scope_select").select_option(scope)
-    page.locator("#kg_fit_select").select_option(frame)
-    assert page.locator("#kg_fit_apply").is_enabled()
+    assert page.locator("#kg_fit_select").count() == 0
+    button = page.locator("#kg_fit_apply")
+    assert button.is_enabled()
+    assert button.get_attribute('data-fit-action') == 'fit'
     before = page.evaluate("kgGlobalLayoutSnapshot()")
-    page.locator("#kg_fit_apply").click()
+    button.click()
     assert page.evaluate("kgViewerStateSnapshot().selection.id") == "2.2"
     assert page.evaluate("kgGlobalLayoutSnapshot()") == before
-    assert page.locator("#kg_fit_apply").text_content() == ("Fit++" if frame == "context" else "Fit")
+    assert button.get_attribute('data-fit-action') == 'contract'
 
 
 @pytest.mark.parametrize("width", [390, 1280])

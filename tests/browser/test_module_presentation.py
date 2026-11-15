@@ -471,8 +471,7 @@ def test_expanded_module_titles_follow_boundaries_and_fit_without_layout_changes
         assert label['x'] == pytest.approx((box['left'] + box['right']) / 2)
         assert label['lines'] and label['width'] <= 1000
         assert label['height'] > 0
-    page.locator('#kg_fit_select').select_option('displayed')
-    page.locator('#kg_fit_apply').click()
+    page.evaluate("kgExecuteViewerCommand({command:'fit',value:'displayed'})")
     page.wait_for_timeout(700)
     assert page.evaluate("""() => kgExpandedModuleLabelSnapshot().every(label => {
       const p=network.canvasToDOM({x:label.x,y:label.bottom});

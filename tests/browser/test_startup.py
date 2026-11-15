@@ -114,8 +114,7 @@ def test_node_builtin_title_is_disabled_for_custom_tooltips(shared_browser_graph
 def test_node_hover_tooltip_typesets_mathjax(mathjax_browser_graph):
     page = mathjax_browser_graph.page
     page.locator("#kg_display_scope_select").select_option("overview")
-    page.locator("#kg_fit_select").select_option("displayed")
-    page.locator("#kg_fit_apply").click()
+    page.evaluate("kgExecuteViewerCommand({command:'fit',value:'displayed'})")
 
     point = page.evaluate(
         """() => {
@@ -1559,7 +1558,7 @@ def test_phone_header_fits_all_primary_controls_on_one_row(browser_graph):
     )
     assert page.locator("#kg_view_select option:checked").inner_text() == "Both"
     assert page.locator("#kg_clear_selection").count() == 0
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Fit context"
+    assert page.locator("#kg_fit_apply").get_attribute("data-fit-action") == "fit"
 
 
 @pytest.mark.browser
@@ -1593,7 +1592,6 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     ids = [
         "kg_context_preset_select",
         "kg_context_depth_select",
-        "kg_fit_select",
         "kg_fit_apply",
     ]
     boxes = [page.locator(f"#{control_id}").bounding_box() for control_id in ids]
@@ -1601,12 +1599,10 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
     assert max(centres) - min(centres) <= 2
     assert all(box["x"] >= 0 and box["x"] + box["width"] <= 390 for box in boxes)
     visible_labels = page.locator(".kg-graph-context-controls .kg-group-label")
-    assert visible_labels.count() == 2
+    assert visible_labels.count() == 1
     assert visible_labels.nth(0).inner_text() == "Context"
-    assert visible_labels.nth(1).inner_text() == "Frame"
     assert visible_labels.nth(0).is_visible()
-    assert visible_labels.nth(1).is_visible()
-    assert page.locator("#kg_fit_select option:checked").inner_text() == "Context"
+    assert page.locator("#kg_fit_apply").is_visible()
 
     summary = page.locator("#kg_context_summary")
     assert "Foundations" not in summary.inner_text()
@@ -1708,7 +1704,6 @@ def test_default_startup_honours_domain_metadata_with_two_hop_derivation(shared_
     assert page.locator("#kg_context_preset_select").input_value() == "derivation"
     assert page.locator("#kg_context_depth_select").input_value() == "two-hops"
     assert page.locator("#kg_view_select").input_value() == "both"
-    assert page.locator("#kg_fit_select").input_value() == "context"
     assert page.locator(".kg-concept-item.active").count() == 0
 
 
@@ -2464,9 +2459,8 @@ def test_context_controls_group_semantics_and_default_fit_target(browser_graph):
     assert groups.nth(1).get_attribute("aria-label") == "Camera framing"
     assert groups.nth(0).locator("#kg_context_preset_select").count() == 1
     assert groups.nth(0).locator("#kg_context_depth_select").count() == 1
-    assert groups.nth(1).locator("#kg_fit_select").count() == 1
+    assert groups.nth(1).locator("select").count() == 0
     assert groups.nth(1).locator("#kg_fit_apply").count() == 1
-    assert page.locator("#kg_fit_select").input_value() == "context"
 
 
 

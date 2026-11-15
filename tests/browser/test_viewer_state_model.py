@@ -424,8 +424,7 @@ def test_overview_summarises_boundaries_independently_of_folding(browser_graph):
       command:'set-all-module-representations', value:'expanded'
     })""")
     # Invisible boundary endpoints must not intercept concept clicks.
-    page.locator('#kg_fit_select').select_option('displayed')
-    page.locator('#kg_fit_apply').click()
+    page.evaluate("kgExecuteViewerCommand({command:'fit',value:'displayed'})")
     page.wait_for_timeout(700)
     assert page.evaluate("""() => nodes.get().filter(n=>n.isOverviewAnchor).every(n=>{
       const s=network.body.nodes[n.id].shape;

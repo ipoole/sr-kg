@@ -14,7 +14,6 @@ def _disable_camera_animation(page):
 
 def _fit_then_contract(page):
     _disable_camera_animation(page)
-    page.locator("#kg_fit_select").select_option("context")
     fit_button = page.locator("#kg_fit_apply")
     fit_button.click()
     assert fit_button.inner_text() == "Fit++"
@@ -224,9 +223,8 @@ def test_offscreen_selection_is_revealed_without_zooming_or_recentering(browser_
 @pytest.mark.browser
 def test_fit_controls_are_explicit_camera_actions(browser_graph):
     page = browser_graph.page
-    assert page.locator("#kg_fit_select option").evaluate_all(
-        "options => options.map(option => option.value)"
-    ) == ["reveal", "selection", "context", "displayed"]
+    assert page.locator("#kg_fit_select").count() == 0
+    assert page.locator("#kg_fit_apply").get_attribute('aria-label') == 'Fit context'
 
     page.evaluate(
         """() => network.moveTo({
@@ -236,7 +234,6 @@ def test_fit_controls_are_explicit_camera_actions(browser_graph):
         })"""
     )
     before = _view_state(page)
-    page.locator("#kg_fit_select").select_option("displayed")
     _disable_camera_animation(page)
     page.locator("#kg_fit_apply").click()
     after = _view_state(page)
@@ -249,7 +246,6 @@ def test_fit_controls_are_explicit_camera_actions(browser_graph):
 def test_fit_skips_animation_on_low_capability_devices(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept("3.1")
-    page.locator("#kg_fit_select").select_option("context")
     animation = page.evaluate("""() => {
       Object.defineProperty(navigator, "hardwareConcurrency", {
         configurable: true,
@@ -296,10 +292,9 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
     ids = ["1.1", "2.1", "2.2", "3.1"]
     before = page.evaluate("ids => network.getPositions(ids)", ids)
 
-    page.locator("#kg_fit_select").select_option("context")
     fit_button = page.locator("#kg_fit_apply")
     _disable_camera_animation(page)
-    assert fit_button.inner_text() == "Fit"
+    assert fit_button.inner_text() == "Fit context"
     fit_button.click()
     assert fit_button.inner_text() == "Fit++"
     assert page.evaluate("ids => network.getPositions(ids)", ids) == before
@@ -309,7 +304,7 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         "() => Boolean(window.kgContextContractionSnapshot().active)"
     )
     after = page.evaluate("ids => network.getPositions(ids)", ids)
-    assert fit_button.inner_text() == "Fit"
+    assert fit_button.inner_text() == "Fit context"
     assert after["3.1"] == before["3.1"]
     before_distances = {
         node_id: math.hypot(position["x"], position["y"])
@@ -371,7 +366,7 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
         assert math.isclose(
             restored[node_id]["y"], published["concepts"][node_id]["y"], abs_tol=2
         )
-    assert fit_button.inner_text() == "Fit"
+    assert fit_button.inner_text() == "Fit context"
     assert page.evaluate("() => kgContextContractionSnapshot().active") is False
 
 

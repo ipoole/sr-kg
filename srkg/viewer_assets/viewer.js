@@ -184,7 +184,7 @@
             if (viewerState.view === "details") { setViewerView("both"); }
             renderGraphFromViewerState();
             expandContextModules();
-            document.getElementById("kg_fit_select").value = "context";
+
             updateGraphContextControls();
             await nextAnimationFrames(2);
             var reading = readingTrees.snapshot();
@@ -3864,12 +3864,6 @@
           setResponsiveOptionLabels("kg_view_select", {
             both: ["Both", "Both"], graph: ["Graph", "Graph"], details: ["Details", "Details"]
           }, compact);
-          setResponsiveOptionLabels("kg_fit_select", {
-            reveal: ["Reveal selection", "Reveal"],
-            selection: ["Fit selection", "Selection"],
-            context: ["Fit context", "Context"],
-            displayed: ["Fit displayed graph", "All"]
-          }, compact);
           var expandSelected = document.getElementById("kg_expand_selected_module");
           if (expandSelected) {
             expandSelected.textContent = compact
@@ -3991,7 +3985,7 @@
           );
           if (viewerState.view === "details") { setViewerView("both"); }
           renderGraphFromViewerState();
-          document.getElementById("kg_fit_select").value = "context";
+
           updateGraphContextControls();
           await nextAnimationFrames(2);
           if (selected !== JSON.stringify(viewerSelectionSnapshot()) ||
@@ -5570,7 +5564,7 @@
           applyDefaultModuleFoldState();
           selectDefaultViewerObject(); initialiseSelectionHistory();
           var homeSelection = JSON.stringify(viewerSelectionSnapshot());
-          document.getElementById("kg_fit_select").value = "context";
+
           await nextAnimationFrames(2);
           if (homeSelection !== JSON.stringify(viewerSelectionSnapshot())) { return; }
           graphCamera.cancelPendingRestore();
@@ -6193,13 +6187,10 @@
             customTraversals: viewerState.contextRule.customTraversals
           }, {origin: "user"});
         });
-        document.getElementById("kg_fit_select").addEventListener("change", function() {
-          clearContextFitPriming();
-        });
         document.getElementById("kg_fit_apply").addEventListener("click", function() {
           executeViewerCommand({
             command: "fit",
-            value: document.getElementById("kg_fit_select").value
+            value: "context"
           }, {origin: "user"});
         });
         document.getElementById("kg_custom_context_apply").addEventListener("click", function() {
