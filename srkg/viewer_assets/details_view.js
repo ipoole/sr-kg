@@ -182,7 +182,7 @@ function kgCreateDetailsView(options) {
     refreshFoldControls(panel);
     schedulePanelContentRefit();
     if (window.MathJax && MathJax.typesetPromise) {
-      MathJax.typesetPromise([panel]).catch(function(err) {
+      return MathJax.typesetPromise([panel]).catch(function(err) {
         console.warn("MathJax typesetting failed:", err);
       }).then(function() {
         applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);

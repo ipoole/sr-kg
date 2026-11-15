@@ -241,3 +241,46 @@ def test_tutorial_checkpoint_restores_full_width_reading(reading_graph):
     assert page.locator('#info_panel').evaluate('e=>e.classList.contains("kg-reading-focus-active")')
     assert page.evaluate('kgCaptureTutorialPresentation().reading') == saved['reading']
     assert not reading_graph.page_errors
+
+
+@pytest.mark.browser_full
+@pytest.mark.parametrize("width", [390, 1280])
+def test_tutorial_reading_statements_are_typeset_before_framing(
+    reading_tree_output, playwright_browser, width,
+):
+    """Programmatic expansion must typeset lazy content, including on resume."""
+    from playwright.sync_api import expect
+
+    api, browser = playwright_browser
+    with _open_browser_graph(api, browser, reading_tree_output.with_name("viewer.html"),
+                             context_options={"viewport": {"width": width, "height": 950}}) as graph:
+        page = graph.page
+        page.evaluate(r"""() => {
+            for (const id of ['3.1', '2.1']) {
+                conceptData[id].content_blocks.find(b => b.kind === 'definition').statement =
+                    String.raw`A mathematical statement \(E_0=mc^2\).`;
+            }
+        }""")
+        graph.click_concept("3.1")
+        page.locator("#kg_view_select").select_option("details")
+        page.evaluate("MathJax.startup.promise")
+        # Finish the initial panel pass before any reading-tree DOM exists.
+        page.evaluate("MathJax.typesetPromise([document.getElementById('info_panel')])")
+        page.evaluate("""kgExecuteViewerCommand({command:'open-reading-tree',
+            recipe:'teaching', depth:'three-hops', target:'concept:2.1'}, {origin:'tutorial'})""")
+
+        def assert_statements_rendered():
+            card = page.locator('.kg-reading-tree[data-reading-recipe="teaching"]')
+            for node in ['3.1', '2.1']:
+                statement = card.locator(
+                    f'[data-content-block-id="{node}.definition"] > summary .kg-content-statement'
+                ).first
+                expect(statement.locator('mjx-container')).to_have_count(1)
+                assert statement.locator('[data-mml-node="merror"]').count() == 0
+
+        assert_statements_rendered()
+        saved = page.evaluate('kgCaptureTutorialPresentation()')
+        page.evaluate("kgExecuteViewerCommand({command:'select',target:'concept:1.1'},{origin:'tutorial'})")
+        page.evaluate('(saved)=>kgRestoreTutorialPresentation(saved)', saved)
+        assert_statements_rendered()
+        assert not graph.page_errors

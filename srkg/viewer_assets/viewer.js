@@ -174,7 +174,7 @@
           renderBlock: function(id, block, placement) {
             return renderOwnerContentBlock("concept", id, block, placement);
           },
-          typeset: function(element) { typesetInfoPanel({element: element}); },
+          typeset: function(element) { return typesetInfoPanel({element: element}); },
           clearMath: function(element) { detailsView.clearMathTypesetting(element); },
           onPosition: function() { if (initialGraphProjectionReady) { network.redraw(); } },
           onSynchronise: async function(id, rule) {

@@ -44,7 +44,7 @@ Issue numbers are retained so existing references remain valid.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 7. **Done.** Date format in version history is dd.mm.yyyy; source dates remain ISO.
 8. **Done.** Personal-layout and Fit++ notices expire after roughly three seconds; editing and the temporary arrangement remain active.
-9. When running tutorials, statements with maths seem to come out raw.
+9. **Done.** Tutorial reading-tree expansion typesets newly inserted statements before framing them; restored reading paths retain rendered maths.
 10. **Done.** Quick Start links to acknowledgments and software credits, including the Susskind/Friedman and Tong acknowledgments.
 
 ## 5. Notes enhancement and unification

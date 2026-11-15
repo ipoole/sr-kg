@@ -356,6 +356,9 @@ function kgCreateReadingTrees(options) {
       hydrate(target); afterRender(target); visit(tree, node);
     }
     restored(document.getElementById("info_panel"));
+    // Quiet programmatic toggles skip the ordinary toggle/typeset handler.
+    // Finish the lazy statements before the tutorial measures or frames them.
+    await options.typeset(card);
     if (sync === true) { await synchronise(tree); }
     return node ? target.parentElement : card;
   }
