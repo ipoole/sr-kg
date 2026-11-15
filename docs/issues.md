@@ -77,10 +77,18 @@ The sampled historical archive is also complete:
 6. **Done.** Add to introductory tutorial a short demo of reading trees.
 7. **Done.** Update the user guide
 8. **Done.** Update Quick start
-9. **Done.** Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text 
+9. **Done.** Decide user facing statement of changes for the version history.  Highlights are reading trees, more explanatory text
    and graphics in content.  What else?
 10. **Done.** Make a bit of a splash about v5.0.0 on the home page.
- 
+
 
 Content status updated: all three domains have developed teaching expositions,
 with continuing review and extension; GR is no longer described as seed-level.
+
+Release-preparation verification: 786 unit tests and 451 browser cases pass
+(357 fast, including the focused full-width checkpoint regression, and 94
+full-content cases). Validation: zero errors and the existing 216 warnings.
+Phone/desktop guide and homepage layouts were inspected; release and preview
+assemblies include the new guide image and exact viewer bytes. The ignored
+`output/PhysicsKG.html` is rebuilt as v5.0.0. Source, product tag and website
+publication remain pending final review.

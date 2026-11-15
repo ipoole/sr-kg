@@ -42,14 +42,16 @@ being pruned in this change.
 
 A block's title, folded statement and expandable body share a pale box tinted by kind.
 The folded title precedes the statement; opening hides the statement and any
-recognition thumbnail. **All bodies start folded**. The kind is a badge,
+recognition thumbnail. Text bodies start folded; native Graphic blocks retain
+their open image-and-caption presentation. The kind is a badge,
 not a substitute for a meaningful title. Opening must reward the reader with
 reasoning, interpretation, detail or illustration beyond the statement.
 
 Local clarifications omit the folded frame, statement and badge; their titles
 use the same full-size bold type as personal notes, with colour identifying origin.
-Ordinary body prose appears on opening. Statements are blue and edge
-justifications teal during development. Structure and labels also identify them.
+Ordinary body prose appears on opening. Statements and edge justifications use
+the normal prose colour; their structure and labels identify their roles. Block
+kind tints, title accents and graph relation colours remain distinct.
 
 A concept details page shows its owned blocks, then a visual divider and reading
 cards. The cards use the same statement/title/disclosure shell, with separate
