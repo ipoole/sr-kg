@@ -5414,7 +5414,7 @@
         var tutorialLibrary;
         var guidedTutorial = kgCreateGuidedTutorial({
           personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
-          canStart: function(route) { return !tutorialLibrary || !tutorialLibrary.problems(route).length; },
+          canStart: function(route, playOptions) { return !tutorialLibrary || !tutorialLibrary.problems(route, playOptions).length; },
           onIntroduction: function(route) { if (tutorialLibrary) { tutorialLibrary.showIntroduction(route); } },
           onExit: function() { if (tutorialLibrary) { tutorialLibrary.playbackExited(); } },
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
@@ -5439,6 +5439,8 @@
         window.kgStartTutorial = startTutorialById;
         tutorialLibrary = kgCreateTutorialLibrary({
           store: personalDataStore.tutorials, markup: contentMarkup,
+          model: kgCreateTutorialEditorModel({contract:kgViewerConfig.tutorialAuthoring,
+            concepts:conceptData, modules:moduleData, edges:allEdges, relation:edgeRelation}),
           version: document.querySelector('meta[name="application-version"]').content,
           hasDomain: function(domain) {
             return Object.keys(conceptData).some(function(id) { return conceptData[id].domain === domain; });

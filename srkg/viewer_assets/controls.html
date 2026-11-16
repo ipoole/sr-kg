@@ -312,16 +312,35 @@
 <dialog id="kg_tutorial_editor" class="kg-tutorial-editor" aria-labelledby="kg_tutorial_editor_heading">
   <h2 id="kg_tutorial_editor_heading">Edit tutorial</h2>
   <p id="kg_tutorial_editor_status" role="status" aria-live="polite"></p>
+  <fieldset id="kg_tutorial_editor_fields">
   <label>Tutorial title<input id="kg_tutorial_editor_title" type="text"></label>
   <label>Summary<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
   <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
   <hr>
   <label>Card<select id="kg_tutorial_editor_card"></select></label>
+  <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_card_controls">
+    <button type="button" data-card-action="add">Add card</button>
+    <button type="button" data-card-action="duplicate">Duplicate card</button>
+    <button type="button" data-card-action="delete">Delete card</button>
+    <button type="button" data-card-action="up">Move up</button>
+    <button type="button" data-card-action="down">Move down</button>
+  </div>
+  <details><summary>Arrange cards (drag to reorder)</summary><ol id="kg_tutorial_editor_order"></ol></details>
   <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
   <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="6" placeholder="Add written narration here"></textarea></label>
-  <p id="kg_tutorial_editor_actions" class="kg-muted-label"></p>
+  <details id="kg_tutorial_editor_action_section"><summary>Viewer actions</summary>
+    <div id="kg_tutorial_editor_actions"></div>
+  </details>
+  <details id="kg_tutorial_editor_setup_section"><summary>Setup (silent)</summary>
+    <p>These actions run before the pointer demonstration.</p>
+    <div id="kg_tutorial_editor_setup"></div>
+  </details>
+  <p class="kg-muted-label">Preview rebuilds the earlier cards first. After changing an earlier action, check that later cards still work.</p>
+  </fieldset>
   <p id="kg_tutorial_editor_validation" role="status"></p>
   <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_editor_preview" type="button">Preview card</button>
+    <button id="kg_tutorial_editor_from" type="button">Play from here</button>
     <button id="kg_tutorial_editor_play" type="button">Play tutorial</button>
     <button id="kg_tutorial_editor_retry" type="button" hidden>Retry save</button>
     <button id="kg_tutorial_editor_close" type="button">Done</button>

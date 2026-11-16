@@ -4057,6 +4057,18 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 .kg-tutorial-editor textarea { resize: vertical; }
 .kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.kg-tutorial-editor-actions button { font: inherit; padding: 6px 10px; cursor: pointer; }
+.kg-tutorial-editor button {
+    font: inherit; font-size: 0.875em; min-height: 32px; padding: 6px 10px;
+    border: 1px solid #9cafc1; border-radius: 5px; background: #f7f9fc; color: #28465b;
+    cursor: pointer;
+}
+.kg-tutorial-editor button:disabled { opacity: 0.5; cursor: default; }
 #kg_tutorial_editor_status[data-state="error"] { color: #a51d22; font-weight: 700; }
 #kg_tutorial_editor_validation { color: #6b5200; }
+
+/* Tutorial authoring stays in a single scrollable surface, including on phones. */
+.kg-tutorial-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.kg-tutorial-editor details { margin: 12px 0; padding: 8px; border: 1px solid #ccd6df; border-radius: 6px; }
+.kg-tutorial-editor summary { cursor: pointer; font-weight: 600; }
+.kg-tutorial-editor li[draggable] { padding: 8px; margin: 4px 0; border: 1px solid #ccd6df; cursor: grab; }
+.kg-tutorial-editor select { text-overflow: ellipsis; }

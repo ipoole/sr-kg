@@ -21,7 +21,10 @@ function kgCreateGuidedTutorial(options) {
     exploreSnapshot: null,
     exploring: false,
     stepIndex: -1,
-    transitioning: false
+    transitioning: false,
+    singleStep: false,
+    previewIndex: 0,
+    errorMessage: ""
   };
   var tutorialPointerState = {
     target: null,
@@ -393,21 +396,22 @@ function kgCreateGuidedTutorial(options) {
     var step = steps[tutorialPlayback.stepIndex];
     document.getElementById("kg_tutorial_first_step_guidance").hidden =
       tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
-    document.getElementById("kg_tutorial_title").textContent = route.title;
+    document.getElementById("kg_tutorial_title").textContent = (tutorialPlayback.singleStep ? "Card preview · " : "") + route.title;
     document.getElementById("kg_tutorial_progress").textContent =
       String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
     document.getElementById("kg_tutorial_step_title").textContent = step.title;
     var commentary = document.getElementById("kg_tutorial_commentary");
     replaceTypesetContent(commentary, renderConceptText(step.commentary || ""));
     var error = document.getElementById("kg_tutorial_error");
-    error.hidden = !errorMessage;
-    error.textContent = errorMessage || "";
+    if (errorMessage !== undefined) { tutorialPlayback.errorMessage = errorMessage; }
+    error.hidden = !tutorialPlayback.errorMessage;
+    error.textContent = tutorialPlayback.errorMessage;
     document.getElementById("kg_tutorial_back").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.stepIndex <= 0;
+      tutorialPlayback.singleStep || tutorialPlayback.stepIndex <= 0;
     document.getElementById("kg_tutorial_next").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.stepIndex >= steps.length - 1;
+      tutorialPlayback.singleStep || tutorialPlayback.stepIndex >= steps.length - 1;
     document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
     var exploreButton = document.getElementById("kg_tutorial_explore");
     exploreButton.disabled = tutorialPlayback.transitioning;
@@ -484,7 +488,9 @@ function kgCreateGuidedTutorial(options) {
       !tutorialPlayback.activeRoute
     ) { return; }
     var route = tutorialPlayback.activeRoute;
-    if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
+    if (stepIndex < 0 || stepIndex >= route.steps.length ||
+        (tutorialPlayback.singleStep && stepIndex !== tutorialPlayback.previewIndex)) { return; }
+    tutorialPlayback.errorMessage = "";
     setTutorialTransitioning(true);
     clearTutorialEmphasis();
     try {
@@ -526,17 +532,23 @@ function kgCreateGuidedTutorial(options) {
       }
       renderTutorialNarration();
     } catch (error) {
-      renderTutorialNarration("Tutorial stopped: " + String(error.message || error));
+      renderTutorialNarration("Card " + (stepIndex + 1) + " stopped: " + String(error.message || error));
     } finally {
       setTutorialTransitioning(false);
     }
   }
 
-  async function startSelectedTutorial() {
+  async function startSelectedTutorial(playOptions) {
+    playOptions = playOptions || {};
     if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
     var route = tutorialRouteById(tutorialPlayback.selectedId);
     if (!route || !route.steps || !route.steps.length ||
-        (options.canStart && !options.canStart(route))) { return; }
+        (options.canStart && !options.canStart(route, playOptions))) { return; }
+    var startIndex = Number.isInteger(playOptions.startIndex) ? playOptions.startIndex : 0;
+    if (startIndex < 0 || startIndex >= route.steps.length) { return; }
+    tutorialPlayback.singleStep = Boolean(playOptions.singleStep);
+    tutorialPlayback.previewIndex = startIndex;
+    tutorialPlayback.errorMessage = "";
     tutorialPlayback.baseline = captureTutorialPresentation();
     tutorialPlayback.activeRoute = JSON.parse(JSON.stringify(route));
     tutorialPlayback.exploreSnapshot = null;
@@ -544,7 +556,19 @@ function kgCreateGuidedTutorial(options) {
     tutorialPlayback.stepIndex = -1;
     setControlsVisible(false);
     setGuidedTutorialActive(true);
-    await runTutorialStep(0, false);
+    if (startIndex > 0) {
+      tutorialPlayback.stepIndex = startIndex;
+      setTutorialTransitioning(true);
+      try {
+        await replayTutorialCommands(tutorialPlayback.baseline, tutorialCommandsThrough(tutorialPlayback.activeRoute, startIndex - 1));
+        setControlsVisible(false);
+      } catch (error) {
+        renderTutorialNarration("Could not prepare card " + (startIndex + 1) + ": " + String(error.message || error));
+        setTutorialTransitioning(false); return;
+      }
+      setTutorialTransitioning(false);
+    }
+    await runTutorialStep(startIndex, false);
   }
 
   function defaultGuidedTutorial() {
@@ -553,14 +577,14 @@ function kgCreateGuidedTutorial(options) {
       (tutorialData || [])[0] || null;
   }
 
-  async function startTutorialById(tutorialId) {
+  async function startTutorialById(tutorialId, playOptions) {
     if (tutorialPlayback.activeRoute || tutorialPlayback.transitioning) { return false; }
     var route = tutorialRouteById(tutorialId);
     if (!route) { return false; }
     selectTutorialIntroduction(route.tutorial_id);
     var dialog = document.getElementById("kg_splash_dialog");
     if (dialog && dialog.open) { dismissSplash(); }
-    await startSelectedTutorial();
+    await startSelectedTutorial(playOptions);
     return Boolean(tutorialPlayback.activeRoute);
   }
 
@@ -652,7 +676,7 @@ function kgCreateGuidedTutorial(options) {
       var button = event.target.closest(".kg-tutorial-select");
       if (button) { selectTutorialIntroduction(button.getAttribute("data-tutorial-id")); }
     });
-    document.getElementById("kg_tutorial_start").addEventListener("click", startSelectedTutorial);
+    document.getElementById("kg_tutorial_start").addEventListener("click", function() { startSelectedTutorial(); });
     document.getElementById("kg_tutorial_back").addEventListener("click", function() {
       runTutorialStep(tutorialPlayback.stepIndex - 1, true);
     });

@@ -252,3 +252,168 @@ def test_long_tutorial_library_keeps_start_reachable(tutorial_graph, width):
     page.locator('#kg_tutorial_start').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.locator('#kg_tutorial_error').is_hidden()
+
+
+def _copy_editor(page):
+    page.locator('#kg_tutorial_list [data-tutorial-id="viewer-tour"]').click()
+    page.locator('#kg_tutorial_intro_copy').click()
+    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
+    return page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+
+
+def _record(page, tutorial_id):
+    _saved(page)
+    return page.evaluate('(id)=>kgPersonalData.tutorials.get(id)', tutorial_id)
+
+
+@pytest.mark.browser
+def test_card_operations_keep_identity_and_allow_an_empty_draft(tutorial_graph):
+    page = _library(tutorial_graph)
+    tutorial_id = _copy_editor(page)
+    original = _record(page, tutorial_id)['route']['steps']
+    controls = page.locator('#kg_tutorial_editor_card_controls')
+    controls.get_by_role('button', name='Duplicate card', exact=True).click()
+    copied = _record(page, tutorial_id)['route']['steps']
+    assert copied[1]['step_id'] != original[0]['step_id']
+    assert {k:v for k,v in copied[1].items() if k != 'step_id'} == {k:v for k,v in original[0].items() if k != 'step_id'}
+    controls.get_by_role('button', name='Move down', exact=True).click()
+    assert _record(page, tutorial_id)['route']['steps'][2]['step_id'] == copied[1]['step_id']
+    page.locator('#kg_tutorial_editor_order').evaluate('e=>e.parentElement.open=true')
+    page.locator('#kg_tutorial_editor_order li').nth(2).drag_to(page.locator('#kg_tutorial_editor_order li').nth(0))
+    assert _record(page, tutorial_id)['route']['steps'][0]['step_id'] == copied[1]['step_id']
+    page.once('dialog', lambda dialog: dialog.dismiss())
+    controls.get_by_role('button', name='Delete card', exact=True).click()
+    assert len(_record(page, tutorial_id)['route']['steps']) == 7
+    page.on('dialog', lambda dialog: dialog.accept())
+    for _ in range(7):
+        controls.get_by_role('button', name='Delete card', exact=True).click()
+    assert not _record(page, tutorial_id)['route']['steps']
+    assert page.locator('#kg_tutorial_editor_card_title').is_disabled()
+    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    controls.get_by_role('button', name='Add card', exact=True).click()
+    assert len(_record(page, tutorial_id)['route']['steps']) == 1
+    assert page.locator('#kg_tutorial_editor_commentary').input_value() == ''
+    assert page.locator('#kg_tutorial_editor_preview').is_disabled()
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_edit_action_sequence_setup_pointers_and_pause_survives_reload(tutorial_graph, width):
+    page = _library(tutorial_graph)
+    page.set_viewport_size({'width':width, 'height':900})
+    page.locator('#kg_tutorial_new').click()
+    _fill_draft(page)
+    tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+    page.locator('#kg_tutorial_editor_action_section').evaluate('e=>e.open=true')
+    actions = page.locator('#kg_tutorial_editor_actions')
+    actions.get_by_role('button', name='Add action', exact=True).click()
+    actions.locator('[data-field="target"]').select_option('concept:2.1')
+    actions.get_by_label('Pause before the next action (seconds)', exact=True).fill('1.2')
+    actions.get_by_role('button', name='Add action', exact=True).click()
+    actions.get_by_label('Action type', exact=True).select_option('set-context')
+    actions.locator('[data-field="preset"]').select_option('uses')
+    actions.locator('[data-field="depth"]').select_option('three-hops')
+    actions.get_by_label('Pointer area', exact=True).select_option('controls')
+    actions.get_by_label('Pointer target', exact=True).select_option('control:depth')
+    actions.get_by_role('button', name='Move action up', exact=True).click()
+    page.locator('#kg_tutorial_editor_setup_section').evaluate('e=>e.open=true')
+    setup = page.locator('#kg_tutorial_editor_setup')
+    setup.get_by_role('button', name='Add action', exact=True).click()
+    setup.get_by_label('Action type', exact=True).select_option('set-view')
+    setup.locator('[data-field="value"]').select_option('graph')
+    step = _record(page, tutorial_id)['route']['steps'][0]
+    assert step['prepare'] == [{'command':'set-view', 'value':'graph'}]
+    assert 'action' not in step and 'pointer' not in step
+    assert step['actions'][0]['action'] == {'command':'set-context', 'preset':'uses', 'depth':'three-hops'}
+    assert step['actions'][0]['pointer'] == {'target':'control:depth'}
+    assert step['actions'][1]['action'] == {'command':'select', 'target':'concept:2.1'}
+    assert step['actions'][1]['pause_ms'] == 1200
+    assert step['actions'][1]['pointer'] == {'target':'graph:concept:2.1'}
+    assert page.locator('#kg_tutorial_editor').evaluate('e=>e.scrollWidth<=e.clientWidth+1')
+    page.locator('#kg_tutorial_editor_close').click()
+    page.reload(wait_until='domcontentloaded')
+    _library(tutorial_graph)
+    page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
+    page.locator('#kg_tutorial_intro_edit').click()
+    assert _record(page, tutorial_id)['route']['steps'][0] == step
+    page.locator('#kg_tutorial_editor_play').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
+    assert page.locator('#kg_tutorial_error').is_hidden()
+    state = page.evaluate('kgCaptureTutorialPresentation()')
+    assert state['selection'] == {'type':'concept', 'id':'2.1'}
+    assert state['view'] == 'graph'
+    assert not tutorial_graph.page_errors
+
+
+@pytest.mark.browser
+def test_card_preview_rebuilds_prefix_and_play_from_here_continues(tutorial_graph):
+    page = _library(tutorial_graph)
+    _copy_editor(page)
+    before = page.evaluate('kgCaptureTutorialPresentation()')
+    page.locator('#kg_tutorial_editor_card').select_option(index=2)
+    page.locator('#kg_tutorial_editor_preview').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===2 && !kgTutorialPlaybackSnapshot().transitioning')
+    state = page.evaluate('kgCaptureTutorialPresentation()')
+    assert state['selection'] == {'type':'concept', 'id':'2.1'}
+    assert state['contextRule']['preset'] == 'uses'
+    assert state['displayScope'] == 'context'
+    assert page.locator('#kg_tutorial_back').is_disabled()
+    assert page.locator('#kg_tutorial_next').is_disabled()
+    assert page.locator('#kg_tutorial_error').is_hidden()
+    page.locator('#kg_tutorial_exit').click()
+    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
+    assert page.locator('#kg_tutorial_editor_card').input_value() == '2'
+    restored = page.evaluate('kgCaptureTutorialPresentation()')
+    for key in ['selection', 'contextRule', 'view', 'displayScope', 'camera']:
+        assert restored[key] == before[key]
+    page.locator('#kg_tutorial_editor_from').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===2 && !kgTutorialPlaybackSnapshot().transitioning')
+    assert page.locator('#kg_tutorial_next').is_enabled()
+    page.locator('#kg_tutorial_next').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===3 && !kgTutorialPlaybackSnapshot().transitioning')
+    assert page.locator('#kg_search').input_value() == 'Alpha'
+    assert page.locator('#kg_tutorial_error').is_hidden()
+
+
+@pytest.mark.browser
+def test_incomplete_later_card_does_not_block_preview_but_invalid_action_does(tutorial_graph):
+    page = _library(tutorial_graph)
+    tutorial_id = _copy_editor(page)
+    page.locator('#kg_tutorial_editor_card').select_option(index=5)
+    page.locator('#kg_tutorial_editor_commentary').fill('')
+    _saved(page)
+    page.locator('#kg_tutorial_editor_card').select_option(index=0)
+    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
+    assert page.locator('#kg_tutorial_editor_preview').is_enabled()
+    page.locator('#kg_tutorial_editor_action_section').evaluate('e=>e.open=true')
+    actions = page.locator('#kg_tutorial_editor_actions')
+    actions.get_by_label('Action type', exact=True).select_option('search')
+    actions.locator('[data-field="query"]').fill('')
+    assert page.locator('#kg_tutorial_editor_preview').is_disabled()
+    assert _record(page, tutorial_id)['route']['steps'][0]['actions'][0]['action']['query'] == ''
+    actions.locator('[data-field="query"]').fill('Beta')
+    assert page.locator('#kg_tutorial_editor_preview').is_enabled()
+    # Text entry must keep focus through each keystroke, rather than rebuilding the form.
+    actions.locator('[data-field="query"]').press('End')
+    actions.locator('[data-field="query"]').press_sequentially(' route')
+    assert actions.locator('[data-field="query"]').input_value() == 'Beta route'
+
+
+@pytest.mark.browser
+def test_rehearsal_error_keeps_exit_and_editor_available(tutorial_graph):
+    page = _library(tutorial_graph)
+    _copy_editor(page)
+    # A known block can still be unavailable in the selected concept. Do not silently fix the route.
+    page.locator('#kg_tutorial_editor_action_section').evaluate('e=>e.open=true')
+    actions = page.locator('#kg_tutorial_editor_actions')
+    actions.get_by_label('Action type', exact=True).select_option('open-details-block')
+    actions.locator('[data-field="target"]').select_option('block:1.1.definition')
+    actions.get_by_label('Pointer area', exact=True).select_option('general')
+    actions.get_by_label('Pointer target', exact=True).select_option('narration')
+    page.locator('#kg_tutorial_editor_preview').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
+    expect(page.locator('#kg_tutorial_error')).to_be_visible()
+    assert page.locator('#kg_tutorial_exit').is_enabled()
+    page.locator('#kg_tutorial_exit').click()
+    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')

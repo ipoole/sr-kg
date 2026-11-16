@@ -350,8 +350,8 @@ it is not a separate creation workflow.
 See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
 the proposed contract, storage compatibility safeguards, compact playback and
 staged review gates. This supersedes the earlier developer-only recorder proposal;
-the local library, independent copies and minimal text editor are implemented
-(stage 2), while action editing/recording, portability/sync and audio remain planned.
+the local library, independent copies, card/action editor and rehearsal are implemented
+(stages 2–3), while recording, portability/sync and audio remain planned.
 
 ## Validation and compatibility
 

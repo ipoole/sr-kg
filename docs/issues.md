@@ -7,9 +7,11 @@ Issue numbers are retained so existing references remain valid.
 2. **Deferred — generated tutorials.** Explore generating prompts from a concept's derivation tree,
    using short block summaries or learning outcomes that could also serve as hover previews.
    Use this work to audit the KB's dependencies, block structure and explanations.
-3. **Deferred — tutorial authoring.** Explore recording viewer actions with commentary and an
-   Explore/Continue workflow. Unify recording and editing, including insertion of steps;
-   validate that changed actions do not invalidate later presentation states.
+3. **In progress — user tutorial authoring**, branch `user-creation-of-tutorials`.
+   Personal drafts, built-in copies, card/action editing and rehearsal are implemented;
+   next are recording with Undo/Redo and phone support, portability/sync
+   and optional human narration. Learners' Explore actions are not recorded. See
+   [the staged design and review gates](design/tutorial_authoring.md).
 
 ## 3. Ambitious ideas
 

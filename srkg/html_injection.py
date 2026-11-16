@@ -13,6 +13,7 @@ from datetime import date
 from pathlib import Path
 from html import escape as html_escape
 
+from srkg.tutorial_contract import authoring_contract
 from srkg.branding import PRODUCT_NAME, PRODUCT_TAGLINE, PRODUCT_TITLE, PRODUCT_VERSION
 
 from srkg.config import (
@@ -126,6 +127,8 @@ def inject_controls(
         "tutorial_targets.js",
         "guided_tutorial.js",
         "tutorial_store.js",
+        "tutorial_editor_model.js",
+        "tutorial_action_editor.js",
         "tutorial_library.js",
         "context_layout.js",
         "graph_model.js",
@@ -277,6 +280,7 @@ def _viewer_runtime_config(google_drive_client_id: str = "", *, domain_data=None
     """Return browser-side constants that are injected with generated data."""
     return {
         "applicationVersion": PRODUCT_VERSION,
+        "tutorialAuthoring": authoring_contract(),
         "domains": domain_data or [],
         "edgeHoverWidth": EDGE_HOVER_WIDTH,
         "nodeLabels": {

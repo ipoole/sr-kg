@@ -1,6 +1,6 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–2 implemented. Action editing/recording,
+Status: design accepted; stages 1–3 implemented. Action recording,
 export/import, tutorial sync and voice remain planned.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
@@ -13,7 +13,8 @@ player, semantic commands, pointer targets and presentation restoration.
 Stage 2 review: Tools → Tutorials → New tutorial opens the same editor used for
 personal copies. Edit tutorial/card titles, summary, author credit and written
 narration; select any existing card. Play tutorial returns to the editor on Exit.
-Adding/reordering cards and editing/capturing actions follow in stages 3–4.
+Stage 3 adds card management, explicit action editing and selected-card rehearsal;
+action capture follows in stage 4.
 Personal tutorial text is local-only at this stage; existing backups and Google
 sync do not include it. Storage failures retain the open draft and offer Retry.
 
@@ -270,6 +271,25 @@ as separate immutable assets and packaged/deployed with the website, not embedde
 into every viewer. The HTML remains text-capable without bundled audio. Fully
 offline use also needs the existing viewer dependencies and any audio assets;
 this work does not implicitly include the separate installable/offline-app issue.
+
+## Implemented through stage 3
+
+The editor supports independent cards with stable IDs; add, duplicate, delete,
+Move up/down and drag reordering. Visible actions and optional silent setup use
+the same command form, driven by the build validator's shared command contract.
+Each visible action can choose a semantic pointer and a 0–5 second pause before
+the next action. Empty or invalid drafts still save; validation identifies the
+card/action that prevents playback.
+
+Preview card reconstructs the preceding cards without pointer animation, then
+runs only the selected card. Its Back/Next are disabled. Incomplete later cards
+do not prevent this preview. Play from here rebuilds the same prefix and then
+permits normal progression; Play tutorial starts at the beginning. Exit restores
+the original viewer presentation and reopens the editor at the same card. Earlier
+action edits can break later steps: report rehearsal failures, retain the draft
+and offer Exit rather than silently repairing the sequence.
+
+Recording remains stage 4; these controls currently edit actions explicitly.
 
 ## 10. Delivery stages and review gates
 

@@ -9,74 +9,13 @@ from typing import Any, Iterable
 import yaml
 from srkg.domain_references import BuildWarning, domain_namespace
 
+from srkg.tutorial_contract import (
+    COMMANDS, CONTROL_TARGETS, POINTER_BASE_TARGETS, READING_TREE_RECIPES,
+    TOOLS_SECTIONS, TUTORIAL_CATEGORIES, TUTORIAL_COMMANDS, TUTORIAL_EDGE_RELATIONS,
+)
+
 
 TUTORIAL_SCHEMA_VERSION = 1
-TUTORIAL_CATEGORIES = frozenset({"interface", "physics"})
-TUTORIAL_COMMANDS = frozenset({
-    "select",
-    "set-display-scope",
-    "set-context",
-    "set-view",
-    "set-module-representation",
-    "set-all-module-representations",
-    "expand-context-modules",
-    "fit",
-    "open-details-block",
-    "open-reading-tree",
-    "open-study-questions",
-    "open-details-graphic",
-    "open-details-relationship",
-    "set-relationship-full-tree",
-    "show-relationship-in-graph",
-    "show-graph-concept-hover",
-    "show-graph-edge-hover",
-    "show-tools-section",
-    "search",
-    "close-search",
-    "wait",
-})
-DISPLAY_SCOPES = frozenset({"overview", "full", "context"})
-CONTEXT_PRESETS = frozenset({
-    "connections",
-    "prerequisites",
-    "derivation",
-    "foundations",
-    "uses",
-    "related",
-})
-CONTEXT_DEPTHS = frozenset({"one-hop", "two-hops", "three-hops", "transitive"})
-VIEWS = frozenset({"both", "graph", "details"})
-MODULE_REPRESENTATIONS = frozenset({"folded", "expanded"})
-FIT_TARGETS = frozenset({"reveal", "selection", "context", "displayed"})
-TOOLS_SECTIONS = frozenset({
-    "tutorials",
-    "modules",
-    "layouts",
-    "study",
-    "personal-data",
-    "notes",
-})
-READING_TREE_RECIPES = frozenset({"derivation", "teaching"})
-DETAILS_RELATIONSHIP_SECTIONS = frozenset({"derived-from", "where-used"})
-TUTORIAL_EDGE_RELATIONS = frozenset({
-    "REQUIRES",
-    "DERIVES_FROM",
-    "CONSTRUCTED_FROM",
-    "COMPONENT_OF",
-    "INSTANCE_OF",
-    "RELATED",
-})
-CONTROL_TARGETS = frozenset({
-    "context",
-    "depth",
-    "fit",
-    "display-scope",
-    "view",
-    "search",
-    "search-input",
-    "tools",
-    "expand-context",
-})
 
 
 class TutorialLoadError(ValueError):
@@ -301,64 +240,35 @@ def _validate_command(command: dict[str, object], *, context: str, concept_ids: 
     name = _required_text(command, 'command', context)
     if name not in TUTORIAL_COMMANDS:
         raise TutorialLoadError(f'{context} has unsupported command: {name}')
-    if name == 'select':
-        target = _required_text(command, 'target', context)
-        _validate_object_target(target, context, concept_ids, module_ids, references=references)
-    elif name == 'set-display-scope':
-        _enum(command, 'value', DISPLAY_SCOPES, context)
-    elif name == 'set-context':
-        _enum(command, 'preset', CONTEXT_PRESETS, context)
-        _enum(command, 'depth', CONTEXT_DEPTHS, context)
-    elif name == 'set-view':
-        _enum(command, 'value', VIEWS, context)
-    elif name == 'set-module-representation':
-        target = _required_text(command, 'target', context)
-        _validate_prefixed_known(target, 'module:', module_ids, 'module', context, references=references)
-        _enum(command, 'value', MODULE_REPRESENTATIONS, context)
-    elif name == 'set-all-module-representations':
-        _enum(command, 'value', MODULE_REPRESENTATIONS, context)
-    elif name == 'fit':
-        _enum(command, 'value', FIT_TARGETS, context)
-    elif name == 'open-reading-tree':
-        _enum(command, 'recipe', READING_TREE_RECIPES, context)
-        if 'target' in command:
-            _validate_prefixed_known(_required_text(command, 'target', context), 'concept:', concept_ids, 'concept', context, references=references)
-        if 'depth' in command:
-            _enum(command, 'depth', CONTEXT_DEPTHS, context)
-        if 'synchronise' in command and not isinstance(command['synchronise'], bool):
-            raise TutorialLoadError(f'{context}.synchronise must be a boolean')
-    elif name == 'open-details-block':
-        target = _required_text(command, 'target', context)
-        _validate_prefixed_known(target, 'block:', block_ids, 'block', context, references=references)
-    elif name in {'open-details-relationship', 'set-relationship-full-tree'}:
-        _enum(command, 'value', DETAILS_RELATIONSHIP_SECTIONS, context)
-        if name == 'set-relationship-full-tree' and (not isinstance(command.get('full_tree'), bool)):
-            raise TutorialLoadError(f'{context}.full_tree must be a boolean')
-    elif name == 'show-relationship-in-graph':
-        _enum(command, 'preset', CONTEXT_PRESETS, context)
-        if not isinstance(command.get('full_tree'), bool):
-            raise TutorialLoadError(f'{context}.full_tree must be a boolean')
-    elif name == 'show-graph-concept-hover':
-        target = _required_text(command, 'target', context)
-        _validate_prefixed_known(target, 'concept:', concept_ids, 'concept', context, references=references)
-    elif name == 'show-graph-edge-hover':
-        target = _required_text(command, 'target', context)
-        _validate_edge_target(target, 'edge:', context, concept_ids, references=references)
-    elif name == 'show-tools-section':
-        _enum(command, 'value', TOOLS_SECTIONS, context)
-    elif name == 'search':
-        query = _required_text(command, 'query', context)
-        if len(query) > 200:
-            raise TutorialLoadError(f'{context}.query must be at most 200 characters')
-    elif name == 'wait':
-        milliseconds = _integer(command.get('milliseconds'), f'{context}.milliseconds')
-        if not 0 <= milliseconds <= 5000:
-            raise TutorialLoadError(f'{context}.milliseconds must be between 0 and 5000')
+    for spec in COMMANDS[name]['fields']:
+        key, kind = spec['name'], spec['type']
+        if spec.get('optional') and key not in command:
+            continue
+        if kind == 'enum':
+            _enum(command, key, spec['choices'], context)
+        elif kind == 'boolean':
+            if not isinstance(command.get(key), bool):
+                raise TutorialLoadError(f'{context}.{key} must be a boolean')
+        elif kind == 'integer':
+            value = _integer(command.get(key), f'{context}.{key}')
+            if not spec['min'] <= value <= spec['max']:
+                raise TutorialLoadError(f"{context}.{key} must be between {spec['min']} and {spec['max']}")
+        else:
+            value = _required_text(command, key, context)
+            if kind == 'object':
+                _validate_object_target(value, context, concept_ids, module_ids, references=references)
+            elif kind == 'edge':
+                _validate_edge_target(value, 'edge:', context, concept_ids, references=references)
+            elif kind in {'concept', 'module', 'block'}:
+                known = {'concept': concept_ids, 'module': module_ids, 'block': block_ids}[kind]
+                _validate_prefixed_known(value, kind + ':', known, kind, context, references=references)
+            elif kind == 'text' and len(value) > spec['max_length']:
+                raise TutorialLoadError(f"{context}.{key} must be at most {spec['max_length']} characters")
     return {str(key): value for key, value in command.items()}
 
 
 def _validate_pointer_target(target: str, *, context: str, concept_ids: set[str], module_ids: set[str], block_ids: set[str], references=None) -> None:
-    if target == 'narration' or target in {'details:heading', 'details:contents', 'details:study-questions', 'details:graphic', 'details:derived-from-show-graph', 'details:where-used-show-graph', 'details:derived-from-full-tree', 'details:where-used-full-tree'}:
+    if target in POINTER_BASE_TARGETS:
         return
     if target.startswith('control:module-fold:'):
         module_id = target.removeprefix('control:module-fold:')
@@ -490,7 +400,7 @@ def _integer(value: object, context: str) -> int:
 def _enum(
     mapping: dict[str, object],
     key: str,
-    allowed: frozenset[str],
+    allowed: Iterable[str],
     context: str,
 ) -> str:
     value = _required_text(mapping, key, context)

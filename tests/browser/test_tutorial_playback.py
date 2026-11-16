@@ -253,9 +253,26 @@ def test_tutorial_hides_the_previous_pointer_during_step_preparation(browser_gra
     )
     assert page.evaluate("kgTutorialPointerSnapshot().visible") is True
 
+    # Hold this fixture's preparation wait explicitly. A separate browser call
+    # can miss its 80 ms window when the parallel workers are busy.
+    page.evaluate("""() => {
+      const schedule = window.setTimeout;
+      window.setTimeout = (callback, delay, ...args) => {
+        if (delay === 80) {
+          window.__resumePreparation = () => {
+            window.setTimeout = schedule;
+            schedule(callback, 0, ...args);
+          };
+          return 0;
+        }
+        return schedule(callback, delay, ...args);
+      };
+    }""")
     page.locator("#kg_tutorial_next").click()
-    page.wait_for_function("() => kgTutorialPlaybackSnapshot().transitioning")
+    page.wait_for_function("() => typeof window.__resumePreparation === 'function'")
+    assert page.evaluate("kgTutorialPlaybackSnapshot().transitioning") is True
     assert page.evaluate("kgTutorialPointerSnapshot().visible") is False
+    page.evaluate("() => window.__resumePreparation()")
 
     page.wait_for_function(
         "() => !kgTutorialPlaybackSnapshot().transitioning && "

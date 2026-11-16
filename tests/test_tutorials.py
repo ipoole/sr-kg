@@ -327,3 +327,44 @@ def test_reading_tree_action_validation(tmp_path, recipe, target, depth):
     path.write_text(path.read_text().replace('recipe: '+recipe, 'recipe: unknown'))
     with pytest.raises(TutorialLoadError):
         load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)
+
+
+def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp_path):
+    """Exercise every editor command, including optional fields, through the public loader."""
+    import yaml
+    from srkg.tutorial_contract import authoring_contract
+
+    contract = authoring_contract()
+    target = {'object':'concept:sr.alpha', 'concept':'concept:sr.alpha',
+              'module':'module:sr.foundations', 'block':'block:sr.alpha.definition',
+              'edge':'edge:sr.alpha|DERIVES_FROM|gr.beta', 'text':'Alpha'}
+    steps = []
+    for name, spec in contract['commands'].items():
+        command = {'command':name}
+        for field in spec['fields']:
+            kind = field['type']
+            if kind == 'enum':
+                command[field['name']] = next(iter(field['choices']))
+            elif kind == 'boolean':
+                command[field['name']] = False
+            elif kind == 'integer':
+                command[field['name']] = field['min']
+            else:
+                command[field['name']] = target[kind]
+        steps.append({'step_id':name, 'title':name, 'commentary':'Read this card.', 'action':command})
+    document = {'schema_version':1, 'tutorials':[{'tutorial_id':'commands', 'title':'Commands',
+                'summary':'A contract exercise.', 'category':'interface', 'sequence':1,
+                'domains':['sr'], 'steps':steps}]}
+    path = tmp_path / 'tutorials.yaml'
+    path.write_text(yaml.safe_dump(document))
+    route = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
+    assert [step.action for step in route.steps] == [step['action'] for step in steps]
+    for index, step in enumerate(steps):
+        descriptor = contract['commands'][step['action']['command']]
+        for field in descriptor['fields']:
+            original = step['action'][field['name']]
+            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1}.get(field['type'], '')
+            path.write_text(yaml.safe_dump(document))
+            with pytest.raises(TutorialLoadError):
+                load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
+            step['action'][field['name']] = original

@@ -64,6 +64,7 @@ modules should not import it.
 | Load/complete the authored global layout; module-free fallback placement | `layout_persistence.py`, `layout.py` |
 | Relation colours/direction and module visual identities | `edges.py`, `module_colours.py` |
 | Parse/validate declarative tutorial routes and semantic targets | `tutorials.py` |
+| Shared command fields/choices used by route validation and the browser action editor | `tutorial_contract.py` |
 | Convert prepared graph data to a PyVis network and base HTML | `render_pyvis.py` |
 | Inject application assets, escaped JSON data, configuration, branding and MathJax | `html_injection.py` |
 
@@ -192,7 +193,9 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_targets.js` | Live semantic target geometry and concept/edge hover demonstrations. |
 | `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume; frozen built-in/personal route playback. |
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions and built-in-copy provenance. |
-| `tutorial_library.js` | Personal tutorial library, minimal text editor, autosave/failure status and return-to-editor playback. |
+| `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
+| `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
+| `tutorial_library.js` | Personal library, card editing/reordering, autosave/failure status and rehearsal returning to the editor. |
 | `csv.js` | Shared CSV encoding/decoding; callers retain their format-specific strictness and line endings. |
 
 `viewerState` holds context rule, display scope and workspace view. Selection and
@@ -342,8 +345,11 @@ exclude personal-data changes, so exploration does not undo study or notes.
 See [Tutorial playback](tutorial_playback.md) and
 [Personal tutorial authoring](tutorial_authoring.md). The local-only personal
 library exposes IndexedDB storage through the Personal data facade; it does not
-extend the legacy cloud/profile envelope. Full card/action authoring, portable
-packages and voice remain later stages.
+extend the legacy cloud/profile envelope. Card/action editing shares the existing
+player: Preview card silently reconstructs preceding actions, then demonstrates
+only the selected card; Play from here continues normally. Both restore the
+pre-rehearsal presentation on Exit. Recording, portable packages and voice remain
+later stages.
 
 ## Design patterns actually present
 
