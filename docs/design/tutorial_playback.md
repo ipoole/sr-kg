@@ -342,23 +342,16 @@ and a details-block command waits for MathJax and scrolling.
 
 ## Authoring and recording
 
-Hand-author the first route. This will expose whether the command vocabulary and
-commentary card are adequate before a recorder makes the format harder to
-change.
+The implemented player currently uses repository-authored routes. The agreed next
+extension is user-facing personal tutorial creation/editing, including copies of
+built-ins, recording several semantic actions into a card, portable packages and
+optional human voice narration. New creates a one-card draft in the same editor;
+it is not a separate creation workflow.
 
-A later developer-only **Record tutorial** mode can subscribe to the semantic
-command interface. It records supported user actions as draft steps, using
-stable IDs and enum values. Unsupported actions are reported rather than
-captured as coordinates. The author then:
-
-1. removes accidental or redundant steps;
-2. adds step IDs, titles and commentary;
-3. groups silent preparation actions where necessary;
-4. validates and previews the route;
-5. saves the YAML into the repository through the normal authoring workflow.
-
-Recording is an authoring convenience, not part of the normal learner UI, and
-does not write directly into the generated HTML's source data.
+See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
+the proposed contract, storage compatibility safeguards, compact playback and
+staged review gates. This supersedes the earlier developer-only recorder proposal;
+none of the new authoring/audio functionality is implemented yet.
 
 ## Validation and compatibility
 
@@ -427,18 +420,18 @@ provides most coverage without multiplying expensive browser cases.
    click pulse, responsive placement and reduced-motion handling.
 6. **First substantive tutorials** — one interface orientation route and one
    physics route, refined on desktop, phone and old iPad. **Implemented.**
-7. **Author recorder** — developer-only capture of supported semantic commands,
-   after the format has proved stable.
+7. **Personal authoring and voice** — planned extension with its own staged
+   review gates in [Tutorial authoring](tutorial_authoring.md).
 
 ## Deferred capabilities
 
-- timed autoplay or voice narration;
+- timed autoplay;
 - branching, quizzes or conditional steps;
 - resuming tutorial progress across devices;
 - route analytics;
-- tutorial actions that write personal data;
-- importing third-party recordings;
-- an end-user route editor.
+- tutorial actions that write personal data.
 
-These can be added without weakening the core semantic route format if later
+Personal editing, audio-file import and voice narration are now planned in the
+authoring extension rather than indefinitely deferred. The remaining capabilities
+can be added without weakening the core semantic route format if later
 experience justifies them.

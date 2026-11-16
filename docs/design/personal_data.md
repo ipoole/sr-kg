@@ -10,6 +10,12 @@ content and transient viewer state. It currently comprises:
 - latest study-question results;
 - content-block read marks.
 
+Personal tutorials and voice attachments are a planned extension, described in
+[Tutorial authoring](tutorial_authoring.md#8-local-storage-backup-and-google-sync).
+That design keeps the existing cloud archive compatible with old viewers and
+adds tutorial synchronization behind the same Personal data controls. It is not
+implemented yet.
+
 Selection, context, camera, folded modules, open details, temporary Fit++ adjustments
 and control preferences are not personal data. They are not exported or merged.
 
