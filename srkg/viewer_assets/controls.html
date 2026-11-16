@@ -46,16 +46,27 @@
       </details>
       <details id="kg_tutorials_section" class="kg-fold">
         <summary>Tutorials</summary>
+        <h3 class="kg-tutorial-library-heading">Built-in tutorials</h3>
         <div id="kg_tutorial_list" class="kg-tutorial-list"></div>
+        <h3 class="kg-tutorial-library-heading">My tutorials</h3>
+        <button id="kg_tutorial_new" type="button" disabled>New tutorial</button>
+        <p id="kg_tutorial_library_status" class="kg-muted-label" role="status">Loading personal tutorials…</p>
+        <button id="kg_tutorial_library_retry" type="button" hidden>Retry</button>
+        <div id="kg_tutorial_personal_list" class="kg-tutorial-list"></div>
         <section id="kg_tutorial_intro" class="kg-tutorial-intro" hidden>
           <h3 id="kg_tutorial_intro_title"></h3>
           <p id="kg_tutorial_intro_summary"></p>
+          <p id="kg_tutorial_intro_author" hidden></p>
           <p id="kg_tutorial_guidance" class="kg-tutorial-guidance">
             This is a guided tour. PhysicsKG will operate the viewer—press
             Start, then Next step to continue.
           </p>
           <p id="kg_tutorial_intro_length" class="kg-tutorial-length"></p>
+          <p id="kg_tutorial_intro_status" role="status"></p>
           <button id="kg_tutorial_start" type="button">Start</button>
+          <button id="kg_tutorial_intro_copy" type="button">Make editable copy</button>
+          <button id="kg_tutorial_intro_edit" type="button" hidden>Edit</button>
+          <button id="kg_tutorial_intro_delete" type="button" hidden>Delete</button>
           <a id="kg_tutorial_launch_link">Direct link to this tutorial</a>
         </section>
       </details>
@@ -297,3 +308,22 @@
       </div>
     </dialog>
     
+
+<dialog id="kg_tutorial_editor" class="kg-tutorial-editor" aria-labelledby="kg_tutorial_editor_heading">
+  <h2 id="kg_tutorial_editor_heading">Edit tutorial</h2>
+  <p id="kg_tutorial_editor_status" role="status" aria-live="polite"></p>
+  <label>Tutorial title<input id="kg_tutorial_editor_title" type="text"></label>
+  <label>Summary<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
+  <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
+  <hr>
+  <label>Card<select id="kg_tutorial_editor_card"></select></label>
+  <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
+  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="6" placeholder="Add written narration here"></textarea></label>
+  <p id="kg_tutorial_editor_actions" class="kg-muted-label"></p>
+  <p id="kg_tutorial_editor_validation" role="status"></p>
+  <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_editor_play" type="button">Play tutorial</button>
+    <button id="kg_tutorial_editor_retry" type="button" hidden>Retry save</button>
+    <button id="kg_tutorial_editor_close" type="button">Done</button>
+  </div>
+</dialog>

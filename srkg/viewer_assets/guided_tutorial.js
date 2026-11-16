@@ -304,7 +304,7 @@ function kgCreateGuidedTutorial(options) {
   function tutorialRouteById(tutorialId) {
     return (tutorialData || []).find(function(route) {
       return String(route.tutorial_id) === String(tutorialId);
-    }) || null;
+    }) || (options.personalRouteById ? options.personalRouteById(tutorialId) : null);
   }
 
   function tutorialCommandsThrough(route, stepIndex) {
@@ -374,6 +374,7 @@ function kgCreateGuidedTutorial(options) {
       String((route.steps || []).length) +
       ((route.steps || []).length === 1 ? " step" : " steps");
     document.getElementById("kg_tutorial_intro").hidden = false;
+    if (options.onIntroduction) { options.onIntroduction(route); }
   }
 
   function setTutorialTransitioning(value) {
@@ -534,9 +535,10 @@ function kgCreateGuidedTutorial(options) {
   async function startSelectedTutorial() {
     if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
     var route = tutorialRouteById(tutorialPlayback.selectedId);
-    if (!route || !route.steps || !route.steps.length) { return; }
+    if (!route || !route.steps || !route.steps.length ||
+        (options.canStart && !options.canStart(route))) { return; }
     tutorialPlayback.baseline = captureTutorialPresentation();
-    tutorialPlayback.activeRoute = route;
+    tutorialPlayback.activeRoute = JSON.parse(JSON.stringify(route));
     tutorialPlayback.exploreSnapshot = null;
     tutorialPlayback.exploring = false;
     tutorialPlayback.stepIndex = -1;
@@ -587,6 +589,7 @@ function kgCreateGuidedTutorial(options) {
     } finally {
       setGuidedTutorialActive(false);
       tutorialPlayback.transitioning = false;
+      if (options.onExit) { options.onExit(); }
     }
   }
 
@@ -645,7 +648,7 @@ function kgCreateGuidedTutorial(options) {
     var defaultRoute = defaultGuidedTutorial();
     var splashStart = document.getElementById("kg_splash_start_tutorial");
     splashStart.hidden = !defaultRoute;
-    document.getElementById("kg_tutorial_list").addEventListener("click", function(event) {
+    document.getElementById("kg_tutorials_section").addEventListener("click", function(event) {
       var button = event.target.closest(".kg-tutorial-select");
       if (button) { selectTutorialIntroduction(button.getAttribute("data-tutorial-id")); }
     });
@@ -683,6 +686,7 @@ function kgCreateGuidedTutorial(options) {
     refreshReadingControls: refreshReadingControls,
     tutorialPointerSnapshot: tutorialPointerSnapshot,
     tutorialRouteById: tutorialRouteById,
+    selectIntroduction: selectTutorialIntroduction,
     positionTutorialNarration: positionTutorialNarration,
     startTutorialById: startTutorialById,
     requestedTutorialId: requestedTutorialId,

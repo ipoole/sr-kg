@@ -8,13 +8,15 @@ content and transient viewer state. It currently comprises:
 - notes;
 - personal concept positions and module anchors;
 - latest study-question results;
-- content-block read marks.
+- content-block read marks;
+- personal tutorial drafts and editable built-in copies (currently local-only).
 
-Personal tutorials and voice attachments are a planned extension, described in
-[Tutorial authoring](tutorial_authoring.md#8-local-storage-backup-and-google-sync).
-That design keeps the existing cloud archive compatible with old viewers and
-adds tutorial synchronization behind the same Personal data controls. It is not
-implemented yet.
+The first four collections retain the existing profile, backups and Google sync.
+Tutorial metadata uses a separate IndexedDB store through the same facade,
+kgPersonalData.tutorials, so old-profile writes cannot erase it. Tutorial export,
+backup/sync integration and audio are planned in
+[Tutorial authoring](tutorial_authoring.md#8-local-storage-backup-and-google-sync);
+the tutorial library explicitly explains this current local-only limitation.
 
 Selection, context, camera, folded modules, open details, temporary Fit++ adjustments
 and control preferences are not personal data. They are not exported or merged.

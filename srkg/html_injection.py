@@ -125,6 +125,8 @@ def inject_controls(
         "personal_data_controller.js",
         "tutorial_targets.js",
         "guided_tutorial.js",
+        "tutorial_store.js",
+        "tutorial_library.js",
         "context_layout.js",
         "graph_model.js",
         "vis_network_adapter.js",

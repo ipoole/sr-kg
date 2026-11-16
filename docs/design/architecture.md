@@ -190,7 +190,9 @@ through callbacks rather than captured once at controller construction.
 | `study_controller.js` | Questions/read state and indexes, marking, completion caches and scorecard. |
 | `personal_data_controller.js` | Connection/import-export UI, OAuth/sync lifecycle and automatic-sync/visibility timers. |
 | `tutorial_targets.js` | Live semantic target geometry and concept/edge hover demonstrations. |
-| `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume. |
+| `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume; frozen built-in/personal route playback. |
+| `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions and built-in-copy provenance. |
+| `tutorial_library.js` | Personal tutorial library, minimal text editor, autosave/failure status and return-to-editor playback. |
 | `csv.js` | Shared CSV encoding/decoding; callers retain their format-specific strictness and line endings. |
 
 `viewerState` holds context rule, display scope and workspace view. Selection and
@@ -337,7 +339,11 @@ Back restores the baseline and replays commands rather than inverting each
 action. Explore captures a checkpoint and releases normal input;
 Resume restores it, while Exit restores the pre-route presentation. These snapshots
 exclude personal-data changes, so exploration does not undo study or notes.
-See [Tutorial playback](tutorial_playback.md).
+See [Tutorial playback](tutorial_playback.md) and
+[Personal tutorial authoring](tutorial_authoring.md). The local-only personal
+library exposes IndexedDB storage through the Personal data facade; it does not
+extend the legacy cloud/profile envelope. Full card/action authoring, portable
+packages and voice remain later stages.
 
 ## Design patterns actually present
 

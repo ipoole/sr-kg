@@ -1,6 +1,7 @@
 # Personal tutorial authoring and voice narration
 
-Status: stage 1 design for review; no authoring or audio implementation yet.
+Status: design accepted; stages 1–2 implemented. Action editing/recording,
+export/import, tutorial sync and voice remain planned.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -8,6 +9,13 @@ and installable as built-in tutorials, adding a personal human voice.
 This extends [Tutorial playback](tutorial_playback.md), using its existing
 player, semantic commands, pointer targets and presentation restoration.
 “Card” is the user-facing term; the existing route format calls it a step.
+
+Stage 2 review: Tools → Tutorials → New tutorial opens the same editor used for
+personal copies. Edit tutorial/card titles, summary, author credit and written
+narration; select any existing card. Play tutorial returns to the editor on Exit.
+Adding/reordering cards and editing/capturing actions follow in stages 3–4.
+Personal tutorial text is local-only at this stage; existing backups and Google
+sync do not include it. Storage failures retain the open draft and offer Retry.
 
 ## 1. Ownership and library
 
@@ -279,6 +287,10 @@ using the normal artifact workflow and preview version increments.
 | 6 — voice authoring | Per-card recording/import/replacement and durable attachments with stale-narration indicators. Ian voices a finished text route; review reload/listening on laptop, phone and old iPad. |
 | 7 — voiced/compact player | Agreed after-actions narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
 | 8 — audio delivery | Complete export/import, attachment sync, repository installation and lazy hosted audio. Review Ian's exported voiced route installed as built-in in a preview, cross-device sync and local/offline behaviour. |
+
+Stage 9 completes the restrained code cleanup, user/authoring guides and Quick
+Start, keyboard/screen-reader checks and old-iPad profiling. Final review is the
+end-to-end create → voice → export → install workflow before release.
 
 Tests must cover draft/reload safety, built-in independence, editing/reordering,
 recording boundaries, presentation restoration, invalid/missing targets, import

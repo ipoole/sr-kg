@@ -59,6 +59,7 @@
           storage: window.localStorage,
           storageKeys: kgStorageKeys
         });
+        personalDataStore.tutorials = kgCreateTutorialStore();
         window.kgPersonalData = personalDataStore;
 
         var activeNodeId = null;
@@ -5410,7 +5411,12 @@
         var tutorialEdgeReference = tutorialTargets.tutorialEdgeReference;
         var showTutorialConceptHover = tutorialTargets.showTutorialConceptHover;
         var showTutorialEdgeHover = tutorialTargets.showTutorialEdgeHover;
+        var tutorialLibrary;
         var guidedTutorial = kgCreateGuidedTutorial({
+          personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
+          canStart: function(route) { return !tutorialLibrary || !tutorialLibrary.problems(route).length; },
+          onIntroduction: function(route) { if (tutorialLibrary) { tutorialLibrary.showIntroduction(route); } },
+          onExit: function() { if (tutorialLibrary) { tutorialLibrary.playbackExited(); } },
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
           presentation: {capture: captureTutorialPresentation, restore: restoreTutorialPresentation, replay: replayTutorialCommands},
           settle: nextAnimationFrames, hover: {hide: hideNodeTooltip, restore: restoreHoveredEdge},
@@ -5431,6 +5437,16 @@
 
         window.kgTutorialPlaybackSnapshot = tutorialPlaybackSnapshot;
         window.kgStartTutorial = startTutorialById;
+        tutorialLibrary = kgCreateTutorialLibrary({
+          store: personalDataStore.tutorials, markup: contentMarkup,
+          version: document.querySelector('meta[name="application-version"]').content,
+          hasDomain: function(domain) {
+            return Object.keys(conceptData).some(function(id) { return conceptData[id].domain === domain; });
+          },
+          routeById: tutorialRouteById, play: startTutorialById,
+          selectedId: function() { return tutorialPlaybackSnapshot().selectedId; },
+          select: guidedTutorial.selectIntroduction
+        });
 
         function focusConcept(nodeId, statusPrefix, options) {
           return executeViewerCommand(
@@ -7035,15 +7051,25 @@
           });
         });
         var directTutorialId = requestedTutorialId();
-        if (directTutorialId && tutorialRouteById(directTutorialId)) {
-          requestAnimationFrame(function() {
+        function launchRequestedTutorial() {
+          var requestedRoute = directTutorialId && tutorialRouteById(directTutorialId);
+          if (requestedRoute && tutorialLibrary.problems(requestedRoute).length) {
+            guidedTutorial.selectIntroduction(directTutorialId);
+            document.getElementById("kg_tutorials_section").open = true;
+            setControlsVisible(true);
+          } else if (requestedRoute) {
             requestAnimationFrame(function() {
-              setTimeout(function() { startTutorialById(directTutorialId); }, 0);
+              requestAnimationFrame(function() {
+                setTimeout(function() { startTutorialById(directTutorialId); }, 0);
+              });
             });
-          });
-        } else {
-          showSplashOnFirstLoad();
+          } else {
+            showSplashOnFirstLoad();
+          }
         }
+        if (directTutorialId && directTutorialId.indexOf("personal:") === 0) {
+          tutorialLibrary.ready.then(launchRequestedTutorial);
+        } else { launchRequestedTutorial(); }
       }
 
       // Wait until pyvis has created network/nodes/edges variables.

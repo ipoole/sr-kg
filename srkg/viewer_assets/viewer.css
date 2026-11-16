@@ -131,6 +131,9 @@
         font-size: 13px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.18);
         max-width: 320px;
+        max-height: calc(100vh - var(--kg-header-height) - 40px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
       #kg_controls.kg-hidden {
         display: none;
@@ -4035,3 +4038,25 @@ details[open] > summary > .kg-content-preview { display: none; }
     padding: 0.3em 0.65em; min-height: 32px; cursor: pointer;
 }
 #info_panel .kg-content-refold:focus-visible { outline: 2px solid #174ea6; outline-offset: 2px; }
+
+/* Authoring is a separate, scrollable editor, never a third cramped viewer pane. */
+.kg-tutorial-library-heading { font-size: 1em; margin: 0.8em 0 0.35em; }
+.kg-tutorial-editor {
+    background: #fff; color: #212529; border: 1px solid #9bb0c5;
+    border-radius: 10px; box-sizing: border-box; padding: 18px;
+    width: min(700px, calc(100% - 20px)); max-height: calc(100vh - 24px);
+    overflow: auto; font: 16px/1.4 Arial, sans-serif;
+}
+.kg-tutorial-editor::backdrop { background: rgba(20,35,55,0.35); }
+.kg-tutorial-editor h2 { font-size: 1.2em; margin: 0 0 0.5em; }
+.kg-tutorial-editor label { display: block; font-weight: 600; margin: 0.6em 0; }
+.kg-tutorial-editor input, .kg-tutorial-editor textarea, .kg-tutorial-editor select {
+    display: block; box-sizing: border-box; width: 100%; min-width: 0;
+    font: 400 16px/1.4 Arial, sans-serif; margin-top: 4px; padding: 7px;
+    border: 1px solid #9cafc1; border-radius: 4px;
+}
+.kg-tutorial-editor textarea { resize: vertical; }
+.kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.kg-tutorial-editor-actions button { font: inherit; padding: 6px 10px; cursor: pointer; }
+#kg_tutorial_editor_status[data-state="error"] { color: #a51d22; font-weight: 700; }
+#kg_tutorial_editor_validation { color: #6b5200; }

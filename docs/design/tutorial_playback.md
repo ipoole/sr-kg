@@ -342,16 +342,16 @@ and a details-block command waits for MathJax and scrolling.
 
 ## Authoring and recording
 
-The implemented player currently uses repository-authored routes. The agreed next
-extension is user-facing personal tutorial creation/editing, including copies of
-built-ins, recording several semantic actions into a card, portable packages and
-optional human voice narration. New creates a one-card draft in the same editor;
+The shared player accepts repository-authored routes and local personal drafts
+and copies. The authoring extension includes editing, recording several semantic
+actions into a card, portable packages and optional human voice narration. New creates a one-card draft in the same editor;
 it is not a separate creation workflow.
 
 See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
 the proposed contract, storage compatibility safeguards, compact playback and
 staged review gates. This supersedes the earlier developer-only recorder proposal;
-none of the new authoring/audio functionality is implemented yet.
+the local library, independent copies and minimal text editor are implemented
+(stage 2), while action editing/recording, portability/sync and audio remain planned.
 
 ## Validation and compatibility
 
