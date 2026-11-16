@@ -423,14 +423,19 @@ function kgCreateContentMarkup(options) {
       .replace(/\\n(?=(?:[A-Z]|[0-9]+)[.)]\s)/g, "\n");
   }
 
+  function renderBodyLine(block, index, context) {
+    var paragraph = block.kind === "text" && String(block.text || "").trim();
+    return '<div class="concept-line' + (block.structural ? ' kg-structural-break' : '') +
+      (paragraph ? ' kg-text-paragraph' : '') + '">' +
+      (block.text ? renderConceptText(block.text, Object.assign({}, context,
+        {legacyPrefix: "paragraph-" + index})) : "&nbsp;") + "</div>";
+  }
+
   function renderBodyLines(text, className, context) {
     var blocks = splitConceptBlocks(text);
     var html = '<div class="' + escapeHtml(className || "concept-body") + '">';
     blocks.forEach(function(block, index) {
-      html += '<div class="concept-line' + (block.structural ? ' kg-structural-break' : '') + '">' +
-        (block.text ? renderConceptText(block.text, Object.assign({}, context,
-          {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
-        "</div>";
+      html += renderBodyLine(block, index, context);
     });
     html += "</div>";
     return html;
@@ -484,6 +489,7 @@ function kgCreateContentMarkup(options) {
     parseContent: parseContent,
     childContext: childContext, contentText: contentText, localScopeKey: localScopeKey,
     occurrenceKey: occurrenceKey,
+    renderBodyLine: renderBodyLine,
     renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,
     findNextOptionalDetailBlock: findNextOptionalDetailBlock,

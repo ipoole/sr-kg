@@ -8,9 +8,9 @@ function kgCreateContextLayout(options) {
   var cameraAnimationEnabled = graphCamera.cameraAnimationEnabled;
   var revealViewerSelection = options.revealSelection;
   var updateGraphViewControls = options.onControlsChange, updateNodeLabelPositions = options.onPositionsChange;
-  var showContextNotice = options.notice;
+  var showNotice = options.notice;
   function showTemporaryNotice() {
-    showContextNotice("Temporary draggable layout", "context-contracted");
+    showNotice("Temporary draggable layout", "context-contracted");
   }
 
   var activeNodeRadiusScale = options.labels.activeRadiusScale, nodeLabelFontSize = options.labels.fontSize;
@@ -57,6 +57,26 @@ function kgCreateContextLayout(options) {
       if (nodes.get(id) && validLayoutPosition(position)) { network.moveNode(id, position.x, position.y); }
     });
     showTemporaryNotice();
+  }
+  function preserveDuringLayoutReload(reload) {
+    var state = contextContractionState;
+    var positions = state ? network.getPositions(Object.keys(state.finalPositions)) : null;
+    reload();
+    if (!state) { return; }
+    // Sync changes the base, not this temporary display. Restore the latest
+    // merged positions on navigation, preserving even a drag still in progress.
+    Object.keys(state.restorePositions).forEach(function(id) {
+      var position = underlyingContextNodePosition(id);
+      if (validLayoutPosition(position)) { state.restorePositions[id] = copyLayoutPosition(position); }
+    });
+    Object.keys(positions).forEach(function(id) {
+      var position = positions[id];
+      if (nodes.get(id) && validLayoutPosition(position)) {
+        network.moveNode(id, position.x, position.y);
+        state.finalPositions[id] = copyLayoutPosition(position);
+      }
+    });
+    updateNodeLabelPositions();
   }
   function snapshot() {
     return {primed: Boolean(contextFitPrimedKey), active: isActive(),
@@ -107,7 +127,7 @@ function kgCreateContextLayout(options) {
     contextContractionState = null;
     var notice = document.getElementById("kg_context_notice");
     if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-      showContextNotice("", "context-contracted");
+      showNotice("", "context-contracted");
     }
     updateGraphViewControls();
     updateNodeLabelPositions();
@@ -133,7 +153,7 @@ function kgCreateContextLayout(options) {
       contextContractionState = null;
       var notice = document.getElementById("kg_context_notice");
       if (notice && notice.getAttribute("data-kind") === "context-contracted") {
-        showContextNotice("", "context-contracted");
+        showNotice("", "context-contracted");
       }
       updateGraphViewControls();
     }
@@ -424,6 +444,7 @@ function kgCreateContextLayout(options) {
     canMove: canMove,
     recordDrag: recordDrag,
     capture: capture,
+    preserveDuringLayoutReload: preserveDuringLayoutReload,
     restoreCheckpoint: restoreCheckpoint,
     snapshot: snapshot
   };

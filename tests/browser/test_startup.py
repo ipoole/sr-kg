@@ -1039,6 +1039,7 @@ def test_layout_controls_report_export_and_reset_state(browser_graph):
 @pytest.mark.browser
 def test_layout_editing_is_personal_and_reports_move_consequences(browser_graph):
     page = browser_graph.page
+    page.clock.install()
 
     browser_graph.open_control_section("kg_layouts_section")
     assert page.locator("#kg_layout_edit_persistence").count() == 0
@@ -1055,6 +1056,9 @@ def test_layout_editing_is_personal_and_reports_move_consequences(browser_graph)
         "y": 888,
     }
     assert "Personal layout updated" in page.locator("#kg_context_notice").inner_text()
+    page.clock.fast_forward(3000)
+    assert page.locator("#kg_context_notice").is_hidden()
+    assert page.evaluate("kgLayoutDraggingEnabled()") is True
     page.locator("#kg_layout_edit_toggle").uncheck()
     assert page.evaluate("() => kgGlobalLayoutSnapshot().concepts['2.1']") == {
         "x": 777,
@@ -2491,6 +2495,11 @@ def test_splash_dialog_shows_once_and_can_be_reopened(browser_graph, width):
     assert sections.evaluate_all(
         "nodes => nodes.every(node => node.textContent.trim().length > 0)"
     )
+
+    acknowledgments = dialog.locator("#kg_acknowledgments_link")
+    assert acknowledgments.get_attribute("href") == "https://physicskg.org/acknowledgments.html"
+    assert acknowledgments.get_attribute("target") == "_blank"
+    assert "noopener" in acknowledgments.get_attribute("rel").split()
 
     credit = page.locator("#kg_splash_dialog .kg-splash-credit")
     assert credit.locator("a").get_attribute("href") == "https://www.linkedin.com/in/ipoole/"

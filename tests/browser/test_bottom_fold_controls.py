@@ -76,7 +76,8 @@ def test_personal_note_folds_without_losing_its_draft(browser_graph):
     page.locator('#info_panel .kg-note-owner-action').click()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-body-input').fill('Keep this draft when folding.')
-    note.locator('.kg-content-refold').click()
+    assert note.locator('.kg-content-footer').count() == 0
+    note.locator(':scope > summary').click()
     expect(note).not_to_have_attribute('open', '')
     note.locator(':scope > summary').click()
     expect(note.locator('.user-note-reading')).to_contain_text('Keep this draft when folding.')
@@ -134,3 +135,24 @@ def test_titles_precede_folded_statements_and_statements_hide_when_open(reading_
         summary.click()
         expect(statement).to_be_visible()
     assert not reading_graph.page_errors
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_block_footer_uses_the_last_line_space(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 900})
+    browser_graph.click_concept('2.2')
+    block = page.locator('[data-content-block-id="2.2.definition"]').first
+    block.locator(':scope > summary').click()
+    footer = block.locator(':scope > .kg-content-body > .kg-content-footer')
+    metrics = footer.evaluate('''e=>{
+        const style=getComputedStyle(e), font=parseFloat(style.fontSize);
+        return {margin:parseFloat(style.marginTop),font};
+    }''')
+    assert metrics['margin'] < 0
+    assert metrics['margin'] >= -metrics['font']
+    footer.locator('.content-block-read-toggle').check()
+    expect(block.locator(':scope > summary .content-block-read-toggle')).to_be_checked()
+    footer.locator('.kg-content-refold').click()
+    expect(block).not_to_have_attribute('open', '')

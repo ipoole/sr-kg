@@ -275,6 +275,7 @@ def test_fit_skips_animation_on_low_capability_devices(browser_graph):
 @pytest.mark.browser
 def test_second_context_fit_contracts_around_selection_until_navigation(browser_graph):
     page = browser_graph.page
+    page.clock.install()
     page.locator("#kg_context_preset_select").select_option("foundations")
     _close_tools_overlay(page)
     published = page.evaluate("() => kgGlobalLayoutSnapshot()")
@@ -356,6 +357,12 @@ def test_second_context_fit_contracts_around_selection_until_navigation(browser_
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == published
     assert page.evaluate("() => kgContextContractionSnapshot().active") is True
     assert page.locator("#kg_context_notice").get_attribute("data-kind") == "context-contracted"
+
+    page.clock.fast_forward(3000)
+    assert page.locator("#kg_context_notice").is_hidden()
+    assert page.evaluate("kgContextContractionSnapshot().active") is True
+    assert page.evaluate("kgLayoutDraggingEnabled()") is True
+    assert page.evaluate("kgGlobalLayoutSnapshot()") == published
 
     browser_graph.click_concept("2.1")
     restored = page.evaluate("ids => network.getPositions(ids)", ids)

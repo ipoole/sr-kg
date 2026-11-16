@@ -614,10 +614,7 @@ function kgCreateNotesController(options) {
     ) : "";
     blocks.forEach(function(textBlock, index) {
       if (!capabilities || !capabilities.hideProse) {
-      html += '<div class="concept-line' + (textBlock.structural ? ' kg-structural-break' : '') + '">' +
-        (textBlock.text ? renderConceptText(textBlock.text, Object.assign({}, context,
-          {legacyPrefix: "paragraph-" + index})) : "&nbsp;") +
-        "</div>";
+        html += options.markup.renderBodyLine(textBlock, index, context);
       }
       if (annotate) { html += renderNotesAtAnchor(
         targetType,

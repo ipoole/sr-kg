@@ -22,4 +22,4 @@ def test_release_history_escapes_content(monkeypatch):
     rendered = html_injection._release_history_html()
     assert '<script>' not in rendered
     assert '&lt;script&gt;' in rendered
-    assert '<time datetime="2026-11-03">' in rendered
+    assert '<time datetime="2026-11-03">03.11.2026</time>' in rendered

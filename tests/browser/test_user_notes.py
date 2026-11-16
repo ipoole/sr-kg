@@ -33,7 +33,7 @@ def _place_note_at_anchor(anchor):
         ":scope > summary .kg-note-block-action, "
         ":scope > .kg-noteable-heading .kg-note-block-action"
     ).click()
-    if not atomic and block.locator(".concept-line").count() > 0:
+    if not atomic and block.get_attribute("data-note-placement") == "active":
         anchor.evaluate("element => element.click()")
 
 
@@ -87,6 +87,7 @@ def test_note_bubble_places_note_after_chosen_paragraph(repo_browser_graph):
         ":scope > summary .kg-note-placement-instruction"
     )
     assert instruction.is_visible()
+    assert instruction.evaluate("el=>getComputedStyle(el).backgroundColor") == "rgb(255, 248, 220)"
     assert "Choose paragraph ↓" in instruction.inner_text()
     assert explanation.locator(".kg-add-note-row:visible").count() == 0
     assert page.locator(
@@ -1038,7 +1039,7 @@ def test_note_placement_does_not_offer_personal_paragraphs_as_targets(browser_gr
     graph = browser_graph
     page = graph.page
     graph.click_concept('2.1')
-    _place_note_at_anchor(page.locator('#info_panel .kg-add-note').first)
+    _place_note_at_anchor(page.locator('[data-content-block-id="2.1.explanation"] .kg-add-note').first)
     note = page.locator('#info_panel .user-note')
     note.locator('textarea').fill('My personal explanation.')
     note.locator('.user-note-close').click()
@@ -1224,3 +1225,51 @@ def test_delete_all_notes_confirms_and_syncs_deletions_only(browser_graph):
     page.reload(wait_until='domcontentloaded')
     page.wait_for_function('Boolean(window.kgPersonalData)')
     assert page.evaluate('kgPersonalData.getNotes()') == []
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_single_paragraph_note_bypasses_placement_choice(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 900})
+    page.evaluate(r"conceptData['2.1'].content_blocks.find(b=>b.block_id==='2.1.definition').body += '\n\n'")
+    browser_graph.click_concept('2.1')
+    block = page.locator('[data-content-block-id="2.1.definition"]').first
+    expected_anchor = block.locator('.concept-line').first.evaluate(
+        "line=>Number(line.nextElementSibling.querySelector('.kg-add-note').dataset.anchorIndex)"
+    )
+    block.locator(':scope > summary .kg-note-block-action').click()
+    assert block.get_attribute('data-note-placement') is None
+    assert block.locator('.kg-note-placement-target').count() == 0
+    note = block.locator('.user-note')
+    assert note.count() == 1
+    assert note.locator('.user-note-title-input').is_visible()
+    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].anchor.blockIndex') == expected_anchor
+    assert page.locator('.kg-unmatched-notes').count() == 0
+    note.locator('.user-note-body-input').fill('Keep the first note.')
+    note.locator('.user-note-close').click()
+    block.locator(':scope > summary .kg-note-block-action').click()
+    assert block.locator('.user-note').count() == 2
+    assert block.locator('.user-note .kg-content-footer').count() == 0
+    footer_button = block.locator(':scope > .kg-content-body > .kg-content-footer .kg-content-refold')
+    assert footer_button.bounding_box()['y'] >= block.locator('.user-note').last.evaluate('e=>e.getBoundingClientRect().bottom')
+    assert page.evaluate('kgPersonalData.getSnapshot().notes.map(n=>n.anchor.blockIndex)') == [expected_anchor, expected_anchor]
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('width', [390, 1280])
+def test_paragraph_instruction_is_opaque_and_clear_of_cancel(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 900})
+    browser_graph.click_concept('2.1')
+    block = page.locator('[data-content-block-id="2.1.explanation"]').first
+    block.locator(':scope > summary .kg-note-block-action').click()
+    instruction = block.locator(':scope > summary .kg-note-placement-instruction')
+    cancel = block.locator(':scope > summary .kg-note-placement-cancel')
+    assert instruction.is_visible()
+    assert instruction.evaluate('el=>getComputedStyle(el).backgroundColor') == 'rgb(255, 248, 220)'
+    hint_box, cancel_box = instruction.bounding_box(), cancel.bounding_box()
+    assert hint_box['x'] + hint_box['width'] <= cancel_box['x'] - 2
+    cancel.click()
+    assert block.get_attribute('data-note-placement') is None
+    assert block.locator('.user-note').count() == 0

@@ -116,9 +116,11 @@
         var infoPanelPinchState = null;
         var infoPanelGraphicZoomBasePx = null;
         var panelContentRefreshPending = false;
-        var userGuideLink = document.getElementById("kg_user_guide_link");
-        if (userGuideLink && window.location.pathname.indexOf("/preview/") === 0) {
-          userGuideLink.href = "https://physicskg.org/preview/user-guide.html";
+        if (window.location.pathname.indexOf("/preview/") === 0) {
+          [["kg_user_guide_link", "user-guide.html"],
+            ["kg_acknowledgments_link", "acknowledgments.html"]].forEach(function(link) {
+            document.getElementById(link[0]).href = "https://physicskg.org/preview/" + link[1];
+          });
         }
 
         var derivedFromFullTreeEnabled = false;
@@ -172,7 +174,7 @@
           renderBlock: function(id, block, placement) {
             return renderOwnerContentBlock("concept", id, block, placement);
           },
-          typeset: function(element) { typesetInfoPanel({element: element}); },
+          typeset: function(element) { return typesetInfoPanel({element: element}); },
           clearMath: function(element) { detailsView.clearMathTypesetting(element); },
           onPosition: function() { if (initialGraphProjectionReady) { network.redraw(); } },
           onSynchronise: async function(id, rule) {
@@ -290,7 +292,10 @@
           store: personalDataStore, clientId: function() { return kgCloudSyncConfig.googleDriveClientId; },
           flushLayout: function() { writePersonalLayoutNow(); },
           onMerged: function() {
-            globalLayoutStore.reload(); applyGlobalLayoutPositions(); updateLayoutControls();
+            contextLayout.preserveDuringLayoutReload(function() {
+              globalLayoutStore.reload(); applyGlobalLayoutPositions();
+            });
+            updateLayoutControls();
             notesController.reload(); studyController.reload(); refreshNodeTooltips();
             renderNotesOverview(); renderStudyScorecard(); updateContentReadCompletionIndicators();
             if (network && network.redraw) { network.redraw(); }
@@ -357,7 +362,7 @@
           selectedConceptId: function() { return activeNodeId; }, readLabels: function() { return nodeLabelEls; },
           labels: {activeRadiusScale: activeNodeRadiusScale, fontSize: nodeLabelFontSize, hideBelowPx: kgNodeLabelConfig.hideBelowPx},
           revealSelection: revealViewerSelection, onControlsChange: updateGraphViewControls,
-          onPositionsChange: updateNodeLabelPositions, notice: showContextNotice,
+          onPositionsChange: updateNodeLabelPositions, notice: showTransientContextNotice,
           fixedObstacles: function() {
             return expandedModuleOutlineSnapshot().map(function(box) {
               return {left: box.left, right: box.right, top: box.contentBottom,
@@ -517,6 +522,7 @@
 
         function showTransientContextNotice(message, kind, duration) {
           showContextNotice(message, kind);
+          if (!message) { return; }
           contextNoticeTimer = setTimeout(function() {
             var notice = document.getElementById("kg_context_notice");
             if (notice && notice.getAttribute("data-kind") === kind) {
@@ -559,7 +565,7 @@
           Object.keys(affectedModules).forEach(function(moduleId) {
             refreshModuleFootprintGeometry(moduleId);
           });
-          showContextNotice(
+          showTransientContextNotice(
             "Personal layout updated — saved in this browser.",
             "personal-layout"
           );
@@ -3028,6 +3034,13 @@
           }
         }
 
+        function placeNoteAfterParagraph(line) {
+          var row = line && line.nextElementSibling;
+          while (row && row.matches(".user-note")) { row = row.nextElementSibling; }
+          var button = row && row.querySelector(".kg-add-note");
+          if (button) { button.click(); }
+        }
+
         function beginNotePlacement(action) {
           var block = action && action.closest("[data-note-block]");
           if (!block) { return; }
@@ -3039,11 +3052,17 @@
           var lines = Array.from(block.querySelectorAll(".concept-line")).filter(function(line) {
             var inline = line.closest(".kg-content-inline");
             return line.closest("[data-note-block]") === block && (!inline || inline === block) &&
+              !line.matches(".kg-structural-break") &&
+              (line.textContent.trim() || line.querySelector("mjx-container")) &&
               !line.closest(".user-note, .kg-content-statement");
           });
           if (block.matches(".concept-figure, .study-questions") || lines.length === 0) {
             var blockNoteButton = block.querySelector(".kg-add-note");
             if (blockNoteButton) { blockNoteButton.click(); }
+            return;
+          }
+          if (lines.length === 1) {
+            placeNoteAfterParagraph(lines[0]);
             return;
           }
           block.setAttribute("data-note-placement", "active");
@@ -6685,9 +6704,7 @@
             !e.target.closest("a, button, input, textarea, select, label")
           ) {
             e.preventDefault();
-            var placementRow = placementLine.nextElementSibling;
-            var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
-            if (placementButton) { placementButton.click(); }
+            placeNoteAfterParagraph(placementLine);
             return;
           }
 
@@ -6888,9 +6905,7 @@
           var placementLine = e.target.closest(".kg-note-placement-target");
           if (!placementLine) { return; }
           e.preventDefault();
-          var placementRow = placementLine.nextElementSibling;
-          var placementButton = placementRow && placementRow.querySelector(".kg-add-note");
-          if (placementButton) { placementButton.click(); }
+          placeNoteAfterParagraph(placementLine);
         });
 
         document.getElementById("info_panel").addEventListener("pointerdown", function(e) {

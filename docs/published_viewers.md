@@ -58,5 +58,17 @@ The 47 HTML files total 95.2 MiB; all hashes and Git-backed byte comparisons pas
 Shared local libraries, verified unchanged since the initial commit, are included
 under `historic_builds/lib/`. External CDNs may still be needed; historical browser
 compatibility has not been checked for every build. HTML and asset references are
-unmodified. No Git history rewriting has been performed. Preserve the ignored
-archive and its manifest separately when preparing the eventual history cleanup.
+unmodified. Preserve the ignored archive and its manifest in ordinary backups.
+
+## History retention decision
+
+15 November 2026: issue 6.4 was closed without rewriting history. A disposable
+GitHub mirror covered all eight remote branches and 54 tags. Comparable packs
+including their indexes occupied 7.07 MiB with all history and 5.63 MiB excluding
+126 generated-viewer blobs, an estimated saving of only 1.44 MiB (20.4%). The
+current small legacy redirect was retained in the comparison.
+
+GitHub reported 7.8 MiB for the repository. The modest potential saving did not
+justify changing commit IDs or migrating deployment provenance. Historical builds
+remain in Git history; new generated viewers are already ignored and published
+separately. The estimate changed neither repository history nor GitHub.

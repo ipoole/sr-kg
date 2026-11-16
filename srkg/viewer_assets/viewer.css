@@ -1126,7 +1126,7 @@
         border: 0;
         border-radius: 0;
 
-        padding: 14px 16px;
+        padding: 0 16px 14px;
 
         font-family: Arial, sans-serif;
         font-size: __INFO_PANEL_FONT_SIZE_PX__px;
@@ -1163,7 +1163,7 @@
     }
 
     #info_panel .concept-sticky-header {
-        background: rgba(255,255,255,0.96);
+        background: #fff;
         border-bottom: 1px solid #ddd;
         box-sizing: border-box;
         margin: 0 -16px 0.75em;
@@ -1719,12 +1719,16 @@
 
     #info_panel [data-note-placement="active"] > summary .kg-note-placement-instruction,
     #info_panel [data-note-placement="active"] > .kg-noteable-heading .kg-note-placement-instruction {
+        background: #fff8dc;
+        border-radius: 3px;
         color: #6b5200;
         display: inline;
+        padding: 1px 4px;
+        z-index: 2;
         font-size: 0.72em;
         font-weight: 700;
         position: absolute;
-        right: 4.6em;
+        right: calc(5.6em + 5px);
         top: 0.14em;
         white-space: nowrap;
     }
@@ -1988,6 +1992,14 @@
     #info_panel .kg-add-note-row {
         display: none;
     }
+
+    /* 0.6 of the 1.45em text line height. Empty authored lines already
+       provide their own gap; figures and display maths are not prose pairs. */
+    #info_panel .kg-text-paragraph + .kg-text-paragraph,
+    #info_panel .kg-text-paragraph + .kg-add-note-row + .kg-text-paragraph {
+        margin-top: 0.87em;
+    }
+
 
     #info_panel [data-note-placement="active"] .kg-note-placement-target {
         border-radius: 4px;
@@ -3287,7 +3299,7 @@
             max-height: min(48vh, 360px);
             max-width: none;
             overflow-y: auto;
-            padding: 10px;
+            padding: 0 10px 10px;
             right: max(8px, env(safe-area-inset-right));
             top: auto;
             width: auto;
@@ -3480,7 +3492,7 @@
             height: 100%;
             left: auto;
             max-height: none;
-            padding: 10px;
+            padding: 0 10px 10px;
             position: static;
             right: auto;
             top: auto;
@@ -3980,8 +3992,8 @@ details[open] > summary > .kg-content-preview { display: none; }
     display: inline-block; margin-left: 0.35em; vertical-align: middle;
 }
 
-/* Authored blank lines supply spacing. Keep structural figure breaks in the
-   DOM for existing note anchors without displaying an extra empty line. */
+/* Keep structural figure breaks in the DOM for existing note anchors,
+   without displaying an extra empty line. */
 #info_panel .concept-line.kg-structural-break { display: none; }
 #info_panel .content-block-read-toggle:disabled { opacity: 0.35; cursor: default; }
 .kg-content-fold-controls { display: flex; gap: 0.4em; margin-top: 0.3em; }
@@ -4002,8 +4014,15 @@ details[open] > summary > .kg-content-preview { display: none; }
     justify-content: flex-end;
     align-items: center;
     gap: 0.45em;
-    margin-top: 0.65em;
+    margin-top: 0.1em;
+    position: relative;
+    pointer-events: none;
 }
+/* Reuse the final prose line's trailing space; containers keep their controls
+   below their children so nested Fold buttons never share the same corner. */
+#info_panel .content-block-body > .kg-content-footer:not(.kg-content-footer-separated) { margin-top: -0.8em; }
+#info_panel .kg-content-footer button,
+#info_panel .kg-content-footer input { pointer-events: auto; }
 #info_panel details:not([open]) > .kg-content-footer { display: none; }
 #info_panel .kg-footer-read-slot { display: inline-flex; padding: 0.2em 0; margin: 0; }
 #info_panel .kg-footer-read-slot:empty { display: none; }
@@ -4012,7 +4031,7 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 #info_panel .kg-content-refold {
     font: inherit; font-size: 0.75em; color: #334f64;
-    background: #fff; border: 1px solid #bdcbd5; border-radius: 5px;
+    background: rgba(255,255,255,0.75); border: 1px solid #bdcbd5; border-radius: 5px;
     padding: 0.3em 0.65em; min-height: 32px; cursor: pointer;
 }
 #info_panel .kg-content-refold:focus-visible { outline: 2px solid #174ea6; outline-offset: 2px; }

@@ -225,3 +225,25 @@ def test_show_in_graph_fit_is_not_undone_by_pane_camera_restore(browser_graph):
     # return to the deliberately distant, zoomed-out pre-shortcut camera.
     assert result["settled"]["scale"] > 0.15
     assert result["settled"]["position"]["x"] < 1000
+
+
+@pytest.mark.parametrize('width', [390, 1280], ids=['phone', 'desktop'])
+def test_details_masthead_is_flush_and_opaque_while_scrolling(browser_graph, width):
+    page = browser_graph.page
+    page.set_viewport_size({'width': width, 'height': 844})
+    page.locator('#kg_view_select').select_option('both')
+    for target in ['concept:2.2', 'module:test.m02_applications']:
+        page.evaluate('(target)=>kgExecuteViewerCommand({command:"select",target})', target)
+        # Make the same scrolling geometry available even in the short fixture.
+        page.locator('#info_panel').evaluate('''panel => {
+            const spacer = document.createElement('div');
+            spacer.style.height = '3000px';
+            panel.appendChild(spacer);
+        }''')
+        for scroll in [0, 400, 1800]:
+            page.locator('#info_panel').evaluate('(panel,top)=>{panel.scrollTop=top}', scroll)
+            header = page.locator('#info_panel > .concept-sticky-header')
+            assert header.bounding_box()['y'] == pytest.approx(
+                page.locator('#info_panel').bounding_box()['y'], abs=1
+            ), (target, scroll)
+            assert header.evaluate('el=>getComputedStyle(el).backgroundColor') == 'rgb(255, 255, 255)'

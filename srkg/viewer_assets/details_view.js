@@ -22,7 +22,7 @@ function kgCreateDetailsView(options) {
     var items = Array.from(scope.querySelectorAll("details"));
     if (scope.matches("details")) { items.unshift(scope); }
     items.forEach(function(item) {
-      if (item.closest(".concept-toc") ||
+      if (item.closest(".concept-toc") || item.matches(".user-note") ||
           item.matches('.kg-content-inline[data-content-origin="authored"]:not(.kg-shared-explanation)')) { return; }
       var heading = item.querySelector(":scope > summary");
       if (!heading) { return; }
@@ -41,6 +41,16 @@ function kgCreateDetailsView(options) {
         var body = item.querySelector(":scope > .kg-content-body, :scope > .kg-reading-concept-body, :scope > .kg-reading-tree-body");
         (body || item).appendChild(footer);
       }
+      var last = footer.previousElementSibling;
+      while (last && last.matches(".kg-add-note-row, .kg-structural-break")) {
+        last = last.previousElementSibling;
+      }
+      // Keep controls clear of a final nested note, clarification or figure,
+      // and of display maths both before and after MathJax typesetting.
+      footer.classList.toggle("kg-content-footer-separated", Boolean(last && (
+        last.matches("details, figure, table") ||
+        last.querySelector('details, figure, table, mjx-container[display="true"]') ||
+        last.textContent.indexOf("\\[") !== -1)));
       var slot = footer.querySelector(".kg-footer-read-slot");
       var tick = heading.querySelector(".content-block-read-toggle");
       if (tick && item.open && !slot.querySelector("input")) {
@@ -62,17 +72,9 @@ function kgCreateDetailsView(options) {
     var item = foldTargets.get(button.closest(".kg-content-footer"));
     if (!item) { return false; }
     if (options.beforeFold) { options.beforeFold(item); }
-    var noteId = item.getAttribute("data-note-id"), occurrence = item.getAttribute("data-content-occurrence");
     item.open = false;
     refreshFoldControls(item);
     requestAnimationFrame(function() {
-      // Folding an edited note replaces its shell after saving the draft.
-      if (!item.isConnected && noteId) {
-        item = Array.from(document.querySelectorAll("#info_panel .user-note")).find(function(note) {
-          return note.getAttribute("data-note-id") === noteId &&
-            note.getAttribute("data-content-occurrence") === occurrence;
-        });
-      }
       if (!item || !item.isConnected) { return; }
       var heading = item.classList.contains("kg-reading-concept")
         ? item.parentElement.querySelector(":scope > .kg-reading-concept-title > button")
@@ -182,7 +184,7 @@ function kgCreateDetailsView(options) {
     refreshFoldControls(panel);
     schedulePanelContentRefit();
     if (window.MathJax && MathJax.typesetPromise) {
-      MathJax.typesetPromise([panel]).catch(function(err) {
+      return MathJax.typesetPromise([panel]).catch(function(err) {
         console.warn("MathJax typesetting failed:", err);
       }).then(function() {
         applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);

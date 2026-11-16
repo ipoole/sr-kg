@@ -4,7 +4,8 @@ Pages deploys locally built and tested packages through GitHub Actions. Generate
 viewers are ignored/untracked; pushing source alone does not publish. Website
 sources live in `website/`, and the small tracked legacy URL page remains at
 `output/interactive_graph.html`. Public URLs, HTTPS and OAuth origins are unchanged.
-The migration leaves the product at v4.5.0. History extraction/rewriting is separate.
+The migration left the product at v4.5.0. The historical viewer sample is archived;
+Git history is deliberately retained after the [storage assessment](../published_viewers.md#history-retention-decision).
 
 ## Build and publish
 
@@ -114,5 +115,5 @@ on current main. No force pushes are needed for normal publication or rollback.
 [Rehearsal](artefact_deployment_rehearsal.md), [switchover](artefact_deployment_cutover.md)
 and [completion](artefact_deployment_completion.md) record the checks and deployment
 identities. Those dated records describe their historical stages; this document is
-the current operating procedure. Historical viewer extraction and Git history
-rewriting have not been performed.
+the current operating procedure. The [historical viewer sample](../published_viewers.md)
+is archived separately; history rewriting was considered and declined.
