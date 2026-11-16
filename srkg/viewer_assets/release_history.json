@@ -1,4 +1,5 @@
 [
+  {"version": "5.0.2", "date": "2026-11-16", "summary": "Preview: Fit++ survives synchronisation, temporary layout notices fade, tutorial maths renders correctly, and details headers stay flush; clearer dates and acknowledgments."},
   {"version": "5.0.0", "date": "2026-11-15", "summary": "Explore connected explanations through reading trees, with substantially revised teaching content, richer intuition and illustrations throughout SR, GR and supporting mathematics."},
   {"version": "4.6.1", "date": "2026-11-08", "summary": "Illustrated user guide with desktop and phone examples, and a shorter Quick Start."},
   {"version": "4.6.0", "date": "2026-11-08", "summary": "Clearer graph overviews, improved guided tutorials content with scrolling and zooming permitted in details view, and better equation layouts"},

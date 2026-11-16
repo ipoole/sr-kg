@@ -48,6 +48,7 @@ Issue numbers are retained so existing references remain valid.
 10. **Done.** Quick Start links to acknowledgments and software credits, including the Susskind/Friedman and Tong acknowledgments.
 11. **Done.** Google sync preserves the current Fit++ arrangement, including manual moves. Navigating away restores the latest merged saved layout.
 12. **Done.** Concept and module mastheads sit flush with the top of the details viewport and have an opaque background, preventing scrolling content from showing above or through them.
+13. **Deferred — details masthead redesign, for a later minor feature release.** Keep its scale fixed like the graph toolbar, independently of content zoom. Reduce vertical space and the prominence of the module link on desktop; reconsider the Fold/Unfold controls and the messy “+” note marker. Resolve these together before implementing a compact layout.
 
 ## 5. Notes enhancement and unification
 
