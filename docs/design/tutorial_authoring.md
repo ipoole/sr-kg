@@ -61,8 +61,13 @@ pre-preview presentation. Review the entire route after changing earlier cards.
 
 Desktop authoring uses the available editor/viewer space. On phones the editor
 and action-capture view are switched explicitly rather than squeezing an editor,
-graph and details into the screen together. Playback remains fully supported on
-phones and the old iPad; comfortable complex authoring is desktop-first.
+graph and details into the screen together. Recording is supported on phones,
+not restricted to desktop: show the normal viewer with a compact current-card,
+action-count, Undo and Stop strip, then return to the editor on Stop. Desktop is
+the initial implementation/test target; phone capture belongs in the stage 4
+review gate. Playback remains fully supported on phones and the old iPad;
+comfortable complex editing is desktop-first. Microphone recording is a separate
+per-device capability, particularly on the old iPad.
 
 ## 3. Recording viewer actions
 
@@ -85,6 +90,16 @@ authentication, playback/rehearsal, or learners' Explore actions. Do not record
 continuous pointer motion, arbitrary scroll offsets or raw pinch/pan events.
 Prefer semantic block targets and responsive Fit commands. Exact manual framing
 and temporary node arrangements are a later extension, not part of this recorder.
+
+While recording, Undo last action removes the last captured action and restores
+its preceding viewer presentation, including selection, context, folding and
+camera consequences. Redo restores that action/result until a new recorded action
+discards the redo branch. These are temporary authoring checkpoints, not permanent
+snapshots embedded in exported tutorials. Undo covers supported actions recorded
+into this card, not arbitrary personal-data changes. Replay card rehearses the
+current sequence without recording the replay. After Stop, edit/delete/reorder
+actions in the editor and reconstruct from the card's known start to rehearse.
+Report failed reconstruction rather than leaving an unexplained partial state.
 
 Retain the existing baseline/replay model and explicit preparation commands.
 Do not serialize an entire personal presentation checkpoint into every card.
@@ -259,7 +274,7 @@ using the normal artifact workflow and preview version increments.
 | 1 — design | This contract, New-as-draft workflow and compact playback sketch. Review the storage compatibility approach and playback defaults before implementation. |
 | 2 — library/storage | New and independent built-in copies, minimal editing, persistence and playback through the existing engine. Review copy/edit/reload/play without changing the original. |
 | 3 — card editor | Add/delete/duplicate/reorder/edit cards and actions, autosave/status and rehearsal. Review a substantial rewrite with inserted/deleted cards. |
-| 4 — action capture | Explicit Record/Stop for one card, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
+| 4 — action capture | Explicit Record/Stop, Undo/Redo and Replay for one card, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
 | 5 — text portability/sync | Validation/repair, JSON/ZIP round trip, conflict-safe companion sync archive, full backup integration and text-only built-in installation. Review fresh-browser import, two-device sync/conflict and a built-in test build. Useful text-only release boundary. |
 | 6 — voice authoring | Per-card recording/import/replacement and durable attachments with stale-narration indicators. Ian voices a finished text route; review reload/listening on laptop, phone and old iPad. |
 | 7 — voiced/compact player | Agreed after-actions narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
