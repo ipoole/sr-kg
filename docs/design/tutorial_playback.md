@@ -261,6 +261,7 @@ The first implementation should deliberately expose a small, stable vocabulary:
 
 | Command | Parameters | Existing viewer operation |
 | --- | --- | --- |
+| `home` | none | restore the standard starting view; recorder route baseline |
 | `select` | concept or module semantic ID | normal selection transition, without history |
 | `set-display-scope` | `overview`, `full`, `context` | Overview, Context + background, Context only |
 | `set-context` | preset and depth | Context rule controls |
@@ -269,17 +270,17 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | `set-all-module-representations` | `folded`/`expanded` | fold or expand all non-empty modules |
 | `expand-context-modules` | none | expand only folded modules representing the current context |
 | `fit` | `reveal`, `selection`, `context`, `displayed` | existing Fit operation |
-| `open-details-block` | stable block ID | open and scroll to authored block |
-| `open-reading-tree` | recipe; optional concept target, depth and synchronise flag | open a tree or an available support occurrence; optionally synchronise its graph |
-| `open-study-questions` | none | open and scroll to the selected concept's questions without attempting them |
-| `open-details-graphic` | none | open and scroll to the selected concept's graphic |
-| `open-details-relationship` | `derived-from` or `where-used` | open and frame a relationship section |
+| `open-details-block` | stable block ID; optional `open` boolean | open/close and scroll to authored block |
+| `open-reading-tree` | recipe; optional concept target, block ID, depth, synchronise and open flags | open/close a tree, support or borrowed block; optionally synchronise its graph |
+| `open-study-questions` | optional `open` boolean | open/close and scroll to the selected concept's questions without attempting them |
+| `open-details-graphic` | optional `open` boolean | open/close and scroll to the selected concept's graphic |
+| `open-details-relationship` | `derived-from` or `where-used`; optional `open` boolean | open/close and frame a relationship section |
 | `set-relationship-full-tree` | relationship section and boolean `full_tree` | set the section's Full tree checkbox and refresh its contents |
 | `show-relationship-in-graph` | Context preset and full-tree flag | sets context/depth, shows Both if necessary, fits the context after resizing; does not expand or contract |
 | `show-graph-concept-hover` | concept ID | show the normal graph-hover preview without selecting |
 | `show-graph-edge-hover` | source, relation and target concept IDs | emphasise and preview one visible edge |
 | `show-tools-section` | stable section name | open Tools and the named section |
-| `search` | query text | open Search and display matching concepts and modules |
+| `search` | query text, including empty | open Search and display matches; empty clears the query |
 | `close-search` | none | close Search without changing Selection |
 | `wait` | bounded milliseconds | settling pause only, not exposition timing |
 
@@ -350,8 +351,8 @@ it is not a separate creation workflow.
 See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
 the proposed contract, storage compatibility safeguards, compact playback and
 staged review gates. This supersedes the earlier developer-only recorder proposal;
-the local library, independent copies, card/action editor and rehearsal are implemented
-(stages 2–3), while recording, portability/sync and audio remain planned.
+the local library, independent copies, card/action editor, rehearsal and recording are implemented
+(stages 2–4), while portability/sync and audio remain planned.
 
 ## Validation and compatibility
 

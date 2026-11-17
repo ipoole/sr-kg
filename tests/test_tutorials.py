@@ -363,7 +363,7 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
         descriptor = contract['commands'][step['action']['command']]
         for field in descriptor['fields']:
             original = step['action'][field['name']]
-            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1}.get(field['type'], '')
+            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1, 'text':'x' * 201}.get(field['type'], '')
             path.write_text(yaml.safe_dump(document))
             with pytest.raises(TutorialLoadError):
                 load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)

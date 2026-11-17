@@ -1,7 +1,7 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–3 implemented. Action recording,
-export/import, tutorial sync and voice remain planned.
+Status: design accepted; stages 1–4 implemented.
+Export/import, tutorial sync and voice remain planned.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -272,7 +272,7 @@ into every viewer. The HTML remains text-capable without bundled audio. Fully
 offline use also needs the existing viewer dependencies and any audio assets;
 this work does not implicitly include the separate installable/offline-app issue.
 
-## Implemented through stage 3
+## Implemented through stage 4
 
 The editor supports independent cards with stable IDs; add, duplicate, delete,
 Move up/down and drag reordering. Visible actions and optional silent setup use
@@ -289,7 +289,38 @@ the original viewer presentation and reopens the editor at the same card. Earlie
 action edits can break later steps: report rehearsal failures, retain the draft
 and offer Exit rather than silently repairing the sequence.
 
-Recording remains stage 4; these controls currently edit actions explicitly.
+Stage 4 adds Record actions. It switches to the viewer with a compact strip on
+both desktop and phone. Each recording appends to the selected card; Undo covers
+only actions captured in that session, not earlier card actions. Redo is discarded
+when a new action is recorded. Replay card uses the shared pointer/action player
+without appending its replay. Stop restores the pre-recording presentation and
+returns to the same editor/card, flushing its draft; a storage failure remains
+visible and retryable there.
+
+The first card receives a silent `home` preparation command, once per route.
+Recording reconstructs earlier cards and the selected card's existing actions
+before accepting input. This avoids device-specific snapshots in stored routes.
+Checkpoint snapshots exist only in memory for the active recording, at most 20
+captured actions. New recordings cannot overlap playback or another editor.
+
+Capture covers selection, named context/depth, pane/graph modes, module folding,
+Search (including clearing the query, debounce and Enter), Fit/Fit++, native
+Details block opening/folding, relationship controls and reading-tree
+opening/folding/depth/synchronisation. Older local controls are translated before
+their native handlers; automatic effects are not captured twice. During replay,
+Undo/Redo and restoration the dispatcher bypasses capture.
+
+Personal notes, answers, reading marks and layout/data/account changes are not
+recorded or rolled back. Camera gestures and scrolling are not serialized.
+Unsupported local clarifications, full-width reading focus, bulk content folding,
+custom-context rules and ambiguous repeated reading-concept occurrences are
+reported rather than guessed. Hover demonstrations remain available through the
+explicit action editor; incidental mouse motion is not recorded. Portable text
+export/import and sync are next, in stage 5.
+
+Local clarification folds, full-width reading controls and ambiguous repeated
+occurrences of a concept in one reading tree remain unsupported capture targets;
+the strip reports these rather than guessing which occurrence to reproduce.
 
 ## 10. Delivery stages and review gates
 

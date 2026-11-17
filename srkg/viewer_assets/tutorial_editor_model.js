@@ -87,7 +87,7 @@ function kgCreateTutorialEditorModel(options) {
       var valid;
       if (field.type === 'integer') { valid = Number.isInteger(value) && value >= field.min && value <= field.max; }
       else if (field.type === 'boolean') { valid = typeof value === 'boolean'; }
-      else if (field.type === 'text') { valid = typeof value === 'string' && value.trim() && value.length <= field.max_length; }
+      else if (field.type === 'text') { valid = typeof value === 'string' && (field.allow_empty || value.trim()) && value.length <= field.max_length; }
       else if (field.type === 'edge') {
         var parts = typeof value === 'string' ? value.replace(/^edge:/, '').split('|') : [];
         valid = typeof value === 'string' && value.indexOf('edge:') === 0 && parts.length === 3 &&

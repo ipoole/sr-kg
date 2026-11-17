@@ -27,11 +27,15 @@ function kgCreateTutorialLibrary(options) {
   function status(state, text) {
     element("editor_status").dataset.state = state;
     element("editor_status").textContent = text;
+    if (options.recorder) { options.recorder.saveStatus(text); }
     element("editor_retry").hidden = state !== "error";
   }
   function updatePlay() {
     var errors = editing ? problems(editing.route) : [];
     element("editor_play").disabled = busy || Boolean(errors.length);
+    var canRecord = !options.canRecord || options.canRecord();
+    element("editor_record").disabled = busy || !editing || !editing.route.steps.length || !canRecord;
+    element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
     element("editor_preview").disabled = busy || !editing || Boolean(problems(editing.route, {singleStep:true, startIndex:cardIndex}).length);
     element("editor_validation").textContent = errors.join(" ");
@@ -205,6 +209,28 @@ function kgCreateTutorialLibrary(options) {
   function playbackExited() {
     if (returningToEditor) { returningToEditor = false; setBusy(false); showEditor(); element("editor_preview").focus(); }
   }
+  async function recordActions() {
+    if (busy || !editing || !editing.route.steps.length || (options.canRecord && !options.canRecord())) { return; }
+    setBusy(true);
+    try {
+      // A portable semantic baseline, once per route, rather than saved device coordinates.
+      var first = editing.route.steps[0];
+      first.prepare = first.prepare || [];
+      if (!first.prepare.length || first.prepare[0].command !== 'home') {
+        first.prepare.unshift({command:'home'}); markChanged();
+      }
+      await flush(); dialog.close();
+      await options.recorder.start(clone(editing.route), cardIndex);
+    } catch (error) { showEditor(); element("editor_validation").textContent = 'Could not record: ' + error.message; }
+    finally { setBusy(false); }
+  }
+  function recordingChanged(items) {
+    model.setActions(editing.route.steps[cardIndex], items); markChanged();
+  }
+  async function recordingStopped() {
+    renderCard(); showEditor(); element("editor_record").focus();
+    try { await flush(); } catch (error) { saveFailed(error); }
+  }
   function selected() { return options.selectedId(); }
   element("new").addEventListener("click", function() { create(null); });
   element("library_retry").addEventListener("click", initialise);
@@ -229,6 +255,7 @@ function kgCreateTutorialLibrary(options) {
   });
   element("editor_close").addEventListener("click", closeEditor);
   element("editor_retry").addEventListener("click", function() { flush().catch(function() {}); });
+  element("editor_record").addEventListener("click", recordActions);
   element("editor_play").addEventListener("click", function() { playEditor('all'); });
   element("editor_preview").addEventListener("click", function() { playEditor('preview'); });
   element("editor_from").addEventListener("click", function() { playEditor('from'); });
@@ -267,5 +294,6 @@ function kgCreateTutorialLibrary(options) {
   });
   var ready = initialise();
   return {ready: ready, routeById: routeById, problems: problems,
-    showIntroduction: showIntroduction, playbackExited: playbackExited};
+    showIntroduction: showIntroduction, playbackExited: playbackExited,
+    recordingChanged:recordingChanged, recordingStopped:recordingStopped};
 }

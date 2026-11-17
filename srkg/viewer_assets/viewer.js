@@ -4929,14 +4929,14 @@
           return value;
         }
 
-        function openTutorialDetailsBlock(blockId) {
+        function openTutorialDetailsBlock(blockId, open) {
           var panel = document.getElementById("info_panel");
           var target = panel.querySelector(
             '[data-content-block-id="' + cssAttributeValueEscape(blockId) + '"]'
           );
           if (!target) { throw new Error("Unknown or unavailable details block: " + blockId); }
           if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
-          openTargetForToc(target);
+          if (open === false) { target.open = false; } else { openTargetForToc(target); }
           if (target.id) { setActiveConceptSection(target.id); }
           scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
         }
@@ -4978,7 +4978,7 @@
           }) || null;
         }
 
-        function openTutorialDetailsRelationship(sectionName) {
+        function openTutorialDetailsRelationship(sectionName, open) {
           var relationship = tutorialDetailsRelationships[String(sectionName || "")];
           var panel = document.getElementById("info_panel");
           var target = relationship
@@ -4988,7 +4988,7 @@
             throw new Error("Unknown or unavailable Details relationship: " + sectionName);
           }
           if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
-          target.open = true;
+          target.open = open !== false;
           if (target.id) { setActiveConceptSection(target.id); }
           scrollInfoPanelTargetBelowStickyToc(target, {immediate: true});
         }
@@ -5017,12 +5017,22 @@
           setSearchOpen(true);
         }
 
-        async function executeViewerCommand(command, options) {
+        var tutorialRecorder;
+        function executeViewerCommand(command, options) {
+          options = options || {};
+          if (tutorialRecorder && tutorialRecorder.active() && (!options.origin || options.origin === 'user')) {
+            return tutorialRecorder.perform(command, function() { return applyViewerCommand(command, options); }, options);
+          }
+          return applyViewerCommand(command, options);
+        }
+        async function applyViewerCommand(command, options) {
           options = options || {};
           command = command || {};
           var name = String(command.command || "");
           try {
-            if (name === "select") {
+            if (name === "home") {
+              await restoreHome();
+            } else if (name === "select") {
               var target = String(command.target || "");
               var type;
               var id;
@@ -5093,26 +5103,27 @@
                 throw new Error("open-reading-tree requires a synchronise boolean");
               }
               if (!detailsAreVisible()) { setViewerView("both"); }
-              var readingTarget = await readingTrees.openForTutorial(recipe, readingNode, readingDepth, command.synchronise);
+              var readingTarget = await readingTrees.openForTutorial(recipe, readingNode, readingDepth, command.synchronise,
+                command.block === undefined ? null : commandTargetId(command.block, "block:", "block"), command.open);
               if (!command.synchronise) { scrollInfoPanelTargetBelowStickyToc(readingTarget, {immediate: true}); }
             } else if (name === "open-details-block") {
-              openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"));
+              openTutorialDetailsBlock(commandTargetId(command.target, "block:", "block"), command.open);
             } else if (name === "open-study-questions") {
               var questions = document.querySelector("#info_panel .study-questions");
               if (!questions) { throw new Error("Study Questions are unavailable"); }
               if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
-              questions.open = true;
+              questions.open = command.open !== false;
               scrollInfoPanelTargetBelowStickyToc(questions, {immediate: true});
             } else if (name === "open-details-graphic") {
               var graphic = document.querySelector("#info_panel > .content-block-graphic, #info_panel > .concept-figure");
               if (!graphic) { throw new Error("Details graphic is unavailable"); }
               if (!detailsAreVisible()) { setViewerView(viewerState.view === "graph" ? "both" : viewerState.view); }
-              graphic.open = true;
+              graphic.open = command.open !== false;
               scrollInfoPanelTargetBelowStickyToc(graphic, {immediate: true});
             } else if (name === "open-details-relationship") {
               openTutorialDetailsRelationship(commandEnumValue(
                 command, "value", ["derived-from", "where-used"]
-              ));
+              ), command.open);
             } else if (name === "set-relationship-full-tree") {
               var sectionName = commandEnumValue(command, "value", ["derived-from", "where-used"]);
               if (typeof command.full_tree !== "boolean") {
@@ -5142,8 +5153,8 @@
               showTutorialToolsSection(String(command.value || ""));
             } else if (name === "search") {
               var searchQuery = String(command.query || "").trim();
-              if (!searchQuery || searchQuery.length > 200) {
-                throw new Error("Search query must contain between 1 and 200 characters");
+              if (searchQuery.length > 200) {
+                throw new Error("Search query must contain at most 200 characters");
               }
               showTutorialSearch(searchQuery);
             } else if (name === "close-search") {
@@ -5414,7 +5425,10 @@
         var tutorialLibrary;
         var guidedTutorial = kgCreateGuidedTutorial({
           personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
-          canStart: function(route, playOptions) { return !tutorialLibrary || !tutorialLibrary.problems(route, playOptions).length; },
+          canStart: function(route, playOptions) {
+            return !(tutorialRecorder && tutorialRecorder.active()) &&
+              (!tutorialLibrary || !tutorialLibrary.problems(route, playOptions).length);
+          },
           onIntroduction: function(route) { if (tutorialLibrary) { tutorialLibrary.showIntroduction(route); } },
           onExit: function() { if (tutorialLibrary) { tutorialLibrary.playbackExited(); } },
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
@@ -5437,10 +5451,28 @@
 
         window.kgTutorialPlaybackSnapshot = tutorialPlaybackSnapshot;
         window.kgStartTutorial = startTutorialById;
+        var tutorialEditorModel = kgCreateTutorialEditorModel({contract:kgViewerConfig.tutorialAuthoring,
+          concepts:conceptData, modules:moduleData, edges:allEdges, relation:edgeRelation});
+        tutorialRecorder = kgCreateTutorialRecorder({model:tutorialEditorModel,
+          presentation:{capture:captureTutorialPresentation, restore:restoreTutorialPresentation, replay:replayTutorialCommands},
+          execute:applyViewerCommand, demonstrate:guidedTutorial.rehearseActions,
+          dispatch:function(command, metadata) { return executeViewerCommand(command, Object.assign({origin:'user'}, metadata)); },
+          gesture:kgCreateTutorialCaptureTargets({reading:readingTrees}),
+          settle:async function() {
+            var previous = '', stable = 0, started = performance.now();
+            while (stable < 3 && performance.now() - started < 1500) {
+              await nextAnimationFrames(1);
+              var current = JSON.stringify(cameraSnapshot());
+              stable = current === previous ? stable + 1 : 0; previous = current;
+            }
+          },
+          changed:function(items) { tutorialLibrary.recordingChanged(items); },
+          stopped:function() { return tutorialLibrary.recordingStopped(); }
+        });
         tutorialLibrary = kgCreateTutorialLibrary({
           store: personalDataStore.tutorials, markup: contentMarkup,
-          model: kgCreateTutorialEditorModel({contract:kgViewerConfig.tutorialAuthoring,
-            concepts:conceptData, modules:moduleData, edges:allEdges, relation:edgeRelation}),
+          model:tutorialEditorModel, recorder:tutorialRecorder,
+          canRecord:function() { return !tutorialPlaybackSnapshot().tutorialId; },
           version: document.querySelector('meta[name="application-version"]').content,
           hasDomain: function(domain) {
             return Object.keys(conceptData).some(function(id) { return conceptData[id].domain === domain; });
@@ -5589,7 +5621,7 @@
           return conceptId ? {type: "concept", id: conceptId} : null;
         }
 
-        window.kgRestoreHome = async function() {
+        async function restoreHome() {
           resetContextFitInteraction(); setLayoutEditingEnabled(false);
           hideNodeTooltip(); restoreHoveredEdge();
           readingTrees.reset(); sharedExplanations.reset();
@@ -5618,6 +5650,8 @@
             if (status.textContent === "Starting view restored") { status.textContent = ""; }
           }, 2500);
         };
+
+        window.kgRestoreHome = function() { return executeViewerCommand({command:'home'}, {origin:'user'}); };
 
         function selectDefaultViewerObject() {
           var selection = defaultViewerSelection();

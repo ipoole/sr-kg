@@ -482,6 +482,26 @@ function kgCreateGuidedTutorial(options) {
     }
   }
 
+  async function demonstrateActions(actions) {
+    for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
+      var item = actions[actionIndex];
+      clearTutorialEmphasis();
+      var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
+      await moveTutorialPointer(stepPointerTarget);
+      await pulseTutorialPointer();
+      await executeViewerCommand(item.action, {origin: "tutorial"});
+      await nextAnimationFrames(2);
+      settleTutorialPointer(stepPointerTarget);
+      if (actionIndex < actions.length - 1 && item.pause_ms) {
+        await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
+      }
+    }
+  }
+  async function rehearseActions(actions) {
+    try { await demonstrateActions(actions); }
+    finally { clearTutorialEmphasis(); }
+  }
+
   async function runTutorialStep(stepIndex, replay) {
     if (
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
@@ -516,19 +536,7 @@ function kgCreateGuidedTutorial(options) {
           await executeViewerCommand(prepare[index], {origin: "tutorial"});
         }
         var actions = tutorialStepActions(step);
-        for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
-          var item = actions[actionIndex];
-          clearTutorialEmphasis();
-          var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
-          await moveTutorialPointer(stepPointerTarget);
-          await pulseTutorialPointer();
-          await executeViewerCommand(item.action, {origin: "tutorial"});
-          await nextAnimationFrames(2);
-          settleTutorialPointer(stepPointerTarget);
-          if (actionIndex < actions.length - 1 && item.pause_ms) {
-            await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
-          }
-        }
+        await demonstrateActions(actions);
       }
       renderTutorialNarration();
     } catch (error) {
@@ -716,6 +724,7 @@ function kgCreateGuidedTutorial(options) {
     requestedTutorialId: requestedTutorialId,
     tutorialPlaybackSnapshot: tutorialPlaybackSnapshot,
     initialiseTutorialPlayback: initialiseTutorialPlayback,
+    rehearseActions:rehearseActions,
     isGuiding: isGuiding
   };
 }

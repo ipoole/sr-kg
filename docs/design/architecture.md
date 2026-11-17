@@ -195,6 +195,8 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions and built-in-copy provenance. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
 | `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
+| `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory Undo/Redo checkpoints and shared-player Replay; no personal-data rollback. |
+| `tutorial_capture_targets.js` | Maps older DOM-only controls to semantic commands before native handlers; reports unsupported operations. |
 | `tutorial_library.js` | Personal library, card editing/reordering, autosave/failure status and rehearsal returning to the editor. |
 | `csv.js` | Shared CSV encoding/decoding; callers retain their format-specific strictness and line endings. |
 
@@ -348,7 +350,10 @@ library exposes IndexedDB storage through the Personal data facade; it does not
 extend the legacy cloud/profile envelope. Card/action editing shares the existing
 player: Preview card silently reconstructs preceding actions, then demonstrates
 only the selected card; Play from here continues normally. Both restore the
-pre-rehearsal presentation on Exit. Recording, portable packages and voice remain
+pre-rehearsal presentation on Exit. Recording uses the same command boundary and presentation port. A Home preparation
+command makes the route start explicit; session snapshots support Undo/Redo but
+are never saved into tutorial records. The recorder is idle outside explicit
+capture and rejects concurrent playback. Portable packages and voice remain
 later stages.
 
 ## Design patterns actually present

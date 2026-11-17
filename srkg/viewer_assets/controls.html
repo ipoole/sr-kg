@@ -336,9 +336,11 @@
     <div id="kg_tutorial_editor_setup"></div>
   </details>
   <p class="kg-muted-label">Preview rebuilds the earlier cards first. After changing an earlier action, check that later cards still work.</p>
+  <p class="kg-muted-label">Record actions starts from Home and replays earlier cards, then appends to this card. Undo affects new recordings only. Stop returns here.</p>
   </fieldset>
   <p id="kg_tutorial_editor_validation" role="status"></p>
   <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_editor_record" type="button">Record actions</button>
     <button id="kg_tutorial_editor_preview" type="button">Preview card</button>
     <button id="kg_tutorial_editor_from" type="button">Play from here</button>
     <button id="kg_tutorial_editor_play" type="button">Play tutorial</button>
@@ -346,3 +348,14 @@
     <button id="kg_tutorial_editor_close" type="button">Done</button>
   </div>
 </dialog>
+
+<section id="kg_tutorial_recording" class="kg-tutorial-recording-strip" aria-label="Record tutorial actions" hidden>
+  <strong id="kg_tutorial_recording_title"></strong>
+  <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_recording_undo" type="button">Undo</button>
+    <button id="kg_tutorial_recording_redo" type="button">Redo</button>
+    <button id="kg_tutorial_recording_replay" type="button">Replay card</button>
+    <button id="kg_tutorial_recording_stop" type="button">Stop recording</button>
+  </div>
+  <span id="kg_tutorial_recording_status" role="status" aria-live="polite"></span>
+</section>

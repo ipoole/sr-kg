@@ -129,6 +129,8 @@ def inject_controls(
         "tutorial_store.js",
         "tutorial_editor_model.js",
         "tutorial_action_editor.js",
+        "tutorial_recorder.js",
+        "tutorial_capture_targets.js",
         "tutorial_library.js",
         "context_layout.js",
         "graph_model.js",

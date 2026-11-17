@@ -388,10 +388,10 @@ def test_incomplete_later_card_does_not_block_preview_but_invalid_action_does(tu
     assert page.locator('#kg_tutorial_editor_preview').is_enabled()
     page.locator('#kg_tutorial_editor_action_section').evaluate('e=>e.open=true')
     actions = page.locator('#kg_tutorial_editor_actions')
-    actions.get_by_label('Action type', exact=True).select_option('search')
-    actions.locator('[data-field="query"]').fill('')
+    actions.get_by_label('Action type', exact=True).select_option('select')
     assert page.locator('#kg_tutorial_editor_preview').is_disabled()
-    assert _record(page, tutorial_id)['route']['steps'][0]['actions'][0]['action']['query'] == ''
+    assert _record(page, tutorial_id)['route']['steps'][0]['actions'][0]['action']['target'] == ''
+    actions.get_by_label('Action type', exact=True).select_option('search')
     actions.locator('[data-field="query"]').fill('Beta')
     assert page.locator('#kg_tutorial_editor_preview').is_enabled()
     # Text entry must keep focus through each keystroke, rather than rebuilding the form.

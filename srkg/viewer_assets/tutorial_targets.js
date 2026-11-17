@@ -202,7 +202,9 @@ function kgCreateTutorialTargets(options) {
     };
     if (target === "narration") {
       return tutorialElementTarget(
-        document.getElementById("kg_tutorial_narration"), "Tutorial narration"
+        document.getElementById("kg_tutorial_recording").hidden
+          ? document.getElementById("kg_tutorial_narration")
+          : document.getElementById("kg_tutorial_recording"), "Tutorial narration"
       );
     }
     if (target.indexOf("control:module-fold:") === 0) {

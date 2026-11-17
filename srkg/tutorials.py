@@ -254,7 +254,12 @@ def _validate_command(command: dict[str, object], *, context: str, concept_ids: 
             if not spec['min'] <= value <= spec['max']:
                 raise TutorialLoadError(f"{context}.{key} must be between {spec['min']} and {spec['max']}")
         else:
-            value = _required_text(command, key, context)
+            if kind == 'text' and spec.get('allow_empty'):
+                value = command.get(key)
+                if not isinstance(value, str):
+                    raise TutorialLoadError(f'{context}.{key} must be text')
+            else:
+                value = _required_text(command, key, context)
             if kind == 'object':
                 _validate_object_target(value, context, concept_ids, module_ids, references=references)
             elif kind == 'edge':

@@ -51,6 +51,7 @@ CONTEXT_CHOICES = [('derivation', 'Derivation'), ('foundations', 'Foundations'),
 DEPTH_CHOICES = [('one-hop', '1 hop'), ('two-hops', '2 hops'), ('three-hops', '3 hops'), ('transitive', 'Full tree')]
 RELATIONSHIP_CHOICES = [('derived-from', 'Derived from'), ('where-used', 'Where used')]
 COMMANDS = {
+    'home': command('Restore the starting view'),
     'select': command('Select a concept or module', field('target', 'Selection', 'object'), pointer='graph:{target}'),
     'set-display-scope': command('Choose graph mode', choice('value', 'Graph mode', [
         ('overview', 'Overview'), ('full', 'Context + background'), ('context', 'Context only')]), pointer='control:display-scope'),
@@ -66,14 +67,16 @@ COMMANDS = {
     'fit': command('Fit the graph', choice('value', 'Frame', [
         ('context', 'Context (repeat for Fit++)'), ('displayed', 'All displayed'),
         ('selection', 'Selection'), ('reveal', 'Reveal selection')]), pointer='control:fit'),
-    'open-details-block': command('Open a content block', field('target', 'Content block', 'block'), pointer='details:{target}'),
+    'open-details-block': command('Open a content block', field('target', 'Content block', 'block'), field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:{target}'),
     'open-reading-tree': command('Open a reading tree', choice('recipe', 'Recipe', READING_TREE_RECIPES, 'teaching'),
         field('target', 'Support concept (optional)', 'concept', optional=True),
         choice('depth', 'Depth (optional)', DEPTH_CHOICES, optional=True),
-        field('synchronise', 'Synchronise graph (optional)', 'boolean', optional=True), pointer='details:reading-tree:{recipe}'),
-    'open-study-questions': command('Open Study Questions', pointer='details:study-questions'),
-    'open-details-graphic': command('Open the main graphic', pointer='details:graphic'),
-    'open-details-relationship': command('Open a relationship section', choice('value', 'Section', RELATIONSHIP_CHOICES), pointer='details:heading'),
+        field('synchronise', 'Synchronise graph (optional)', 'boolean', optional=True),
+        field('block', 'Reading block (optional)', 'block', optional=True),
+        field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:reading-tree:{recipe}'),
+    'open-study-questions': command('Open Study Questions', field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:study-questions'),
+    'open-details-graphic': command('Open the main graphic', field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:graphic'),
+    'open-details-relationship': command('Open a relationship section', choice('value', 'Section', RELATIONSHIP_CHOICES), field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:heading'),
     'set-relationship-full-tree': command('Change relationship tree depth', choice('value', 'Section', RELATIONSHIP_CHOICES),
         field('full_tree', 'Show full tree', 'boolean', default=True), pointer='details:{value}-full-tree'),
     'show-relationship-in-graph': command('Show relationships in the graph', choice('preset', 'Context', CONTEXT_CHOICES),
@@ -81,7 +84,7 @@ COMMANDS = {
     'show-graph-concept-hover': command('Show concept hover information', field('target', 'Concept', 'concept'), pointer='graph:{target}'),
     'show-graph-edge-hover': command('Show edge hover information', field('target', 'Edge', 'edge'), pointer='graph:{target}'),
     'show-tools-section': command('Open a Tools section', choice('value', 'Section', TOOLS_SECTIONS), pointer='tools:section:{value}'),
-    'search': command('Search concepts and modules', field('query', 'Search text', 'text', max_length=200), pointer='control:search-input'),
+    'search': command('Search concepts and modules', field('query', 'Search text', 'text', max_length=200, allow_empty=True), pointer='control:search-input'),
     'close-search': command('Close Search', pointer='control:search'),
     'wait': command('Wait briefly', field('milliseconds', 'Wait (seconds)', 'integer', min=0, max=5000, default=500, scale=1000)),
 }
