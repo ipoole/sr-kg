@@ -13,7 +13,6 @@ function kgCreateTutorialLibrary(options) {
   function status(state, text) {
     element("editor_status").dataset.state = state;
     element("editor_status").textContent = text;
-    if (options.recorder) { options.recorder.saveStatus(text); }
     element("editor_retry").hidden = state !== "error";
   }
   function updatePlay() {
@@ -220,21 +219,21 @@ function kgCreateTutorialLibrary(options) {
     if (busy || !editing || !editing.route.steps.length || (options.canRecord && !options.canRecord())) { return; }
     setBusy(true);
     try {
-      // A portable semantic baseline, once per route, rather than saved device coordinates.
-      var first = editing.route.steps[0];
-      first.prepare = first.prepare || [];
-      if (!first.prepare.length || first.prepare[0].command !== 'home') {
-        first.prepare.unshift({command:'home'}); markChanged();
-      }
       await flush(); dialog.close();
-      await options.recorder.start(clone(editing.route), cardIndex);
+      var route = clone(editing.route); ensureRecordingBaseline(route);
+      await options.recorder.start(route, cardIndex);
     } catch (error) { showEditor(); element("editor_validation").textContent = 'Could not record: ' + error.message; }
     finally { setBusy(false); }
   }
-  function recordingChanged(items) {
-    model.setActions(editing.route.steps[cardIndex], items); markChanged();
+  function ensureRecordingBaseline(route) {
+    var first = route.steps[0]; first.prepare = first.prepare || [];
+    if (!first.prepare.length || first.prepare[0].command !== 'home') { first.prepare.unshift({command:'home'}); }
   }
-  async function recordingStopped() {
+  async function recordingStopped(items) {
+    if (items !== null) {
+      ensureRecordingBaseline(editing.route);
+      model.setActions(editing.route.steps[cardIndex], items); markChanged();
+    }
     renderCard(); showEditor(); element("editor_record").focus();
     try { await flush(); } catch (error) { saveFailed(error); }
   }
@@ -407,5 +406,5 @@ function kgCreateTutorialLibrary(options) {
   var ready = initialise();
   return {ready: ready, routeById: routeById, problems: problems,
     showIntroduction: showIntroduction, playbackExited: playbackExited, prepareCardEdit:prepareCardEdit,
-    recordingChanged:recordingChanged, recordingStopped:recordingStopped, flush:flush, reconcile:reconcile};
+    recordingStopped:recordingStopped, flush:flush, reconcile:reconcile};
 }

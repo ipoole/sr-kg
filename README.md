@@ -92,8 +92,12 @@ free investigation with only a small return button; **Continue with tutorial** r
 without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
-Edit cards and their action sequences, or use **Record actions** with Undo/Redo
-and Replay. The viewer saves drafts automatically.
+Write narration and use **Record actions** to replace a card's sequence, with
+Undo/Redo while recording. **Finish recording** accepts the replacement; **Cancel**
+keeps the saved sequence. **Play card** checks one card, **Play from here** continues
+and **Play from start** begins the tutorial. Manual commands and silent setup are
+under **Advanced**. Editor drafts save automatically; recordings are accepted only
+on Finish.
 **Edit card** during personal playback opens the current card for revision;
 **Play from here** demonstrates the changes and continues. Built-in playback
 keeps its existing controls; first make an editable copy to revise it.

@@ -490,10 +490,6 @@ function kgCreateGuidedTutorial(options) {
       }
     }
   }
-  async function rehearseActions(actions) {
-    try { await demonstrateActions(actions); }
-    finally { clearTutorialEmphasis(); }
-  }
 
   async function runTutorialStep(stepIndex, replay) {
     if (
@@ -742,7 +738,6 @@ function kgCreateGuidedTutorial(options) {
     requestedTutorialId: requestedTutorialId,
     tutorialPlaybackSnapshot: tutorialPlaybackSnapshot,
     initialiseTutorialPlayback: initialiseTutorialPlayback,
-    rehearseActions:rehearseActions,
     isGuiding: isGuiding
   };
 }

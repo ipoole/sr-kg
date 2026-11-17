@@ -4057,6 +4057,12 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 .kg-tutorial-editor textarea { resize: vertical; }
 .kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#kg_tutorial_editor_footer { display: grid; gap: 8px; }
+.kg-tutorial-editor .kg-tutorial-three-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.kg-tutorial-three-buttons button { min-width: 0; }
+.kg-tutorial-editor button.kg-tutorial-primary { background: #205f88; color: white; border-color: #205f88; font-weight: 700; }
+.kg-tutorial-record-dot { color: #ff8989; font-size: 1.1em; }
+.kg-tutorial-editor section h3 { font-size: 1em; margin: 0.6em 0; }
 .kg-tutorial-editor button {
     font: inherit; font-size: 0.875em; min-height: 32px; padding: 6px 10px;
     border: 1px solid #9cafc1; border-radius: 5px; background: #f7f9fc; color: #28465b;

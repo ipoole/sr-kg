@@ -196,7 +196,7 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions, atomic collection snapshots and cloud baselines. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
 | `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
-| `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory Undo/Redo checkpoints and shared-player Replay; no personal-data rollback. |
+| `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory replacement recording and Undo/Redo checkpoints; Finish commits through the library, Cancel discards; no personal-data rollback. |
 | `tutorial_capture_targets.js` | Maps older DOM-only controls to semantic commands before native handlers; reports unsupported operations. |
 | `tutorial_library.js` | Personal library, card editing/reordering, autosave, rehearsal, import review/export and preserving the open editor across sync. |
 | `text_zip.js` | Shared stored UTF-8 ZIP codec with path, size and checksum validation. |
@@ -353,11 +353,13 @@ See [Tutorial playback](tutorial_playback.md) and
 library exposes IndexedDB storage through the Personal data facade. Full backups
 add optional tutorial JSON, while the separate companion cloud file leaves the
 legacy cloud/profile envelope unchanged. Card/action editing shares the existing
-player: Preview card silently reconstructs preceding actions, then demonstrates
+player: Play card silently reconstructs preceding actions, then demonstrates
 only the selected card; Play from here continues normally. Both restore the
 pre-rehearsal presentation on Exit. Recording uses the same command boundary and presentation port. A Home preparation
-command makes the route start explicit; session snapshots support Undo/Redo but
-are never saved into tutorial records. The recorder is idle outside explicit
+command makes the route start explicit and is committed only on Finish. Captured
+commands are saved on Finish; Undo/Redo snapshots are never persisted. Recording replays
+earlier cards and current setup, excluding the current card's old actions. Cancel
+discards the replacement; manual command/setup editing is under Advanced. The recorder is idle outside explicit
 capture and rejects concurrent playback. Text-only portable packages and companion sync share the validation/merge modules.
 `tutorial_packages.py` validates exported routes against the target KB and installs
 reviewable YAML through `tools/install_tutorial.py`. Voice remains a later stage.

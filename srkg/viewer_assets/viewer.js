@@ -5463,7 +5463,7 @@
           concepts:conceptData, modules:moduleData, edges:allEdges, relation:edgeRelation});
         tutorialRecorder = kgCreateTutorialRecorder({model:tutorialEditorModel,
           presentation:{capture:captureTutorialPresentation, restore:restoreTutorialPresentation, replay:replayTutorialCommands},
-          execute:applyViewerCommand, demonstrate:guidedTutorial.rehearseActions,
+          execute:applyViewerCommand,
           dispatch:function(command, metadata) { return executeViewerCommand(command, Object.assign({origin:'user'}, metadata)); },
           gesture:kgCreateTutorialCaptureTargets({reading:readingTrees}),
           settle:async function() {
@@ -5474,8 +5474,7 @@
               stable = current === previous ? stable + 1 : 0; previous = current;
             }
           },
-          changed:function(items) { tutorialLibrary.recordingChanged(items); },
-          stopped:function() { return tutorialLibrary.recordingStopped(); }
+          stopped:function(items) { return tutorialLibrary.recordingStopped(items); }
         });
         tutorialLibrary = kgCreateTutorialLibrary({
           store: personalDataStore.tutorials, markup: contentMarkup,
