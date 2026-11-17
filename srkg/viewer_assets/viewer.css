@@ -4086,3 +4086,5 @@ details[open] > summary > .kg-content-preview { display: none; }
 .kg-tutorial-recording-strip button:disabled { opacity: 0.5; }
 .kg-tutorial-recording #info_panel { padding-bottom: 125px; }
 .kg-tutorial-recording #kg_controls { max-height: calc(100vh - var(--kg-header-height) - 145px); }
+
+.kg-tutorial-import-dialog input[type="radio"] { display: inline-block; width: auto; margin: 0 6px 0 0; }

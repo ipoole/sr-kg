@@ -1,7 +1,7 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–4 implemented.
-Export/import, tutorial sync and voice remain planned.
+Status: design accepted; stages 1–5 implemented.
+Text export/import, backup integration and tutorial sync are available; voice remains planned.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -15,8 +15,8 @@ personal copies. Edit tutorial/card titles, summary, author credit and written
 narration; select any existing card. Play tutorial returns to the editor on Exit.
 Stage 3 adds card management, explicit action editing and selected-card rehearsal;
 action capture follows in stage 4.
-Personal tutorial text is local-only at this stage; existing backups and Google
-sync do not include it. Storage failures retain the open draft and offer Retry.
+Stage 5 adds text export/import, full backup inclusion and optional Google sync.
+Storage failures retain the open draft and offer Retry or text export.
 
 ## 1. Ownership and library
 
@@ -276,7 +276,7 @@ into every viewer. The HTML remains text-capable without bundled audio. Fully
 offline use also needs the existing viewer dependencies and any audio assets;
 this work does not implicitly include the separate installable/offline-app issue.
 
-## Implemented through stage 4
+## Implemented through stage 5
 
 The editor supports independent cards with stable IDs; add, duplicate, delete,
 Move up/down and drag reordering. Visible actions and optional silent setup use
@@ -320,11 +320,45 @@ Unsupported local clarifications, full-width reading focus, bulk content folding
 custom-context rules and ambiguous repeated reading-concept occurrences are
 reported rather than guessed. Hover demonstrations remain available through the
 explicit action editor; incidental mouse motion is not recorded. Portable text
-export/import and sync are next, in stage 5.
+export/import and sync are implemented in stage 5; voice remains a later stage.
 
 Local clarification folds, full-width reading controls and ambiguous repeated
 occurrences of a concept in one reading tree remain unsupported capture targets;
 the strip reports these rather than guessing which occurrence to reproduce.
+
+### Text portability and sync
+
+Tools → Tutorials → Import accepts the versioned text-only ZIP or JSON exported
+by this viewer. The review dialog defaults to an independent copy. Replacement
+is offered only for a matching personal ID and preserves a separate previous
+copy; a changed local revision stops replacement until reviewed again. Built-ins
+are never overwritten by browser import. Missing KB targets/domains remain
+editable drafts; repair Required domains and the highlighted actions before
+playing. Unsupported commands, unsafe target syntax and damaged archives are
+rejected before saving. Export from the editor also recovers its current text if
+a local save has failed. ZIP entries are stored UTF-8; JSON is the simpler option
+when manually editing a text definition.
+
+Personal data backup includes the entire library, including deletion tombstones.
+Old backups retain existing tutorials. Optional Google sync uses the separate
+**PhysicsKG tutorials.zip** companion file and whole-route conflict copies; see
+[Personal data](personal_data.md). It preserves an open editor and a running
+playback snapshot. Exporting a tutorial does not expose notes, answers or layouts.
+Packages currently reject audio assets, which arrive in stages 6–8.
+
+To install an exported text tutorial into the repository:
+
+```bash
+conda run -n sr-kg python tools/install_tutorial.py my-tutorial.zip --tutorial-id my-tutorial --dry-run
+conda run -n sr-kg python tools/install_tutorial.py my-tutorial.zip --tutorial-id my-tutorial
+```
+
+Use `--replace` explicitly for an existing built-in ID, and `--data-root` for a
+separate KB. Required domains are inferred from references and combined with the
+exported list; `--domains` overrides that list. Full target/schema validation runs
+before an atomic YAML update. Card IDs and author credit survive. Review the Git
+diff, build/test normally, then publish through the artifact workflow. The command
+does not publish or alter the browser's personal library.
 
 ## 10. Delivery stages and review gates
 

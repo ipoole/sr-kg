@@ -60,6 +60,7 @@
           storageKeys: kgStorageKeys
         });
         personalDataStore.tutorials = kgCreateTutorialStore();
+        window.kgTutorialPortable = kgCreateTutorialPortable({contract:kgViewerConfig.tutorialAuthoring});
         window.kgPersonalData = personalDataStore;
 
         var activeNodeId = null;
@@ -292,6 +293,8 @@
         var personalDataController = kgCreatePersonalDataController({
           store: personalDataStore, clientId: function() { return kgCloudSyncConfig.googleDriveClientId; },
           flushLayout: function() { writePersonalLayoutNow(); },
+          prepareTutorials:function() { return tutorialLibrary ? tutorialLibrary.flush() : Promise.resolve(); },
+          tutorialsChanged:function(merged) { return tutorialLibrary ? tutorialLibrary.reconcile(merged) : Promise.resolve(); },
           onMerged: function() {
             contextLayout.preserveDuringLayoutReload(function() {
               globalLayoutStore.reload(); applyGlobalLayoutPositions();
@@ -1098,6 +1101,9 @@
 
         window.kgInitialiseGoogleDriveSync = initialiseGoogleDriveSync;
         window.kgSchedulePersonalDataAutoSync = schedulePersonalDataAutoSync;
+        window.addEventListener('kg:tutorials-changed',function(event) {
+          if (event.detail.origin !== 'remote') { schedulePersonalDataAutoSync(); }
+        });
 
         window.kgExportPersonalData = exportPersonalData;
 
@@ -5472,7 +5478,7 @@
         });
         tutorialLibrary = kgCreateTutorialLibrary({
           store: personalDataStore.tutorials, markup: contentMarkup,
-          model:tutorialEditorModel, recorder:tutorialRecorder,
+          model:tutorialEditorModel, recorder:tutorialRecorder, portable:window.kgTutorialPortable,
           canRecord:function() { return !tutorialPlaybackSnapshot().tutorialId; },
           version: document.querySelector('meta[name="application-version"]').content,
           routeById: tutorialRouteById, play: startTutorialById,
@@ -6341,7 +6347,7 @@
           var file = e.target.files && e.target.files[0];
           if (!file) { return; }
           file.arrayBuffer().then(function(buffer) {
-            showPersonalDataImport(window.kgPersonalDataArchive.importBytes(buffer));
+            showPersonalDataImport(window.kgPersonalDataArchive.unpack(buffer));
           }).catch(function() {
             setPersonalDataStatus("Could not import this personal-data archive.");
           }).finally(function() {

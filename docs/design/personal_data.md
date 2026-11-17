@@ -9,14 +9,13 @@ content and transient viewer state. It currently comprises:
 - personal concept positions and module anchors;
 - latest study-question results;
 - content-block read marks;
-- personal tutorial drafts and editable built-in copies (currently local-only).
+- personal tutorial drafts and editable built-in copies.
 
-The first four collections retain the existing profile, backups and Google sync.
-Tutorial metadata uses a separate IndexedDB store through the same facade,
-kgPersonalData.tutorials, so old-profile writes cannot erase it. Tutorial export,
-backup/sync integration and audio are planned in
-[Tutorial authoring](tutorial_authoring.md#8-local-storage-backup-and-google-sync);
-the tutorial library explicitly explains this current local-only limitation.
+The first four collections retain their existing profile and cloud format.
+Tutorials use a separate IndexedDB store through the same facade,
+`kgPersonalData.tutorials`, so older viewers cannot erase them. Full backups include
+them as `tutorials.json`; Google sync uses a separate visible companion file.
+Voice attachments are a later stage. See [Tutorial authoring](tutorial_authoring.md).
 
 Selection, context, camera, folded modules, open details, temporary Fit++ adjustments
 and control preferences are not personal data. They are not exported or merged.
@@ -124,7 +123,7 @@ tie-break rather than depending on import order.
 ## Portable archive
 
 **Export personal data** downloads one `srkg-personal-data.zip`. It is a
-standard, unencrypted ZIP containing UTF-8 CSV files:
+standard, unencrypted ZIP containing readable UTF-8 files:
 
 | File | Purpose |
 | --- | --- |
@@ -134,6 +133,7 @@ standard, unencrypted ZIP containing UTF-8 CSV files:
 | `study_attempts.csv` | one latest result per question; legacy-compatible column names |
 | `study_resets.csv` | per-question and global reset events |
 | `reading_progress.csv` | checked and unchecked read records |
+| `tutorials.json` | personal tutorial definitions, provenance and deletion tombstones |
 
 CSV uses RFC 4180-style quoting and a header row. Empty collections still have
 a file containing their header. The manifest identifies archive schema version
@@ -145,8 +145,11 @@ chooses:
 - **Merge** (default): combine records using the rules above;
 - **Replace**: replace the current profile after explicit confirmation.
 
-Import is atomic: malformed input changes nothing. The old notes-only CSV
-import remains available for compatibility.
+Malformed input changes nothing. Profile and tutorial stores have separate
+transactions: if tutorial writing fails, restore the previous profile when it has
+not changed meanwhile; otherwise report partial completion explicitly. An older
+backup without `tutorials.json` retains existing tutorials, even in Replace mode.
+The old notes-only CSV import remains available for compatibility.
 
 ## Synchronisation architecture
 
@@ -178,6 +181,27 @@ also checks every five minutes and when it becomes active after being away.
 **Sync now** remains available, and the status reports the last successful sync
 time. Disconnecting removes authorization from the current page but does not
 delete either copy of the data.
+
+Tutorials share the same connection and Sync now action, but use a second visible
+file, **PhysicsKG tutorials.zip**. The original cloud archive remains exactly the
+legacy CSV format, so old viewers can continue syncing safely. The companion
+contains `manifest.json` and `tutorials.json` (versioned readable JSON). No file is
+created until there is tutorial data to sync.
+
+A durable baseline supports three-way whole-tutorial merges. Independent edits
+keep both versions as visibly marked conflict copies, with deterministic IDs so
+repeated syncing does not multiply copies. Deletions use tombstones; an independent
+edit survives as a conflict copy. Card order is never merged automatically.
+Updates require the cloud revision and retry a bounded number of times on a
+concurrent change. Duplicate companion files from simultaneous first connections
+are read together, merged into a stable canonical file and retained, not deleted.
+Unchanged Drive versions reuse their downloaded content.
+
+Sync does not rebuild an open tutorial editor or interrupt playback. A playing
+route remains a frozen snapshot; an open editor keeps its text, focus and caret.
+If necessary its draft becomes a separate conflict copy. New local edits are
+queued for another sync. Partial success is reported explicitly: profile data
+may sync while tutorials remain pending. Disconnect keeps both local/cloud copies.
 
 The standalone viewer uses Google Identity Services' browser token flow. The
 repository's public OAuth web-client ID is the normal build default and

@@ -193,12 +193,15 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_targets.js` | Live semantic target geometry and concept/edge hover demonstrations. |
 | `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume; frozen built-in/personal route playback. |
 | `tutorial_sequence.js` | Shared action sequencing and placeholder cards used by playback, recording, the editor and storage. |
-| `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions and built-in-copy provenance. |
+| `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions, atomic collection snapshots and cloud baselines. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
 | `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
 | `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory Undo/Redo checkpoints and shared-player Replay; no personal-data rollback. |
 | `tutorial_capture_targets.js` | Maps older DOM-only controls to semantic commands before native handlers; reports unsupported operations. |
-| `tutorial_library.js` | Personal library, card editing/reordering, autosave/failure status and rehearsal returning to the editor. |
+| `tutorial_library.js` | Personal library, card editing/reordering, autosave, rehearsal, import review/export and preserving the open editor across sync. |
+| `text_zip.js` | Shared stored UTF-8 ZIP codec with path, size and checksum validation. |
+| `tutorial_portable.js` | Versioned JSON/ZIP definitions and collection validation, safe semantic targets and stable fingerprints. |
+| `tutorial_sync.js` | Whole-tutorial three-way merge, deterministic conflict copies, tombstones and revision-aware companion-file sync. |
 | `csv.js` | Shared CSV encoding/decoding; callers retain their format-specific strictness and line endings. |
 
 `viewerState` holds context rule, display scope and workspace view. Selection and
@@ -346,16 +349,18 @@ action. Explore captures a checkpoint and releases normal input;
 Resume restores it, while Exit restores the pre-route presentation. These snapshots
 exclude personal-data changes, so exploration does not undo study or notes.
 See [Tutorial playback](tutorial_playback.md) and
-[Personal tutorial authoring](tutorial_authoring.md). The local-only personal
-library exposes IndexedDB storage through the Personal data facade; it does not
-extend the legacy cloud/profile envelope. Card/action editing shares the existing
+[Personal tutorial authoring](tutorial_authoring.md). The personal
+library exposes IndexedDB storage through the Personal data facade. Full backups
+add optional tutorial JSON, while the separate companion cloud file leaves the
+legacy cloud/profile envelope unchanged. Card/action editing shares the existing
 player: Preview card silently reconstructs preceding actions, then demonstrates
 only the selected card; Play from here continues normally. Both restore the
 pre-rehearsal presentation on Exit. Recording uses the same command boundary and presentation port. A Home preparation
 command makes the route start explicit; session snapshots support Undo/Redo but
 are never saved into tutorial records. The recorder is idle outside explicit
-capture and rejects concurrent playback. Portable packages and voice remain
-later stages.
+capture and rejects concurrent playback. Text-only portable packages and companion sync share the validation/merge modules.
+`tutorial_packages.py` validates exported routes against the target KB and installs
+reviewable YAML through `tools/install_tutorial.py`. Voice remains a later stage.
 
 ## Design patterns actually present
 

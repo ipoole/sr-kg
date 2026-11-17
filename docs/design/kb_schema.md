@@ -309,6 +309,13 @@ Each tutorial has a stable `tutorial_id`, `title`, `category` (`interface` or
 `domains`, and a non-empty list of `steps`. Domain-filtered builds omit routes
 whose declared domains are unavailable.
 
+An optional `author` string (maximum 300 characters) supplies visible credit.
+Personal exports use a separate versioned JSON/ZIP envelope with record identity,
+timestamps and copy provenance; they are not authored YAML. The text-only
+`tools/install_tutorial.py` command validates and converts an export into the
+target catalogue, requiring explicit replacement of existing IDs. See
+[Tutorial authoring](tutorial_authoring.md#text-portability-and-sync).
+
 Each step has a stable route-local `step_id`, `title`, `commentary`, optional
 unanimated `prepare` commands, and either one `action` with an optional
 `pointer`, or an `actions` list. Each list entry has an `action`, optional

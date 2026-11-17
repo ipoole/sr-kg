@@ -66,6 +66,7 @@ function kgCreateTutorialEditorModel(options) {
     graph:'Graph concepts and modules', edges:'Graph edges', search:'Search results', blocks:'Content blocks',
     reading:'Reading tree controls', 'reading-concepts':'Reading tree concepts', tools:'Tools sections'};
   function pointerGroup(target) {
+    target = String(target || "");
     if (contract.pointer_base[target]) { return 'general'; }
     if (target.indexOf('control:module-fold:') === 0) { return 'module-controls'; }
     if (target.indexOf('control:') === 0) { return 'controls'; }

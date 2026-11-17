@@ -91,12 +91,21 @@ and clarifications. **Explore from here** temporarily releases the viewer for
 free investigation with only a small return button; **Continue with tutorial** restores the saved tutorial view
 without undoing notes or study progress.
 
+**Tools → Tutorials** also creates personal tutorials or editable built-in copies.
+Edit cards and their action sequences, or use **Record actions** with Undo/Redo
+and Replay. The viewer saves drafts automatically. Export a tutorial as ZIP/JSON;
+Import defaults to a new copy and retains missing references for repair. Personal
+backups include tutorials, and optional Google sync keeps independent edits as
+conflict copies. Text-only exports can become built-ins with
+`tools/install_tutorial.py`; see [Tutorial authoring](docs/design/tutorial_authoring.md).
+Voice recording is not yet implemented.
+
 See [Viewer behaviour](docs/design/viewer.md) for details presentation, navigation and
-personal notes. The **Study** tools keep attempt counts and latest results, with
-links back to each attempted question and controls to reset progress. Teaching
+personal notes. The **Study** tools keep the latest question results, with
+links back to each answered question and controls to reset progress. Teaching
 blocks also have a persistent blue read tick. Notes, personal layout, study
-attempts and reading marks remain local by default; **Tools → Personal data**
-downloads or imports them together as a portable ZIP of readable CSV files. See the
+results, reading marks and personal tutorials remain local by default; **Tools → Personal data**
+downloads or imports them together as a portable ZIP of readable CSV/JSON files. See the
 [Viewer quick start](docs/design/viewer_quick_start.md) for a short introduction.
 Use the speech-bubble `+` in a block heading, then choose a paragraph, to add a
 note without leaving permanent insertion controls throughout the text. A filled
@@ -107,7 +116,8 @@ MathJax notation, with **Insert maths** supplying an editable example. Personal
 notes do not affect completion ticks. See [Notes and authored content](docs/design/notes_content_unification.md).
 
 An optional Google Drive connection synchronises the same visible
-`PhysicsKG personal data.zip` file between browsers. It syncs immediately on
+`PhysicsKG personal data.zip` file between browsers; personal tutorials use the
+separate companion `PhysicsKG tutorials.zip` through the same controls. It syncs immediately on
 connection and automatically after changes while connected, while retaining a
 manual **Sync now** action. Local storage remains the working copy and the viewer
 remains usable without connecting. The project's

@@ -62,9 +62,10 @@ class Tutorial:
     sequence: int
     domains: tuple[str, ...]
     steps: tuple[TutorialStep, ...]
+    author: str = ""
 
     def to_viewer_data(self) -> dict[str, object]:
-        return {
+        data = {
             "tutorial_id": self.tutorial_id,
             "title": self.title,
             "category": self.category,
@@ -73,6 +74,17 @@ class Tutorial:
             "domains": list(self.domains),
             "steps": [step.to_viewer_data() for step in self.steps],
         }
+        if self.author:
+            data["author"] = self.author
+        return data
+
+
+def _optional_author(value: object) -> str:
+    if value is None:
+        return ""
+    if not isinstance(value, str) or len(value) > 300:
+        raise TutorialLoadError("Tutorial author must be text up to 300 characters")
+    return value.strip()
 
 
 def load_tutorials(
@@ -168,6 +180,7 @@ def load_tutorials(
             sequence=sequence,
             domains=tuple(domains),
             steps=steps,
+            author=_optional_author(mapping.get("author")),
         )
         if external:
             build_warnings.extend(external)

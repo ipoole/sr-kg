@@ -4,6 +4,7 @@ function kgCreatePersonalDataController(options) {
   var personalDataStore = options.store;
   var writePersonalLayoutNow = options.flushLayout;
   var pendingPersonalDataImport = null, googleDriveAuthorizer = null, personalDataSyncEngine = null;
+  var tutorialSyncEngine = null, synchronizing = null, importing = false;
   var cloudSyncAutoTimer = null, cloudSyncPeriodicTimer = null, cloudSyncLastSuccessfulAt = 0;
   var cloudSyncAutoDelayMs = 15000, cloudSyncPeriodicDelayMs = 5 * 60 * 1000;
 
@@ -103,8 +104,14 @@ function kgCreatePersonalDataController(options) {
         store: personalDataStore,
         archive: window.kgPersonalDataArchive,
         provider: provider,
-        onStatus: function(status) { setCloudSyncStatus(status.detail); }
+        onStatus: function(status) {
+          setCloudSyncStatus(status.state === 'synced' ? 'Notes and progress synced; checking tutorials…' : status.detail);
+        }
       });
+      tutorialSyncEngine = kgCreateTutorialSync({portable:kgTutorialPortable,store:personalDataStore.tutorials,
+        provider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
+          fileName:'PhysicsKG tutorials.zip',allMatches:true}),
+        prepare:options.prepareTutorials,updated:options.tutorialsChanged});
       showCloudSyncConnected(true);
       showCloudSyncAttention(false);
       startCloudSyncPeriodicChecks();
@@ -117,35 +124,40 @@ function kgCreatePersonalDataController(options) {
 
   function syncPersonalDataNow() {
     if (!personalDataSyncEngine) { return Promise.resolve(false); }
-    if (cloudSyncAutoTimer !== null) {
-      clearTimeout(cloudSyncAutoTimer);
-      cloudSyncAutoTimer = null;
-    }
-    writePersonalLayoutNow();
-    return personalDataSyncEngine.synchronize().then(function() {
-      cloudSyncLastSuccessfulAt = Date.now();
-      options.onMerged();
-      setCloudSyncStatus(
-        "Personal data synced. Last synced at " +
-        cloudSyncTimeText(cloudSyncLastSuccessfulAt) + "."
-      );
-      showCloudSyncAttention(false);
-      return true;
-    }).catch(function(error) {
-      if (error && error.code === "auth_required") {
-        clearCloudSyncTimers();
-        showCloudSyncConnected(false, true);
-        showCloudSyncAttention(true);
-        personalDataSyncEngine = null;
-        setCloudSyncStatus("Google sign-in expired. Connect again to sync.");
+    if (synchronizing) { return synchronizing; }
+    if (cloudSyncAutoTimer !== null) { clearTimeout(cloudSyncAutoTimer); cloudSyncAutoTimer = null; }
+    var engine = personalDataSyncEngine, tutorials = tutorialSyncEngine;
+    synchronizing = (async function() {
+      var legacyComplete = false;
+      try {
+        writePersonalLayoutNow(); await options.prepareTutorials();
+        await engine.synchronize(); legacyComplete = true;
+        if (engine !== personalDataSyncEngine) { return false; }
+        options.onMerged();
+        var result = await tutorials.synchronize();
+        if (engine !== personalDataSyncEngine) { return false; }
+        cloudSyncLastSuccessfulAt = Date.now(); showCloudSyncAttention(false);
+        setCloudSyncStatus(result.pending ? 'Notes and progress synced; new tutorial edits are pending automatic sync.' :
+          'Personal data synced. Last synced at ' + cloudSyncTimeText(cloudSyncLastSuccessfulAt) +
+          (result.conflicts ? '. Tutorial conflicts were kept as separate copies.' : '.'));
+        if (result.pending) { schedulePersonalDataAutoSync(1500); }
+        return true;
+      } catch (error) {
+        if (engine !== personalDataSyncEngine) { return false; }
+        setCloudSyncStatus((legacyComplete ? 'Notes, layouts and progress synced; tutorials are still pending. ' : 'Sync did not complete. ') + error.message);
+        if (error && error.code === 'auth_required') {
+          clearCloudSyncTimers(); showCloudSyncConnected(false,true); showCloudSyncAttention(true);
+          personalDataSyncEngine = null; tutorialSyncEngine = null;
+        }
+        return false;
       }
-      return false;
-    });
+    })().finally(function() { synchronizing = null; });
+    return synchronizing;
   }
 
   function disconnectGoogleDrive() {
     clearCloudSyncTimers();
-    personalDataSyncEngine = null;
+    personalDataSyncEngine = null; tutorialSyncEngine = null;
     cloudSyncLastSuccessfulAt = 0;
     showCloudSyncConnected(false);
     showCloudSyncAttention(false);
@@ -162,26 +174,30 @@ function kgCreatePersonalDataController(options) {
     ].join(", ");
   }
 
-  function exportPersonalData() {
-    writePersonalLayoutNow();
-    var bytes = window.kgPersonalDataArchive.exportBytes(personalDataStore.getSnapshot());
-    var blob = new Blob([bytes], {type: "application/zip"});
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = "srkg-personal-data.zip";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setPersonalDataStatus("Personal data exported.");
+  async function exportPersonalData() {
+    try {
+      writePersonalLayoutNow(); await options.prepareTutorials();
+      var records, warning = '';
+      try { records = (await personalDataStore.tutorials.snapshot()).records; }
+      catch (error) { warning = 'Notes, layouts and progress exported; tutorial storage was unavailable, so tutorials are not included.'; }
+      var bytes = window.kgPersonalDataArchive.exportBytes(personalDataStore.getSnapshot(),records);
+      var url = URL.createObjectURL(new Blob([bytes],{type:'application/zip'})), link = document.createElement('a');
+      link.href = url; link.download = 'srkg-personal-data.zip'; document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); },1000);
+      setPersonalDataStatus(warning || 'Personal data, including tutorials, exported.');
+    } catch (error) { setPersonalDataStatus('Could not export personal data: ' + error.message); }
   }
 
-  function showPersonalDataImport(profile) {
-    pendingPersonalDataImport = profile;
-    var summary = window.kgPersonalDataArchive.summarize(profile);
+  function showPersonalDataImport(bundle) {
+    if (importing) { return; }
+    if (!bundle.profile) { bundle = {profile:bundle,tutorials:null}; }
+    pendingPersonalDataImport = bundle;
+    document.getElementById('kg_personal_data_import_status').textContent = '';
+    var summary = window.kgPersonalDataArchive.summarize(bundle.profile);
     document.getElementById("kg_personal_data_import_summary").textContent =
-      "This archive contains " + personalDataSummaryText(summary) + ".";
+      "This archive contains " + personalDataSummaryText(summary) +
+      (bundle.tutorials === null ? '. Tutorials are not included; existing tutorials will be retained.' :
+        ', ' + bundle.tutorials.filter(function(record) { return !record.deletedAt; }).length + ' tutorials.');
     var merge = document.querySelector(
       'input[name="kg_personal_import_mode"][value="merge"]'
     );
@@ -192,36 +208,65 @@ function kgCreatePersonalDataController(options) {
   }
 
   function closePersonalDataImport() {
+    if (importing) { return; }
     pendingPersonalDataImport = null;
     var dialog = document.getElementById("kg_personal_data_import_dialog");
     if (dialog.close) { dialog.close(); }
     else { dialog.removeAttribute("open"); }
   }
 
-  function applyPersonalDataImport() {
-    if (!pendingPersonalDataImport) { return; }
-    var selected = document.querySelector(
-      'input[name="kg_personal_import_mode"]:checked'
-    );
-    var mode = selected ? selected.value : "merge";
-    if (mode === "replace" && !window.confirm(
-      "Replace all personal data currently stored in this browser?"
-    )) { return; }
-    var succeeded = mode === "replace"
-      ? personalDataStore.replaceSnapshot(pendingPersonalDataImport)
-      : personalDataStore.mergeSnapshot(pendingPersonalDataImport);
-    if (!succeeded) {
-      setPersonalDataStatus("Could not save the imported personal data.");
-      return;
+  async function applyPersonalDataImport() {
+    if (importing || !pendingPersonalDataImport) { return; }
+    var mode = document.querySelector('input[name="kg_personal_import_mode"]:checked').value;
+    if (mode === 'replace' && !window.confirm('Replace all personal data currently stored in this browser?')) { return; }
+    var bundle = pendingPersonalDataImport, beforeProfile = personalDataStore.getSnapshot(), writtenProfile = null;
+    var apply = document.getElementById('kg_personal_data_import_apply');
+    var cancel = document.getElementById('kg_personal_data_import_cancel');
+    importing = true; apply.disabled = cancel.disabled = true;
+    document.getElementById('kg_personal_data_import_status').textContent = 'Importing…';
+    function failed(message) {
+      setPersonalDataStatus(message);
+      document.getElementById('kg_personal_data_import_status').textContent = message;
     }
     try {
-      window.sessionStorage.setItem(
-        "srkg.personalData.importStatus",
-        "Personal data " + (mode === "replace" ? "replaced" : "merged") + "."
-      );
-    } catch (err) { /* reload still applies the import */ }
-    window.location.reload();
+      await options.prepareTutorials();
+      var beforeTutorials = bundle.tutorials === null ? null : await personalDataStore.tutorials.snapshot();
+      var merged = null;
+      if (beforeTutorials) {
+        if (mode === 'merge') {
+          merged = await kgCreateTutorialSync({portable:kgTutorialPortable}).merge(beforeTutorials.records,bundle.tutorials,{});
+        } else {
+          var imported = new Set(bundle.tutorials.map(function(record) { return record.id; }));
+          var now = new Date().toISOString();
+          var deleted = beforeTutorials.records.filter(function(record) { return !imported.has(record.id); }).map(function(record) {
+            record = kgTutorialPortable.clone(record); record.deletedAt = now; record.updatedAt = now;
+            record.revisionId = 'revision:' + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); return record;
+          });
+          merged = {records:bundle.tutorials.concat(deleted),relocations:{}};
+        }
+      }
+      var success = mode === 'replace' ? personalDataStore.replaceSnapshot(bundle.profile) : personalDataStore.mergeSnapshot(bundle.profile);
+      if (!success) { throw new Error('Could not save the imported personal data.'); }
+      writtenProfile = personalDataStore.getSnapshot();
+      if (merged) { await personalDataStore.tutorials.commitSnapshot(merged.records,null,beforeTutorials.records,'import'); }
+      try { sessionStorage.setItem('srkg.personalData.importStatus','Personal data ' + (mode === 'replace' ? 'replaced' : 'merged') + '.'); }
+      catch (error) { /* The data has already been saved. */ }
+      window.location.reload();
+    } catch (error) {
+      if (writtenProfile && JSON.stringify(personalDataStore.getSnapshot()) !== JSON.stringify(writtenProfile)) {
+        failed('Import partly completed: profile data changed during import and has been retained; tutorials were not imported. Export your data before retrying.'); return;
+      }
+      if (writtenProfile && JSON.stringify(personalDataStore.getSnapshot()) === JSON.stringify(writtenProfile)) {
+        if (!personalDataStore.replaceSnapshot(beforeProfile)) { failed('Import partly completed; profile rollback failed. Export your data before retrying.'); return; }
+      }
+      failed('Import did not complete: ' + error.message);
+    } finally { importing = false; apply.disabled = cancel.disabled = false; }
   }
+
+  document.getElementById('kg_personal_data_import_dialog').addEventListener('cancel',function(event) {
+    if (importing) { event.preventDefault(); }
+    else { closePersonalDataImport(); }
+  });
 
   return {
     onVisibilityChange: onVisibilityChange,

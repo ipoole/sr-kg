@@ -166,7 +166,14 @@ move it into shared `svg_graphics/motifs.py`.
 For guided tutorials, put teaching exposition in Details, one point per card.
 Group actions to establish a useful view and leave reading targets available
 until Next. Check physics assumptions as well as algebra. See
-[tutorial playback](../design/tutorial_playback.md).
+[tutorial playback](../design/tutorial_playback.md). Personal tutorials can be
+created/copied, recorded and exported in the viewer. To install a text-only export
+as reviewed built-in YAML, first run
+`conda run -n sr-kg python tools/install_tutorial.py tutorial.zip --tutorial-id my-route --dry-run`,
+then repeat without `--dry-run`. Existing IDs require explicit `--replace`.
+The installer validates references, infers domains and preserves card IDs/author
+credit. Review the source diff and run normal build/tests; installation does not
+publish. See [Tutorial authoring](../design/tutorial_authoring.md#text-portability-and-sync).
 
 ## Commands
 

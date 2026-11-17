@@ -101,7 +101,7 @@
       return String(options.accessToken || "");
     };
     var fileName = String(options.fileName || DEFAULT_FILE_NAME);
-    var fileId = "";
+    var fileId = "", allMatches = options.allMatches === true, cache = new Map();
 
     function headers(extra) {
       var result = {Authorization: "Bearer " + token()};
@@ -109,41 +109,41 @@
       return result;
     }
 
-    async function findFile() {
-      if (fileId) { return {id: fileId}; }
+    async function findMatches() {
       var escapedName = fileName.replace(/'/g, "\\'");
-      var params = new URLSearchParams({
-        q: "name = '" + escapedName + "' and trashed = false",
-        spaces: "drive",
-        fields: "files(id,name,version,modifiedTime)",
-        orderBy: "modifiedTime desc",
-        pageSize: "10"
-      });
-      var response = await fetchImpl(DRIVE_API + "?" + params.toString(), {headers: headers()});
-      if (!response.ok) { throw apiError(response, "Could not search Google Drive"); }
+      var params = new URLSearchParams({q:"name = '" + escapedName + "' and trashed = false",spaces:'drive',
+        fields:'nextPageToken,files(id,name,version,modifiedTime)',orderBy:'modifiedTime desc',pageSize:allMatches ? '100' : '10'});
+      var response = await fetchImpl(DRIVE_API + '?' + params.toString(),{headers:headers()});
+      if (!response.ok) { throw apiError(response,'Could not search Google Drive'); }
       var result = await response.json();
-      var match = (result.files || []).find(function(item) { return item.name === fileName; });
-      if (!match) { return null; }
-      fileId = match.id;
-      return match;
+      if (allMatches && result.nextPageToken) { throw new Error('Too many duplicate tutorial cloud files; tidy them in Google Drive before syncing.'); }
+      return (result.files || []).filter(function(item) { return item.name === fileName; });
     }
-
+    async function readFile(file) {
+      var previous = cache.get(file.id);
+      if (allMatches && previous && file.version && previous.version === file.version) { return previous.value; }
+      var response = await fetchImpl(DRIVE_API + '/' + encodeURIComponent(file.id) + '?alt=media',{headers:headers()});
+      if (response.status === 404) { cache.delete(file.id); return null; }
+      if (!response.ok) { throw apiError(response,'Could not download ' + fileName); }
+      var value = {id:file.id,bytes:await response.arrayBuffer(),revision:response.headers.get('etag') || ''};
+      if (allMatches) { cache.set(file.id,{version:file.version,value:value}); }
+      return value;
+    }
     async function read() {
-      var file = await findFile();
-      if (!file) { return null; }
-      var response = await fetchImpl(
-        DRIVE_API + "/" + encodeURIComponent(file.id) + "?alt=media",
-        {headers: headers()}
-      );
-      if (response.status === 404) { fileId = ""; return null; }
-      if (!response.ok) { throw apiError(response, "Could not download personal data from Google Drive"); }
-      return {
-        bytes: await response.arrayBuffer(),
-        revision: response.headers.get("etag") || ""
-      };
+      var matches = !allMatches && fileId ? [{id:fileId}] : await findMatches();
+      if (!matches.length) { return null; }
+      if (allMatches) { matches.sort(function(a,b) { return a.id.localeCompare(b.id); }); }
+      var available = [];
+      for (var file of matches) { var value = await readFile(file); if (value) { available.push(value); } }
+      if (!available.length) { fileId = ''; return null; }
+      fileId = available[0].id;
+      return Object.assign({},available[0],allMatches ? {copies:available.slice(1)} : {});
     }
 
     async function create(bytes) {
+      if (allMatches && (await findMatches()).length) {
+        var conflict = new Error('A tutorial cloud file was created by another device.'); conflict.code = 'conflict'; throw conflict;
+      }
       var boundary = "physicskg-" + Math.random().toString(36).slice(2);
       var body = new Blob([
         "--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n",
@@ -163,6 +163,7 @@
       if (!response.ok) { throw apiError(response, "Could not create the Google Drive file"); }
       var result = await response.json();
       fileId = result.id;
+      cache.delete(fileId);
       return {revision: response.headers.get("etag") || String(result.version || "")};
     }
 
@@ -181,6 +182,7 @@
       );
       if (!response.ok) { throw apiError(response, "Could not update the Google Drive file"); }
       var result = await response.json();
+      cache.delete(fileId);
       return {revision: response.headers.get("etag") || String(result.version || "")};
     }
 

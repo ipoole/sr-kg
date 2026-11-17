@@ -1,4 +1,5 @@
 import pytest
+from playwright.sync_api import expect
 
 
 @pytest.mark.browser
@@ -26,7 +27,7 @@ def test_connect_syncs_immediately_and_local_changes_schedule_another_sync(brows
             disconnect: () => {}
           });
           window.kgCreateGoogleDrivePersonalDataProvider = () => ({
-            fileName: 'PhysicsKG personal data.zip'
+            fileName: 'PhysicsKG personal data.zip', read:async()=>null
           });
           window.kgCreatePersonalDataSyncEngine = options => ({
             synchronize: () => {
@@ -42,10 +43,10 @@ def test_connect_syncs_immediately_and_local_changes_schedule_another_sync(brows
 
     page.locator("#kg_cloud_sync_connect").click()
     page.wait_for_function("() => window.__syncCalls === 1")
-    assert "Last synced" in page.locator("#kg_cloud_sync_status").inner_text()
+    expect(page.locator("#kg_cloud_sync_status")).to_contain_text("Last synced")
 
     page.evaluate("() => kgSchedulePersonalDataAutoSync(0)")
-    page.wait_for_function("() => window.__syncCalls === 2")
+    page.wait_for_function("() => window.__syncCalls === 2 && document.getElementById('kg_cloud_sync_status').textContent.includes('Last synced')")
 
     page.evaluate("""() => {
       Object.defineProperty(document, 'visibilityState', {configurable: true, value: 'visible'});
@@ -70,7 +71,7 @@ def test_completed_sync_does_not_rebuild_an_active_details_editor(browser_graph)
             token: () => 'test-token',
             disconnect: () => {}
           });
-          window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+          window.kgCreateGoogleDrivePersonalDataProvider = () => ({read:async()=>null});
           window.kgCreatePersonalDataSyncEngine = () => ({
             synchronize: () => new Promise(resolve => { window.__finishSync = resolve; }),
             isSynchronizing: () => false
@@ -123,7 +124,7 @@ def test_completed_sync_leaves_an_open_note_untouched(browser_graph):
             token: () => 'test-token',
             disconnect: () => {}
           });
-          window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+          window.kgCreateGoogleDrivePersonalDataProvider = () => ({read:async()=>null});
           window.kgCreatePersonalDataSyncEngine = () => ({
             synchronize: () => new Promise(resolve => { window.__finishSync = resolve; }),
             isSynchronizing: () => false
@@ -170,7 +171,7 @@ def test_paused_sync_opens_choices_without_reconnecting(browser_graph, action):
         token: () => 'test-token',
         disconnect: () => { window.__disconnectCalls++; }
       });
-      window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+      window.kgCreateGoogleDrivePersonalDataProvider = () => ({read:async()=>null});
       window.kgCreatePersonalDataSyncEngine = () => ({
         synchronize: () => window.__syncFails
           ? Promise.reject(Object.assign(new Error('Sign-in expired'), {code:'auth_required'}))
@@ -334,7 +335,7 @@ def test_sync_preserves_fitpp_but_navigation_uses_latest_saved_layout(browser_gr
         window.kgCreateGoogleDriveAuthorizer = () => ({
             connect: () => Promise.resolve(), token: () => 'test-token', disconnect: () => {}
         });
-        window.kgCreateGoogleDrivePersonalDataProvider = () => ({});
+        window.kgCreateGoogleDrivePersonalDataProvider = () => ({read:async()=>null});
         window.kgCreatePersonalDataSyncEngine = () => ({
             synchronize: () => new Promise(resolve => { window.__finishSync = resolve; })
         });

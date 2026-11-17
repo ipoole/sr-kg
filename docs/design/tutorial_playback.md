@@ -352,7 +352,8 @@ See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
 the proposed contract, storage compatibility safeguards, compact playback and
 staged review gates. This supersedes the earlier developer-only recorder proposal;
 the local library, independent copies, card/action editor, rehearsal and recording are implemented
-(stages 2–4), while portability/sync and audio remain planned.
+(stages 2–5), including text portability, backups and companion-file sync.
+Audio remains planned.
 
 ## Validation and compatibility
 
