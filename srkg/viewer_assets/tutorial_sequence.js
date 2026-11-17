@@ -6,12 +6,14 @@ var kgTutorialSequence = (function() {
   }
   function commandsThrough(route, index) {
     return route.steps.slice(0, index + 1).reduce(function(commands, step) {
-      return commands.concat(step.prepare || [], actions(step).map(function(item) { return item.action; }));
+      // Reconstruct view state, omitting playback-only waits from earlier cards.
+      return commands.concat(step.prepare || [], actions(step).map(function(item) { return item.action; }).filter(function(command) { return command.command !== 'wait'; }));
     }, []);
   }
   function newCard(id) {
-    return {step_id:id, title:'New card', commentary:'',
+    return {step_id:id, title:'New card', commentary:'', demonstrate:false,
       action:{command:'wait', milliseconds:0}, pointer:{target:'narration'}};
   }
-  return {actions:actions, commandsThrough:commandsThrough, newCard:newCard};
+  function isPause(item) { return item.action.command === 'wait' && item.action.milliseconds > 0; }
+  return {actions:actions, commandsThrough:commandsThrough, newCard:newCard, isPause:isPause};
 })();

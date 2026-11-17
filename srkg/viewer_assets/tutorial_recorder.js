@@ -7,13 +7,30 @@ function kgCreateTutorialRecorder(options) {
     strip.hidden = !session;
     document.body.classList.toggle('kg-tutorial-recording', Boolean(session));
     strip.dataset.busy = String(busy);
-    if (!session) { return; }
+    if (!session) { document.body.style.removeProperty('--kg-recording-height'); return; }
     document.getElementById('kg_tutorial_recording_title').textContent = session.title + ' · ' + session.items.length + '/' + model.contract.max_actions + ' actions';
-    ['undo', 'redo', 'finish', 'cancel'].forEach(function(key) {
-      var disabled = busy || (key === 'undo' && !session.undo.length) || (key === 'redo' && !session.redo.length);
+    ['undo', 'redo', 'pause', 'finish', 'cancel'].forEach(function(key) {
+      var disabled = busy || (key === 'pause' && session.items.length >= model.contract.max_actions) || (key === 'undo' && !session.undo.length) || (key === 'redo' && !session.redo.length);
       document.getElementById('kg_tutorial_recording_' + key).disabled = disabled;
     });
-    if (message !== undefined) { notice.textContent = message; }
+    if (message !== undefined) { session.message = message; }
+    var next = session.redo[session.redo.length - 1];
+    notice.textContent = (session.message || '') + (next ? ' Next: ' + describe(next.item) + '.' : '');
+    var last = session.undo[session.undo.length - 1];
+    document.getElementById('kg_tutorial_recording_undo').title = last ? 'Undo: ' + describe(last.item) : 'Nothing to undo';
+    document.getElementById('kg_tutorial_recording_redo').title = next ? 'Redo: ' + describe(next.item) : 'Nothing to redo';
+    document.body.style.setProperty('--kg-recording-height',Math.ceil(strip.offsetHeight + 12) + 'px');
+  }
+  function describe(item) {
+    var command = item.action, spec = model.contract.commands[command.command];
+    if (kgTutorialSequence.isPause(item)) { return 'Pause ' + command.milliseconds / 1000 + 's'; }
+    var target = command.target;
+    var value = target ? model.catalog.object[target] || model.catalog.block[target] || target : command.value || command.preset || command.recipe || command.query;
+    return (spec ? spec.label : command.command) + (value ? ' — ' + value : '');
+  }
+  function remember(item, before, after) {
+    session.checkpoint = after; session.items.push(item);
+    session.undo.push({before:before, item:item}); session.redo = [];
   }
   function warn(message) { if (session) { render(message); } }
   async function settled() { await options.settle(); }
@@ -21,7 +38,8 @@ function kgCreateTutorialRecorder(options) {
     if (session || busy) { throw new Error('Recording is already active.'); }
     busy = true;
     var original = options.presentation.capture(), card = route.steps[index], commands = [];
-    session = {title:card.title, original:original, items:[], undo:[], redo:[]};
+    session = {title:card.title, original:original, items:[], undo:[],
+      redo:model.actions(card).reverse().map(function(item) { return {item:item}; })};
     render('Preparing this card…');
     try {
       commands = kgTutorialSequence.commandsThrough(route, index - 1);
@@ -33,7 +51,7 @@ function kgCreateTutorialRecorder(options) {
       }
       await settled();
       session.checkpoint = options.presentation.capture();
-      render('Recording. Prefer Fit/Fit++; manual pan/zoom are not recorded.');
+      render('Redo keeps old actions; a new action replaces the remaining tail.');
     } catch (error) {
       try { await options.presentation.restore(original); }
       finally { session = null; }
@@ -58,10 +76,9 @@ function kgCreateTutorialRecorder(options) {
     if (command.command === 'search') { before.search = model.clone(session.checkpoint.search); }
     try {
       var result = await execute(); await settled();
-      var item = {action:model.clone(command), pointer:{target:metadata && metadata.pointer || model.pointer(command)}, pause_ms:500};
+      var item = {action:model.clone(command), pointer:{target:metadata && metadata.pointer || model.pointer(command)}, pause_ms:0};
       var after = options.presentation.capture();
-      session.checkpoint = after;
-      session.items.push(item); session.undo.push({before:before, after:after, item:item}); session.redo = [];
+      remember(item,before,after);
       render('Recorded.'); return result;
     } catch (error) {
       await options.presentation.restore(before); render('Action not recorded: ' + error.message); return {ok:false};
@@ -79,16 +96,33 @@ function kgCreateTutorialRecorder(options) {
     var source = redo ? session.redo : session.undo;
     if (!source.length) { return; }
     busy = true; render();
-    var record = source[source.length - 1];
+    var record = source[source.length - 1], before = options.presentation.capture();
     try {
-      await options.presentation.restore(redo ? record.after : record.before);
-      session.checkpoint = options.presentation.capture();
-      source.pop();
+      if (redo) {
+        var problem = model.commandProblem(record.item.action);
+        if (problem) { throw new Error(problem); }
+        // Redo performs the semantic action, including transient effects such as hover.
+        if (!kgTutorialSequence.isPause(record.item)) { await options.execute(record.item.action,{origin:'rehearsal'}); }
+        await settled(); record.before = before;
+      } else { await options.presentation.restore(record.before); }
+      session.checkpoint = options.presentation.capture(); source.pop();
       if (redo) { session.items.push(record.item); session.undo.push(record); }
       else { session.items.pop(); session.redo.push(record); }
-      render(redo ? 'Action restored.' : 'Last recorded action undone.');
-    } catch (error) { render('Could not restore the view: ' + error.message); }
-    finally { busy = false; render(); }
+      render((redo ? 'Restored: ' : 'Undone: ') + describe(record.item) + '.');
+    } catch (error) {
+      await options.presentation.restore(before); render('Could not restore the action: ' + error.message);
+    } finally { busy = false; render(); }
+  }
+  async function pause() {
+    await flushSearch(); if (!session || busy) { return; }
+    if (session.items.length >= model.contract.max_actions) { warn('Finish recording and add another card.'); return; }
+    var view = options.presentation.capture();
+    remember({action:{command:'wait',milliseconds:1000},pause_ms:0},view,view);
+    var seconds = 0;
+    for (var i = session.items.length - 1; i >= 0 && kgTutorialSequence.isPause(session.items[i]); i -= 1) {
+      seconds += session.items[i].action.milliseconds / 1000;
+    }
+    render('Pause at end: ' + seconds + 's. Undo removes the last pause.');
   }
   function clearSearch() {
     if (searchTimer !== null) { clearTimeout(searchTimer); searchTimer = null; }
@@ -107,9 +141,10 @@ function kgCreateTutorialRecorder(options) {
     } catch (error) { render('Could not finish recording: ' + error.message + '. You can retry or Cancel.'); }
     finally { busy = false; render(); }
   }
-  ['undo', 'redo', 'finish', 'cancel'].forEach(function(key) {
+  ['undo', 'redo', 'pause', 'finish', 'cancel'].forEach(function(key) {
     document.getElementById('kg_tutorial_recording_' + key).addEventListener('click', function() {
       if (key === 'undo' || key === 'redo') { travel(key === 'redo'); }
+      else if (key === 'pause') { pause(); }
       else { finish(key === 'cancel'); }
     });
   });
@@ -145,6 +180,7 @@ function kgCreateTutorialRecorder(options) {
   window.addEventListener('beforeunload', function(event) {
     if (session || busy) { event.preventDefault(); event.returnValue = ''; }
   });
+  window.addEventListener('resize',function() { if (session) { render(); } });
   return {start:start, perform:perform, warn:warn, active:function() { return Boolean(session); },
     busy:function() { return busy; }, flushSearch:flushSearch};
 }

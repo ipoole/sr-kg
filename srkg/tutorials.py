@@ -33,6 +33,7 @@ class TutorialStep:
     prepare: tuple[dict[str, object], ...] = ()
     pointer_target: str | None = None
     actions: tuple[dict[str, object], ...] = ()
+    demonstrate: bool | None = None
 
     def to_viewer_data(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -48,6 +49,8 @@ class TutorialStep:
             data["prepare"] = [dict(command) for command in self.prepare]
         if self.pointer_target:
             data["pointer"] = {"target": self.pointer_target}
+        if self.demonstrate is not None:
+            data["demonstrate"] = self.demonstrate
         return data
 
 
@@ -212,6 +215,9 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
         if step_id in step_ids:
             raise TutorialLoadError(f'Duplicate step id in {context}: {step_id}')
         step_ids.add(step_id)
+        demonstrate = mapping.get('demonstrate')
+        if 'demonstrate' in mapping and not isinstance(demonstrate, bool):
+            raise TutorialLoadError(f'{step_context}.demonstrate must be a boolean')
         prepare_rows = mapping.get('prepare', [])
         if not isinstance(prepare_rows, list):
             raise TutorialLoadError(f'{step_context}.prepare must be a list')
@@ -245,7 +251,7 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
             pointer = _mapping(mapping['pointer'], f'{step_context}.pointer')
             pointer_target = _required_text(pointer, 'target', f'{step_context}.pointer')
             _validate_pointer_target(pointer_target, context=f'{step_context}.pointer target', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
-        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_required_text(mapping, 'commentary', step_context), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions)))
+        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_required_text(mapping, 'commentary', step_context), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate))
     return tuple(steps)
 
 

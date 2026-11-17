@@ -48,7 +48,8 @@ does not change the viewer. Personal tutorials need no account or setup.
 The new draft has title “New tutorial”, an empty summary and one card titled
 “New card”, with empty written narration. Placeholder prompts are editor UI,
 not narration that could accidentally reach learners. Its action is the existing
-zero-duration wait and its pointer target is narration. These are hidden as
+zero-duration wait and its pointer target is narration; `demonstrate: false`
+starts new cards in scene-setting mode. These are hidden as
 “No viewer action”: a commentary-only card needs no invented user interaction.
 
 ## 2. Editor workflow
@@ -63,6 +64,7 @@ Each card exposes:
 | Field | Behaviour |
 | --- | --- |
 | Title | Short label; required for playback. |
+| Demonstrate actions | Per-card checkbox, editable after recording. Off sets the scene without pointer demonstrations or automatic inter-action delays; On demonstrates the actions. New cards default Off. Older cards without the field retain On behaviour. |
 | Written narration | Primary commentary; required for playback. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
 | Preparation | Optional supported actions to establish the card's starting view, under Advanced → Setup (silent). |
 | Actions | Ordered friendly entries such as “Select Lorentz transformations”, with editable parameters, optional pointer and pause. |
@@ -87,7 +89,7 @@ Desktop authoring uses the available editor/viewer space. On phones the editor
 and action-capture view are switched explicitly rather than squeezing an editor,
 graph and details into the screen together. Recording is supported on phones,
 not restricted to desktop: show the normal viewer with a compact current-card,
-action-count, Undo, Redo, Finish recording and Cancel strip. Desktop is
+action-count, Undo, Redo, Pause +1s, Finish recording and Cancel strip. Desktop is
 the initial implementation/test target; phone capture belongs in the stage 4
 review gate. Playback remains fully supported on phones and the old iPad;
 comfortable complex editing is desktop-first. Microphone recording is a separate
@@ -106,14 +108,37 @@ Required domains, Author credit, Move up/down, manual Viewer actions and Setup
 (silent). These remain available without cluttering the usual writing/recording
 workflow. The Card dropdown supplies navigation through the route.
 
-Record starts an empty replacement sequence, after replaying earlier cards and
-running this card's silent setup. It does not run this card's old actions, so even
-a broken sequence can be replaced. Keep captured actions/checkpoints in memory;
-the old saved sequence stays untouched until Finish. Finish replaces the whole
-sequence (including allowing an empty, narration-only card), preserves setup and
-saves the edited draft. Cancel discards the new sequence. Both restore the
-pre-recording presentation and reopen the same editor/card. A failed save retains
-the replacement draft for Retry or export. Closing the page during capture warns
+Record begins before this card's actions, after replaying earlier cards and its
+silent setup. Its current actions start in the redo queue. Redo executes the next
+queued action against the current view, then remembers a session checkpoint;
+Undo returns it to the queue. A new recorded action discards the unplayed tail.
+The strip describes the next queued action. Appending is therefore Redo to the
+end, then record more. Invalid old actions do not prevent starting a replacement;
+Redo reports the invalid action without consuming it.
+
+Pause +1s records an explicit one-second wait. Repeated presses add independent
+waits immediately, with a combined trailing-duration message. Undo removes one
+wait at a time before affecting the preceding graph action. Recording/Redo does
+not wait out a pause; playback does. Pauses keep the pointer and view stationary,
+including trailing pauses. New recorded actions add no implicit pause; existing
+per-action pause metadata remains supported in Advanced and survives Redo.
+
+Demonstrate actions can be changed during later review, independently of recording.
+The title and narration remain visible in either mode, and explicit pauses work
+in both. New cards default to scene-setting; omitted flags on older cards mean
+demonstration, preserving current tutorials. Existing `prepare` setup remains
+quiet and editable in Advanced for this iteration; no built-in routes are split
+or silently rewritten.
+
+Jumping to a later card or reconstructing a previous view skips earlier main-action
+waits, since they do not change the view. Forward playback still honours each
+explicit pause. Existing silent preparation commands retain their behaviour.
+
+Keep captured actions/checkpoints in memory; the old saved sequence stays untouched
+until Finish. Finish keeps the applied sequence, dropping any remaining redo tail,
+including allowing an empty narration-only card. Cancel discards the recording.
+Both restore the pre-recording presentation and reopen the editor/card. A failed
+save retains the draft for Retry or export. Closing the page during capture warns
 about the unfinished recording.
 
 Capture only supported user intentions, using semantic IDs. Several actions
@@ -141,8 +166,8 @@ While recording, Undo last action removes the last captured action and restores
 its preceding viewer presentation, including selection, context, folding and
 camera consequences. Redo restores that action/result until a new recorded action
 discards the redo branch. These are temporary authoring checkpoints, not permanent
-snapshots embedded in exported tutorials. Undo covers supported actions recorded
-into this card, not arbitrary personal-data changes. Test the finished sequence
+snapshots embedded in exported tutorials. Undo covers supported actions applied
+within this recording session, not arbitrary personal-data changes. Test the finished sequence
 with Play from here; there is no separate replay control in the recording strip.
 Manual action edits and pause adjustments remain available under Advanced.
 Report failed reconstruction rather than leaving an unexplained partial state.
@@ -163,7 +188,7 @@ without conversion. Schema versions are independent of product versions.
 | --- | --- |
 | Personal tutorial | Stable tutorial ID, route, UTC created/updated times, deletion tombstone, revision ID and optional source provenance. |
 | Route | Existing tutorial ID, title, summary, category, sequence, required domains and ordered steps. Optional author credit. |
-| Card/step | Stable step ID, title, commentary, preparation, one action or an ordered action sequence, semantic pointers/pauses; optional audio reference. |
+| Card/step | Stable step ID, title, commentary, preparation, one action or an ordered action sequence, semantic pointers/pauses, optional `demonstrate` boolean; optional audio reference. |
 | Audio reference | Asset ID, recorded commentary hash and duration. A changed commentary hash means “Voice needs review”, not removal of the recording. |
 | Audio asset | SHA-256 content ID, MIME type, byte length and immutable bytes; local/cloud/hosted location belongs to the asset resolver, not a player command. |
 
@@ -326,8 +351,8 @@ Earlier action edits can break later steps: report rehearsal failures, retain th
 draft and offer Exit rather than silently repairing the sequence.
 
 Record actions switches to the normal viewer with a compact strip on both desktop
-and phone. It records an empty replacement with session-only Undo/Redo; Finish
-saves it and Cancel keeps the old sequence. Silent setup is retained. The first
+and phone. Existing actions begin in Redo; session Undo/Redo walks the applied
+sequence, Pause +1s adds waits, Finish saves and Cancel keeps the old sequence. Silent setup is retained. The first
 card receives a silent `home` preparation command when a recording is accepted,
 not on cancellation. Recording reconstructs earlier cards and only the selected
 card's setup before accepting input. This avoids device-specific stored snapshots.

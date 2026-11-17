@@ -368,3 +368,17 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
             with pytest.raises(TutorialLoadError):
                 load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
             step['action'][field['name']] = original
+
+
+@pytest.mark.parametrize('demonstrate',[False,True])
+def test_optional_card_demonstration_flag_survives_loading(tmp_path,demonstrate):
+    path=_write_tutorials(tmp_path/'tutorials.yaml',_sequence_route('[{action: {command: wait, milliseconds: 0}}]',extra='demonstrate: '+str(demonstrate).lower()))
+    route=load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)[0]
+    assert route.to_viewer_data()['steps'][0]['demonstrate'] is demonstrate
+
+
+@pytest.mark.parametrize('value',['"false"','1','null'])
+def test_card_demonstration_flag_rejects_non_booleans(tmp_path,value):
+    path=_write_tutorials(tmp_path/'tutorials.yaml',_sequence_route('[{action: {command: wait, milliseconds: 0}}]',extra='demonstrate: '+value))
+    with pytest.raises(TutorialLoadError):
+        load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)

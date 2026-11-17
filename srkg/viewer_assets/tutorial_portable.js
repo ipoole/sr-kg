@@ -90,7 +90,8 @@ function kgCreateTutorialPortable(options) {
     if (!Array.isArray(value.steps) || value.steps.length > 1000) { throw new Error('Invalid card list.'); }
     var ids = new Set();
     value.steps.forEach(function(step) {
-      keys(step,['step_id','title','commentary','prepare','action','actions','pointer'],'card');
+      keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate'],'card');
+      if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { throw new Error('Invalid demonstration flag.'); }
       if (!identifier(step.step_id) || ids.has(step.step_id)) { throw new Error('Invalid or duplicate card ID.'); }
       ids.add(step.step_id); text(step.title,'card title',300,false); text(step.commentary,'written narration',100000,false);
       if (step.prepare !== undefined) {

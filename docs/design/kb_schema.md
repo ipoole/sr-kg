@@ -319,9 +319,16 @@ target catalogue, requiring explicit replacement of existing IDs. See
 Each step has a stable route-local `step_id`, `title`, `commentary`, optional
 unanimated `prepare` commands, and either one `action` with an optional
 `pointer`, or an `actions` list. Each list entry has an `action`, optional
-`pointer` and `pause_ms` (default 500, range 0–2000). Sequences contain 1–20
+`pointer` and `pause_ms` (default 500, range 0–5000). Sequences contain 1–20
 entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
 One card stays visible while its actions run; Next is enabled on completion.
+An optional boolean `demonstrate` controls pointer demonstrations for the card's
+actions. Omitted means `true` for compatibility; newly created personal cards use
+`false`. False executes actions without the pointer or automatic `pause_ms` delays;
+explicit `wait` commands still run. Titles/narration remain visible in both modes.
+Positive waits are pauses: they retain the preceding pointer position, including
+at the end of a card. The field survives JSON/ZIP exchange and built-in installation.
+
 Commands refer to concepts, modules and
 content blocks by stable semantic IDs. Generation rejects unknown IDs,
 unsupported commands, invalid enum values and duplicate tutorial or step IDs.

@@ -4056,6 +4056,8 @@ details[open] > summary > .kg-content-preview { display: none; }
     border: 1px solid #9cafc1; border-radius: 4px;
 }
 .kg-tutorial-editor textarea { resize: vertical; }
+.kg-tutorial-editor label.kg-tutorial-toggle { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.kg-tutorial-editor .kg-tutorial-toggle input { width: auto; margin: 0; }
 .kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 #kg_tutorial_editor[open] { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100dvh - 24px); }
 #kg_tutorial_editor_body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
@@ -4090,9 +4092,10 @@ details[open] > summary > .kg-content-preview { display: none; }
 .kg-tutorial-recording-strip[hidden] { display: none; }
 .kg-tutorial-recording-strip strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kg-tutorial-recording-strip .kg-tutorial-editor-actions { gap: 5px; margin: 5px 0; }
-.kg-tutorial-recording-strip button { font: inherit; min-height: 32px; padding: 4px 8px; background: white; color: #28465b; border: 1px solid #9cafc1; border-radius: 5px; }
+.kg-tutorial-recording-strip button { font: inherit; min-height: 32px; padding: 4px; background: white; color: #28465b; border: 1px solid #9cafc1; border-radius: 5px; }
 .kg-tutorial-recording-strip button:disabled { opacity: 0.5; }
-.kg-tutorial-recording #info_panel { padding-bottom: 125px; }
-.kg-tutorial-recording #kg_controls { max-height: calc(100vh - var(--kg-header-height) - 145px); }
+.kg-tutorial-recording #info_panel { padding-bottom: var(--kg-recording-height, 125px); }
+.kg-tutorial-recording #kg_controls { max-height: calc(100vh - var(--kg-header-height) - var(--kg-recording-height, 125px) - 20px); }
+#kg_tutorial_recording_status { overflow-wrap: anywhere; }
 
 .kg-tutorial-import-dialog input[type="radio"] { display: inline-block; width: auto; margin: 0 6px 0 0; }

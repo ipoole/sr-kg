@@ -93,7 +93,11 @@ without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
 Write narration and use **Record actions** to replace a card's sequence, with
-Undo/Redo while recording. **Finish recording** accepts the replacement; **Cancel**
+Undo/Redo while recording. Existing actions start in Redo, so redo to the end to
+append, or record a new action to replace the remaining tail. **Pause +1s** adds
+explicit waits; Undo removes them one at a time. **Demonstrate actions** can be
+changed later to switch between pointer demonstrations and quick scene-setting;
+the title and narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**
 keeps the saved sequence. **Play from here** runs the current card and continues; **Play from start** begins
 the tutorial. Recording/playback controls stay visible while the editor scrolls.
 Metadata, card ordering, manual commands and silent setup are under **Advanced**. Editor drafts save automatically; recordings are accepted only

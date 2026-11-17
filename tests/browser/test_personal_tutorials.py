@@ -276,6 +276,8 @@ def _copy_editor(page):
 
 
 def _record(page, tutorial_id):
+    # Finish restores the viewer before committing the replacement draft.
+    expect(page.locator('#kg_tutorial_recording')).not_to_have_attribute('data-busy','true')
     _saved(page)
     return page.evaluate('(id)=>kgPersonalData.tutorials.get(id)', tutorial_id)
 

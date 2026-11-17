@@ -312,8 +312,8 @@ function kgCreateGuidedTutorial(options) {
   var tutorialStepActions = kgTutorialSequence.actions;
 
   function tutorialFinalAction(step) {
-    var actions = tutorialStepActions(step);
-    return actions[actions.length - 1];
+    var actions = tutorialStepActions(step).filter(function(item) { return !kgTutorialSequence.isPause(item); });
+    return actions[actions.length - 1] || null;
   }
 
   function renderTutorialList() {
@@ -473,20 +473,29 @@ function kgCreateGuidedTutorial(options) {
     }
   }
 
-  async function demonstrateActions(actions) {
+  async function playActions(actions, demonstrate) {
     for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
       var item = actions[actionIndex];
-      clearTutorialEmphasis();
-      var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
-      await moveTutorialPointer(stepPointerTarget);
-      await pulseTutorialPointer();
-      await executeViewerCommand(item.action, {origin: "tutorial"});
+      var point = demonstrate && !kgTutorialSequence.isPause(item);
+      var target = item.pointer ? item.pointer.target : 'narration';
+      if (point) {
+        clearTutorialEmphasis(); await moveTutorialPointer(target); await pulseTutorialPointer();
+      }
+      await executeViewerCommand(item.action, {origin:'tutorial'});
       await nextAnimationFrames(2);
-      settleTutorialPointer(stepPointerTarget);
-      if (actionIndex < actions.length - 1 && item.pause_ms) {
-        await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
+      if (point) { settleTutorialPointer(target); }
+      if (demonstrate && actionIndex < actions.length - 1 && item.pause_ms) {
+        await new Promise(function(resolve) { setTimeout(resolve,item.pause_ms); });
       }
     }
+  }
+  async function restoreFinalEmphasis(step) {
+    var item = tutorialFinalAction(step);
+    if (!item) { return; }
+    var target = item.pointer ? item.pointer.target : 'narration';
+    if (step.demonstrate !== false) { await moveTutorialPointer(target); }
+    if (tutorialActionIsHover(item.action)) { await executeViewerCommand(item.action,{origin:'tutorial'}); }
+    if (step.demonstrate !== false) { settleTutorialPointer(target); }
   }
 
   async function runTutorialStep(stepIndex, replay) {
@@ -507,12 +516,7 @@ function kgCreateGuidedTutorial(options) {
         );
         setControlsVisible(false);
         tutorialPlayback.stepIndex = stepIndex;
-        var replayStep = route.steps[stepIndex];
-        var replayAction = tutorialFinalAction(replayStep);
-        await moveTutorialPointer(
-          replayAction.pointer ? replayAction.pointer.target : "narration"
-        );
-        settleTutorialPointer(replayAction.pointer ? replayAction.pointer.target : "narration");
+        await restoreFinalEmphasis(route.steps[stepIndex]);
       } else {
         var step = route.steps[stepIndex];
         tutorialPlayback.stepIndex = stepIndex;
@@ -522,7 +526,7 @@ function kgCreateGuidedTutorial(options) {
           await executeViewerCommand(prepare[index], {origin: "tutorial"});
         }
         var actions = tutorialStepActions(step);
-        await demonstrateActions(actions);
+        await playActions(actions, step.demonstrate !== false);
       }
       renderTutorialNarration();
     } catch (error) {
@@ -651,12 +655,7 @@ function kgCreateGuidedTutorial(options) {
       await nextAnimationFrames(2);
       await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
       var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
-      var finalAction = tutorialFinalAction(step);
-      await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
-      if (tutorialActionIsHover(finalAction.action)) {
-        await executeViewerCommand(finalAction.action, {origin: "tutorial"});
-      }
-      settleTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
+      await restoreFinalEmphasis(step);
       renderTutorialNarration();
       tutorialPlayback.exploreSnapshot = null;
     } catch (error) {

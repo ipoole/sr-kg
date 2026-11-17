@@ -23,6 +23,7 @@ def installation(tmp_path):
     (data / "manifest.yaml").write_text(yaml.safe_dump(manifest))
     route = load_knowledge_base(data, include_graphics=False).tutorials[0].to_viewer_data()
     route["author"] = "A physics teacher"
+    route["steps"][0]["demonstrate"] = False
     package = tmp_path / "tutorial.json"
     document = {"format":"physicskg-tutorial", "schema_version":1, "route_schema_version":1,
                 "tutorial":{"route":route}}
@@ -36,6 +37,7 @@ def test_install_exported_tutorial_and_generate_with_credit(installation, tmp_pa
     kb = load_knowledge_base(data, include_graphics=False)
     installed = next(item for item in kb.tutorials if item.tutorial_id == "teacher-tour")
     assert installed.author == "A physics teacher"
+    assert installed.steps[0].demonstrate is False
     assert installed.to_viewer_data()["author"] == installed.author
     output = tmp_path / "viewer.html"
     generate_viewer_from_root(data_root=str(data), out_path=str(output), height="100vh", width="100vw", title="Test")

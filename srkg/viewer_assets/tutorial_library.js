@@ -87,7 +87,8 @@ function kgCreateTutorialLibrary(options) {
     var step = editing.route.steps[cardIndex];
     element("editor_card_title").value = step ? step.title : "";
     element("editor_commentary").value = step ? step.commentary : "";
-    ["editor_card_title", "editor_commentary", "editor_card"].forEach(function(key) { element(key).disabled = !step; });
+    element("editor_demonstrate").checked = Boolean(step && step.demonstrate !== false);
+    ["editor_card_title", "editor_commentary", "editor_card", "editor_demonstrate"].forEach(function(key) { element(key).disabled = !step; });
     element("editor_action_section").hidden = element("editor_setup_section").hidden = !step;
     element("editor_fields").querySelectorAll('[data-card-action]').forEach(function(button) {
       var action = button.dataset.cardAction;
@@ -150,6 +151,7 @@ function kgCreateTutorialLibrary(options) {
     if (step) {
       step.title = element("editor_card_title").value;
       step.commentary = element("editor_commentary").value;
+      step.demonstrate = element("editor_demonstrate").checked;
       element("editor_card").options[cardIndex].textContent = (cardIndex + 1) + ". " + step.title;
     }
     markChanged();
@@ -352,7 +354,7 @@ function kgCreateTutorialLibrary(options) {
     } catch (error) { element("library_status").textContent = "Could not delete tutorial: " + error.message; }
   });
   dialog.addEventListener("input", function(event) {
-    if (["editor_title", "editor_summary", "editor_author", "editor_domains", "editor_card_title", "editor_commentary"].some(function(key) {
+    if (["editor_title", "editor_summary", "editor_author", "editor_domains", "editor_card_title", "editor_commentary", "editor_demonstrate"].some(function(key) {
       return event.target === element(key);
     })) { changed(); }
   });
