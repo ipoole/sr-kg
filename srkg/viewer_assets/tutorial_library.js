@@ -8,21 +8,7 @@ function kgCreateTutorialLibrary(options) {
   var dialog = document.getElementById("kg_tutorial_editor");
   function element(id) { return document.getElementById("kg_tutorial_" + id); }
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
-  function problems(route, playOptions) {
-    if (!route || !String(route.title || "").trim()) { return ["Add a tutorial title."]; }
-    if (!String(route.summary || "").trim()) { return ["Add a tutorial summary."]; }
-    if (!Array.isArray(route.steps) || !route.steps.length) { return ["Add a card."]; }
-    var limit = playOptions && playOptions.singleStep ? playOptions.startIndex + 1 : route.steps.length;
-    var ids = new Set();
-    for (var index = 0; index < limit; index += 1) {
-      var step = route.steps[index], problem = model.stepProblem(step);
-      if (problem) { return ["Card " + (index + 1) + ": " + problem]; }
-      if (!step.step_id || ids.has(step.step_id)) { return ["Each card needs a unique identifier."]; }
-      ids.add(step.step_id);
-    }
-    var missing = (route.domains || []).filter(function(domain) { return !options.hasDomain(domain); });
-    return missing.length ? ["This tutorial needs these domains: " + missing.join(", ") + "."] : [];
-  }
+  var problems = model.routeProblems;
   function routeById(id) { var record = records.get(id); return record ? record.route : null; }
   function status(state, text) {
     element("editor_status").dataset.state = state;

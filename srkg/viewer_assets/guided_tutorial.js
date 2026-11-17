@@ -310,18 +310,8 @@ function kgCreateGuidedTutorial(options) {
     }) || (options.personalRouteById ? options.personalRouteById(tutorialId) : null);
   }
 
-  function tutorialCommandsThrough(route, stepIndex) {
-    var commands = [];
-    (route.steps || []).slice(0, stepIndex + 1).forEach(function(step) {
-      (step.prepare || []).forEach(function(command) { commands.push(command); });
-      tutorialStepActions(step).forEach(function(item) { commands.push(item.action); });
-    });
-    return commands;
-  }
-
-  function tutorialStepActions(step) {
-    return step.actions || [{action: step.action, pointer: step.pointer, pause_ms: 0}];
-  }
+  var tutorialCommandsThrough = kgTutorialSequence.commandsThrough;
+  var tutorialStepActions = kgTutorialSequence.actions;
 
   function tutorialFinalAction(step) {
     var actions = tutorialStepActions(step);

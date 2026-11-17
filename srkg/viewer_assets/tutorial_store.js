@@ -75,8 +75,7 @@ function kgCreateTutorialStore(options) {
   function create(route, basedOn) {
     var key = id("personal:");
     route = route ? clone(route) : {title: "New tutorial", summary: "", category: "physics",
-      sequence: 0, domains: [], steps: [{step_id: id("card:"), title: "New card", commentary: "",
-        action: {command: "wait", milliseconds: 0}, pointer: {target: "narration"}}]};
+      sequence: 0, domains: [], steps: [kgTutorialSequence.newCard(id("card:"))]};
     route.tutorial_id = key;
     return save({id: key, route: route, basedOn: clone(basedOn), deletedAt: ""});
   }

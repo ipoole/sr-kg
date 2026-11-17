@@ -192,6 +192,7 @@ through callbacks rather than captured once at controller construction.
 | `personal_data_controller.js` | Connection/import-export UI, OAuth/sync lifecycle and automatic-sync/visibility timers. |
 | `tutorial_targets.js` | Live semantic target geometry and concept/edge hover demonstrations. |
 | `guided_tutorial.js` | Route/pointer/narration state, input lock, progression and Explore/Resume; frozen built-in/personal route playback. |
+| `tutorial_sequence.js` | Shared action sequencing and placeholder cards used by playback, recording, the editor and storage. |
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions and built-in-copy provenance. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
 | `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |

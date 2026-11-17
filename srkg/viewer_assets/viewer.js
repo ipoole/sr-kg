@@ -5475,9 +5475,6 @@
           model:tutorialEditorModel, recorder:tutorialRecorder,
           canRecord:function() { return !tutorialPlaybackSnapshot().tutorialId; },
           version: document.querySelector('meta[name="application-version"]').content,
-          hasDomain: function(domain) {
-            return Object.keys(conceptData).some(function(id) { return conceptData[id].domain === domain; });
-          },
           routeById: tutorialRouteById, play: startTutorialById,
           selectedId: function() { return tutorialPlaybackSnapshot().selectedId; },
           select: guidedTutorial.selectIntroduction

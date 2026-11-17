@@ -25,9 +25,7 @@ function kgCreateTutorialRecorder(options) {
     session = {title:card.title, original:original, items:model.actions(card), undo:[], redo:[]};
     render('Preparing this card…');
     try {
-      route.steps.slice(0, index).forEach(function(step) {
-        commands = commands.concat(step.prepare || [], model.actions(step).map(function(item) { return item.action; }));
-      });
+      commands = kgTutorialSequence.commandsThrough(route, index - 1);
       await options.presentation.replay(original, commands);
       var beginning = options.presentation.capture();
       var items = model.actions(card);
