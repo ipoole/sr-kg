@@ -9,8 +9,9 @@ Issue numbers are retained so existing references remain valid.
    Use this work to audit the KB's dependencies, block structure and explanations.
 3. **In progress — user tutorial authoring**, branch `user-creation-of-tutorials`.
    Personal drafts, built-in copies, card/action editing, rehearsal and recording
-   with Undo/Redo and phone support are implemented; next are portability/sync
-   and optional human narration. Learners' Explore actions are not recorded. See
+   with Undo/Redo and phone support, text export/import, backups and companion-file
+   Google sync are implemented; optional human narration is next.
+   Learners' Explore actions are not recorded. See
    [the staged design and review gates](design/tutorial_authoring.md).
 
 ## 3. Ambitious ideas
@@ -45,6 +46,10 @@ Issue numbers are retained so existing references remain valid.
    resets every domain, and saving a Personal layout can delete unloaded-domain layout overrides.
    Scope these operations to loaded domains, preserving other domains through sync; add regression tests.
 13. **Deferred — details masthead redesign, for a later minor feature release.** Keep its scale fixed like the graph toolbar, independently of content zoom. Reduce vertical space and the prominence of the module link on desktop; reconsider the Fold/Unfold controls and the messy “+” note marker. Resolve these together before implementing a compact layout.
+14. **Website analytics.** Consider lightweight, privacy-conscious page-level analytics for
+   physicskg.org, reporting home-page visits, viewer opens and user-guide visits separately.
+   Exclude preview/test traffic. Initially avoid tracking reading activity, answers or
+   personal content; review the provider and any privacy-policy changes before enabling.
 
 ## 5. Notes enhancement and unification
 
