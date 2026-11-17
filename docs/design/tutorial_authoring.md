@@ -97,6 +97,10 @@ Do not capture automatic consequences as additional actions.
 Do not record notes, question answers, read marks, personal-layout writes,
 authentication, playback/rehearsal, or learners' Explore actions. Do not record
 continuous pointer motion, arbitrary scroll offsets or raw pinch/pan events.
+Manual graph pan/zoom remain available for inspection, but are not recorded or
+reproduced in playback. Authors should prefer Fit/Fit++ for framing, because those
+commands adapt to the playback device. Details scrolling and text zoom also remain
+available without recording their raw gestures.
 Prefer semantic block targets and responsive Fit commands. Exact manual framing
 and temporary node arrangements are a later extension, not part of this recorder.
 

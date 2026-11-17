@@ -177,7 +177,7 @@ through callbacks rather than captured once at controller construction.
 | Owner | Responsibility |
 | --- | --- |
 | `graph_model.js` | Stateless context traversal, folded-boundary grouping and shortest-hop Fit++ planning. |
-| `vis_network_adapter.js` | All direct `network.body`/`network.canvas` access: precise positions, borrowed geometry, curve points and draw-only widths. Public network operations stay with their callers. |
+| `vis_network_adapter.js` | All direct `network.body`/`network.canvas` access: precise positions, borrowed geometry, curve points and draw-only widths. Also owns safe camera movement, handling vis 9.1.2 animation replacement before its first frame through public redraw/move calls. |
 | `global_layout.js` | Published/personal positions, revision state, debounced persistence and reset. |
 | `graph_camera.js` | Panel-aware framing/reveal, animation capability and cancellation of deferred camera restores. |
 | `context_layout.js` | Fit/Fit++ priming, temporary coordinates/drag membership and tutorial checkpoints. |

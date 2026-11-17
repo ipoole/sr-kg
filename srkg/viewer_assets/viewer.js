@@ -337,6 +337,7 @@
         var exportGlobalLayout = globalLayoutStore.exportGlobalLayout;
         var graphCamera = kgCreateGraphCamera({
           network: network, nodes: nodes, container: graphContainer,
+          moveCamera:visAdapter.moveCamera,
           labels: {width: nodeLabelWidth, fontSize: nodeLabelFontSize, activeRadiusScale: activeNodeRadiusScale},
           selectedConceptId: function() { return activeNodeId; }, onChange: updateNodeLabelPositions,
           additionalBounds: function(nodeIds) {
@@ -5374,7 +5375,7 @@
           graphCamera.cancelPendingRestore();
           contextLayout.restoreCheckpoint(snapshot.contextFit || {});
           if (snapshot.camera && snapshot.camera.position) {
-            network.moveTo({
+            visAdapter.moveCamera({
               position: snapshot.camera.position,
               scale: snapshot.camera.scale,
               animation: false

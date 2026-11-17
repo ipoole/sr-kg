@@ -39,7 +39,7 @@ function kgCreateTutorialRecorder(options) {
       await settled();
       session = {title:card.title, original:original, beginning:beginning, prepare:model.clone(card.prepare || []),
         items:items, undo:[], redo:[], checkpoint:options.presentation.capture()};
-      render('Recording. Pan and scroll freely; only supported controls are captured.');
+      render('Recording. Prefer Fit/Fit++; manual pan/zoom are not recorded.');
     } catch (error) {
       try { await options.presentation.restore(original); }
       finally { session = null; }

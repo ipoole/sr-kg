@@ -251,3 +251,73 @@ def test_recording_cannot_start_during_a_learners_explore(tutorial_graph):
     page.wait_for_function('kgTutorialPlaybackSnapshot().tutorialId===null')
     page.locator('#kg_tutorial_intro_edit').click()
     assert page.locator('#kg_tutorial_editor_record').is_enabled()
+
+
+@pytest.mark.browser
+def test_recording_allows_unrecorded_camera_adjustments_and_stable_hover(tutorial_graph):
+    page = _library(tutorial_graph)
+    tutorial_id = _start(page)
+    page.evaluate('''async()=>{
+      for(const command of [
+        {command:'set-view',value:'graph'},
+        {command:'set-all-module-representations',value:'expanded'},
+        {command:'select',target:'concept:2.1'},
+        {command:'set-context',preset:'foundations',depth:'two-hops'},
+        {command:'fit',value:'context'}
+      ])await kgExecuteViewerCommand(command,{origin:'user'});
+    }''')
+    _idle(page)
+    actions = _record(page,tutorial_id)['route']['steps'][0]['actions']
+    before = page.evaluate('({camera:kgCaptureTutorialPresentation().camera, positions:network.getPositions()})')
+    point = page.evaluate('''()=>{
+      const p=network.canvasToDOM(network.getPositions(['2.1'])['2.1']);
+      const box=network.canvas.frame.canvas.getBoundingClientRect();
+      return {x:box.left+p.x,y:box.top+p.y};
+    }''')
+    for offset in [0, 2, -2, 0]:
+        page.mouse.move(point['x']+offset,point['y'])
+    expect(page.locator('#kg_node_tooltip')).to_be_visible()
+    after = page.evaluate('({camera:kgCaptureTutorialPresentation().camera, positions:network.getPositions()})')
+    assert after == before
+    canvas = page.locator('#mynetwork canvas').bounding_box()
+    x, y = canvas['x']+20, canvas['y']+canvas['height']*0.75
+    page.mouse.move(x,y)
+    page.mouse.wheel(0,-600)
+    page.wait_for_function('(scale)=>Math.abs(network.getScale()-scale)>0.001',arg=before['camera']['scale'])
+    position = page.evaluate('network.getViewPosition()')
+    page.mouse.down()
+    page.mouse.move(x+90,y-60,steps=5)
+    page.mouse.up()
+    page.wait_for_function('(p)=>Math.abs(network.getViewPosition().x-p.x)>1',arg=position)
+    assert _record(page,tutorial_id)['route']['steps'][0]['actions'] == actions
+    assert not tutorial_graph.page_errors
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize('restore', [False, True])
+def test_back_to_back_tutorial_framing_cannot_leave_hover_redraw_animation(tutorial_graph, restore):
+    page = _library(tutorial_graph)
+    _start(page)
+    result = page.evaluate('''async restore=>{
+      Object.defineProperty(navigator,'hardwareConcurrency',{configurable:true,value:8});
+      Object.defineProperty(navigator,'deviceMemory',{configurable:true,value:8});
+      await kgExecuteViewerCommand({command:'set-view',value:'graph'},{origin:'tutorial'});
+      await kgExecuteViewerCommand({command:'set-all-module-representations',value:'expanded'},{origin:'tutorial'});
+      await kgExecuteViewerCommand({command:'select',target:'concept:2.1'},{origin:'tutorial'});
+      await kgExecuteViewerCommand({command:'set-context',preset:'foundations',depth:'two-hops'},{origin:'tutorial'});
+      const baseline=kgCaptureTutorialPresentation();
+      // Rehearsal replays commands in sequence, without waiting for animation frames.
+      await kgExecuteViewerCommand({command:'fit',value:'context'},{origin:'tutorial'});
+      await kgExecuteViewerCommand({command:'fit',value:'displayed'},{origin:'tutorial'});
+      if(restore)await kgRestoreTutorialPresentation(baseline);
+      else await new Promise(resolve=>network.once('animationFinished',resolve));
+      const before=kgCaptureTutorialPresentation().camera;
+      // Node/edge hover redraws must not advance an abandoned camera animation.
+      for(let i=0;i<8;i++)network.redraw();
+      return {before,after:kgCaptureTutorialPresentation().camera,expected:restore?baseline.camera:null};
+    }''',restore)
+    assert result['after']['scale'] == pytest.approx(result['before']['scale'])
+    assert result['after']['position'] == pytest.approx(result['before']['position'])
+    if restore:
+        assert result['before']['scale'] == pytest.approx(result['expected']['scale'])
+        assert result['before']['position'] == pytest.approx(result['expected']['position'])
