@@ -93,8 +93,12 @@ without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
 Edit cards and their action sequences, or use **Record actions** with Undo/Redo
-and Replay. The viewer saves drafts automatically. Export a tutorial as ZIP/JSON;
-Import defaults to a new copy and retains missing references for repair. Personal
+and Replay. The viewer saves drafts automatically.
+**Edit card** during personal playback opens the current card for revision;
+**Play from here** demonstrates the changes and continues. Built-in playback
+keeps its existing controls; first make an editable copy to revise it.
+Export a tutorial as ZIP/JSON; Import defaults to a new copy and retains missing
+references for repair. Personal
 backups include tutorials, and optional Google sync keeps independent edits as
 conflict copies. Text-only exports can become built-ins with
 `tools/install_tutorial.py`; see [Tutorial authoring](docs/design/tutorial_authoring.md).

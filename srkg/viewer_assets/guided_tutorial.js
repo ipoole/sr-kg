@@ -403,6 +403,9 @@ function kgCreateGuidedTutorial(options) {
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
       tutorialPlayback.singleStep || tutorialPlayback.stepIndex >= steps.length - 1;
     document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
+    var editButton = document.getElementById('kg_tutorial_edit');
+    editButton.hidden = !canEditCurrentCard();
+    editButton.disabled = tutorialPlayback.transitioning || tutorialPlayback.exploring;
     var exploreButton = document.getElementById("kg_tutorial_explore");
     exploreButton.disabled = tutorialPlayback.transitioning;
     exploreButton.textContent = tutorialPlayback.exploring
@@ -594,9 +597,33 @@ function kgCreateGuidedTutorial(options) {
     }
   }
 
+  function canEditCurrentCard() {
+    var route = tutorialPlayback.activeRoute;
+    return Boolean(route && options.prepareCardEdit && options.personalRouteById &&
+      options.personalRouteById(route.tutorial_id));
+  }
+
   async function exitTutorial() {
     if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
     setTutorialTransitioning(true);
+    await finishTutorial();
+  }
+
+  async function editCurrentCard() {
+    if (tutorialPlayback.transitioning || tutorialPlayback.exploring || !canEditCurrentCard()) { return; }
+    setTutorialTransitioning(true);
+    try {
+      var route = tutorialPlayback.activeRoute;
+      var card = route.steps[tutorialPlayback.stepIndex];
+      var edit = await options.prepareCardEdit(route.tutorial_id,card.step_id);
+      await finishTutorial(edit);
+    } catch (error) {
+      renderTutorialNarration('Could not edit this card: ' + String(error.message || error));
+      setTutorialTransitioning(false);
+    }
+  }
+
+  async function finishTutorial(cardEdit) {
     var baseline = tutorialPlayback.baseline;
     try {
       clearTutorialEmphasis();
@@ -611,7 +638,7 @@ function kgCreateGuidedTutorial(options) {
     } finally {
       setGuidedTutorialActive(false);
       tutorialPlayback.transitioning = false;
-      if (options.onExit) { options.onExit(); }
+      if (options.onExit) { options.onExit(cardEdit); }
     }
   }
 
@@ -685,6 +712,7 @@ function kgCreateGuidedTutorial(options) {
       "click", toggleTutorialExploration
     );
     document.getElementById("kg_tutorial_exit").addEventListener("click", exitTutorial);
+    document.getElementById("kg_tutorial_edit").addEventListener("click", editCurrentCard);
     document.getElementById("info_panel").addEventListener("scroll", scheduleReadingPointerRefresh, true);
     splashStart.addEventListener("click", function() {
       if (defaultRoute) { startTutorialById(defaultRoute.tutorial_id); }

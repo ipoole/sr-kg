@@ -18,6 +18,15 @@ action capture follows in stage 4.
 Stage 5 adds text export/import, full backup inclusion and optional Google sync.
 Storage failures retain the open draft and offer Retry or text export.
 
+During personal tutorial playback, **Edit card** opens the editor on the current
+card, whether playback began in the library or the editor. **Play from here**
+replays the revised card and then continues normally. The handoff restores the
+pre-playback presentation, so the edit/replay cycle retains the original return
+view. Built-in playback has no editing button: first make an editable copy in
+Tools → Tutorials. Card identity, rather than its position/title, locates the
+current card if the stored route has changed; missing/deleted cards report an
+error without ending playback or silently selecting a different card.
+
 ## 1. Ownership and library
 
 Tools → Tutorials offers Built-in tutorials and My tutorials. Opening the library

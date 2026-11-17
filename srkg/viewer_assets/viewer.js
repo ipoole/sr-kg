@@ -5437,7 +5437,8 @@
               (!tutorialLibrary || !tutorialLibrary.problems(route, playOptions).length);
           },
           onIntroduction: function(route) { if (tutorialLibrary) { tutorialLibrary.showIntroduction(route); } },
-          onExit: function() { if (tutorialLibrary) { tutorialLibrary.playbackExited(); } },
+          prepareCardEdit: function(id,stepId) { return tutorialLibrary.prepareCardEdit(id,stepId); },
+          onExit: function(cardEdit) { if (tutorialLibrary) { tutorialLibrary.playbackExited(cardEdit); } },
           routes: tutorialData, targets: tutorialTargets, execute: executeViewerCommand,
           presentation: {capture: captureTutorialPresentation, restore: restoreTutorialPresentation, replay: replayTutorialCommands},
           settle: nextAnimationFrames, hover: {hide: hideNodeTooltip, restore: restoreHoveredEdge},

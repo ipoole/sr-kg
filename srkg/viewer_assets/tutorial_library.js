@@ -110,8 +110,10 @@ function kgCreateTutorialLibrary(options) {
   function showEditor() {
     if (!dialog.open) { dialog.showModal(); }
   }
-  function openEditor(record) {
-    editing = clone(record); edited = saved = 0; cardIndex = 0;
+  function openEditor(record, stepId) {
+    records.set(record.id,clone(record));
+    editing = clone(record); edited = saved = 0;
+    cardIndex = Math.max(0,editing.route.steps.findIndex(function(step) { return step.step_id === stepId; }));
     dialog.dataset.tutorialId = record.id;
     element("editor_heading").textContent = record.conflictOf ? "Edit tutorial — conflict copy" : "Edit tutorial";
     element("editor_title").value = editing.route.title;
@@ -197,7 +199,21 @@ function kgCreateTutorialLibrary(options) {
     } catch (error) { returningToEditor = false; showEditor(); element("editor_validation").textContent = error.message; }
     finally { setBusy(false); }
   }
-  function playbackExited() {
+  async function prepareCardEdit(tutorialId, stepId) {
+    await flush();
+    var record = await store.get(tutorialId);
+    if (!record || record.deletedAt) { throw new Error('This tutorial is no longer in your library.'); }
+    if (editing && editing.id === tutorialId) { record = editing; }
+    if (!record.route.steps.some(function(step) { return step.step_id === stepId; })) {
+      throw new Error('This card has changed or been removed. Exit and reopen the tutorial to review the latest version.');
+    }
+    return {record:clone(record),stepId:stepId};
+  }
+  function playbackExited(cardEdit) {
+    if (cardEdit) {
+      returningToEditor = false; setBusy(false);
+      openEditor(cardEdit.record,cardEdit.stepId); element('editor_commentary').focus(); return;
+    }
     if (returningToEditor) { returningToEditor = false; setBusy(false); showEditor(); element("editor_preview").focus(); }
   }
   async function recordActions() {
@@ -390,6 +406,6 @@ function kgCreateTutorialLibrary(options) {
   });
   var ready = initialise();
   return {ready: ready, routeById: routeById, problems: problems,
-    showIntroduction: showIntroduction, playbackExited: playbackExited,
+    showIntroduction: showIntroduction, playbackExited: playbackExited, prepareCardEdit:prepareCardEdit,
     recordingChanged:recordingChanged, recordingStopped:recordingStopped, flush:flush, reconcile:reconcile};
 }
