@@ -1,7 +1,7 @@
 """Single-card action capture uses normal controls and reversible presentation checkpoints."""
 import pytest
 from playwright.sync_api import expect
-from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record
+from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record, _edit_selected_tutorial
 
 
 def _idle(page):
@@ -247,7 +247,7 @@ def test_recording_cannot_start_during_a_learners_explore(tutorial_graph):
     page.wait_for_function('!kgTutorialPlaybackSnapshot().exploring && !kgTutorialPlaybackSnapshot().transitioning')
     page.locator('#kg_tutorial_exit').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().tutorialId===null')
-    page.locator('#kg_tutorial_intro_edit').click()
+    _edit_selected_tutorial(page)
     assert page.locator('#kg_tutorial_editor_record').is_enabled()
 
 

@@ -23,7 +23,6 @@ function kgCreateTutorialLibrary(options) {
     element("editor_record").disabled = busy || !editing || !editing.route.steps.length || !canRecord;
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
-    element("editor_preview").disabled = busy || !editing || Boolean(problems(editing.route, {singleStep:true, startIndex:cardIndex}).length);
     element("editor_validation").textContent = errors.join(" ");
   }
   function renderList() {
@@ -60,8 +59,9 @@ function kgCreateTutorialLibrary(options) {
     var personal = records.has(route.tutorial_id);
     element("intro_copy").hidden = element("new").disabled;
     element("intro_copy").textContent = personal ? "Duplicate" : "Make editable copy";
-    element("intro_edit").hidden = element("intro_delete").hidden = !personal;
     var errors = problems(route);
+    element("intro_edit").hidden = !personal || !errors.length;
+    element("intro_delete").hidden = !personal;
     element("start").disabled = Boolean(errors.length);
     element("launch_link").hidden = Boolean(errors.length);
     element("intro_author").textContent = route.author ? "By " + route.author : "";
@@ -77,12 +77,9 @@ function kgCreateTutorialLibrary(options) {
       markChanged();
     }});
   function renderCardList() {
-    element("editor_card").replaceChildren(); element("editor_order").replaceChildren();
+    element("editor_card").replaceChildren();
     editing.route.steps.forEach(function(step, index) {
       element("editor_card").add(new Option((index + 1) + ". " + step.title, index));
-      var item = document.createElement('li'); item.textContent = (index + 1) + '. ' + step.title;
-      item.draggable = true; item.dataset.cardId = step.step_id;
-      element("editor_order").appendChild(item);
     });
     element("editor_card").value = cardIndex;
   }
@@ -92,7 +89,7 @@ function kgCreateTutorialLibrary(options) {
     element("editor_commentary").value = step ? step.commentary : "";
     ["editor_card_title", "editor_commentary", "editor_card"].forEach(function(key) { element(key).disabled = !step; });
     element("editor_action_section").hidden = element("editor_setup_section").hidden = !step;
-    element("editor_card_controls").querySelectorAll('button').forEach(function(button) {
+    element("editor_fields").querySelectorAll('[data-card-action]').forEach(function(button) {
       var action = button.dataset.cardAction;
       button.disabled = action !== 'add' && (!step || (action === 'up' && cardIndex === 0) ||
         (action === 'down' && cardIndex === editing.route.steps.length - 1));
@@ -119,6 +116,7 @@ function kgCreateTutorialLibrary(options) {
     element("editor_summary").value = editing.route.summary;
     element("editor_author").value = editing.route.author || "";
     element("editor_domains").value = (editing.route.domains || []).join(", ");
+    element("editor_advanced").open = false;
     renderCardList();
     renderCard(); updatePlay(); status("saved", "Saved in this browser."); showEditor();
     element("editor_title").focus();
@@ -154,9 +152,6 @@ function kgCreateTutorialLibrary(options) {
       step.commentary = element("editor_commentary").value;
       element("editor_card").options[cardIndex].textContent = (cardIndex + 1) + ". " + step.title;
     }
-    element("editor_order").querySelectorAll('li').forEach(function(item, index) {
-      item.textContent = (index + 1) + '. ' + editing.route.steps[index].title;
-    });
     markChanged();
   }
   function markChanged() {
@@ -188,8 +183,8 @@ function kgCreateTutorialLibrary(options) {
     element("editor_close").disabled = value; updatePlay();
   }
   async function playEditor(mode) {
-    var playOptions = {startIndex:mode === 'all' ? 0 : cardIndex, singleStep:mode === 'preview'};
-    if (busy || !editing || problems(editing.route, playOptions).length) { return; }
+    var playOptions = {startIndex:mode === 'all' ? 0 : cardIndex};
+    if (busy || !editing || problems(editing.route).length) { return; }
     setBusy(true);
     try {
       await flush(); dialog.close(); returningToEditor = true;
@@ -213,7 +208,7 @@ function kgCreateTutorialLibrary(options) {
       returningToEditor = false; setBusy(false);
       openEditor(cardEdit.record,cardEdit.stepId); element('editor_commentary').focus(); return;
     }
-    if (returningToEditor) { returningToEditor = false; setBusy(false); showEditor(); element("editor_preview").focus(); }
+    if (returningToEditor) { returningToEditor = false; setBusy(false); showEditor(); element("editor_from").focus(); }
   }
   async function recordActions() {
     if (busy || !editing || !editing.route.steps.length || (options.canRecord && !options.canRecord())) { return; }
@@ -368,9 +363,8 @@ function kgCreateTutorialLibrary(options) {
   element("editor_retry").addEventListener("click", function() { flush().catch(function() {}); });
   element("editor_record").addEventListener("click", recordActions);
   element("editor_play").addEventListener("click", function() { playEditor('all'); });
-  element("editor_preview").addEventListener("click", function() { playEditor('preview'); });
   element("editor_from").addEventListener("click", function() { playEditor('from'); });
-  element("editor_card_controls").addEventListener("click", function(event) {
+  element("editor_fields").addEventListener("click", function(event) {
     var action = event.target.dataset.cardAction, steps = editing.route.steps;
     if (!action || busy) { return; }
     if (action === 'up' || action === 'down') { moveCard(cardIndex, cardIndex + (action === 'up' ? -1 : 1)); return; }
@@ -382,20 +376,6 @@ function kgCreateTutorialLibrary(options) {
     }
     markChanged(); renderCardList(); renderCard();
   });
-  var draggedCard = null;
-  element("editor_order").addEventListener('dragstart', function(event) {
-    var item = event.target.closest('li'); if (!item || busy) { event.preventDefault(); return; }
-    draggedCard = item.dataset.cardId; event.dataTransfer.setData('text/plain', draggedCard);
-  });
-  element("editor_order").addEventListener('dragover', function(event) { if (draggedCard) { event.preventDefault(); } });
-  element("editor_order").addEventListener('drop', function(event) {
-    event.preventDefault(); var item = event.target.closest('li');
-    var steps = editing.route.steps, from = steps.findIndex(function(step) { return step.step_id === draggedCard; });
-    var to = item ? steps.findIndex(function(step) { return step.step_id === item.dataset.cardId; }) : -1;
-    if (!busy && from >= 0 && to >= 0 && from !== to) { moveCard(from, to); }
-    draggedCard = null;
-  });
-  element("editor_order").addEventListener('dragend', function() { draggedCard = null; });
   dialog.addEventListener("cancel", function(event) { event.preventDefault(); closeEditor(); });
   dialog.addEventListener("keydown", function(event) {
     if (event.key === "Escape") { event.stopPropagation(); }

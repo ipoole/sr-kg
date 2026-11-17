@@ -128,13 +128,12 @@ function kgCreateTutorialEditorModel(options) {
     return '';
   }
   var domains = new Set(Object.keys(concepts).map(function(key) { return concepts[key].domain; }));
-  function routeProblems(route, playOptions) {
+  function routeProblems(route) {
     if (!route || !String(route.title || "").trim()) { return ["Add a tutorial title."]; }
     if (!String(route.summary || "").trim()) { return ["Add a tutorial summary."]; }
     if (!Array.isArray(route.steps) || !route.steps.length) { return ["Add a card."]; }
-    var limit = playOptions && playOptions.singleStep ? playOptions.startIndex + 1 : route.steps.length;
     var ids = new Set();
-    for (var index = 0; index < limit; index += 1) {
+    for (var index = 0; index < route.steps.length; index += 1) {
       var step = route.steps[index], problem = stepProblem(step);
       if (problem) { return ["Card " + (index + 1) + ": " + problem]; }
       if (!step.step_id || ids.has(step.step_id)) { return ["Each card needs a unique identifier."]; }

@@ -5432,9 +5432,9 @@
         var tutorialLibrary;
         var guidedTutorial = kgCreateGuidedTutorial({
           personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
-          canStart: function(route, playOptions) {
+          canStart: function(route) {
             return !(tutorialRecorder && tutorialRecorder.active()) &&
-              (!tutorialLibrary || !tutorialLibrary.problems(route, playOptions).length);
+              (!tutorialLibrary || !tutorialLibrary.problems(route).length);
           },
           onIntroduction: function(route) { if (tutorialLibrary) { tutorialLibrary.showIntroduction(route); } },
           prepareCardEdit: function(id,stepId) { return tutorialLibrary.prepareCardEdit(id,stepId); },

@@ -22,8 +22,6 @@ function kgCreateGuidedTutorial(options) {
     exploring: false,
     stepIndex: -1,
     transitioning: false,
-    singleStep: false,
-    previewIndex: 0,
     errorMessage: ""
   };
   var tutorialPointerState = {
@@ -386,7 +384,7 @@ function kgCreateGuidedTutorial(options) {
     var step = steps[tutorialPlayback.stepIndex];
     document.getElementById("kg_tutorial_first_step_guidance").hidden =
       tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
-    document.getElementById("kg_tutorial_title").textContent = (tutorialPlayback.singleStep ? "Card preview · " : "") + route.title;
+    document.getElementById("kg_tutorial_title").textContent = route.title;
     document.getElementById("kg_tutorial_progress").textContent =
       String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
     document.getElementById("kg_tutorial_step_title").textContent = step.title;
@@ -398,10 +396,10 @@ function kgCreateGuidedTutorial(options) {
     error.textContent = tutorialPlayback.errorMessage;
     document.getElementById("kg_tutorial_back").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.singleStep || tutorialPlayback.stepIndex <= 0;
+      tutorialPlayback.stepIndex <= 0;
     document.getElementById("kg_tutorial_next").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.singleStep || tutorialPlayback.stepIndex >= steps.length - 1;
+      tutorialPlayback.stepIndex >= steps.length - 1;
     document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
     var editButton = document.getElementById('kg_tutorial_edit');
     editButton.hidden = !canEditCurrentCard();
@@ -497,8 +495,7 @@ function kgCreateGuidedTutorial(options) {
       !tutorialPlayback.activeRoute
     ) { return; }
     var route = tutorialPlayback.activeRoute;
-    if (stepIndex < 0 || stepIndex >= route.steps.length ||
-        (tutorialPlayback.singleStep && stepIndex !== tutorialPlayback.previewIndex)) { return; }
+    if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
     tutorialPlayback.errorMessage = "";
     setTutorialTransitioning(true);
     clearTutorialEmphasis();
@@ -540,11 +537,9 @@ function kgCreateGuidedTutorial(options) {
     if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
     var route = tutorialRouteById(tutorialPlayback.selectedId);
     if (!route || !route.steps || !route.steps.length ||
-        (options.canStart && !options.canStart(route, playOptions))) { return; }
+        (options.canStart && !options.canStart(route))) { return; }
     var startIndex = Number.isInteger(playOptions.startIndex) ? playOptions.startIndex : 0;
     if (startIndex < 0 || startIndex >= route.steps.length) { return; }
-    tutorialPlayback.singleStep = Boolean(playOptions.singleStep);
-    tutorialPlayback.previewIndex = startIndex;
     tutorialPlayback.errorMessage = "";
     tutorialPlayback.baseline = captureTutorialPresentation();
     tutorialPlayback.activeRoute = JSON.parse(JSON.stringify(route));

@@ -67,7 +67,7 @@
           <p id="kg_tutorial_intro_status" role="status"></p>
           <button id="kg_tutorial_start" type="button">Start</button>
           <button id="kg_tutorial_intro_copy" type="button">Make editable copy</button>
-          <button id="kg_tutorial_intro_edit" type="button" hidden>Edit</button>
+          <button id="kg_tutorial_intro_edit" type="button" hidden>Edit draft</button>
           <button id="kg_tutorial_intro_export" type="button">Export tutorial</button>
           <button id="kg_tutorial_intro_delete" type="button" hidden>Delete</button>
           <a id="kg_tutorial_launch_link">Direct link to this tutorial</a>
@@ -315,26 +315,30 @@
     
 
 <dialog id="kg_tutorial_editor" class="kg-tutorial-editor" aria-labelledby="kg_tutorial_editor_heading">
+  <div id="kg_tutorial_editor_body">
   <h2 id="kg_tutorial_editor_heading">Edit tutorial</h2>
   <p id="kg_tutorial_editor_status" role="status" aria-live="polite"></p>
   <fieldset id="kg_tutorial_editor_fields">
   <label>Tutorial title<input id="kg_tutorial_editor_title" type="text"></label>
   <label>Summary<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
-  <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
-  <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
   <hr>
   <label>Card<select id="kg_tutorial_editor_card"></select></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_card_controls">
     <button type="button" data-card-action="add">Add card</button>
     <button type="button" data-card-action="duplicate">Duplicate card</button>
     <button type="button" data-card-action="delete">Delete card</button>
+  </div>
+  <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
+  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="6" placeholder="Add written narration here"></textarea></label>
+  <p class="kg-muted-label">Record replaces this card’s actions when you finish; Cancel keeps the old sequence. Play rebuilds earlier cards first.</p>
+  <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
+  <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
+  <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
+  <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_order_controls" role="group" aria-label="Card order">
     <button type="button" data-card-action="up">Move up</button>
     <button type="button" data-card-action="down">Move down</button>
   </div>
-  <details><summary>Arrange cards (drag to reorder)</summary><ol id="kg_tutorial_editor_order"></ol></details>
-  <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
-  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="6" placeholder="Add written narration here"></textarea></label>
-  <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
+  <p class="kg-muted-label">Moving a card may require changes to later cards.</p>
   <section id="kg_tutorial_editor_action_section"><h3>Viewer actions</h3>
     <div id="kg_tutorial_editor_actions"></div>
   </section>
@@ -343,16 +347,13 @@
     <div id="kg_tutorial_editor_setup"></div>
   </section>
   </details>
-  <p class="kg-muted-label">Record replaces this card’s actions when you finish; Cancel keeps the old sequence. Play rebuilds earlier cards first.</p>
   </fieldset>
   <p id="kg_tutorial_editor_validation" role="status"></p>
   <button id="kg_tutorial_editor_retry" type="button" hidden>Retry save</button>
-  <div id="kg_tutorial_editor_footer">
-  <div class="kg-tutorial-editor-actions" role="group" aria-label="Record">
-    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record actions</button>
   </div>
-  <div class="kg-tutorial-editor-actions kg-tutorial-three-buttons" role="group" aria-label="Play">
-    <button id="kg_tutorial_editor_preview" type="button"><span aria-hidden="true">▶</span> Play card</button>
+  <div id="kg_tutorial_editor_footer">
+  <div class="kg-tutorial-editor-actions kg-tutorial-three-buttons" role="group" aria-label="Record and play">
+    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record actions</button>
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Play from here</button>
     <button id="kg_tutorial_editor_play" type="button"><span aria-hidden="true">▶</span> Play from start</button>
   </div>

@@ -156,8 +156,8 @@ def test_imported_missing_targets_can_be_repaired_in_editor(tutorial_graph):
     page.locator('#kg_tutorial_import_apply').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
     assert page.locator('#kg_tutorial_editor_play').is_disabled()
-    page.locator('#kg_tutorial_editor_domains').fill('')
     page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
+    page.locator('#kg_tutorial_editor_domains').fill('')
     page.locator('#kg_tutorial_editor_actions [data-field="target"]').select_option('concept:2.1')
     expect(page.locator('#kg_tutorial_editor_play')).to_be_enabled()
 

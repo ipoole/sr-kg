@@ -1,7 +1,7 @@
 """Recording replaces a card deliberately; cancellation keeps its saved sequence."""
 import pytest
 from playwright.sync_api import expect
-from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record
+from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record, _edit_selected_tutorial
 from test_tutorial_recording import _idle, _control
 
 
@@ -24,7 +24,7 @@ def _editable_card(page):
 def _open_existing(graph,tutorial_id):
     page=_library(graph)
     page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
-    page.locator('#kg_tutorial_intro_edit').click()
+    _edit_selected_tutorial(page)
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
     return page
 
@@ -51,7 +51,7 @@ def test_record_replaces_only_on_finish_and_cancel_retains_original(tutorial_gra
     else:
         assert [item['action'] for item in saved['route']['steps'][0]['actions']]==[{'command':'set-view','value':'graph'}]
         assert saved['route']['steps'][0]['prepare']==[{'command':'home'},{'command':'select','target':'concept:2.1'}]
-        page.locator('#kg_tutorial_editor_preview').click()
+        page.locator('#kg_tutorial_editor_from').click()
         page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0&&!kgTutorialPlaybackSnapshot().transitioning')
         assert page.evaluate('kgCaptureTutorialPresentation().view')=='graph'
     assert not tutorial_graph.page_errors
@@ -59,7 +59,7 @@ def test_record_replaces_only_on_finish_and_cancel_retains_original(tutorial_gra
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width',[390,1280])
-def test_tutorial_editor_groups_primary_controls_in_three_rows(tutorial_graph,width):
+def test_tutorial_editor_groups_primary_controls_in_two_rows(tutorial_graph,width):
     page=_library(tutorial_graph)
     page.set_viewport_size({'width':width,'height':900})
     page.locator('#kg_tutorial_new').click()
@@ -69,16 +69,15 @@ def test_tutorial_editor_groups_primary_controls_in_three_rows(tutorial_graph,wi
     assert not page.locator('#kg_tutorial_editor_actions').is_visible()
     assert not page.locator('#kg_tutorial_editor_setup').is_visible()
     rows=page.locator('#kg_tutorial_editor_footer > .kg-tutorial-editor-actions')
-    assert rows.count()==3
-    assert [rows.nth(i).locator('button').count() for i in range(3)]==[1,3,3]
-    assert page.get_by_role('button',name='Play card',exact=True).is_enabled()
+    assert rows.count()==2
+    assert [rows.nth(i).locator('button').count() for i in range(2)]==[3,3]
+    assert page.locator('#kg_tutorial_editor_preview').count()==0
     assert page.get_by_role('button',name='Play from start',exact=True).is_enabled()
     boxes=rows.evaluate_all('rows=>rows.map(row=>Array.from(row.querySelectorAll("button"),b=>{const r=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right};}))')
     for row in boxes:
         assert len({round(box['top']) for box in row})==1
         for a,b in zip(row,row[1:]):assert a['right']<=b['left']
     assert boxes[0][0]['bottom']<boxes[1][0]['top']
-    assert boxes[1][0]['bottom']<boxes[2][0]['top']
     assert page.locator('#kg_tutorial_editor').evaluate('e=>e.scrollWidth<=e.clientWidth')
     advanced.locator('summary').click()
     assert page.locator('#kg_tutorial_editor_actions').is_visible()

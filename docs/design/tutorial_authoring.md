@@ -11,8 +11,10 @@ player, semantic commands, pointer targets and presentation restoration.
 “Card” is the user-facing term; the existing route format calls it a step.
 
 Stage 2 review: Tools → Tutorials → New tutorial opens the same editor used for
-personal copies. Edit tutorial/card titles, summary, author credit and written
-narration; select any existing card. Play from start returns to the editor on Exit.
+personal copies. Edit tutorial/card titles, summary and written narration; select
+any existing card. Metadata and ordering are under Advanced. Play from start
+returns to the editor on Exit. Playable personal introductions offer Start, with
+Edit card during playback; unplayable routes instead retain Edit draft.
 Stage 3 adds card management, explicit action editing and selected-card rehearsal;
 action capture follows in stage 4.
 Stage 5 adds text export/import, full backup inclusion and optional Google sync.
@@ -35,7 +37,8 @@ does not change the viewer. Personal tutorials need no account or setup.
 - New creates and saves a personal draft with one placeholder card, then opens
   the ordinary editor. There is no creation wizard or separate creation model.
 - Edit on a built-in means Make an editable copy. The original remains available.
-- Personal tutorials support Edit, Duplicate, Play, Export and Delete.
+- Personal tutorials support Start, Duplicate, Export and Delete. Use Edit card
+  during playback, or Edit draft directly when validation prevents Start.
 - A copy gets a new tutorial ID and retains source ID/version and author credit.
   Existing card IDs may remain: they are unique within their tutorial.
 - Deleting the final card leaves an empty draft with Add card available.
@@ -51,8 +54,9 @@ zero-duration wait and its pointer target is narration. These are hidden as
 ## 2. Editor workflow
 
 The editor contains tutorial title/summary/optional author credit, an ordered
-card list, and the selected card. Support Add, Duplicate, Delete, Move up/down
-and drag reordering; the buttons provide keyboard and touch alternatives.
+Card dropdown and the selected card. Keep Add, Duplicate and Delete beside the
+dropdown. Move up/down remains under Advanced; there is no separate Arrange list
+or drag-reordering interface. Reordering may require revising downstream cards.
 
 Each card exposes:
 
@@ -72,10 +76,12 @@ Playback/rehearsal uses a frozen route snapshot: library edits or background syn
 must not change its cards midway through playback. Sync must also preserve an open
 editor and its current draft, rather than rebuilding the pane or moving the viewer.
 
-Play card and Play from here reconstruct the preceding route from its known
-baseline; they do not assume the current viewer happens to be in the right state.
-Play from start uses the same player. Exit returns to the editor and its
-pre-preview presentation. Review the entire route after changing earlier cards.
+Play from here reconstructs the preceding route from its known baseline, then
+plays the current card and permits normal progression. It does not assume the
+viewer happens to be in the right state. Play from start uses the same player.
+There is no single-card playback mode: use Edit card when another revision is
+needed, or continue with Next. Exit returns to the editor and its pre-playback
+presentation. Review the entire route after changing earlier cards.
 
 Desktop authoring uses the available editor/viewer space. On phones the editor
 and action-capture view are switched explicitly rather than squeezing an editor,
@@ -90,11 +96,15 @@ per-device capability, particularly on the old iPad.
 ## 3. Recording viewer actions
 
 Workflow: Add/select card → write narration → Record actions → operate PhysicsKG
-→ Finish recording → Play card. Record actions is the prominent blue button with
-a red record dot. The next row groups Play card, Play from here and Play from start;
-the final row groups Export ZIP, Export JSON and Done. The Play buttons share a
-triangle icon and retain their explicit text labels. Manual Viewer actions and
-Setup (silent) live under one closed-by-default Advanced disclosure.
+→ Finish recording → Play from here. A fixed footer remains visible while the
+editor body scrolls. Its primary row contains the prominent blue Record actions
+button (red record dot), Play from here and Play from start (text-labelled play
+triangles). Its secondary row contains Export ZIP, Export JSON and Done.
+
+Advanced is the last section after narration, closed by default. It contains
+Required domains, Author credit, Move up/down, manual Viewer actions and Setup
+(silent). These remain available without cluttering the usual writing/recording
+workflow. The Card dropdown supplies navigation through the route.
 
 Record starts an empty replacement sequence, after replaying earlier cards and
 running this card's silent setup. It does not run this card's old actions, so even
@@ -133,7 +143,7 @@ camera consequences. Redo restores that action/result until a new recorded actio
 discards the redo branch. These are temporary authoring checkpoints, not permanent
 snapshots embedded in exported tutorials. Undo covers supported actions recorded
 into this card, not arbitrary personal-data changes. Test the finished sequence
-with Play card; there is no separate replay control in the recording strip.
+with Play from here; there is no separate replay control in the recording strip.
 Manual action edits and pause adjustments remain available under Advanced.
 Report failed reconstruction rather than leaving an unexplained partial state.
 
@@ -302,19 +312,18 @@ this work does not implicitly include the separate installable/offline-app issue
 ## Implemented through stage 5
 
 The editor supports independent cards with stable IDs; add, duplicate, delete,
-Move up/down and drag reordering. Visible actions and optional silent setup use
+Move up/down under Advanced; Card selection, Add, Duplicate and Delete remain
+readily available. Visible actions and optional silent setup use
 the same command form, driven by the build validator's shared command contract.
 Each visible action can choose a semantic pointer and a 0–5 second pause before
 the next action. Empty or invalid drafts still save; validation identifies the
 card/action that prevents playback.
 
-Play card reconstructs the preceding cards without pointer animation, then
-runs only the selected card. Its Back/Next are disabled. Incomplete later cards
-do not prevent this preview. Play from here rebuilds the same prefix and then
-permits normal progression; Play from start starts at the beginning. Exit restores
-the original viewer presentation and reopens the editor at the same card. Earlier
-action edits can break later steps: report rehearsal failures, retain the draft
-and offer Exit rather than silently repairing the sequence.
+Play from here reconstructs preceding cards without pointer animation, runs the
+selected card, then permits normal progression. Play from start begins at the
+first card. Both validate the entire route and return to the editor on Exit.
+Earlier action edits can break later steps: report rehearsal failures, retain the
+draft and offer Exit rather than silently repairing the sequence.
 
 Record actions switches to the normal viewer with a compact strip on both desktop
 and phone. It records an empty replacement with session-only Undo/Redo; Finish

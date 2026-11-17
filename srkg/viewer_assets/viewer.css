@@ -4057,7 +4057,10 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 .kg-tutorial-editor textarea { resize: vertical; }
 .kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-#kg_tutorial_editor_footer { display: grid; gap: 8px; }
+#kg_tutorial_editor[open] { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100dvh - 24px); }
+#kg_tutorial_editor_body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+#kg_tutorial_editor_footer { display: grid; gap: 8px; flex: 0 0 auto; padding-top: 10px; margin-top: 10px; border-top: 1px solid #ccd6df; background: white; }
+#kg_tutorial_editor_footer button { padding: 6px 4px; }
 .kg-tutorial-editor .kg-tutorial-three-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .kg-tutorial-three-buttons button { min-width: 0; }
 .kg-tutorial-editor button.kg-tutorial-primary { background: #205f88; color: white; border-color: #205f88; font-weight: 700; }
@@ -4076,7 +4079,6 @@ details[open] > summary > .kg-content-preview { display: none; }
 .kg-tutorial-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .kg-tutorial-editor details { margin: 12px 0; padding: 8px; border: 1px solid #ccd6df; border-radius: 6px; }
 .kg-tutorial-editor summary { cursor: pointer; font-weight: 600; }
-.kg-tutorial-editor li[draggable] { padding: 8px; margin: 4px 0; border: 1px solid #ccd6df; cursor: grab; }
 .kg-tutorial-editor select { text-overflow: ellipsis; }
 
 .kg-tutorial-recording-strip {

@@ -94,13 +94,14 @@ without undoing notes or study progress.
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
 Write narration and use **Record actions** to replace a card's sequence, with
 Undo/Redo while recording. **Finish recording** accepts the replacement; **Cancel**
-keeps the saved sequence. **Play card** checks one card, **Play from here** continues
-and **Play from start** begins the tutorial. Manual commands and silent setup are
-under **Advanced**. Editor drafts save automatically; recordings are accepted only
+keeps the saved sequence. **Play from here** runs the current card and continues; **Play from start** begins
+the tutorial. Recording/playback controls stay visible while the editor scrolls.
+Metadata, card ordering, manual commands and silent setup are under **Advanced**. Editor drafts save automatically; recordings are accepted only
 on Finish.
 **Edit card** during personal playback opens the current card for revision;
 **Play from here** demonstrates the changes and continues. Built-in playback
-keeps its existing controls; first make an editable copy to revise it.
+keeps its existing controls; first make an editable copy to revise it. Personal
+introductions offer Start for playable routes, or Edit draft when repairs are needed.
 Export a tutorial as ZIP/JSON; Import defaults to a new copy and retains missing
 references for repair. Personal
 backups include tutorials, and optional Google sync keeps independent edits as
