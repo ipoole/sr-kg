@@ -354,9 +354,9 @@ library exposes IndexedDB storage through the Personal data facade. Full backups
 add optional tutorial JSON, while the separate companion cloud file leaves the
 legacy cloud/profile envelope unchanged. The editor has a scrollable body and fixed action footer. Draft-only direct Edit
 and current-card playback Edit keep personal revision reachable. Card/action editing shares the existing
-player: Play from here silently reconstructs preceding actions, runs the selected
-card and continues normally; Play from start begins at the start. Both restore the
-pre-rehearsal presentation on Exit. Recording uses the same command boundary and presentation port. A Home preparation
+player: Continue tutorial silently reconstructs preceding actions, runs the selected
+card and continues normally. Exit restores the pre-rehearsal presentation and
+leaves the editor closed. Advanced sits below the two primary actions and includes exports. Recording uses the same command boundary and presentation port. A Home preparation
 command makes the route start explicit and is committed only on Finish. Captured
 commands are saved on Finish; Undo/Redo snapshots are never persisted. Recording replays
 earlier cards and current setup, placing the current card's old actions in Redo.

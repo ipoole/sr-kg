@@ -65,7 +65,7 @@ def test_card_mode_preserves_state_and_explicit_pause_without_moving_pointer(tut
     expect(toggle).to_have_value('show')
     toggle.select_option('show' if demonstrate else 'hide')
     tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.evaluate('''async id=>{
       const r=await kgPersonalData.tutorials.get(id);
       delete r.route.steps[0].action;delete r.route.steps[0].pointer;

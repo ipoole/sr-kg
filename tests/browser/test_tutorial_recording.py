@@ -56,7 +56,7 @@ def test_record_controls_undo_redo_finish_and_play(tutorial_graph, width):
     assert restored['camera']['scale'] == pytest.approx(before['camera']['scale'])
     for axis in ['x','y']:
         assert restored['camera']['position'][axis] == pytest.approx(before['camera']['position'][axis])
-    page.locator('#kg_tutorial_editor_play').click()
+    page.locator('#kg_tutorial_editor_from').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.locator('#kg_tutorial_error').is_hidden()
     played = page.evaluate('kgCaptureTutorialPresentation()')
@@ -204,7 +204,7 @@ def test_recording_preparation_is_visible_and_blocks_other_actions(tutorial_grap
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.evaluate('''async id=>{
       const r=await kgPersonalData.tutorials.get(id);r.route.steps[0].prepare=[{command:'wait',milliseconds:4000}];
       await kgPersonalData.tutorials.save(r);
@@ -246,7 +246,7 @@ def test_recording_cannot_start_during_a_learners_explore(tutorial_graph):
     _fill_draft(page)
     assert page.locator('#kg_tutorial_editor_record').is_disabled()
     assert page.locator('#kg_tutorial_recording').is_hidden()
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.locator('#kg_tutorial_explore').click()
     page.wait_for_function('!kgTutorialPlaybackSnapshot().exploring && !kgTutorialPlaybackSnapshot().transitioning')
     page.locator('#kg_tutorial_exit').click()

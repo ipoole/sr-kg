@@ -4064,8 +4064,8 @@ details[open] > summary > .kg-content-preview { display: none; }
 #kg_tutorial_editor_body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 #kg_tutorial_editor_footer { display: grid; gap: 8px; flex: 0 0 auto; padding-top: 10px; margin-top: 10px; border-top: 1px solid #ccd6df; background: white; }
 #kg_tutorial_editor_footer button { padding: 6px 4px; }
-.kg-tutorial-editor .kg-tutorial-three-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.kg-tutorial-three-buttons button { min-width: 0; }
+.kg-tutorial-editor .kg-tutorial-primary-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.kg-tutorial-primary-actions button { min-width: 0; }
 .kg-tutorial-editor button.kg-tutorial-primary { background: #205f88; color: white; border-color: #205f88; font-weight: 700; }
 .kg-tutorial-record-dot { color: #ff8989; font-size: 1.1em; }
 .kg-tutorial-editor section h3 { font-size: 1em; margin: 0.6em 0; }
@@ -4100,3 +4100,7 @@ details[open] > summary > .kg-content-preview { display: none; }
 #kg_tutorial_recording_status { overflow-wrap: anywhere; }
 
 .kg-tutorial-import-dialog input[type="radio"] { display: inline-block; width: auto; margin: 0 6px 0 0; }
+
+/* Keep the ordinary workflow visible while advanced controls scroll separately. */
+#kg_tutorial_editor_advanced { margin: 0; padding: 0; border: 0; max-height: 40vh; max-height: 40dvh; overflow: auto; }
+#kg_tutorial_editor_advanced > summary { font-size: 0.875em; color: #526577; }

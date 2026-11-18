@@ -92,19 +92,20 @@ free investigation with only a small return button; **Continue with tutorial** r
 without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
-Write narration and use **Record actions** to replace a card's sequence, with
+Write narration and use **Record card action** to replace a card's sequence, with
 Undo/Redo while recording. Existing actions start in Redo, so redo to the end to
 append, or record a new action to replace the remaining tail. **Pause +1s** adds
 explicit waits; Undo removes them one at a time. **Action visibility** (Show/Hide, default Show) can be changed later to switch
 between pointer demonstrations and quick scene-setting;
 the title and narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**
-keeps the saved sequence. **Play from here** runs the current card and continues; **Play from start** begins
-the tutorial. Recording/playback controls stay visible while the editor scrolls.
-Metadata, card ordering and manual commands are under **Advanced**. Older silent
+keeps the saved sequence. **Continue tutorial** runs the current card and continues; select the first card
+to review from the start. Playback Exit leaves the editor closed. Recording/playback controls stay visible while the editor scrolls.
+Metadata, card ordering, manual commands and exports are under **Advanced**, below
+the main actions. Older silent
 setup is preserved without an editing panel. Editor drafts save automatically; recordings are accepted only
 on Finish.
 **Edit card** during personal playback opens the current card for revision;
-**Play from here** demonstrates the changes and continues. Built-in playback
+**Continue tutorial** demonstrates the changes and continues. Built-in playback
 keeps its existing controls; first make an editable copy to revise it. Personal
 introductions offer Start for playable routes, or Edit draft when repairs are needed.
 Export a tutorial as ZIP/JSON; Import defaults to a new copy and retains missing

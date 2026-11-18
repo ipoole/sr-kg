@@ -322,7 +322,7 @@
   <label>Tutorial title<input id="kg_tutorial_editor_title" type="text"></label>
   <label>Summary<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
   <hr>
-  <label>Card<select id="kg_tutorial_editor_card"></select></label>
+  <label>This Card<select id="kg_tutorial_editor_card" aria-label="This Card"></select></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_card_controls">
     <button type="button" data-card-action="add">Add card</button>
     <button type="button" data-card-action="duplicate">Duplicate card</button>
@@ -332,7 +332,18 @@
   <label class="kg-tutorial-visibility">Action visibility<select id="kg_tutorial_editor_demonstrate" aria-label="Action visibility"><option value="show">Show</option><option value="hide">Hide</option></select></label>
   <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="4" placeholder="Add written narration here"></textarea></label>
   <p class="kg-muted-label">Redo keeps existing actions; a new action replaces the remaining tail. Finish saves; Cancel keeps the old card.</p>
+
+  </fieldset>
+  <p id="kg_tutorial_editor_validation" role="status"></p>
+  <button id="kg_tutorial_editor_retry" type="button" hidden>Retry save</button>
+  </div>
+  <div id="kg_tutorial_editor_footer">
+  <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions" role="group" aria-label="Record and continue">
+    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card action</button>
+    <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
+  </div>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
+  <fieldset id="kg_tutorial_editor_advanced_fields">
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
   <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_order_controls" role="group" aria-label="Card order">
@@ -343,22 +354,12 @@
   <section id="kg_tutorial_editor_action_section"><h3>Viewer actions</h3>
     <div id="kg_tutorial_editor_actions"></div>
   </section>
-  </details>
-  </fieldset>
-  <p id="kg_tutorial_editor_validation" role="status"></p>
-  <button id="kg_tutorial_editor_retry" type="button" hidden>Retry save</button>
-  </div>
-  <div id="kg_tutorial_editor_footer">
-  <div class="kg-tutorial-editor-actions kg-tutorial-three-buttons" role="group" aria-label="Record and play">
-    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record actions</button>
-    <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Play from here</button>
-    <button id="kg_tutorial_editor_play" type="button"><span aria-hidden="true">▶</span> Play from start</button>
-  </div>
-  <div class="kg-tutorial-editor-actions kg-tutorial-three-buttons" role="group" aria-label="Export and finish">
+  <div class="kg-tutorial-editor-actions" role="group" aria-label="Export tutorial">
     <button id="kg_tutorial_editor_export" type="button">Export ZIP</button>
     <button id="kg_tutorial_editor_json" type="button">Export JSON</button>
-    <button id="kg_tutorial_editor_close" type="button">Done</button>
   </div>
+  </fieldset>
+  </details>
   </div>
 </dialog>
 

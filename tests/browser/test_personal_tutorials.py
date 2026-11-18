@@ -60,9 +60,9 @@ def test_new_tutorial_is_one_saved_card_and_reopens_in_the_same_editor(tutorial_
     assert tutorial_id.startswith('personal:')
     assert page.locator('#kg_tutorial_editor_card option').count() == 1
     assert page.locator('#kg_tutorial_editor_commentary').input_value() == ''
-    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
     _fill_draft(page)
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     # An old-profile archive round trip must not erase the separate tutorials.
     page.evaluate('''()=>kgPersonalData.replaceSnapshot(kgPersonalDataArchive.importBytes(
         kgPersonalDataArchive.exportBytes(kgPersonalData.getSnapshot())))''')
@@ -96,7 +96,7 @@ def test_builtin_copy_keeps_actions_and_can_be_edited_and_deleted_independently(
     page.locator('#kg_tutorial_editor_card_title').fill('A revised second card')
     page.locator('#kg_tutorial_editor_commentary').fill('Pay attention to the context controls.')
     _saved(page)
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     record = page.evaluate('(id)=>kgPersonalData.tutorials.get(id)', tutorial_id)
     assert record['basedOn']['tutorialId'] == 'viewer-tour'
     assert record['route']['steps'][1]['step_id'] == source['steps'][1]['step_id']
@@ -124,13 +124,13 @@ def test_builtin_copy_keeps_actions_and_can_be_edited_and_deleted_independently(
 
 
 @pytest.mark.browser
-def test_personal_playback_is_frozen_and_exit_returns_to_the_editor(tutorial_graph):
+def test_personal_playback_is_frozen_and_exit_leaves_the_editor_closed(tutorial_graph):
     page = _library(tutorial_graph)
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
     before = page.evaluate('kgCaptureTutorialPresentation()')
-    page.locator('#kg_tutorial_editor_play').click()
+    page.locator('#kg_tutorial_editor_from').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.evaluate('kgTutorialPlaybackSnapshot().tutorialId') == tutorial_id
     assert page.locator('#kg_tutorial_error').is_hidden()
@@ -143,7 +143,7 @@ def test_personal_playback_is_frozen_and_exit_returns_to_the_editor(tutorial_gra
     }''', tutorial_id)
     assert page.locator('#kg_tutorial_commentary').inner_text() == commentary
     page.locator('#kg_tutorial_exit').click()
-    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
+    expect(page.locator('#kg_tutorial_editor')).not_to_have_attribute('open', '')
     assert page.locator('#kg_tutorial_editor_title').input_value() == 'My learning route'
     after = page.evaluate('kgCaptureTutorialPresentation()')
     for name in ['selection', 'contextRule', 'displayScope', 'view', 'camera']:
@@ -163,7 +163,7 @@ def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph):
     }''')
     page.locator('#kg_tutorial_editor_title').fill('Keep my unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state', 'error')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
     assert page.locator('#kg_tutorial_editor_title').input_value() == 'Keep my unsaved title'
     assert page.evaluate('(id)=>kgPersonalData.tutorials.get(id)', tutorial_id)['route']['title'] != 'Keep my unsaved title'
@@ -212,7 +212,7 @@ def test_personal_tutorial_launch_url_waits_for_saved_library(tutorial_graph):
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.goto(tutorial_graph.output_path.as_uri()+'?tutorial='+tutorial_id, wait_until='domcontentloaded')
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.evaluate('kgTutorialPlaybackSnapshot().tutorialId') == tutorial_id
@@ -240,7 +240,7 @@ def test_done_waits_for_pending_save_and_keeps_later_typing(tutorial_graph):
     page.wait_for_function("typeof window.__finishTutorialSave==='function'")
     page.locator('#kg_tutorial_editor_title').fill('Latest edit')
     page.locator('#kg_tutorial_editor_summary').fill('Keep this later summary.')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
     page.evaluate('()=>window.__finishTutorialSave()')
     expect(page.locator('#kg_tutorial_editor')).not_to_have_attribute('open', '')
@@ -306,7 +306,7 @@ def test_card_operations_keep_identity_and_allow_an_empty_draft(tutorial_graph):
         controls.get_by_role('button', name='Delete card', exact=True).click()
     assert not _record(page, tutorial_id)['route']['steps']
     assert page.locator('#kg_tutorial_editor_card_title').is_disabled()
-    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
     controls.get_by_role('button', name='Add card', exact=True).click()
     assert len(_record(page, tutorial_id)['route']['steps']) == 1
     assert page.locator('#kg_tutorial_editor_commentary').input_value() == ''
@@ -321,7 +321,7 @@ def test_edit_action_sequence_preserves_legacy_setup_pointers_and_pause(tutorial
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.evaluate('''async id=>{
       const r=await kgPersonalData.tutorials.get(id);r.route.steps[0].prepare=[{command:'set-view',value:'graph'}];
       await kgPersonalData.tutorials.save(r);
@@ -351,13 +351,13 @@ def test_edit_action_sequence_preserves_legacy_setup_pointers_and_pause(tutorial
     assert step['actions'][1]['pause_ms'] == 1200
     assert step['actions'][1]['pointer'] == {'target':'graph:concept:2.1'}
     assert page.locator('#kg_tutorial_editor').evaluate('e=>e.scrollWidth<=e.clientWidth+1')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.reload(wait_until='domcontentloaded')
     _library(tutorial_graph)
     page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
     _edit_selected_tutorial(page)
     assert _record(page, tutorial_id)['route']['steps'][0] == step
-    page.locator('#kg_tutorial_editor_play').click()
+    page.locator('#kg_tutorial_editor_from').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.locator('#kg_tutorial_error').is_hidden()
     state = page.evaluate('kgCaptureTutorialPresentation()')
@@ -382,11 +382,15 @@ def test_play_from_here_rebuilds_prefix_and_continues(tutorial_graph):
     assert page.locator('#kg_tutorial_next').is_enabled()
     assert page.locator('#kg_tutorial_error').is_hidden()
     page.locator('#kg_tutorial_exit').click()
-    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
+    expect(page.locator('#kg_tutorial_editor')).not_to_have_attribute('open', '')
     assert page.locator('#kg_tutorial_editor_card').input_value() == '2'
     restored = page.evaluate('kgCaptureTutorialPresentation()')
     for key in ['selection', 'contextRule', 'view', 'displayScope', 'camera']:
         assert restored[key] == before[key]
+    page.locator('#kg_tutorial_start').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
+    page.locator('#kg_tutorial_edit').click()
+    page.locator('#kg_tutorial_editor_card').select_option(index=2)
     page.locator('#kg_tutorial_editor_from').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===2 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.locator('#kg_tutorial_next').is_enabled()
@@ -404,7 +408,7 @@ def test_incomplete_routes_block_playback_but_remain_editable(tutorial_graph):
     page.locator('#kg_tutorial_editor_commentary').fill('')
     _saved(page)
     page.locator('#kg_tutorial_editor_card').select_option(index=0)
-    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
     assert page.locator('#kg_tutorial_editor_from').is_disabled()
     page.locator('#kg_tutorial_editor_card').select_option(index=5)
     page.locator('#kg_tutorial_editor_commentary').fill('Repaired final card.')
@@ -425,7 +429,7 @@ def test_incomplete_routes_block_playback_but_remain_editable(tutorial_graph):
 
 
 @pytest.mark.browser
-def test_rehearsal_error_keeps_exit_and_editor_available(tutorial_graph):
+def test_rehearsal_error_keeps_exit_and_current_card_edit_available(tutorial_graph):
     page = _library(tutorial_graph)
     _copy_editor(page)
     # A known block can still be unavailable in the selected concept. Do not silently fix the route.
@@ -439,5 +443,5 @@ def test_rehearsal_error_keeps_exit_and_editor_available(tutorial_graph):
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     expect(page.locator('#kg_tutorial_error')).to_be_visible()
     assert page.locator('#kg_tutorial_exit').is_enabled()
-    page.locator('#kg_tutorial_exit').click()
+    page.locator('#kg_tutorial_edit').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')

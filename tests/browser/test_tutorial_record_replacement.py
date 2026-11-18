@@ -9,7 +9,7 @@ def _editable_card(page):
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     original=page.evaluate('''async id=>{
       const r=await kgPersonalData.tutorials.get(id);
       r.route.steps[0].prepare=[{command:'select',target:'concept:2.1'}];
@@ -59,7 +59,7 @@ def test_record_replaces_only_on_finish_and_cancel_retains_original(tutorial_gra
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width',[390,1280])
-def test_tutorial_editor_groups_primary_controls_in_two_rows(tutorial_graph,width):
+def test_tutorial_editor_keeps_record_and_continue_primary(tutorial_graph,width):
     page=_library(tutorial_graph)
     page.set_viewport_size({'width':width,'height':900})
     page.locator('#kg_tutorial_new').click()
@@ -69,15 +69,14 @@ def test_tutorial_editor_groups_primary_controls_in_two_rows(tutorial_graph,widt
     assert not page.locator('#kg_tutorial_editor_actions').is_visible()
     assert page.locator('#kg_tutorial_editor_setup').count()==0
     rows=page.locator('#kg_tutorial_editor_footer > .kg-tutorial-editor-actions')
-    assert rows.count()==2
-    assert [rows.nth(i).locator('button').count() for i in range(2)]==[3,3]
+    assert rows.count()==1
+    assert rows.first.locator('button').count()==2
     assert page.locator('#kg_tutorial_editor_preview').count()==0
-    assert page.get_by_role('button',name='Play from start',exact=True).is_enabled()
+    assert page.get_by_role('button',name='Continue tutorial',exact=True).is_enabled()
     boxes=rows.evaluate_all('rows=>rows.map(row=>Array.from(row.querySelectorAll("button"),b=>{const r=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right};}))')
     for row in boxes:
         assert len({round(box['top']) for box in row})==1
         for a,b in zip(row,row[1:]):assert a['right']<=b['left']
-    assert boxes[0][0]['bottom']<boxes[1][0]['top']
     assert page.locator('#kg_tutorial_editor').evaluate('e=>e.scrollWidth<=e.clientWidth')
     advanced.locator('summary').click()
     assert page.locator('#kg_tutorial_editor_actions').is_visible()
@@ -94,7 +93,7 @@ def test_rerecord_repairs_broken_actions_and_empty_finish_can_clear_them(tutoria
     }''',tutorial_id)
     page.reload(wait_until='domcontentloaded')
     page=_open_existing(tutorial_graph,tutorial_id)
-    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
     page.locator('#kg_tutorial_editor_record').click()
     _idle(page)
     assert page.locator('#kg_tutorial_recording_undo').is_disabled()
@@ -102,7 +101,7 @@ def test_rerecord_repairs_broken_actions_and_empty_finish_can_clear_them(tutoria
     saved=_record(page,tutorial_id)
     assert saved['route']['steps'][0]['action']=={'command':'wait','milliseconds':0}
     assert 'actions' not in saved['route']['steps'][0]
-    assert page.locator('#kg_tutorial_editor_play').is_enabled()
+    assert page.locator('#kg_tutorial_editor_from').is_enabled()
 
 
 @pytest.mark.browser
