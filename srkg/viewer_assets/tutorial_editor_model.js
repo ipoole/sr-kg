@@ -38,7 +38,9 @@ function kgCreateTutorialEditorModel(options) {
     });
     return result;
   }
+  var pointerCatalog = {};
   function pointerChoices(group) {
+    if (Object.prototype.hasOwnProperty.call(pointerCatalog, group)) { return pointerCatalog[group]; }
     var result = {};
     function add(prefix, values) { Object.keys(values).forEach(function(key) { result[prefix + key] = values[key]; }); }
     if (group === 'general') { return contract.pointer_base; }
@@ -60,6 +62,7 @@ function kgCreateTutorialEditorModel(options) {
         Object.keys(concepts).forEach(function(key) { result['details:reading-concept:' + recipe + ':' + key] = recipe + ': ' + label(concepts[key], key); });
       });
     }
+    pointerCatalog[group] = result;
     return result;
   }
   var groups = {general:'Narration and Details', controls:'Toolbar controls', 'module-controls':'Module fold controls',
@@ -119,7 +122,7 @@ function kgCreateTutorialEditorModel(options) {
       var silent = index < setup.length, item = silent ? {action:setup[index]} : list[index - setup.length];
       var problem = commandProblem(item.action);
       if (!problem && !silent) {
-        var target = item.pointer ? item.pointer.target : 'narration';
+        var target = kgTutorialSequence.pointerTarget(item);
         if (!pointerChoices(pointerGroup(target))[target]) { problem = 'Choose an available pointer target.'; }
         var pause = item.pause_ms === undefined ? 500 : item.pause_ms;
         if (!Number.isInteger(pause) || pause < 0 || pause > contract.max_pause_ms) { problem = 'Pause must be between 0 and 5 seconds.'; }

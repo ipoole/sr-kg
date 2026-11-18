@@ -5,15 +5,28 @@ var kgTutorialSequence = (function() {
     return step.actions || (step.action ? [{action:step.action, pointer:step.pointer, pause_ms:0}] : []);
   }
   function commandsThrough(route, index) {
-    return route.steps.slice(0, index + 1).reduce(function(commands, step) {
-      // Reconstruct view state, omitting playback-only waits from earlier cards.
-      return commands.concat(step.prepare || [], actions(step).map(function(item) { return item.action; }).filter(function(command) { return command.command !== 'wait'; }));
-    }, []);
+    var commands = [];
+    route.steps.slice(0, index + 1).forEach(function(step) {
+      // Legacy setup remains executable; main-action waits are playback-only.
+      (step.prepare || []).forEach(function(command) { commands.push(command); });
+      actions(step).forEach(function(item) {
+        if (item.action.command !== 'wait') { commands.push(item.action); }
+      });
+    });
+    return commands;
+  }
+  function pointerTarget(item) { return item.pointer ? item.pointer.target : 'narration'; }
+  function finalAction(step) {
+    var items = actions(step);
+    for (var index = items.length - 1; index >= 0; index -= 1) {
+      if (!isPause(items[index])) { return items[index]; }
+    }
+    return null;
   }
   function newCard(id) {
     return {step_id:id, title:'New card', commentary:'', demonstrate:true,
       action:{command:'wait', milliseconds:0}, pointer:{target:'narration'}};
   }
   function isPause(item) { return item.action.command === 'wait' && item.action.milliseconds > 0; }
-  return {actions:actions, commandsThrough:commandsThrough, newCard:newCard, isPause:isPause};
+  return {actions:actions, commandsThrough:commandsThrough, newCard:newCard, isPause:isPause, pointerTarget:pointerTarget, finalAction:finalAction};
 })();

@@ -311,10 +311,6 @@ function kgCreateGuidedTutorial(options) {
   var tutorialCommandsThrough = kgTutorialSequence.commandsThrough;
   var tutorialStepActions = kgTutorialSequence.actions;
 
-  function tutorialFinalAction(step) {
-    var actions = tutorialStepActions(step).filter(function(item) { return !kgTutorialSequence.isPause(item); });
-    return actions[actions.length - 1] || null;
-  }
 
   function renderTutorialList() {
     var list = document.getElementById("kg_tutorial_list");
@@ -477,7 +473,7 @@ function kgCreateGuidedTutorial(options) {
     for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
       var item = actions[actionIndex];
       var point = demonstrate && !kgTutorialSequence.isPause(item);
-      var target = item.pointer ? item.pointer.target : 'narration';
+      var target = kgTutorialSequence.pointerTarget(item);
       if (point) {
         clearTutorialEmphasis(); await moveTutorialPointer(target); await pulseTutorialPointer();
       }
@@ -490,9 +486,9 @@ function kgCreateGuidedTutorial(options) {
     }
   }
   async function restoreFinalEmphasis(step) {
-    var item = tutorialFinalAction(step);
+    var item = kgTutorialSequence.finalAction(step);
     if (!item) { return; }
-    var target = item.pointer ? item.pointer.target : 'narration';
+    var target = kgTutorialSequence.pointerTarget(item);
     if (step.demonstrate !== false) { await moveTutorialPointer(target); }
     if (tutorialActionIsHover(item.action)) { await executeViewerCommand(item.action,{origin:'tutorial'}); }
     if (step.demonstrate !== false) { settleTutorialPointer(target); }

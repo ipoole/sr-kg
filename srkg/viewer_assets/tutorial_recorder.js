@@ -33,7 +33,6 @@ function kgCreateTutorialRecorder(options) {
     session.undo.push({before:before, item:item}); session.redo = [];
   }
   function warn(message) { if (session) { render(message); } }
-  async function settled() { await options.settle(); }
   async function start(route, index) {
     if (session || busy) { throw new Error('Recording is already active.'); }
     busy = true;
@@ -49,7 +48,7 @@ function kgCreateTutorialRecorder(options) {
         if (problem) { throw new Error(problem); }
         await options.execute(command, {origin:'rehearsal'});
       }
-      await settled();
+      await options.settle();
       session.checkpoint = options.presentation.capture();
       render('Redo keeps old actions; a new action replaces the remaining tail.');
     } catch (error) {
@@ -75,7 +74,7 @@ function kgCreateTutorialRecorder(options) {
     // Search input is already changed when its debounced intention is submitted.
     if (command.command === 'search') { before.search = model.clone(session.checkpoint.search); }
     try {
-      var result = await execute(); await settled();
+      var result = await execute(); await options.settle();
       var item = {action:model.clone(command), pointer:{target:metadata && metadata.pointer || model.pointer(command)}, pause_ms:0};
       var after = options.presentation.capture();
       remember(item,before,after);
@@ -103,7 +102,7 @@ function kgCreateTutorialRecorder(options) {
         if (problem) { throw new Error(problem); }
         // Redo performs the semantic action, including transient effects such as hover.
         if (!kgTutorialSequence.isPause(record.item)) { await options.execute(record.item.action,{origin:'rehearsal'}); }
-        await settled(); record.before = before;
+        await options.settle(); record.before = before;
       } else { await options.presentation.restore(record.before); }
       session.checkpoint = options.presentation.capture(); source.pop();
       if (redo) { session.items.push(record.item); session.undo.push(record); }

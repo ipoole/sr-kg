@@ -152,10 +152,11 @@ def test_personal_playback_is_frozen_and_exit_leaves_the_editor_closed(tutorial_
 
 
 @pytest.mark.browser
-def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph):
+@pytest.mark.parametrize('handoff', ['close', 'continue', 'record'])
+def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph, handoff):
     page = _library(tutorial_graph)
     page.locator('#kg_tutorial_new').click()
-    _saved(page)
+    _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
     page.evaluate('''()=>{
         window.__tutorialSave=kgPersonalData.tutorials.save;
@@ -163,9 +164,14 @@ def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph):
     }''')
     page.locator('#kg_tutorial_editor_title').fill('Keep my unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state', 'error')
-    page.keyboard.press('Escape')
+    if handoff == 'close':
+        page.keyboard.press('Escape')
+    else:
+        page.locator('#kg_tutorial_editor_' + ('from' if handoff == 'continue' else 'record')).click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
     assert page.locator('#kg_tutorial_editor_title').input_value() == 'Keep my unsaved title'
+    assert page.evaluate('kgTutorialPlaybackSnapshot().tutorialId') is None
+    assert page.locator('#kg_tutorial_recording').is_hidden()
     assert page.evaluate('(id)=>kgPersonalData.tutorials.get(id)', tutorial_id)['route']['title'] != 'Keep my unsaved title'
     page.evaluate('()=>{kgPersonalData.tutorials.save=window.__tutorialSave;}')
     page.locator('#kg_tutorial_editor_retry').click()
@@ -408,7 +414,6 @@ def test_incomplete_routes_block_playback_but_remain_editable(tutorial_graph):
     page.locator('#kg_tutorial_editor_commentary').fill('')
     _saved(page)
     page.locator('#kg_tutorial_editor_card').select_option(index=0)
-    assert page.locator('#kg_tutorial_editor_from').is_disabled()
     assert page.locator('#kg_tutorial_editor_from').is_disabled()
     page.locator('#kg_tutorial_editor_card').select_option(index=5)
     page.locator('#kg_tutorial_editor_commentary').fill('Repaired final card.')

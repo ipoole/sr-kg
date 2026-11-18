@@ -77,7 +77,7 @@ function kgCreateTutorialActionEditor(options) {
         } else { change(false); }
       }); field(spec.label, input);
     });
-    var item = items[selected], target = item.pointer ? item.pointer.target : 'narration';
+    var item = items[selected], target = kgTutorialSequence.pointerTarget(item);
     var group = select(model.groups, model.pointerGroup(target));
     field('Pointer area', group);
     var pointerInput;
