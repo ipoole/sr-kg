@@ -13,24 +13,46 @@ tutorials:
     title: See the whole map
     commentary: PhysicsKG begins as a map of subject modules. Folded modules let you see the wood before the trees;
       Fit frames the displayed graph.
-    prepare:
-    - command: select
-      target: module:sr.spacetime_foundations
-    - command: set-all-module-representations
-      value: folded
-    - command: set-display-scope
-      value: overview
-    - command: set-view
-      value: graph
-    - command: set-context
-      preset: derivation
-      depth: one-hop
-    action:
-      command: fit
-      value: displayed
-    pointer:
-      target: control:fit
+    demonstrate: false
+    actions:
+    - action:
+        command: select
+        target: module:sr.spacetime_foundations
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-all-module-representations
+        value: folded
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-display-scope
+        value: overview
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: set-context
+        preset: derivation
+        depth: one-hop
+      pointer:
+        target: control:context
+      pause_ms: 0
+    - action:
+        command: fit
+        value: displayed
+      pointer:
+        target: control:fit
   - step_id: select-a-module
+    demonstrate: true
     title: Select a module
     commentary: Modules organise the landscape into coherent subjects. Selecting SR-2 makes it the subject in the
       graph; Details follows the same selection.
@@ -40,6 +62,7 @@ tutorials:
     pointer:
       target: graph:module:sr.relativistic_mechanics
   - step_id: choose-the-pane
+    demonstrate: true
     title: Choose what occupies the screen
     commentary: View chooses Graph, Details or Both. These actions demonstrate each; changing panes preserves the
       selection, graph mode and reading state.
@@ -62,6 +85,7 @@ tutorials:
       pointer:
         target: control:view
   - step_id: reveal-the-concepts
+    demonstrate: true
     title: Reveal its concepts
     commentary: The plus control expands a module in place. Its concepts appear inside the same persistent area
       of the map. The tutorial then frames those concepts clear of this card.
@@ -78,6 +102,7 @@ tutorials:
       pointer:
         target: control:fit
   - step_id: overview-across-subjects
+    demonstrate: true
     title: See the wood and the trees
     commentary: Overview combines open and folded modules. Here SR and Maths are expanded while GR stays folded.
       Derivation links connect concepts within each open module; between modules, summary links stop at the module boundaries.
@@ -125,6 +150,7 @@ tutorials:
       pointer:
         target: control:fit
   - step_id: return-to-one-module
+    demonstrate: true
     title: Take a closer look
     commentary: The tutorial brings SR-2 back into view. Expanding other modules has not moved its concepts or changed
       the selection. Next, compare how the graph modes treat the same map.
@@ -134,6 +160,7 @@ tutorials:
     pointer:
       target: control:fit
   - step_id: choose-graph-emphasis
+    demonstrate: true
     title: Choose how the graph is treated
     commentary: Overview shows the whole map with internal concept links and module summaries. Context + background emphasises the selected context;
       Context only omits the background. Selecting something never changes this choice automatically.
@@ -156,6 +183,7 @@ tutorials:
       pointer:
         target: control:display-scope
   - step_id: preview-a-concept
+    demonstrate: true
     title: Preview without selecting
     commentary: On a pointer device, hovering over a concept previews it without changing Selection. PhysicsKG demonstrates
       that preview here.
@@ -165,6 +193,7 @@ tutorials:
     pointer:
       target: graph:concept:sr.momentum_four_vector
   - step_id: select-a-concept
+    demonstrate: true
     title: Select a concept
     commentary: Selection gives the viewer a subject. Here, momentum four-vector becomes the subject shown in the
       graph and Details.
@@ -174,6 +203,7 @@ tutorials:
     pointer:
       target: graph:concept:sr.momentum_four_vector
   - step_id: choose-connections
+    demonstrate: true
     title: Choose a Context
     commentary: Context chooses which relationships to follow from the selection. Connections gives a broad one-hop
       neighbourhood.
@@ -184,6 +214,7 @@ tutorials:
     pointer:
       target: control:context
   - step_id: show-the-context
+    demonstrate: true
     title: See the context clearly
     commentary: Context only hides the background graph while leaving the selected concept and its context visible.
     action:
@@ -192,6 +223,7 @@ tutorials:
     pointer:
       target: control:display-scope
   - step_id: frame-the-result
+    demonstrate: true
     title: Frame the result
     commentary: Fit context adjusts the camera around the context without changing Selection, Context or the graph
       itself.
@@ -201,6 +233,7 @@ tutorials:
     pointer:
       target: control:fit
   - step_id: preview-a-relationship
+    demonstrate: true
     title: Preview a relationship
     commentary: On a pointer device, hovering over an edge emphasises it and explains the relationship. On touch
       devices, tapping an edge opens its details.
@@ -210,6 +243,7 @@ tutorials:
     pointer:
       target: graph:edge:sr.momentum_four_vector|DERIVES_FROM|sr.velocity_four_vector
   - step_id: return-to-the-map
+    demonstrate: true
     title: Return to the full map
     commentary: Context + background restores the wider map. The same Selection and Context remain active, so changing
       this axis does not silently change them.
@@ -219,6 +253,7 @@ tutorials:
     pointer:
       target: control:display-scope
   - step_id: search-for-lorentz-transformations
+    demonstrate: true
     title: Search across PhysicsKG
     commentary: Search finds concepts and modules by identifier, title or authored text. PhysicsKG enters this query
       and displays the matches.
@@ -228,6 +263,7 @@ tutorials:
     pointer:
       target: control:search
   - step_id: choose-a-search-result
+    demonstrate: true
     title: Choose a result
     commentary: Selecting a search result changes Selection exactly as selecting its node in the graph would.
     action:
@@ -239,16 +275,26 @@ tutorials:
     title: Read the Details
     commentary: Details develops the selected concept in authored blocks. Contents and folded headings help you
       move through a longer explanation.
-    prepare:
-    - command: close-search
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.lorentz_transformations.overview
-    pointer:
-      target: details:block:sr.lorentz_transformations.overview
+    demonstrate: true
+    actions:
+    - action:
+        command: close-search
+      pointer:
+        target: control:search
+      pause_ms: 0
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.lorentz_transformations.overview
+      pointer:
+        target: details:block:sr.lorentz_transformations.overview
   - step_id: inspect-a-derivation-tree
+    demonstrate: true
     title: Follow an idea back to its foundations
     commentary: Open Mass-energy equivalence and its Derived from section. Full tree includes earlier foundations
       as well as the immediate inputs. Read the explanations beside the links to see why each connection matters.
@@ -270,6 +316,7 @@ tutorials:
       pointer:
         target: details:derived-from-full-tree
   - step_id: show-the-derivation-in-graph
+    demonstrate: true
     title: Turn the reading into a graph
     commentary: Briefly show Both to see the reading and graph controls together. Choose Context only, then Show in graph.
       This shortcut sets Derivation and Transitive depth and
@@ -302,6 +349,7 @@ tutorials:
       pointer:
         target: control:fit
   - step_id: show-a-derivation-tree
+    demonstrate: true
     title: Bring the tree together with Fit++
     commentary: After Fit context, the button becomes Fit++. Press it to bring the context concepts closer together.
       You can adjust these positions while exploring; navigating away restores the saved layout.
@@ -315,18 +363,28 @@ tutorials:
     commentary: Reading trees gather the original content of supporting concepts beneath your selected topic.
       The Teaching tree includes definitions, explanations, intuition and examples. It starts at three hops;
       you can choose a smaller depth or extend to Full tree.
-    prepare:
-    - command: select
-      target: concept:sr.mass_energy_equivalence
-    - command: set-view
-      value: details
-    action:
-      command: open-reading-tree
-      recipe: teaching
-      depth: three-hops
-    pointer:
-      target: details:reading-tree:teaching
+    demonstrate: false
+    actions:
+    - action:
+        command: select
+        target: concept:sr.mass_energy_equivalence
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-reading-tree
+        recipe: teaching
+        depth: three-hops
+      pointer:
+        target: details:reading-tree:teaching
   - step_id: open-a-reading-support
+    demonstrate: true
     title: Read a supporting concept in place
     commentary: Four-momentum supports the mass-energy argument. The text explains why the connection matters,
       and the expanded concept offers its own blocks. These are the original blocks, so reading marks and personal
@@ -338,6 +396,7 @@ tutorials:
     pointer:
       target: details:reading-concept:teaching:sr.momentum_four_vector
   - step_id: locate-your-reading-on-the-graph
+    demonstrate: true
     title: Keep your place on the map
     commentary: Synchronise graph sets the tree's context and depth, reveals its concepts and fits them.
       Mass-energy equivalence remains selected. The amber ring marks four-momentum, where we are reading.
@@ -356,6 +415,7 @@ tutorials:
       pointer:
         target: graph:concept:sr.momentum_four_vector
   - step_id: continue-your-study
+    demonstrate: true
     title: Continue your study
     commentary: Tools contains study questions, reading progress, notes, layouts and portable personal data. This
       tutorial only points them out; it does not change your study record.

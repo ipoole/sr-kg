@@ -283,6 +283,10 @@ def test_tutorial_hides_the_previous_pointer_during_step_preparation(browser_gra
 
 def test_completed_fit_pointer_does_not_linger_over_fit_plus(repo_browser_graph):
     page = _open_tutorial(repo_browser_graph, "rest-energy-to-sr-foundations")
+    # Exercise demonstrated camera actions independently of the authored Hide recipe.
+    page.evaluate("""() => tutorialData
+      .find(t => t.tutorial_id === 'rest-energy-to-sr-foundations')
+      .steps.forEach(s => { s.demonstrate = true; })""")
     frame_index = page.evaluate("""() => tutorialData
       .find(t => t.tutorial_id === 'rest-energy-to-sr-foundations')
       .steps.findIndex(s => s.step_id === 'expose-the-foundations')""")
@@ -562,8 +566,11 @@ def test_authored_route_walkthrough(request, graph_fixture, tutorial_id):
             assert page.evaluate("kgContextContractionSnapshot().active")
         previous_selection = selection
         pointer = (step.get("actions") or [step])[-1].get("pointer", {}).get("target", "narration")
-        assert page.evaluate("kgTutorialPointerSnapshot().target") == pointer, step["step_id"]
-        _assert_block_pointer_matches(page, pointer, step["step_id"])
+        if step.get("demonstrate", True):
+            assert page.evaluate("kgTutorialPointerSnapshot().target") == pointer, step["step_id"]
+            _assert_block_pointer_matches(page, pointer, step["step_id"])
+        else:
+            assert not page.evaluate("kgTutorialPointerSnapshot().visible"), step["step_id"]
         if step["step_id"] in {"begin-with-rest-energy", "begin-with-two-ticks"}:
             assert page.evaluate("kgContextContractionSnapshot().active")
             checkpoint = page.evaluate("kgCaptureTutorialPresentation()")

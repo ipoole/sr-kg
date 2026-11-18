@@ -132,9 +132,9 @@ refinement does not change that timing yet.
 Action visibility can be changed during later review, independently of recording.
 The title and narration remain visible in either mode, and explicit pauses work
 in both. New cards default to Show; omitted flags on older cards also mean Show,
-preserving current tutorials. Existing `prepare` setup remains quiet and preserved
-without an editing panel; no built-in routes are split
-or silently rewritten.
+preserving older imports. Existing `prepare` setup remains quiet and preserved
+without an editing panel. Built-in routes have been explicitly audited and migrated
+to whole-card visibility without adding cards.
 
 Jumping to a later card or reconstructing a previous view skips earlier main-action
 waits, since they do not change the view. Forward playback still honours each
@@ -446,3 +446,12 @@ recording boundaries, presentation restoration, invalid/missing targets, import
 rollback, repeated sync/conflicts/deletions, missing audio, format/permission/storage
 failures and old/new-viewer coexistence. Retain existing unit and fast/full browser
 lanes; avoid multiplying combinations unrelated to a specific behaviour.
+
+### Built-in route visibility audit
+
+The built-in routes use explicit whole-card visibility, with no separate `prepare`
+sequences. Using PhysicsKG demonstrates controls with Show cards; its opening map
+and reading-tree scene use Hide. The physics routes use Hide throughout: each
+card prepares its graph or reading scene quietly, then invites the learner to
+read. Card identifiers and teaching order are preserved. Legacy imported
+`prepare` sequences remain supported.

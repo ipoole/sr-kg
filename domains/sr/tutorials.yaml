@@ -10,9 +10,10 @@ tutorials:
   - sr
   steps:
   - step_id: introduction
+    demonstrate: false
     title: Why does mass have rest energy?
     commentary: We will investigate a heated box, use light emission to explain its inertia change, then connect rest energy
-      to four-momentum. Lorentz transformations are assumed. Press Next to watch the guided actions and read the highlighted content.
+      to four-momentum. Lorentz transformations are assumed. Press Next to move to each reading scene, then read at your own pace.
       Explore from here lets you take control; Continue with tutorial returns to the tutorial.
     action:
       command: wait
@@ -21,19 +22,39 @@ tutorials:
     title: Map the argument
     commentary: This route assumes Lorentz transformations. The graph shows the nearby derivation links; we will focus
       on why energy contributes inertia, rather than retracing the SR postulates.
-    prepare:
-    - command: select
-      target: concept:sr.mass_energy_equivalence
-    - command: set-all-module-representations
-      value: folded
-    - command: set-display-scope
-      value: context
-    - command: set-context
-      preset: derivation
-      depth: two-hops
-    - command: set-view
-      value: graph
+    demonstrate: false
     actions:
+    - action:
+        command: select
+        target: concept:sr.mass_energy_equivalence
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-all-module-representations
+        value: folded
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: set-context
+        preset: derivation
+        depth: two-hops
+      pointer:
+        target: control:context
+      pause_ms: 0
+    - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: control:view
+      pause_ms: 0
     - action:
         command: expand-context-modules
       pointer:
@@ -52,15 +73,21 @@ tutorials:
     title: Begin with rest energy
     commentary: A resting body has no kinetic energy as a whole. What, then, does its rest energy mean? Read this opening puzzle;
       we will investigate a concrete example before tracing the argument.
-    prepare:
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.mass_energy_equivalence.overview
-    pointer:
-      target: details:block:sr.mass_energy_equivalence.overview
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.mass_energy_equivalence.overview
+      pointer:
+        target: details:block:sr.mass_energy_equivalence.overview
   - step_id: preview-heated-box
+    demonstrate: false
     title: Same box, more mass?
     commentary: Read the heated-box example. Identify the system boundary and what enters it. Keep its predicted
       inertia change as a question. Why should retained energy make it harder to accelerate? The formula alone cannot answer that.
@@ -73,15 +100,21 @@ tutorials:
     title: Lose energy without slowing down
     commentary: Read Light leaves without a kick. Compare the same emission in the body's rest frame and a moving frame.
       Why do the two pulses carry different total energies in those frames, although neither description changes the experiment?
-    prepare:
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.mass_energy_equivalence.light_emission
-    pointer:
-      target: details:block:sr.mass_energy_equivalence.light_emission
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.mass_energy_equivalence.light_emission
+      pointer:
+        target: details:block:sr.mass_energy_equivalence.light_emission
   - step_id: infer-the-inertia-change
+    demonstrate: false
     title: Energy conservation requires an inertia change
     commentary: Work through the two energy balances and their subtraction. Notice how the low-speed kinetic-energy coefficient
       measures inertia. This argument obtains the mass change without assuming the rest-energy formula.
@@ -91,6 +124,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.light_inertia
   - step_id: distinguish-the-energies
+    demonstrate: false
     title: Three quantities, three meanings
     commentary: Read Rest energy is not kinetic energy. Which quantity vanishes at rest? Which quantities change
       when we change observer?
@@ -100,6 +134,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.three_energies
   - step_id: the-famous-equation
+    demonstrate: false
     title: State the result carefully
     commentary: Read the definition. Take particular note of the subscript on E₀ and of the more general energy–momentum
       relation.
@@ -109,6 +144,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.definition
   - step_id: show-derived-from-in-graph
+    demonstrate: false
     title: What each link contributes
     commentary: Read the immediate derivation links. Each edge note explains what the next concept supplies; the next card shows the graph.
       Notice the physical qualification on the first link to four-momentum.
@@ -119,20 +155,34 @@ tutorials:
     title: Frame the nearby derivation
     commentary: The graph follows Derivation for two hops. Lorentz transformations are assumed; the light argument
       has supplied the physical intuition. Inspect these nearby connections; Explore from here if you want to inspect a branch or edge.
-    prepare:
-    - command: set-view
-      value: graph
-    - command: set-context
-      preset: derivation
-      depth: two-hops
-    - command: set-display-scope
-      value: context
-    action:
-      command: fit
-      value: context
-    pointer:
-      target: control:fit
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: set-context
+        preset: derivation
+        depth: two-hops
+      pointer:
+        target: control:context
+      pause_ms: 0
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: fit
+        value: context
+      pointer:
+        target: control:fit
   - step_id: select-four-momentum
+    demonstrate: false
     title: Follow the route to four-momentum
     commentary: Select SR-2.5 Momentum four-vector as the next concept in the foundation chain.
     action:
@@ -144,15 +194,21 @@ tutorials:
     title: Energy and momentum belong together
     commentary: Read the four-momentum overview. Identify which quantities become components of one object and which
       aspects can remain invariant.
-    prepare:
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.momentum_four_vector.overview
-    pointer:
-      target: details:block:sr.momentum_four_vector.overview
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.momentum_four_vector.overview
+      pointer:
+        target: details:block:sr.momentum_four_vector.overview
   - step_id: the-mass-shell
+    demonstrate: false
     title: Where the argument must end up
     commentary: Preview this invariant relation as our destination. We still need to explain why its E is physical
       energy; keep that gap in mind as we trace the geometry back to its foundations.
@@ -165,39 +221,55 @@ tutorials:
     title: Momentum comes from four-velocity
     commentary: Read the four-velocity overview. Note what it is tangent to and which time parameter its definition
       must use.
-    prepare:
-    - command: select
-      target: concept:sr.velocity_four_vector
-    action:
-      command: open-details-block
-      target: block:sr.velocity_four_vector.overview
-    pointer:
-      target: details:block:sr.velocity_four_vector.overview
+    demonstrate: false
+    actions:
+    - action:
+        command: select
+        target: concept:sr.velocity_four_vector
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.velocity_four_vector.overview
+      pointer:
+        target: details:block:sr.velocity_four_vector.overview
   - step_id: rebuild-four-velocity
     title: A Lorentz-invariant norm
     commentary: Read four-velocity's fixed-norm calculation. Use the assumed Lorentz invariance of the interval;
       keep the distinction between coordinate time and proper time in view.
-    prepare:
-    - command: select
-      target: concept:sr.velocity_four_vector
-    action:
-      command: open-details-block
-      target: block:sr.velocity_four_vector.fixed_norm
-    pointer:
-      target: details:block:sr.velocity_four_vector.fixed_norm
+    demonstrate: false
+    actions:
+    - action:
+        command: select
+        target: concept:sr.velocity_four_vector
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.velocity_four_vector.fixed_norm
+      pointer:
+        target: details:block:sr.velocity_four_vector.fixed_norm
   - step_id: rebuild-four-momentum
     title: From motion to momentum
     commentary: Read the component construction from four-velocity. Notice the momentum law and the distinction
       between a time component with energy units and its physical identification as energy.
-    prepare:
-    - command: select
-      target: concept:sr.momentum_four_vector
-    action:
-      command: open-details-block
-      target: block:sr.momentum_four_vector.components
-    pointer:
-      target: details:block:sr.momentum_four_vector.components
+    demonstrate: false
+    actions:
+    - action:
+        command: select
+        target: concept:sr.momentum_four_vector
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.momentum_four_vector.components
+      pointer:
+        target: details:block:sr.momentum_four_vector.components
   - step_id: identify-physical-energy
+    demonstrate: false
     title: The link to measured work
     commentary: Follow the work-rate calculation. Identify the physical assumptions and the quantity whose change
       equals energy transferred by work.
@@ -207,6 +279,7 @@ tutorials:
     pointer:
       target: details:block:sr.momentum_four_vector.work_energy
   - step_id: check-the-slow-limit
+    demonstrate: false
     title: Recover familiar kinetic energy
     commentary: Read the slow-speed check. See how kinetic energy approaches the Newtonian expression, then note
       why subtracting the energy at rest leaves its additive constant undetermined.
@@ -216,6 +289,7 @@ tutorials:
     pointer:
       target: details:block:sr.momentum_four_vector.kinetic_limit
   - step_id: state-the-physical-input
+    demonstrate: false
     title: What geometry and work do not prove
     commentary: Read this qualification carefully. What does mechanical work leave undetermined, and what additional
       conservation statement does relativistic dynamics use?
@@ -225,6 +299,7 @@ tutorials:
     pointer:
       target: details:block:sr.momentum_four_vector.energy_physical_input
   - step_id: reconstruct-the-invariant
+    demonstrate: false
     title: Put the physical energy into the invariant
     commentary: Revisit the invariant-norm block. The time component now has a physical interpretation; distinguish
       the metric calculation from the massive-particle momentum law.
@@ -236,28 +311,43 @@ tutorials:
   - step_id: return-to-rest-energy
     title: Return to rest energy
     commentary: Return to the wider map and select SR-2.6 Mass-energy equivalence.
-    prepare:
-    - command: set-view
-      value: graph
-    - command: set-display-scope
-      value: full
-    action:
-      command: select
-      target: concept:sr.mass_energy_equivalence
-    pointer:
-      target: graph:concept:sr.mass_energy_equivalence
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: graph
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: set-display-scope
+        value: full
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: select
+        target: concept:sr.mass_energy_equivalence
+      pointer:
+        target: graph:concept:sr.mass_energy_equivalence
   - step_id: frame-rest-energy
     title: Frame the complete argument
     commentary: Show and fit the nearby Derivation links of mass-energy equivalence.
-    prepare:
-    - command: set-display-scope
-      value: context
-    action:
-      command: fit
-      value: context
-    pointer:
-      target: control:fit
+    demonstrate: false
+    actions:
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: fit
+        value: context
+      pointer:
+        target: control:fit
   - step_id: contract-rest-energy
+    demonstrate: false
     title: Bring the argument together
     commentary: Fit++ temporarily contracts the same Context around the selection. Its layout can be refined later
       without changing the knowledge route.
@@ -270,15 +360,21 @@ tutorials:
     title: Reconstruct the argument
     commentary: Read the rest-frame calculation, then reconstruct the chain forward in your own words. Explore from
       here if any link still feels abrupt.
-    prepare:
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.mass_energy_equivalence.rest_frame
-    pointer:
-      target: details:block:sr.mass_energy_equivalence.rest_frame
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.mass_energy_equivalence.rest_frame
+      pointer:
+        target: details:block:sr.mass_energy_equivalence.rest_frame
   - step_id: interpret-with-care
+    demonstrate: false
     title: Apply it to the whole box
     commentary: Read The mass belongs to the whole system. Explain why cancelling internal momenta does not cancel
       internal energy.
@@ -288,6 +384,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.systems
   - step_id: explain-the-heated-box
+    demonstrate: false
     title: Return to the opening puzzle
     commentary: Re-read the box setup. Reverse the light-emission argument to explain why retained radiation increases its inertia.
       Contrast this internal change with simply boosting the entire box; the numerical application comes next.
@@ -297,6 +394,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.heated_box
   - step_id: calculate-the-mass-change
+    demonstrate: false
     title: Put a number on it
     commentary: Work through the stored-energy calculation. Check the units and scale; then say what happens if
       the energy leaves the box again.
@@ -306,6 +404,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.heating_calculation
   - step_id: avoid-the-substance-picture
+    demonstrate: false
     title: Mass is not a separate substance
     commentary: Finish with the misconception block. Compare its careful statement with the familiar phrase “mass
       is converted into energy”.
@@ -315,6 +414,7 @@ tutorials:
     pointer:
       target: details:block:sr.mass_energy_equivalence.not_substance_conversion
   - step_id: check-your-understanding
+    demonstrate: false
     title: Can you explain it yourself?
     commentary: Use Explore from here to try the energy-loss calculation and the heated-box question in Study Questions.
       Explain why a boost and heating affect mass differently. Answers stay hidden until you attempt a question
@@ -332,9 +432,10 @@ tutorials:
   - sr
   steps:
   - step_id: introduction
+    demonstrate: false
     title: Why do moving clocks record less time?
     commentary: We will follow a light pulse, compare two ticks of the same clock and connect the result to Lorentz
-      transformations and proper time. Press Next to watch the guided actions and read the highlighted content.
+      transformations and proper time. Press Next to move to each reading scene, then read at your own pace.
       Explore from here lets you take control; Continue with tutorial returns to the tutorial.
     action:
       command: wait
@@ -343,16 +444,32 @@ tutorials:
     title: Map the argument
     commentary: First look over the derivation route in Graph view. Fit++ brings its concepts together.
       The following cards give the reading the full screen; Explore from here lets you inspect a branch.
-    prepare:
-    - command: select
-      target: module:sr.spacetime_foundations
-    - command: set-all-module-representations
-      value: folded
-    - command: set-display-scope
-      value: context
-    - command: set-view
-      value: both
+    demonstrate: false
     actions:
+    - action:
+        command: select
+        target: module:sr.spacetime_foundations
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-all-module-representations
+        value: folded
+      pointer:
+        target: narration
+      pause_ms: 0
+    - action:
+        command: set-display-scope
+        value: context
+      pointer:
+        target: control:display-scope
+      pause_ms: 0
+    - action:
+        command: set-view
+        value: both
+      pointer:
+        target: control:view
+      pause_ms: 0
     - action:
         command: select
         target: concept:sr.time_dilation
@@ -397,15 +514,21 @@ tutorials:
   - step_id: read-opening-question
     title: One clock, two ticks
     commentary: Read the opening question. Keep the same two tick events in mind throughout the explanation.
-    prepare:
-    - command: set-view
-      value: details
-    action:
-      command: open-details-block
-      target: block:sr.time_dilation.overview
-    pointer:
-      target: details:block:sr.time_dilation.overview
+    demonstrate: false
+    actions:
+    - action:
+        command: set-view
+        value: details
+      pointer:
+        target: control:view
+      pause_ms: 0
+    - action:
+        command: open-details-block
+        target: block:sr.time_dilation.overview
+      pointer:
+        target: details:block:sr.time_dilation.overview
   - step_id: define-the-comparison
+    demonstrate: false
     title: How does the lab assign time?
     commentary: Read One travelling clock and a lab clock network. Identify A and B, the clock that visits both,
       and the separate lab clocks that record them. Which frame synchronises those lab clocks?
@@ -415,6 +538,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.measurement
   - step_id: build-a-light-clock
+    demonstrate: false
     title: Count returning light pulses
     commentary: Read the light-clock setup. Locate A and B on the lower mirror, and check why its own round-trip
       time is proper time.
@@ -424,6 +548,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.light_clock_setup
   - step_id: compare-the-paths
+    demonstrate: false
     title: The same pulse in two frames
     commentary: Trace the graphic's vertical path in the clock frame and diagonal path in the lab. These are spatial
       paths inside the apparatus, not rays travelling to a distant observer. Find L and s.
@@ -432,6 +557,7 @@ tutorials:
     pointer:
       target: details:graphic
   - step_id: explain-the-diagonal
+    demonstrate: false
     title: Longer path, unchanged light speed
     commentary: Read A diagonal path at the same speed. Explain why the mirror moves during the flight, and why
       the lab cannot compensate by assigning a larger speed to the light.
@@ -441,6 +567,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.light_clock_triangle
   - step_id: derive-the-factor
+    demonstrate: false
     title: Let the triangle do the algebra
     commentary: Work through the right-triangle derivation. Identify the three sides before substituting for L,
       then check the result at zero speed.
@@ -450,6 +577,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.light_clock_derivation
   - step_id: interpret-the-clock-law
+    demonstrate: false
     title: Which interval is longer?
     commentary: Compare the definition with the derivation. Say which clock or frame each time symbol belongs to,
       and which interval is longer.
@@ -459,6 +587,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.definition
   - step_id: generalise-the-clock
+    demonstrate: false
     title: Does this only work for light clocks?
     commentary: Read why the comparison applies to ideal clocks generally. Distinguish a physical clock error from
       the effect of comparing measurements in different inertial frames.
@@ -468,6 +597,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.ideal_clocks
   - step_id: put-numbers-on-it
+    demonstrate: false
     title: Ten seconds versus eight
     commentary: Work through the numerical example. Check both directions of the calculation, and distinguish a
       local second from the comparison of elapsed readings in two frames.
@@ -477,6 +607,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.worked_comparison
   - step_id: connect-the-lorentz-boost
+    demonstrate: false
     title: Find the same rule in Lorentz transformations
     commentary: Read the time part of the standard boost and the sentence about its inverse. Our clock is stationary
       in the primed frame; which displacement between its two ticks is zero there?
@@ -492,6 +623,7 @@ tutorials:
       pointer:
         target: details:block:sr.lorentz_transformations.boost_formula
   - step_id: apply-the-boost
+    demonstrate: false
     title: Keep the clock's two events fixed
     commentary: Read Derivation from a boost. Follow the zero-displacement substitution and identify why primed
       coordinate time equals this clock's proper time.
@@ -507,6 +639,7 @@ tutorials:
       pointer:
         target: details:block:sr.time_dilation.lorentz_derivation
   - step_id: connect-proper-time
+    demonstrate: false
     title: Clock time belongs to a worldline
     commentary: Read Coordinate time versus clock time in Proper time. This generalises the distinction we used
       for two ticks of a coasting clock.
@@ -522,6 +655,7 @@ tutorials:
       pointer:
         target: details:block:sr.proper_time.coordinate_time
   - step_id: read-the-invariant-rate
+    demonstrate: false
     title: Recover the clock rate from the interval
     commentary: Follow the interval calculation. Identify where the clock's speed enters, and why the positive root
       gives a smaller elapsed proper time.
@@ -531,6 +665,7 @@ tutorials:
     pointer:
       target: details:block:sr.proper_time.rate
   - step_id: reunite-the-explanations
+    demonstrate: false
     title: Triangle, boost and interval agree
     commentary: Read The same result from proper time. Compare it with the light-clock triangle, and note the limit
       on applying a finite constant-speed formula to a changing journey.
@@ -546,6 +681,7 @@ tutorials:
       pointer:
         target: details:block:sr.time_dilation.interval_derivation
   - step_id: resolve-reciprocity
+    demonstrate: false
     title: Can both frames call the other slow?
     commentary: Read the reciprocal comparison. Identify the clocks and synchronisation convention in each experiment.
       Use the final equation to explain why the claims do not contradict one another.
@@ -555,6 +691,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.reciprocal
   - step_id: separate-signals-from-readings
+    demonstrate: false
     title: What a camera sees is another question
     commentary: Read the signal-delay warning. Distinguish event times from signal arrival times, then explain why
       a reunion comparison needs the proper time along each actual worldline.
@@ -564,6 +701,7 @@ tutorials:
     pointer:
       target: details:block:sr.time_dilation.not_signal_delay
   - step_id: check-the-comparison-yourself
+    demonstrate: false
     title: Test your clock reasoning
     commentary: Use Explore from here to try the moving-clock and light-clock calculations. Then explain the reciprocal-frame
       comparison in your own words. Continue with tutorial returns to this step and keeps your study work.

@@ -23,6 +23,32 @@ def test_physics_routes_start_with_quiet_introduction():
         assert not intro.pointer_target
 
 
+def test_built_in_cards_use_explicit_whole_card_visibility():
+    from srkg.kb import load_knowledge_base
+    routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
+    for route in routes:
+        for step in route.steps:
+            assert isinstance(step.demonstrate, bool), (route.tutorial_id, step.step_id)
+            assert not step.prepare, (route.tutorial_id, step.step_id)
+        if route.category == "physics":
+            assert all(step.demonstrate is False for step in route.steps)
+
+
+def test_built_in_reading_cards_target_the_selected_concept():
+    from srkg.kb import load_knowledge_base
+    routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
+    for route in routes:
+        selected = None
+        for step in route.steps:
+            commands = [item["action"] for item in step.actions] if step.actions else [step.action]
+            for command in commands:
+                if command["command"] == "select":
+                    selected = command["target"]
+                elif command["command"] == "open-details-block":
+                    owner = command["target"].removeprefix("block:").rsplit(".", 1)[0]
+                    assert selected == f"concept:{owner}", (route.tutorial_id, step.step_id)
+
+
 def _sequence_route(actions, extra=""):
     return f"""schema_version: 1
 tutorials:
