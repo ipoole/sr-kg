@@ -335,15 +335,23 @@ content blocks by stable semantic IDs. Generation rejects unknown IDs,
 unsupported commands, invalid enum values and duplicate tutorial or step IDs.
 Raw screen coordinates and CSS selectors are not part of the authored format.
 
-The initial command vocabulary is:
+The command vocabulary is defined in `srkg/tutorial_contract.py` and shared with
+validation and the editor:
 
-- `select` and `clear-selection`;
-- `set-display-scope`, `set-context` and `set-details-mode`;
+- `home`, `select`, `set-view`, `set-display-scope` and `set-context`;
 - `set-module-representation`, `set-all-module-representations`, `expand-context-modules` and `fit`;
+- `place-context-node` for temporary Fit++ node placements;
 - `open-details-relationship`, `set-relationship-full-tree` and `show-relationship-in-graph`;
-- `open-details-block`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
-- `search` and `close-search`;
+- `open-details-block`, `open-reading-tree`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
+- `show-graph-concept-hover`, `show-graph-edge-hover`, `search` and `close-search`;
 - a bounded settling `wait`.
+
+`place-context-node` requires typed `target` and `anchor` concept/module IDs and
+numeric `x`/`y` offsets in graph coordinates, each finite and in the range
+−10,000,000 to 10,000,000. The anchor must match the active Fit++ arrangement,
+and the target must belong to it. Modules must be folded. An anchor moved relative
+to itself uses its preceding position. These commands never alter saved layouts.
+The fields survive JSON/ZIP exchange and built-in installation.
 
 A generated viewer may launch a route directly with
 `?tutorial=<tutorial-id>`. Unknown IDs leave the viewer at its normal start.

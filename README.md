@@ -92,9 +92,11 @@ free investigation with only a small return button; **Continue with tutorial** r
 without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
-Write narration and use **Record card action** to replace a card's sequence, with
+Write narration and use **Record card actions** to replace a card's sequence, with
 Undo/Redo while recording. Existing actions start in Redo, so redo to the end to
-append, or record a new action to replace the remaining tail. **Pause +1s** adds
+append, or record a new action to replace the remaining tail. After Fit++, node
+drags are recorded too: each drop adds one temporary placement, replayable on
+other screen sizes and reversible with Undo/Redo. **Pause +1s** adds
 explicit waits; Undo removes them one at a time. **Action visibility** (Show/Hide, default Show) can be changed later to switch
 between pointer demonstrations and quick scene-setting;
 the title and narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**

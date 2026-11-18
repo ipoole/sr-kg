@@ -89,7 +89,8 @@ function kgCreateTutorialEditorModel(options) {
       var field = spec.fields[index], value = command[field.name];
       if (field.optional && value === undefined) { continue; }
       var valid;
-      if (field.type === 'integer') { valid = Number.isInteger(value) && value >= field.min && value <= field.max; }
+      if (field.type === 'number') { valid = typeof value === 'number' && Number.isFinite(value) && value >= field.min && value <= field.max; }
+      else if (field.type === 'integer') { valid = Number.isInteger(value) && value >= field.min && value <= field.max; }
       else if (field.type === 'boolean') { valid = typeof value === 'boolean'; }
       else if (field.type === 'text') { valid = typeof value === 'string' && (field.allow_empty || value.trim()) && value.length <= field.max_length; }
       else if (field.type === 'edge') {

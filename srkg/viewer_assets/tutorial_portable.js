@@ -60,8 +60,8 @@ function kgCreateTutorialPortable(options) {
     spec.fields.forEach(function(field) {
       var item = value[field.name];
       if (item === undefined || item === null) { return; }
-      if (field.type === 'integer') {
-        if (typeof item !== 'number' || !Number.isFinite(item)) { throw new Error('Invalid numeric action field.'); }
+      if (field.type === 'integer' || field.type === 'number') {
+        if (typeof item !== 'number' || !Number.isFinite(item) || (field.type === 'number' && (item < field.min || item > field.max))) { throw new Error('Invalid numeric action field.'); }
       } else if (field.type === 'boolean') {
         if (typeof item !== 'boolean') { throw new Error('Invalid boolean action field.'); }
       } else if (field.type === 'object') {

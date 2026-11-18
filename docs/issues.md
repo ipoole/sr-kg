@@ -9,7 +9,7 @@ Issue numbers are retained so existing references remain valid.
    Use this work to audit the KB's dependencies, block structure and explanations.
 3. **In progress — user tutorial authoring**, branch `user-creation-of-tutorials`.
    Personal drafts, built-in copies, card/action editing, rehearsal and recording
-   with Undo/Redo and phone support, text export/import, backups and companion-file
+   with Undo/Redo and phone support, recorded Fit++ node placements, text export/import, backups and companion-file
    Google sync are implemented; optional human narration is next.
    Learners' Explore actions are not recorded. See
    [the staged design and review gates](design/tutorial_authoring.md).

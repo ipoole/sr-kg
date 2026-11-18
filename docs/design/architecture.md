@@ -365,7 +365,9 @@ command makes the route start explicit and is committed only on Finish. Captured
 commands are saved on Finish; Undo/Redo snapshots are never persisted. Recording replays
 earlier cards and current setup, placing the current card's old actions in Redo.
 Seeded Redo executes semantic commands before creating checkpoints; new actions
-replace the remaining tail. Explicit pauses are commands, while the card's optional
+replace the remaining tail. Completed Fit++ drags pass through the same recorder
+command boundary as anchor-relative placements; checkpoints retain precise positions
+and never write Personal layouts. Explicit pauses are commands, while the card's optional
 `demonstrate` flag controls pointer/delay presentation. Legacy omitted flags retain
 the existing demonstration behaviour. Cancel
 discards the replacement; manual command editing is under Advanced. Legacy setup is retained without an editing panel. The recorder is idle outside explicit

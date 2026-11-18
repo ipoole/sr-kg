@@ -373,7 +373,7 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
                 command[field['name']] = next(iter(field['choices']))
             elif kind == 'boolean':
                 command[field['name']] = False
-            elif kind == 'integer':
+            elif kind in {'integer', 'number'}:
                 command[field['name']] = field['min']
             else:
                 command[field['name']] = target[kind]
@@ -389,7 +389,7 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
         descriptor = contract['commands'][step['action']['command']]
         for field in descriptor['fields']:
             original = step['action'][field['name']]
-            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1, 'text':'x' * 201}.get(field['type'], '')
+            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1, 'number':10000001, 'text':'x' * 201}.get(field['type'], '')
             path.write_text(yaml.safe_dump(document))
             with pytest.raises(TutorialLoadError):
                 load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
@@ -408,3 +408,22 @@ def test_card_demonstration_flag_rejects_non_booleans(tmp_path,value):
     path=_write_tutorials(tmp_path/'tutorials.yaml',_sequence_route('[{action: {command: wait, milliseconds: 0}}]',extra='demonstrate: '+value))
     with pytest.raises(TutorialLoadError):
         load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)
+
+
+@pytest.mark.parametrize('coordinate', [float('nan'), float('inf'), -float('inf'), True, '12', 10000001])
+def test_reject_invalid_node_placement_coordinates(tmp_path, coordinate):
+    import yaml
+    action = {'command': 'place-context-node', 'target': 'concept:sr.alpha',
+              'anchor': 'module:sr.foundations', 'x': coordinate, 'y': -12.5}
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', _sequence_route(yaml.safe_dump([{'action': action}], default_flow_style=True)))
+    with pytest.raises(TutorialLoadError):
+        load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
+
+
+def test_node_placement_preserves_signed_fractional_graph_offsets(tmp_path):
+    import yaml
+    action = {'command': 'place-context-node', 'target': 'concept:sr.alpha',
+              'anchor': 'module:sr.foundations', 'x': 83.25, 'y': -47.5}
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', _sequence_route(yaml.safe_dump([{'action': action}], default_flow_style=True)))
+    route = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
+    assert route.steps[0].actions[0]['action'] == action

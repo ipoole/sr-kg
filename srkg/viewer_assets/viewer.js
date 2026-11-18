@@ -538,11 +538,37 @@
           }, duration || 2800);
         }
 
+        function graphNodeTutorialTarget(nodeId) {
+          var moduleId = moduleIdFromGraphNodeId(nodeId);
+          return moduleId ? "module:" + moduleId : "concept:" + nodeId;
+        }
+        async function recordContextNodeDrags(draggedIds) {
+          var movement = contextLayout.movementSnapshot();
+          if (!movement) { return; }
+          var changes = draggedIds.map(String).filter(contextLayout.canMove).map(function(id) {
+            return {id:id, before:movement.positions[id], after:graphPositionForNode(id)};
+          });
+          // Native dragging has already moved the drawing. Put it back before the
+          // command boundary captures Undo, then apply each final placement normally.
+          // A single-node drop is reset and reapplied in the same event, before drawing.
+          changes.forEach(function(change) { network.moveNode(change.id, change.before.x, change.before.y); });
+          for (var change of changes) {
+            if (Math.hypot(change.after.x - change.before.x, change.after.y - change.before.y) < 0.001) { continue; }
+            var anchor = graphPositionForNode(movement.anchorId);
+            await executeViewerCommand({command:"place-context-node",
+              target:graphNodeTutorialTarget(change.id), anchor:graphNodeTutorialTarget(movement.anchorId),
+              x:change.after.x - anchor.x, y:change.after.y - anchor.y}, {origin:"user"});
+          }
+        }
         function updateLayoutFromDrag(params) {
           if (!layoutDraggingEnabled()) { return; }
           var draggedIds = params && Array.isArray(params.nodes) ? params.nodes : [];
           if (draggedIds.length === 0) { return; }
           if (contextLayout.isActive()) {
+            if (tutorialRecorder && tutorialRecorder.active()) {
+              recordContextNodeDrags(draggedIds).catch(function(error) { tutorialRecorder.warn(error.message); });
+              return;
+            }
             draggedIds.forEach(function(nodeId) {
               contextLayout.recordDrag(nodeId, graphPositionForNode(nodeId));
             });
@@ -5025,6 +5051,17 @@
         }
 
         var tutorialRecorder;
+        function placementNodeId(target) {
+          if (typeof target !== "string") { throw new Error("Node placement needs a concept or module target."); }
+          if (target.indexOf("concept:") === 0) {
+            var conceptId = commandTargetId(target, "concept:", "concept");
+            if (getConcept(conceptId)) { return conceptId; }
+          } else if (target.indexOf("module:") === 0) {
+            var moduleId = commandTargetId(target, "module:", "module");
+            if (getModule(moduleId) && selectedModuleIsFolded(moduleId)) { return moduleGraphNodeId(moduleId); }
+          }
+          throw new Error("The recorded context node is unavailable: " + target);
+        }
         function executeViewerCommand(command, options) {
           options = options || {};
           if (tutorialRecorder && tutorialRecorder.active() && (!options.origin || options.origin === 'user')) {
@@ -5097,6 +5134,8 @@
               fitViewerTarget(commandEnumValue(
                 command, "value", ["reveal", "selection", "context", "displayed"]
               ));
+            } else if (name === "place-context-node") {
+              contextLayout.placeNode(placementNodeId(command.target), placementNodeId(command.anchor), {x:command.x, y:command.y});
             } else if (name === "open-reading-tree") {
               var recipe = commandEnumValue(command, "recipe", ["derivation", "teaching"]);
               var readingNode = null;

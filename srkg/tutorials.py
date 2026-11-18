@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -268,6 +269,11 @@ def _validate_command(command: dict[str, object], *, context: str, concept_ids: 
         elif kind == 'boolean':
             if not isinstance(command.get(key), bool):
                 raise TutorialLoadError(f'{context}.{key} must be a boolean')
+        elif kind == 'number':
+            value = command.get(key)
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not spec['min'] <= value <= spec['max'] or not math.isfinite(value)):
+                raise TutorialLoadError(f"{context}.{key} must be a finite number between {spec['min']} and {spec['max']}")
         elif kind == 'integer':
             value = _integer(command.get(key), f'{context}.{key}')
             if not spec['min'] <= value <= spec['max']:

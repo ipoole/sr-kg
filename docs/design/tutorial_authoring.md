@@ -96,9 +96,9 @@ per-device capability, particularly on the old iPad.
 
 ## 3. Recording viewer actions
 
-Workflow: Add/select This Card → write narration → Record card action → operate
+Workflow: Add/select This Card → write narration → Record card actions → operate
 PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps these two
-main actions visible while the editor body scrolls. Record card action is prominent
+main actions visible while the editor body scrolls. Record card actions is prominent
 with a red record dot; Continue tutorial has a play triangle. Advanced is smaller
 and last, with metadata, ordering, manual actions and Export ZIP/JSON. There is no
 Done or Play from start button: select the first card to start there, and use Exit
@@ -167,8 +167,17 @@ Manual graph pan/zoom remain available for inspection, but are not recorded or
 reproduced in playback. Authors should prefer Fit/Fit++ for framing, because those
 commands adapt to the playback device. Details scrolling and text zoom also remain
 available without recording their raw gestures.
-Prefer semantic block targets and responsive Fit commands. Exact manual framing
-and temporary node arrangements are a later extension, not part of this recorder.
+Prefer semantic block targets and responsive Fit commands. Exact manual camera framing remains unrecorded.
+
+After Fit++, each completed context-node drag records one `place-context-node`
+action; pointer motion and unchanged drops do not add actions. Concepts and folded
+modules use stable IDs. The destination is a finite graph-coordinate offset from
+the recorded Fit++ anchor, not a screen pixel position. Playback places the node
+directly; no drag-path animation is stored. Undo/Redo, Back, starting from a later
+card and Explore/Resume use the same temporary checkpoints and commands. Moving
+the anchor itself records an offset from its preceding position. No movement
+writes a Personal layout; navigation and Exit retain normal restoration rules.
+A subsequent Fit context can frame the tidied arrangement for the playback device.
 
 While recording, Undo last action removes the last captured action and restores
 its preceding viewer presentation, including selection, context, folding and
@@ -360,7 +369,7 @@ Exit restores the original view and leaves the editor closed.
 Earlier action edits can break later steps: report rehearsal failures, retain the
 draft and offer Exit rather than silently repairing the sequence.
 
-Record card action switches to the normal viewer with a compact strip on both desktop
+Record card actions switches to the normal viewer with a compact strip on both desktop
 and phone. Existing actions begin in Redo; session Undo/Redo walks the applied
 sequence, Pause +1s adds waits, Finish saves and Cancel keeps the old sequence. Silent setup is retained. The first
 card receives a silent `home` preparation command when a recording is accepted,

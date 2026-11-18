@@ -67,6 +67,11 @@ COMMANDS = {
     'fit': command('Fit the graph', choice('value', 'Frame', [
         ('context', 'Context (repeat for Fit++)'), ('displayed', 'All displayed'),
         ('selection', 'Selection'), ('reveal', 'Reveal selection')]), pointer='control:fit'),
+    'place-context-node': command('Place a temporary context node',
+        field('target', 'Node', 'object'), field('anchor', 'Fit++ anchor', 'object'),
+        field('x', 'Horizontal offset', 'number', min=-10000000, max=10000000, default=0),
+        field('y', 'Vertical offset', 'number', min=-10000000, max=10000000, default=0),
+        pointer='graph:{target}'),
     'open-details-block': command('Open a content block', field('target', 'Content block', 'block'), field('open', 'Open (optional)', 'boolean', optional=True), pointer='details:{target}'),
     'open-reading-tree': command('Open a reading tree', choice('recipe', 'Recipe', READING_TREE_RECIPES, 'teaching'),
         field('target', 'Support concept (optional)', 'concept', optional=True),

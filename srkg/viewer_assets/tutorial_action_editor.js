@@ -54,11 +54,11 @@ function kgCreateTutorialActionEditor(options) {
     if (!descriptor) { return; }
     descriptor.fields.forEach(function(spec) {
       var value = command[spec.name], input;
-      if (spec.type === 'integer' || spec.type === 'text') {
-        input = node('input'); input.type = spec.type === 'integer' ? 'number' : 'text';
-        if (spec.type === 'integer') {
+      if (spec.type === 'integer' || spec.type === 'number' || spec.type === 'text') {
+        input = node('input'); input.type = spec.type === 'text' ? 'text' : 'number';
+        if (spec.type === 'integer' || spec.type === 'number') {
           input.min = spec.min / (spec.scale || 1); input.max = spec.max / (spec.scale || 1);
-          input.step = spec.scale ? '0.1' : '1';
+          input.step = spec.type === 'number' ? 'any' : (spec.scale ? '0.1' : '1');
           input.value = value === undefined ? '' : value / (spec.scale || 1);
         } else { input.value = value || ''; input.maxLength = spec.max_length; }
       } else {
@@ -66,10 +66,10 @@ function kgCreateTutorialActionEditor(options) {
         input = select(values, value, spec.optional ? 'Leave unchanged' : (value === '' || value === undefined ? 'Choose…' : undefined));
       }
       input.dataset.field = spec.name;
-      input.addEventListener(spec.type === 'integer' || spec.type === 'text' ? 'input' : 'change', function() {
+      input.addEventListener(spec.type === 'integer' || spec.type === 'number' || spec.type === 'text' ? 'input' : 'change', function() {
         var previousPointer = model.pointer(command);
         if (spec.optional && input.value === '') { delete command[spec.name]; }
-        else if (spec.type === 'integer') { command[spec.name] = input.value === '' ? null : Number(input.value) * (spec.scale || 1); }
+        else if (spec.type === 'integer' || spec.type === 'number') { command[spec.name] = input.value === '' ? null : Number(input.value) * (spec.scale || 1); }
         else if (spec.type === 'boolean') { command[spec.name] = input.value === 'true'; }
         else { command[spec.name] = input.value; }
         if (items[selected].pointer && items[selected].pointer.target === previousPointer && model.pointer(command) !== previousPointer) {
