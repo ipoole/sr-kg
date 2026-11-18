@@ -195,7 +195,7 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_sequence.js` | Shared action sequencing and placeholder cards used by playback, recording, the editor and storage. |
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions, atomic collection snapshots and cloud baselines. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
-| `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
+| `tutorial_action_editor.js` | Advanced viewer-action editing with manual pointer choice and timing; recording assigns pointers automatically. |
 | `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory replacement recording, seeded Redo, explicit waits and Undo/Redo checkpoints; Finish commits through the library, Cancel discards; no personal-data rollback. |
 | `tutorial_capture_targets.js` | Maps older DOM-only controls to semantic commands before native handlers; reports unsupported operations. |
 | `tutorial_library.js` | Personal library, card editing/reordering, autosave, rehearsal, import review/export and preserving the open editor across sync. |
@@ -364,7 +364,7 @@ Seeded Redo executes semantic commands before creating checkpoints; new actions
 replace the remaining tail. Explicit pauses are commands, while the card's optional
 `demonstrate` flag controls pointer/delay presentation. Legacy omitted flags retain
 the existing demonstration behaviour. Cancel
-discards the replacement; manual command/setup editing is under Advanced. The recorder is idle outside explicit
+discards the replacement; manual command editing is under Advanced. Legacy setup is retained without an editing panel. The recorder is idle outside explicit
 capture and rejects concurrent playback. Text-only portable packages and companion sync share the validation/merge modules.
 `tutorial_packages.py` validates exported routes against the target KB and installs
 reviewable YAML through `tools/install_tutorial.py`. Voice remains a later stage.

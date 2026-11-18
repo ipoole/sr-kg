@@ -203,11 +203,15 @@ def test_recording_preparation_is_visible_and_blocks_other_actions(tutorial_grap
     page = _library(tutorial_graph)
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
-    page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
-    setup = page.locator('#kg_tutorial_editor_setup')
-    setup.get_by_role('button',name='Add action',exact=True).click()
-    setup.get_by_label('Action type',exact=True).select_option('wait')
-    setup.locator('[data-field="milliseconds"]').fill('4')
+    tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+    page.locator('#kg_tutorial_editor_close').click()
+    page.evaluate('''async id=>{
+      const r=await kgPersonalData.tutorials.get(id);r.route.steps[0].prepare=[{command:'wait',milliseconds:4000}];
+      await kgPersonalData.tutorials.save(r);
+    }''',tutorial_id)
+    page.reload(wait_until='domcontentloaded');_library(tutorial_graph)
+    page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
+    _edit_selected_tutorial(page)
     # Gate just this preparation timer; do not depend on a short wall-clock window.
     page.evaluate('''()=>{
       const schedule=window.setTimeout;

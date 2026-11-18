@@ -111,7 +111,7 @@ function kgCreateTutorialEditorModel(options) {
   }
   function stepProblem(step) {
     if (!step || !String(step.title || '').trim() || !String(step.commentary || '').trim()) { return 'Add a title and written narration.'; }
-    if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { return 'Check Demonstrate actions.'; }
+    if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { return 'Check Action visibility.'; }
     var list = actions(step);
     if (list.length > contract.max_actions) { return 'Too many actions.'; }
     var setup = step.prepare || [];

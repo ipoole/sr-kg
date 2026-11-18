@@ -11,6 +11,11 @@ def test_editor_footer_stays_visible_and_advanced_is_last(tutorial_graph,width,h
     page.set_viewport_size({'width':width,'height':height})
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
+    expect(page.get_by_label('Action visibility',exact=True)).to_have_value('show')
+    assert page.locator('#kg_tutorial_editor_commentary').get_attribute('rows')=='4'
+    assert page.locator('#kg_tutorial_editor_setup').count()==0
+    heading=page.locator('#kg_tutorial_editor_heading').evaluate('e=>({align:getComputedStyle(e).textAlign,size:parseFloat(getComputedStyle(e).fontSize)})')
+    assert heading['align']=='center' and heading['size']>=24
     footer=page.locator('#kg_tutorial_editor_footer')
     initial=footer.bounding_box()
     assert initial['y']>=0 and initial['y']+initial['height']<=height
@@ -25,6 +30,7 @@ def test_editor_footer_stays_visible_and_advanced_is_last(tutorial_graph,width,h
     assert page.locator('#kg_tutorial_editor_author').is_visible()
     assert page.locator('#kg_tutorial_editor_domains').is_visible()
     assert page.locator('[data-card-action="up"]').is_visible()
+    assert page.get_by_role('button',name='Use suggested pointer',exact=True).count()==0
     assert advanced.evaluate('e=>e===document.getElementById("kg_tutorial_editor_fields").lastElementChild')
     pinned=footer.bounding_box()
     body=page.locator('#kg_tutorial_editor_body')

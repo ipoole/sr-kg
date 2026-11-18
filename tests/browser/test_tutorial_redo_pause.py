@@ -61,9 +61,9 @@ def test_pause_double_click_adds_two_seconds_and_undo_removes_only_one(tutorial_
 def test_card_mode_preserves_state_and_explicit_pause_without_moving_pointer(tutorial_graph,demonstrate):
     page=_library(tutorial_graph)
     page.locator('#kg_tutorial_new').click();_fill_draft(page)
-    toggle=page.get_by_role('checkbox',name='Demonstrate actions',exact=True)
-    expect(toggle).not_to_be_checked()
-    if demonstrate:toggle.check()
+    toggle=page.get_by_label('Action visibility',exact=True)
+    expect(toggle).to_have_value('show')
+    toggle.select_option('show' if demonstrate else 'hide')
     tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
     page.locator('#kg_tutorial_editor_close').click()
     page.evaluate('''async id=>{
@@ -96,8 +96,8 @@ def test_card_mode_preserves_state_and_explicit_pause_without_moving_pointer(tut
     assert page.evaluate('kgTutorialPointerSnapshot().visible')==demonstrate
     page.locator('#kg_tutorial_edit').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
-    assert toggle.is_checked()==demonstrate
-    toggle.set_checked(not demonstrate)
+    assert toggle.input_value()==('show' if demonstrate else 'hide')
+    toggle.select_option('hide' if demonstrate else 'show')
     saved=_record(page,tutorial_id)
     assert saved['route']['steps'][0]['demonstrate']==(not demonstrate)
     exported=page.evaluate('''id=>kgPersonalData.tutorials.get(id).then(r=>kgTutorialPortable.importSingle(kgTutorialPortable.exportSingle(r,true)))''',tutorial_id)

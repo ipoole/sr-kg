@@ -329,8 +329,8 @@
     <button type="button" data-card-action="delete">Delete card</button>
   </div>
   <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
-  <label class="kg-tutorial-toggle"><input id="kg_tutorial_editor_demonstrate" type="checkbox">Demonstrate actions</label>
-  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="6" placeholder="Add written narration here"></textarea></label>
+  <label class="kg-tutorial-visibility">Action visibility<select id="kg_tutorial_editor_demonstrate" aria-label="Action visibility"><option value="show">Show</option><option value="hide">Hide</option></select></label>
+  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="4" placeholder="Add written narration here"></textarea></label>
   <p class="kg-muted-label">Redo keeps existing actions; a new action replaces the remaining tail. Finish saves; Cancel keeps the old card.</p>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
@@ -342,10 +342,6 @@
   <p class="kg-muted-label">Moving a card may require changes to later cards.</p>
   <section id="kg_tutorial_editor_action_section"><h3>Viewer actions</h3>
     <div id="kg_tutorial_editor_actions"></div>
-  </section>
-  <section id="kg_tutorial_editor_setup_section"><h3>Setup (silent)</h3>
-    <p>These actions run before the pointer demonstration.</p>
-    <div id="kg_tutorial_editor_setup"></div>
   </section>
   </details>
   </fieldset>

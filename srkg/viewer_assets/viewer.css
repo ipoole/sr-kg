@@ -4049,6 +4049,7 @@ details[open] > summary > .kg-content-preview { display: none; }
 }
 .kg-tutorial-editor::backdrop { background: rgba(20,35,55,0.35); }
 .kg-tutorial-editor h2 { font-size: 1.2em; margin: 0 0 0.5em; }
+#kg_tutorial_editor_heading { font-size: 1.5em; text-align: center; }
 .kg-tutorial-editor label { display: block; font-weight: 600; margin: 0.6em 0; }
 .kg-tutorial-editor input, .kg-tutorial-editor textarea, .kg-tutorial-editor select {
     display: block; box-sizing: border-box; width: 100%; min-width: 0;
@@ -4056,8 +4057,8 @@ details[open] > summary > .kg-content-preview { display: none; }
     border: 1px solid #9cafc1; border-radius: 4px;
 }
 .kg-tutorial-editor textarea { resize: vertical; }
-.kg-tutorial-editor label.kg-tutorial-toggle { display: flex; align-items: center; gap: 8px; font-weight: 400; }
-.kg-tutorial-editor .kg-tutorial-toggle input { width: auto; margin: 0; }
+.kg-tutorial-editor label.kg-tutorial-visibility { display: flex; align-items: center; gap: 10px; }
+.kg-tutorial-editor .kg-tutorial-visibility select { width: auto; margin: 0; }
 .kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 #kg_tutorial_editor[open] { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100dvh - 24px); }
 #kg_tutorial_editor_body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }

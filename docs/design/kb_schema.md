@@ -322,9 +322,10 @@ unanimated `prepare` commands, and either one `action` with an optional
 `pointer` and `pause_ms` (default 500, range 0–5000). Sequences contain 1–20
 entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
 One card stays visible while its actions run; Next is enabled on completion.
-An optional boolean `demonstrate` controls pointer demonstrations for the card's
-actions. Omitted means `true` for compatibility; newly created personal cards use
-`false`. False executes actions without the pointer or automatic `pause_ms` delays;
+The Show/Hide Action visibility menu stores an optional boolean `demonstrate`,
+which controls pointer demonstrations for the card's
+actions. Omitted means `true` for compatibility; newly created personal cards explicitly use
+`true`. False executes actions without the pointer or automatic `pause_ms` delays;
 explicit `wait` commands still run. Titles/narration remain visible in both modes.
 Positive waits are pauses: they retain the preceding pointer position, including
 at the end of a card. The field survives JSON/ZIP exchange and built-in installation.

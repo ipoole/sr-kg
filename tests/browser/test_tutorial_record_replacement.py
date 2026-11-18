@@ -67,7 +67,7 @@ def test_tutorial_editor_groups_primary_controls_in_two_rows(tutorial_graph,widt
     advanced=page.locator('#kg_tutorial_editor_advanced')
     assert not advanced.evaluate('e=>e.open')
     assert not page.locator('#kg_tutorial_editor_actions').is_visible()
-    assert not page.locator('#kg_tutorial_editor_setup').is_visible()
+    assert page.locator('#kg_tutorial_editor_setup').count()==0
     rows=page.locator('#kg_tutorial_editor_footer > .kg-tutorial-editor-actions')
     assert rows.count()==2
     assert [rows.nth(i).locator('button').count() for i in range(2)]==[3,3]
@@ -81,7 +81,7 @@ def test_tutorial_editor_groups_primary_controls_in_two_rows(tutorial_graph,widt
     assert page.locator('#kg_tutorial_editor').evaluate('e=>e.scrollWidth<=e.clientWidth')
     advanced.locator('summary').click()
     assert page.locator('#kg_tutorial_editor_actions').is_visible()
-    assert page.locator('#kg_tutorial_editor_setup').is_visible()
+    assert page.locator('#kg_tutorial_editor_setup').count()==0
 
 
 @pytest.mark.browser

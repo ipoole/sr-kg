@@ -315,12 +315,20 @@ def test_card_operations_keep_identity_and_allow_an_empty_draft(tutorial_graph):
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width', [390, 1280])
-def test_edit_action_sequence_setup_pointers_and_pause_survives_reload(tutorial_graph, width):
+def test_edit_action_sequence_preserves_legacy_setup_pointers_and_pause(tutorial_graph, width):
     page = _library(tutorial_graph)
     page.set_viewport_size({'width':width, 'height':900})
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+    page.locator('#kg_tutorial_editor_close').click()
+    page.evaluate('''async id=>{
+      const r=await kgPersonalData.tutorials.get(id);r.route.steps[0].prepare=[{command:'set-view',value:'graph'}];
+      await kgPersonalData.tutorials.save(r);
+    }''',tutorial_id)
+    page.reload(wait_until='domcontentloaded');_library(tutorial_graph)
+    page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
+    _edit_selected_tutorial(page)
     page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
     actions = page.locator('#kg_tutorial_editor_actions')
     actions.get_by_role('button', name='Add action', exact=True).click()
@@ -334,10 +342,6 @@ def test_edit_action_sequence_setup_pointers_and_pause_survives_reload(tutorial_
     actions.get_by_label('Pointer target', exact=True).select_option('control:depth')
     actions.get_by_role('button', name='Move action up', exact=True).click()
     page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
-    setup = page.locator('#kg_tutorial_editor_setup')
-    setup.get_by_role('button', name='Add action', exact=True).click()
-    setup.get_by_label('Action type', exact=True).select_option('set-view')
-    setup.locator('[data-field="value"]').select_option('graph')
     step = _record(page, tutorial_id)['route']['steps'][0]
     assert step['prepare'] == [{'command':'set-view', 'value':'graph'}]
     assert 'action' not in step and 'pointer' not in step

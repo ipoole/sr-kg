@@ -48,8 +48,8 @@ does not change the viewer. Personal tutorials need no account or setup.
 The new draft has title “New tutorial”, an empty summary and one card titled
 “New card”, with empty written narration. Placeholder prompts are editor UI,
 not narration that could accidentally reach learners. Its action is the existing
-zero-duration wait and its pointer target is narration; `demonstrate: false`
-starts new cards in scene-setting mode. These are hidden as
+zero-duration wait and its pointer target is narration; `demonstrate: true`
+starts new cards with their actions shown. These are hidden as
 “No viewer action”: a commentary-only card needs no invented user interaction.
 
 ## 2. Editor workflow
@@ -64,9 +64,9 @@ Each card exposes:
 | Field | Behaviour |
 | --- | --- |
 | Title | Short label; required for playback. |
-| Demonstrate actions | Per-card checkbox, editable after recording. Off sets the scene without pointer demonstrations or automatic inter-action delays; On demonstrates the actions. New cards default Off. Older cards without the field retain On behaviour. |
+| Action visibility | Per-card Show/Hide menu, editable after recording. Show (default) demonstrates actions; Hide sets the scene without pointer demonstrations or automatic inter-action delays. Both show narration and honour explicit pauses. |
 | Written narration | Primary commentary; required for playback. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
-| Preparation | Optional supported actions to establish the card's starting view, under Advanced → Setup (silent). |
+| Legacy preparation | Optional saved setup commands remain supported by playback and export/import, but have no editing panel. Use JSON for deliberate changes. |
 | Actions | Ordered friendly entries such as “Select Lorentz transformations”, with editable parameters, optional pointer and pause. |
 | Voice | Optional recording/file, duration, Listen, Replace and Remove; audio can be added after the text route is complete. |
 
@@ -104,8 +104,7 @@ button (red record dot), Play from here and Play from start (text-labelled play
 triangles). Its secondary row contains Export ZIP, Export JSON and Done.
 
 Advanced is the last section after narration, closed by default. It contains
-Required domains, Author credit, Move up/down, manual Viewer actions and Setup
-(silent). These remain available without cluttering the usual writing/recording
+Required domains, Author credit, Move up/down, manual Viewer actions. These remain available without cluttering the usual writing/recording
 workflow. The Card dropdown supplies navigation through the route.
 
 Record begins before this card's actions, after replaying earlier cards and its
@@ -123,11 +122,18 @@ not wait out a pause; playback does. Pauses keep the pointer and view stationary
 including trailing pauses. New recorded actions add no implicit pause; existing
 per-action pause metadata remains supported in Advanced and survives Redo.
 
-Demonstrate actions can be changed during later review, independently of recording.
+Queued timing refinement: make a pause a minimum interval measured from applying
+the preceding action, counting processing/rendering time and waiting only for the
+remainder. Exclude pointer travel before the action, accumulate consecutive pauses
+against one clock, and always await completion of the preceding operation. The
+current explicit-wait implementation still adds the full duration; the editor UI
+refinement does not change that timing yet.
+
+Action visibility can be changed during later review, independently of recording.
 The title and narration remain visible in either mode, and explicit pauses work
-in both. New cards default to scene-setting; omitted flags on older cards mean
-demonstration, preserving current tutorials. Existing `prepare` setup remains
-quiet and editable in Advanced for this iteration; no built-in routes are split
+in both. New cards default to Show; omitted flags on older cards also mean Show,
+preserving current tutorials. Existing `prepare` setup remains quiet and preserved
+without an editing panel; no built-in routes are split
 or silently rewritten.
 
 Jumping to a later card or reconstructing a previous view skips earlier main-action
@@ -170,6 +176,8 @@ snapshots embedded in exported tutorials. Undo covers supported actions applied
 within this recording session, not arbitrary personal-data changes. Test the finished sequence
 with Play from here; there is no separate replay control in the recording strip.
 Manual action edits and pause adjustments remain available under Advanced.
+Recording assigns pointers automatically. Manual pointer overrides remain, but
+there is no separate Use suggested pointer button.
 Report failed reconstruction rather than leaving an unexplained partial state.
 
 Retain the existing baseline/replay model and explicit preparation commands.
@@ -338,8 +346,8 @@ this work does not implicitly include the separate installable/offline-app issue
 
 The editor supports independent cards with stable IDs; add, duplicate, delete,
 Move up/down under Advanced; Card selection, Add, Duplicate and Delete remain
-readily available. Visible actions and optional silent setup use
-the same command form, driven by the build validator's shared command contract.
+readily available. Manual viewer actions use a command form driven by the build validator's shared
+command contract. Legacy silent setup remains supported in the data, without an editor.
 Each visible action can choose a semantic pointer and a 0–5 second pause before
 the next action. Empty or invalid drafts still save; validation identifies the
 card/action that prevents playback.

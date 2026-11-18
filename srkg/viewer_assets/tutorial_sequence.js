@@ -11,7 +11,7 @@ var kgTutorialSequence = (function() {
     }, []);
   }
   function newCard(id) {
-    return {step_id:id, title:'New card', commentary:'', demonstrate:false,
+    return {step_id:id, title:'New card', commentary:'', demonstrate:true,
       action:{command:'wait', milliseconds:0}, pointer:{target:'narration'}};
   }
   function isPause(item) { return item.action.command === 'wait' && item.action.milliseconds > 0; }

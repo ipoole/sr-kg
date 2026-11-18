@@ -70,12 +70,6 @@ function kgCreateTutorialLibrary(options) {
   }
   var actionEditor = kgCreateTutorialActionEditor({root:element("editor_actions"), model:model,
     changed:function(items) { model.setActions(editing.route.steps[cardIndex], items); markChanged(); }});
-  var setupEditor = kgCreateTutorialActionEditor({root:element("editor_setup"), model:model, silent:true,
-    changed:function(items) {
-      if (items.length) { editing.route.steps[cardIndex].prepare = items; }
-      else { delete editing.route.steps[cardIndex].prepare; }
-      markChanged();
-    }});
   function renderCardList() {
     element("editor_card").replaceChildren();
     editing.route.steps.forEach(function(step, index) {
@@ -87,15 +81,15 @@ function kgCreateTutorialLibrary(options) {
     var step = editing.route.steps[cardIndex];
     element("editor_card_title").value = step ? step.title : "";
     element("editor_commentary").value = step ? step.commentary : "";
-    element("editor_demonstrate").checked = Boolean(step && step.demonstrate !== false);
+    element("editor_demonstrate").value = step && step.demonstrate !== false ? "show" : "hide";
     ["editor_card_title", "editor_commentary", "editor_card", "editor_demonstrate"].forEach(function(key) { element(key).disabled = !step; });
-    element("editor_action_section").hidden = element("editor_setup_section").hidden = !step;
+    element("editor_action_section").hidden = !step;
     element("editor_fields").querySelectorAll('[data-card-action]').forEach(function(button) {
       var action = button.dataset.cardAction;
       button.disabled = action !== 'add' && (!step || (action === 'up' && cardIndex === 0) ||
         (action === 'down' && cardIndex === editing.route.steps.length - 1));
     });
-    actionEditor.show(step ? model.actions(step) : []); setupEditor.show(step ? step.prepare || [] : []);
+    actionEditor.show(step ? model.actions(step) : []);
     updatePlay();
   }
   function moveCard(from, to) {
@@ -151,7 +145,7 @@ function kgCreateTutorialLibrary(options) {
     if (step) {
       step.title = element("editor_card_title").value;
       step.commentary = element("editor_commentary").value;
-      step.demonstrate = element("editor_demonstrate").checked;
+      step.demonstrate = element("editor_demonstrate").value === "show";
       element("editor_card").options[cardIndex].textContent = (cardIndex + 1) + ". " + step.title;
     }
     markChanged();
