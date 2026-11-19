@@ -99,9 +99,11 @@ drags are recorded too: each drop adds one temporary placement, replayable on
 other screen sizes and reversible with Undo/Redo. **Pause +1s** adds
 explicit waits; Undo removes them one at a time. **Action visibility** (Show/Hide, default Show) can be changed later to switch
 between pointer demonstrations and quick scene-setting;
-the title and narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**
+the title and any supplied narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**
 keeps the saved sequence. **Continue tutorial** runs the current card and continues; select the first card
-to review from the start. Playback Exit leaves the editor closed. Recording/playback controls stay visible while the editor scrolls.
+to review from the start. Playback Exit leaves the editor closed. **Done editing**
+saves and returns to the tutorial library without playback, including incomplete
+drafts. Summary and narration are optional; title-only cards can be played. Recording/playback controls stay visible while the editor scrolls.
 Metadata, card ordering, manual commands and exports are under **Advanced**, below
 the main actions. Older silent
 setup is preserved without an editing panel. Editor drafts save automatically; recordings are accepted only

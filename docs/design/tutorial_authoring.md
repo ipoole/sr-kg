@@ -46,7 +46,8 @@ does not change the viewer. Personal tutorials need no account or setup.
 
 The new draft has title “New tutorial”, an empty summary and one card titled
 “New card”, with empty written narration. Placeholder prompts are editor UI,
-not narration that could accidentally reach learners. Its action is the existing
+not narration that could accidentally reach learners. This title-only card can
+play immediately; tutorial and card titles remain required. Its action is the existing
 zero-duration wait and its pointer target is narration; `demonstrate: true`
 starts new cards with their actions shown. These are hidden as
 “No viewer action”: a commentary-only card needs no invented user interaction.
@@ -64,7 +65,7 @@ Each card exposes:
 | --- | --- |
 | Title | Short label; required for playback. |
 | Action visibility | Per-card Show/Hide menu, editable after recording. Show (default) demonstrates actions; Hide sets the scene without pointer demonstrations or automatic inter-action delays. Both show narration and honour explicit pauses. |
-| Written narration | Primary commentary; required for playback. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
+| Written narration | Optional commentary. Blank cards show their title and playback controls. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
 | Legacy preparation | Optional saved setup commands remain supported by playback and export/import, but have no editing panel. Use JSON for deliberate changes. |
 | Actions | Ordered friendly entries such as “Select Lorentz transformations”, with editable parameters, optional pointer and pause. |
 | Voice | Optional recording/file, duration, Listen, Replace and Remove; audio can be added after the text route is complete. |
@@ -97,13 +98,14 @@ per-device capability, particularly on the old iPad.
 ## 3. Recording viewer actions
 
 Workflow: Add/select This Card → write narration → Record card actions → operate
-PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps these two
-main actions visible while the editor body scrolls. Record card actions is prominent
+PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps Record card
+actions, Continue tutorial and Done editing visible while the editor body scrolls. Record card actions is prominent
 with a red record dot; Continue tutorial has a play triangle. Advanced is smaller
-and last, with metadata, ordering, manual actions and Export ZIP/JSON. There is no
-Done or Play from start button: select the first card to start there, and use Exit
-during playback to finish. Desktop Escape still closes the editor safely, saving
-pending edits before leaving.
+and last, with metadata, ordering, manual actions and Export ZIP/JSON. Done editing
+saves and closes without starting playback, including incomplete drafts; a save
+failure retains the editor for Retry or export. Summary and written narration are
+optional and hidden when blank. Select the first card to play from the start;
+Exit during playback leaves the editor closed. Desktop Escape also closes safely.
 
 Advanced is the last section after narration, closed by default. It contains
 Required domains, Author credit, Move up/down, manual Viewer actions. These remain available without cluttering the usual writing/recording
@@ -132,7 +134,7 @@ current explicit-wait implementation still adds the full duration; the editor UI
 refinement does not change that timing yet.
 
 Action visibility can be changed during later review, independently of recording.
-The title and narration remain visible in either mode, and explicit pauses work
+The title and any supplied narration remain visible in either mode, and explicit pauses work
 in both. New cards default to Show; omitted flags on older cards also mean Show,
 preserving older imports. Existing `prepare` setup remains quiet and preserved
 without an editing panel. Built-in routes have been explicitly audited and migrated
@@ -206,7 +208,7 @@ without conversion. Schema versions are independent of product versions.
 | Record | Minimum contract |
 | --- | --- |
 | Personal tutorial | Stable tutorial ID, route, UTC created/updated times, deletion tombstone, revision ID and optional source provenance. |
-| Route | Existing tutorial ID, title, summary, category, sequence, required domains and ordered steps. Optional author credit. |
+| Route | Existing tutorial ID, title, category, sequence, required domains and ordered steps. Optional summary and author credit. |
 | Card/step | Stable step ID, title, commentary, preparation, one action or an ordered action sequence, semantic pointers/pauses, optional `demonstrate` boolean; optional audio reference. |
 | Audio reference | Asset ID, recorded commentary hash and duration. A changed commentary hash means “Voice needs review”, not removal of the recording. |
 | Audio asset | SHA-256 content ID, MIME type, byte length and immutable bytes; local/cloud/hosted location belongs to the asset resolver, not a player command. |

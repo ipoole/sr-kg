@@ -70,7 +70,7 @@ def test_tutorial_editor_keeps_record_and_continue_primary(tutorial_graph,width)
     assert page.locator('#kg_tutorial_editor_setup').count()==0
     rows=page.locator('#kg_tutorial_editor_footer > .kg-tutorial-editor-actions')
     assert rows.count()==1
-    assert rows.first.locator('button').count()==2
+    assert rows.first.locator('button').count()==3
     assert page.locator('#kg_tutorial_editor_preview').count()==0
     assert page.get_by_role('button',name='Continue tutorial',exact=True).is_enabled()
     boxes=rows.evaluate_all('rows=>rows.map(row=>Array.from(row.querySelectorAll("button"),b=>{const r=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right};}))')

@@ -114,7 +114,7 @@ function kgCreateTutorialEditorModel(options) {
     else { step.action = {command:'wait', milliseconds:0}; step.pointer = {target:'narration'}; }
   }
   function stepProblem(step) {
-    if (!step || !String(step.title || '').trim() || !String(step.commentary || '').trim()) { return 'Add a title and written narration.'; }
+    if (!step || !String(step.title || '').trim()) { return 'Add a card title.'; }
     if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { return 'Check Action visibility.'; }
     var list = actions(step);
     if (list.length > contract.max_actions) { return 'Too many actions.'; }
@@ -135,7 +135,6 @@ function kgCreateTutorialEditorModel(options) {
   var domains = new Set(Object.keys(concepts).map(function(key) { return concepts[key].domain; }));
   function routeProblems(route) {
     if (!route || !String(route.title || "").trim()) { return ["Add a tutorial title."]; }
-    if (!String(route.summary || "").trim()) { return ["Add a tutorial summary."]; }
     if (!Array.isArray(route.steps) || !route.steps.length) { return ["Add a card."]; }
     var ids = new Set();
     for (var index = 0; index < route.steps.length; index += 1) {

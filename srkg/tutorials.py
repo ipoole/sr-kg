@@ -180,7 +180,7 @@ def load_tutorials(
             tutorial_id=tutorial_id,
             title=_required_text(mapping, "title", context),
             category=category,
-            summary=_required_text(mapping, "summary", context),
+            summary=_optional_text(mapping, "summary", context, maximum=10000),
             sequence=sequence,
             domains=tuple(domains),
             steps=steps,
@@ -252,7 +252,7 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
             pointer = _mapping(mapping['pointer'], f'{step_context}.pointer')
             pointer_target = _required_text(pointer, 'target', f'{step_context}.pointer')
             _validate_pointer_target(pointer_target, context=f'{step_context}.pointer target', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
-        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_required_text(mapping, 'commentary', step_context), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate))
+        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_optional_text(mapping, 'commentary', step_context, maximum=100000), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate))
     return tuple(steps)
 
 
@@ -393,6 +393,13 @@ def _mapping(value: object, context: str) -> dict[str, object]:
     if not isinstance(value, dict):
         raise TutorialLoadError(f"{context} must be a mapping")
     return {str(key): item for key, item in value.items()}
+
+
+def _optional_text(mapping: dict[str, object], key: str, context: str, *, maximum: int) -> str:
+    value = mapping.get(key, "")
+    if not isinstance(value, str) or len(value) > maximum:
+        raise TutorialLoadError(f"{context}.{key} must be text of at most {maximum} characters")
+    return value.strip()
 
 
 def _required_text(mapping: dict[str, object], key: str, context: str) -> str:

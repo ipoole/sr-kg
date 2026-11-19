@@ -60,7 +60,7 @@ def test_new_tutorial_is_one_saved_card_and_reopens_in_the_same_editor(tutorial_
     assert tutorial_id.startswith('personal:')
     assert page.locator('#kg_tutorial_editor_card option').count() == 1
     assert page.locator('#kg_tutorial_editor_commentary').input_value() == ''
-    assert page.locator('#kg_tutorial_editor_from').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_enabled()
     _fill_draft(page)
     page.keyboard.press('Escape')
     # An old-profile archive round trip must not erase the separate tutorials.
@@ -165,7 +165,7 @@ def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph, han
     page.locator('#kg_tutorial_editor_title').fill('Keep my unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state', 'error')
     if handoff == 'close':
-        page.keyboard.press('Escape')
+        page.get_by_role('button',name='Done editing',exact=True).click()
     else:
         page.locator('#kg_tutorial_editor_' + ('from' if handoff == 'continue' else 'record')).click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
@@ -316,7 +316,7 @@ def test_card_operations_keep_identity_and_allow_an_empty_draft(tutorial_graph):
     controls.get_by_role('button', name='Add card', exact=True).click()
     assert len(_record(page, tutorial_id)['route']['steps']) == 1
     assert page.locator('#kg_tutorial_editor_commentary').input_value() == ''
-    assert page.locator('#kg_tutorial_editor_from').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_enabled()
 
 
 @pytest.mark.browser
@@ -411,12 +411,12 @@ def test_incomplete_routes_block_playback_but_remain_editable(tutorial_graph):
     page = _library(tutorial_graph)
     tutorial_id = _copy_editor(page)
     page.locator('#kg_tutorial_editor_card').select_option(index=5)
-    page.locator('#kg_tutorial_editor_commentary').fill('')
+    page.locator('#kg_tutorial_editor_card_title').fill('')
     _saved(page)
     page.locator('#kg_tutorial_editor_card').select_option(index=0)
     assert page.locator('#kg_tutorial_editor_from').is_disabled()
     page.locator('#kg_tutorial_editor_card').select_option(index=5)
-    page.locator('#kg_tutorial_editor_commentary').fill('Repaired final card.')
+    page.locator('#kg_tutorial_editor_card_title').fill('Repaired final card.')
     _saved(page)
     page.locator('#kg_tutorial_editor_card').select_option(index=0)
     page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')

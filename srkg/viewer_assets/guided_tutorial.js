@@ -333,7 +333,7 @@ function kgCreateGuidedTutorial(options) {
           return '<button type="button" class="kg-tutorial-select" data-tutorial-id="' +
             escapeHtml(route.tutorial_id) + '" aria-current="false">' +
             '<span class="kg-tutorial-list-title">' + escapeHtml(route.title) + '</span>' +
-            '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' +
+            (String(route.summary || '').trim() ? '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' : '') +
             '</button>';
         }).join("");
     }).join("");
@@ -356,7 +356,9 @@ function kgCreateGuidedTutorial(options) {
     launchUrl.hash = "";
     launchUrl.searchParams.set("tutorial", route.tutorial_id);
     document.getElementById("kg_tutorial_launch_link").href = launchUrl.href;
-    document.getElementById("kg_tutorial_intro_summary").textContent = route.summary;
+    var summary = document.getElementById("kg_tutorial_intro_summary");
+    summary.textContent = route.summary || "";
+    summary.hidden = !summary.textContent.trim();
     document.getElementById("kg_tutorial_intro_length").textContent =
       String((route.steps || []).length) +
       ((route.steps || []).length === 1 ? " step" : " steps");
@@ -386,6 +388,7 @@ function kgCreateGuidedTutorial(options) {
     document.getElementById("kg_tutorial_step_title").textContent = step.title;
     var commentary = document.getElementById("kg_tutorial_commentary");
     replaceTypesetContent(commentary, renderConceptText(step.commentary || ""));
+    commentary.hidden = !String(step.commentary || "").trim();
     var error = document.getElementById("kg_tutorial_error");
     if (errorMessage !== undefined) { tutorialPlayback.errorMessage = errorMessage; }
     error.hidden = !tutorialPlayback.errorMessage;

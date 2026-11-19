@@ -427,3 +427,20 @@ def test_node_placement_preserves_signed_fractional_graph_offsets(tmp_path):
     path = _write_tutorials(tmp_path / 'tutorials.yaml', _sequence_route(yaml.safe_dump([{'action': action}], default_flow_style=True)))
     route = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
     assert route.steps[0].actions[0]['action'] == action
+
+
+@pytest.mark.parametrize('omit', [False, True])
+def test_summary_and_narration_are_optional(tmp_path, omit):
+    import yaml
+    document = yaml.safe_load(_sequence_route('[{action: {command: wait, milliseconds: 0}}]'))
+    route = document['tutorials'][0]
+    if omit:
+        route.pop('summary')
+        route['steps'][0].pop('commentary')
+    else:
+        route['summary'] = ''
+        route['steps'][0]['commentary'] = ''
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', yaml.safe_dump(document))
+    loaded = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
+    assert loaded.summary == ''
+    assert loaded.steps[0].commentary == ''

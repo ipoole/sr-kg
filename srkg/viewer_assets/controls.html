@@ -320,7 +320,7 @@
   <p id="kg_tutorial_editor_status" role="status" aria-live="polite"></p>
   <fieldset id="kg_tutorial_editor_fields">
   <label>Tutorial title<input id="kg_tutorial_editor_title" type="text"></label>
-  <label>Summary<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
+  <label>Summary (optional)<textarea id="kg_tutorial_editor_summary" rows="2"></textarea></label>
   <hr>
   <label>This Card<select id="kg_tutorial_editor_card" aria-label="This Card"></select></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_card_controls">
@@ -330,7 +330,7 @@
   </div>
   <label>Card title<input id="kg_tutorial_editor_card_title" type="text"></label>
   <label class="kg-tutorial-visibility">Action visibility<select id="kg_tutorial_editor_demonstrate" aria-label="Action visibility"><option value="show">Show</option><option value="hide">Hide</option></select></label>
-  <label>Written narration<textarea id="kg_tutorial_editor_commentary" rows="4" placeholder="Add written narration here"></textarea></label>
+  <label>Written narration (optional)<textarea id="kg_tutorial_editor_commentary" rows="4" placeholder="Add written narration here"></textarea></label>
   <p class="kg-muted-label">Redo keeps existing actions; a new action replaces the remaining tail. Finish saves; Cancel keeps the old card.</p>
 
   </fieldset>
@@ -341,6 +341,7 @@
   <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions" role="group" aria-label="Record and continue">
     <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card actions</button>
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
+    <button id="kg_tutorial_editor_close" type="button">Done editing</button>
   </div>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <fieldset id="kg_tutorial_editor_advanced_fields">

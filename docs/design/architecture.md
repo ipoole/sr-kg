@@ -356,7 +356,10 @@ legacy cloud/profile envelope unchanged. The editor has a scrollable body and fi
 and current-card playback Edit keep personal revision reachable. Card/action editing shares the existing
 player: Continue tutorial silently reconstructs preceding actions, runs the selected
 card and continues normally. Exit restores the pre-rehearsal presentation and
-leaves the editor closed. Advanced sits below the two primary actions and includes exports.
+leaves the editor closed. Done editing closes the autosaved editor without playback,
+even for incomplete drafts. Advanced sits below the primary actions and includes exports.
+Summary and narration are optional across editing, playback, packages and installation;
+titles and valid action targets remain required.
 Editor handoffs share one save-before-leaving path, retaining the draft on any failure.
 Advanced action forms render only when opened or their card changes; pointer-choice
 catalogues are cached for the loaded KB. Playback and editing share sequence rules

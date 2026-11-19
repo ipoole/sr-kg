@@ -22,6 +22,7 @@ function kgCreateTutorialLibrary(options) {
     element("editor_record").disabled = busy || !editing || !editing.route.steps.length || !canRecord;
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
+    element("editor_close").disabled = busy;
     element("editor_validation").textContent = errors.join(" ");
   }
   function renderList() {
@@ -109,7 +110,7 @@ function kgCreateTutorialLibrary(options) {
     dialog.dataset.tutorialId = record.id;
     element("editor_heading").textContent = record.conflictOf ? "Edit tutorial — conflict copy" : "Edit tutorial";
     element("editor_title").value = editing.route.title;
-    element("editor_summary").value = editing.route.summary;
+    element("editor_summary").value = editing.route.summary || "";
     element("editor_author").value = editing.route.author || "";
     element("editor_domains").value = (editing.route.domains || []).join(", ");
     element("editor_advanced").open = false;
@@ -357,6 +358,7 @@ function kgCreateTutorialLibrary(options) {
   element("editor_retry").addEventListener("click", function() { flush().catch(function() {}); });
   element("editor_record").addEventListener("click", recordActions);
   element("editor_from").addEventListener("click", playEditor);
+  element("editor_close").addEventListener("click", closeEditor);
   function changeCard(action) {
     if (!action || busy || !editing) { return; }
     var steps = editing.route.steps;

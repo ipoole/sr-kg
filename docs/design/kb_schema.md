@@ -305,7 +305,7 @@ top-level `schema_version` is currently `1`; `tutorials` is an ordered source
 list whose visible order is determined by each route's numeric `sequence`.
 
 Each tutorial has a stable `tutorial_id`, `title`, `category` (`interface` or
-`physics`), short `summary`, numeric `sequence`, non-empty list of required
+`physics`), optional short `summary`, numeric `sequence`, non-empty list of required
 `domains`, and a non-empty list of `steps`. Domain-filtered builds omit routes
 whose declared domains are unavailable.
 
@@ -316,12 +316,15 @@ timestamps and copy provenance; they are not authored YAML. The text-only
 target catalogue, requiring explicit replacement of existing IDs. See
 [Tutorial authoring](tutorial_authoring.md#text-portability-and-sync).
 
-Each step has a stable route-local `step_id`, `title`, `commentary`, optional
+Each step has a stable route-local `step_id`, `title`, optional `commentary`, optional
 unanimated `prepare` commands, and either one `action` with an optional
 `pointer`, or an `actions` list. Each list entry has an `action`, optional
 `pointer` and `pause_ms` (default 500, range 0–5000). Sequences contain 1–20
 entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
 One card stays visible while its actions run; Next is enabled on completion.
+Summary and commentary may be omitted or empty and load as empty text. Titles
+remain required. A title-only card uses the normal zero-duration wait action;
+there is no separate placeholder-card format.
 The Show/Hide Action visibility menu stores an optional boolean `demonstrate`,
 which controls pointer demonstrations for the card's
 actions. Omitted means `true` for compatibility; newly created personal cards explicitly use

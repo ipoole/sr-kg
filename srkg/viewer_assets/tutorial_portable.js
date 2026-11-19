@@ -83,7 +83,7 @@ function kgCreateTutorialPortable(options) {
   function route(value) {
     keys(value,['tutorial_id','title','summary','author','category','sequence','domains','steps'],'tutorial');
     if (!identifier(value.tutorial_id)) { throw new Error('Invalid tutorial ID.'); }
-    text(value.title,'tutorial title',300,false); text(value.summary,'tutorial summary',10000,false);
+    text(value.title,'tutorial title',300,false); text(value.summary === undefined ? '' : value.summary,'tutorial summary',10000,false);
     if (value.author !== undefined) { text(value.author,'author credit',300,false); }
     if (['interface','physics'].indexOf(value.category) < 0 || !Number.isInteger(value.sequence)) { throw new Error('Invalid tutorial metadata.'); }
     if (!Array.isArray(value.domains) || value.domains.length > 100 || value.domains.some(function(id) { return !identifier(id); })) { throw new Error('Invalid domains.'); }
@@ -93,7 +93,7 @@ function kgCreateTutorialPortable(options) {
       keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate'],'card');
       if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { throw new Error('Invalid demonstration flag.'); }
       if (!identifier(step.step_id) || ids.has(step.step_id)) { throw new Error('Invalid or duplicate card ID.'); }
-      ids.add(step.step_id); text(step.title,'card title',300,false); text(step.commentary,'written narration',100000,false);
+      ids.add(step.step_id); text(step.title,'card title',300,false); text(step.commentary === undefined ? '' : step.commentary,'written narration',100000,false);
       if (step.prepare !== undefined) {
         if (!Array.isArray(step.prepare) || step.prepare.length > 100) { throw new Error('Invalid setup action list.'); }
         step.prepare.forEach(command);
@@ -110,7 +110,10 @@ function kgCreateTutorialPortable(options) {
         if (step.pointer !== undefined) { keys(step.pointer,['target'],'pointer'); pointer(step.pointer.target); }
       }
     });
-    return clone(value);
+    var result = clone(value);
+    if (result.summary === undefined) { result.summary = ''; }
+    result.steps.forEach(function(step) { if (step.commentary === undefined) { step.commentary = ''; } });
+    return result;
   }
   function record(value, personal) {
     keys(value,['id','route','basedOn','createdAt','updatedAt','revisionId','deletedAt','conflictOf','sourceRevision'],'tutorial record');
