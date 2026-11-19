@@ -22,8 +22,6 @@ function kgCreateGuidedTutorial(options) {
     exploring: false,
     stepIndex: -1,
     transitioning: false,
-    singleStep: false,
-    previewIndex: 0,
     errorMessage: ""
   };
   var tutorialPointerState = {
@@ -313,10 +311,6 @@ function kgCreateGuidedTutorial(options) {
   var tutorialCommandsThrough = kgTutorialSequence.commandsThrough;
   var tutorialStepActions = kgTutorialSequence.actions;
 
-  function tutorialFinalAction(step) {
-    var actions = tutorialStepActions(step);
-    return actions[actions.length - 1];
-  }
 
   function renderTutorialList() {
     var list = document.getElementById("kg_tutorial_list");
@@ -339,7 +333,7 @@ function kgCreateGuidedTutorial(options) {
           return '<button type="button" class="kg-tutorial-select" data-tutorial-id="' +
             escapeHtml(route.tutorial_id) + '" aria-current="false">' +
             '<span class="kg-tutorial-list-title">' + escapeHtml(route.title) + '</span>' +
-            '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' +
+            (String(route.summary || '').trim() ? '<span class="kg-tutorial-list-summary">' + escapeHtml(route.summary) + '</span>' : '') +
             '</button>';
         }).join("");
     }).join("");
@@ -362,7 +356,9 @@ function kgCreateGuidedTutorial(options) {
     launchUrl.hash = "";
     launchUrl.searchParams.set("tutorial", route.tutorial_id);
     document.getElementById("kg_tutorial_launch_link").href = launchUrl.href;
-    document.getElementById("kg_tutorial_intro_summary").textContent = route.summary;
+    var summary = document.getElementById("kg_tutorial_intro_summary");
+    summary.textContent = route.summary || "";
+    summary.hidden = !summary.textContent.trim();
     document.getElementById("kg_tutorial_intro_length").textContent =
       String((route.steps || []).length) +
       ((route.steps || []).length === 1 ? " step" : " steps");
@@ -386,23 +382,27 @@ function kgCreateGuidedTutorial(options) {
     var step = steps[tutorialPlayback.stepIndex];
     document.getElementById("kg_tutorial_first_step_guidance").hidden =
       tutorialPlayback.stepIndex !== 0 || tutorialPlayback.exploring;
-    document.getElementById("kg_tutorial_title").textContent = (tutorialPlayback.singleStep ? "Card preview · " : "") + route.title;
+    document.getElementById("kg_tutorial_title").textContent = route.title;
     document.getElementById("kg_tutorial_progress").textContent =
       String(tutorialPlayback.stepIndex + 1) + " / " + String(steps.length);
     document.getElementById("kg_tutorial_step_title").textContent = step.title;
     var commentary = document.getElementById("kg_tutorial_commentary");
     replaceTypesetContent(commentary, renderConceptText(step.commentary || ""));
+    commentary.hidden = !String(step.commentary || "").trim();
     var error = document.getElementById("kg_tutorial_error");
     if (errorMessage !== undefined) { tutorialPlayback.errorMessage = errorMessage; }
     error.hidden = !tutorialPlayback.errorMessage;
     error.textContent = tutorialPlayback.errorMessage;
     document.getElementById("kg_tutorial_back").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.singleStep || tutorialPlayback.stepIndex <= 0;
+      tutorialPlayback.stepIndex <= 0;
     document.getElementById("kg_tutorial_next").disabled =
       tutorialPlayback.transitioning || tutorialPlayback.exploring ||
-      tutorialPlayback.singleStep || tutorialPlayback.stepIndex >= steps.length - 1;
+      tutorialPlayback.stepIndex >= steps.length - 1;
     document.getElementById("kg_tutorial_exit").disabled = tutorialPlayback.transitioning;
+    var editButton = document.getElementById('kg_tutorial_edit');
+    editButton.hidden = !canEditCurrentCard();
+    editButton.disabled = tutorialPlayback.transitioning || tutorialPlayback.exploring;
     var exploreButton = document.getElementById("kg_tutorial_explore");
     exploreButton.disabled = tutorialPlayback.transitioning;
     exploreButton.textContent = tutorialPlayback.exploring
@@ -472,24 +472,29 @@ function kgCreateGuidedTutorial(options) {
     }
   }
 
-  async function demonstrateActions(actions) {
+  async function playActions(actions, demonstrate) {
     for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
       var item = actions[actionIndex];
-      clearTutorialEmphasis();
-      var stepPointerTarget = item.pointer ? item.pointer.target : "narration";
-      await moveTutorialPointer(stepPointerTarget);
-      await pulseTutorialPointer();
-      await executeViewerCommand(item.action, {origin: "tutorial"});
+      var point = demonstrate && !kgTutorialSequence.isPause(item);
+      var target = kgTutorialSequence.pointerTarget(item);
+      if (point) {
+        clearTutorialEmphasis(); await moveTutorialPointer(target); await pulseTutorialPointer();
+      }
+      await executeViewerCommand(item.action, {origin:'tutorial'});
       await nextAnimationFrames(2);
-      settleTutorialPointer(stepPointerTarget);
-      if (actionIndex < actions.length - 1 && item.pause_ms) {
-        await new Promise(function(resolve) { setTimeout(resolve, item.pause_ms); });
+      if (point) { settleTutorialPointer(target); }
+      if (demonstrate && actionIndex < actions.length - 1 && item.pause_ms) {
+        await new Promise(function(resolve) { setTimeout(resolve,item.pause_ms); });
       }
     }
   }
-  async function rehearseActions(actions) {
-    try { await demonstrateActions(actions); }
-    finally { clearTutorialEmphasis(); }
+  async function restoreFinalEmphasis(step) {
+    var item = kgTutorialSequence.finalAction(step);
+    if (!item) { return; }
+    var target = kgTutorialSequence.pointerTarget(item);
+    if (step.demonstrate !== false) { await moveTutorialPointer(target); }
+    if (tutorialActionIsHover(item.action)) { await executeViewerCommand(item.action,{origin:'tutorial'}); }
+    if (step.demonstrate !== false) { settleTutorialPointer(target); }
   }
 
   async function runTutorialStep(stepIndex, replay) {
@@ -498,8 +503,7 @@ function kgCreateGuidedTutorial(options) {
       !tutorialPlayback.activeRoute
     ) { return; }
     var route = tutorialPlayback.activeRoute;
-    if (stepIndex < 0 || stepIndex >= route.steps.length ||
-        (tutorialPlayback.singleStep && stepIndex !== tutorialPlayback.previewIndex)) { return; }
+    if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
     tutorialPlayback.errorMessage = "";
     setTutorialTransitioning(true);
     clearTutorialEmphasis();
@@ -511,12 +515,7 @@ function kgCreateGuidedTutorial(options) {
         );
         setControlsVisible(false);
         tutorialPlayback.stepIndex = stepIndex;
-        var replayStep = route.steps[stepIndex];
-        var replayAction = tutorialFinalAction(replayStep);
-        await moveTutorialPointer(
-          replayAction.pointer ? replayAction.pointer.target : "narration"
-        );
-        settleTutorialPointer(replayAction.pointer ? replayAction.pointer.target : "narration");
+        await restoreFinalEmphasis(route.steps[stepIndex]);
       } else {
         var step = route.steps[stepIndex];
         tutorialPlayback.stepIndex = stepIndex;
@@ -526,7 +525,7 @@ function kgCreateGuidedTutorial(options) {
           await executeViewerCommand(prepare[index], {origin: "tutorial"});
         }
         var actions = tutorialStepActions(step);
-        await demonstrateActions(actions);
+        await playActions(actions, step.demonstrate !== false);
       }
       renderTutorialNarration();
     } catch (error) {
@@ -541,11 +540,9 @@ function kgCreateGuidedTutorial(options) {
     if (tutorialPlayback.transitioning || tutorialPlayback.activeRoute) { return; }
     var route = tutorialRouteById(tutorialPlayback.selectedId);
     if (!route || !route.steps || !route.steps.length ||
-        (options.canStart && !options.canStart(route, playOptions))) { return; }
+        (options.canStart && !options.canStart(route))) { return; }
     var startIndex = Number.isInteger(playOptions.startIndex) ? playOptions.startIndex : 0;
     if (startIndex < 0 || startIndex >= route.steps.length) { return; }
-    tutorialPlayback.singleStep = Boolean(playOptions.singleStep);
-    tutorialPlayback.previewIndex = startIndex;
     tutorialPlayback.errorMessage = "";
     tutorialPlayback.baseline = captureTutorialPresentation();
     tutorialPlayback.activeRoute = JSON.parse(JSON.stringify(route));
@@ -594,9 +591,33 @@ function kgCreateGuidedTutorial(options) {
     }
   }
 
+  function canEditCurrentCard() {
+    var route = tutorialPlayback.activeRoute;
+    return Boolean(route && options.prepareCardEdit && options.personalRouteById &&
+      options.personalRouteById(route.tutorial_id));
+  }
+
   async function exitTutorial() {
     if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
     setTutorialTransitioning(true);
+    await finishTutorial();
+  }
+
+  async function editCurrentCard() {
+    if (tutorialPlayback.transitioning || tutorialPlayback.exploring || !canEditCurrentCard()) { return; }
+    setTutorialTransitioning(true);
+    try {
+      var route = tutorialPlayback.activeRoute;
+      var card = route.steps[tutorialPlayback.stepIndex];
+      var edit = await options.prepareCardEdit(route.tutorial_id,card.step_id);
+      await finishTutorial(edit);
+    } catch (error) {
+      renderTutorialNarration('Could not edit this card: ' + String(error.message || error));
+      setTutorialTransitioning(false);
+    }
+  }
+
+  async function finishTutorial(cardEdit) {
     var baseline = tutorialPlayback.baseline;
     try {
       clearTutorialEmphasis();
@@ -611,7 +632,7 @@ function kgCreateGuidedTutorial(options) {
     } finally {
       setGuidedTutorialActive(false);
       tutorialPlayback.transitioning = false;
-      if (options.onExit) { options.onExit(); }
+      if (options.onExit) { options.onExit(cardEdit); }
     }
   }
 
@@ -633,12 +654,7 @@ function kgCreateGuidedTutorial(options) {
       await nextAnimationFrames(2);
       await restoreTutorialPresentation(tutorialPlayback.exploreSnapshot);
       var step = tutorialPlayback.activeRoute.steps[tutorialPlayback.stepIndex];
-      var finalAction = tutorialFinalAction(step);
-      await moveTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
-      if (tutorialActionIsHover(finalAction.action)) {
-        await executeViewerCommand(finalAction.action, {origin: "tutorial"});
-      }
-      settleTutorialPointer(finalAction.pointer ? finalAction.pointer.target : "narration");
+      await restoreFinalEmphasis(step);
       renderTutorialNarration();
       tutorialPlayback.exploreSnapshot = null;
     } catch (error) {
@@ -685,6 +701,7 @@ function kgCreateGuidedTutorial(options) {
       "click", toggleTutorialExploration
     );
     document.getElementById("kg_tutorial_exit").addEventListener("click", exitTutorial);
+    document.getElementById("kg_tutorial_edit").addEventListener("click", editCurrentCard);
     document.getElementById("info_panel").addEventListener("scroll", scheduleReadingPointerRefresh, true);
     splashStart.addEventListener("click", function() {
       if (defaultRoute) { startTutorialById(defaultRoute.tutorial_id); }
@@ -714,7 +731,6 @@ function kgCreateGuidedTutorial(options) {
     requestedTutorialId: requestedTutorialId,
     tutorialPlaybackSnapshot: tutorialPlaybackSnapshot,
     initialiseTutorialPlayback: initialiseTutorialPlayback,
-    rehearseActions:rehearseActions,
     isGuiding: isGuiding
   };
 }

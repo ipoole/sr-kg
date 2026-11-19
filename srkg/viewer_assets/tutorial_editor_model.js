@@ -38,7 +38,9 @@ function kgCreateTutorialEditorModel(options) {
     });
     return result;
   }
+  var pointerCatalog = {};
   function pointerChoices(group) {
+    if (Object.prototype.hasOwnProperty.call(pointerCatalog, group)) { return pointerCatalog[group]; }
     var result = {};
     function add(prefix, values) { Object.keys(values).forEach(function(key) { result[prefix + key] = values[key]; }); }
     if (group === 'general') { return contract.pointer_base; }
@@ -60,6 +62,7 @@ function kgCreateTutorialEditorModel(options) {
         Object.keys(concepts).forEach(function(key) { result['details:reading-concept:' + recipe + ':' + key] = recipe + ': ' + label(concepts[key], key); });
       });
     }
+    pointerCatalog[group] = result;
     return result;
   }
   var groups = {general:'Narration and Details', controls:'Toolbar controls', 'module-controls':'Module fold controls',
@@ -86,7 +89,8 @@ function kgCreateTutorialEditorModel(options) {
       var field = spec.fields[index], value = command[field.name];
       if (field.optional && value === undefined) { continue; }
       var valid;
-      if (field.type === 'integer') { valid = Number.isInteger(value) && value >= field.min && value <= field.max; }
+      if (field.type === 'number') { valid = typeof value === 'number' && Number.isFinite(value) && value >= field.min && value <= field.max; }
+      else if (field.type === 'integer') { valid = Number.isInteger(value) && value >= field.min && value <= field.max; }
       else if (field.type === 'boolean') { valid = typeof value === 'boolean'; }
       else if (field.type === 'text') { valid = typeof value === 'string' && (field.allow_empty || value.trim()) && value.length <= field.max_length; }
       else if (field.type === 'edge') {
@@ -110,7 +114,8 @@ function kgCreateTutorialEditorModel(options) {
     else { step.action = {command:'wait', milliseconds:0}; step.pointer = {target:'narration'}; }
   }
   function stepProblem(step) {
-    if (!step || !String(step.title || '').trim() || !String(step.commentary || '').trim()) { return 'Add a title and written narration.'; }
+    if (!step || !String(step.title || '').trim()) { return 'Add a card title.'; }
+    if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { return 'Check Action visibility.'; }
     var list = actions(step);
     if (list.length > contract.max_actions) { return 'Too many actions.'; }
     var setup = step.prepare || [];
@@ -118,7 +123,7 @@ function kgCreateTutorialEditorModel(options) {
       var silent = index < setup.length, item = silent ? {action:setup[index]} : list[index - setup.length];
       var problem = commandProblem(item.action);
       if (!problem && !silent) {
-        var target = item.pointer ? item.pointer.target : 'narration';
+        var target = kgTutorialSequence.pointerTarget(item);
         if (!pointerChoices(pointerGroup(target))[target]) { problem = 'Choose an available pointer target.'; }
         var pause = item.pause_ms === undefined ? 500 : item.pause_ms;
         if (!Number.isInteger(pause) || pause < 0 || pause > contract.max_pause_ms) { problem = 'Pause must be between 0 and 5 seconds.'; }
@@ -128,13 +133,11 @@ function kgCreateTutorialEditorModel(options) {
     return '';
   }
   var domains = new Set(Object.keys(concepts).map(function(key) { return concepts[key].domain; }));
-  function routeProblems(route, playOptions) {
+  function routeProblems(route) {
     if (!route || !String(route.title || "").trim()) { return ["Add a tutorial title."]; }
-    if (!String(route.summary || "").trim()) { return ["Add a tutorial summary."]; }
     if (!Array.isArray(route.steps) || !route.steps.length) { return ["Add a card."]; }
-    var limit = playOptions && playOptions.singleStep ? playOptions.startIndex + 1 : route.steps.length;
     var ids = new Set();
-    for (var index = 0; index < limit; index += 1) {
+    for (var index = 0; index < route.steps.length; index += 1) {
       var step = route.steps[index], problem = stepProblem(step);
       if (problem) { return ["Card " + (index + 1) + ": " + problem]; }
       if (!step.step_id || ids.has(step.step_id)) { return ["Each card needs a unique identifier."]; }

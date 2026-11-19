@@ -23,6 +23,32 @@ def test_physics_routes_start_with_quiet_introduction():
         assert not intro.pointer_target
 
 
+def test_built_in_cards_use_explicit_whole_card_visibility():
+    from srkg.kb import load_knowledge_base
+    routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
+    for route in routes:
+        for step in route.steps:
+            assert isinstance(step.demonstrate, bool), (route.tutorial_id, step.step_id)
+            assert not step.prepare, (route.tutorial_id, step.step_id)
+        if route.category == "physics":
+            assert all(step.demonstrate is False for step in route.steps)
+
+
+def test_built_in_reading_cards_target_the_selected_concept():
+    from srkg.kb import load_knowledge_base
+    routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
+    for route in routes:
+        selected = None
+        for step in route.steps:
+            commands = [item["action"] for item in step.actions] if step.actions else [step.action]
+            for command in commands:
+                if command["command"] == "select":
+                    selected = command["target"]
+                elif command["command"] == "open-details-block":
+                    owner = command["target"].removeprefix("block:").rsplit(".", 1)[0]
+                    assert selected == f"concept:{owner}", (route.tutorial_id, step.step_id)
+
+
 def _sequence_route(actions, extra=""):
     return f"""schema_version: 1
 tutorials:
@@ -347,7 +373,7 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
                 command[field['name']] = next(iter(field['choices']))
             elif kind == 'boolean':
                 command[field['name']] = False
-            elif kind == 'integer':
+            elif kind in {'integer', 'number'}:
                 command[field['name']] = field['min']
             else:
                 command[field['name']] = target[kind]
@@ -363,8 +389,58 @@ def test_editor_command_contract_and_python_validator_accept_the_same_fields(tmp
         descriptor = contract['commands'][step['action']['command']]
         for field in descriptor['fields']:
             original = step['action'][field['name']]
-            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1, 'text':'x' * 201}.get(field['type'], '')
+            step['action'][field['name']] = {'enum':'unknown', 'boolean':0, 'integer':-1, 'number':10000001, 'text':'x' * 201}.get(field['type'], '')
             path.write_text(yaml.safe_dump(document))
             with pytest.raises(TutorialLoadError):
                 load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
             step['action'][field['name']] = original
+
+
+@pytest.mark.parametrize('demonstrate',[False,True])
+def test_optional_card_demonstration_flag_survives_loading(tmp_path,demonstrate):
+    path=_write_tutorials(tmp_path/'tutorials.yaml',_sequence_route('[{action: {command: wait, milliseconds: 0}}]',extra='demonstrate: '+str(demonstrate).lower()))
+    route=load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)[0]
+    assert route.to_viewer_data()['steps'][0]['demonstrate'] is demonstrate
+
+
+@pytest.mark.parametrize('value',['"false"','1','null'])
+def test_card_demonstration_flag_rejects_non_booleans(tmp_path,value):
+    path=_write_tutorials(tmp_path/'tutorials.yaml',_sequence_route('[{action: {command: wait, milliseconds: 0}}]',extra='demonstrate: '+value))
+    with pytest.raises(TutorialLoadError):
+        load_tutorials(path,concept_ids=CONCEPT_IDS,module_ids=MODULE_IDS,block_ids=BLOCK_IDS)
+
+
+@pytest.mark.parametrize('coordinate', [float('nan'), float('inf'), -float('inf'), True, '12', 10000001])
+def test_reject_invalid_node_placement_coordinates(tmp_path, coordinate):
+    import yaml
+    action = {'command': 'place-context-node', 'target': 'concept:sr.alpha',
+              'anchor': 'module:sr.foundations', 'x': coordinate, 'y': -12.5}
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', _sequence_route(yaml.safe_dump([{'action': action}], default_flow_style=True)))
+    with pytest.raises(TutorialLoadError):
+        load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)
+
+
+def test_node_placement_preserves_signed_fractional_graph_offsets(tmp_path):
+    import yaml
+    action = {'command': 'place-context-node', 'target': 'concept:sr.alpha',
+              'anchor': 'module:sr.foundations', 'x': 83.25, 'y': -47.5}
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', _sequence_route(yaml.safe_dump([{'action': action}], default_flow_style=True)))
+    route = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
+    assert route.steps[0].actions[0]['action'] == action
+
+
+@pytest.mark.parametrize('omit', [False, True])
+def test_summary_and_narration_are_optional(tmp_path, omit):
+    import yaml
+    document = yaml.safe_load(_sequence_route('[{action: {command: wait, milliseconds: 0}}]'))
+    route = document['tutorials'][0]
+    if omit:
+        route.pop('summary')
+        route['steps'][0].pop('commentary')
+    else:
+        route['summary'] = ''
+        route['steps'][0]['commentary'] = ''
+    path = _write_tutorials(tmp_path / 'tutorials.yaml', yaml.safe_dump(document))
+    loaded = load_tutorials(path, concept_ids=CONCEPT_IDS, module_ids=MODULE_IDS, block_ids=BLOCK_IDS)[0]
+    assert loaded.summary == ''
+    assert loaded.steps[0].commentary == ''

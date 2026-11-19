@@ -92,9 +92,28 @@ free investigation with only a small return button; **Continue with tutorial** r
 without undoing notes or study progress.
 
 **Tools → Tutorials** also creates personal tutorials or editable built-in copies.
-Edit cards and their action sequences, or use **Record actions** with Undo/Redo
-and Replay. The viewer saves drafts automatically. Export a tutorial as ZIP/JSON;
-Import defaults to a new copy and retains missing references for repair. Personal
+Write narration and use **Record card actions** to replace a card's sequence, with
+Undo/Redo while recording. Existing actions start in Redo, so redo to the end to
+append, or record a new action to replace the remaining tail. After Fit++, node
+drags are recorded too: each drop adds one temporary placement, replayable on
+other screen sizes and reversible with Undo/Redo. **Pause +1s** adds
+explicit waits; Undo removes them one at a time. **Action visibility** (Show/Hide, default Show) can be changed later to switch
+between pointer demonstrations and quick scene-setting;
+the title and any supplied narration remain visible in both modes. **Finish recording** accepts the replacement; **Cancel**
+keeps the saved sequence. **Continue tutorial** runs the current card and continues; select the first card
+to review from the start. Playback Exit leaves the editor closed. **Done editing**
+saves and returns to the tutorial library without playback, including incomplete
+drafts. Summary and narration are optional; title-only cards can be played. Recording/playback controls stay visible while the editor scrolls.
+Metadata, card ordering, manual commands and exports are under **Advanced**, below
+the main actions. Older silent
+setup is preserved without an editing panel. Editor drafts save automatically; recordings are accepted only
+on Finish.
+**Edit card** during personal playback opens the current card for revision;
+**Continue tutorial** demonstrates the changes and continues. Built-in playback
+keeps its existing controls; first make an editable copy to revise it. Personal
+introductions offer Start for playable routes, or Edit draft when repairs are needed.
+Export a tutorial as ZIP/JSON; Import defaults to a new copy and retains missing
+references for repair. Personal
 backups include tutorials, and optional Google sync keeps independent edits as
 conflict copies. Text-only exports can become built-ins with
 `tools/install_tutorial.py`; see [Tutorial authoring](docs/design/tutorial_authoring.md).

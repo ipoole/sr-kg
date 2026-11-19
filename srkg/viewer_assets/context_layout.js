@@ -43,10 +43,29 @@ function kgCreateContextLayout(options) {
       contextContractionState.finalPositions[String(id)] = copyLayoutPosition(position);
     }
   }
+  function movementSnapshot() {
+    return contextContractionState ? {anchorId:contextContractionState.anchorId,
+      positions:JSON.parse(JSON.stringify(contextContractionState.finalPositions))} : null;
+  }
+  function placeNode(id, anchorId, offset) {
+    if (!contextContractionState || String(anchorId) !== contextContractionState.anchorId || !canMove(id)) {
+      throw new Error('Node placement requires the recorded Fit++ context and anchor.');
+    }
+    if (!offset || !['x', 'y'].every(function(axis) {
+      return typeof offset[axis] === 'number' && Number.isFinite(offset[axis]) && Math.abs(offset[axis]) <= 10000000;
+    })) { throw new Error('Node placement needs finite graph offsets.'); }
+    var anchor = graphPositionForNode(anchorId);
+    if (!validLayoutPosition(anchor)) { throw new Error('The Fit++ anchor is unavailable.'); }
+    var position = {x:anchor.x + offset.x, y:anchor.y + offset.y};
+    network.moveNode(id, position.x, position.y); recordDrag(id, position);
+    updateNodeLabelPositions(); showTemporaryNotice();
+  }
   function capture() {
     return {primedKey: contextFitPrimedKey, contraction: contextContractionState
       ? Object.assign(JSON.parse(JSON.stringify(contextContractionState)), {
-          finalPositions: network.getPositions(Object.keys(contextContractionState.finalPositions))}) : null};
+          finalPositions: Object.fromEntries(Object.keys(contextContractionState.finalPositions).map(function(id) {
+            return [id, graphPositionForNode(id)];
+          }))}) : null};
   }
   function restoreCheckpoint(checkpoint) {
     contextFitPrimedKey = checkpoint.primedKey || null;
@@ -443,6 +462,8 @@ function kgCreateContextLayout(options) {
     showTemporaryNotice: showTemporaryNotice,
     canMove: canMove,
     recordDrag: recordDrag,
+    movementSnapshot: movementSnapshot,
+    placeNode: placeNode,
     capture: capture,
     preserveDuringLayoutReload: preserveDuringLayoutReload,
     restoreCheckpoint: restoreCheckpoint,

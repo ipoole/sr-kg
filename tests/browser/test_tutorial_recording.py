@@ -1,10 +1,11 @@
 """Single-card action capture uses normal controls and reversible presentation checkpoints."""
 import pytest
 from playwright.sync_api import expect
-from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record
+from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _record, _edit_selected_tutorial
 
 
 def _idle(page):
+    expect(page.locator('#kg_tutorial_recording')).to_be_visible()
     expect(page.locator('#kg_tutorial_recording')).to_have_attribute('data-busy', 'false')
 
 
@@ -27,7 +28,7 @@ def _control(page, selector, value):
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width', [390, 1280])
-def test_record_controls_undo_redo_replay_and_reload(tutorial_graph, width):
+def test_record_controls_undo_redo_finish_and_play(tutorial_graph, width):
     page = _library(tutorial_graph)
     page.set_viewport_size({'width':width, 'height':900})
     original = []
@@ -44,14 +45,9 @@ def test_record_controls_undo_redo_replay_and_reload(tutorial_graph, width):
     page.locator('#kg_tutorial_recording_redo').click()
     _idle(page)
     assert page.evaluate('kgCaptureTutorialPresentation().contextRule') == state['contextRule']
-    step = _record(page, tutorial_id)['route']['steps'][0]
-    page.locator('#kg_tutorial_recording_replay').click()
-    _idle(page)
-    assert page.evaluate('kgCaptureTutorialPresentation().contextRule') == state['contextRule']
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')
     saved = _record(page, tutorial_id)['route']['steps'][0]
-    assert saved == step
     assert saved['prepare'] == [{'command':'home'}]
     assert [item['action']['command'] for item in saved['actions']] == ['set-view', 'set-display-scope', 'set-context', 'set-context']
     restored = page.evaluate('kgCaptureTutorialPresentation()')
@@ -60,7 +56,7 @@ def test_record_controls_undo_redo_replay_and_reload(tutorial_graph, width):
     assert restored['camera']['scale'] == pytest.approx(before['camera']['scale'])
     for axis in ['x','y']:
         assert restored['camera']['position'][axis] == pytest.approx(before['camera']['position'][axis])
-    page.locator('#kg_tutorial_editor_play').click()
+    page.locator('#kg_tutorial_editor_from').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0 && !kgTutorialPlaybackSnapshot().transitioning')
     assert page.locator('#kg_tutorial_error').is_hidden()
     played = page.evaluate('kgCaptureTutorialPresentation()')
@@ -93,7 +89,7 @@ def test_record_search_selection_fit_and_redo_branch(tutorial_graph):
     assert page.evaluate('kgCaptureTutorialPresentation().contextFit.contraction') is None
     _control(page, '#kg_view_select', 'details')
     assert page.locator('#kg_tutorial_recording_redo').is_disabled()
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     step = _record(page, tutorial_id)['route']['steps'][0]
     actions = step['actions']
     queries = [item['action']['query'] for item in actions if item['action']['command']=='search']
@@ -107,7 +103,7 @@ def test_record_search_selection_fit_and_redo_branch(tutorial_graph):
 
 
 @pytest.mark.browser
-def test_recording_appends_and_capacity_does_not_mutate_view(tutorial_graph):
+def test_recording_capacity_does_not_mutate_view_and_rerecording_starts_empty(tutorial_graph):
     page = _library(tutorial_graph)
     tutorial_id = _start(page)
     page.evaluate("""async()=>{
@@ -116,13 +112,15 @@ def test_recording_appends_and_capacity_does_not_mutate_view(tutorial_graph):
     _idle(page)
     _control(page, '#kg_view_select', 'details')
     assert page.evaluate('kgCaptureTutorialPresentation().view') == 'graph'
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     assert len(_record(page,tutorial_id)['route']['steps'][0]['actions']) == 20
     page.locator('#kg_tutorial_editor_record').click()
     _idle(page)
     assert page.locator('#kg_tutorial_recording_undo').is_disabled()
-    page.locator('#kg_tutorial_recording_stop').click()
+    _control(page, '#kg_view_select', 'details')
     assert len(_record(page,tutorial_id)['route']['steps'][0]['actions']) == 20
+    page.locator('#kg_tutorial_recording_finish').click()
+    assert [item['action'] for item in _record(page,tutorial_id)['route']['steps'][0]['actions']] == [{'command':'set-view','value':'details'}]
 
 
 @pytest.mark.browser
@@ -163,7 +161,7 @@ def test_record_details_and_reading_controls_without_personal_read_marks(tutoria
     _idle(page)
     tree.locator('.kg-reading-sync').uncheck()
     _idle(page)
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     actions = [item['action'] for item in _record(page,tutorial_id)['route']['steps'][0]['actions']]
     assert actions[1] == {'command':'open-details-block','target':'block:2.1.explanation','open':True}
     reading = [item for item in actions if item['command']=='open-reading-tree']
@@ -195,7 +193,7 @@ def test_pending_search_is_undoable_and_enter_records_selection(tutorial_graph):
     page.locator('#kg_tutorial_recording_redo').click()
     _idle(page)
     assert page.locator('#kg_search').input_value() == 'Beta'
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     actions = _record(page,tutorial_id)['route']['steps'][0]['actions']
     assert [item['action']['command'] for item in actions] == ['search', 'search']
 
@@ -205,11 +203,15 @@ def test_recording_preparation_is_visible_and_blocks_other_actions(tutorial_grap
     page = _library(tutorial_graph)
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
-    page.locator('#kg_tutorial_editor_setup_section').evaluate('e=>e.open=true')
-    setup = page.locator('#kg_tutorial_editor_setup')
-    setup.get_by_role('button',name='Add action',exact=True).click()
-    setup.get_by_label('Action type',exact=True).select_option('wait')
-    setup.locator('[data-field="milliseconds"]').fill('4')
+    tutorial_id=page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+    page.keyboard.press('Escape')
+    page.evaluate('''async id=>{
+      const r=await kgPersonalData.tutorials.get(id);r.route.steps[0].prepare=[{command:'wait',milliseconds:4000}];
+      await kgPersonalData.tutorials.save(r);
+    }''',tutorial_id)
+    page.reload(wait_until='domcontentloaded');_library(tutorial_graph)
+    page.locator(f'#kg_tutorial_personal_list [data-tutorial-id="{tutorial_id}"]').click()
+    _edit_selected_tutorial(page)
     # Gate just this preparation timer; do not depend on a short wall-clock window.
     page.evaluate('''()=>{
       const schedule=window.setTimeout;
@@ -221,13 +223,13 @@ def test_recording_preparation_is_visible_and_blocks_other_actions(tutorial_grap
     page.locator('#kg_tutorial_editor_record').click()
     page.wait_for_function("typeof __finishRecordingPreparation==='function'")
     expect(page.locator('#kg_tutorial_recording')).to_be_visible()
-    assert page.locator('#kg_tutorial_recording_stop').is_disabled()
+    assert page.locator('#kg_tutorial_recording_finish').is_disabled()
     before = page.evaluate('kgCaptureTutorialPresentation().view')
     page.locator('#kg_view_select').evaluate("e=>{e.value='details';e.dispatchEvent(new Event('change',{bubbles:true}));}")
     assert page.evaluate('kgCaptureTutorialPresentation().view') == before
     page.evaluate('__finishRecordingPreparation()')
     _idle(page)
-    page.locator('#kg_tutorial_recording_stop').click()
+    page.locator('#kg_tutorial_recording_finish').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
 
 
@@ -244,12 +246,12 @@ def test_recording_cannot_start_during_a_learners_explore(tutorial_graph):
     _fill_draft(page)
     assert page.locator('#kg_tutorial_editor_record').is_disabled()
     assert page.locator('#kg_tutorial_recording').is_hidden()
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.locator('#kg_tutorial_explore').click()
     page.wait_for_function('!kgTutorialPlaybackSnapshot().exploring && !kgTutorialPlaybackSnapshot().transitioning')
     page.locator('#kg_tutorial_exit').click()
     page.wait_for_function('kgTutorialPlaybackSnapshot().tutorialId===null')
-    page.locator('#kg_tutorial_intro_edit').click()
+    _edit_selected_tutorial(page)
     assert page.locator('#kg_tutorial_editor_record').is_enabled()
 
 
@@ -267,7 +269,7 @@ def test_recording_allows_unrecorded_camera_adjustments_and_stable_hover(tutoria
       ])await kgExecuteViewerCommand(command,{origin:'user'});
     }''')
     _idle(page)
-    actions = _record(page,tutorial_id)['route']['steps'][0]['actions']
+    saved_before = _record(page,tutorial_id)
     before = page.evaluate('({camera:kgCaptureTutorialPresentation().camera, positions:network.getPositions()})')
     point = page.evaluate('''()=>{
       const p=network.canvasToDOM(network.getPositions(['2.1'])['2.1']);
@@ -289,7 +291,9 @@ def test_recording_allows_unrecorded_camera_adjustments_and_stable_hover(tutoria
     page.mouse.move(x+90,y-60,steps=5)
     page.mouse.up()
     page.wait_for_function('(p)=>Math.abs(network.getViewPosition().x-p.x)>1',arg=position)
-    assert _record(page,tutorial_id)['route']['steps'][0]['actions'] == actions
+    assert _record(page,tutorial_id) == saved_before
+    page.locator('#kg_tutorial_recording_finish').click()
+    assert len(_record(page,tutorial_id)['route']['steps'][0]['actions']) == 5
     assert not tutorial_graph.page_errors
 
 

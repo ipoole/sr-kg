@@ -305,7 +305,7 @@ top-level `schema_version` is currently `1`; `tutorials` is an ordered source
 list whose visible order is determined by each route's numeric `sequence`.
 
 Each tutorial has a stable `tutorial_id`, `title`, `category` (`interface` or
-`physics`), short `summary`, numeric `sequence`, non-empty list of required
+`physics`), optional short `summary`, numeric `sequence`, non-empty list of required
 `domains`, and a non-empty list of `steps`. Domain-filtered builds omit routes
 whose declared domains are unavailable.
 
@@ -316,26 +316,45 @@ timestamps and copy provenance; they are not authored YAML. The text-only
 target catalogue, requiring explicit replacement of existing IDs. See
 [Tutorial authoring](tutorial_authoring.md#text-portability-and-sync).
 
-Each step has a stable route-local `step_id`, `title`, `commentary`, optional
+Each step has a stable route-local `step_id`, `title`, optional `commentary`, optional
 unanimated `prepare` commands, and either one `action` with an optional
 `pointer`, or an `actions` list. Each list entry has an `action`, optional
-`pointer` and `pause_ms` (default 500, range 0–2000). Sequences contain 1–20
+`pointer` and `pause_ms` (default 500, range 0–5000). Sequences contain 1–20
 entries. Mixing step-level `action`/`pointer` with `actions` is rejected.
 One card stays visible while its actions run; Next is enabled on completion.
+Summary and commentary may be omitted or empty and load as empty text. Titles
+remain required. A title-only card uses the normal zero-duration wait action;
+there is no separate placeholder-card format.
+The Show/Hide Action visibility menu stores an optional boolean `demonstrate`,
+which controls pointer demonstrations for the card's
+actions. Omitted means `true` for compatibility; newly created personal cards explicitly use
+`true`. False executes actions without the pointer or automatic `pause_ms` delays;
+explicit `wait` commands still run. Titles/narration remain visible in both modes.
+Positive waits are pauses: they retain the preceding pointer position, including
+at the end of a card. The field survives JSON/ZIP exchange and built-in installation.
+
 Commands refer to concepts, modules and
 content blocks by stable semantic IDs. Generation rejects unknown IDs,
 unsupported commands, invalid enum values and duplicate tutorial or step IDs.
 Raw screen coordinates and CSS selectors are not part of the authored format.
 
-The initial command vocabulary is:
+The command vocabulary is defined in `srkg/tutorial_contract.py` and shared with
+validation and the editor:
 
-- `select` and `clear-selection`;
-- `set-display-scope`, `set-context` and `set-details-mode`;
+- `home`, `select`, `set-view`, `set-display-scope` and `set-context`;
 - `set-module-representation`, `set-all-module-representations`, `expand-context-modules` and `fit`;
+- `place-context-node` for temporary Fit++ node placements;
 - `open-details-relationship`, `set-relationship-full-tree` and `show-relationship-in-graph`;
-- `open-details-block`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
-- `search` and `close-search`;
+- `open-details-block`, `open-reading-tree`, `open-details-graphic`, `open-study-questions` and `show-tools-section`;
+- `show-graph-concept-hover`, `show-graph-edge-hover`, `search` and `close-search`;
 - a bounded settling `wait`.
+
+`place-context-node` requires typed `target` and `anchor` concept/module IDs and
+numeric `x`/`y` offsets in graph coordinates, each finite and in the range
+−10,000,000 to 10,000,000. The anchor must match the active Fit++ arrangement,
+and the target must belong to it. Modules must be folded. An anchor moved relative
+to itself uses its preceding position. These commands never alter saved layouts.
+The fields survive JSON/ZIP exchange and built-in installation.
 
 A generated viewer may launch a route directly with
 `?tutorial=<tutorial-id>`. Unknown IDs leave the viewer at its normal start.

@@ -122,9 +122,10 @@ def test_tutorial_export_import_ui_makes_independent_copy_and_retains_unsaved_te
     _fill_draft(page)
     original_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
     with page.expect_download() as captured:
+        page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
         page.locator('#kg_tutorial_editor_export').click()
     path = captured.value.path()
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     page.locator('#kg_tutorial_import_file').set_input_files(path)
     page.locator('#kg_tutorial_import_apply').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
@@ -135,6 +136,7 @@ def test_tutorial_export_import_ui_makes_independent_copy_and_retains_unsaved_te
     page.locator('#kg_tutorial_editor_title').fill('My unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state','error')
     with page.expect_download() as captured:
+        page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
         page.locator('#kg_tutorial_editor_json').click()
     from pathlib import Path
     exported = json.loads(Path(captured.value.path()).read_text())
@@ -155,11 +157,11 @@ def test_imported_missing_targets_can_be_repaired_in_editor(tutorial_graph):
     page.locator('#kg_tutorial_import_file').set_input_files({'name':'missing.json','mimeType':'application/json','buffer':payload})
     page.locator('#kg_tutorial_import_apply').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
-    assert page.locator('#kg_tutorial_editor_play').is_disabled()
+    assert page.locator('#kg_tutorial_editor_from').is_disabled()
+    page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
     page.locator('#kg_tutorial_editor_domains').fill('')
-    page.locator('#kg_tutorial_editor_action_section').evaluate('e=>e.open=true')
     page.locator('#kg_tutorial_editor_actions [data-field="target"]').select_option('concept:2.1')
-    expect(page.locator('#kg_tutorial_editor_play')).to_be_enabled()
+    expect(page.locator('#kg_tutorial_editor_from')).to_be_enabled()
 
 
 @pytest.mark.browser
@@ -214,7 +216,7 @@ def test_personal_backup_includes_tutorials_and_old_backup_retains_them(tutorial
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     tutorial_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
-    page.locator('#kg_tutorial_editor_close').click()
+    page.keyboard.press('Escape')
     tutorial_graph.open_control_section('kg_personal_data_section')
     with page.expect_download() as captured:
         page.locator('#kg_personal_data_export').click()

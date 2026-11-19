@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -33,6 +34,7 @@ class TutorialStep:
     prepare: tuple[dict[str, object], ...] = ()
     pointer_target: str | None = None
     actions: tuple[dict[str, object], ...] = ()
+    demonstrate: bool | None = None
 
     def to_viewer_data(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -48,6 +50,8 @@ class TutorialStep:
             data["prepare"] = [dict(command) for command in self.prepare]
         if self.pointer_target:
             data["pointer"] = {"target": self.pointer_target}
+        if self.demonstrate is not None:
+            data["demonstrate"] = self.demonstrate
         return data
 
 
@@ -176,7 +180,7 @@ def load_tutorials(
             tutorial_id=tutorial_id,
             title=_required_text(mapping, "title", context),
             category=category,
-            summary=_required_text(mapping, "summary", context),
+            summary=_optional_text(mapping, "summary", context, maximum=10000),
             sequence=sequence,
             domains=tuple(domains),
             steps=steps,
@@ -212,6 +216,9 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
         if step_id in step_ids:
             raise TutorialLoadError(f'Duplicate step id in {context}: {step_id}')
         step_ids.add(step_id)
+        demonstrate = mapping.get('demonstrate')
+        if 'demonstrate' in mapping and not isinstance(demonstrate, bool):
+            raise TutorialLoadError(f'{step_context}.demonstrate must be a boolean')
         prepare_rows = mapping.get('prepare', [])
         if not isinstance(prepare_rows, list):
             raise TutorialLoadError(f'{step_context}.prepare must be a list')
@@ -245,7 +252,7 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
             pointer = _mapping(mapping['pointer'], f'{step_context}.pointer')
             pointer_target = _required_text(pointer, 'target', f'{step_context}.pointer')
             _validate_pointer_target(pointer_target, context=f'{step_context}.pointer target', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
-        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_required_text(mapping, 'commentary', step_context), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions)))
+        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_optional_text(mapping, 'commentary', step_context, maximum=100000), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate))
     return tuple(steps)
 
 
@@ -262,6 +269,11 @@ def _validate_command(command: dict[str, object], *, context: str, concept_ids: 
         elif kind == 'boolean':
             if not isinstance(command.get(key), bool):
                 raise TutorialLoadError(f'{context}.{key} must be a boolean')
+        elif kind == 'number':
+            value = command.get(key)
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not spec['min'] <= value <= spec['max'] or not math.isfinite(value)):
+                raise TutorialLoadError(f"{context}.{key} must be a finite number between {spec['min']} and {spec['max']}")
         elif kind == 'integer':
             value = _integer(command.get(key), f'{context}.{key}')
             if not spec['min'] <= value <= spec['max']:
@@ -381,6 +393,13 @@ def _mapping(value: object, context: str) -> dict[str, object]:
     if not isinstance(value, dict):
         raise TutorialLoadError(f"{context} must be a mapping")
     return {str(key): item for key, item in value.items()}
+
+
+def _optional_text(mapping: dict[str, object], key: str, context: str, *, maximum: int) -> str:
+    value = mapping.get(key, "")
+    if not isinstance(value, str) or len(value) > maximum:
+        raise TutorialLoadError(f"{context}.{key} must be text of at most {maximum} characters")
+    return value.strip()
 
 
 def _required_text(mapping: dict[str, object], key: str, context: str) -> str:

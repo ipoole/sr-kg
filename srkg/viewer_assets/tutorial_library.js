@@ -3,28 +3,26 @@ function kgCreateTutorialLibrary(options) {
   "use strict";
   var store = options.store, escape = options.markup.escapeHtml;
   var records = new Map(), editing = null, cardIndex = 0, edited = 0, saved = 0;
-  var saveTimer = null, pendingSave = null, returningToEditor = false, busy = false;
+  var saveTimer = null, pendingSave = null, busy = false;
   var model = options.model, portable = options.portable, reconciliation = null;
   var dialog = document.getElementById("kg_tutorial_editor");
   function element(id) { return document.getElementById("kg_tutorial_" + id); }
-  function clone(value) { return JSON.parse(JSON.stringify(value)); }
+  var clone = model.clone;
   var problems = model.routeProblems;
   function routeById(id) { var record = records.get(id); return record ? record.route : null; }
   function status(state, text) {
     element("editor_status").dataset.state = state;
     element("editor_status").textContent = text;
-    if (options.recorder) { options.recorder.saveStatus(text); }
     element("editor_retry").hidden = state !== "error";
   }
   function updatePlay() {
     var errors = editing ? problems(editing.route) : [];
-    element("editor_play").disabled = busy || Boolean(errors.length);
     element("editor_export").disabled = element("editor_json").disabled = busy;
     var canRecord = !options.canRecord || options.canRecord();
     element("editor_record").disabled = busy || !editing || !editing.route.steps.length || !canRecord;
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
-    element("editor_preview").disabled = busy || !editing || Boolean(problems(editing.route, {singleStep:true, startIndex:cardIndex}).length);
+    element("editor_close").disabled = busy;
     element("editor_validation").textContent = errors.join(" ");
   }
   function renderList() {
@@ -61,8 +59,9 @@ function kgCreateTutorialLibrary(options) {
     var personal = records.has(route.tutorial_id);
     element("intro_copy").hidden = element("new").disabled;
     element("intro_copy").textContent = personal ? "Duplicate" : "Make editable copy";
-    element("intro_edit").hidden = element("intro_delete").hidden = !personal;
     var errors = problems(route);
+    element("intro_edit").hidden = !personal || !errors.length;
+    element("intro_delete").hidden = !personal;
     element("start").disabled = Boolean(errors.length);
     element("launch_link").hidden = Boolean(errors.length);
     element("intro_author").textContent = route.author ? "By " + route.author : "";
@@ -71,19 +70,18 @@ function kgCreateTutorialLibrary(options) {
   }
   var actionEditor = kgCreateTutorialActionEditor({root:element("editor_actions"), model:model,
     changed:function(items) { model.setActions(editing.route.steps[cardIndex], items); markChanged(); }});
-  var setupEditor = kgCreateTutorialActionEditor({root:element("editor_setup"), model:model, silent:true,
-    changed:function(items) {
-      if (items.length) { editing.route.steps[cardIndex].prepare = items; }
-      else { delete editing.route.steps[cardIndex].prepare; }
-      markChanged();
-    }});
+  var advancedDirty = true;
+  function renderAdvancedActions() {
+    if (!editing || !advancedDirty || !element("editor_advanced").open) { return; }
+    var step = editing.route.steps[cardIndex];
+    actionEditor.show(step ? model.actions(step) : []);
+    advancedDirty = false;
+  }
+  element("editor_advanced").addEventListener("toggle", renderAdvancedActions);
   function renderCardList() {
-    element("editor_card").replaceChildren(); element("editor_order").replaceChildren();
+    element("editor_card").replaceChildren();
     editing.route.steps.forEach(function(step, index) {
       element("editor_card").add(new Option((index + 1) + ". " + step.title, index));
-      var item = document.createElement('li'); item.textContent = (index + 1) + '. ' + step.title;
-      item.draggable = true; item.dataset.cardId = step.step_id;
-      element("editor_order").appendChild(item);
     });
     element("editor_card").value = cardIndex;
   }
@@ -91,35 +89,33 @@ function kgCreateTutorialLibrary(options) {
     var step = editing.route.steps[cardIndex];
     element("editor_card_title").value = step ? step.title : "";
     element("editor_commentary").value = step ? step.commentary : "";
-    ["editor_card_title", "editor_commentary", "editor_card"].forEach(function(key) { element(key).disabled = !step; });
-    element("editor_action_section").hidden = element("editor_setup_section").hidden = !step;
-    element("editor_card_controls").querySelectorAll('button').forEach(function(button) {
+    element("editor_demonstrate").value = step && step.demonstrate !== false ? "show" : "hide";
+    ["editor_card_title", "editor_commentary", "editor_card", "editor_demonstrate"].forEach(function(key) { element(key).disabled = !step; });
+    element("editor_action_section").hidden = !step;
+    dialog.querySelectorAll('[data-card-action]').forEach(function(button) {
       var action = button.dataset.cardAction;
       button.disabled = action !== 'add' && (!step || (action === 'up' && cardIndex === 0) ||
         (action === 'down' && cardIndex === editing.route.steps.length - 1));
     });
-    actionEditor.show(step ? model.actions(step) : []); setupEditor.show(step ? step.prepare || [] : []);
+    advancedDirty = true; renderAdvancedActions();
     updatePlay();
-  }
-  function moveCard(from, to) {
-    var steps = editing.route.steps, selectedId = steps[cardIndex].step_id;
-    steps.splice(to, 0, steps.splice(from, 1)[0]);
-    cardIndex = steps.findIndex(function(step) { return step.step_id === selectedId; });
-    markChanged(); renderCardList(); renderCard();
   }
   function showEditor() {
     if (!dialog.open) { dialog.showModal(); }
   }
-  function openEditor(record) {
-    editing = clone(record); edited = saved = 0; cardIndex = 0;
+  function openEditor(record, stepId) {
+    records.set(record.id,clone(record));
+    editing = clone(record); edited = saved = 0;
+    cardIndex = Math.max(0,editing.route.steps.findIndex(function(step) { return step.step_id === stepId; }));
     dialog.dataset.tutorialId = record.id;
     element("editor_heading").textContent = record.conflictOf ? "Edit tutorial — conflict copy" : "Edit tutorial";
     element("editor_title").value = editing.route.title;
-    element("editor_summary").value = editing.route.summary;
+    element("editor_summary").value = editing.route.summary || "";
     element("editor_author").value = editing.route.author || "";
     element("editor_domains").value = (editing.route.domains || []).join(", ");
+    element("editor_advanced").open = false;
     renderCardList();
-    renderCard(); updatePlay(); status("saved", "Saved in this browser."); showEditor();
+    renderCard(); status("saved", "Saved in this browser."); showEditor();
     element("editor_title").focus();
   }
   function saveFailed(error) { status("error", "Not saved: " + error.message); }
@@ -151,11 +147,9 @@ function kgCreateTutorialLibrary(options) {
     if (step) {
       step.title = element("editor_card_title").value;
       step.commentary = element("editor_commentary").value;
+      step.demonstrate = element("editor_demonstrate").value === "show";
       element("editor_card").options[cardIndex].textContent = (cardIndex + 1) + ". " + step.title;
     }
-    element("editor_order").querySelectorAll('li').forEach(function(item, index) {
-      item.textContent = (index + 1) + '. ' + editing.route.steps[index].title;
-    });
     markChanged();
   }
   function markChanged() {
@@ -163,14 +157,20 @@ function kgCreateTutorialLibrary(options) {
     if (saveTimer !== null) { clearTimeout(saveTimer); }
     saveTimer = setTimeout(function() { flush().catch(function() {}); }, 250);
   }
-  async function closeEditor() {
-    if (busy) { return; }
+  // Every editor handoff saves first, retains the draft on failure, and releases busy state.
+  async function leaveEditor(operation, errorPrefix) {
+    if (busy || !editing) { return; }
     setBusy(true);
     try {
-      await flush(); dialog.close();
-      options.select(editing.id); editing = null;
-    } catch (error) { saveFailed(error); }
-    finally { setBusy(false); }
+      await flush(); dialog.close(); await operation();
+    } catch (error) {
+      showEditor();
+      if (errorPrefix !== undefined) { element("editor_validation").textContent = errorPrefix + error.message; }
+      else { saveFailed(error); }
+    } finally { setBusy(false); }
+  }
+  function closeEditor() {
+    return leaveEditor(function() { options.select(editing.id); editing = null; });
   }
   async function create(route) {
     element("new").disabled = element("intro_copy").disabled = true;
@@ -184,41 +184,47 @@ function kgCreateTutorialLibrary(options) {
   }
   function setBusy(value) {
     busy = value; element("editor_fields").disabled = value;
-    element("editor_close").disabled = value; updatePlay();
+    element("editor_advanced_fields").disabled = value; updatePlay();
   }
-  async function playEditor(mode) {
-    var playOptions = {startIndex:mode === 'all' ? 0 : cardIndex, singleStep:mode === 'preview'};
-    if (busy || !editing || problems(editing.route, playOptions).length) { return; }
-    setBusy(true);
-    try {
-      await flush(); dialog.close(); returningToEditor = true;
-      var started = await options.play(editing.id, playOptions);
-      if (!started) { returningToEditor = false; showEditor(); element("editor_validation").textContent = "Could not start this tutorial."; }
-    } catch (error) { returningToEditor = false; showEditor(); element("editor_validation").textContent = error.message; }
-    finally { setBusy(false); }
+  function playEditor() {
+    if (!editing || problems(editing.route).length) { return; }
+    return leaveEditor(async function() {
+      var started = await options.play(editing.id, {startIndex:cardIndex});
+      if (!started) { throw new Error("Could not start this tutorial."); }
+      editing = null;
+    }, "");
   }
-  function playbackExited() {
-    if (returningToEditor) { returningToEditor = false; setBusy(false); showEditor(); element("editor_preview").focus(); }
+  async function prepareCardEdit(tutorialId, stepId) {
+    await flush();
+    var record = await store.get(tutorialId);
+    if (!record || record.deletedAt) { throw new Error('This tutorial is no longer in your library.'); }
+    if (editing && editing.id === tutorialId) { record = editing; }
+    if (!record.route.steps.some(function(step) { return step.step_id === stepId; })) {
+      throw new Error('This card has changed or been removed. Exit and reopen the tutorial to review the latest version.');
+    }
+    return {record:clone(record),stepId:stepId};
   }
-  async function recordActions() {
-    if (busy || !editing || !editing.route.steps.length || (options.canRecord && !options.canRecord())) { return; }
-    setBusy(true);
-    try {
-      // A portable semantic baseline, once per route, rather than saved device coordinates.
-      var first = editing.route.steps[0];
-      first.prepare = first.prepare || [];
-      if (!first.prepare.length || first.prepare[0].command !== 'home') {
-        first.prepare.unshift({command:'home'}); markChanged();
-      }
-      await flush(); dialog.close();
-      await options.recorder.start(clone(editing.route), cardIndex);
-    } catch (error) { showEditor(); element("editor_validation").textContent = 'Could not record: ' + error.message; }
-    finally { setBusy(false); }
+  function playbackExited(cardEdit) {
+    if (!cardEdit) { return; }
+    setBusy(false); openEditor(cardEdit.record, cardEdit.stepId);
+    element("editor_commentary").focus();
   }
-  function recordingChanged(items) {
-    model.setActions(editing.route.steps[cardIndex], items); markChanged();
+  function recordActions() {
+    if (!editing || !editing.route.steps.length || (options.canRecord && !options.canRecord())) { return; }
+    return leaveEditor(async function() {
+      var route = clone(editing.route); ensureRecordingBaseline(route);
+      await options.recorder.start(route, cardIndex);
+    }, "Could not record: ");
   }
-  async function recordingStopped() {
+  function ensureRecordingBaseline(route) {
+    var first = route.steps[0]; first.prepare = first.prepare || [];
+    if (!first.prepare.length || first.prepare[0].command !== 'home') { first.prepare.unshift({command:'home'}); }
+  }
+  async function recordingStopped(items) {
+    if (items !== null) {
+      ensureRecordingBaseline(editing.route);
+      model.setActions(editing.route.steps[cardIndex], items); markChanged();
+    }
     renderCard(); showEditor(); element("editor_record").focus();
     try { await flush(); } catch (error) { saveFailed(error); }
   }
@@ -342,45 +348,33 @@ function kgCreateTutorialLibrary(options) {
     } catch (error) { element("library_status").textContent = "Could not delete tutorial: " + error.message; }
   });
   dialog.addEventListener("input", function(event) {
-    if (["editor_title", "editor_summary", "editor_author", "editor_domains", "editor_card_title", "editor_commentary"].some(function(key) {
+    if (["editor_title", "editor_summary", "editor_author", "editor_domains", "editor_card_title", "editor_commentary", "editor_demonstrate"].some(function(key) {
       return event.target === element(key);
     })) { changed(); }
   });
   element("editor_card").addEventListener("change", function() {
     cardIndex = Number(this.value); renderCard();
   });
-  element("editor_close").addEventListener("click", closeEditor);
   element("editor_retry").addEventListener("click", function() { flush().catch(function() {}); });
   element("editor_record").addEventListener("click", recordActions);
-  element("editor_play").addEventListener("click", function() { playEditor('all'); });
-  element("editor_preview").addEventListener("click", function() { playEditor('preview'); });
-  element("editor_from").addEventListener("click", function() { playEditor('from'); });
-  element("editor_card_controls").addEventListener("click", function(event) {
-    var action = event.target.dataset.cardAction, steps = editing.route.steps;
-    if (!action || busy) { return; }
-    if (action === 'up' || action === 'down') { moveCard(cardIndex, cardIndex + (action === 'up' ? -1 : 1)); return; }
-    if (action === 'add') { steps.splice(cardIndex + 1, 0, model.newCard()); cardIndex = Math.min(cardIndex + 1, steps.length - 1); }
-    if (action === 'duplicate') { var copy = clone(steps[cardIndex]); copy.step_id = model.id(); steps.splice(cardIndex + 1, 0, copy); cardIndex += 1; }
-    if (action === 'delete') {
+  element("editor_from").addEventListener("click", playEditor);
+  element("editor_close").addEventListener("click", closeEditor);
+  function changeCard(action) {
+    if (!action || busy || !editing) { return; }
+    var steps = editing.route.steps;
+    if (action === 'up' || action === 'down') {
+      var destination = cardIndex + (action === 'up' ? -1 : 1);
+      if (destination < 0 || destination >= steps.length) { return; }
+      steps.splice(destination, 0, steps.splice(cardIndex, 1)[0]); cardIndex = destination;
+    } else if (action === 'add') { steps.splice(cardIndex + 1, 0, model.newCard()); cardIndex = Math.min(cardIndex + 1, steps.length - 1); }
+    else if (action === 'duplicate') { var copy = clone(steps[cardIndex]); copy.step_id = model.id(); steps.splice(cardIndex + 1, 0, copy); cardIndex += 1; }
+    else if (action === 'delete') {
       if (!window.confirm('Delete this card?')) { return; }
       steps.splice(cardIndex, 1); cardIndex = Math.max(0, Math.min(cardIndex, steps.length - 1));
-    }
+    } else { return; }
     markChanged(); renderCardList(); renderCard();
-  });
-  var draggedCard = null;
-  element("editor_order").addEventListener('dragstart', function(event) {
-    var item = event.target.closest('li'); if (!item || busy) { event.preventDefault(); return; }
-    draggedCard = item.dataset.cardId; event.dataTransfer.setData('text/plain', draggedCard);
-  });
-  element("editor_order").addEventListener('dragover', function(event) { if (draggedCard) { event.preventDefault(); } });
-  element("editor_order").addEventListener('drop', function(event) {
-    event.preventDefault(); var item = event.target.closest('li');
-    var steps = editing.route.steps, from = steps.findIndex(function(step) { return step.step_id === draggedCard; });
-    var to = item ? steps.findIndex(function(step) { return step.step_id === item.dataset.cardId; }) : -1;
-    if (!busy && from >= 0 && to >= 0 && from !== to) { moveCard(from, to); }
-    draggedCard = null;
-  });
-  element("editor_order").addEventListener('dragend', function() { draggedCard = null; });
+  }
+  dialog.addEventListener("click", function(event) { changeCard(event.target.dataset.cardAction); });
   dialog.addEventListener("cancel", function(event) { event.preventDefault(); closeEditor(); });
   dialog.addEventListener("keydown", function(event) {
     if (event.key === "Escape") { event.stopPropagation(); }
@@ -390,6 +384,6 @@ function kgCreateTutorialLibrary(options) {
   });
   var ready = initialise();
   return {ready: ready, routeById: routeById, problems: problems,
-    showIntroduction: showIntroduction, playbackExited: playbackExited,
-    recordingChanged:recordingChanged, recordingStopped:recordingStopped, flush:flush, reconcile:reconcile};
+    showIntroduction: showIntroduction, playbackExited: playbackExited, prepareCardEdit:prepareCardEdit,
+    recordingStopped:recordingStopped, flush:flush, reconcile:reconcile};
 }

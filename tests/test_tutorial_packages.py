@@ -23,6 +23,7 @@ def installation(tmp_path):
     (data / "manifest.yaml").write_text(yaml.safe_dump(manifest))
     route = load_knowledge_base(data, include_graphics=False).tutorials[0].to_viewer_data()
     route["author"] = "A physics teacher"
+    route["steps"][0]["demonstrate"] = False
     package = tmp_path / "tutorial.json"
     document = {"format":"physicskg-tutorial", "schema_version":1, "route_schema_version":1,
                 "tutorial":{"route":route}}
@@ -30,12 +31,23 @@ def installation(tmp_path):
     return data, package, document
 
 
-def test_install_exported_tutorial_and_generate_with_credit(installation, tmp_path):
-    data, package, _ = installation
+@pytest.mark.parametrize('with_text', [True, False])
+def test_install_exported_tutorial_and_generate_with_credit(installation, tmp_path, with_text):
+    data, package, document = installation
+    if not with_text:
+        route = document['tutorial']['route']
+        route.pop('summary')
+        for step in route['steps']:
+            step.pop('commentary')
+        package.write_text(json.dumps(document))
     target = install_tutorial(package, data, "teacher-tour")
     kb = load_knowledge_base(data, include_graphics=False)
     installed = next(item for item in kb.tutorials if item.tutorial_id == "teacher-tour")
     assert installed.author == "A physics teacher"
+    assert installed.steps[0].demonstrate is False
+    if not with_text:
+        assert installed.summary == ''
+        assert all(step.commentary == '' for step in installed.steps)
     assert installed.to_viewer_data()["author"] == installed.author
     output = tmp_path / "viewer.html"
     generate_viewer_from_root(data_root=str(data), out_path=str(output), height="100vh", width="100vw", title="Test")
@@ -60,7 +72,7 @@ def test_bad_package_and_incomplete_draft_never_change_authored_file(installatio
     data, package, document = installation
     target = data / "tutorials.yaml"
     before = target.read_bytes()
-    document["tutorial"]["route"]["steps"][0]["commentary"] = ""
+    document["tutorial"]["route"]["steps"][0]["title"] = ""
     package.write_text(json.dumps(document))
     with pytest.raises(TutorialLoadError):
         install_tutorial(package, data, "incomplete")

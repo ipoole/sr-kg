@@ -11,12 +11,22 @@ player, semantic commands, pointer targets and presentation restoration.
 “Card” is the user-facing term; the existing route format calls it a step.
 
 Stage 2 review: Tools → Tutorials → New tutorial opens the same editor used for
-personal copies. Edit tutorial/card titles, summary, author credit and written
-narration; select any existing card. Play tutorial returns to the editor on Exit.
+personal copies. Edit tutorial/card titles, summary and written narration; select
+any existing card. Metadata and ordering are under Advanced. Continue tutorial resumes at the selected card; playback Exit leaves the editor closed. Playable personal introductions offer Start, with
+Edit card during playback; unplayable routes instead retain Edit draft.
 Stage 3 adds card management, explicit action editing and selected-card rehearsal;
 action capture follows in stage 4.
 Stage 5 adds text export/import, full backup inclusion and optional Google sync.
 Storage failures retain the open draft and offer Retry or text export.
+
+During personal tutorial playback, **Edit card** opens the editor on the current
+card, whether playback began in the library or the editor. **Continue tutorial**
+replays the revised card and then continues normally. The handoff restores the
+pre-playback presentation, so the edit/replay cycle retains the original return
+view. Built-in playback has no editing button: first make an editable copy in
+Tools → Tutorials. Card identity, rather than its position/title, locates the
+current card if the stored route has changed; missing/deleted cards report an
+error without ending playback or silently selecting a different card.
 
 ## 1. Ownership and library
 
@@ -26,7 +36,8 @@ does not change the viewer. Personal tutorials need no account or setup.
 - New creates and saves a personal draft with one placeholder card, then opens
   the ordinary editor. There is no creation wizard or separate creation model.
 - Edit on a built-in means Make an editable copy. The original remains available.
-- Personal tutorials support Edit, Duplicate, Play, Export and Delete.
+- Personal tutorials support Start, Duplicate, Export and Delete. Use Edit card
+  during playback, or Edit draft directly when validation prevents Start.
 - A copy gets a new tutorial ID and retains source ID/version and author credit.
   Existing card IDs may remain: they are unique within their tutorial.
 - Deleting the final card leaves an empty draft with Add card available.
@@ -35,23 +46,27 @@ does not change the viewer. Personal tutorials need no account or setup.
 
 The new draft has title “New tutorial”, an empty summary and one card titled
 “New card”, with empty written narration. Placeholder prompts are editor UI,
-not narration that could accidentally reach learners. Its action is the existing
-zero-duration wait and its pointer target is narration. These are hidden as
+not narration that could accidentally reach learners. This title-only card can
+play immediately; tutorial and card titles remain required. Its action is the existing
+zero-duration wait and its pointer target is narration; `demonstrate: true`
+starts new cards with their actions shown. These are hidden as
 “No viewer action”: a commentary-only card needs no invented user interaction.
 
 ## 2. Editor workflow
 
 The editor contains tutorial title/summary/optional author credit, an ordered
-card list, and the selected card. Support Add, Duplicate, Delete, Move up/down
-and drag reordering; the buttons provide keyboard and touch alternatives.
+Card dropdown and the selected card. Keep Add, Duplicate and Delete beside the
+dropdown. Move up/down remains under Advanced; there is no separate Arrange list
+or drag-reordering interface. Reordering may require revising downstream cards.
 
 Each card exposes:
 
 | Field | Behaviour |
 | --- | --- |
 | Title | Short label; required for playback. |
-| Written narration | Primary commentary; required for playback. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
-| Preparation | Optional supported actions to establish the card's starting view, shown in a collapsible Setup area. |
+| Action visibility | Per-card Show/Hide menu, editable after recording. Show (default) demonstrates actions; Hide sets the scene without pointer demonstrations or automatic inter-action delays. Both show narration and honour explicit pauses. |
+| Written narration | Optional commentary. Blank cards show their title and playback controls. Reuse existing safe text, maths and concept-link conventions and editing helpers. |
+| Legacy preparation | Optional saved setup commands remain supported by playback and export/import, but have no editing panel. Use JSON for deliberate changes. |
 | Actions | Ordered friendly entries such as “Select Lorentz transformations”, with editable parameters, optional pointer and pause. |
 | Voice | Optional recording/file, duration, Listen, Replace and Remove; audio can be added after the text route is complete. |
 
@@ -63,16 +78,18 @@ Playback/rehearsal uses a frozen route snapshot: library edits or background syn
 must not change its cards midway through playback. Sync must also preserve an open
 editor and its current draft, rather than rebuilding the pane or moving the viewer.
 
-Preview card and Play from here reconstruct the preceding route from its known
-baseline; they do not assume the current viewer happens to be in the right state.
-Play from beginning uses the same player. Exit returns to the editor and its
-pre-preview presentation. Review the entire route after changing earlier cards.
+Continue tutorial reconstructs the preceding route from its known baseline, then
+plays the current card and permits normal progression. It does not assume the
+viewer happens to be in the right state. Select the first card to review from the start.
+There is no single-card playback mode: use Edit card when another revision is
+needed, or continue with Next. Exit restores the pre-playback presentation and
+leaves the editor closed. Review the entire route after changing earlier cards.
 
 Desktop authoring uses the available editor/viewer space. On phones the editor
 and action-capture view are switched explicitly rather than squeezing an editor,
 graph and details into the screen together. Recording is supported on phones,
 not restricted to desktop: show the normal viewer with a compact current-card,
-action-count, Undo and Stop strip, then return to the editor on Stop. Desktop is
+action-count, Undo, Redo, Pause +1s, Finish recording and Cancel strip. Desktop is
 the initial implementation/test target; phone capture belongs in the stage 4
 review gate. Playback remains fully supported on phones and the old iPad;
 comfortable complex editing is desktop-first. Microphone recording is a separate
@@ -80,8 +97,59 @@ per-device capability, particularly on the old iPad.
 
 ## 3. Recording viewer actions
 
-Workflow: Add/select card → Record actions → operate PhysicsKG → Stop recording
-→ tidy actions and add written narration → Preview.
+Workflow: Add/select This Card → write narration → Record card actions → operate
+PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps Record card
+actions, Continue tutorial and Done editing visible while the editor body scrolls. Record card actions is prominent
+with a red record dot; Continue tutorial has a play triangle. Advanced is smaller
+and last, with metadata, ordering, manual actions and Export ZIP/JSON. Done editing
+saves and closes without starting playback, including incomplete drafts; a save
+failure retains the editor for Retry or export. Summary and written narration are
+optional and hidden when blank. Select the first card to play from the start;
+Exit during playback leaves the editor closed. Desktop Escape also closes safely.
+
+Advanced is the last section after narration, closed by default. It contains
+Required domains, Author credit, Move up/down, manual Viewer actions. These remain available without cluttering the usual writing/recording
+workflow. The Card dropdown supplies navigation through the route.
+
+Record begins before this card's actions, after replaying earlier cards and its
+silent setup. Its current actions start in the redo queue. Redo executes the next
+queued action against the current view, then remembers a session checkpoint;
+Undo returns it to the queue. A new recorded action discards the unplayed tail.
+The strip describes the next queued action. Appending is therefore Redo to the
+end, then record more. Invalid old actions do not prevent starting a replacement;
+Redo reports the invalid action without consuming it.
+
+Pause +1s records an explicit one-second wait. Repeated presses add independent
+waits immediately, with a combined trailing-duration message. Undo removes one
+wait at a time before affecting the preceding graph action. Recording/Redo does
+not wait out a pause; playback does. Pauses keep the pointer and view stationary,
+including trailing pauses. New recorded actions add no implicit pause; existing
+per-action pause metadata remains supported in Advanced and survives Redo.
+
+Queued timing refinement: make a pause a minimum interval measured from applying
+the preceding action, counting processing/rendering time and waiting only for the
+remainder. Exclude pointer travel before the action, accumulate consecutive pauses
+against one clock, and always await completion of the preceding operation. The
+current explicit-wait implementation still adds the full duration; the editor UI
+refinement does not change that timing yet.
+
+Action visibility can be changed during later review, independently of recording.
+The title and any supplied narration remain visible in either mode, and explicit pauses work
+in both. New cards default to Show; omitted flags on older cards also mean Show,
+preserving older imports. Existing `prepare` setup remains quiet and preserved
+without an editing panel. Built-in routes have been explicitly audited and migrated
+to whole-card visibility without adding cards.
+
+Jumping to a later card or reconstructing a previous view skips earlier main-action
+waits, since they do not change the view. Forward playback still honours each
+explicit pause. Existing silent preparation commands retain their behaviour.
+
+Keep captured actions/checkpoints in memory; the old saved sequence stays untouched
+until Finish. Finish keeps the applied sequence, dropping any remaining redo tail,
+including allowing an empty narration-only card. Cancel discards the recording.
+Both restore the pre-recording presentation and reopen the editor/card. A failed
+save retains the draft for Retry or export. Closing the page during capture warns
+about the unfinished recording.
 
 Capture only supported user intentions, using semantic IDs. Several actions
 belong to one card; clicks never automatically create cards. Suggest a pointer
@@ -101,17 +169,28 @@ Manual graph pan/zoom remain available for inspection, but are not recorded or
 reproduced in playback. Authors should prefer Fit/Fit++ for framing, because those
 commands adapt to the playback device. Details scrolling and text zoom also remain
 available without recording their raw gestures.
-Prefer semantic block targets and responsive Fit commands. Exact manual framing
-and temporary node arrangements are a later extension, not part of this recorder.
+Prefer semantic block targets and responsive Fit commands. Exact manual camera framing remains unrecorded.
+
+After Fit++, each completed context-node drag records one `place-context-node`
+action; pointer motion and unchanged drops do not add actions. Concepts and folded
+modules use stable IDs. The destination is a finite graph-coordinate offset from
+the recorded Fit++ anchor, not a screen pixel position. Playback places the node
+directly; no drag-path animation is stored. Undo/Redo, Back, starting from a later
+card and Explore/Resume use the same temporary checkpoints and commands. Moving
+the anchor itself records an offset from its preceding position. No movement
+writes a Personal layout; navigation and Exit retain normal restoration rules.
+A subsequent Fit context can frame the tidied arrangement for the playback device.
 
 While recording, Undo last action removes the last captured action and restores
 its preceding viewer presentation, including selection, context, folding and
 camera consequences. Redo restores that action/result until a new recorded action
 discards the redo branch. These are temporary authoring checkpoints, not permanent
-snapshots embedded in exported tutorials. Undo covers supported actions recorded
-into this card, not arbitrary personal-data changes. Replay card rehearses the
-current sequence without recording the replay. After Stop, edit/delete/reorder
-actions in the editor and reconstruct from the card's known start to rehearse.
+snapshots embedded in exported tutorials. Undo covers supported actions applied
+within this recording session, not arbitrary personal-data changes. Test the finished sequence
+with Continue tutorial; there is no separate replay control in the recording strip.
+Manual action edits and pause adjustments remain available under Advanced.
+Recording assigns pointers automatically. Manual pointer overrides remain, but
+there is no separate Use suggested pointer button.
 Report failed reconstruction rather than leaving an unexplained partial state.
 
 Retain the existing baseline/replay model and explicit preparation commands.
@@ -129,8 +208,8 @@ without conversion. Schema versions are independent of product versions.
 | Record | Minimum contract |
 | --- | --- |
 | Personal tutorial | Stable tutorial ID, route, UTC created/updated times, deletion tombstone, revision ID and optional source provenance. |
-| Route | Existing tutorial ID, title, summary, category, sequence, required domains and ordered steps. Optional author credit. |
-| Card/step | Stable step ID, title, commentary, preparation, one action or an ordered action sequence, semantic pointers/pauses; optional audio reference. |
+| Route | Existing tutorial ID, title, category, sequence, required domains and ordered steps. Optional summary and author credit. |
+| Card/step | Stable step ID, title, commentary, preparation, one action or an ordered action sequence, semantic pointers/pauses, optional `demonstrate` boolean; optional audio reference. |
 | Audio reference | Asset ID, recorded commentary hash and duration. A changed commentary hash means “Voice needs review”, not removal of the recording. |
 | Audio asset | SHA-256 content ID, MIME type, byte length and immutable bytes; local/cloud/hosted location belongs to the asset resolver, not a player command. |
 
@@ -279,31 +358,25 @@ this work does not implicitly include the separate installable/offline-app issue
 ## Implemented through stage 5
 
 The editor supports independent cards with stable IDs; add, duplicate, delete,
-Move up/down and drag reordering. Visible actions and optional silent setup use
-the same command form, driven by the build validator's shared command contract.
+Move up/down under Advanced; Card selection, Add, Duplicate and Delete remain
+readily available. Manual viewer actions use a command form driven by the build validator's shared
+command contract. Legacy silent setup remains supported in the data, without an editor.
 Each visible action can choose a semantic pointer and a 0–5 second pause before
 the next action. Empty or invalid drafts still save; validation identifies the
 card/action that prevents playback.
 
-Preview card reconstructs the preceding cards without pointer animation, then
-runs only the selected card. Its Back/Next are disabled. Incomplete later cards
-do not prevent this preview. Play from here rebuilds the same prefix and then
-permits normal progression; Play tutorial starts at the beginning. Exit restores
-the original viewer presentation and reopens the editor at the same card. Earlier
-action edits can break later steps: report rehearsal failures, retain the draft
-and offer Exit rather than silently repairing the sequence.
+Continue tutorial reconstructs preceding cards without pointer animation, runs the
+selected card, then permits normal progression. It validates the entire route.
+Exit restores the original view and leaves the editor closed.
+Earlier action edits can break later steps: report rehearsal failures, retain the
+draft and offer Exit rather than silently repairing the sequence.
 
-Stage 4 adds Record actions. It switches to the viewer with a compact strip on
-both desktop and phone. Each recording appends to the selected card; Undo covers
-only actions captured in that session, not earlier card actions. Redo is discarded
-when a new action is recorded. Replay card uses the shared pointer/action player
-without appending its replay. Stop restores the pre-recording presentation and
-returns to the same editor/card, flushing its draft; a storage failure remains
-visible and retryable there.
-
-The first card receives a silent `home` preparation command, once per route.
-Recording reconstructs earlier cards and the selected card's existing actions
-before accepting input. This avoids device-specific snapshots in stored routes.
+Record card actions switches to the normal viewer with a compact strip on both desktop
+and phone. Existing actions begin in Redo; session Undo/Redo walks the applied
+sequence, Pause +1s adds waits, Finish saves and Cancel keeps the old sequence. Silent setup is retained. The first
+card receives a silent `home` preparation command when a recording is accepted,
+not on cancellation. Recording reconstructs earlier cards and only the selected
+card's setup before accepting input. This avoids device-specific stored snapshots.
 Checkpoint snapshots exist only in memory for the active recording, at most 20
 captured actions. New recordings cannot overlap playback or another editor.
 
@@ -371,7 +444,7 @@ using the normal artifact workflow and preview version increments.
 | 1 — design | This contract, New-as-draft workflow and compact playback sketch. Review the storage compatibility approach and playback defaults before implementation. |
 | 2 — library/storage | New and independent built-in copies, minimal editing, persistence and playback through the existing engine. Review copy/edit/reload/play without changing the original. |
 | 3 — card editor | Add/delete/duplicate/reorder/edit cards and actions, autosave/status and rehearsal. Review a substantial rewrite with inserted/deleted cards. |
-| 4 — action capture | Explicit Record/Stop, Undo/Redo and Replay for one card, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
+| 4 — action capture | Explicit replacement Record/Finish/Cancel, session Undo/Redo, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
 | 5 — text portability/sync | Validation/repair, JSON/ZIP round trip, conflict-safe companion sync archive, full backup integration and text-only built-in installation. Review fresh-browser import, two-device sync/conflict and a built-in test build. Useful text-only release boundary. |
 | 6 — voice authoring | Per-card recording/import/replacement and durable attachments with stale-narration indicators. Ian voices a finished text route; review reload/listening on laptop, phone and old iPad. |
 | 7 — voiced/compact player | Agreed after-actions narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
@@ -386,3 +459,12 @@ recording boundaries, presentation restoration, invalid/missing targets, import
 rollback, repeated sync/conflicts/deletions, missing audio, format/permission/storage
 failures and old/new-viewer coexistence. Retain existing unit and fast/full browser
 lanes; avoid multiplying combinations unrelated to a specific behaviour.
+
+### Built-in route visibility audit
+
+The built-in routes use explicit whole-card visibility, with no separate `prepare`
+sequences. Using PhysicsKG demonstrates controls with Show cards; its opening map
+and reading-tree scene use Hide. The physics routes use Hide throughout: each
+card prepares its graph or reading scene quietly, then invites the learner to
+read. Card identifiers and teaching order are preserved. Legacy imported
+`prepare` sequences remain supported.

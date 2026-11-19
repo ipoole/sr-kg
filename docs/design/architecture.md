@@ -195,8 +195,8 @@ through callbacks rather than captured once at controller construction.
 | `tutorial_sequence.js` | Shared action sequencing and placeholder cards used by playback, recording, the editor and storage. |
 | `tutorial_store.js` | IndexedDB sidecar records, revision-checked tutorial saves/deletions, atomic collection snapshots and cloud baselines. |
 | `tutorial_editor_model.js` | Command/target catalog, card identity, draft validation and action normalization, using the injected `tutorial_contract.py` command descriptors. |
-| `tutorial_action_editor.js` | Shared command form for visible actions and silent preparation, pointer choice and timing. |
-| `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory Undo/Redo checkpoints and shared-player Replay; no personal-data rollback. |
+| `tutorial_action_editor.js` | Advanced viewer-action editing with manual pointer choice and timing; recording assigns pointers automatically. |
+| `tutorial_recorder.js` | Explicit capture sessions, user-command observation, in-memory replacement recording, seeded Redo, explicit waits and Undo/Redo checkpoints; Finish commits through the library, Cancel discards; no personal-data rollback. |
 | `tutorial_capture_targets.js` | Maps older DOM-only controls to semantic commands before native handlers; reports unsupported operations. |
 | `tutorial_library.js` | Personal library, card editing/reordering, autosave, rehearsal, import review/export and preserving the open editor across sync. |
 | `text_zip.js` | Shared stored UTF-8 ZIP codec with path, size and checksum validation. |
@@ -352,12 +352,28 @@ See [Tutorial playback](tutorial_playback.md) and
 [Personal tutorial authoring](tutorial_authoring.md). The personal
 library exposes IndexedDB storage through the Personal data facade. Full backups
 add optional tutorial JSON, while the separate companion cloud file leaves the
-legacy cloud/profile envelope unchanged. Card/action editing shares the existing
-player: Preview card silently reconstructs preceding actions, then demonstrates
-only the selected card; Play from here continues normally. Both restore the
-pre-rehearsal presentation on Exit. Recording uses the same command boundary and presentation port. A Home preparation
-command makes the route start explicit; session snapshots support Undo/Redo but
-are never saved into tutorial records. The recorder is idle outside explicit
+legacy cloud/profile envelope unchanged. The editor has a scrollable body and fixed action footer. Draft-only direct Edit
+and current-card playback Edit keep personal revision reachable. Card/action editing shares the existing
+player: Continue tutorial silently reconstructs preceding actions, runs the selected
+card and continues normally. Exit restores the pre-rehearsal presentation and
+leaves the editor closed. Done editing closes the autosaved editor without playback,
+even for incomplete drafts. Advanced sits below the primary actions and includes exports.
+Summary and narration are optional across editing, playback, packages and installation;
+titles and valid action targets remain required.
+Editor handoffs share one save-before-leaving path, retaining the draft on any failure.
+Advanced action forms render only when opened or their card changes; pointer-choice
+catalogues are cached for the loaded KB. Playback and editing share sequence rules
+for command reconstruction, pointer defaults and the final non-pause action. Recording uses the same command boundary and presentation port. A Home preparation
+command makes the route start explicit and is committed only on Finish. Captured
+commands are saved on Finish; Undo/Redo snapshots are never persisted. Recording replays
+earlier cards and current setup, placing the current card's old actions in Redo.
+Seeded Redo executes semantic commands before creating checkpoints; new actions
+replace the remaining tail. Completed Fit++ drags pass through the same recorder
+command boundary as anchor-relative placements; checkpoints retain precise positions
+and never write Personal layouts. Explicit pauses are commands, while the card's optional
+`demonstrate` flag controls pointer/delay presentation. Legacy omitted flags retain
+the existing demonstration behaviour. Cancel
+discards the replacement; manual command editing is under Advanced. Legacy setup is retained without an editing panel. The recorder is idle outside explicit
 capture and rejects concurrent playback. Text-only portable packages and companion sync share the validation/merge modules.
 `tutorial_packages.py` validates exported routes against the target KB and installs
 reviewable YAML through `tools/install_tutorial.py`. Voice remains a later stage.
