@@ -2,6 +2,7 @@
 function kgCreateGraphCamera(options) {
   "use strict";
   var network = options.network, nodes = options.nodes, graphContainer = options.container;
+  var moveCamera = options.moveCamera;
   var updateNodeLabelPositions = options.onChange;
   var activeNodeRadiusScale = options.labels.activeRadiusScale;
   var nodeLabelWidth = options.labels.width, nodeLabelFontSize = options.labels.fontSize;
@@ -21,7 +22,7 @@ function kgCreateGraphCamera(options) {
     var generation = cameraRestoreGeneration;
     function restore() {
       if (generation !== cameraRestoreGeneration) { return; }
-      network.moveTo({
+      moveCamera({
         position: snapshot.position,
         scale: snapshot.scale,
         animation: false
@@ -50,7 +51,7 @@ function kgCreateGraphCamera(options) {
 
   function restoreGraphView(view) {
     if (!view || !network || !network.moveTo) { return; }
-    network.moveTo({
+    moveCamera({
       position: view.position,
       scale: view.scale,
       animation: false
@@ -107,7 +108,7 @@ function kgCreateGraphCamera(options) {
     if (Math.abs(deltaX) < 0.001 && Math.abs(deltaY) < 0.001) { return false; }
 
     var position = network.getViewPosition();
-    network.moveTo({
+    moveCamera({
       position: {x: position.x + deltaX, y: position.y + deltaY},
       scale: network.getScale(),
       animation: options.animation === true ? {
@@ -374,7 +375,7 @@ function kgCreateGraphCamera(options) {
       ? cameraAnimationEnabled()
       : options.animation !== false;
 
-    network.moveTo({
+    moveCamera({
       position: targetPosition,
       scale: scale,
       animation: animate ? {

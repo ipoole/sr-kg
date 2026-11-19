@@ -11,11 +11,27 @@ function kgCreateVisNetworkAdapter(network) {
     return network.body && network.body.edges[String(id)];
   }
   var layeredEdges = [];
+  var cameraAnimationPending = false;
+  var cameraEventsBound = false;
   function position(value) {
     return value && Number.isFinite(Number(value.x)) && Number.isFinite(Number(value.y))
       ? {x: Number(value.x), y: Number(value.y)} : null;
   }
   return {
+    moveCamera: function(view) {
+      if (!cameraEventsBound) {
+        network.on('animationFinished', function() { cameraAnimationPending = false; });
+        cameraEventsBound = true;
+      }
+      // vis 9.1.2 cannot replace an animation before its first redraw: easingTime
+      // is still zero, so it leaves the previous initRedraw listener attached.
+      // Later hover redraws then advance that abandoned animation. Flush its
+      // first frame before replacement so vis removes it and balances rendering.
+      if (cameraAnimationPending) { network.redraw(); }
+      network.moveTo(view);
+      cameraAnimationPending = Boolean(view.animation &&
+        (view.animation === true || view.animation.duration !== 0));
+    },
     // Keep vis's curves, arrows, hover widths and labels, but paint these edges
     // before module backgrounds rather than in the normal foreground pass.
     setLayeredEdges: function(ids) {

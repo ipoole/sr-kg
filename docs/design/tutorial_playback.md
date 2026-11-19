@@ -261,6 +261,7 @@ The first implementation should deliberately expose a small, stable vocabulary:
 
 | Command | Parameters | Existing viewer operation |
 | --- | --- | --- |
+| `home` | none | restore the standard starting view; recorder route baseline |
 | `select` | concept or module semantic ID | normal selection transition, without history |
 | `set-display-scope` | `overview`, `full`, `context` | Overview, Context + background, Context only |
 | `set-context` | preset and depth | Context rule controls |
@@ -269,17 +270,17 @@ The first implementation should deliberately expose a small, stable vocabulary:
 | `set-all-module-representations` | `folded`/`expanded` | fold or expand all non-empty modules |
 | `expand-context-modules` | none | expand only folded modules representing the current context |
 | `fit` | `reveal`, `selection`, `context`, `displayed` | existing Fit operation |
-| `open-details-block` | stable block ID | open and scroll to authored block |
-| `open-reading-tree` | recipe; optional concept target, depth and synchronise flag | open a tree or an available support occurrence; optionally synchronise its graph |
-| `open-study-questions` | none | open and scroll to the selected concept's questions without attempting them |
-| `open-details-graphic` | none | open and scroll to the selected concept's graphic |
-| `open-details-relationship` | `derived-from` or `where-used` | open and frame a relationship section |
+| `open-details-block` | stable block ID; optional `open` boolean | open/close and scroll to authored block |
+| `open-reading-tree` | recipe; optional concept target, block ID, depth, synchronise and open flags | open/close a tree, support or borrowed block; optionally synchronise its graph |
+| `open-study-questions` | optional `open` boolean | open/close and scroll to the selected concept's questions without attempting them |
+| `open-details-graphic` | optional `open` boolean | open/close and scroll to the selected concept's graphic |
+| `open-details-relationship` | `derived-from` or `where-used`; optional `open` boolean | open/close and frame a relationship section |
 | `set-relationship-full-tree` | relationship section and boolean `full_tree` | set the section's Full tree checkbox and refresh its contents |
 | `show-relationship-in-graph` | Context preset and full-tree flag | sets context/depth, shows Both if necessary, fits the context after resizing; does not expand or contract |
 | `show-graph-concept-hover` | concept ID | show the normal graph-hover preview without selecting |
 | `show-graph-edge-hover` | source, relation and target concept IDs | emphasise and preview one visible edge |
 | `show-tools-section` | stable section name | open Tools and the named section |
-| `search` | query text | open Search and display matching concepts and modules |
+| `search` | query text, including empty | open Search and display matches; empty clears the query |
 | `close-search` | none | close Search without changing Selection |
 | `wait` | bounded milliseconds | settling pause only, not exposition timing |
 
@@ -342,23 +343,17 @@ and a details-block command waits for MathJax and scrolling.
 
 ## Authoring and recording
 
-Hand-author the first route. This will expose whether the command vocabulary and
-commentary card are adequate before a recorder makes the format harder to
-change.
+The shared player accepts repository-authored routes and local personal drafts
+and copies. The authoring extension includes editing, recording several semantic
+actions into a card, portable packages and optional human voice narration. New creates a one-card draft in the same editor;
+it is not a separate creation workflow.
 
-A later developer-only **Record tutorial** mode can subscribe to the semantic
-command interface. It records supported user actions as draft steps, using
-stable IDs and enum values. Unsupported actions are reported rather than
-captured as coordinates. The author then:
-
-1. removes accidental or redundant steps;
-2. adds step IDs, titles and commentary;
-3. groups silent preparation actions where necessary;
-4. validates and previews the route;
-5. saves the YAML into the repository through the normal authoring workflow.
-
-Recording is an authoring convenience, not part of the normal learner UI, and
-does not write directly into the generated HTML's source data.
+See [Personal tutorial authoring and voice narration](tutorial_authoring.md) for
+the proposed contract, storage compatibility safeguards, compact playback and
+staged review gates. This supersedes the earlier developer-only recorder proposal;
+the local library, independent copies, card/action editor, rehearsal and recording are implemented
+(stages 2–5), including text portability, backups and companion-file sync.
+Audio remains planned.
 
 ## Validation and compatibility
 
@@ -427,18 +422,18 @@ provides most coverage without multiplying expensive browser cases.
    click pulse, responsive placement and reduced-motion handling.
 6. **First substantive tutorials** — one interface orientation route and one
    physics route, refined on desktop, phone and old iPad. **Implemented.**
-7. **Author recorder** — developer-only capture of supported semantic commands,
-   after the format has proved stable.
+7. **Personal authoring and voice** — planned extension with its own staged
+   review gates in [Tutorial authoring](tutorial_authoring.md).
 
 ## Deferred capabilities
 
-- timed autoplay or voice narration;
+- timed autoplay;
 - branching, quizzes or conditional steps;
 - resuming tutorial progress across devices;
 - route analytics;
-- tutorial actions that write personal data;
-- importing third-party recordings;
-- an end-user route editor.
+- tutorial actions that write personal data.
 
-These can be added without weakening the core semantic route format if later
+Personal editing, audio-file import and voice narration are now planned in the
+authoring extension rather than indefinitely deferred. The remaining capabilities
+can be added without weakening the core semantic route format if later
 experience justifies them.

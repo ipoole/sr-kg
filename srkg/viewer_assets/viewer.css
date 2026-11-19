@@ -131,6 +131,9 @@
         font-size: 13px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.18);
         max-width: 320px;
+        max-height: calc(100vh - var(--kg-header-height) - 40px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
       #kg_controls.kg-hidden {
         display: none;
@@ -4035,3 +4038,53 @@ details[open] > summary > .kg-content-preview { display: none; }
     padding: 0.3em 0.65em; min-height: 32px; cursor: pointer;
 }
 #info_panel .kg-content-refold:focus-visible { outline: 2px solid #174ea6; outline-offset: 2px; }
+
+/* Authoring is a separate, scrollable editor, never a third cramped viewer pane. */
+.kg-tutorial-library-heading { font-size: 1em; margin: 0.8em 0 0.35em; }
+.kg-tutorial-editor {
+    background: #fff; color: #212529; border: 1px solid #9bb0c5;
+    border-radius: 10px; box-sizing: border-box; padding: 18px;
+    width: min(700px, calc(100% - 20px)); max-height: calc(100vh - 24px);
+    overflow: auto; font: 16px/1.4 Arial, sans-serif;
+}
+.kg-tutorial-editor::backdrop { background: rgba(20,35,55,0.35); }
+.kg-tutorial-editor h2 { font-size: 1.2em; margin: 0 0 0.5em; }
+.kg-tutorial-editor label { display: block; font-weight: 600; margin: 0.6em 0; }
+.kg-tutorial-editor input, .kg-tutorial-editor textarea, .kg-tutorial-editor select {
+    display: block; box-sizing: border-box; width: 100%; min-width: 0;
+    font: 400 16px/1.4 Arial, sans-serif; margin-top: 4px; padding: 7px;
+    border: 1px solid #9cafc1; border-radius: 4px;
+}
+.kg-tutorial-editor textarea { resize: vertical; }
+.kg-tutorial-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.kg-tutorial-editor button {
+    font: inherit; font-size: 0.875em; min-height: 32px; padding: 6px 10px;
+    border: 1px solid #9cafc1; border-radius: 5px; background: #f7f9fc; color: #28465b;
+    cursor: pointer;
+}
+.kg-tutorial-editor button:disabled { opacity: 0.5; cursor: default; }
+#kg_tutorial_editor_status[data-state="error"] { color: #a51d22; font-weight: 700; }
+#kg_tutorial_editor_validation { color: #6b5200; }
+
+/* Tutorial authoring stays in a single scrollable surface, including on phones. */
+.kg-tutorial-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.kg-tutorial-editor details { margin: 12px 0; padding: 8px; border: 1px solid #ccd6df; border-radius: 6px; }
+.kg-tutorial-editor summary { cursor: pointer; font-weight: 600; }
+.kg-tutorial-editor li[draggable] { padding: 8px; margin: 4px 0; border: 1px solid #ccd6df; cursor: grab; }
+.kg-tutorial-editor select { text-overflow: ellipsis; }
+
+.kg-tutorial-recording-strip {
+    position: fixed; z-index: 2200; bottom: 6px; left: 50%; transform: translateX(-50%);
+    box-sizing: border-box; width: min(620px, calc(100% - 12px)); padding: 8px 12px;
+    background: rgba(255, 250, 238, 0.97); border: 1px solid #ac7536; border-radius: 8px;
+    box-shadow: 0 2px 10px #0003; font: 13px/1.35 Arial, sans-serif;
+}
+.kg-tutorial-recording-strip[hidden] { display: none; }
+.kg-tutorial-recording-strip strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kg-tutorial-recording-strip .kg-tutorial-editor-actions { gap: 5px; margin: 5px 0; }
+.kg-tutorial-recording-strip button { font: inherit; min-height: 32px; padding: 4px 8px; background: white; color: #28465b; border: 1px solid #9cafc1; border-radius: 5px; }
+.kg-tutorial-recording-strip button:disabled { opacity: 0.5; }
+.kg-tutorial-recording #info_panel { padding-bottom: 125px; }
+.kg-tutorial-recording #kg_controls { max-height: calc(100vh - var(--kg-header-height) - 145px); }
+
+.kg-tutorial-import-dialog input[type="radio"] { display: inline-block; width: auto; margin: 0 6px 0 0; }

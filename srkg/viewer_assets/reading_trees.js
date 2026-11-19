@@ -339,7 +339,7 @@ function kgCreateReadingTrees(options) {
       depths: depths, entries: records, synchronised: synchronised, position: position,
       activeRecipe: activeRecipe, focus: focusStack.map(function(item) { return item.targetId; })};
   }
-  async function openForTutorial(recipe, node, depth, sync) {
+  async function openForTutorial(recipe, node, depth, sync, blockId, open) {
     var tree = trees[recipe];
     if (!tree) { throw new Error("Reading tree is unavailable: " + recipe); }
     var card = document.getElementById(tree.entry.id), target = card;
@@ -355,12 +355,41 @@ function kgCreateReadingTrees(options) {
       target.open = true; entryIds.get(target.id).open = true;
       hydrate(target); afterRender(target); visit(tree, node);
     }
+    if (blockId) {
+      target = Array.from(target.querySelectorAll('[data-content-block-id]')).find(function(element) {
+        return element.getAttribute('data-content-block-id') === blockId;
+      });
+      if (!target) { throw new Error('Reading block is unavailable: ' + blockId); }
+    }
+    if (open === false) { target.open = false; var closed = entryIds.get(target.id); if (closed) { closed.open = false; } }
+    else if (blockId) { target.open = true; var opened = entryIds.get(target.id); if (opened) { opened.open = true; } }
     restored(document.getElementById("info_panel"));
     // Quiet programmatic toggles skip the ordinary toggle/typeset handler.
     // Finish the lazy statements before the tutorial measures or frames them.
     await options.typeset(card);
     if (sync === true) { await synchronise(tree); }
+    else if (sync === false) { detach(); }
     return node ? target.parentElement : card;
+  }
+  function commandFor(element, open) {
+    var tree = treeFor(element);
+    if (!tree) { return null; }
+    var command = {command:'open-reading-tree', recipe:tree.recipe};
+    if (element.hasAttribute('data-reading-depth')) { command.depth = element.value; return command; }
+    if (element.classList.contains('kg-reading-sync')) { command.synchronise = element.checked; return command; }
+    var found = entryIds.get(element.id);
+    if (!found) { return null; }
+    var parent = element.closest('.kg-reading-concept');
+    if (found.kind === 'concept') { command.target = 'concept:' + found.node; }
+    else if (found.kind === 'block') {
+      if (parent) { command.target = 'concept:' + parent.dataset.readingNode; }
+      command.block = 'block:' + element.getAttribute('data-content-block-id');
+    }
+    if (command.target && Array.from(document.getElementById(tree.entry.id).querySelectorAll('.kg-reading-concept')).filter(function(item) {
+      return 'concept:' + item.dataset.readingNode === command.target;
+    }).length > 1) { return null; }
+    command.open = open;
+    return command;
   }
   function click(event) {
     var toggle = event.target.closest("[data-reading-toggle]");
@@ -397,7 +426,7 @@ function kgCreateReadingTrees(options) {
   return {beginPage: beginPage, render: render, afterRender: afterRender, restored: restored, toggled: toggled,
     restoreFocus: restoreFocus, prepareFold: prepareFold, focusButton: focusButton, click: click, change: change, detach: detach,
     capture: capture, restore: function(checkpoint) { pendingCheckpoint = checkpoint || null; },
-    openForTutorial: openForTutorial,
+    openForTutorial: openForTutorial, commandFor:commandFor,
     reset: function() {
       leaveFocus(true); detach(); root = null; position = null; activeRecipe = null;
       entries.clear(); entryIds.clear(); trees = {}; preferredDepths = {}; pendingCheckpoint = null; resumeFocus = [];

@@ -45,6 +45,7 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
             "study_attempts.csv",
             "study_resets.csv",
             "reading_progress.csv",
+            "tutorials.json",
         }
         notes = list(csv.DictReader(io.TextIOWrapper(archive.open("notes.csv"))))
         layout = list(csv.DictReader(io.TextIOWrapper(archive.open("layout.csv"))))
