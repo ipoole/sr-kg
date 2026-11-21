@@ -1,4 +1,5 @@
 [
+  {"version": "5.0.8", "date": "2026-11-21", "summary": "Preview: Prefer MP4 for new voice recordings on iPhone and iPad."},
   {"version": "5.0.7", "date": "2026-11-21", "summary": "Preview: Switch iPhone and iPad audio to playback mode before listening to a recording."},
   {"version": "5.0.6", "date": "2026-11-21", "summary": "Preview: Release the microphone after recording on iPhone and iPad before playing back a take."},
   {"version": "5.0.5", "date": "2026-11-21", "summary": "Preview: Record or import tutorial voice narration and listen while card actions play."},
