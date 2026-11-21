@@ -47,6 +47,9 @@ def test_block_cref_preview_and_explicit_navigation(block_cref_output, playwrigh
         page = graph.page
         graph.click_concept('2.1')
         page.locator('#kg_view_select').select_option('details')
+        # The floating Tools panel can cover the paragraph in Details-only view.
+        if page.locator('#kg_controls').is_visible():
+            page.locator('#kg_controls_toggle').click()
         source = page.locator('#info_panel > [data-content-block-id="2.1.explanation"]')
         source.evaluate('e=>e.open=true')
         before = page.evaluate('kgViewerStateSnapshot()')
