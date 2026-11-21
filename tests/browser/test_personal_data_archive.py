@@ -70,7 +70,8 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
     assert "1 question result" in page.locator(
         "#kg_personal_data_import_summary"
     ).inner_text()
-    page.locator("#kg_personal_data_import_apply").click()
+    with page.expect_navigation(wait_until="domcontentloaded"):
+        page.locator("#kg_personal_data_import_apply").click()
     page.wait_for_function(
         """() => window.kgPersonalData &&
           window.kgPersonalData.getSnapshot().notes.some(note => note.id === "note-portable")"""
