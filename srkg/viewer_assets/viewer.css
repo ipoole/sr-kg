@@ -4067,6 +4067,8 @@ details[open] > summary > .kg-content-preview { display: none; }
 .kg-tutorial-editor .kg-tutorial-primary-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .kg-tutorial-primary-actions button { min-width: 0; }
 .kg-tutorial-editor button.kg-tutorial-primary { background: #205f88; color: white; border-color: #205f88; font-weight: 700; }
+#kg_tutorial_editor_close { justify-self: end; min-width: 72px; }
+.kg-tutorial-record-dot { color: #ff8080; }
 .kg-tutorial-record-icon { font-size: 1em; line-height: 1; }
 #kg_tutorial_editor_record, #kg_tutorial_editor_voice_record { min-height: 60px; }
 .kg-tutorial-editor section h3 { font-size: 1em; margin: 0.6em 0; }

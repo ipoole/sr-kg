@@ -23,7 +23,7 @@ function kgCreateTutorialVoice(options) {
   }
   el('microphone_note').textContent = releaseBetweenTakes
     ? 'The microphone is released when you stop recording. Re-recording may ask for access again.'
-    : 'Microphone access lasts until Done editing or Exit tutorial. It is muted between takes.';
+    : 'Microphone access lasts until Done or Exit tutorial. It is muted between takes.';
   function message(text) { el('status').textContent = text; }
   function controls() {
     var locked = phase !== 'idle';
@@ -132,10 +132,7 @@ function kgCreateTutorialVoice(options) {
   ['play','pause','ended'].forEach(function(event) { player.addEventListener(event,controls); });
   player.addEventListener('error',function() { if (clip && session) { message('This device cannot play this audio. Import a supported audio file or re-record.'); } });
   el('download').addEventListener('click',function() {
-    if (!clip || !url) { return; }
-    var link = document.createElement('a'); link.href = url;
-    var type = clip.type.split(';')[0], extension = {'audio/mp4':'m4a','audio/webm':'webm','audio/ogg':'ogg','audio/wav':'wav','audio/x-wav':'wav','audio/mpeg':'mp3'}[type] || 'audio';
-    link.download = 'narration.' + extension; link.click();
+    if (clip) { kgDownloadTutorialAudio(clip); }
   });
   el('finish').addEventListener('click',async function() {
     if (phase !== 'idle' || !dirty) { return; }
@@ -160,6 +157,7 @@ function kgCreateTutorialVoice(options) {
     stopTracks();
   });
   function open(step, asset) {
+    el('advanced').open = false;
     generation += 1; session = step; phase = 'idle'; dirty = false; clip = null; duration = 0;
     el('heading').textContent = 'Voice narration — ' + (step.title || 'Untitled card');
     if (window.MathJax && MathJax.typesetClear) { MathJax.typesetClear([el('script')]); }
@@ -200,4 +198,17 @@ function kgCreateTutorialVoice(options) {
     }
   }
   return {endAuthoring:endAuthoring, open:open, importFile:importFile, cancel:cancel};
+}
+
+
+function kgDownloadTutorialAudio(blob) {
+  var extensions = {'audio/mp4':'m4a','audio/webm':'webm','audio/ogg':'ogg',
+    'audio/wav':'wav','audio/x-wav':'wav','audio/mpeg':'mp3'};
+  var url = URL.createObjectURL(blob), link = document.createElement('a');
+  link.href = url;
+  link.download = 'narration.' + (extensions[blob.type.split(';')[0]] || 'audio');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }

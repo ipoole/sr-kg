@@ -101,9 +101,9 @@ per-device capability, particularly on the old iPad.
 
 Workflow: Add/select This Card → write narration → Record card actions → operate
 PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps Record card
-actions, Continue tutorial and Done editing visible while the editor body scrolls. Record card actions is prominent
+actions, Continue tutorial and Done visible while the editor body scrolls. Record card actions is prominent
 with a red record dot; Continue tutorial has a play triangle. Advanced is smaller
-and last, with metadata, ordering, manual actions and Export ZIP/JSON. Done editing
+and sits above Done, with audio import and download, metadata, ordering, manual actions and Export ZIP/JSON. Done
 saves and closes without starting playback, including incomplete drafts; a save
 failure retains the editor for Retry or export. Summary and written narration are
 optional and hidden when blank. Select the first card to play from the start;
@@ -478,7 +478,7 @@ formatted written narration without operating the graph. Record/Re-record → St
 the previously saved recording. Recording requests microphone permission only on
 Record and reuses the stream throughout the tutorial authoring session. Stop,
 Finish recording and Cancel mute its tracks; rehearsal and Edit card retain access
-within the same tutorial. Done editing, Exit tutorial, switching tutorials,
+within the same tutorial. Done, Exit tutorial, switching tutorials,
 page exit and recorder errors release them. An ended/revoked stream is reacquired
 on the next Record. No audio is recorded between takes. A late permission
 On iPhone and iPad, the stream is released after each take so the browser

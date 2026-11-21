@@ -165,7 +165,7 @@ def test_failed_save_retains_the_draft_and_retry_persists_it(tutorial_graph, han
     page.locator('#kg_tutorial_editor_title').fill('Keep my unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state', 'error')
     if handoff == 'close':
-        page.get_by_role('button',name='Done editing',exact=True).click()
+        page.get_by_role('button',name='Done',exact=True).click()
     else:
         page.locator('#kg_tutorial_editor_' + ('from' if handoff == 'continue' else 'record')).click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open', '')

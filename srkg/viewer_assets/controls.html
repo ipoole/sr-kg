@@ -346,13 +346,12 @@
   </div>
   <div id="kg_tutorial_editor_footer">
   <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions" role="group" aria-label="Record and continue">
-    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-icon" aria-hidden="true">➤</span> Record card actions</button>
+    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card actions <span class="kg-tutorial-record-icon" aria-hidden="true">↖</span></button>
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
-    <button id="kg_tutorial_editor_close" type="button">Done editing</button>
   </div>
   <section id="kg_tutorial_editor_voice" aria-label="Card voice narration">
     <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions">
-      <button id="kg_tutorial_editor_voice_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-icon" aria-hidden="true">🎙︎</span> Record voice narration</button>
+      <button id="kg_tutorial_editor_voice_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record voice narration <span class="kg-tutorial-record-icon" aria-hidden="true">🎙︎</span></button>
       <button id="kg_tutorial_editor_voice_remove" type="button">Remove voice</button>
     </div>
     <span id="kg_tutorial_editor_voice_status" role="status"></span>
@@ -360,6 +359,7 @@
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <fieldset id="kg_tutorial_editor_advanced_fields">
   <button id="kg_tutorial_editor_voice_import" type="button">Import audio file</button>
+  <button id="kg_tutorial_editor_voice_download" type="button" disabled>Download audio</button>
   <input id="kg_tutorial_editor_voice_file" type="file" accept="audio/*" hidden>
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
   <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
@@ -377,6 +377,7 @@
   </div>
   </fieldset>
   </details>
+  <button id="kg_tutorial_editor_close" type="button">Done</button>
   </div>
 </dialog>
 
@@ -416,8 +417,10 @@
     <button id="kg_tutorial_voice_play" type="button">Play</button>
     <button id="kg_tutorial_voice_finish" type="button">Finish recording</button>
     <button id="kg_tutorial_voice_cancel" type="button">Cancel</button>
-    <button id="kg_tutorial_voice_download" type="button">Download audio</button>
   </div>
+  <details id="kg_tutorial_voice_advanced"><summary>Advanced</summary>
+    <button id="kg_tutorial_voice_download" type="button">Download audio</button>
+  </details>
   <p id="kg_tutorial_voice_microphone_note" class="kg-muted-label"></p>
   <p class="kg-muted-label">Voice currently stays in this browser. Download audio to keep a separate copy; tutorial audio export and sync come later.</p>
 </dialog>

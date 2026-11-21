@@ -154,6 +154,11 @@ def test_import_real_audio_listen_save_remove_and_permission_error(tutorial_grap
     page.locator('#kg_tutorial_voice_finish').click()
     expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
     assert audio_ref(page)['duration']==pytest.approx(1)
+    page.locator("#kg_tutorial_editor_advanced summary").click()
+    with page.expect_download() as download:
+        page.locator("#kg_tutorial_editor_voice_download").click()
+    assert download.value.path().read_bytes()==data.getvalue()
+    page.locator("#kg_tutorial_editor_advanced summary").click()
     page.on('dialog',lambda d:d.accept())
     page.locator('#kg_tutorial_editor_voice_remove').click()
     expect(page.locator('#kg_tutorial_editor_voice_status')).to_have_text('No voice recording.')
@@ -185,6 +190,8 @@ def test_failed_finish_keeps_take_for_retry_and_old_asset(tutorial_graph):
     page.locator('#kg_tutorial_voice_finish').click()
     expect(page.locator('#kg_tutorial_voice_status')).to_contain_text('Not saved')
     assert audio_ref(page)==first
+    page.locator('#kg_tutorial_voice_advanced summary').click()
+    expect(page.locator('#kg_tutorial_voice_download')).to_be_visible()
     expect(page.locator('#kg_tutorial_voice_download')).to_be_enabled()
     page.evaluate('()=>{IDBObjectStore.prototype.put=window.originalPut;}')
     page.locator('#kg_tutorial_voice_finish').click()

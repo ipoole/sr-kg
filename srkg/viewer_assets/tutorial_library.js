@@ -23,9 +23,9 @@ function kgCreateTutorialLibrary(options) {
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
     element("editor_close").disabled = busy;
-    ['record','import','remove'].forEach(function(action) {
+    ['record','import','remove','download'].forEach(function(action) {
       element('editor_voice_' + action).disabled = busy || !editing || !editing.route.steps.length ||
-        (action === 'remove' && !editing.route.steps[cardIndex].audio);
+        ((action === 'remove' || action === 'download') && !editing.route.steps[cardIndex].audio);
     });
     updateVoiceStatus();
     element("editor_validation").textContent = errors.join(" ");
@@ -65,6 +65,15 @@ function kgCreateTutorialLibrary(options) {
   }
   element('editor_voice_record').addEventListener('click',function() { openVoice(); });
   element('editor_voice_import').addEventListener('click',function() { element('editor_voice_file').click(); });
+  element('editor_voice_download').addEventListener('click',async function() {
+    var step = editing && editing.route.steps[cardIndex];
+    if (!step || !step.audio) { return; }
+    try {
+      var asset = await store.getAudio(step.audio.assetId);
+      if (!asset) { throw new Error('The saved recording is missing.'); }
+      kgDownloadTutorialAudio(asset.blob);
+    } catch (error) { element('editor_validation').textContent = 'Could not download audio: ' + error.message; }
+  });
   element('editor_voice_file').addEventListener('change',function(event) {
     var file = event.target.files[0]; event.target.value = ''; if (file) { openVoice(file); }
   });
