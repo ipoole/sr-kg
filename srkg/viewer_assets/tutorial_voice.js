@@ -119,7 +119,12 @@ function kgCreateTutorialVoice(options) {
   });
   dialog.addEventListener('cancel',function(event) { event.preventDefault(); cancel(); });
   dialog.addEventListener('close',function() { if (session && !dialog.open) { cancel(); } });
-  dialog.addEventListener('keydown',function(event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); } });
+  window.addEventListener('keydown',function(event) {
+    if (event.key !== 'Escape' || !dialog.open) { return; }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    cancel();
+  }, true);
   // Concept links in the script must not change the graph while recording.
   el('script').addEventListener('click',function(event) { event.preventDefault(); event.stopPropagation(); });
   window.addEventListener('pagehide',function() { phase = 'idle'; cancel(); endAuthoring(); });
