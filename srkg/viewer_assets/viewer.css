@@ -4104,3 +4104,12 @@ details[open] > summary > .kg-content-preview { display: none; }
 /* Keep the ordinary workflow visible while advanced controls scroll separately. */
 #kg_tutorial_editor_advanced { margin: 0; padding: 0; border: 0; max-height: 40vh; max-height: 40dvh; overflow: auto; }
 #kg_tutorial_editor_advanced > summary { font-size: 0.875em; color: #526577; }
+
+#kg_tutorial_editor_voice { display: grid; gap: 4px; }
+#kg_tutorial_editor_voice_status { font-size: 0.8em; }
+#kg_tutorial_voice_dialog[open] { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); overflow: hidden; }
+#kg_tutorial_voice_script { min-height: 50px; overflow: auto; overflow-wrap: anywhere; flex: 1 1 auto; padding: 8px; border: 1px solid #ccd6df; }
+#kg_tutorial_voice_dialog > :not(#kg_tutorial_voice_script) { flex-shrink: 0; }
+#kg_tutorial_voice_script a { pointer-events: none; }
+#kg_tutorial_voice_time { font-variant-numeric: tabular-nums; }
+#kg_tutorial_editor_voice_file { display: none; }

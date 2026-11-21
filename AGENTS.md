@@ -1,5 +1,25 @@
 # Agent Instructions
 
+## Issues and parallel development
+
+- Track bugs, features and content work in [GitHub Issues](https://github.com/ipoole/sr-kg/issues).
+  Check the issue and its linked work before starting. Record who is taking it
+  and the branch name. Use the issue for scope changes, blockers and handoffs.
+  Record lasting design decisions in the relevant project docs.
+- Use a separate checkout and feature branch for each active piece of work.
+  Fetch `origin`, check the current branch and working tree, and base new work
+  on `origin/main`. Include the issue number in the branch name when there is
+  one, for example `issue-11-domain-personal-data`. Coordinate scope and merge
+  order when work overlaps in a shared component or data contract.
+- Open a pull request against `main` and record the change and checks run.
+  Use `Closes #N` if the PR fully resolves the issue, or `Refs #N` for partial
+  work. Bring in current `origin/main` before merging and repeat affected checks
+  after resolving conflicts or integrating overlapping changes.
+- Coordinate hosted previews and releases across checkouts. Agree who will
+  publish, which commit to build, and which version to use before changing
+  shared release metadata. Record the deployed preview version and link on
+  the PR. Follow the publishing instructions below.
+
 ## Python Environment
 
 Use the project conda environment for all Python commands:

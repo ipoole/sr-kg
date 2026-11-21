@@ -1,4 +1,5 @@
 import pytest
+from playwright.sync_api import expect
 
 
 def _open_scorecard(browser_graph):
@@ -62,8 +63,9 @@ def test_study_scorecard_navigates_to_question(browser_graph):
     assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.1"
     assert page.locator("#kg_view_select").input_value() == "both"
     question = page.locator('.study-question[data-question-id="2.1.q1"]')
+    # Navigation marks the target in requestAnimationFrame, after the click handler.
+    expect(question).to_have_attribute("data-scorecard-target", "true")
     assert question.evaluate("element => element.open")
-    assert question.get_attribute("data-scorecard-target") == "true"
 
 
 @pytest.mark.browser

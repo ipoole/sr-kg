@@ -13,10 +13,11 @@ function kgCreateTutorialStore(options) {
     if (database) { return database; }
     database = new Promise(function(resolve, reject) {
       if (!window.indexedDB) { reject(new Error('Personal tutorial storage is unavailable.')); return; }
-      var abandoned = false, request = indexedDB.open(options.databaseName || 'physicskg.tutorials', 2);
+      var abandoned = false, request = indexedDB.open(options.databaseName || 'physicskg.tutorials', 3);
       request.onupgradeneeded = function() {
         var db = request.result;
         if (!db.objectStoreNames.contains('tutorials')) { db.createObjectStore('tutorials', {keyPath:'id'}); }
+        if (!db.objectStoreNames.contains('audio')) { db.createObjectStore('audio', {keyPath:'id'}); }
         if (!db.objectStoreNames.contains('meta')) { db.createObjectStore('meta', {keyPath:'key'}); }
       };
       request.onerror = function() { reject(request.error); };
@@ -34,7 +35,7 @@ function kgCreateTutorialStore(options) {
     return open().then(function(db) {
       return new Promise(function(resolve, reject) {
         var tx = db.transaction(names, mode), result, failure;
-        tx.oncomplete = function() { resolve(clone(result)); };
+        tx.oncomplete = function() { resolve(result); };
         tx.onabort = tx.onerror = function() { reject(failure || tx.error || new Error('Could not save tutorial.')); };
         function fail(error) { failure = error; tx.abort(); }
         try { operation(tx, function(value) { result = value; }, fail); }
@@ -61,20 +62,30 @@ function kgCreateTutorialStore(options) {
     return record && typeof record.id === 'string' && record.id.indexOf('personal:') === 0 &&
       record.route && record.route.tutorial_id === record.id && Array.isArray(record.route.steps);
   }
-  function save(record) {
+  function save(record, asset) {
     record = clone(record);
     if (!validRecord(record)) { return Promise.reject(new Error('Invalid personal tutorial record.')); }
-    return transaction(['tutorials'], 'readwrite', function(tx, done, fail) {
+    return transaction(['tutorials','audio'], 'readwrite', function(tx, done, fail) {
       var store = tx.objectStore('tutorials');
       store.get(record.id).onsuccess = function(event) {
-        var previous = event.target.result;
-        if (previous && previous.revisionId !== record.revisionId) {
-          fail(new Error('This tutorial changed in another editor. Keep your text before reopening it.')); return;
-        }
-        var now = new Date(Math.max(Date.now(), previous ? Date.parse(previous.updatedAt) + 1 : 0)).toISOString();
-        record.createdAt = previous ? previous.createdAt : now; record.updatedAt = now;
-        if (record.deletedAt) { record.deletedAt = now; }
-        record.revisionId = id('revision:'); store.put(record); done(record);
+        try {
+          var previous = event.target.result;
+          if (previous && previous.revisionId !== record.revisionId) {
+            fail(new Error('This tutorial changed in another editor. Keep your text before reopening it.')); return;
+          }
+          var now = new Date(Math.max(Date.now(), previous ? Date.parse(previous.updatedAt) + 1 : 0)).toISOString();
+          record.createdAt = previous ? previous.createdAt : now; record.updatedAt = now;
+          if (record.deletedAt) { record.deletedAt = now; }
+          record.revisionId = id('revision:');
+          if (asset) { tx.objectStore('audio').put(asset); }
+          (record.route.steps || []).forEach(function(step) {
+            if (!step.audio) { return; }
+            tx.objectStore('audio').get(step.audio.assetId).onsuccess = function(event) {
+              if (!event.target.result) { fail(new Error('Voice asset is missing; recording was not saved.')); }
+            };
+          });
+          store.put(record); done(record);
+        } catch (error) { fail(error); }
       };
     }).then(function(result) { changed('edit'); return result; });
   }
@@ -113,5 +124,28 @@ function kgCreateTutorialStore(options) {
       record.deletedAt = new Date().toISOString(); return save(record);
     });
   }
-  return {get:get, list:list, snapshot:snapshot, save:save, create:create, remove:remove, commitSnapshot:commitSnapshot};
+  async function saveVoice(record, stepId, blob, duration, fingerprint) {
+    if (!(blob instanceof Blob) || !blob.size || blob.size > 50 * 1024 * 1024 ||
+        !/^audio\//.test(blob.type) || !Number.isFinite(duration) || duration <= 0) {
+      throw new Error('Choose a non-empty audio recording of at most 50 MB.');
+    }
+    var bytes = await blob.arrayBuffer(), digest = await crypto.subtle.digest('SHA-256', bytes);
+    var assetId = Array.from(new Uint8Array(digest)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
+    record = clone(record);
+    var step = record.route.steps.find(function(item) { return item.step_id === stepId; });
+    if (!step) { throw new Error('This card no longer exists.'); }
+    step.audio = {assetId:assetId, duration:duration, commentaryHash:await fingerprint(step.commentary || ''),
+      actionsHash:await fingerprint(voiceActions(step))};
+    return save(record, {id:assetId, mimeType:blob.type, byteLength:blob.size, blob:blob});
+  }
+  function voiceActions(step) {
+    return {prepare:step.prepare || [], actions:step.actions || null, action:step.action || null,
+      pointer:step.pointer || null, demonstrate:step.demonstrate !== false};
+  }
+  function getAudio(assetId) {
+    return transaction(['audio'], 'readonly', function(tx, done) {
+      tx.objectStore('audio').get(assetId).onsuccess = function(event) { done(event.target.result || null); };
+    });
+  }
+  return {saveVoice:saveVoice, getAudio:getAudio, voiceActions:voiceActions, get:get, list:list, snapshot:snapshot, save:save, create:create, remove:remove, commitSnapshot:commitSnapshot};
 }

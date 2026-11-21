@@ -198,8 +198,10 @@
     },
     unpack: function(buffer) {
       var files = kgTextZip.decode(buffer), profile = profileFromTables(files);
-      return {profile:profile,tutorials:files['tutorials.json'] === undefined ? null :
-        kgTutorialPortable.collection(kgTutorialPortable.parse(files['tutorials.json']))};
+      var tutorials = files['tutorials.json'] === undefined ? null :
+        kgTutorialPortable.collection(kgTutorialPortable.parse(files['tutorials.json']));
+      if (tutorials) { kgTutorialPortable.requireTextOnly(tutorials); }
+      return {profile:profile,tutorials:tutorials};
     },
     importBytes: function(buffer) { return global.kgPersonalDataArchive.unpack(buffer).profile; },
     summarize: summary,
