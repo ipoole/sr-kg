@@ -249,7 +249,7 @@ repair when the package itself is structurally valid.
 Voice is an optional final authoring pass, essentially reading the written
 narration. Provide Record, Stop, Listen, Replace, Remove and audio-file import.
 Request microphone access only on Record. Show recording state/duration; release
-the microphone on Stop, cancellation or leaving recording. Keep an old recording
+the microphone when tutorial authoring ends; mute it between takes and cards. Keep an old recording
 until its replacement is successfully saved. Moving cards does not detach audio.
 
 Detect supported recording/playback formats rather than assuming one codec works
@@ -478,7 +478,11 @@ The card editor provides **Record voice narration** below action recording, plus
 formatted written narration without operating the graph. Record/Re-record → Stop
 → Play/Pause → Finish recording accepts a take. Cancel (including Escape) keeps
 the previously saved recording. Recording requests microphone permission only on
-Record and releases tracks on Stop, cancellation and navigation. A late permission
+Record and reuses the stream throughout the tutorial authoring session. Stop,
+Finish recording and Cancel mute its tracks; rehearsal and Edit card retain access
+within the same tutorial. Done editing, Exit tutorial, switching tutorials,
+page exit and recorder errors release them. An ended/revoked stream is reacquired
+on the next Record. No audio is recorded between takes. A late permission
 response after cancellation releases its stream without starting a recording.
 
 Recordings and imported originals are limited to 50 MB per clip. Imports must have

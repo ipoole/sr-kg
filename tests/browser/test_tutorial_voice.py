@@ -7,7 +7,7 @@ from test_personal_tutorials import tutorial_graph, _library, _fill_draft, _save
 FAKE_MIC = r'''() => {
  window.voiceTracksStopped = 0;
  window.voiceRecorders = [];
- const stream = () => ({getTracks:()=>[{stop:()=>window.voiceTracksStopped++}]});
+ const stream = () => {const track={enabled:true,readyState:'live',stop(){this.readyState='ended';window.voiceTracksStopped++;}};return {getTracks:()=>[track]};};
  Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:async()=>stream()}});
  window.MediaRecorder = class {
    static isTypeSupported(type) { return type === 'audio/webm;codecs=opus'; }
@@ -58,7 +58,7 @@ def test_voice_record_cancel_replace_reload_and_review(tutorial_graph,width):
     expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
     first=audio_ref(page)
     assert len(first['assetId'])==64 and first['duration']>0
-    assert page.evaluate('voiceTracksStopped')==1
+    assert page.evaluate('voiceTracksStopped')==0
     page.locator('#kg_tutorial_editor_voice_record').click()
     record_take(page)
     page.locator('#kg_tutorial_voice_cancel').click()
@@ -102,8 +102,9 @@ def test_late_microphone_permission_and_active_recording_cancel_release_tracks(t
     page.locator('#kg_tutorial_voice_record').click()
     expect(page.locator('#kg_tutorial_voice_stop')).to_be_enabled()
     page.keyboard.press('Escape')
+    assert page.evaluate('voiceTracksStopped')==0
+    page.locator('#kg_tutorial_editor_close').click()
     page.wait_for_function('voiceTracksStopped===1')
-    assert audio_ref(page) is None
 
 
 @pytest.mark.browser
@@ -224,6 +225,51 @@ def test_cancelled_recorder_error_does_not_interrupt_a_new_take(tutorial_graph):
     expect(page.locator('#kg_tutorial_voice_stop')).to_be_enabled()
     page.evaluate('()=>{voiceRecorders[0].onerror();}')
     expect(page.locator('#kg_tutorial_voice_stop')).to_be_enabled()
-    assert page.evaluate('voiceTracksStopped')==1
+    assert page.evaluate('voiceTracksStopped')==0
     page.locator('#kg_tutorial_voice_cancel').click()
-    assert page.evaluate('voiceTracksStopped')==2
+    assert page.evaluate('voiceTracksStopped')==0
+
+
+@pytest.mark.browser
+def test_microphone_reused_muted_across_cards_until_done(tutorial_graph):
+    page=setup_voice(tutorial_graph)
+    page.evaluate('''()=>{
+      window.micRequests=0;
+      window.micTrack={enabled:true,readyState:'live',stop(){this.readyState='ended';}};
+      navigator.mediaDevices.getUserMedia=async()=>{micRequests++;return {getTracks:()=>[micTrack]};};
+    }''')
+    for _ in range(2):
+        page.locator('#kg_tutorial_editor_voice_record').click()
+        for _ in range(2):
+            page.locator('#kg_tutorial_voice_record').click()
+            expect(page.locator('#kg_tutorial_voice_stop')).to_be_enabled()
+            assert page.evaluate('micTrack.enabled')
+            page.locator('#kg_tutorial_voice_stop').click()
+            expect(page.locator('#kg_tutorial_voice_finish')).to_be_enabled()
+            assert page.evaluate('!micTrack.enabled && micTrack.readyState==="live"')
+        page.locator('#kg_tutorial_voice_finish').click()
+        expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
+        page.locator('#kg_tutorial_editor_card_controls [data-card-action="add"]').click()
+    assert page.evaluate('micRequests')==1
+    page.locator('#kg_tutorial_editor_close').click()
+    expect(page.locator('#kg_tutorial_editor')).not_to_have_attribute('open','')
+    assert page.evaluate('micTrack.readyState')=='ended'
+
+
+@pytest.mark.browser
+def test_microphone_session_survives_rehearsal_and_ends_on_exit(tutorial_graph):
+    page=setup_voice(tutorial_graph)
+    page.locator('#kg_tutorial_editor_voice_record').click()
+    record_take(page)
+    page.locator('#kg_tutorial_voice_finish').click()
+    expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
+    page.locator('#kg_tutorial_editor_from').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0&&!kgTutorialPlaybackSnapshot().transitioning')
+    assert page.evaluate('voiceTracksStopped')==0
+    page.locator('#kg_tutorial_edit').click()
+    expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
+    assert page.evaluate('voiceTracksStopped')==0
+    page.locator('#kg_tutorial_editor_from').click()
+    page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0&&!kgTutorialPlaybackSnapshot().transitioning')
+    page.locator('#kg_tutorial_exit').click()
+    page.wait_for_function('voiceTracksStopped===1')

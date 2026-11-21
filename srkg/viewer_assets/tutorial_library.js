@@ -30,7 +30,7 @@ function kgCreateTutorialLibrary(options) {
     updateVoiceStatus();
     element("editor_validation").textContent = errors.join(" ");
   }
-  var voiceStatusSerial = 0, voiceRecord = null, voiceStepId = null;
+  var voiceStatusSerial = 0, voiceRecord = null, voiceStepId = null, voiceTutorialId = null;
   async function updateVoiceStatus() {
     var serial = ++voiceStatusSerial, step = editing && editing.route.steps[cardIndex];
     var label = element('editor_voice_status');
@@ -157,6 +157,8 @@ function kgCreateTutorialLibrary(options) {
     if (!dialog.open) { dialog.showModal(); }
   }
   function openEditor(record, stepId) {
+    if (voiceTutorialId !== record.id) { voice.endAuthoring(); }
+    voiceTutorialId = record.id;
     records.set(record.id,clone(record));
     editing = clone(record); edited = saved = 0;
     cardIndex = Math.max(0,editing.route.steps.findIndex(function(step) { return step.step_id === stepId; }));
@@ -223,7 +225,7 @@ function kgCreateTutorialLibrary(options) {
     } finally { setBusy(false); }
   }
   function closeEditor() {
-    return leaveEditor(function() { options.select(editing.id); editing = null; });
+    return leaveEditor(function() { voice.endAuthoring(); options.select(editing.id); editing = null; });
   }
   async function create(route) {
     element("new").disabled = element("intro_copy").disabled = true;
@@ -258,7 +260,7 @@ function kgCreateTutorialLibrary(options) {
     return {record:clone(record),stepId:stepId};
   }
   function playbackExited(cardEdit) {
-    if (!cardEdit) { return; }
+    if (!cardEdit) { voice.endAuthoring(); return; }
     setBusy(false); openEditor(cardEdit.record, cardEdit.stepId);
     element("editor_commentary").focus();
   }

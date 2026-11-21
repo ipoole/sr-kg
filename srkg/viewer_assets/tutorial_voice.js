@@ -24,6 +24,11 @@ function kgCreateTutorialVoice(options) {
     if (stream) { stream.getTracks().forEach(function(track) { track.stop(); }); stream = null; }
     clearInterval(timer); timer = null;
   }
+  function muteTracks() {
+    if (stream) { stream.getTracks().forEach(function(track) { track.enabled = false; }); }
+    clearInterval(timer); timer = null;
+  }
+  function endAuthoring() { generation += 1; stopTracks(); }
   function stopPlayback() { player.pause(); player.removeAttribute('src'); player.load(); if (url) { URL.revokeObjectURL(url); url = null; } }
   function useClip(blob, seconds) {
     stopPlayback(); clip = blob; duration = seconds;
@@ -33,7 +38,7 @@ function kgCreateTutorialVoice(options) {
     if (phase === 'saving') { return; }
     generation += 1;
     if (recorder && recorder.state !== 'inactive') { recorder.stop(); }
-    recorder = null; stopTracks(); stopPlayback(); session = null; clip = null; dirty = false; phase = 'idle';
+    recorder = null; muteTracks(); stopPlayback(); session = null; clip = null; dirty = false; phase = 'idle';
     if (dialog.open) { dialog.close(); }
     options.closed();
   }
@@ -42,9 +47,11 @@ function kgCreateTutorialVoice(options) {
     var token = ++generation, oldDuration = duration;
     phase = 'permission'; player.pause(); controls(); message('Waiting for microphone permission…');
     try {
-      var acquired = await navigator.mediaDevices.getUserMedia({audio:true});
+      if (stream && !stream.getTracks().every(function(track) { return track.readyState === 'live'; })) { stopTracks(); }
+      var acquired = stream || await navigator.mediaDevices.getUserMedia({audio:true});
       if (token !== generation) { acquired.getTracks().forEach(function(track) { track.stop(); }); return; }
       stream = acquired;
+      stream.getTracks().forEach(function(track) { track.enabled = true; });
       var mime = ['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus'].find(function(type) {
         return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type);
       });
@@ -64,7 +71,7 @@ function kgCreateTutorialVoice(options) {
       };
       current.onstop = function() {
         if (token !== generation) { return; }
-        stopTracks(); recorder = null; phase = 'idle';
+        muteTracks(); recorder = null; phase = 'idle';
         var blob = new Blob(chunks,{type:current.mimeType || (chunks[0] && chunks[0].type) || mime || 'audio/webm'});
         if (!failed && blob.size && blob.size <= 50 * 1024 * 1024) {
           useClip(blob, Math.max(0.001,(performance.now() - started) / 1000)); dirty = true;
@@ -83,7 +90,7 @@ function kgCreateTutorialVoice(options) {
   }
   function stop() {
     if (phase !== 'recording') { return; }
-    phase = 'stopping'; recorder.stop(); stopTracks(); message('Preparing take…'); controls();
+    phase = 'stopping'; recorder.stop(); muteTracks(); message('Preparing take…'); controls();
   }
   el('record').addEventListener('click',start);
   el('stop').addEventListener('click',stop);
@@ -115,10 +122,11 @@ function kgCreateTutorialVoice(options) {
   dialog.addEventListener('keydown',function(event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); } });
   // Concept links in the script must not change the graph while recording.
   el('script').addEventListener('click',function(event) { event.preventDefault(); event.stopPropagation(); });
-  window.addEventListener('pagehide',function() { phase = 'idle'; cancel(); });
+  window.addEventListener('pagehide',function() { phase = 'idle'; cancel(); endAuthoring(); });
   window.addEventListener('beforeunload',function(event) {
     if (session && (dirty || phase !== 'idle')) { event.preventDefault(); event.returnValue = ''; }
-    if (phase === 'recording') { stop(); } else { stopTracks(); }
+    if (phase === 'recording') { stop(); }
+    stopTracks();
   });
   function open(step, asset) {
     generation += 1; session = step; phase = 'idle'; dirty = false; clip = null; duration = 0;
@@ -160,5 +168,5 @@ function kgCreateTutorialVoice(options) {
       if (token === generation) { phase = 'idle'; controls(); }
     }
   }
-  return {open:open, importFile:importFile, cancel:cancel};
+  return {endAuthoring:endAuthoring, open:open, importFile:importFile, cancel:cancel};
 }
