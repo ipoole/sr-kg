@@ -126,6 +126,7 @@ def inject_controls(
         "personal_data_controller.js",
         "tutorial_targets.js",
         "tutorial_sequence.js",
+        "tutorial_audio_player.js",
         "guided_tutorial.js",
         "tutorial_store.js",
         "tutorial_editor_model.js",

@@ -1,9 +1,9 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–5 and local voice authoring (stage 6) implemented.
+Status: design accepted; stages 1–6 and voiced playback from stage 7 implemented.
 Text export/import, backup integration and tutorial sync are available for text-only
-libraries. Voice recording/import is local; voiced playback and audio delivery
-remain planned. See the local voice authoring section below for current limits.
+libraries. Local voice recording/import and optional playback are available; compact
+cards and audio delivery remain planned. See the local voice authoring section below for current limits.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -260,8 +260,8 @@ devices; a successfully recorded clip is not proof of cross-device playability.
 
 Agreed playback sequence:
 
-1. Establish the card and finish its viewer actions/pauses and pointer demonstration.
-2. Play its narration when voice is enabled. Keep written commentary available.
+1. Establish the card and run any preparation.
+2. When voice is enabled, start narration alongside the card actions. Keep written commentary available.
 3. Wait for the learner's Next; audio completion never advances automatically.
 
 Provide Play/Pause and Replay voice. Back, Next, Explore and Exit stop the current
@@ -449,7 +449,7 @@ using the normal artifact workflow and preview version increments.
 | 4 — action capture | Explicit replacement Record/Finish/Cancel, session Undo/Redo, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
 | 5 — text portability/sync | Validation/repair, JSON/ZIP round trip, conflict-safe companion sync archive, full backup integration and text-only built-in installation. Review fresh-browser import, two-device sync/conflict and a built-in test build. Useful text-only release boundary. |
 | 6 — voice authoring | Per-card recording/import/replacement and durable attachments with stale-narration indicators. Ian voices a finished text route; review reload/listening on laptop, phone and old iPad. |
-| 7 — voiced/compact player | Agreed after-actions narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
+| 7 — voiced/compact player | Concurrent narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
 | 8 — audio delivery | Complete export/import, attachment sync, repository installation and lazy hosted audio. Review Ian's exported voiced route installed as built-in in a preview, cross-device sync and local/offline behaviour. |
 
 Stage 9 completes the restrained code cleanup, user/authoring guides and Quick
@@ -507,7 +507,7 @@ the unsaved take remains in the dialogue for retry/download. Removal detaches on
 that card's reference. Assets are retained conservatively; garbage collection is
 deferred until backup/conflict/transfer lifetimes are implemented.
 
-Delivery remains staged: the player does not yet use audio. Version-1 packages,
+Delivery remains staged: the player resolves audio from this browser. Version-1 packages,
 backups and tutorial sync remain text-only, and explicitly reject records containing
 audio references before export or cloud access. No silently incomplete voiced
 package is produced. A library containing recordings cannot currently use full
@@ -519,5 +519,32 @@ Before audio delivery ships, introduce package/route schema version 2 with an
 asset inventory and validated `audio/<content-id>.<extension>` entries. Use a
 separate versioned cloud companion for voiced metadata/attachments; do not place
 voice references in the version-1 companion read by older viewers. That migration,
-asset transfer, cross-device encoding, player integration and compact cards remain
-stages 3–5 of the issue implementation plan (design delivery stages 7–8).
+asset transfer, cross-device encoding and compact cards remain
+later stages of the issue implementation plan (design delivery stages 7–8).
+
+
+## Voice playback (issue #6, implementation stage 3)
+
+Tutorial introductions offer **Start** for text and **Start with voice** when at
+least one card has an audio reference. The player has an independent Voice switch,
+Play/Pause voice and Replay voice; written narration remains visible. The listener's
+choice is remembered locally, including for Continue tutorial from the editor.
+Starting a text-only route does not change that preference.
+
+After card preparation, the clip loads on demand while the card actions run.
+The actions and narration proceed independently, without timing cues. Playback and asset loading never block Next, Back,
+Explore, Edit card or Exit. Ending audio does not advance the card. Pause retains
+the audio position; Replay starts only the clip again, without repeating actions.
+Returning with Back starts the previous card's clip from the beginning. Explore
+stops and releases audio; Continue with tutorial restores the scene with voice
+stopped until the listener presses Play/Replay. Navigation invalidates pending
+asset loads and play promises so late completion cannot voice an old card or
+interrupt the new one.
+
+Missing clips, unsupported audio and browser autoplay rejection keep written
+narration and navigation available with a Play/retry message. Unvoiced cards show
+“No voice for this card”; the voice preference still applies on subsequent cards.
+Only the current clip is retained, and its object URL is revoked on navigation.
+The controls take part in the existing phone dock sizing and pointer positioning.
+Compact mode, audio-bearing packages, hosted audio and attachment sync are still
+out of scope for this increment.

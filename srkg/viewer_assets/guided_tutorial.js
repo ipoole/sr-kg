@@ -24,6 +24,8 @@ function kgCreateGuidedTutorial(options) {
     transitioning: false,
     errorMessage: ""
   };
+  var voicePlayer = kgCreateTutorialAudioPlayer({getAudio:options.getAudio,
+    changed:function() { positionTutorialNarration(); refreshTutorialPointerPosition(); }});
   var tutorialPointerState = {
     target: null,
     label: "",
@@ -364,6 +366,9 @@ function kgCreateGuidedTutorial(options) {
       ((route.steps || []).length === 1 ? " step" : " steps");
     document.getElementById("kg_tutorial_intro").hidden = false;
     if (options.onIntroduction) { options.onIntroduction(route); }
+    var voicedStart = document.getElementById('kg_tutorial_start_voice');
+    voicedStart.hidden = !route.steps.some(function(step) { return Boolean(step.audio); });
+    voicedStart.disabled = Boolean(options.canStart && !options.canStart(route));
   }
 
   function setTutorialTransitioning(value) {
@@ -505,16 +510,19 @@ function kgCreateGuidedTutorial(options) {
     var route = tutorialPlayback.activeRoute;
     if (stepIndex < 0 || stepIndex >= route.steps.length) { return; }
     tutorialPlayback.errorMessage = "";
+    voicePlayer.prepare(route.steps[stepIndex]);
     setTutorialTransitioning(true);
     clearTutorialEmphasis();
     try {
       if (replay) {
+        tutorialPlayback.stepIndex = stepIndex;
+        renderTutorialNarration();
+        voicePlayer.settled(true, true);
         await replayTutorialCommands(
           tutorialPlayback.baseline,
           tutorialCommandsThrough(route, stepIndex)
         );
         setControlsVisible(false);
-        tutorialPlayback.stepIndex = stepIndex;
         await restoreFinalEmphasis(route.steps[stepIndex]);
       } else {
         var step = route.steps[stepIndex];
@@ -525,10 +533,13 @@ function kgCreateGuidedTutorial(options) {
           await executeViewerCommand(prepare[index], {origin: "tutorial"});
         }
         var actions = tutorialStepActions(step);
+        voicePlayer.settled(true, true);
         await playActions(actions, step.demonstrate !== false);
       }
       renderTutorialNarration();
     } catch (error) {
+      voicePlayer.suspend();
+      voicePlayer.settled(false, false);
       renderTutorialNarration("Card " + (stepIndex + 1) + " stopped: " + String(error.message || error));
     } finally {
       setTutorialTransitioning(false);
@@ -546,6 +557,7 @@ function kgCreateGuidedTutorial(options) {
     tutorialPlayback.errorMessage = "";
     tutorialPlayback.baseline = captureTutorialPresentation();
     tutorialPlayback.activeRoute = JSON.parse(JSON.stringify(route));
+    voicePlayer.startRoute(route.steps.some(function(step) { return Boolean(step.audio); }), playOptions.voice);
     tutorialPlayback.exploreSnapshot = null;
     tutorialPlayback.exploring = false;
     tutorialPlayback.stepIndex = -1;
@@ -599,12 +611,14 @@ function kgCreateGuidedTutorial(options) {
 
   async function exitTutorial() {
     if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
+    voicePlayer.stop();
     setTutorialTransitioning(true);
     await finishTutorial();
   }
 
   async function editCurrentCard() {
     if (tutorialPlayback.transitioning || tutorialPlayback.exploring || !canEditCurrentCard()) { return; }
+    voicePlayer.stop();
     setTutorialTransitioning(true);
     try {
       var route = tutorialPlayback.activeRoute;
@@ -612,12 +626,15 @@ function kgCreateGuidedTutorial(options) {
       var edit = await options.prepareCardEdit(route.tutorial_id,card.step_id);
       await finishTutorial(edit);
     } catch (error) {
+      voicePlayer.startRoute(route.steps.some(function(step) { return Boolean(step.audio); }));
+      voicePlayer.prepare(card); voicePlayer.settled(true, false);
       renderTutorialNarration('Could not edit this card: ' + String(error.message || error));
       setTutorialTransitioning(false);
     }
   }
 
   async function finishTutorial(cardEdit) {
+    voicePlayer.stop();
     var baseline = tutorialPlayback.baseline;
     try {
       clearTutorialEmphasis();
@@ -639,6 +656,7 @@ function kgCreateGuidedTutorial(options) {
   async function toggleTutorialExploration() {
     if (tutorialPlayback.transitioning || !tutorialPlayback.activeRoute) { return; }
     if (!tutorialPlayback.exploring) {
+      voicePlayer.suspend();
       tutorialPlayback.exploreSnapshot = captureTutorialPresentation();
       tutorialPlayback.exploring = true;
       clearTutorialEmphasis();
@@ -657,6 +675,8 @@ function kgCreateGuidedTutorial(options) {
       await restoreFinalEmphasis(step);
       renderTutorialNarration();
       tutorialPlayback.exploreSnapshot = null;
+      voicePlayer.prepare(step);
+      voicePlayer.settled(true, false);
     } catch (error) {
       tutorialPlayback.exploring = true;
       setGuidedTutorialActive(false);
@@ -690,7 +710,8 @@ function kgCreateGuidedTutorial(options) {
       var button = event.target.closest(".kg-tutorial-select");
       if (button) { selectTutorialIntroduction(button.getAttribute("data-tutorial-id")); }
     });
-    document.getElementById("kg_tutorial_start").addEventListener("click", function() { startSelectedTutorial(); });
+    document.getElementById("kg_tutorial_start").addEventListener("click", function() { startSelectedTutorial({voice:false}); });
+    document.getElementById('kg_tutorial_start_voice').addEventListener('click',function() { startSelectedTutorial({voice:true}); });
     document.getElementById("kg_tutorial_back").addEventListener("click", function() {
       runTutorialStep(tutorialPlayback.stepIndex - 1, true);
     });

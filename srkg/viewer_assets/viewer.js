@@ -5470,6 +5470,7 @@
         var showTutorialEdgeHover = tutorialTargets.showTutorialEdgeHover;
         var tutorialLibrary;
         var guidedTutorial = kgCreateGuidedTutorial({
+          getAudio: function(id) { return personalDataStore.tutorials.getAudio(id); },
           personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
           canStart: function(route) {
             return !(tutorialRecorder && tutorialRecorder.active()) &&

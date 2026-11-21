@@ -66,6 +66,7 @@
           <p id="kg_tutorial_intro_length" class="kg-tutorial-length"></p>
           <p id="kg_tutorial_intro_status" role="status"></p>
           <button id="kg_tutorial_start" type="button">Start</button>
+          <button id="kg_tutorial_start_voice" type="button" hidden>Start with voice</button>
           <button id="kg_tutorial_intro_copy" type="button">Make editable copy</button>
           <button id="kg_tutorial_intro_edit" type="button" hidden>Edit draft</button>
           <button id="kg_tutorial_intro_export" type="button">Export tutorial</button>
@@ -205,6 +206,14 @@
         <p id="kg_tutorial_first_step_guidance" hidden>PhysicsKG operates the viewer for you. You can scroll and zoom Details and open clarifications while reading. Use Next step to continue, Explore from here to take control, and Continue with tutorial to return to this step. Exit restores your previous view.</p>
         <span id="kg_tutorial_target_description" class="kg-visually-hidden"></span>
         <div id="kg_tutorial_error" class="kg-tutorial-error" role="alert" hidden></div>
+        <div id="kg_tutorial_listen_controls" hidden>
+          <div class="kg-tutorial-actions">
+            <label><input id="kg_tutorial_listen_enabled" type="checkbox"> Voice</label>
+            <button id="kg_tutorial_listen_play" type="button">Play voice</button>
+            <button id="kg_tutorial_listen_replay" type="button">Replay voice</button>
+          </div>
+          <p id="kg_tutorial_listen_status" role="status"></p>
+        </div>
         <div class="kg-tutorial-actions">
           <button id="kg_tutorial_back" type="button">Back</button>
           <button id="kg_tutorial_explore" type="button">Explore from here</button>

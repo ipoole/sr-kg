@@ -4113,3 +4113,7 @@ details[open] > summary > .kg-content-preview { display: none; }
 #kg_tutorial_voice_script a { pointer-events: none; }
 #kg_tutorial_voice_time { font-variant-numeric: tabular-nums; }
 #kg_tutorial_editor_voice_file { display: none; }
+
+#kg_tutorial_listen_controls[hidden] { display: none; }
+#kg_tutorial_listen_controls label { display: inline-flex; align-items: center; gap: 4px; }
+#kg_tutorial_listen_status { margin: 4px 0 0; font-size: 0.9em; }
