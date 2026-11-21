@@ -64,7 +64,7 @@
     return wire;
   }
 
-  function hasPersonalRecords(profile) {
+  function hasUserChanges(profile) {
     return Boolean(
       profile && (
         profile.notes.some(function(note) { return !isUntouchedStarter(note); }) ||
@@ -420,21 +420,25 @@
       return Object.keys(byId).sort().map(function(id) { return byId[id]; });
     }
 
+    function mergeNotes(current, incoming) {
+      var merged = mergeById(current, incoming);
+      // A browser can seed before it first learns about older owner notes.
+      var supersededStarterIds = new Set();
+      merged.forEach(function(note) {
+        if (note.placement !== "owner") { return; }
+        var starterId = starterOwnerNoteId(note);
+        if (note.id !== starterId) { supersededStarterIds.add(starterId); }
+      });
+      return merged.filter(function(note) {
+        return !isUntouchedStarter(note) || !supersededStarterIds.has(note.id);
+      });
+    }
+
     function mergeSnapshot(value) {
       var incoming = normalizeProfile(value, new Date().toISOString());
       if (!incoming) { return false; }
-      var localWasEmpty = !hasPersonalRecords(profile);
-      var mergedNotes = mergeById(profile.notes, incoming.notes);
-      // A browser can seed before it first learns about older owner notes.
-      var ownersWithOlderNotes = new Set();
-      mergedNotes.forEach(function(note) {
-        if (note.placement === "owner" && note.id !== starterOwnerNoteId(note)) {
-          ownersWithOlderNotes.add(starterOwnerNoteId(note));
-        }
-      });
-      profile.notes = mergedNotes.filter(function(note) {
-        return !isUntouchedStarter(note) || !ownersWithOlderNotes.has(note.id);
-      });
+      var localWasEmpty = !hasUserChanges(profile);
+      profile.notes = mergeNotes(profile.notes, incoming.notes);
       Object.keys(incoming.layout.records).forEach(function(key) {
         var current = profile.layout.records[key];
         profile.layout.records[key] = current

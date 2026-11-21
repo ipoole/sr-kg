@@ -117,9 +117,6 @@ function kgCreateNotesController(options) {
     if ((targetType !== "concept" && targetType !== "module") || !targetId) {
       return null;
     }
-    var anchor = note.anchor || {};
-    var blockIndex = Number(anchor.blockIndex);
-    if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
     return {
       id: String(note.id || makeNoteId()),
       targetType: targetType,
@@ -127,18 +124,25 @@ function kgCreateNotesController(options) {
       conceptId: targetType === "concept" ? targetId : "",
       placement: note.placement === "owner" ? "owner" : "anchor",
       section: String(note.section),
-      anchor: {
-        blockIndex: Math.floor(blockIndex),
-        afterText: String(anchor.afterText || ""),
-        blockId: String(anchor.blockId || ""),
-        sectionKey: String(anchor.sectionKey || ""),
-        contextBefore: String(anchor.contextBefore || ""),
-        contextAfter: String(anchor.contextAfter || "")
-      },
+      anchor: normalizeUserNoteAnchor(note.anchor),
       title: String(note.title || "Untitled note"),
       body: String(note.body || ""),
       createdAt: String(note.createdAt || new Date().toISOString()),
       updatedAt: String(note.updatedAt || note.createdAt || new Date().toISOString())
+    };
+  }
+
+  function normalizeUserNoteAnchor(anchor) {
+    anchor = anchor || {};
+    var blockIndex = Number(anchor.blockIndex);
+    if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
+    return {
+      blockIndex: Math.floor(blockIndex),
+      afterText: String(anchor.afterText || ""),
+      blockId: String(anchor.blockId || ""),
+      sectionKey: String(anchor.sectionKey || ""),
+      contextBefore: String(anchor.contextBefore || ""),
+      contextAfter: String(anchor.contextAfter || "")
     };
   }
 
@@ -432,7 +436,7 @@ function kgCreateNotesController(options) {
     var result = personalDataStore.seedOwnerNote({
       targetType: targetType, targetId: targetId, placement: "owner",
       conceptId: targetType === "concept" ? targetId : "", section: "Personal notes",
-      anchor: {blockIndex: 0, afterText: "", blockId: "", sectionKey: "", contextBefore: "", contextAfter: ""},
+      anchor: normalizeUserNoteAnchor(),
       title: "User notes",
       body: "Choose Edit to write your own notes. Include inline maths with \\(x^2\\), " +
         "or put a display equation on its own line:\n\\[E=mc^2\\]\n" +
@@ -652,7 +656,7 @@ function kgCreateNotesController(options) {
     return html + "</details>";
   }
 
-  function createUserNote(targetType, targetId, sectionName, anchorIndex, afterText, stableAnchor) {
+  function createAnchoredNote(targetType, targetId, sectionName, anchorIndex, afterText, stableAnchor) {
     stableAnchor = stableAnchor || {};
     var now = new Date().toISOString();
     var note = {
@@ -661,7 +665,7 @@ function kgCreateNotesController(options) {
       targetId: String(targetId),
       conceptId: targetType === "concept" ? String(targetId) : "",
       section: String(sectionName),
-      placement: stableAnchor.placement === "owner" ? "owner" : "anchor",
+      placement: "anchor",
       anchor: {
         blockIndex: Number(anchorIndex) || 0,
         afterText: String(afterText || ""),
@@ -903,7 +907,7 @@ function kgCreateNotesController(options) {
     renderNotesAtAnchor: renderNotesAtAnchor, openEditor: openEditor,
     renderNoteAnchoredBody: renderNoteAnchoredBody,
     renderUnmatchedNotes: renderUnmatchedNotes,
-    createUserNote: createUserNote,
+    createAnchoredNote: createAnchoredNote,
     deleteUserNote: deleteUserNote,
     deleteAllNotes: deleteAllNotes,
     updateUserNote: updateUserNote,

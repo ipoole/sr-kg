@@ -283,7 +283,7 @@
         var renderNotesAtAnchor = notesController.renderNotesAtAnchor;
         var renderNoteAnchoredBody = notesController.renderNoteAnchoredBody;
         var renderUnmatchedNotes = notesController.renderUnmatchedNotes;
-        var createUserNote = notesController.createUserNote;
+        var createAnchoredNote = notesController.createAnchoredNote;
         var deleteUserNote = notesController.deleteUserNote;
         var updateUserNote = notesController.updateUserNote;
         var noteEditorField = notesController.noteEditorField;
@@ -6741,7 +6741,7 @@
               ? enclosingSection.id
               : "";
             cancelNotePlacement(addNoteButton.closest('[data-note-placement="active"]'));
-            var createdNote = createUserNote(
+            var createdNote = createAnchoredNote(
               noteTargetType,
               noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
