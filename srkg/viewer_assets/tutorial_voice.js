@@ -6,6 +6,12 @@ function kgCreateTutorialVoice(options) {
   var recorder = null, stream = null, timer = null, started = 0;
   var clip = null, duration = 0, dirty = false, phase = 'idle', url = null;
   var player = el('audio');
+  // iOS can keep playback routed through the recording audio session with a muted track.
+  var releaseBetweenTakes = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  el('microphone_note').textContent = releaseBetweenTakes
+    ? 'The microphone is released when you stop recording. Re-recording may ask for access again.'
+    : 'Microphone access lasts until Done editing or Exit tutorial. It is muted between takes.';
   function message(text) { el('status').textContent = text; }
   function controls() {
     var locked = phase !== 'idle';
@@ -28,6 +34,10 @@ function kgCreateTutorialVoice(options) {
     if (stream) { stream.getTracks().forEach(function(track) { track.enabled = false; }); }
     clearInterval(timer); timer = null;
   }
+  function endTake() {
+    if (releaseBetweenTakes) { stopTracks(); }
+    else { muteTracks(); }
+  }
   function endAuthoring() { generation += 1; stopTracks(); }
   function stopPlayback() { player.pause(); player.removeAttribute('src'); player.load(); if (url) { URL.revokeObjectURL(url); url = null; } }
   function useClip(blob, seconds) {
@@ -38,7 +48,7 @@ function kgCreateTutorialVoice(options) {
     if (phase === 'saving') { return; }
     generation += 1;
     if (recorder && recorder.state !== 'inactive') { recorder.stop(); }
-    recorder = null; muteTracks(); stopPlayback(); session = null; clip = null; dirty = false; phase = 'idle';
+    recorder = null; endTake(); stopPlayback(); session = null; clip = null; dirty = false; phase = 'idle';
     if (dialog.open) { dialog.close(); }
     options.closed();
   }
@@ -71,7 +81,7 @@ function kgCreateTutorialVoice(options) {
       };
       current.onstop = function() {
         if (token !== generation) { return; }
-        muteTracks(); recorder = null; phase = 'idle';
+        endTake(); recorder = null; phase = 'idle';
         var blob = new Blob(chunks,{type:current.mimeType || (chunks[0] && chunks[0].type) || mime || 'audio/webm'});
         if (!failed && blob.size && blob.size <= 50 * 1024 * 1024) {
           useClip(blob, Math.max(0.001,(performance.now() - started) / 1000)); dirty = true;

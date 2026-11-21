@@ -80,6 +80,7 @@ def test_voice_record_cancel_replace_reload_and_review(tutorial_graph,width):
     assert audio_ref(page)==replacement
     expect(page.locator('#kg_tutorial_editor_voice_status')).to_contain_text('Voice needs review')
     page.locator('#kg_tutorial_editor_voice_record').click()
+    expect(page.locator('#kg_tutorial_voice_dialog')).to_be_visible()
     expect(page.locator('#kg_tutorial_voice_play')).to_be_enabled()
     page.keyboard.press('Escape')
     expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
@@ -273,3 +274,16 @@ def test_microphone_session_survives_rehearsal_and_ends_on_exit(tutorial_graph):
     page.wait_for_function('kgTutorialPlaybackSnapshot().stepIndex===0&&!kgTutorialPlaybackSnapshot().transitioning')
     page.locator('#kg_tutorial_exit').click()
     page.wait_for_function('voiceTracksStopped===1')
+
+
+@pytest.mark.browser
+def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph):
+    page=tutorial_graph.page
+    page.add_init_script("Object.defineProperty(navigator, 'userAgent', {value:'iPhone'});")
+    page.reload(wait_until='domcontentloaded')
+    page=setup_voice(tutorial_graph)
+    page.locator('#kg_tutorial_editor_voice_record').click()
+    record_take(page)
+    assert page.evaluate('voiceTracksStopped')==1
+    expect(page.locator('#kg_tutorial_voice_play')).to_be_enabled()
+    expect(page.locator('#kg_tutorial_voice_microphone_note')).to_contain_text('released')

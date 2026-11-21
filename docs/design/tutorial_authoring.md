@@ -481,6 +481,8 @@ Finish recording and Cancel mute its tracks; rehearsal and Edit card retain acce
 within the same tutorial. Done editing, Exit tutorial, switching tutorials,
 page exit and recorder errors release them. An ended/revoked stream is reacquired
 on the next Record. No audio is recorded between takes. A late permission
+On iPhone and iPad, the stream is released after each take so the browser
+can return to playback audio routing. Re-recording can prompt for access again.
 response after cancellation releases its stream without starting a recording.
 
 Recordings and imported originals are limited to 50 MB per clip. Imports must have
