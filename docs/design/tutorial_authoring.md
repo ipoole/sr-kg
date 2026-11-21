@@ -264,13 +264,11 @@ Agreed playback sequence:
 2. When voice is enabled, start narration alongside the card actions. Keep written commentary available.
 3. Wait for the learner's Next; audio completion never advances automatically.
 
-Provide Play/Pause and Replay voice. Back, Next, Explore and Exit stop the current
-clip; returning to a card starts from its beginning. Pause within a card resumes
-from the paused position. Audio replay does not repeat viewer actions. On resuming
-from Explore, restore the card and leave its voice stopped, ready for Replay.
-Cancel pending media loads/play requests on navigation so a late result cannot
-speak an old card. Browser audio restrictions or missing files reveal text and a
-clear Play/retry choice; they never strand the learner.
+Cards with a recording show a Voice checkbox. Turn Voice off to stop the clip,
+then on to start it from the beginning without repeating viewer actions. Back,
+Next, Explore and Exit stop the current clip and cancel pending audio requests.
+After Explore, the clip stays stopped until Voice is turned off and on. Cards
+without a recording hide the checkbox and preserve the listener's preference.
 
 The introduction offers ordinary Start and, when available, Start with voice.
 Conservative initial default: text remains usable without choosing audio. Remember
@@ -526,24 +524,22 @@ later stages of the issue implementation plan (design delivery stages 7–8).
 ## Voice playback (issue #6, implementation stage 3)
 
 Tutorial introductions offer **Start** for text and **Start with voice** when at
-least one card has an audio reference. The player has an independent Voice switch,
-Play/Pause voice and Replay voice; written narration remains visible. The listener's
+least one card has an audio reference. The player shows a Voice checkbox on cards with a recording and keeps written narration visible. The listener's
 choice is remembered locally, including for Continue tutorial from the editor.
 Starting a text-only route does not change that preference.
 
 After card preparation, the clip loads on demand while the card actions run.
 The actions and narration proceed independently, without timing cues. Playback and asset loading never block Next, Back,
-Explore, Edit card or Exit. Ending audio does not advance the card. Pause retains
-the audio position; Replay starts only the clip again, without repeating actions.
+Explore, Edit card or Exit. Ending audio does not advance the card. Turning Voice off and on restarts the clip without repeating actions.
 Returning with Back starts the previous card's clip from the beginning. Explore
 stops and releases audio; Continue with tutorial restores the scene with voice
-stopped until the listener presses Play/Replay. Navigation invalidates pending
+stopped until the listener turns Voice off and on. Navigation invalidates pending
 asset loads and play promises so late completion cannot voice an old card or
 interrupt the new one.
 
 Missing clips, unsupported audio and browser autoplay rejection keep written
-narration and navigation available with a Play/retry message. Unvoiced cards show
-“No voice for this card”; the voice preference still applies on subsequent cards.
+narration and navigation available with a retry message. Unvoiced cards hide
+the Voice checkbox and preserve the preference for subsequent cards.
 Only the current clip is retained, and its object URL is revoked on navigation.
 The controls take part in the existing phone dock sizing and pointer positioning.
 Compact mode, audio-bearing packages, hosted audio and attachment sync are still

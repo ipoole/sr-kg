@@ -45,13 +45,19 @@ def voice_route(graph, fake=True):
     return page,tutorial_id
 
 
+def restart_voice(page):
+    checkbox=page.locator('#kg_tutorial_listen_enabled')
+    checkbox.uncheck()
+    checkbox.check()
+
+
 def settled(page,index):
     page.wait_for_function('(i)=>kgTutorialPlaybackSnapshot().stepIndex===i&&!kgTutorialPlaybackSnapshot().transitioning',arg=index)
 
 
 @pytest.mark.browser
 @pytest.mark.parametrize('width',[390,1280])
-def test_voice_overlaps_actions_pause_replay_and_manual_navigation(tutorial_graph,width):
+def test_voice_overlaps_actions_toggle_restart_and_manual_navigation(tutorial_graph,width):
     page,_=voice_route(tutorial_graph)
     page.set_viewport_size({'width':width,'height':800})
     page.locator('#kg_tutorial_start_voice').click()
@@ -60,42 +66,38 @@ def test_voice_overlaps_actions_pause_replay_and_manual_navigation(tutorial_grap
     settled(page,0)
     assert page.evaluate('voicePlays[0].stepIndex')==0
     expect(page.locator('#kg_tutorial_commentary')).to_have_text('Written explanation 0')
-    expect(page.locator('#kg_tutorial_listen_play')).to_have_text('Pause voice')
+    assert page.locator('#kg_tutorial_listen_play, #kg_tutorial_listen_replay').count()==0
     page.evaluate('()=>{voiceMedia[0].currentTime=1.25;}')
-    page.locator('#kg_tutorial_listen_play').click()
-    expect(page.locator('#kg_tutorial_listen_play')).to_have_text('Play voice')
-    page.locator('#kg_tutorial_listen_play').click()
-    page.wait_for_function('voicePlays.length===2')
-    assert page.evaluate('voicePlays[1].time')==1.25
     baseline=page.evaluate('kgCaptureTutorialPresentation()')
-    page.locator('#kg_tutorial_listen_replay').click()
-    page.wait_for_function('voicePlays.length===3')
-    assert page.evaluate('voicePlays[2].time')==0
+    restart_voice(page)
+    page.wait_for_function('voicePlays.length===2')
+    assert page.evaluate('voicePlays[1].time')==0
+    assert page.evaluate('voiceMedia[0].paused && !voiceMedia[0].src')
     assert page.evaluate('kgCaptureTutorialPresentation()')==baseline
-    page.evaluate("()=>{voiceMedia[0].ended=true;voiceMedia[0].paused=true;voiceMedia[0].dispatchEvent(new Event('ended'));}")
+    page.evaluate("()=>{voiceMedia[1].ended=true;voiceMedia[1].paused=true;voiceMedia[1].dispatchEvent(new Event('ended'));}")
     expect(page.locator('#kg_tutorial_listen_status')).to_contain_text('Voice finished')
     assert page.evaluate('kgTutorialPlaybackSnapshot().stepIndex')==0
     page.locator('#kg_tutorial_next').click()
-    page.wait_for_function('voicePlays.length===4')
+    page.wait_for_function('voicePlays.length===3')
     assert page.evaluate('voiceMedia[0].paused && !voiceMedia[0].src')
-    assert page.evaluate('voicePlays[3].stepIndex')==1
+    assert page.evaluate('voicePlays[2].stepIndex')==1
     settled(page,1)
     page.locator('#kg_tutorial_back').click()
-    page.wait_for_function('voicePlays.length===5')
-    assert page.evaluate('voicePlays[4].time')==0
+    page.wait_for_function('voicePlays.length===4')
+    assert page.evaluate('voicePlays[3].time')==0
     settled(page,0)
     page.locator('#kg_tutorial_explore').click()
     assert page.evaluate('voiceMedia.every(m=>m.paused)')
     page.locator('#kg_tutorial_explore').click()
     settled(page,0)
-    assert page.evaluate('voicePlays.length')==5
-    page.locator('#kg_tutorial_listen_replay').click()
-    page.wait_for_function('voicePlays.length===6')
+    assert page.evaluate('voicePlays.length')==4
+    restart_voice(page)
+    page.wait_for_function('voicePlays.length===5')
     page.locator('#kg_tutorial_next').click(); settled(page,1)
     page.locator('#kg_tutorial_next').click(); settled(page,2)
-    expect(page.locator('#kg_tutorial_listen_status')).to_have_text('No voice for this card.')
+    expect(page.locator('#kg_tutorial_listen_enabled')).to_be_hidden()
+    assert page.evaluate("localStorage.getItem('srkg.tutorial.voice')")=='true'
     expect(page.locator('#kg_tutorial_commentary')).to_have_text('Written explanation 2')
-    expect(page.locator('#kg_tutorial_listen_play')).to_be_disabled()
     assert page.evaluate('voiceMedia.every(m=>m.paused)')
     assert page.locator('#kg_tutorial_narration').evaluate('e=>e.scrollWidth<=e.clientWidth')
     page.locator('#kg_tutorial_exit').click()
@@ -143,8 +145,8 @@ def test_voice_failure_keeps_text_navigation_and_retry(tutorial_graph,failure):
     expect(page.locator('#kg_tutorial_next')).to_be_enabled()
     if failure=='missing':
         page.evaluate('()=>{kgPersonalData.tutorials.getAudio=originalAudio;}')
-    page.locator('#kg_tutorial_listen_play').click()
-    expect(page.locator('#kg_tutorial_listen_play')).to_have_text('Pause voice')
+    restart_voice(page)
+    expect(page.locator('#kg_tutorial_listen_status')).to_have_text('Playing voice.')
     page.locator('#kg_tutorial_exit').click()
     assert page.evaluate('voiceMedia.every(m=>m.paused)')
 
@@ -155,9 +157,8 @@ def test_plain_start_voice_toggle_preference_and_real_wav_playback(tutorial_grap
     page.locator('#kg_tutorial_start').click()
     settled(page,0)
     expect(page.locator('#kg_tutorial_listen_enabled')).not_to_be_checked()
-    expect(page.locator('#kg_tutorial_listen_play')).to_be_disabled()
     page.locator('#kg_tutorial_listen_enabled').check()
-    expect(page.locator('#kg_tutorial_listen_play')).to_have_text('Pause voice')
+    expect(page.locator('#kg_tutorial_listen_status')).to_have_text('Playing voice.')
     assert page.evaluate("localStorage.getItem('srkg.tutorial.voice')")=='true'
     page.locator('#kg_tutorial_exit').click()
     page.reload(wait_until='domcontentloaded');_library(tutorial_graph)
@@ -165,7 +166,6 @@ def test_plain_start_voice_toggle_preference_and_real_wav_playback(tutorial_grap
     settled(page,0)
     expect(page.locator('#kg_tutorial_listen_enabled')).to_be_checked()
     page.locator('#kg_tutorial_listen_enabled').uncheck()
-    expect(page.locator('#kg_tutorial_listen_play')).to_be_disabled()
     assert page.evaluate("localStorage.getItem('srkg.tutorial.voice')")=='false'
 
 
@@ -189,7 +189,7 @@ def test_late_play_promise_cannot_restart_old_card_or_pause_new_one(tutorial_gra
     assert page.evaluate('voiceMedia[0].paused')
     if navigation=='next':
         assert page.evaluate('!voiceMedia[1].paused')
-        expect(page.locator('#kg_tutorial_listen_play')).to_have_text('Pause voice')
+        expect(page.locator('#kg_tutorial_listen_status')).to_have_text('Playing voice.')
 
 
 @pytest.mark.browser
@@ -206,4 +206,4 @@ def test_voice_disabled_during_load_does_not_start_later(tutorial_graph):
     page.locator('#kg_tutorial_listen_enabled').uncheck()
     page.evaluate('async()=>{finishLateVoice();await new Promise(r=>requestAnimationFrame(r));}')
     assert page.evaluate('voicePlays.length')==0
-    expect(page.locator('#kg_tutorial_listen_status')).to_have_text('Voice is off.')
+    expect(page.locator('#kg_tutorial_listen_enabled')).not_to_be_checked()
