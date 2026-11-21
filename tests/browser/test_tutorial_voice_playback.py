@@ -68,6 +68,14 @@ def test_voice_overlaps_actions_toggle_restart_and_manual_navigation(tutorial_gr
     expect(page.locator('#kg_tutorial_commentary')).to_have_text('Written explanation 0')
     assert page.locator('#kg_tutorial_listen_play, #kg_tutorial_listen_replay').count()==0
     page.evaluate('()=>{voiceMedia[0].currentTime=1.25;}')
+    card=page.locator('#kg_tutorial_narration')
+    height=card.evaluate('e=>e.offsetHeight')
+    assert page.locator("#kg_tutorial_back").bounding_box()["y"] == pytest.approx(
+        page.locator("#kg_tutorial_listen_controls").bounding_box()["y"], abs=1
+    )
+    assert page.locator('#kg_tutorial_listen_controls').evaluate(
+        "e=>e.parentElement===document.getElementById('kg_tutorial_back').parentElement"
+    )
     baseline=page.evaluate('kgCaptureTutorialPresentation()')
     restart_voice(page)
     page.wait_for_function('voicePlays.length===2')
@@ -76,6 +84,7 @@ def test_voice_overlaps_actions_toggle_restart_and_manual_navigation(tutorial_gr
     assert page.evaluate('kgCaptureTutorialPresentation()')==baseline
     page.evaluate("()=>{voiceMedia[1].ended=true;voiceMedia[1].paused=true;voiceMedia[1].dispatchEvent(new Event('ended'));}")
     expect(page.locator('#kg_tutorial_listen_status')).to_contain_text('Voice finished')
+    assert card.evaluate('e=>e.offsetHeight')==height
     assert page.evaluate('kgTutorialPlaybackSnapshot().stepIndex')==0
     page.locator('#kg_tutorial_next').click()
     page.wait_for_function('voicePlays.length===3')

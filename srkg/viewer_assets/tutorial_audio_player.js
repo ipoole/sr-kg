@@ -7,9 +7,11 @@ function kgCreateTutorialAudioPlayer(options) {
   try { enabled = localStorage.getItem('srkg.tutorial.voice') === 'true'; } catch (error) { /* Local preference is optional. */ }
   function render() {
     el('controls').hidden = !(step && step.audio);
+    el('controls').parentElement.classList.toggle('kg-has-voice', !el('controls').hidden);
     el('enabled').checked = enabled;
     el('enabled').disabled = !ready;
     el('status').textContent = message;
+    el('status').title = message;
     if (options.changed) { options.changed(); }
   }
   function release() {

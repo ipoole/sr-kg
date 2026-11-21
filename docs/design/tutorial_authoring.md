@@ -543,6 +543,7 @@ Missing clips, unsupported audio and browser autoplay rejection keep written
 narration and navigation available with a retry message. Unvoiced cards hide
 the Voice checkbox and preserve the preference for subsequent cards.
 Only the current clip is retained, and its object URL is revoked on navigation.
-The controls take part in the existing phone dock sizing and pointer positioning.
+Voice shares the navigation row. Status uses a fixed-width slot on wider screens
+and is announced without adding a line on phones.
 Compact mode, audio-bearing packages, hosted audio and attachment sync are still
 out of scope for this increment.

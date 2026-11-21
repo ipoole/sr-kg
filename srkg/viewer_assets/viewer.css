@@ -4117,6 +4117,44 @@ details[open] > summary > .kg-content-preview { display: none; }
 #kg_tutorial_voice_time { font-variant-numeric: tabular-nums; }
 #kg_tutorial_editor_voice_file { display: none; }
 
+#kg_tutorial_listen_controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
 #kg_tutorial_listen_controls[hidden] { display: none; }
 #kg_tutorial_listen_controls label { display: inline-flex; align-items: center; gap: 4px; }
-#kg_tutorial_listen_status { margin: 4px 0 0; font-size: 0.9em; }
+#kg_tutorial_listen_controls input { margin: 0; }
+#kg_tutorial_listen_status {
+  width: 7.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9em;
+}
+@media (max-width: 850px) {
+  #kg_tutorial_listen_status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+  }
+  .kg-tutorial-actions.kg-has-voice {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .kg-tutorial-actions.kg-has-voice button {
+    padding-inline: 5px;
+  }
+}
+@media (max-width: 420px) {
+  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice :is(#kg_tutorial_explore, #kg_tutorial_next, #kg_tutorial_edit) {
+    font-size: 0;
+  }
+  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice :is(#kg_tutorial_explore, #kg_tutorial_next, #kg_tutorial_edit)::after {
+    font-size: 13px;
+  }
+  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_explore::after { content: "Explore" / ""; }
+  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_next::after { content: "Next" / ""; }
+  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_edit::after { content: "Edit" / ""; }
+}
