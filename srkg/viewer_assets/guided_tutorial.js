@@ -411,8 +411,8 @@ function kgCreateGuidedTutorial(options) {
     var exploreButton = document.getElementById("kg_tutorial_explore");
     exploreButton.disabled = tutorialPlayback.transitioning;
     exploreButton.textContent = tutorialPlayback.exploring
-      ? "Continue with tutorial"
-      : "Explore from here";
+      ? "Resume"
+      : "Explore";
     positionTutorialNarration();
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([commentary]).catch(function(err) {

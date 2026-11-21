@@ -14,7 +14,7 @@ tutorials:
     title: Why does mass have rest energy?
     commentary: We will investigate a heated box, use light emission to explain its inertia change, then connect rest energy
       to four-momentum. Lorentz transformations are assumed. Press Next to move to each reading scene, then read at your own pace.
-      Explore from here lets you take control; Continue with tutorial returns to the tutorial.
+      Explore lets you take control; Resume returns to the tutorial.
     action:
       command: wait
       milliseconds: 0
@@ -154,7 +154,7 @@ tutorials:
   - step_id: expose-the-foundations
     title: Frame the nearby derivation
     commentary: The graph follows Derivation for two hops. Lorentz transformations are assumed; the light argument
-      has supplied the physical intuition. Inspect these nearby connections; Explore from here if you want to inspect a branch or edge.
+      has supplied the physical intuition. Inspect these nearby connections; Explore if you want to inspect a branch or edge.
     demonstrate: false
     actions:
     - action:
@@ -416,7 +416,7 @@ tutorials:
   - step_id: check-your-understanding
     demonstrate: false
     title: Can you explain it yourself?
-    commentary: Use Explore from here to try the energy-loss calculation and the heated-box question in Study Questions.
+    commentary: Use Explore to try the energy-loss calculation and the heated-box question in Study Questions.
       Explain why a boost and heating affect mass differently. Answers stay hidden until you attempt a question
       or choose I don't know.
     action:
@@ -436,14 +436,14 @@ tutorials:
     title: Why do moving clocks record less time?
     commentary: We will follow a light pulse, compare two ticks of the same clock and connect the result to Lorentz
       transformations and proper time. Press Next to move to each reading scene, then read at your own pace.
-      Explore from here lets you take control; Continue with tutorial returns to the tutorial.
+      Explore lets you take control; Resume returns to the tutorial.
     action:
       command: wait
       milliseconds: 0
   - step_id: begin-with-two-ticks
     title: Map the argument
     commentary: First look over the derivation route in Graph view. Fit++ brings its concepts together.
-      The following cards give the reading the full screen; Explore from here lets you inspect a branch.
+      The following cards give the reading the full screen; Explore lets you inspect a branch.
     demonstrate: false
     actions:
     - action:
@@ -703,8 +703,8 @@ tutorials:
   - step_id: check-the-comparison-yourself
     demonstrate: false
     title: Test your clock reasoning
-    commentary: Use Explore from here to try the moving-clock and light-clock calculations. Then explain the reciprocal-frame
-      comparison in your own words. Continue with tutorial returns to this step and keeps your study work.
+    commentary: Use Explore to try the moving-clock and light-clock calculations. Then explain the reciprocal-frame
+      comparison in your own words. Resume returns to this step and keeps your study work.
     action:
       command: open-study-questions
     pointer:

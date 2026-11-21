@@ -5,7 +5,7 @@ validation, the shared semantic command interface, transient presentation
 snapshot/replay, the Tutorials picker, narration card, semantic pointer,
 target halo, block spotlight and temporary exploration are in place. Ordinary
 viewer controls are unavailable during guided playback; the learner controls
-it with Back, Next step, Explore from here and Exit. The viewer
+it with Back, Next, Explore and Exit. The viewer
 contains an interface orientation and physics routes on rest energy and time
 dilation, all available in
 Tools or through a `?tutorial=<tutorial-id>` URL.
@@ -83,17 +83,17 @@ graph pane.
 
 The card uses a lavender tint, purple commentary and a persistent Guided
 tutorial label to distinguish its instructions from teaching content. Every
-route's first card explains Next step, Explore, Resume and Exit, including
+route's first card explains Next, Explore, Resume and Exit, including
 when playback starts through a direct URL. A demonstrated hover tooltip can
 move the card to the upper edge to keep the preview readable.
 Physics routes begin with a quiet introductory card; their graph demonstrations
-start only after the user presses Next step.
+start only after the user presses Next.
 
 It contains:
 
 - tutorial title and `step / total`;
 - one short heading and commentary;
-- **Back**, **Next step**, **Explore from here** and **Exit**.
+- **Back**, **Next**, **Explore** and **Exit**.
 
 After a demonstrated action, the arrow becomes highly transparent so it does not
 obscure reading; the block highlight remains visible.
@@ -103,7 +103,7 @@ pointer supplies the spatial connection. On a narrow phone the card occupies
 a dedicated strip at the bottom of the screen, below both panes. The workspace
 reserves its measured height, keeping the existing graph-row sizing and leaving
 the remaining area for Details. Explore removes the strip and releases its
-reserved space, leaving only a small Continue with tutorial button over the
+reserved space, leaving only a small Resume button over the
 workspace. Exit restores the normal workspace. Desktop narration remains an
 overlay, with Fit and Reveal accounting for its occupied space. The interface
 tutorial expands and fits its module within one card. When the graph is hidden,
@@ -181,13 +181,13 @@ The header and graph controls remain inert; Details uses a central event policy
 and restores the original enabled/tab state of its controls after playback.
 Pointer geometry follows reading scroll and zoom, with Details highlights clipped
 to the reading pane. Text zoom remains a reader preference across steps.
-Back, Next step and Exit control the route; the learner need not guess an action.
+Back, Next and Exit control the route; the learner need not guess an action.
 
-**Explore from here** snapshots the current tutorial checkpoint, removes the
+**Explore** snapshots the current tutorial checkpoint, removes the
 interaction lock and hides tutorial emphasis and narration. Only a small
-**Continue with tutorial** button remains; no narration space is reserved. The
+**Resume** button remains; no narration space is reserved. The
 learner may navigate, search and change any presentation
-control. **Continue with tutorial** restores Selection, Context, Display, module
+control. **Resume** restores Selection, Context, Display, module
 representations, Details and Camera to the saved checkpoint. Notes, question
 attempts, reading marks and other personal data created while exploring remain.
 
@@ -416,7 +416,7 @@ provides most coverage without multiplying expensive browser cases.
    controls and tutorial playback without changing their behaviour.
 3. **Transient presentation state** — capture, restore and deterministically
    replay a route without altering personal data.
-4. **Basic playback** — tutorial list, narration card and Back/Next step/Exit;
+4. **Basic playback** — tutorial list, narration card and Back/Next/Exit;
    no animated pointer yet.
 5. **Pointer and targeting** — DOM, graph and details target registries, halo,
    click pulse, responsive placement and reduced-motion handling.

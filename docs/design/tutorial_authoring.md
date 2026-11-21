@@ -534,7 +534,7 @@ After card preparation, the clip loads on demand while the card actions run.
 The actions and narration proceed independently, without timing cues. Playback and asset loading never block Next, Back,
 Explore, Edit card or Exit. Ending audio does not advance the card. Turning Voice off and on restarts the clip without repeating actions.
 Returning with Back starts the previous card's clip from the beginning. Explore
-stops and releases audio; Continue with tutorial restores the scene with voice
+stops and releases audio; Resume restores the scene with voice
 stopped until the listener turns Voice off and on. Navigation invalidates pending
 asset loads and play promises so late completion cannot voice an old card or
 interrupt the new one.

@@ -172,7 +172,7 @@ def test_tutorial_next_back_and_exit_restore_the_baseline(browser_graph):
     assert state["playback"]["stepIndex"] == 0
     assert state["presentation"]["selection"] == {"type": "concept", "id": "2.1"}
     assert page.locator("#kg_tutorial_progress").inner_text() == "1 / 6"
-    assert page.locator("#kg_tutorial_next").inner_text() == "Next step"
+    assert page.locator("#kg_tutorial_next").inner_text() == "Next"
     assert page.locator("body").evaluate("el => el.classList.contains('kg-tutorial-active')")
     assert page.locator("#kg_app_header").evaluate("el => el.inert")
     pointer = page.evaluate("window.kgTutorialPointerSnapshot()")

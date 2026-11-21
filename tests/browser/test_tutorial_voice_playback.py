@@ -70,9 +70,10 @@ def test_voice_overlaps_actions_toggle_restart_and_manual_navigation(tutorial_gr
     page.evaluate('()=>{voiceMedia[0].currentTime=1.25;}')
     card=page.locator('#kg_tutorial_narration')
     height=card.evaluate('e=>e.offsetHeight')
-    assert page.locator("#kg_tutorial_back").bounding_box()["y"] == pytest.approx(
-        page.locator("#kg_tutorial_listen_controls").bounding_box()["y"], abs=1
-    )
+    back=page.locator("#kg_tutorial_back").bounding_box()
+    assert page.locator("#kg_tutorial_edit").bounding_box()["height"] == pytest.approx(back["height"], abs=1)
+    voice=page.locator("#kg_tutorial_listen_controls").bounding_box()
+    assert back["y"] + back["height"]/2 == pytest.approx(voice["y"] + voice["height"]/2, abs=1)
     assert page.locator('#kg_tutorial_listen_controls').evaluate(
         "e=>e.parentElement===document.getElementById('kg_tutorial_back').parentElement"
     )

@@ -388,7 +388,7 @@ tutorials:
     title: Read a supporting concept in place
     commentary: Four-momentum supports the mass-energy argument. The text explains why the connection matters,
       and the expanded concept offers its own blocks. These are the original blocks, so reading marks and personal
-      notes are shared wherever you encounter them. Explore from here lets you open any block for yourself.
+      notes are shared wherever you encounter them. Explore lets you open any block for yourself.
     action:
       command: open-reading-tree
       recipe: teaching

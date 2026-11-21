@@ -865,11 +865,13 @@
       }
       .kg-tutorial-actions {
         display: flex;
+        align-items: center;
         gap: 6px;
         justify-content: flex-end;
         margin-top: 7px;
       }
       .kg-tutorial-actions button {
+        white-space: nowrap;
         background: #f8fafc;
         border: 1px solid #aeb9c7;
         border-radius: 6px;
@@ -4146,15 +4148,4 @@ details[open] > summary > .kg-content-preview { display: none; }
   .kg-tutorial-actions.kg-has-voice button {
     padding-inline: 5px;
   }
-}
-@media (max-width: 420px) {
-  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice :is(#kg_tutorial_explore, #kg_tutorial_next, #kg_tutorial_edit) {
-    font-size: 0;
-  }
-  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice :is(#kg_tutorial_explore, #kg_tutorial_next, #kg_tutorial_edit)::after {
-    font-size: 13px;
-  }
-  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_explore::after { content: "Explore" / ""; }
-  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_next::after { content: "Next" / ""; }
-  .kg-tutorial-narration:not(.kg-exploring) .kg-has-voice #kg_tutorial_edit::after { content: "Edit" / ""; }
 }
