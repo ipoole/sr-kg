@@ -489,8 +489,8 @@ Recordings and imported originals are limited to 50 MB per clip. Imports must ha
 an audio MIME type and a finite duration readable on the current device. Recording
 selects a supported MediaRecorder format, falling back to the browser default.
 Support on the authoring device does not establish cross-device compatibility.
-The dialogue offers Download audio for a separate copy, including after a failed
-save; microphone recording is not required for file import or listening.
+In the tutorial editor, Advanced offers Download audio for the saved recording.
+Microphone recording is not required for file import or listening.
 
 The local database is version 3, with a separate `audio` object store containing
 SHA-256 content IDs, immutable Blob bytes, MIME type and byte length. A card's
@@ -503,7 +503,7 @@ indicator. Duplicate cards and personal tutorials share immutable assets.
 
 Saving a take writes its asset and updated tutorial in one IndexedDB transaction,
 using the existing revision check. Failure keeps the previous reference and bytes;
-the unsaved take remains in the dialogue for retry/download. Removal detaches only
+the unsaved take remains in the dialogue for retry. Removal detaches only
 that card's reference. Assets are retained conservatively; garbage collection is
 deferred until backup/conflict/transfer lifetimes are implemented.
 

@@ -34,7 +34,6 @@ function kgCreateTutorialVoice(options) {
     el('play').textContent = player.paused ? 'Play' : 'Pause';
     el('finish').disabled = locked || !dirty;
     el('cancel').disabled = phase === 'saving';
-    el('download').disabled = locked || !clip;
     el('time').textContent = (phase === 'recording' ? 'Recording · ' : 'Duration · ') +
       Math.floor(duration / 60) + ':' + String(Math.floor(duration % 60)).padStart(2,'0');
   }
@@ -131,14 +130,11 @@ function kgCreateTutorialVoice(options) {
   });
   ['play','pause','ended'].forEach(function(event) { player.addEventListener(event,controls); });
   player.addEventListener('error',function() { if (clip && session) { message('This device cannot play this audio. Import a supported audio file or re-record.'); } });
-  el('download').addEventListener('click',function() {
-    if (clip) { kgDownloadTutorialAudio(clip); }
-  });
   el('finish').addEventListener('click',async function() {
     if (phase !== 'idle' || !dirty) { return; }
     phase = 'saving'; player.pause(); controls(); message('Saving recording…');
     try { await options.save(clip,duration); phase = 'idle'; cancel(); }
-    catch (error) { phase = 'idle'; message('Not saved: ' + error.message + ' Your take is still here; retry Finish or download it.'); controls(); }
+    catch (error) { phase = 'idle'; message('Not saved: ' + error.message + ' Your take is still here. Retry Finish recording to save it.'); controls(); }
   });
   dialog.addEventListener('cancel',function(event) { event.preventDefault(); cancel(); });
   dialog.addEventListener('close',function() { if (session && !dialog.open) { cancel(); } });
@@ -157,7 +153,6 @@ function kgCreateTutorialVoice(options) {
     stopTracks();
   });
   function open(step, asset) {
-    el('advanced').open = false;
     generation += 1; session = step; phase = 'idle'; dirty = false; clip = null; duration = 0;
     el('heading').textContent = 'Voice narration — ' + (step.title || 'Untitled card');
     if (window.MathJax && MathJax.typesetClear) { MathJax.typesetClear([el('script')]); }

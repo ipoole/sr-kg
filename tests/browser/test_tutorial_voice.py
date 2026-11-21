@@ -190,9 +190,6 @@ def test_failed_finish_keeps_take_for_retry_and_old_asset(tutorial_graph):
     page.locator('#kg_tutorial_voice_finish').click()
     expect(page.locator('#kg_tutorial_voice_status')).to_contain_text('Not saved')
     assert audio_ref(page)==first
-    page.locator('#kg_tutorial_voice_advanced summary').click()
-    expect(page.locator('#kg_tutorial_voice_download')).to_be_visible()
-    expect(page.locator('#kg_tutorial_voice_download')).to_be_enabled()
     page.evaluate('()=>{IDBObjectStore.prototype.put=window.originalPut;}')
     page.locator('#kg_tutorial_voice_finish').click()
     expect(page.locator('#kg_tutorial_voice_dialog')).not_to_have_attribute('open','')
