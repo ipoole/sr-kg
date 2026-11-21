@@ -1,7 +1,9 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–5 implemented.
-Text export/import, backup integration and tutorial sync are available; voice remains planned.
+Status: design accepted; stages 1–5 and local voice authoring (stage 6) implemented.
+Text export/import, backup integration and tutorial sync are available for text-only
+libraries. Voice recording/import is local; voiced playback and audio delivery
+remain planned. See the local voice authoring section below for current limits.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -393,7 +395,7 @@ Unsupported local clarifications, full-width reading focus, bulk content folding
 custom-context rules and ambiguous repeated reading-concept occurrences are
 reported rather than guessed. Hover demonstrations remain available through the
 explicit action editor; incidental mouse motion is not recorded. Portable text
-export/import and sync are implemented in stage 5; voice remains a later stage.
+export/import and sync are implemented in stage 5; local voice authoring is described below.
 
 Local clarification folds, full-width reading controls and ambiguous repeated
 occurrences of a concept in one reading tree remain unsupported capture targets;
@@ -417,7 +419,7 @@ Old backups retain existing tutorials. Optional Google sync uses the separate
 **PhysicsKG tutorials.zip** companion file and whole-route conflict copies; see
 [Personal data](personal_data.md). It preserves an open editor and a running
 playback snapshot. Exporting a tutorial does not expose notes, answers or layouts.
-Packages currently reject audio assets, which arrive in stages 6–8.
+Packages currently reject audio assets; portable audio delivery remains stage 8.
 
 To install an exported text tutorial into the repository:
 
@@ -468,3 +470,50 @@ and reading-tree scene use Hide. The physics routes use Hide throughout: each
 card prepares its graph or reading scene quietly, then invites the learner to
 read. Card identifiers and teaching order are preserved. Legacy imported
 `prepare` sequences remain supported.
+
+## Local voice authoring (issue #6, stages 1–2)
+
+The card editor provides **Record voice narration** below action recording, plus
+**Import audio file** and **Remove voice**. The voice dialogue displays the card's
+formatted written narration without operating the graph. Record/Re-record → Stop
+→ Play/Pause → Finish recording accepts a take. Cancel (including Escape) keeps
+the previously saved recording. Recording requests microphone permission only on
+Record and releases tracks on Stop, cancellation and navigation. A late permission
+response after cancellation releases its stream without starting a recording.
+
+Recordings and imported originals are limited to 50 MB per clip. Imports must have
+an audio MIME type and a finite duration readable on the current device. Recording
+selects a supported MediaRecorder format, falling back to the browser default.
+Support on the authoring device does not establish cross-device compatibility.
+The dialogue offers Download audio for a separate copy, including after a failed
+save; microphone recording is not required for file import or listening.
+
+The local database is version 3, with a separate `audio` object store containing
+SHA-256 content IDs, immutable Blob bytes, MIME type and byte length. A card's
+optional `audio` reference contains `assetId`, `duration` (seconds),
+`commentaryHash` and `actionsHash` (SHA-256 of the portable stable JSON encoding).
+The action hash includes preparation, actions, pointers and demonstration mode;
+card identity/order and title are excluded. Changed hashes show **Voice needs
+review**, retaining the recording. Restoring the original content clears that
+indicator. Duplicate cards and personal tutorials share immutable assets.
+
+Saving a take writes its asset and updated tutorial in one IndexedDB transaction,
+using the existing revision check. Failure keeps the previous reference and bytes;
+the unsaved take remains in the dialogue for retry/download. Removal detaches only
+that card's reference. Assets are retained conservatively; garbage collection is
+deferred until backup/conflict/transfer lifetimes are implemented.
+
+Delivery remains staged: the player does not yet use audio. Version-1 packages,
+backups and tutorial sync remain text-only, and explicitly reject records containing
+audio references before export or cloud access. No silently incomplete voiced
+package is produced. A library containing recordings cannot currently use full
+personal-data backup or tutorial sync; download the clips separately for now.
+Version-2 clients cannot reopen the upgraded local database and overwrite voice
+references. Existing text-only package formats are unchanged.
+
+Before audio delivery ships, introduce package/route schema version 2 with an
+asset inventory and validated `audio/<content-id>.<extension>` entries. Use a
+separate versioned cloud companion for voiced metadata/attachments; do not place
+voice references in the version-1 companion read by older viewers. That migration,
+asset transfer, cross-device encoding, player integration and compact cards remain
+stages 3–5 of the issue implementation plan (design delivery stages 7–8).

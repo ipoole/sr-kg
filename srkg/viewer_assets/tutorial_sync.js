@@ -48,7 +48,9 @@ function kgCreateTutorialSync(options) {
     if (!store || !provider) { throw new Error('Tutorial sync needs storage and a provider.'); }
     for (var attempt = 0; attempt < 3; attempt += 1) {
       if (options.prepare) { await options.prepare(); }
-      var local = await store.snapshot(), remote = await provider.read();
+      var local = await store.snapshot();
+      portable.requireTextOnly(local.records);
+      var remote = await provider.read();
       var primary = remote ? portable.importCollection(remote.bytes) : [];
       var remoteRecords = primary.slice();
       for (var extra of remote && remote.copies || []) { remoteRecords = remoteRecords.concat(portable.importCollection(extra.bytes)); }

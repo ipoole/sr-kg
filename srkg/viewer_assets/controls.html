@@ -343,6 +343,15 @@
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
     <button id="kg_tutorial_editor_close" type="button">Done editing</button>
   </div>
+  <section id="kg_tutorial_editor_voice" aria-label="Card voice narration">
+    <button id="kg_tutorial_editor_voice_record" type="button">● Record voice narration</button>
+    <span id="kg_tutorial_editor_voice_status" role="status"></span>
+    <div class="kg-tutorial-editor-actions">
+      <button id="kg_tutorial_editor_voice_import" type="button">Import audio file</button>
+      <button id="kg_tutorial_editor_voice_remove" type="button">Remove voice</button>
+    </div>
+    <input id="kg_tutorial_editor_voice_file" type="file" accept="audio/*" hidden>
+  </section>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <fieldset id="kg_tutorial_editor_advanced_fields">
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
@@ -386,4 +395,21 @@
     <button id="kg_tutorial_import_apply" type="button">Import</button>
     <button id="kg_tutorial_import_cancel" type="button">Cancel</button>
   </div>
+</dialog>
+
+<dialog id="kg_tutorial_voice_dialog" class="kg-tutorial-editor" aria-labelledby="kg_tutorial_voice_heading">
+  <h2 id="kg_tutorial_voice_heading">Voice narration</h2>
+  <div id="kg_tutorial_voice_script" aria-label="Written narration"></div>
+  <p id="kg_tutorial_voice_time" role="timer">Duration · 0:00</p>
+  <p id="kg_tutorial_voice_status" role="status" aria-live="polite"></p>
+  <audio id="kg_tutorial_voice_audio" preload="metadata"></audio>
+  <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_voice_record" type="button">Record</button>
+    <button id="kg_tutorial_voice_stop" type="button">Stop</button>
+    <button id="kg_tutorial_voice_play" type="button">Play</button>
+    <button id="kg_tutorial_voice_finish" type="button">Finish recording</button>
+    <button id="kg_tutorial_voice_cancel" type="button">Cancel</button>
+    <button id="kg_tutorial_voice_download" type="button">Download audio</button>
+  </div>
+  <p class="kg-muted-label">Voice currently stays in this browser. Download audio to keep a separate copy; tutorial audio export and sync come later.</p>
 </dialog>
