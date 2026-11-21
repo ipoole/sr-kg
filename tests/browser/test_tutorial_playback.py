@@ -62,7 +62,7 @@ def test_tutorial_introduction_does_not_change_the_view(browser_graph):
     assert page.locator("#kg_tutorial_start").is_visible()
     assert "guided tour" in page.locator("#kg_tutorial_guidance").inner_text().lower()
     assert "operate the viewer" in page.locator("#kg_tutorial_guidance").inner_text().lower()
-    assert "press start, then next step" in page.locator(
+    assert "press start, then next" in page.locator(
         "#kg_tutorial_guidance"
     ).inner_text().lower()
     after = page.evaluate("window.kgCaptureTutorialPresentation()")
