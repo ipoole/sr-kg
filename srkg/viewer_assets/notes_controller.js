@@ -87,7 +87,10 @@ function kgCreateNotesController(options) {
   }
 
   function saveUserNotes() {
-    var saved = personalDataStore.replaceNotes(userNotesState.notes);
+    return finishSavingNotes(personalDataStore.replaceNotes(userNotesState.notes));
+  }
+
+  function finishSavingNotes(saved) {
     safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
     schedulePersonalDataAutoSync();
     setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
@@ -102,7 +105,7 @@ function kgCreateNotesController(options) {
   }
 
   function noteIsDefaultEmpty(note) {
-    return note &&
+    return note && note.placement !== "owner" &&
       String(note.title || "").trim() === "Note" &&
       String(note.body || "").trim() === "";
   }
@@ -114,9 +117,6 @@ function kgCreateNotesController(options) {
     if ((targetType !== "concept" && targetType !== "module") || !targetId) {
       return null;
     }
-    var anchor = note.anchor || {};
-    var blockIndex = Number(anchor.blockIndex);
-    if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
     return {
       id: String(note.id || makeNoteId()),
       targetType: targetType,
@@ -124,18 +124,25 @@ function kgCreateNotesController(options) {
       conceptId: targetType === "concept" ? targetId : "",
       placement: note.placement === "owner" ? "owner" : "anchor",
       section: String(note.section),
-      anchor: {
-        blockIndex: Math.floor(blockIndex),
-        afterText: String(anchor.afterText || ""),
-        blockId: String(anchor.blockId || ""),
-        sectionKey: String(anchor.sectionKey || ""),
-        contextBefore: String(anchor.contextBefore || ""),
-        contextAfter: String(anchor.contextAfter || "")
-      },
+      anchor: normalizeUserNoteAnchor(note.anchor),
       title: String(note.title || "Untitled note"),
       body: String(note.body || ""),
       createdAt: String(note.createdAt || new Date().toISOString()),
       updatedAt: String(note.updatedAt || note.createdAt || new Date().toISOString())
+    };
+  }
+
+  function normalizeUserNoteAnchor(anchor) {
+    anchor = anchor || {};
+    var blockIndex = Number(anchor.blockIndex);
+    if (!Number.isFinite(blockIndex) || blockIndex < 0) { blockIndex = 0; }
+    return {
+      blockIndex: Math.floor(blockIndex),
+      afterText: String(anchor.afterText || ""),
+      blockId: String(anchor.blockId || ""),
+      sectionKey: String(anchor.sectionKey || ""),
+      contextBefore: String(anchor.contextBefore || ""),
+      contextAfter: String(anchor.contextAfter || "")
     };
   }
 
@@ -425,22 +432,27 @@ function kgCreateNotesController(options) {
     });
   }
 
-  function renderOwnerNoteAction(targetType, targetId) {
-    return '<button type="button" class="kg-note-block-action kg-note-owner-action"' +
-      ' data-note-state="' + (ownerNotes(targetType, targetId).length ? "present" : "empty") +
-      '" data-target-type="' + escapeHtml(targetType) + '" data-target-id="' + escapeHtml(targetId) +
-      '" aria-label="Add a personal note to this ' + escapeHtml(targetType) +
-      '" title="Add a personal note"><span class="kg-note-bubble-glyph" aria-hidden="true">+</span></button>';
+  function ensureOwnerNote(targetType, targetId) {
+    var result = personalDataStore.seedOwnerNote({
+      targetType: targetType, targetId: targetId, placement: "owner",
+      conceptId: targetType === "concept" ? targetId : "", section: "Personal notes",
+      anchor: normalizeUserNoteAnchor(),
+      title: "User notes",
+      body: "Choose Edit to write your own notes. Include inline maths with \\(x^2\\), " +
+        "or put a display equation on its own line:\n\\[E=mc^2\\]\n" +
+        "Use Insert maths in the editor to insert an example you can change."
+    });
+    if (result) {
+      userNotesState.notes.push(normalizeUserNote(result.note));
+      finishSavingNotes(result.saved);
+    }
   }
 
-  function renderOwnerNotes(targetType, targetId) {
+  function renderOwnerNotes(targetType, targetId, seedDefault) {
+    if (seedDefault) { ensureOwnerNote(targetType, targetId); }
     var notes = ownerNotes(targetType, targetId);
     return notes.length ? '<section class="kg-owner-notes" aria-label="Personal notes">' +
       notes.map(function(note) { return renderUserNote(note); }).join("") + '</section>' : "";
-  }
-
-  function createOwnerNote(targetType, targetId) {
-    return createUserNote(targetType, targetId, "Personal notes", 0, "", {placement: "owner"});
   }
 
   function revealNote(noteId, focusEditor) {
@@ -644,7 +656,7 @@ function kgCreateNotesController(options) {
     return html + "</details>";
   }
 
-  function createUserNote(targetType, targetId, sectionName, anchorIndex, afterText, stableAnchor) {
+  function createAnchoredNote(targetType, targetId, sectionName, anchorIndex, afterText, stableAnchor) {
     stableAnchor = stableAnchor || {};
     var now = new Date().toISOString();
     var note = {
@@ -653,7 +665,7 @@ function kgCreateNotesController(options) {
       targetId: String(targetId),
       conceptId: targetType === "concept" ? String(targetId) : "",
       section: String(sectionName),
-      placement: stableAnchor.placement === "owner" ? "owner" : "anchor",
+      placement: "anchor",
       anchor: {
         blockIndex: Number(anchorIndex) || 0,
         afterText: String(afterText || ""),
@@ -888,16 +900,14 @@ function kgCreateNotesController(options) {
     unresolvedNoteCount: unresolvedNoteCount,
     migrateUserNotesState: migrateUserNotesState,
     renderNoteBlockAction: renderNoteBlockAction,
-    renderOwnerNoteAction: renderOwnerNoteAction,
     renderOwnerNotes: renderOwnerNotes,
-    createOwnerNote: createOwnerNote,
     revealNote: revealNote,
     findUserNote: findUserNote,
     renderNotesOverview: renderNotesOverview,
     renderNotesAtAnchor: renderNotesAtAnchor, openEditor: openEditor,
     renderNoteAnchoredBody: renderNoteAnchoredBody,
     renderUnmatchedNotes: renderUnmatchedNotes,
-    createUserNote: createUserNote,
+    createAnchoredNote: createAnchoredNote,
     deleteUserNote: deleteUserNote,
     deleteAllNotes: deleteAllNotes,
     updateUserNote: updateUserNote,

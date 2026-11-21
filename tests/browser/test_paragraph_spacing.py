@@ -26,7 +26,8 @@ def test_text_paragraphs_have_a_gap_without_doubling_authored_blanks(reading_gra
     card.locator(':scope > summary').click()
     borrowed = card.locator('[data-content-block-id="3.1.definition"]').first
     borrowed.locator(':scope > summary').click()
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-body-input').fill(text)
     note.locator('.user-note-close').click()

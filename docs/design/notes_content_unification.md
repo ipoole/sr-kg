@@ -47,6 +47,16 @@ exposition, before relationships/study. Their IDs and timestamps remain stable.
 Placement is an optional additive column in notes CSV and personal-data archives;
 old archives remain readable. Existing anchors are not reinterpreted as owner notes.
 
+The viewer creates one **User notes** owner note when it first renders Details
+during ordinary browsing for a concept or module with no owner-note history.
+Tutorial playback and recording do not create starter notes. The initial body contains
+editable guidance and maths examples. An existing owner note or deletion
+tombstone suppresses creation. The starter has a stable ID per owner and a
+fixed initial revision, so syncing independently created copies keeps one note
+and an edit or deletion takes precedence over untouched guidance. The note
+uses the ordinary edit, deletion, export and sync paths. Its creation replaces
+the masthead add action; paragraph annotations still use their block controls.
+
 ## Reading and editing
 
 Existing notes open in reading mode with a small Edit action. New notes open in

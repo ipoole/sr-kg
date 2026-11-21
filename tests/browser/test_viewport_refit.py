@@ -692,7 +692,8 @@ def test_phone_keyboard_does_not_trigger_rotate_notice(mobile_repo_browser_graph
     graph = mobile_repo_browser_graph
     page = graph.page
     graph.click_concept('sr.momentum_four_vector')
-    page.locator('#info_panel .kg-note-owner-action').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').tap()
     title = page.locator('#info_panel .user-note-title-input')
     title.focus()
     # Keep physical orientation portrait while simulating keyboard viewport shrink.

@@ -170,7 +170,7 @@ def test_read_marks_notes_and_open_paths_survive_same_page_refresh(shared_explan
     assert deeper.evaluate('e=>e.open')
     assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
     assert page.locator('#info_panel .kg-unmatched-notes').count()==0
-    assert page.locator('#info_panel .user-note').count()==1
+    assert page.locator('#info_panel .user-note:not(.kg-owner-notes *)').count()==1
     graph.click_concept('test.beta'); graph.click_concept('test.alpha')
     assert not _reference(page,'left').evaluate('e=>e.open')  # New page visit.
     assert root.locator(':scope > summary .content-block-read-toggle').is_checked()
@@ -327,8 +327,9 @@ def test_notes_in_shared_sources_and_named_local_clarifications(shared_explanati
     page.locator('.user-note-close').click()
     assert first.locator('.user-note').count()==second.locator('.user-note').count()==1
     assert 'remembered fact' in second.locator('.user-note').inner_text()
-    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].targetId')=='test.delta'
-    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].anchor.blockId')=='test.delta.definition'
+    saved_note = page.evaluate('kgPersonalData.getNotes().find(n => n.title === "Shared observation")')
+    assert saved_note['targetId'] == 'test.delta'
+    assert saved_note['anchor']['blockId'] == 'test.delta.definition'
     second.locator('.user-note-edit').click()
     assert page.locator('.user-note-body-input').count()==1
     assert second.locator('.user-note-body-input').count()==1
@@ -343,16 +344,16 @@ def test_notes_in_shared_sources_and_named_local_clarifications(shared_explanati
     page.locator('.user-note-body-input').fill('This belongs to the named clarification.')
     page.locator('.user-note-close').click()
     assert page.locator('#info_panel .kg-unmatched-notes').count()==0
-    snapshot=page.evaluate('kgPersonalData.getSnapshot()')
-    assert len(snapshot['notes'])==2
-    assert snapshot['notes'][1]['anchor']['sectionKey'].startswith('explanation:')
+    anchored = page.evaluate('kgPersonalData.getNotes().filter(n => n.placement === "anchor")')
+    assert len(anchored) == 2
+    assert anchored[1]['anchor']['sectionKey'].startswith('explanation:')
     # Archive round trip must preserve local scope without a new storage field.
     page.evaluate('''() => {
       const before=kgPersonalData.getSnapshot();
       const restored=kgPersonalDataArchive.importBytes(kgPersonalDataArchive.exportBytes(before));
-      window.restoredAnchors=restored.notes.map(n=>n.anchor);
+      window.restoredAnchors=restored.notes.filter(n => n.placement === "anchor").map(n => n.anchor);
     }''')
-    assert page.evaluate('restoredAnchors')==[n['anchor'] for n in snapshot['notes']]
+    assert page.evaluate('restoredAnchors')==[n['anchor'] for n in anchored]
     graph.click_concept('test.delta')
     native=page.locator('[data-content-block-id="test.delta.definition"]')
     assert native.locator('.user-note').count()==2

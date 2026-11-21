@@ -65,6 +65,7 @@
 
         var activeNodeId = null;
         var activeModuleId = null;
+        var tutorialSelectedDetails = false;
         function defaultViewerState() {
           return {
             contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
@@ -282,7 +283,7 @@
         var renderNotesAtAnchor = notesController.renderNotesAtAnchor;
         var renderNoteAnchoredBody = notesController.renderNoteAnchoredBody;
         var renderUnmatchedNotes = notesController.renderUnmatchedNotes;
-        var createUserNote = notesController.createUserNote;
+        var createAnchoredNote = notesController.createAnchoredNote;
         var deleteUserNote = notesController.deleteUserNote;
         var updateUserNote = notesController.updateUserNote;
         var noteEditorField = notesController.noteEditorField;
@@ -1113,6 +1114,12 @@
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "");
           return "kg-toc-" + (slug || "section");
+        }
+
+        function canSeedOwnerNote() {
+          return !tutorialSelectedDetails &&
+            !(guidedTutorial && guidedTutorial.tutorialPlaybackSnapshot().active) &&
+            !(tutorialRecorder && tutorialRecorder.active());
         }
 
         function refreshActiveConcept() {
@@ -2027,7 +2034,6 @@
           html += '<h2 class="concept-title" title="' + escapeHtml(conceptTitleText) + '">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
-          html += notesController.renderOwnerNoteAction("concept", nodeId);
           html += renderContentReadCompletionIndicator("concept", nodeId);
           html += renderStudyQuestionCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
@@ -2883,7 +2889,6 @@
           var html = '<div class="concept-sticky-header module-sticky-header">';
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
-          html += notesController.renderOwnerNoteAction("module", moduleId);
           html += renderContentReadCompletionIndicator("module", moduleId);
           html += renderStudyQuestionCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
@@ -2996,7 +3001,7 @@
           moduleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
-          html += notesController.renderOwnerNotes("module", moduleId);
+          html += notesController.renderOwnerNotes("module", moduleId, canSeedOwnerNote());
           html += renderModuleMembers(moduleId, module);
           html += renderModuleBoundarySection(moduleId, "incoming", "Incoming boundary links");
           html += renderModuleBoundarySection(moduleId, "outgoing", "Outgoing boundary links");
@@ -4688,7 +4693,7 @@
           html += "<hr>";
           html += renderConceptContent(nodeId, concept);
           html += readingTrees.render(nodeId);
-          html += notesController.renderOwnerNotes("concept", nodeId);
+          html += notesController.renderOwnerNotes("concept", nodeId, canSeedOwnerNote());
           html += renderConceptDerivedFrom(nodeId);
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
@@ -4908,6 +4913,7 @@
             detailsView.restoreTarget(null);
           }
 
+          tutorialSelectedDetails = options.origin === "tutorial";
           activeNodeId = type === "concept" ? id : null;
           activeModuleId = type === "module" ? id : null;
           updateSelectedConceptHeader(activeNodeId);
@@ -5075,7 +5081,7 @@
           var name = String(command.command || "");
           try {
             if (name === "home") {
-              await restoreHome();
+              await restoreHome(options.origin);
             } else if (name === "select") {
               var target = String(command.target || "");
               var type;
@@ -5092,7 +5098,10 @@
                 throw new Error("Select requires a concept: or module: target");
               }
               var selectionOptions = Object.assign({}, options.selectionOptions || {});
-              if (options.origin === "tutorial") { selectionOptions.skipHistory = true; }
+              if (options.origin === "tutorial") {
+                selectionOptions.origin = "tutorial";
+                selectionOptions.skipHistory = true;
+              }
               selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
             } else if (name === "set-display-scope") {
               setViewerDisplayScope(commandEnumValue(
@@ -5373,7 +5382,7 @@
               {origin: "tutorial"}
             );
           } else {
-            selectDefaultViewerObject();
+            selectDefaultViewerObject("tutorial");
           }
 
           setViewerView(snapshot.view || "both");
@@ -5664,7 +5673,7 @@
           return conceptId ? {type: "concept", id: conceptId} : null;
         }
 
-        async function restoreHome() {
+        async function restoreHome(origin) {
           resetContextFitInteraction(); setLayoutEditingEnabled(false);
           hideNodeTooltip(); restoreHoveredEdge();
           readingTrees.reset(); sharedExplanations.reset();
@@ -5678,7 +5687,7 @@
             preferredFoldedModules[String(moduleId)] = Boolean(getModule(moduleId).default_collapsed);
           });
           applyDefaultModuleFoldState();
-          selectDefaultViewerObject(); initialiseSelectionHistory();
+          selectDefaultViewerObject(origin); initialiseSelectionHistory();
           var homeSelection = JSON.stringify(viewerSelectionSnapshot());
 
           await nextAnimationFrames(2);
@@ -5696,10 +5705,10 @@
 
         window.kgRestoreHome = function() { return executeViewerCommand({command:'home'}, {origin:'user'}); };
 
-        function selectDefaultViewerObject() {
+        function selectDefaultViewerObject(origin) {
           var selection = defaultViewerSelection();
           if (!selection) { return; }
-          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true});
+          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true, origin: origin});
           var state = selection.type === "module"
             ? {objectType: "module", moduleId: selection.id}
             : {objectType: "concept", nodeId: selection.id};
@@ -6716,17 +6725,6 @@
             return;
           }
 
-          var ownerNoteButton = e.target.closest(".kg-note-owner-action");
-          if (ownerNoteButton) {
-            e.preventDefault();
-            var ownerNote = notesController.createOwnerNote(
-              ownerNoteButton.getAttribute("data-target-type"), ownerNoteButton.getAttribute("data-target-id")
-            );
-            refreshActiveConcept();
-            notesController.revealNote(ownerNote.id, true);
-            return;
-          }
-
           var addNoteButton = e.target.closest(".kg-add-note");
           if (addNoteButton) {
             e.preventDefault();
@@ -6743,7 +6741,7 @@
               ? enclosingSection.id
               : "";
             cancelNotePlacement(addNoteButton.closest('[data-note-placement="active"]'));
-            var createdNote = createUserNote(
+            var createdNote = createAnchoredNote(
               noteTargetType,
               noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
