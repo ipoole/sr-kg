@@ -279,7 +279,10 @@ def test_microphone_session_survives_rehearsal_and_ends_on_exit(tutorial_graph):
 @pytest.mark.browser
 def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph):
     page=tutorial_graph.page
-    page.add_init_script("Object.defineProperty(navigator, 'userAgent', {value:'iPhone'});")
+    page.add_init_script("""
+      Object.defineProperty(navigator, 'userAgent', {value:'iPhone'});
+      Object.defineProperty(navigator, 'audioSession', {value:{type:'auto'}});
+    """)
     page.reload(wait_until='domcontentloaded')
     page=setup_voice(tutorial_graph)
     page.locator('#kg_tutorial_editor_voice_record').click()
@@ -287,3 +290,9 @@ def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph):
     assert page.evaluate('voiceTracksStopped')==1
     expect(page.locator('#kg_tutorial_voice_play')).to_be_enabled()
     expect(page.locator('#kg_tutorial_voice_microphone_note')).to_contain_text('released')
+    assert page.evaluate('navigator.audioSession.type')=='playback'
+    page.locator('#kg_tutorial_voice_record').click()
+    expect(page.locator('#kg_tutorial_voice_stop')).to_be_enabled()
+    assert page.evaluate('navigator.audioSession.type')=='play-and-record'
+    page.locator('#kg_tutorial_voice_cancel').click()
+    assert page.evaluate('navigator.audioSession.type')=='auto'

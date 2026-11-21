@@ -9,6 +9,18 @@ function kgCreateTutorialVoice(options) {
   // iOS can keep playback routed through the recording audio session with a muted track.
   var releaseBetweenTakes = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var audioSession = releaseBetweenTakes ? navigator.audioSession : null;
+  var previousAudioType = null;
+  function useAudioType(type) {
+    if (!audioSession) { return; }
+    if (previousAudioType === null) { previousAudioType = audioSession.type; }
+    try { audioSession.type = type; } catch (error) { /* Keep browser-managed routing. */ }
+  }
+  function restoreAudioType() {
+    if (previousAudioType === null) { return; }
+    try { audioSession.type = previousAudioType; } catch (error) { /* The browser manages routing. */ }
+    previousAudioType = null;
+  }
   el('microphone_note').textContent = releaseBetweenTakes
     ? 'The microphone is released when you stop recording. Re-recording may ask for access again.'
     : 'Microphone access lasts until Done editing or Exit tutorial. It is muted between takes.';
@@ -48,7 +60,7 @@ function kgCreateTutorialVoice(options) {
     if (phase === 'saving') { return; }
     generation += 1;
     if (recorder && recorder.state !== 'inactive') { recorder.stop(); }
-    recorder = null; endTake(); stopPlayback(); session = null; clip = null; dirty = false; phase = 'idle';
+    recorder = null; endTake(); stopPlayback(); restoreAudioType(); session = null; clip = null; dirty = false; phase = 'idle';
     if (dialog.open) { dialog.close(); }
     options.closed();
   }
@@ -58,6 +70,7 @@ function kgCreateTutorialVoice(options) {
     phase = 'permission'; player.pause(); controls(); message('Waiting for microphone permission…');
     try {
       if (stream && !stream.getTracks().every(function(track) { return track.readyState === 'live'; })) { stopTracks(); }
+      useAudioType('play-and-record');
       var acquired = stream || await navigator.mediaDevices.getUserMedia({audio:true});
       if (token !== generation) { acquired.getTracks().forEach(function(track) { track.stop(); }); return; }
       stream = acquired;
@@ -81,7 +94,7 @@ function kgCreateTutorialVoice(options) {
       };
       current.onstop = function() {
         if (token !== generation) { return; }
-        endTake(); recorder = null; phase = 'idle';
+        endTake(); useAudioType('playback'); recorder = null; phase = 'idle';
         var blob = new Blob(chunks,{type:current.mimeType || (chunks[0] && chunks[0].type) || mime || 'audio/webm'});
         if (!failed && blob.size && blob.size <= 50 * 1024 * 1024) {
           useClip(blob, Math.max(0.001,(performance.now() - started) / 1000)); dirty = true;
@@ -94,7 +107,7 @@ function kgCreateTutorialVoice(options) {
       message('Microphone recording. Press Stop when finished.'); controls();
     } catch (error) {
       if (token !== generation) { return; }
-      stopTracks(); recorder = null; phase = 'idle'; duration = oldDuration;
+      stopTracks(); restoreAudioType(); recorder = null; phase = 'idle'; duration = oldDuration;
       message('Could not record: ' + error.message + ' You can also import an audio file from the card editor.'); controls();
     }
   }
@@ -109,7 +122,7 @@ function kgCreateTutorialVoice(options) {
     if (!clip || phase !== 'idle') { return; }
     var token = generation;
     if (!player.paused) { player.pause(); controls(); return; }
-    try { if (player.ended) { player.currentTime = 0; } await player.play(); }
+    try { useAudioType('playback'); if (player.ended) { player.currentTime = 0; } await player.play(); }
     catch (error) { if (token === generation) { message('Cannot play this audio on this device: ' + error.message); } }
     if (token === generation) { controls(); }
   });
