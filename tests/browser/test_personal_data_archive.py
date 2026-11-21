@@ -55,7 +55,7 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
         reading = list(
             csv.DictReader(io.TextIOWrapper(archive.open("reading_progress.csv")))
         )
-    assert notes[0]["title"] == "Portable note"
+    assert any(note["title"] == "Portable note" for note in notes)
     assert layout[0]["object_id"] == "2.1"
     assert attempts[0]["question_id"] == "2.1.q1"
     assert reading[0]["block_id"] == "2.1.definition"
@@ -66,7 +66,7 @@ def test_personal_data_archive_round_trips_all_collections(browser_graph):
     browser_graph.open_control_section("kg_personal_data_section")
     page.locator("#kg_personal_data_import_input").set_input_files(str(archive_path))
     page.locator("#kg_personal_data_import_dialog[open]").wait_for()
-    assert "1 note" in page.locator("#kg_personal_data_import_summary").inner_text()
+    assert f"{len(notes)} notes" in page.locator("#kg_personal_data_import_summary").inner_text()
     assert "1 question result" in page.locator(
         "#kg_personal_data_import_summary"
     ).inner_text()
@@ -111,7 +111,8 @@ def test_note_placement_survives_archive_and_merge(browser_graph):
       }));
       const roundTrip = kgPersonalDataArchive.importBytes(kgPersonalDataArchive.exportBytes(profile));
       store.mergeSnapshot(roundTrip);
-      return store.getSnapshot().notes.map(n => [n.id, n.placement, n.anchor.blockId, n.body]);
+      return store.getSnapshot().notes.filter(n => n.targetId === '2.1')
+        .map(n => [n.id, n.placement, n.anchor.blockId, n.body]);
     }''')
     assert sorted(result) == [
         ['anchor', 'anchor', '2.1.definition', r'\(x^2\)'],

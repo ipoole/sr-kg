@@ -87,7 +87,10 @@ function kgCreateNotesController(options) {
   }
 
   function saveUserNotes() {
-    var saved = personalDataStore.replaceNotes(userNotesState.notes);
+    return finishSavingNotes(personalDataStore.replaceNotes(userNotesState.notes));
+  }
+
+  function finishSavingNotes(saved) {
     safeLocalStorageSet(userNotesStorageKey, JSON.stringify(userNotesState));
     schedulePersonalDataAutoSync();
     setNotesStatus(saved ? "Notes saved locally." : "Could not save notes locally.");
@@ -102,7 +105,7 @@ function kgCreateNotesController(options) {
   }
 
   function noteIsDefaultEmpty(note) {
-    return note &&
+    return note && note.placement !== "owner" &&
       String(note.title || "").trim() === "Note" &&
       String(note.body || "").trim() === "";
   }
@@ -425,22 +428,27 @@ function kgCreateNotesController(options) {
     });
   }
 
-  function renderOwnerNoteAction(targetType, targetId) {
-    return '<button type="button" class="kg-note-block-action kg-note-owner-action"' +
-      ' data-note-state="' + (ownerNotes(targetType, targetId).length ? "present" : "empty") +
-      '" data-target-type="' + escapeHtml(targetType) + '" data-target-id="' + escapeHtml(targetId) +
-      '" aria-label="Add a personal note to this ' + escapeHtml(targetType) +
-      '" title="Add a personal note"><span class="kg-note-bubble-glyph" aria-hidden="true">+</span></button>';
+  function ensureOwnerNote(targetType, targetId) {
+    var result = personalDataStore.seedOwnerNote({
+      targetType: targetType, targetId: targetId, placement: "owner",
+      conceptId: targetType === "concept" ? targetId : "", section: "Personal notes",
+      anchor: {blockIndex: 0, afterText: "", blockId: "", sectionKey: "", contextBefore: "", contextAfter: ""},
+      title: "User notes",
+      body: "Choose Edit to write your own notes. Include inline maths with \\(x^2\\), " +
+        "or put a display equation on its own line:\n\\[E=mc^2\\]\n" +
+        "Use Insert maths in the editor to insert an example you can change."
+    });
+    if (result) {
+      userNotesState.notes.push(normalizeUserNote(result.note));
+      finishSavingNotes(result.saved);
+    }
   }
 
-  function renderOwnerNotes(targetType, targetId) {
+  function renderOwnerNotes(targetType, targetId, seedDefault) {
+    if (seedDefault) { ensureOwnerNote(targetType, targetId); }
     var notes = ownerNotes(targetType, targetId);
     return notes.length ? '<section class="kg-owner-notes" aria-label="Personal notes">' +
       notes.map(function(note) { return renderUserNote(note); }).join("") + '</section>' : "";
-  }
-
-  function createOwnerNote(targetType, targetId) {
-    return createUserNote(targetType, targetId, "Personal notes", 0, "", {placement: "owner"});
   }
 
   function revealNote(noteId, focusEditor) {
@@ -888,9 +896,7 @@ function kgCreateNotesController(options) {
     unresolvedNoteCount: unresolvedNoteCount,
     migrateUserNotesState: migrateUserNotesState,
     renderNoteBlockAction: renderNoteBlockAction,
-    renderOwnerNoteAction: renderOwnerNoteAction,
     renderOwnerNotes: renderOwnerNotes,
-    createOwnerNote: createOwnerNote,
     revealNote: revealNote,
     findUserNote: findUserNote,
     renderNotesOverview: renderNotesOverview,

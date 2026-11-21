@@ -73,7 +73,8 @@ def test_folding_focused_concept_returns_and_preserves_descendants(reading_graph
 def test_personal_note_folds_without_losing_its_draft(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept('2.2')
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-body-input').fill('Keep this draft when folding.')
     assert note.locator('.kg-content-footer').count() == 0

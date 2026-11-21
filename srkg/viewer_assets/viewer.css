@@ -3840,11 +3840,6 @@
     #info_panel .user-note-actions { flex-wrap: wrap; }
     #info_panel .user-note-maths-help { color: #59616d; font-weight: normal; }
 
-    #info_panel .concept-title-row > .kg-note-owner-action {
-        position: static;
-        flex: 0 0 1.5em;
-    }
-
     /* Shared statements remain in the argument; explanations are quiet disclosures. */
     #info_panel .kg-shared-reference { margin: 0.45em 0; }
     #info_panel .kg-content-statement { margin: 0 0 0.35em; color: var(--kg-prose-color); }

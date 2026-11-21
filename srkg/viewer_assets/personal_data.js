@@ -2,6 +2,17 @@
   "use strict";
 
   var SCHEMA_VERSION = 2;
+  // An untouched starter loses to an edit or a tombstone on any device.
+  var OWNER_NOTE_INITIAL_REVISION = "1970-01-01T00:00:01.000Z";
+
+  function starterOwnerNoteId(note) {
+    return "starter-owner-note:" + note.targetType + ":" + note.targetId;
+  }
+
+  function isUntouchedStarter(note) {
+    return note.placement === "owner" && note.id === starterOwnerNoteId(note) &&
+      !note.deletedAt && note.updatedAt === OWNER_NOTE_INITIAL_REVISION;
+  }
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -56,7 +67,7 @@
   function hasPersonalRecords(profile) {
     return Boolean(
       profile && (
-        profile.notes.length ||
+        profile.notes.some(function(note) { return !isUntouchedStarter(note); }) ||
         Object.keys(profile.layout.records).length ||
         Object.keys(profile.studyResults).length ||
         profile.studyResets.length ||
@@ -231,6 +242,20 @@
       return profile.notes.filter(function(note) { return !note.deletedAt; }).map(clone);
     }
 
+    function seedOwnerNote(note) {
+      var id = starterOwnerNoteId(note);
+      // Deleted owner notes also count as having had a starter.
+      if (profile.notes.some(function(existing) {
+        return existing.id === id || (existing.placement === "owner" &&
+          existing.targetType === note.targetType && existing.targetId === note.targetId);
+      })) { return null; }
+      var record = Object.assign({}, note, {
+        id: id, createdAt: OWNER_NOTE_INITIAL_REVISION, updatedAt: OWNER_NOTE_INITIAL_REVISION, deletedAt: ""
+      });
+      profile.notes.push(clone(record));
+      return {note: record, saved: save()};
+    }
+
     function replaceNotes(notes) {
       var nowValue = new Date().toISOString();
       var incoming = {};
@@ -399,7 +424,17 @@
       var incoming = normalizeProfile(value, new Date().toISOString());
       if (!incoming) { return false; }
       var localWasEmpty = !hasPersonalRecords(profile);
-      profile.notes = mergeById(profile.notes, incoming.notes);
+      var mergedNotes = mergeById(profile.notes, incoming.notes);
+      // A browser can seed before it first learns about older owner notes.
+      var ownersWithOlderNotes = new Set();
+      mergedNotes.forEach(function(note) {
+        if (note.placement === "owner" && note.id !== starterOwnerNoteId(note)) {
+          ownersWithOlderNotes.add(starterOwnerNoteId(note));
+        }
+      });
+      profile.notes = mergedNotes.filter(function(note) {
+        return !isUntouchedStarter(note) || !ownersWithOlderNotes.has(note.id);
+      });
       Object.keys(incoming.layout.records).forEach(function(key) {
         var current = profile.layout.records[key];
         profile.layout.records[key] = current
@@ -442,6 +477,7 @@
       deviceId: deviceId,
       getSnapshot: function() { return clone(profile); },
       getNotes: activeNotes,
+      seedOwnerNote: seedOwnerNote,
       replaceNotes: replaceNotes,
       getLayoutState: layoutState,
       replaceLayout: replaceLayout,
