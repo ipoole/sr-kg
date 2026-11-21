@@ -1471,11 +1471,6 @@
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
         }
 
-        function shouldStartWithConceptTocOpen() {
-          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-          return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
-        }
-
         /* Display-scope controls and module actions. */
         function updateModuleActionControls() {
           var disabled = viewerState.view === "details";
@@ -2007,10 +2002,9 @@
           return items;
         }
 
-        function renderConceptToc(items) {
-          if (!Array.isArray(items) || items.length < 2) { return ""; }
-          var openAttr = shouldStartWithConceptTocOpen() ? " open" : "";
-          var html = '<details class="concept-toc" aria-label="Concept contents"' + openAttr + ">";
+        function renderDetailsContents(items, includeBlockActions) {
+          if (items.length < 2 && !includeBlockActions) { return ""; }
+          var html = '<details class="concept-toc">';
           html += '<summary class="concept-toc-title">Contents</summary>';
           html += '<div class="concept-toc-links">';
           items.forEach(function(item) {
@@ -2022,8 +2016,13 @@
               renderConceptText(item.title) +
               "</a>";
           });
-          html += "</div></details>";
-          return html;
+          html += "</div>";
+          if (includeBlockActions) {
+            html += '<div class="kg-content-fold-controls" role="group" aria-label="Concept blocks">' +
+              '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
+              '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
+          }
+          return html + "</details>";
         }
 
         function renderConceptMasthead(nodeId, concept, tocItems) {
@@ -2041,25 +2040,16 @@
           if (owningModule) {
             var owningModuleTitle = searchDisplayText(owningModule.title || owningModuleId);
             var compactModuleMatch = owningModuleTitle.match(/^(?:SR|GR|MATHS)-\d+/);
-            var compactModuleTitle = compactModuleMatch
-              ? compactModuleMatch[0]
-              : owningModuleTitle;
+            var moduleLinkLabel = compactModuleMatch
+              ? escapeHtml(compactModuleMatch[0])
+              : renderConceptText(owningModule.title || owningModuleId);
             html += '<button type="button" class="concept-module-chip module-detail-link" data-module-id="' +
               escapeHtml(owningModuleId) + '" aria-label="Module: ' +
               escapeHtml(owningModuleTitle) + '" title="Module: ' +
-              escapeHtml(owningModuleTitle) + '">' +
-              '<span class="concept-module-chip-label">Module</span> ' +
-              '<span class="concept-module-chip-full">' +
-              renderConceptText(owningModule.title || owningModuleId) + "</span>" +
-              '<span class="concept-module-chip-compact">' +
-              escapeHtml(compactModuleTitle) + "</span>" +
-              "</button>";
+              escapeHtml(owningModuleTitle) + '">' + moduleLinkLabel + "</button>";
           }
           html += "</div>";
-          html += renderConceptToc(tocItems);
-          html += '<div class="kg-content-fold-controls" aria-label="Concept blocks">' +
-            '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
-            '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
+          html += renderDetailsContents(tocItems, true);
           html += "</div>";
           return html;
         }
@@ -2896,7 +2886,7 @@
             "</span>";
           html += renderModuleGraphFoldControl(moduleId);
           html += "</div>";
-          html += renderConceptToc(tocItems);
+          html += renderDetailsContents(tocItems, false);
           html += "</div>";
           return html;
         }
@@ -6713,15 +6703,7 @@
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
-            var tocTargetId = tocLink.getAttribute("data-toc-target");
-            var target = document.getElementById(tocTargetId);
-            if (target) {
-              setActiveConceptSection(tocTargetId);
-              openTargetForToc(target);
-              window.requestAnimationFrame(function() {
-                scrollInfoPanelTargetBelowStickyToc(target);
-              });
-            }
+            detailsView.navigateFromContents(tocLink);
             return;
           }
 

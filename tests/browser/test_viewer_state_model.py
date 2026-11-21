@@ -325,6 +325,7 @@ def test_detail_navigation_does_not_change_context_rule(browser_graph):
     page.locator("#kg_context_depth_select").select_option("two-hops")
     before = page.evaluate("() => kgViewerStateSnapshot().contextRule")
 
+    page.locator("#info_panel .concept-toc > summary").click()
     page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-3-1-derived-from"]'
     ).click()

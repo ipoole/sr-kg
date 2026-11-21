@@ -16,7 +16,9 @@ def _visible_content_block_kinds(page):
 
 
 def _toc_titles(page):
-    return page.locator("#info_panel .concept-toc .concept-toc-link").all_inner_texts()
+    return page.locator("#info_panel .concept-toc .concept-toc-link").evaluate_all(
+        "links => links.map(link => link.textContent)"
+    )
 
 
 def _statement_concept_ids(locator):
@@ -1372,6 +1374,8 @@ def test_revised_concept_renders_sticky_masthead_and_content_toc(shared_browser_
     toc = page.locator("#info_panel .concept-toc")
     assert toc.count() == 1
     assert toc.evaluate("el => el.tagName") == "DETAILS"
+    assert not toc.evaluate("el => el.open")
+    toc.locator("summary").click()
     assert toc.evaluate("el => el.open")
     toc.locator("summary").click()
     assert not toc.evaluate("el => el.open")
@@ -1409,17 +1413,21 @@ def test_concept_toc_starts_closed_on_phone_viewport(browser_graph):
 
 
 @pytest.mark.browser
-def test_concept_toc_scroll_places_target_below_sticky_masthead(browser_graph):
+@pytest.mark.parametrize("font_size", [6, 40])
+def test_concept_toc_scroll_places_target_below_sticky_masthead(browser_graph, font_size):
     page = browser_graph.page
 
     browser_graph.click_concept("2.2")
     page.locator("#info_panel").evaluate(
-        """panel => {
+        """(panel, size) => {
           panel.style.height = "170px";
+          panel.style.fontSize = size + "px";
           panel.scrollTop = 0;
-        }"""
+        }""",
+        font_size,
     )
 
+    page.locator("#info_panel .concept-toc > summary").click()
     page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
     ).click()
@@ -1446,6 +1454,10 @@ def test_concept_toc_scroll_places_target_below_sticky_masthead(browser_graph):
     )
 
     assert metrics["targetTop"] >= metrics["mastheadBottom"] + 4
+    assert not page.locator("#info_panel .concept-toc").evaluate("el => el.open")
+    assert page.locator("#kg-toc-2-2-gamma-warning > summary").evaluate(
+        "el => el === document.activeElement"
+    )
 
 
 @pytest.mark.browser
@@ -1457,6 +1469,7 @@ def test_concept_toc_opens_folded_target(browser_graph):
     assert warning.evaluate("el => el.tagName") == "DETAILS"
     assert not warning.evaluate("el => el.open")
 
+    page.locator("#info_panel .concept-toc > summary").click()
     page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-2-2-gamma-warning"]'
     ).click()
@@ -1480,6 +1493,7 @@ def test_concept_toc_marks_active_detail_section(browser_graph):
     graphic = page.locator("#info_panel #kg-toc-2-2-graphic")
     assert graphic.evaluate("el => el.classList.contains('kg-active-section')")
 
+    page.locator("#info_panel .concept-toc > summary").click()
     warning_link.click()
 
     assert warning_link.evaluate("el => el.classList.contains('active')")
@@ -1646,9 +1660,10 @@ def test_phone_context_status_and_representation_actions_share_one_row(browser_g
 
 
 @pytest.mark.browser
-def test_phone_concept_masthead_shares_one_row_until_contents_open(repo_browser_graph):
+@pytest.mark.parametrize("width", [390, 1280], ids=["phone", "desktop"])
+def test_concept_masthead_shares_one_row_until_contents_open(repo_browser_graph, width):
     page = repo_browser_graph.page
-    page.set_viewport_size({"width": 390, "height": 800})
+    page.set_viewport_size({"width": width, "height": 800})
     page.goto(
         repo_browser_graph.output_path.as_uri() + "#concept-sr.wave_equation",
         wait_until="domcontentloaded",
@@ -2424,6 +2439,7 @@ def test_hovering_section_context_edge_does_not_move_or_zoom_graph(browser_graph
 
     browser_graph.click_concept("3.1")
     page.locator("#kg_display_scope_select").select_option("context")
+    page.locator("#info_panel .concept-toc > summary").click()
     page.locator(
         '#info_panel .concept-toc-link[data-toc-target="kg-toc-3-1-derived-from"]'
     ).click()
