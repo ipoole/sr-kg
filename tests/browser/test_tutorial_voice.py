@@ -11,7 +11,7 @@ FAKE_MIC = r'''() => {
  Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:async()=>stream()}});
  window.MediaRecorder = class {
    static isTypeSupported(type) { return type === 'audio/webm;codecs=opus'; }
-   constructor() { this.state='inactive'; this.mimeType='audio/webm'; voiceRecorders.push(this); }
+   constructor(stream, options) { this.state='inactive'; this.mimeType=options?.mimeType || 'audio/webm'; voiceRecorders.push(this); }
    start() { this.state='recording'; }
    stop() {
      this.state='inactive';
@@ -277,7 +277,8 @@ def test_microphone_session_survives_rehearsal_and_ends_on_exit(tutorial_graph):
 
 
 @pytest.mark.browser
-def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph):
+@pytest.mark.parametrize('mp4_supported', [True, False])
+def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph, mp4_supported):
     page=tutorial_graph.page
     page.add_init_script("""
       Object.defineProperty(navigator, 'userAgent', {value:'iPhone'});
@@ -285,8 +286,13 @@ def test_iphone_releases_microphone_before_take_can_be_played(tutorial_graph):
     """)
     page.reload(wait_until='domcontentloaded')
     page=setup_voice(tutorial_graph)
+    if mp4_supported:
+        page.evaluate("()=>{MediaRecorder.isTypeSupported=type=>['audio/mp4','audio/webm;codecs=opus'].includes(type);}")
     page.locator('#kg_tutorial_editor_voice_record').click()
     record_take(page)
+    assert page.evaluate('voiceRecorders[0].mimeType') == (
+        'audio/mp4' if mp4_supported else 'audio/webm;codecs=opus'
+    )
     assert page.evaluate('voiceTracksStopped')==1
     expect(page.locator('#kg_tutorial_voice_play')).to_be_enabled()
     expect(page.locator('#kg_tutorial_voice_microphone_note')).to_contain_text('released')

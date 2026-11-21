@@ -75,7 +75,10 @@ function kgCreateTutorialVoice(options) {
       if (token !== generation) { acquired.getTracks().forEach(function(track) { track.stop(); }); return; }
       stream = acquired;
       stream.getTracks().forEach(function(track) { track.enabled = true; });
-      var mime = ['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus'].find(function(type) {
+      var formats = releaseBetweenTakes
+        ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/ogg;codecs=opus']
+        : ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus'];
+      var mime = formats.find(function(type) {
         return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type);
       });
       recorder = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream);
