@@ -346,21 +346,21 @@
   </div>
   <div id="kg_tutorial_editor_footer">
   <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions" role="group" aria-label="Record and continue">
-    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card actions</button>
+    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-icon" aria-hidden="true">➤</span> Record card actions</button>
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
     <button id="kg_tutorial_editor_close" type="button">Done editing</button>
   </div>
   <section id="kg_tutorial_editor_voice" aria-label="Card voice narration">
-    <button id="kg_tutorial_editor_voice_record" type="button">● Record voice narration</button>
-    <span id="kg_tutorial_editor_voice_status" role="status"></span>
-    <div class="kg-tutorial-editor-actions">
-      <button id="kg_tutorial_editor_voice_import" type="button">Import audio file</button>
+    <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions">
+      <button id="kg_tutorial_editor_voice_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-icon" aria-hidden="true">🎙︎</span> Record voice narration</button>
       <button id="kg_tutorial_editor_voice_remove" type="button">Remove voice</button>
     </div>
-    <input id="kg_tutorial_editor_voice_file" type="file" accept="audio/*" hidden>
+    <span id="kg_tutorial_editor_voice_status" role="status"></span>
   </section>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <fieldset id="kg_tutorial_editor_advanced_fields">
+  <button id="kg_tutorial_editor_voice_import" type="button">Import audio file</button>
+  <input id="kg_tutorial_editor_voice_file" type="file" accept="audio/*" hidden>
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
   <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_order_controls" role="group" aria-label="Card order">

@@ -472,7 +472,7 @@ read. Card identifiers and teaching order are preserved. Legacy imported
 ## Local voice authoring (issue #6, stages 1–2)
 
 The card editor provides **Record voice narration** below action recording, plus
-**Import audio file** and **Remove voice**. The voice dialogue displays the card's
+**Remove voice** beside it and **Import audio file** under Advanced. The voice dialogue displays the card's
 formatted written narration without operating the graph. Record/Re-record → Stop
 → Play/Pause → Finish recording accepts a take. Cancel (including Escape) keeps
 the previously saved recording. Recording requests microphone permission only on
