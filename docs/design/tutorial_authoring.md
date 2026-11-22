@@ -474,8 +474,8 @@ lanes; avoid multiplying combinations unrelated to a specific behaviour.
 
 ### Built-in route visibility audit
 
-The built-in routes use explicit whole-card visibility, with no separate `prepare`
-sequences. Using PhysicsKG demonstrates controls with Show cards; its opening map
+The built-in routes use explicit whole-card visibility. A recorded route may start
+with a quiet Home reset to establish its recorded starting view. Using PhysicsKG demonstrates controls with Show cards; its opening map
 and reading-tree scene use Hide. The physics routes use Hide throughout: each
 card prepares its graph or reading scene quietly, then invites the learner to
 read. Card identifiers and teaching order are preserved. Legacy imported
