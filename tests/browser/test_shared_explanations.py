@@ -182,6 +182,8 @@ def test_keyboard_and_phone_layout(shared_explanation_graph,width):
     page=shared_explanation_graph.page
     page.set_viewport_size({'width':width,'height':844})
     page.locator('#kg_view_select').select_option('details')
+    if page.locator('#kg_controls').is_visible():
+        page.locator('#kg_controls_toggle').click()
     left=_reference(page,'left')
     left.locator(':scope > summary').focus()
     page.keyboard.press('Enter')

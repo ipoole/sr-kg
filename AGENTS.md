@@ -24,25 +24,40 @@ When fixing a reported defect, prefer a test-first workflow: add or update a
 focused regression test that fails against the current behaviour, confirm the
 failure when practical, then patch the code and rerun the test to make it pass.
 
-The unit test suite is fast; run it after every significant code change before
-handing work back.
-
-Browser integration tests live under `tests/browser` and require Playwright plus
-browser binaries in the `sr-kg` environment. For routine viewer development run
-the fast synthetic-data lane with:
+Run the Python unit suite after every significant code change. Chromium tests
+take longer. For viewer changes, start with focused Playwright cases that cover
+the changed behaviour. The synthetic-data lane is useful for broader checks
+during development:
 
 ```bash
 conda run -n sr-kg pytest -q tests/browser -m "not browser_full"
 ```
 
-Before completing viewer work, run the full lane with:
+**Share the build early.** Once the unit and focused checks pass, send the user
+a link to the tested local build or, if requested, the hosted preview. Say
+which checks passed and which are still pending. Continue the remaining checks
+in the same task and report their results. A review build is not a sign-off.
+
+Before marking viewer work ready to merge or release, run the full Chromium suite:
 
 ```bash
 conda run -n sr-kg pytest -q tests/browser
 ```
 
-In managed Codex sessions, running browser tests may require command escalation
-because Chromium must launch outside the normal command sandbox.
+Browser tests require Playwright and browser binaries in the `sr-kg`
+environment. In managed Codex sessions, Chromium may require command escalation.
+
+## Design Principles
+
+- Keep the user model and interface simple. Remove duplicate controls and
+  rarely useful actions that take space or distract.
+- Give content priority, especially on phones. Use width before adding rows
+  and keep headers compact while preserving readable labels and usable tap targets.
+- Put controls where their effect is visible. Reuse familiar controls, keep
+  common actions one step away, and show contextual actions only when they apply.
+- Keep interface controls stable while reading. Reading zoom scales text and
+  graphics without growing toolbars. Keep navigation and keyboard focus clear
+  at narrow widths.
 
 ## Build Artifacts
 

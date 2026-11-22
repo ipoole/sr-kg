@@ -280,6 +280,23 @@ function kgCreateDetailsView(options) {
     }
   }
 
+  function navigateFromContents(link) {
+    var target = document.getElementById(link.getAttribute("data-toc-target"));
+    if (!target) { return; }
+    link.closest(".concept-toc").open = false;
+    setActiveConceptSection(target.id);
+    openTargetForToc(target);
+    var heading = target.querySelector(":scope > summary") || target;
+    if (heading === target && !heading.hasAttribute("tabindex")) {
+      heading.setAttribute("tabindex", "-1");
+    }
+    heading.focus({preventScroll: true});
+    suppressScrollSync(450);
+    requestAnimationFrame(function() {
+      if (target.isConnected) { scrollInfoPanelTargetBelowStickyToc(target); }
+    });
+  }
+
   function scrollInfoPanelTargetBelowStickyToc(target, options) {
     options = options || {};
     var panel = document.getElementById("info_panel");
@@ -399,6 +416,7 @@ function kgCreateDetailsView(options) {
     refreshEquationOverflow: refreshEquationOverflow,
     typesetInfoPanel: typesetInfoPanel,
     openTargetForToc: openTargetForToc,
+    navigateFromContents: navigateFromContents,
     scrollInfoPanelTargetBelowStickyToc: scrollInfoPanelTargetBelowStickyToc,
     updateConceptTocActive: updateConceptTocActive,
     setActiveConceptSection: setActiveConceptSection,

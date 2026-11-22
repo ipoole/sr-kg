@@ -1,5 +1,7 @@
 import pytest
 
+from conftest import set_selected_module_representation
+
 
 def _study_controls(browser_graph):
     browser_graph.open_control_section("kg_study_section")
@@ -73,9 +75,7 @@ def test_concept_and_folded_module_markers_follow_read_and_question_completion(b
     )
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
+    set_selected_module_representation(page, "folded")
     module_marker = page.evaluate(
         """() => kgGraphCompletionMarkersSnapshot().markers.find(
           marker => marker.nodeId === 'module::test.m02_applications'
@@ -115,9 +115,7 @@ def test_folded_module_completion_ticks_stay_inside_the_rounded_corner(browser_g
     page = browser_graph.page
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
+    set_selected_module_representation(page, "folded")
     page.evaluate(
         """() => {
           moduleData['test.m01_foundations'].members.forEach(conceptId => {
