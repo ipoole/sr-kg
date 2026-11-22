@@ -1,4 +1,5 @@
 [
+  {"version": "5.0.13", "date": "2026-11-22", "summary": "Preview: The first two cards of the moving-clocks tutorial now have voice narration. Export a tutorial and its recordings together as one ZIP."},
   {"version": "5.0.12", "date": "2026-11-22", "summary": "Preview: Record and play tutorial narration, with compact playback controls and the latest Details and graph toolbar updates."},
   {"version": "5.0.11", "date": "2026-11-22", "summary": "Preview: Expand folded context in one tap from the graph toolbar."},
   {"version": "5.0.9", "date": "2026-11-22", "summary": "Preview: A compact Details masthead keeps its size while reading text zooms."},
