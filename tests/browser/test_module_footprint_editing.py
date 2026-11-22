@@ -2,6 +2,8 @@ import json
 
 import pytest
 
+from conftest import set_selected_module_representation
+
 from srkg.layout_persistence import load_published_layout
 
 
@@ -17,7 +19,7 @@ def _enable_editing(graph):
 def _fold(graph):
     graph.open_control_section("kg_modules_section")
     graph.page.locator(f'.kg-module-item[data-module-id="{MODULE}"]').click()
-    graph.page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(graph.page, "folded")
 
 
 def _assert_box(page):
@@ -44,7 +46,7 @@ def test_reset_while_folded_restores_footprint_without_moving_other_modules(brow
     page.evaluate("() => kgResetToPublishedLayout()")
     _assert_box(page)
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+    set_selected_module_representation(page, "expanded")
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
 
 
@@ -106,7 +108,7 @@ def test_export_reload_and_repeated_folding_preserve_geometry(browser_graph, tmp
     for _ in range(3):
         _fold(browser_graph)
         _assert_box(page)
-        page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+        set_selected_module_representation(page, "expanded")
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == before
 
 

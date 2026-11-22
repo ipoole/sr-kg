@@ -2722,19 +2722,6 @@
             " in the graph.";
         }
 
-        function renderModuleGraphFoldControl(moduleId) {
-          var folded = selectedModuleIsFolded(moduleId);
-          return '<div class="module-graph-fold-control" aria-label="Module graph display">' +
-            '<span class="module-graph-fold-label">Graph</span>' +
-            '<button type="button" class="module-graph-fold-button" data-module-id="' +
-            escapeHtml(moduleId) + '" data-module-fold-state="expanded" aria-pressed="' +
-            (folded ? "false" : "true") + '">Expanded</button>' +
-            '<button type="button" class="module-graph-fold-button" data-module-id="' +
-            escapeHtml(moduleId) + '" data-module-fold-state="folded" aria-pressed="' +
-            (folded ? "true" : "false") + '">Folded</button>' +
-            "</div>";
-        }
-
         function moduleTitleButton(moduleId) {
           var module = getModule(moduleId);
           if (!module) { return escapeHtml(moduleId); }
@@ -2884,7 +2871,6 @@
           html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
-          html += renderModuleGraphFoldControl(moduleId);
           html += "</div>";
           html += renderDetailsContents(tocItems, false);
           html += "</div>";
@@ -6818,20 +6804,6 @@
             var edgeConceptId = edgeConceptButton.getAttribute("data-edge-concept-id");
             if (!getConcept(edgeConceptId)) { return; }
             navigateToConcept(edgeConceptId, "Selected");
-            return;
-          }
-
-          var moduleFoldButton = e.target.closest(".module-graph-fold-button");
-          if (moduleFoldButton) {
-            e.preventDefault();
-            var foldModuleId = moduleFoldButton.getAttribute("data-module-id");
-            var foldState = moduleFoldButton.getAttribute("data-module-fold-state");
-            if (!getModule(foldModuleId)) { return; }
-            executeViewerCommand({
-              command: "set-module-representation",
-              target: "module:" + foldModuleId,
-              value: foldState === "folded" ? "folded" : "expanded"
-            }, {origin: "user"});
             return;
           }
 

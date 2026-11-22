@@ -1,5 +1,7 @@
 import pytest
 
+from conftest import set_selected_module_representation
+
 
 MODULE = "test.m02_applications"
 NODE = "module::" + MODULE
@@ -8,7 +10,7 @@ NODE = "module::" + MODULE
 def fold_applications(graph):
     graph.open_control_section("kg_modules_section")
     graph.page.locator(f'.kg-module-item[data-module-id="{MODULE}"]').click()
-    graph.page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(graph.page, "folded")
 
 
 @pytest.mark.browser
@@ -133,7 +135,7 @@ def test_box_drag_translates_anchor_and_members_without_expansion_jump(browser_g
         assert after["concepts"][cid]["x"] == pytest.approx(before["concepts"][cid]["x"] + 700)
         assert after["concepts"][cid]["y"] == pytest.approx(before["concepts"][cid]["y"] - 450)
     assert after["concepts"]["1.1"] == before["concepts"]["1.1"]
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+    set_selected_module_representation(page, "expanded")
     assert page.evaluate("() => kgGlobalLayoutSnapshot()") == after
 
 

@@ -170,7 +170,7 @@ The sticky Details masthead uses the toolbar's text size. Details text zoom
 scales the reading body and graphics. The concept and module mastheads share
 a layout that keeps Contents closed initially. Selecting an entry closes the
 list before focusing the section and measuring its scroll offset. Concept block
-fold commands live inside Contents. Module graph fold commands remain separate.
+fold commands live inside Contents. Use a module’s graph corner control to fold or expand it.
 
 `viewer.js` is the composition root and application coordinator. It retains
 selection/navigation, module projection and footprint coordination, search,

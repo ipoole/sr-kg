@@ -1260,48 +1260,6 @@
         text-transform: uppercase;
     }
 
-    #info_panel .module-graph-fold-control {
-        align-items: center;
-        border: 1px solid #cfd8e3;
-        border-radius: 6px;
-        display: inline-flex;
-        gap: 0;
-        line-height: 1.2;
-        overflow: hidden;
-    }
-
-    #info_panel .module-graph-fold-label {
-        background: #f3f6f9;
-        color: #526070;
-        font-size: 0.78em;
-        font-weight: 800;
-        padding: 0.28em 0.55em;
-        text-transform: uppercase;
-    }
-
-    #info_panel .module-graph-fold-button {
-        background: #fff;
-        border: 0;
-        border-left: 1px solid #cfd8e3;
-        color: #28516c;
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.84em;
-        font-weight: 700;
-        padding: 0.26em 0.62em;
-    }
-
-    #info_panel .module-graph-fold-button:hover,
-    #info_panel .module-graph-fold-button:focus {
-        background: #edf5fa;
-        outline: none;
-    }
-
-    #info_panel .module-graph-fold-button[aria-pressed="true"] {
-        background: #28516c;
-        color: #fff;
-    }
-
     #info_panel .concept-module-chip {
         background: transparent;
         border: 1px solid transparent;

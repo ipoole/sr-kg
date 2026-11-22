@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import set_selected_module_representation
+
 
 def _visible_content_block_kinds(page):
     return page.locator("#info_panel .content-block").evaluate_all(
@@ -257,9 +259,15 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
-
-    assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Folded"
+    page.locator("#kg_view_select").select_option("details")
+    assert page.locator("#info_panel .module-graph-fold-control").count() == 0
+    page.locator("#kg_view_select").select_option("both")
+    if page.locator("#kg_controls").is_visible():
+        page.locator("#kg_controls_toggle").click()
+    page.locator("#kg_fit_apply").click()
+    corner = page.locator('.kg-module-corner-control[data-module-id="test.m02_applications"]')
+    corner.click()
+    assert corner.get_attribute("data-fold-state") == "folded"
     assert page.locator("#kg_context_summary").get_attribute("data-selection-type") == "module"
     assert page.evaluate(
         """moduleNodeId => {
@@ -287,7 +295,7 @@ def test_selected_module_can_be_folded_into_distinct_graph_node(browser_graph):
         "3.1": True,
     }
 
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+    set_selected_module_representation(page, "expanded")
 
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
     assert page.evaluate("""() => edges.get().filter(edge => edge.isModuleEdge).length === 0""")
@@ -310,7 +318,7 @@ def test_folded_module_graph_node_selects_module(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     page.evaluate(
         """moduleNodeId => {
@@ -336,7 +344,7 @@ def test_selecting_member_concept_keeps_selected_module_folded(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.1"]').click()
 
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
@@ -361,9 +369,7 @@ def test_expand_context_is_offered_for_context_represented_by_other_folded_modul
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
+    set_selected_module_representation(page, "folded")
     browser_graph.click_concept("2.1")
 
     assert page.locator("#kg_expand_selected_module").is_hidden()
@@ -388,9 +394,7 @@ def test_expand_context_is_offered_for_selected_folded_module(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
+    set_selected_module_representation(page, "folded")
 
     context_action = page.locator("#kg_expand_context_modules")
     assert page.locator("#kg_expand_selected_module").is_hidden()
@@ -412,11 +416,11 @@ def test_manual_expansion_replaces_temporary_collapsed_preference(browser_graph)
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.1"]').click()
 
     page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+    set_selected_module_representation(page, "expanded")
     browser_graph.click_concept("1.1")
 
     assert page.evaluate("""nodeId => nodes.get(nodeId) === null""", module_node_id)
@@ -431,7 +435,7 @@ def test_selecting_another_module_preserves_existing_folded_module(browser_graph
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
 
@@ -441,7 +445,7 @@ def test_selecting_another_module_preserves_existing_folded_module(browser_graph
     assert page.locator("#info_panel h2").inner_text() == "Applications"
     assert "Applications" in page.locator("#kg_context_summary").get_attribute("aria-label")
 
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     assert page.evaluate(
         """ids => ids.every(id => nodes.get(id) && nodes.get(id).hidden === false)""",
@@ -466,7 +470,7 @@ def test_focused_folded_module_projects_all_boundary_relations(browser_graph):
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
     page.locator("#kg_context_preset_select").select_option("connections")
     page.locator("#kg_display_scope_select").select_option("context")
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     module_edges = page.evaluate(
         """() => edges.get()
@@ -521,9 +525,9 @@ def test_focused_folded_modules_aggregate_boundary_edges_by_relation(browser_gra
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
     page.locator("#kg_context_preset_select").select_option("connections")
     page.locator("#kg_display_scope_select").select_option("context")
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     module_edges = page.evaluate(
         """() => edges.get()
@@ -595,9 +599,9 @@ def test_module_boundary_hover_lists_short_underlying_relationships(browser_grap
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     page.evaluate(
         """edgeId => {
@@ -716,7 +720,7 @@ def test_folded_module_corner_control_expands_it(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     control = page.locator(
         '.kg-module-corner-control[data-module-id="test.m02_applications"]'
@@ -735,7 +739,7 @@ def test_folded_module_corner_control_expands_it(browser_graph):
         "2.2": False,
         "3.1": False,
     }
-    assert page.locator("#info_panel .module-graph-fold-button[aria-pressed=true]").inner_text() == "Expanded"
+    assert control.get_attribute("data-fold-state") == "expanded"
     assert "Expanded Applications module" in page.locator("#kg_status").inner_text()
 
 
@@ -790,7 +794,7 @@ def test_module_node_hover_shows_module_overview(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.evaluate(
         """moduleNodeId => {
           network.emit("hoverNode", {
@@ -817,9 +821,9 @@ def test_selecting_concept_preserves_all_folded_modules(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('.kg-module-item[data-module-id="test.m02_applications"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.locator('#info_panel .module-member-concept[data-edge-concept-id="2.1"]').click()
 
     assert page.locator("#info_panel h2").inner_text() == "2.1 Beta"
@@ -837,7 +841,7 @@ def test_folded_module_hides_in_unrelated_focussed_context(browser_graph):
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator('.kg-module-item[data-module-id="test.m01_foundations"]').click()
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     browser_graph.click_concept("3.1")
     page.locator("#kg_display_scope_select").select_option("context")
@@ -872,7 +876,7 @@ def test_folding_module_preserves_anchor_with_offset_box_centre(browser_graph):
           network.emit("dragEnd", {nodes: ["2.1", "2.2", "3.1"]});
         }"""
     )
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
 
     position = page.evaluate(
         """moduleNodeId => network.getPositions([moduleNodeId])[moduleNodeId]""",
@@ -1125,7 +1129,7 @@ def test_expanding_moved_module_preserves_member_offsets(browser_graph):
     anchor = page.evaluate(
         """() => window.kgGlobalLayoutSnapshot().modules["test.m02_applications"].anchor"""
     )
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="folded"]').click()
+    set_selected_module_representation(page, "folded")
     page.evaluate(
         """moduleNodeId => {
           network.moveNode(moduleNodeId, 900, 600);
@@ -1133,7 +1137,7 @@ def test_expanding_moved_module_preserves_member_offsets(browser_graph):
         }""",
         module_node_id,
     )
-    page.locator('#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]').click()
+    set_selected_module_representation(page, "expanded")
 
     positions = page.evaluate(
         """() => network.getPositions(["2.1", "2.2", "3.1"])"""
@@ -2166,9 +2170,7 @@ def test_constructed_from_edge_click_shows_readable_relationship_sentence(clean_
     page.locator(
         '.kg-module-item[data-module-id="sr.electromagnetic_structure_gauge_and_stress_energy"]'
     ).click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="expanded"]'
-    ).click()
+    set_selected_module_representation(page, "expanded")
 
     page.evaluate(
         """() => {

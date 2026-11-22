@@ -61,9 +61,8 @@ def test_semantic_commands_control_module_representation_and_details_blocks(brow
         }, {origin: "tutorial"})"""
     )
     assert page.locator(
-        '.module-graph-fold-button[data-module-id="test.m02_applications"]'
-        '[data-module-fold-state="folded"]'
-    ).get_attribute("aria-pressed") == "true"
+        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
+    ).get_attribute("data-fold-state") == "folded"
 
     page.evaluate(
         """() => kgExecuteViewerCommand(
