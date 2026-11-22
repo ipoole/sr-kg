@@ -1,7 +1,9 @@
 # Personal tutorial authoring and voice narration
 
-Status: design accepted; stages 1–5 implemented.
-Text export/import, backup integration and tutorial sync are available; voice remains planned.
+Status: design accepted; stages 1–6 and voiced playback from stage 7 implemented.
+Text export/import, backup integration and tutorial sync are available for text-only
+libraries. Local voice recording/import and optional playback are available; compact
+cards and audio delivery remain planned. See the local voice authoring section below for current limits.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -99,9 +101,9 @@ per-device capability, particularly on the old iPad.
 
 Workflow: Add/select This Card → write narration → Record card actions → operate
 PhysicsKG → Finish recording → Continue tutorial. A fixed footer keeps Record card
-actions, Continue tutorial and Done editing visible while the editor body scrolls. Record card actions is prominent
+actions, Continue tutorial and Done visible while the editor body scrolls. Record card actions is prominent
 with a red record dot; Continue tutorial has a play triangle. Advanced is smaller
-and last, with metadata, ordering, manual actions and Export ZIP/JSON. Done editing
+and sits above Done, with audio import and download, metadata, ordering, manual actions and Export ZIP/JSON. Done
 saves and closes without starting playback, including incomplete drafts; a save
 failure retains the editor for Retry or export. Summary and written narration are
 optional and hidden when blank. Select the first card to play from the start;
@@ -247,7 +249,7 @@ repair when the package itself is structurally valid.
 Voice is an optional final authoring pass, essentially reading the written
 narration. Provide Record, Stop, Listen, Replace, Remove and audio-file import.
 Request microphone access only on Record. Show recording state/duration; release
-the microphone on Stop, cancellation or leaving recording. Keep an old recording
+the microphone when tutorial authoring ends; mute it between takes and cards. Keep an old recording
 until its replacement is successfully saved. Moving cards does not detach audio.
 
 Detect supported recording/playback formats rather than assuming one codec works
@@ -258,17 +260,15 @@ devices; a successfully recorded clip is not proof of cross-device playability.
 
 Agreed playback sequence:
 
-1. Establish the card and finish its viewer actions/pauses and pointer demonstration.
-2. Play its narration when voice is enabled. Keep written commentary available.
+1. Establish the card and run any preparation.
+2. When voice is enabled, start narration alongside the card actions. Keep written commentary available.
 3. Wait for the learner's Next; audio completion never advances automatically.
 
-Provide Play/Pause and Replay voice. Back, Next, Explore and Exit stop the current
-clip; returning to a card starts from its beginning. Pause within a card resumes
-from the paused position. Audio replay does not repeat viewer actions. On resuming
-from Explore, restore the card and leave its voice stopped, ready for Replay.
-Cancel pending media loads/play requests on navigation so a late result cannot
-speak an old card. Browser audio restrictions or missing files reveal text and a
-clear Play/retry choice; they never strand the learner.
+Cards with a recording show a Voice checkbox. Turn Voice off to stop the clip,
+then on to start it from the beginning without repeating viewer actions. Back,
+Next, Explore and Exit stop the current clip and cancel pending audio requests.
+After Explore, the clip stays stopped until Voice is turned off and on. Cards
+without a recording hide the checkbox and preserve the listener's preference.
 
 The introduction offers ordinary Start and, when available, Start with voice.
 Conservative initial default: text remains usable without choosing audio. Remember
@@ -393,7 +393,7 @@ Unsupported local clarifications, full-width reading focus, bulk content folding
 custom-context rules and ambiguous repeated reading-concept occurrences are
 reported rather than guessed. Hover demonstrations remain available through the
 explicit action editor; incidental mouse motion is not recorded. Portable text
-export/import and sync are implemented in stage 5; voice remains a later stage.
+export/import and sync are implemented in stage 5; local voice authoring is described below.
 
 Local clarification folds, full-width reading controls and ambiguous repeated
 occurrences of a concept in one reading tree remain unsupported capture targets;
@@ -417,7 +417,7 @@ Old backups retain existing tutorials. Optional Google sync uses the separate
 **PhysicsKG tutorials.zip** companion file and whole-route conflict copies; see
 [Personal data](personal_data.md). It preserves an open editor and a running
 playback snapshot. Exporting a tutorial does not expose notes, answers or layouts.
-Packages currently reject audio assets, which arrive in stages 6–8.
+Packages currently reject audio assets; portable audio delivery remains stage 8.
 
 To install an exported text tutorial into the repository:
 
@@ -447,7 +447,7 @@ using the normal artifact workflow and preview version increments.
 | 4 — action capture | Explicit replacement Record/Finish/Cancel, session Undo/Redo, semantic targets, multiple actions and unsupported-action feedback. Review a tutorial created from scratch and played on desktop/phone. |
 | 5 — text portability/sync | Validation/repair, JSON/ZIP round trip, conflict-safe companion sync archive, full backup integration and text-only built-in installation. Review fresh-browser import, two-device sync/conflict and a built-in test build. Useful text-only release boundary. |
 | 6 — voice authoring | Per-card recording/import/replacement and durable attachments with stale-narration indicators. Ian voices a finished text route; review reload/listening on laptop, phone and old iPad. |
-| 7 — voiced/compact player | Agreed after-actions narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
+| 7 — voiced/compact player | Concurrent narration, manual Next, independent full/compact modes and text fallback. Review screen space, scrolling, stopping audio, Explore/Resume and mixed voiced/unvoiced cards. |
 | 8 — audio delivery | Complete export/import, attachment sync, repository installation and lazy hosted audio. Review Ian's exported voiced route installed as built-in in a preview, cross-device sync and local/offline behaviour. |
 
 Stage 9 completes the restrained code cleanup, user/authoring guides and Quick
@@ -468,3 +468,82 @@ and reading-tree scene use Hide. The physics routes use Hide throughout: each
 card prepares its graph or reading scene quietly, then invites the learner to
 read. Card identifiers and teaching order are preserved. Legacy imported
 `prepare` sequences remain supported.
+
+## Local voice authoring (issue #6, stages 1–2)
+
+The card editor provides **Record voice narration** below action recording, plus
+**Remove voice** beside it and **Import audio file** under Advanced. The voice dialogue displays the card's
+formatted written narration without operating the graph. Record/Re-record → Stop
+→ Play/Pause → Finish recording accepts a take. Cancel (including Escape) keeps
+the previously saved recording. Recording requests microphone permission only on
+Record and reuses the stream throughout the tutorial authoring session. Stop,
+Finish recording and Cancel mute its tracks; rehearsal and Edit card retain access
+within the same tutorial. Done, Exit tutorial, switching tutorials,
+page exit and recorder errors release them. An ended/revoked stream is reacquired
+on the next Record. No audio is recorded between takes. A late permission
+On iPhone and iPad, the stream is released after each take so the browser
+can return to playback audio routing. Re-recording can prompt for access again.
+response after cancellation releases its stream without starting a recording.
+
+Recordings and imported originals are limited to 50 MB per clip. Imports must have
+an audio MIME type and a finite duration readable on the current device. Recording
+selects a supported MediaRecorder format, falling back to the browser default.
+Support on the authoring device does not establish cross-device compatibility.
+In the tutorial editor, Advanced offers Download audio for the saved recording.
+Microphone recording is not required for file import or listening.
+
+The local database is version 3, with a separate `audio` object store containing
+SHA-256 content IDs, immutable Blob bytes, MIME type and byte length. A card's
+optional `audio` reference contains `assetId`, `duration` (seconds),
+`commentaryHash` and `actionsHash` (SHA-256 of the portable stable JSON encoding).
+The action hash includes preparation, actions, pointers and demonstration mode;
+card identity/order and title are excluded. Changed hashes show **Voice needs
+review**, retaining the recording. Restoring the original content clears that
+indicator. Duplicate cards and personal tutorials share immutable assets.
+
+Saving a take writes its asset and updated tutorial in one IndexedDB transaction,
+using the existing revision check. Failure keeps the previous reference and bytes;
+the unsaved take remains in the dialogue for retry. Removal detaches only
+that card's reference. Assets are retained conservatively; garbage collection is
+deferred until backup/conflict/transfer lifetimes are implemented.
+
+Delivery remains staged: the player resolves audio from this browser. Version-1 packages,
+backups and tutorial sync remain text-only, and explicitly reject records containing
+audio references before export or cloud access. No silently incomplete voiced
+package is produced. A library containing recordings cannot currently use full
+personal-data backup or tutorial sync; download the clips separately for now.
+Version-2 clients cannot reopen the upgraded local database and overwrite voice
+references. Existing text-only package formats are unchanged.
+
+Before audio delivery ships, introduce package/route schema version 2 with an
+asset inventory and validated `audio/<content-id>.<extension>` entries. Use a
+separate versioned cloud companion for voiced metadata/attachments; do not place
+voice references in the version-1 companion read by older viewers. That migration,
+asset transfer, cross-device encoding and compact cards remain
+later stages of the issue implementation plan (design delivery stages 7–8).
+
+
+## Voice playback (issue #6, implementation stage 3)
+
+Tutorial introductions offer **Start** for text and **Start with voice** when at
+least one card has an audio reference. The player shows a Voice checkbox on cards with a recording and keeps written narration visible. The listener's
+choice is remembered locally, including for Continue tutorial from the editor.
+Starting a text-only route does not change that preference.
+
+After card preparation, the clip loads on demand while the card actions run.
+The actions and narration proceed independently, without timing cues. Playback and asset loading never block Next, Back,
+Explore, Edit card or Exit. Ending audio does not advance the card. Turning Voice off and on restarts the clip without repeating actions.
+Returning with Back starts the previous card's clip from the beginning. Explore
+stops and releases audio; Resume restores the scene with voice
+stopped until the listener turns Voice off and on. Navigation invalidates pending
+asset loads and play promises so late completion cannot voice an old card or
+interrupt the new one.
+
+Missing clips, unsupported audio and browser autoplay rejection keep written
+narration and navigation available with a retry message. Unvoiced cards hide
+the Voice checkbox and preserve the preference for subsequent cards.
+Only the current clip is retained, and its object URL is revoked on navigation.
+Voice shares the navigation row. Status uses a fixed-width slot on wider screens
+and is announced without adding a line on phones.
+Compact mode, audio-bearing packages, hosted audio and attachment sync are still
+out of scope for this increment.

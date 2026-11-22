@@ -1,6 +1,10 @@
 [
   {"version": "5.0.11", "date": "2026-11-22", "summary": "Preview: Expand folded context in one tap from the graph toolbar."},
   {"version": "5.0.9", "date": "2026-11-22", "summary": "Preview: A compact Details masthead keeps its size while reading text zooms."},
+  {"version": "5.0.8", "date": "2026-11-21", "summary": "Preview: Prefer MP4 for new voice recordings on iPhone and iPad."},
+  {"version": "5.0.7", "date": "2026-11-21", "summary": "Preview: Switch iPhone and iPad audio to playback mode before listening to a recording."},
+  {"version": "5.0.6", "date": "2026-11-21", "summary": "Preview: Release the microphone after recording on iPhone and iPad before playing back a take."},
+  {"version": "5.0.5", "date": "2026-11-21", "summary": "Preview: Record or import tutorial voice narration and listen while card actions play."},
   {"version": "5.0.4", "date": "2026-11-19", "summary": "Preview: Simpler tutorial editing, optional narration, Show/Hide actions and replayable Fit++ node arrangements."},
   {"version": "5.0.3", "date": "2026-11-17", "summary": "Preview: Create and record personal tutorials, export/import them and synchronise them through Google Drive."},
   {"version": "5.0.1", "date": "2026-11-16", "summary": "Minor fixes and fuller acknowledgements"},

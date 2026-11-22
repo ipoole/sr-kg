@@ -23,8 +23,70 @@ function kgCreateTutorialLibrary(options) {
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
     element("editor_from").disabled = busy || Boolean(errors.length);
     element("editor_close").disabled = busy;
+    ['record','import','remove','download'].forEach(function(action) {
+      element('editor_voice_' + action).disabled = busy || !editing || !editing.route.steps.length ||
+        ((action === 'remove' || action === 'download') && !editing.route.steps[cardIndex].audio);
+    });
+    updateVoiceStatus();
     element("editor_validation").textContent = errors.join(" ");
   }
+  var voiceStatusSerial = 0, voiceRecord = null, voiceStepId = null, voiceTutorialId = null;
+  async function updateVoiceStatus() {
+    var serial = ++voiceStatusSerial, step = editing && editing.route.steps[cardIndex];
+    var label = element('editor_voice_status');
+    if (!step || !step.audio) { label.textContent = 'No voice recording.'; return; }
+    label.textContent = 'Voice saved · ' + Math.ceil(step.audio.duration) + ' seconds · this browser only';
+    try {
+      var commentary = await portable.fingerprint(step.commentary || '');
+      var actions = await portable.fingerprint(store.voiceActions(step));
+      if (serial === voiceStatusSerial && (commentary !== step.audio.commentaryHash || actions !== step.audio.actionsHash)) {
+        label.textContent = 'Voice needs review — narration or actions changed.';
+      }
+    } catch (error) { if (serial === voiceStatusSerial) { label.textContent = 'Voice saved; review status unavailable.'; } }
+  }
+  var voice = kgCreateTutorialVoice({markup:options.markup,
+    save:async function(blob, duration) {
+      var record = await store.saveVoice(voiceRecord,voiceStepId,blob,duration,portable.fingerprint);
+      editing = clone(record); edited = saved = 0; records.set(record.id,record);
+      renderList(); renderCard(); status('saved','Voice saved in this browser.');
+    },
+    closed:function() { voiceRecord = null; setBusy(false); element('editor_voice_record').focus(); }
+  });
+  async function openVoice(file) {
+    if (busy || !editing || !editing.route.steps.length) { return; }
+    setBusy(true);
+    try {
+      await flush(); voiceRecord = clone(editing); voiceStepId = editing.route.steps[cardIndex].step_id;
+      var step = voiceRecord.route.steps[cardIndex];
+      var asset = step.audio ? await store.getAudio(step.audio.assetId) : null;
+      voice.open(step,asset);
+      if (file) { await voice.importFile(file); }
+    } catch (error) { setBusy(false); saveFailed(error); }
+  }
+  element('editor_voice_record').addEventListener('click',function() { openVoice(); });
+  element('editor_voice_import').addEventListener('click',function() { element('editor_voice_file').click(); });
+  element('editor_voice_download').addEventListener('click',async function() {
+    var step = editing && editing.route.steps[cardIndex];
+    if (!step || !step.audio) { return; }
+    try {
+      var asset = await store.getAudio(step.audio.assetId);
+      if (!asset) { throw new Error('The saved recording is missing.'); }
+      kgDownloadTutorialAudio(asset.blob);
+    } catch (error) { element('editor_validation').textContent = 'Could not download audio: ' + error.message; }
+  });
+  element('editor_voice_file').addEventListener('change',function(event) {
+    var file = event.target.files[0]; event.target.value = ''; if (file) { openVoice(file); }
+  });
+  element('editor_voice_remove').addEventListener('click',async function() {
+    if (busy || !editing || !window.confirm('Remove voice from this card?')) { return; }
+    setBusy(true);
+    try {
+      await flush(); var record = clone(editing); delete record.route.steps[cardIndex].audio;
+      record = await store.save(record); editing = clone(record); records.set(record.id,record);
+      status('saved','Voice removed from this card.'); renderCard();
+    } catch (error) { saveFailed(error); }
+    finally { setBusy(false); }
+  });
   function renderList() {
     var items = Array.from(records.values()).sort(function(a, b) { return b.updatedAt.localeCompare(a.updatedAt); });
     element("personal_list").innerHTML = items.length ? items.map(function(record) {
@@ -104,6 +166,8 @@ function kgCreateTutorialLibrary(options) {
     if (!dialog.open) { dialog.showModal(); }
   }
   function openEditor(record, stepId) {
+    if (voiceTutorialId !== record.id) { voice.endAuthoring(); }
+    voiceTutorialId = record.id;
     records.set(record.id,clone(record));
     editing = clone(record); edited = saved = 0;
     cardIndex = Math.max(0,editing.route.steps.findIndex(function(step) { return step.step_id === stepId; }));
@@ -170,7 +234,7 @@ function kgCreateTutorialLibrary(options) {
     } finally { setBusy(false); }
   }
   function closeEditor() {
-    return leaveEditor(function() { options.select(editing.id); editing = null; });
+    return leaveEditor(function() { voice.endAuthoring(); options.select(editing.id); editing = null; });
   }
   async function create(route) {
     element("new").disabled = element("intro_copy").disabled = true;
@@ -205,7 +269,7 @@ function kgCreateTutorialLibrary(options) {
     return {record:clone(record),stepId:stepId};
   }
   function playbackExited(cardEdit) {
-    if (!cardEdit) { return; }
+    if (!cardEdit) { voice.endAuthoring(); return; }
     setBusy(false); openEditor(cardEdit.record, cardEdit.stepId);
     element("editor_commentary").focus();
   }

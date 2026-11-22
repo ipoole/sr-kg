@@ -61,11 +61,12 @@
           <p id="kg_tutorial_intro_author" hidden></p>
           <p id="kg_tutorial_guidance" class="kg-tutorial-guidance">
             This is a guided tour. PhysicsKG will operate the viewer—press
-            Start, then Next step to continue.
+            Start, then Next to continue.
           </p>
           <p id="kg_tutorial_intro_length" class="kg-tutorial-length"></p>
           <p id="kg_tutorial_intro_status" role="status"></p>
           <button id="kg_tutorial_start" type="button">Start</button>
+          <button id="kg_tutorial_start_voice" type="button" hidden>Start with voice</button>
           <button id="kg_tutorial_intro_copy" type="button">Make editable copy</button>
           <button id="kg_tutorial_intro_edit" type="button" hidden>Edit draft</button>
           <button id="kg_tutorial_intro_export" type="button">Export tutorial</button>
@@ -202,15 +203,19 @@
         </div>
         <h3 id="kg_tutorial_step_title"></h3>
         <div id="kg_tutorial_commentary" class="kg-tutorial-commentary"></div>
-        <p id="kg_tutorial_first_step_guidance" hidden>PhysicsKG operates the viewer for you. You can scroll and zoom Details and open clarifications while reading. Use Next step to continue, Explore from here to take control, and Continue with tutorial to return to this step. Exit restores your previous view.</p>
+        <p id="kg_tutorial_first_step_guidance" hidden>PhysicsKG operates the viewer for you. You can scroll and zoom Details and open clarifications while reading. Use Next to continue, Explore to take control, and Resume to return to this step. Exit restores your previous view.</p>
         <span id="kg_tutorial_target_description" class="kg-visually-hidden"></span>
         <div id="kg_tutorial_error" class="kg-tutorial-error" role="alert" hidden></div>
         <div class="kg-tutorial-actions">
           <button id="kg_tutorial_back" type="button">Back</button>
-          <button id="kg_tutorial_explore" type="button">Explore from here</button>
-          <button id="kg_tutorial_next" type="button">Next step</button>
+          <button id="kg_tutorial_explore" type="button">Explore</button>
+          <button id="kg_tutorial_next" type="button">Next</button>
           <button id="kg_tutorial_edit" type="button" hidden>Edit card</button>
           <button id="kg_tutorial_exit" type="button">Exit</button>
+          <div id="kg_tutorial_listen_controls" hidden>
+            <label><input id="kg_tutorial_listen_enabled" type="checkbox"> Voice</label>
+            <span id="kg_tutorial_listen_status" role="status"></span>
+          </div>
         </div>
       </section>
 
@@ -339,12 +344,21 @@
   </div>
   <div id="kg_tutorial_editor_footer">
   <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions" role="group" aria-label="Record and continue">
-    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card actions</button>
+    <button id="kg_tutorial_editor_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record card actions <span class="kg-tutorial-record-icon" aria-hidden="true">↖</span></button>
     <button id="kg_tutorial_editor_from" type="button"><span aria-hidden="true">▶</span> Continue tutorial</button>
-    <button id="kg_tutorial_editor_close" type="button">Done editing</button>
   </div>
+  <section id="kg_tutorial_editor_voice" aria-label="Card voice narration">
+    <div class="kg-tutorial-editor-actions kg-tutorial-primary-actions">
+      <button id="kg_tutorial_editor_voice_record" class="kg-tutorial-primary" type="button"><span class="kg-tutorial-record-dot" aria-hidden="true">●</span> Record voice narration <span class="kg-tutorial-record-icon" aria-hidden="true">🎙︎</span></button>
+      <button id="kg_tutorial_editor_voice_remove" type="button">Remove voice</button>
+    </div>
+    <span id="kg_tutorial_editor_voice_status" role="status"></span>
+  </section>
   <details id="kg_tutorial_editor_advanced"><summary>Advanced</summary>
   <fieldset id="kg_tutorial_editor_advanced_fields">
+  <button id="kg_tutorial_editor_voice_import" type="button">Import audio file</button>
+  <button id="kg_tutorial_editor_voice_download" type="button" disabled>Download audio</button>
+  <input id="kg_tutorial_editor_voice_file" type="file" accept="audio/*" hidden>
   <label>Required domains (comma separated; blank for a general route)<input id="kg_tutorial_editor_domains" type="text"></label>
   <label>Author credit (optional)<input id="kg_tutorial_editor_author" type="text"></label>
   <div class="kg-tutorial-editor-actions" id="kg_tutorial_editor_order_controls" role="group" aria-label="Card order">
@@ -361,6 +375,7 @@
   </div>
   </fieldset>
   </details>
+  <button id="kg_tutorial_editor_close" type="button">Done</button>
   </div>
 </dialog>
 
@@ -386,4 +401,21 @@
     <button id="kg_tutorial_import_apply" type="button">Import</button>
     <button id="kg_tutorial_import_cancel" type="button">Cancel</button>
   </div>
+</dialog>
+
+<dialog id="kg_tutorial_voice_dialog" class="kg-tutorial-editor" aria-labelledby="kg_tutorial_voice_heading">
+  <h2 id="kg_tutorial_voice_heading">Voice narration</h2>
+  <div id="kg_tutorial_voice_script" aria-label="Written narration"></div>
+  <p id="kg_tutorial_voice_time" role="timer">Duration · 0:00</p>
+  <p id="kg_tutorial_voice_status" role="status" aria-live="polite"></p>
+  <audio id="kg_tutorial_voice_audio" preload="metadata"></audio>
+  <div class="kg-tutorial-editor-actions">
+    <button id="kg_tutorial_voice_record" type="button">Record</button>
+    <button id="kg_tutorial_voice_stop" type="button">Stop</button>
+    <button id="kg_tutorial_voice_play" type="button">Play</button>
+    <button id="kg_tutorial_voice_finish" type="button">Finish recording</button>
+    <button id="kg_tutorial_voice_cancel" type="button">Cancel</button>
+  </div>
+  <p id="kg_tutorial_voice_microphone_note" class="kg-muted-label"></p>
+  <p class="kg-muted-label">Voice currently stays in this browser. Download saved recordings from Advanced in the tutorial editor.</p>
 </dialog>

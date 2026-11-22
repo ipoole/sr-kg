@@ -857,11 +857,13 @@
       }
       .kg-tutorial-actions {
         display: flex;
+        align-items: center;
         gap: 6px;
         justify-content: flex-end;
         margin-top: 7px;
       }
       .kg-tutorial-actions button {
+        white-space: nowrap;
         background: #f8fafc;
         border: 1px solid #aeb9c7;
         border-radius: 6px;
@@ -3925,7 +3927,10 @@ details[open] > summary > .kg-content-preview { display: none; }
 .kg-tutorial-editor .kg-tutorial-primary-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .kg-tutorial-primary-actions button { min-width: 0; }
 .kg-tutorial-editor button.kg-tutorial-primary { background: #205f88; color: white; border-color: #205f88; font-weight: 700; }
-.kg-tutorial-record-dot { color: #ff8989; font-size: 1.1em; }
+#kg_tutorial_editor_close { justify-self: end; min-width: 72px; }
+.kg-tutorial-record-dot { color: #ff8080; }
+.kg-tutorial-record-icon { font-size: 1em; line-height: 1; }
+#kg_tutorial_editor_record, #kg_tutorial_editor_voice_record { min-height: 60px; }
 .kg-tutorial-editor section h3 { font-size: 1em; margin: 0.6em 0; }
 .kg-tutorial-editor button {
     font: inherit; font-size: 0.875em; min-height: 32px; padding: 6px 10px;
@@ -3963,6 +3968,45 @@ details[open] > summary > .kg-content-preview { display: none; }
 #kg_tutorial_editor_advanced { margin: 0; padding: 0; border: 0; max-height: 40vh; max-height: 40dvh; overflow: auto; }
 #kg_tutorial_editor_advanced > summary { font-size: 0.875em; color: #526577; }
 
+#kg_tutorial_editor_voice { display: grid; gap: 4px; }
+#kg_tutorial_editor_voice_status { font-size: 0.8em; }
+#kg_tutorial_voice_dialog[open] { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); overflow: hidden; }
+#kg_tutorial_voice_script { min-height: 50px; overflow: auto; overflow-wrap: anywhere; flex: 1 1 auto; padding: 8px; border: 1px solid #ccd6df; }
+#kg_tutorial_voice_dialog > :not(#kg_tutorial_voice_script) { flex-shrink: 0; }
+#kg_tutorial_voice_script a { pointer-events: none; }
+#kg_tutorial_voice_time { font-variant-numeric: tabular-nums; }
+#kg_tutorial_editor_voice_file { display: none; }
+
+#kg_tutorial_listen_controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+#kg_tutorial_listen_controls[hidden] { display: none; }
+#kg_tutorial_listen_controls label { display: inline-flex; align-items: center; gap: 4px; }
+#kg_tutorial_listen_controls input { margin: 0; }
+#kg_tutorial_listen_status {
+  width: 7.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9em;
+}
+@media (max-width: 850px) {
+  #kg_tutorial_listen_status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+  }
+  .kg-tutorial-actions.kg-has-voice {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .kg-tutorial-actions.kg-has-voice button {
+    padding-inline: 5px;
+  }
+}
 
 /* Compact actions depend on the graph pane width, including in a desktop split. */
 @container graph-toolbar (max-width: 520px) {

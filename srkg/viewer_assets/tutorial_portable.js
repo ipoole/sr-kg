@@ -90,7 +90,12 @@ function kgCreateTutorialPortable(options) {
     if (!Array.isArray(value.steps) || value.steps.length > 1000) { throw new Error('Invalid card list.'); }
     var ids = new Set();
     value.steps.forEach(function(step) {
-      keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate'],'card');
+      keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate','audio'],'card');
+      if (step.audio !== undefined) {
+        keys(step.audio,['assetId','duration','commentaryHash','actionsHash'],'voice reference');
+        if (!['assetId','commentaryHash','actionsHash'].every(function(key) { return /^[a-f0-9]{64}$/.test(step.audio[key]); }) ||
+            !Number.isFinite(step.audio.duration) || step.audio.duration <= 0) { throw new Error('Invalid voice reference.'); }
+      }
       if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { throw new Error('Invalid demonstration flag.'); }
       if (!identifier(step.step_id) || ids.has(step.step_id)) { throw new Error('Invalid or duplicate card ID.'); }
       ids.add(step.step_id); text(step.title,'card title',300,false); text(step.commentary === undefined ? '' : step.commentary,'written narration',100000,false);
@@ -137,7 +142,12 @@ function kgCreateTutorialPortable(options) {
       if (ids.has(checked.id)) { throw new Error('Duplicate tutorial record.'); } ids.add(checked.id); return checked;
     });
   }
-  function collectionDocument(records) { return {format:'physicskg-tutorial-library', schema_version:1, records:records}; }
+  function requireTextOnly(records) {
+    if (records.some(function(record) { return record.route.steps.some(function(step) { return Boolean(step.audio); }); })) {
+      throw new Error('Voice recordings are stored only in this browser. Audio export, backup and sync are not available yet.');
+    }
+  }
+  function collectionDocument(records) { requireTextOnly(records); return {format:'physicskg-tutorial-library', schema_version:1, records:records}; }
   function parse(textValue) {
     if (typeof textValue !== 'string' || new TextEncoder().encode(textValue).length > maxBytes) { throw new Error('Tutorial package exceeds 10 MB.'); }
     return JSON.parse(textValue.replace(/^\uFEFF/,''));
@@ -161,6 +171,7 @@ function kgCreateTutorialPortable(options) {
   }
   function manifest(format) { return json({format:format,schema_version:1,route_schema_version:1,assets:[]}); }
   function exportSingle(value, asJson) {
+    requireTextOnly([value]);
     var checked = record(value,false);
     var definition = json({format:'physicskg-tutorial',schema_version:1,route_schema_version:1,tutorial:checked});
     return asJson ? new TextEncoder().encode(definition) : kgTextZip.encode({'manifest.json':manifest('physicskg-tutorial'),'tutorial.json':definition});
@@ -169,7 +180,7 @@ function kgCreateTutorialPortable(options) {
     var files = unpack(buffer); checkManifest(files,'physicskg-tutorial','tutorial.json');
     var value = parse(files['tutorial.json']);
     if (value.format !== 'physicskg-tutorial' || value.schema_version !== 1 || value.route_schema_version !== 1) { throw new Error('Unsupported tutorial definition.'); }
-    return record(value.tutorial,false);
+    var checked = record(value.tutorial,false); requireTextOnly([checked]); return checked;
   }
   function exportCollection(records) {
     var value = collectionDocument(records); collection(value);
@@ -177,7 +188,7 @@ function kgCreateTutorialPortable(options) {
   }
   function importCollection(buffer) {
     var files = unpack(buffer); checkManifest(files,'physicskg-tutorial-library','tutorials.json');
-    return collection(parse(files['tutorials.json']));
+    var checked = collection(parse(files['tutorials.json'])); requireTextOnly(checked); return checked;
   }
   function stable(value) {
     if (Array.isArray(value)) { return '[' + value.map(stable).join(',') + ']'; }
@@ -189,7 +200,7 @@ function kgCreateTutorialPortable(options) {
     var result = await crypto.subtle.digest('SHA-256',bytes);
     return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
   }
-  return {route:route, record:record, collection:collection, collectionDocument:collectionDocument,
+  return {requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
     parse:parse, json:json, exportSingle:exportSingle, importSingle:importSingle,
     exportCollection:exportCollection, importCollection:importCollection, fingerprint:fingerprint, clone:clone};
 }

@@ -204,7 +204,7 @@ the accompanying licence texts.
 - [Selected-domain builds](docs/design/missing_domain_builds.md): isolated loading, missing-domain warnings and omitted relationships.
 - [Modules](docs/design/modules.md) and [layout](docs/design/layout.md): graph behaviour and persistence.
 - [Authoring guide](docs/authoring/authoring_guide.md): content workflow, domain builds, diagnostics and graphics review.
-- [Open viewer requests](docs/issues.md).
+- [GitHub Issues](https://github.com/ipoole/sr-kg/issues) tracks bugs, features and content work.
 
 Source content and graphics live in `domains/<domain-id>/`; `data/` holds shared
 collection metadata. Shared implementation lives in `srkg/`, command-line tools
