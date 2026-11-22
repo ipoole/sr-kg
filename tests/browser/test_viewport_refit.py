@@ -2,6 +2,8 @@ import math
 
 import pytest
 
+from conftest import set_selected_module_representation
+
 
 def _disable_camera_animation(page):
     page.evaluate(
@@ -497,9 +499,7 @@ def test_context_contraction_uses_folded_module_as_selection_anchor(browser_grap
 
     browser_graph.open_control_section("kg_modules_section")
     page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
-    page.locator(
-        '#info_panel .module-graph-fold-button[data-module-fold-state="folded"]'
-    ).click()
+    set_selected_module_representation(page, "folded")
     browser_graph.click_concept("3.1")
     page.locator("#kg_context_depth_select").select_option("two-hops")
     page.locator("#kg_display_scope_select").select_option("context")
@@ -692,7 +692,8 @@ def test_phone_keyboard_does_not_trigger_rotate_notice(mobile_repo_browser_graph
     graph = mobile_repo_browser_graph
     page = graph.page
     graph.click_concept('sr.momentum_four_vector')
-    page.locator('#info_panel .kg-note-owner-action').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').tap()
     title = page.locator('#info_panel .user-note-title-input')
     title.focus()
     # Keep physical orientation portrait while simulating keyboard viewport shrink.

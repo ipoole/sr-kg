@@ -166,6 +166,17 @@ application initialises after PyVis's `nodes`, `edges` and `network` are ready.
 There is no JavaScript bundler, module loader or UI framework. The generated page
 retains ordinary local-file opening and its existing external library requests.
 
+The sticky Details masthead uses the toolbar's text size. Details text zoom
+scales the reading body and graphics. The concept and module mastheads share
+a layout that keeps Contents closed initially. Selecting an entry closes the
+list before focusing the section and measuring its scroll offset. Concept block
+fold commands live inside Contents. Use a module’s graph corner control to fold or expand it.
+
+Expand context shares the Fit context toolbar row and appears only when folded
+modules represent part of the context. The context count and the
+phone shortcut to Details float over the top edge of the graph canvas, outside
+the toolbar layout. Graph fitting takes their overlay into account.
+
 `viewer.js` is the composition root and application coordinator. It retains
 selection/navigation, module projection and footprint coordination, search,
 responsive workspace controls, semantic commands and event wiring. It supplies

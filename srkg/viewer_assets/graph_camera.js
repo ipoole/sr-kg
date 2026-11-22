@@ -231,6 +231,11 @@ function kgCreateGraphCamera(options) {
     };
     var minWidth = Math.min(220, baseAbs.width * 0.65);
     var minHeight = Math.min(180, baseAbs.height * 0.65);
+    var graphStatus = document.getElementById("kg_graph_status");
+    var statusOverlap = graphStatus && intersectRects(baseAbs, graphStatus.getBoundingClientRect());
+    if (statusOverlap && availableAbs.bottom - statusOverlap.bottom - 4 >= minHeight) {
+      availableAbs.top = Math.max(availableAbs.top, statusOverlap.bottom + 4);
+    }
     var panels = visiblePanelRects();
     panels.forEach(function(panel) {
       if (panel.id !== "kg_tutorial_narration") { return; }

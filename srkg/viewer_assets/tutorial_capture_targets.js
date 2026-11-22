@@ -59,7 +59,7 @@ function kgCreateTutorialCaptureTargets(options) {
       }
     }
     if (command) { return {command:command, pointer:pointer}; }
-    if (target.closest('.kg-add-note, .kg-note-block-action, .kg-note-owner-action, .user-note, .content-block-read-toggle, .study-question, #kg_personal_data_section, #kg_layouts_section')) {
+    if (target.closest('.kg-add-note, .kg-note-block-action, .user-note, .content-block-read-toggle, .study-question, #kg_personal_data_section, #kg_layouts_section')) {
       return {warning:'Personal data and layout edits are not recorded. Undo only restores the viewer.'};
     }
     if (target.closest('#info_panel summary, [data-reading-toggle], [data-reading-focus], .kg-reading-return, [data-reading-extend], #kg_content_unfold_all, #kg_content_fold_all, .concept-link, #kg_history_back, #kg_history_forward')) {

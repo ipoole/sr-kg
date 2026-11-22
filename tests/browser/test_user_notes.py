@@ -131,7 +131,7 @@ def test_note_placement_can_be_cancelled(repo_browser_graph):
     overview.locator(":scope > summary .kg-note-placement-cancel").click()
 
     assert overview.get_attribute("data-note-placement") is None
-    assert page.locator("#info_panel details.user-note").count() == 0
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *)").count() == 0
     assert page.locator("#info_panel .kg-add-note-row:visible").count() == 0
     assert overview.locator(":scope > summary .kg-note-block-action").evaluate(
         "element => document.activeElement === element"
@@ -253,7 +253,7 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
 
     _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
-    note = page.locator("#info_panel details.user-note").first
+    note = page.locator("#info_panel details.user-note:not(.kg-owner-notes *)").first
     assert note.is_visible()
     assert note.get_attribute("open") is not None
 
@@ -264,7 +264,7 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     ) in {"400", "normal"}
 
     stored = page.evaluate(
-        """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes"""
+        """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes.filter(n => n.placement !== "owner")"""
     )
     assert len(stored) == 1
     assert stored[0]["targetType"] == "concept"
@@ -277,15 +277,15 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     assert "Check this derivation" in tooltip_text
     assert "This should become an optional detail later." not in tooltip_text
     page.locator("#kg_notes_section summary").click()
-    assert page.locator("#kg_notes_list .kg-note-list-item").count() == 1
-    list_item = page.locator("#kg_notes_list .kg-note-list-item")
+    assert page.locator("#kg_notes_list .kg-note-list-item").filter(has_not_text="User notes").count() == 1
+    list_item = page.locator("#kg_notes_list .kg-note-list-item").filter(has_not_text="User notes")
     assert list_item.get_attribute("data-target-type") == "concept"
     assert list_item.get_attribute("data-target-id") == "2.1"
     _reveal_note_parents(page)
     assert "Check this derivation" in list_item.inner_text()
 
     note.locator(".user-note-close").click()
-    note = page.locator("#info_panel details.user-note").first
+    note = page.locator("#info_panel details.user-note:not(.kg-owner-notes *)").first
     assert note.get_attribute("open") is not None
     _reveal_note_parents(page)
     assert note.locator(".user-note-reading").inner_text() == "This should become an optional detail later."
@@ -296,13 +296,13 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     assert page.locator("#info_panel .user-note-title-input").count() == 0
     assert page.locator("#info_panel .user-note-body-input").count() == 0
     _reveal_note_parents(page)
-    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == (
         "Check this derivation"
     )
-    page.locator("#info_panel details.user-note summary").click()
-    page.locator("#info_panel details.user-note summary").click()
+    page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").click()
+    page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").click()
     assert page.locator("#info_panel .user-note-body-input").count() == 0
-    page.locator("#info_panel .user-note-edit").click()
+    page.locator("#info_panel .user-note-edit:not(.kg-owner-notes *)").click()
     _reveal_note_parents(page)
     assert page.locator("#info_panel .user-note-body-input").input_value() == (
         "This should become an optional detail later."
@@ -319,7 +319,7 @@ def test_user_notes_default_to_reading_and_remain_editable(browser_graph):
     )
     browser_graph.click_concept("2.1")
     _reveal_note_parents(page)
-    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == (
         "Check this derivation"
     )
 
@@ -331,15 +331,14 @@ def test_closing_default_empty_note_deletes_it_and_restores_anchor(browser_graph
     browser_graph.click_concept("2.1")
     _place_note_at_anchor(page.locator("#info_panel .kg-add-note").first)
 
-    assert page.locator("#info_panel details.user-note").count() == 1
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *)").count() == 1
     page.locator("#info_panel .user-note-close").click()
 
-    assert page.locator("#info_panel details.user-note").count() == 0
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *)").count() == 0
     assert page.locator("#info_panel .kg-add-note").first.is_visible() is False
-    assert page.locator("#kg_notes_list .kg-note-list-item").count() == 0
-    assert page.locator("#kg_notes_list .kg-note-list-empty").count() == 1
+    assert page.locator("#kg_notes_list .kg-note-list-item").filter(has_not_text="User notes").count() == 0
     assert page.evaluate(
-        """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes.length"""
+        """() => JSON.parse(localStorage.getItem("srkg.userNotes.v1")).notes.filter(n => n.placement !== "owner").length"""
     ) == 0
 
 
@@ -360,7 +359,7 @@ def test_notes_panel_list_navigates_to_note_concept(browser_graph):
     page.locator("#info_panel .user-note-body-input").fill("Remember alpha.")
     page.locator("#info_panel .user-note-close").click()
 
-    list_items = page.locator("#kg_notes_list .kg-note-list-item")
+    list_items = page.locator("#kg_notes_list .kg-note-list-item").filter(has_not_text="User notes")
     assert list_items.count() == 2
     assert list_items.nth(0).get_attribute("data-target-type") == "concept"
     assert list_items.nth(0).get_attribute("data-target-id") == "1.1"
@@ -373,7 +372,7 @@ def test_notes_panel_list_navigates_to_note_concept(browser_graph):
 
     assert page.locator("#info_panel").get_attribute("data-concept-id") == "2.1"
     assert page.evaluate("() => window.location.hash") == "#concept-2.1"
-    assert page.locator("#info_panel details.user-note summary").inner_text() == "Beta note"
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == "Beta note"
 
 
 @pytest.mark.browser
@@ -390,7 +389,7 @@ def test_user_notes_export_and_import_csv(browser_graph):
         page.locator("#kg_notes_export").click()
     download = download_info.value
     csv_text = download.path().read_text(encoding="utf-8")
-    rows = list(csv.DictReader(csv_text.splitlines()))
+    rows = [row for row in csv.DictReader(csv_text.splitlines()) if row["placement"] == "anchor"]
     assert rows[0]["concept_id"] == "2.1"
     assert rows[0]["concept_label"] == "Beta"
     assert rows[0]["target_type"] == "concept"
@@ -423,13 +422,13 @@ def test_user_notes_export_and_import_csv(browser_graph):
     page.locator("#kg_notes_import_input").set_input_files(str(import_path))
     browser_graph.click_concept("2.1")
     _reveal_note_parents(page)
-    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == (
         "Imported title"
     )
-    page.locator("#info_panel details.user-note summary").click()
+    page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").click()
     assert page.locator("#info_panel .user-note-body-input").count() == 0
     _reveal_note_parents(page)
-    assert page.locator("#info_panel .user-note-reading").inner_text() == "Imported body"
+    assert page.locator("#info_panel .user-note-reading:not(.kg-owner-notes *)").inner_text() == "Imported body"
 
 
 @pytest.mark.browser
@@ -457,7 +456,7 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
     overview.locator(".user-note-close").click()
 
     stored = page.evaluate(
-        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes"
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes.filter(n => n.placement !== \"owner\")"
     )
     assert [(note["targetType"], note["targetId"]) for note in stored] == [
         ("concept", "2.2"),
@@ -472,7 +471,7 @@ def test_module_overview_and_concept_graphic_have_note_hooks(browser_graph):
     browser_graph.click_concept("1.1")
     module_item.click()
     assert page.locator("#info_panel").get_attribute("data-module-id") == "test.m01_foundations"
-    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == (
         "Review module overview"
     )
 
@@ -527,7 +526,7 @@ def test_legacy_module_note_with_corrupted_context_recovers_by_paragraph(repo_br
     page.evaluate("""() => {
       const legacy = JSON.parse(localStorage.getItem('srkg.userNotes.v1'));
       const profile = JSON.parse(localStorage.getItem('srkg.personalData.v1'));
-      [legacy.notes[0], profile.notes.find(note => !note.deletedAt)].forEach(note => {
+      [legacy.notes.find(note => note.placement !== "owner"), profile.notes.find(note => !note.deletedAt && note.placement !== "owner")].forEach(note => {
         note.anchor.contextBefore = 'corrupted legacy context';
         note.anchor.contextAfter = 'corrupted legacy context';
       });
@@ -564,7 +563,7 @@ def test_study_questions_share_one_stable_note_anchor(browser_graph):
     study.locator(".user-note-close").click()
 
     stored = page.evaluate(
-        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes.find(n => n.placement !== \"owner\")"
     )
     assert stored["anchor"]["sectionKey"] == "study-questions"
     assert stored["section"] == "Study Questions"
@@ -608,9 +607,9 @@ def test_legacy_concept_note_csv_still_imports(browser_graph):
     browser_graph.click_concept("2.1")
 
     _reveal_note_parents(page)
-    assert page.locator("#info_panel details.user-note summary").inner_text() == "Legacy note"
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == "Legacy note"
     stored = page.evaluate(
-        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes.find(n => n.placement !== \"owner\")"
     )
     assert stored["targetType"] == "concept"
     assert stored["targetId"] == "2.1"
@@ -640,14 +639,14 @@ def test_legacy_local_storage_note_is_loaded_and_migrated(browser_graph):
     browser_graph.click_concept("2.1")
 
     _reveal_note_parents(page)
-    assert page.locator("#info_panel details.user-note summary").inner_text() == (
+    assert page.locator("#info_panel details.user-note:not(.kg-owner-notes *) summary").inner_text() == (
         "Stored legacy note"
     )
     stored = page.evaluate(
         "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1'))"
     )
     assert stored["version"] == 2
-    assert stored["notes"][0]["anchor"]["blockId"] == "2.1.definition"
+    assert next(note for note in stored["notes"] if note["placement"] != "owner")["anchor"]["blockId"] == "2.1.definition"
 
 
 @pytest.mark.browser
@@ -695,7 +694,7 @@ def test_note_uses_stable_block_id_across_section_rename(browser_graph):
     definition.locator(".user-note-close").click()
 
     stored = page.evaluate(
-        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes.find(n => n.placement !== \"owner\")"
     )
     assert stored["anchor"]["blockId"] == "2.1.definition"
 
@@ -765,7 +764,7 @@ def test_unmatched_note_is_preserved_and_visibly_flagged(browser_graph):
     assert "Explanation" in unmatched.inner_text()
     assert page.locator("#kg_notes_list .kg-note-list-warning").inner_text() == "Needs placement"
     stored = page.evaluate(
-        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes[0]"
+        "() => JSON.parse(localStorage.getItem('srkg.userNotes.v1')).notes.find(n => n.placement !== \"owner\")"
     )
     assert stored["title"] == "Orphaned passage note"
 
@@ -814,7 +813,7 @@ def test_legacy_section_note_migrates_to_the_canonical_block(browser_graph):
     page.wait_for_function("() => typeof kgViewerStateSnapshot === 'function'")
     browser_graph.click_concept('2.1')
     _reveal_note_parents(page)
-    assert page.locator('#info_panel details.user-note summary').inner_text() == 'A legacy section note'
+    assert page.locator('#info_panel details.user-note:not(.kg-owner-notes *) summary').inner_text() == 'A legacy section note'
     anchor = page.evaluate("kgPersonalData.getSnapshot().notes.find(n => n.id === 'legacy-section-key').anchor")
     assert anchor['blockId'] == '2.1.definition'
     assert anchor['sectionKey'] == ''
@@ -826,7 +825,7 @@ def test_note_reading_is_safe_and_done_does_not_fold_parent(browser_graph):
     page = browser_graph.page
     browser_graph.click_concept('2.1')
     _place_note_at_anchor(page.locator('#info_panel .kg-add-note').first)
-    note = page.locator('#info_panel details.user-note').first
+    note = page.locator('#info_panel details.user-note:not(.kg-owner-notes *)').first
     parent = note.locator('xpath=ancestor::details[1]')
     note.locator('.user-note-title-input').fill('Personal explanation')
     note.locator('.user-note-body-input').fill('<img src=x onerror="window.noteInjected=true">\n\nSecond paragraph')
@@ -860,7 +859,7 @@ def test_insert_maths_replaces_selection_and_persists(browser_graph):
     _reveal_note_parents(page)
     assert body.input_value() == 'Before ' + sample + ' after'
     assert body.evaluate('el => [el.selectionStart, el.selectionEnd]') == [7 + len(sample)] * 2
-    stored = page.evaluate('kgPersonalData.getSnapshot().notes[0].body')
+    stored = page.evaluate('kgPersonalData.getSnapshot().notes.find(n => n.placement !== \"owner\").body')
     _reveal_note_parents(page)
     assert stored == body.input_value()
     browser_graph.click_concept('1.1')
@@ -870,7 +869,7 @@ def test_insert_maths_replaces_selection_and_persists(browser_graph):
     page.locator('#info_panel .user-note-close').click()
     profile = page.evaluate('''() => kgPersonalDataArchive.importBytes(
         kgPersonalDataArchive.exportBytes(kgPersonalData.getSnapshot()))''')
-    assert profile['notes'][0]['body'] == stored
+    assert next(n for n in profile['notes'] if n['placement'] == 'anchor')['body'] == stored
 
 
 @pytest.mark.browser
@@ -882,7 +881,7 @@ def test_note_inline_and_display_maths_render(mathjax_browser_graph):
     page.locator('#info_panel .user-note-body-input').fill(
         r'Inline \(\gamma\).' + '\n\n' + r'\[E=mc^2\]')
     page.locator('#info_panel .user-note-close').click()
-    reading = page.locator('#info_panel .user-note-reading')
+    reading = page.locator('#info_panel .user-note-reading:not(.kg-owner-notes *)')
     reading.locator('mjx-container').first.wait_for()
     assert reading.locator('mjx-container').count() == 2
     assert reading.locator('mjx-container[display="true"]').count() == 1
@@ -899,18 +898,19 @@ def test_owner_note_placement_navigation_and_round_trip(browser_graph, owner):
         browser_graph.open_control_section('kg_modules_section')
         owner_id = 'test.m01_foundations'
         page.locator(f'.kg-module-item[data-module-id="{owner_id}"]').click()
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     note = page.locator('#info_panel .kg-owner-notes details.user-note')
     note.locator('.user-note-title-input').fill('My extra explanation')
     note.locator('.user-note-body-input').fill('Independent of any paragraph.')
     note.locator('.user-note-close').click()
     assert note.locator('textarea').count() == 0
-    stored = page.evaluate('kgPersonalData.getSnapshot().notes[0]')
+    stored = page.evaluate('(type) => kgPersonalData.getNotes().find(n => n.targetType === type && n.title === "My extra explanation")', owner)
     assert (stored['placement'], stored['targetType'], stored['targetId']) == ('owner', owner, owner_id)
     assert stored['anchor']['blockId'] == ''
     browser_graph.click_concept('1.1')
     browser_graph.open_control_section('kg_notes_section')
-    page.locator('#kg_notes_list .kg-note-list-item').click()
+    page.locator('#kg_notes_list .kg-note-list-item').filter(has_text='My extra explanation').click()
     assert note.is_visible()
     assert note.evaluate('el => el.open')
     assert note.locator('.user-note-reading').inner_text() == 'Independent of any paragraph.'
@@ -918,13 +918,13 @@ def test_owner_note_placement_navigation_and_round_trip(browser_graph, owner):
     with page.expect_download() as download:
         page.locator('#kg_notes_export').click()
     rows = list(csv.DictReader(download.value.path().read_text().splitlines()))
-    assert rows[0]['placement'] == 'owner'
+    assert next(row for row in rows if row['title'] == 'My extra explanation')['placement'] == 'owner'
     page.evaluate('kgPersonalData.replaceNotes([])')
     page.reload(wait_until='domcontentloaded')
     page.wait_for_function('Boolean(window.kgPersonalData)')
     page.locator('#kg_notes_import_input').set_input_files(str(download.value.path()))
     browser_graph.open_control_section('kg_notes_section')
-    page.locator('#kg_notes_list .kg-note-list-item').click()
+    page.locator('#kg_notes_list .kg-note-list-item').filter(has_text='My extra explanation').click()
     assert page.locator('#info_panel .kg-owner-notes .user-note-reading').inner_text() == 'Independent of any paragraph.'
 
 
@@ -960,23 +960,23 @@ def test_folding_an_editor_returns_to_reading_without_losing_draft(browser_graph
     page = browser_graph.page
     browser_graph.click_concept('2.1')
     _place_note_at_anchor(page.locator('#info_panel .kg-add-note').first)
-    note = page.locator('#info_panel details.user-note')
+    note = page.locator('#info_panel details.user-note:not(.kg-owner-notes *)')
     note.locator('.user-note-title-input').fill('Draft retained')
     note.locator('.user-note-body-input').fill('Keep my words.')
     note.locator(':scope > summary').click()
     page.wait_for_function("!document.querySelector('#info_panel .user-note-body-input')")
-    before = page.evaluate('kgPersonalData.getSnapshot().notes[0].updatedAt')
+    before = page.evaluate('kgPersonalData.getNotes().find(n => n.title === "Draft retained").updatedAt')
     note.locator(':scope > summary').focus()
     page.keyboard.press('Enter')
     assert note.locator('.user-note-reading').inner_text() == 'Keep my words.'
     note.locator(':scope > summary').click()
     note.locator(':scope > summary').click()
-    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].updatedAt') == before
+    assert page.evaluate('kgPersonalData.getNotes().find(n => n.title === "Draft retained").updatedAt') == before
     note.locator('.user-note-edit').focus()
     page.keyboard.press('Enter')
     assert note.locator('.user-note-body-input').input_value() == 'Keep my words.'
     note.locator('.user-note-close').click()
-    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].updatedAt') == before
+    assert page.evaluate('kgPersonalData.getNotes().find(n => n.title === "Draft retained").updatedAt') == before
 
 
 @pytest.mark.browser
@@ -990,7 +990,8 @@ def test_personal_notes_do_not_change_read_completion(browser_graph):
     indicator = page.locator('#info_panel .concept-sticky-header .content-read-complete-indicator')
     assert indicator.is_visible()
     before = page.evaluate('kgPersonalData.getSnapshot().readingProgress')
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-body-input').fill('Unfinished personal work.')
     note.locator('.user-note-close').click()
@@ -1004,7 +1005,8 @@ def test_mobile_owner_note_math_editing(mobile_repo_browser_graph):
     graph = mobile_repo_browser_graph
     page = graph.page
     graph.click_concept('sr.momentum_four_vector')
-    page.locator('#info_panel .kg-note-owner-action').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').tap()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').tap()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-title-input').fill('My calculation')
     note.locator('.user-note-body-input').fill('Check: ')
@@ -1022,7 +1024,8 @@ def test_done_and_notes_list_reveal_note_below_sticky_contents(repo_browser_grap
     graph = repo_browser_graph
     page = graph.page
     graph.click_concept('sr.momentum_four_vector')
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     note = page.locator('#info_panel .kg-owner-notes .user-note')
     note.locator('.user-note-title-input').fill('Read this addition')
     note.locator('textarea').fill('A short reading note after a large contents list.')
@@ -1040,7 +1043,7 @@ def test_note_placement_does_not_offer_personal_paragraphs_as_targets(browser_gr
     page = graph.page
     graph.click_concept('2.1')
     _place_note_at_anchor(page.locator('[data-content-block-id="2.1.explanation"] .kg-add-note').first)
-    note = page.locator('#info_panel .user-note')
+    note = page.locator('#info_panel .user-note:not(.kg-owner-notes *)')
     note.locator('textarea').fill('My personal explanation.')
     note.locator('.user-note-close').click()
     block = note.locator('xpath=ancestor::*[@data-note-block][1]')
@@ -1048,7 +1051,7 @@ def test_note_placement_does_not_offer_personal_paragraphs_as_targets(browser_gr
     assert note.locator('.concept-line').get_attribute('tabindex') is None
     assert block.locator('.concept-line[tabindex="0"]').count() > 0
     note.locator('.concept-line').click()
-    assert page.locator('#info_panel .user-note').count() == 1
+    assert note.count() == 1
 
 
 @pytest.mark.browser
@@ -1099,7 +1102,8 @@ def test_personal_and_authored_content_share_geometry_at_each_level(browser_grap
     inline = page.locator('#info_panel [data-content-block-id="2.1.definition"] .user-note')
     inline.locator('textarea').fill('An inline personal explanation.')
     inline.locator('.user-note-close').click()
-    page.locator('#info_panel .kg-note-owner-action').click()
+    page.locator('#info_panel .kg-owner-notes .user-note > summary').click()
+    page.locator('#info_panel .kg-owner-notes .user-note-edit').click()
     owner = page.locator('#info_panel .kg-owner-notes .user-note')
     owner.locator('textarea').fill('A top-level personal explanation.')
     owner.locator('.user-note-close').click()
@@ -1186,7 +1190,7 @@ def test_delete_all_notes_confirms_and_syncs_deletions_only(browser_graph):
         {id:'unloaded-note', targetType:'concept', targetId:'other.absent', placement:'owner', section:'Personal notes', anchor:{}},
         {id:'unmatched-note', targetType:'concept', targetId:'2.1', placement:'anchor', section:'Former paragraph', anchor:{blockId:'2.1.removed'}}
       ].map(note => Object.assign(note, {title:note.id, body:'Keep until confirmed', createdAt:now, updatedAt:now}));
-      store.mergeSnapshot(snapshot);
+      store.replaceSnapshot(snapshot);
       store.addStudyAttempt('2.1.q1', 'correct', now);
       store.setRead('2.1.definition', true);
       store.replaceLayout({published_revision:'unpublished', concepts:{'2.1':{x:25,y:30}}, modules:{}});
@@ -1244,7 +1248,7 @@ def test_single_paragraph_note_bypasses_placement_choice(browser_graph, width):
     note = block.locator('.user-note')
     assert note.count() == 1
     assert note.locator('.user-note-title-input').is_visible()
-    assert page.evaluate('kgPersonalData.getSnapshot().notes[0].anchor.blockIndex') == expected_anchor
+    assert page.evaluate('kgPersonalData.getNotes().find(n => n.placement === "anchor").anchor.blockIndex') == expected_anchor
     assert page.locator('.kg-unmatched-notes').count() == 0
     note.locator('.user-note-body-input').fill('Keep the first note.')
     note.locator('.user-note-close').click()
@@ -1253,7 +1257,7 @@ def test_single_paragraph_note_bypasses_placement_choice(browser_graph, width):
     assert block.locator('.user-note .kg-content-footer').count() == 0
     footer_button = block.locator(':scope > .kg-content-body > .kg-content-footer .kg-content-refold')
     assert footer_button.bounding_box()['y'] >= block.locator('.user-note').last.evaluate('e=>e.getBoundingClientRect().bottom')
-    assert page.evaluate('kgPersonalData.getSnapshot().notes.map(n=>n.anchor.blockIndex)') == [expected_anchor, expected_anchor]
+    assert page.evaluate('kgPersonalData.getNotes().filter(n => n.placement === "anchor").map(n => n.anchor.blockIndex)') == [expected_anchor, expected_anchor]
 
 
 @pytest.mark.browser
@@ -1273,3 +1277,63 @@ def test_paragraph_instruction_is_opaque_and_clear_of_cancel(browser_graph, widt
     cancel.click()
     assert block.get_attribute('data-note-placement') is None
     assert block.locator('.user-note').count() == 0
+
+
+@pytest.mark.browser
+def test_default_owner_note_deletion_survives_reload_and_stale_sync(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept('2.1')
+    assert page.locator('#info_panel .kg-note-owner-action').count() == 0
+    note = page.locator('#info_panel .kg-owner-notes .user-note')
+    assert note.locator(':scope > summary').inner_text() == 'User notes'
+    note.locator(':scope > summary').click()
+    assert 'inline maths' in note.locator('.user-note-reading').inner_text()
+    note_id = note.get_attribute('data-note-id')
+    starter = page.evaluate('kgPersonalData.getSnapshot()')
+    note.locator('.user-note-edit').click()
+    note.locator('.user-note-body-input').fill('My own explanation.')
+    note.locator('.user-note-close').click()
+    assert page.evaluate('snapshot => kgPersonalData.mergeSnapshot(snapshot)', starter)
+    assert page.evaluate('id => kgPersonalData.getNotes().find(n => n.id === id).body', note_id) == (
+        'My own explanation.'
+    )
+    note.locator('.user-note-edit').click()
+    note.locator('.user-note-delete').click()
+    assert note.count() == 0
+
+    assert page.evaluate('snapshot => kgPersonalData.mergeSnapshot(snapshot)', starter)
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function('Boolean(window.kgPersonalData)')
+    browser_graph.click_concept('2.1')
+    assert note.count() == 0
+    assert page.evaluate(
+        'id => kgPersonalData.getSnapshot().notes.find(n => n.id === id).deletedAt',
+        note_id,
+    )
+
+
+@pytest.mark.browser
+def test_untouched_starter_yields_to_existing_owner_note_on_first_merge(browser_graph):
+    page = browser_graph.page
+    browser_graph.click_concept('2.1')
+    assert page.evaluate('''() => {
+      const remote = kgPersonalData.getSnapshot();
+      remote.profileId = 'existing-remote-profile';
+      remote.notes = [{
+        id: 'existing-owner-note', placement: 'owner',
+        targetType: 'concept', targetId: '2.1', conceptId: '2.1',
+        section: 'Personal notes', anchor: {blockIndex: 0},
+        title: 'An existing note', body: 'Keep this as it is.',
+        createdAt: '2026-10-01T12:00:00Z', updatedAt: '2026-10-01T12:00:00Z'
+      }];
+      return kgPersonalData.mergeSnapshot(remote);
+    }''')
+    assert page.evaluate('kgPersonalData.getSnapshot().profileId') == 'existing-remote-profile'
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function('Boolean(window.kgPersonalData)')
+    browser_graph.click_concept('2.1')
+    notes = page.locator('#info_panel .kg-owner-notes .user-note')
+    assert notes.count() == 1
+    assert notes.locator(':scope > summary').inner_text() == 'An existing note'
+    notes.locator(':scope > summary').click()
+    assert notes.locator('.user-note-reading').inner_text() == 'Keep this as it is.'

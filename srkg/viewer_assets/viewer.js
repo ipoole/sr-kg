@@ -65,6 +65,7 @@
 
         var activeNodeId = null;
         var activeModuleId = null;
+        var tutorialSelectedDetails = false;
         function defaultViewerState() {
           return {
             contextRule: createContextRule(ContextPreset.DERIVATION, ContextDepth.TWO_HOPS),
@@ -282,7 +283,7 @@
         var renderNotesAtAnchor = notesController.renderNotesAtAnchor;
         var renderNoteAnchoredBody = notesController.renderNoteAnchoredBody;
         var renderUnmatchedNotes = notesController.renderUnmatchedNotes;
-        var createUserNote = notesController.createUserNote;
+        var createAnchoredNote = notesController.createAnchoredNote;
         var deleteUserNote = notesController.deleteUserNote;
         var updateUserNote = notesController.updateUserNote;
         var noteEditorField = notesController.noteEditorField;
@@ -1115,6 +1116,12 @@
           return "kg-toc-" + (slug || "section");
         }
 
+        function canSeedOwnerNote() {
+          return !tutorialSelectedDetails &&
+            !(guidedTutorial && guidedTutorial.tutorialPlaybackSnapshot().active) &&
+            !(tutorialRecorder && tutorialRecorder.active());
+        }
+
         function refreshActiveConcept() {
           if (activeNodeId && getConcept(activeNodeId)) {
             showConcept(activeNodeId, {preserveSectionContext: true});
@@ -1171,6 +1178,7 @@
           shell.appendChild(document.getElementById("kg_history_controls"));
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
+          graphSurface.appendChild(document.getElementById("kg_graph_status"));
           if (tutorialNarration) {
             document.body.appendChild(tutorialNarration);
           }
@@ -1462,11 +1470,6 @@
         function shouldStartWithControlsHidden() {
           var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
           return visualWidth <= 850 || window.matchMedia("(max-width: 850px)").matches;
-        }
-
-        function shouldStartWithConceptTocOpen() {
-          var visualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-          return visualWidth > 850 && !window.matchMedia("(max-width: 850px)").matches;
         }
 
         /* Display-scope controls and module actions. */
@@ -2000,10 +2003,9 @@
           return items;
         }
 
-        function renderConceptToc(items) {
-          if (!Array.isArray(items) || items.length < 2) { return ""; }
-          var openAttr = shouldStartWithConceptTocOpen() ? " open" : "";
-          var html = '<details class="concept-toc" aria-label="Concept contents"' + openAttr + ">";
+        function renderDetailsContents(items, includeBlockActions) {
+          if (items.length < 2 && !includeBlockActions) { return ""; }
+          var html = '<details class="concept-toc">';
           html += '<summary class="concept-toc-title">Contents</summary>';
           html += '<div class="concept-toc-links">';
           items.forEach(function(item) {
@@ -2015,8 +2017,13 @@
               renderConceptText(item.title) +
               "</a>";
           });
-          html += "</div></details>";
-          return html;
+          html += "</div>";
+          if (includeBlockActions) {
+            html += '<div class="kg-content-fold-controls" role="group" aria-label="Concept blocks">' +
+              '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
+              '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
+          }
+          return html + "</details>";
         }
 
         function renderConceptMasthead(nodeId, concept, tocItems) {
@@ -2027,7 +2034,6 @@
           html += '<h2 class="concept-title" title="' + escapeHtml(conceptTitleText) + '">' +
             escapeHtml(conceptDisplayId(nodeId)) + " " + renderConceptText(concept.label) +
             "</h2>";
-          html += notesController.renderOwnerNoteAction("concept", nodeId);
           html += renderContentReadCompletionIndicator("concept", nodeId);
           html += renderStudyQuestionCompletionIndicator("concept", nodeId);
           var owningModuleId = moduleIdForConcept(nodeId);
@@ -2035,25 +2041,16 @@
           if (owningModule) {
             var owningModuleTitle = searchDisplayText(owningModule.title || owningModuleId);
             var compactModuleMatch = owningModuleTitle.match(/^(?:SR|GR|MATHS)-\d+/);
-            var compactModuleTitle = compactModuleMatch
-              ? compactModuleMatch[0]
-              : owningModuleTitle;
+            var moduleLinkLabel = compactModuleMatch
+              ? escapeHtml(compactModuleMatch[0])
+              : renderConceptText(owningModule.title || owningModuleId);
             html += '<button type="button" class="concept-module-chip module-detail-link" data-module-id="' +
               escapeHtml(owningModuleId) + '" aria-label="Module: ' +
               escapeHtml(owningModuleTitle) + '" title="Module: ' +
-              escapeHtml(owningModuleTitle) + '">' +
-              '<span class="concept-module-chip-label">Module</span> ' +
-              '<span class="concept-module-chip-full">' +
-              renderConceptText(owningModule.title || owningModuleId) + "</span>" +
-              '<span class="concept-module-chip-compact">' +
-              escapeHtml(compactModuleTitle) + "</span>" +
-              "</button>";
+              escapeHtml(owningModuleTitle) + '">' + moduleLinkLabel + "</button>";
           }
           html += "</div>";
-          html += renderConceptToc(tocItems);
-          html += '<div class="kg-content-fold-controls" aria-label="Concept blocks">' +
-            '<button type="button" id="kg_content_unfold_all">Unfold all</button>' +
-            '<button type="button" id="kg_content_fold_all">Fold all</button></div>';
+          html += renderDetailsContents(tocItems, true);
           html += "</div>";
           return html;
         }
@@ -2726,19 +2723,6 @@
             " in the graph.";
         }
 
-        function renderModuleGraphFoldControl(moduleId) {
-          var folded = selectedModuleIsFolded(moduleId);
-          return '<div class="module-graph-fold-control" aria-label="Module graph display">' +
-            '<span class="module-graph-fold-label">Graph</span>' +
-            '<button type="button" class="module-graph-fold-button" data-module-id="' +
-            escapeHtml(moduleId) + '" data-module-fold-state="expanded" aria-pressed="' +
-            (folded ? "false" : "true") + '">Expanded</button>' +
-            '<button type="button" class="module-graph-fold-button" data-module-id="' +
-            escapeHtml(moduleId) + '" data-module-fold-state="folded" aria-pressed="' +
-            (folded ? "true" : "false") + '">Folded</button>' +
-            "</div>";
-        }
-
         function moduleTitleButton(moduleId) {
           var module = getModule(moduleId);
           if (!module) { return escapeHtml(moduleId); }
@@ -2883,15 +2867,13 @@
           var html = '<div class="concept-sticky-header module-sticky-header">';
           html += '<div class="concept-title-row">';
           html += '<h2 class="concept-title module-title">' + renderConceptText(module.title || moduleId) + "</h2>";
-          html += notesController.renderOwnerNoteAction("module", moduleId);
           html += renderContentReadCompletionIndicator("module", moduleId);
           html += renderStudyQuestionCompletionIndicator("module", moduleId);
           html += '<span class="module-domain-label">' +
             escapeHtml(moduleDomainLabel(module.domain)) +
             "</span>";
-          html += renderModuleGraphFoldControl(moduleId);
           html += "</div>";
-          html += renderConceptToc(tocItems);
+          html += renderDetailsContents(tocItems, false);
           html += "</div>";
           return html;
         }
@@ -2996,7 +2978,7 @@
           moduleContentBlocks(module).forEach(function(block) {
             html += renderModuleContentBlock(moduleId, block);
           });
-          html += notesController.renderOwnerNotes("module", moduleId);
+          html += notesController.renderOwnerNotes("module", moduleId, canSeedOwnerNote());
           html += renderModuleMembers(moduleId, module);
           html += renderModuleBoundarySection(moduleId, "incoming", "Incoming boundary links");
           html += renderModuleBoundarySection(moduleId, "outgoing", "Outgoing boundary links");
@@ -3917,12 +3899,6 @@
           setResponsiveOptionLabels("kg_view_select", {
             both: ["Both", "Both"], graph: ["Graph", "Graph"], details: ["Details", "Details"]
           }, compact);
-          var expandSelected = document.getElementById("kg_expand_selected_module");
-          if (expandSelected) {
-            expandSelected.textContent = compact
-              ? "Expand module"
-              : "Expand selected concept's module";
-          }
         }
 
         function updateGraphContextControls() {
@@ -3932,7 +3908,7 @@
           var depthSelect = document.getElementById("kg_context_depth_select");
           var summary = document.getElementById("kg_context_summary");
           var customEdit = document.getElementById("kg_custom_context_edit");
-          var representationActions = document.getElementById("kg_representation_actions");
+          var expandContext = document.getElementById("kg_expand_context_modules");
           if (presetSelect) {
             presetSelect.value = viewerState.contextRule.preset;
             presetSelect.disabled = false;
@@ -3956,19 +3932,9 @@
             });
             if (moduleRepresentsContext) { representedModuleCount += 1; }
           });
-          if (representationActions) {
-            var selectedConceptModule = selection.type === "concept"
-              ? moduleIdForConcept(selection.id)
-              : null;
-            var selectedConceptIsFolded = Boolean(
-              selectedConceptModule && selectedModuleIsFolded(selectedConceptModule)
-            );
-            var expandSelected = document.getElementById("kg_expand_selected_module");
-            var expandContext = document.getElementById("kg_expand_context_modules");
-            var contextCanExpand = representedCount > 0;
-            expandSelected.hidden = !selectedConceptIsFolded;
-            expandContext.hidden = !contextCanExpand;
-            expandContext.textContent = "Expand " + String(representedCount) + " folded";
+          if (expandContext) {
+            var wasFocused = expandContext === document.activeElement;
+            expandContext.hidden = representedCount === 0;
             var expandContextLabel =
               "Expand " + String(representedCount) + " context concept" +
               (representedCount === 1 ? "" : "s") + " represented by " +
@@ -3976,11 +3942,9 @@
               (representedModuleCount === 1 ? "" : "s");
             expandContext.setAttribute("aria-label", expandContextLabel);
             expandContext.title = expandContextLabel;
-            representationActions.hidden = !selectedConceptIsFolded && !contextCanExpand;
-            representationActions.setAttribute(
-              "data-selected-module-id",
-              selectedConceptIsFolded ? selectedConceptModule : ""
-            );
+            if (expandContext.hidden && wasFocused) {
+              document.getElementById("kg_fit_apply").focus({preventScroll: true});
+            }
           }
           if (!summary) { return; }
 
@@ -3995,7 +3959,6 @@
           graphSelection.textContent = selectionLabel;
           graphSelection.title = "Open details for " + selectionLabel;
           graphSelection.setAttribute("aria-label", graphSelection.title);
-          summary.parentElement.setAttribute("data-context-can-expand", representedCount > 0 ? "true" : "false");
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
             : viewerState.displayScope === DisplayScope.OVERVIEW ? "Overview" : "Context + background";
@@ -4688,7 +4651,7 @@
           html += "<hr>";
           html += renderConceptContent(nodeId, concept);
           html += readingTrees.render(nodeId);
-          html += notesController.renderOwnerNotes("concept", nodeId);
+          html += notesController.renderOwnerNotes("concept", nodeId, canSeedOwnerNote());
           html += renderConceptDerivedFrom(nodeId);
           html += renderConceptBacklinks(nodeId);
           if (studyQuestions.length > 0) {
@@ -4908,6 +4871,7 @@
             detailsView.restoreTarget(null);
           }
 
+          tutorialSelectedDetails = options.origin === "tutorial";
           activeNodeId = type === "concept" ? id : null;
           activeModuleId = type === "module" ? id : null;
           updateSelectedConceptHeader(activeNodeId);
@@ -5075,7 +5039,7 @@
           var name = String(command.command || "");
           try {
             if (name === "home") {
-              await restoreHome();
+              await restoreHome(options.origin);
             } else if (name === "select") {
               var target = String(command.target || "");
               var type;
@@ -5092,7 +5056,10 @@
                 throw new Error("Select requires a concept: or module: target");
               }
               var selectionOptions = Object.assign({}, options.selectionOptions || {});
-              if (options.origin === "tutorial") { selectionOptions.skipHistory = true; }
+              if (options.origin === "tutorial") {
+                selectionOptions.origin = "tutorial";
+                selectionOptions.skipHistory = true;
+              }
               selectViewerObject(type, id, options.statusPrefix || null, selectionOptions);
             } else if (name === "set-display-scope") {
               setViewerDisplayScope(commandEnumValue(
@@ -5373,7 +5340,7 @@
               {origin: "tutorial"}
             );
           } else {
-            selectDefaultViewerObject();
+            selectDefaultViewerObject("tutorial");
           }
 
           setViewerView(snapshot.view || "both");
@@ -5665,7 +5632,7 @@
           return conceptId ? {type: "concept", id: conceptId} : null;
         }
 
-        async function restoreHome() {
+        async function restoreHome(origin) {
           resetContextFitInteraction(); setLayoutEditingEnabled(false);
           hideNodeTooltip(); restoreHoveredEdge();
           readingTrees.reset(); sharedExplanations.reset();
@@ -5679,7 +5646,7 @@
             preferredFoldedModules[String(moduleId)] = Boolean(getModule(moduleId).default_collapsed);
           });
           applyDefaultModuleFoldState();
-          selectDefaultViewerObject(); initialiseSelectionHistory();
+          selectDefaultViewerObject(origin); initialiseSelectionHistory();
           var homeSelection = JSON.stringify(viewerSelectionSnapshot());
 
           await nextAnimationFrames(2);
@@ -5697,10 +5664,10 @@
 
         window.kgRestoreHome = function() { return executeViewerCommand({command:'home'}, {origin:'user'}); };
 
-        function selectDefaultViewerObject() {
+        function selectDefaultViewerObject(origin) {
           var selection = defaultViewerSelection();
           if (!selection) { return; }
-          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true});
+          selectViewerObject(selection.type, selection.id, null, {skipHistory: true, preserveGraphMode: true, origin: origin});
           var state = selection.type === "module"
             ? {objectType: "module", moduleId: selection.id}
             : {objectType: "concept", nodeId: selection.id};
@@ -6336,17 +6303,6 @@
           document.getElementById("kg_custom_context").hidden = true;
           document.getElementById("kg_context_preset_select").value = viewerState.contextRule.preset;
         });
-        document.getElementById("kg_expand_selected_module").addEventListener("click", function() {
-          var actions = document.getElementById("kg_representation_actions");
-          var moduleId = actions.getAttribute("data-selected-module-id");
-          if (moduleId && getModule(moduleId)) {
-            executeViewerCommand({
-              command: "set-module-representation",
-              target: "module:" + moduleId,
-              value: "expanded"
-            }, {origin: "user"});
-          }
-        });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
           executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
@@ -6705,26 +6661,7 @@
           var tocLink = e.target.closest(".concept-toc-link");
           if (tocLink) {
             e.preventDefault();
-            var tocTargetId = tocLink.getAttribute("data-toc-target");
-            var target = document.getElementById(tocTargetId);
-            if (target) {
-              setActiveConceptSection(tocTargetId);
-              openTargetForToc(target);
-              window.requestAnimationFrame(function() {
-                scrollInfoPanelTargetBelowStickyToc(target);
-              });
-            }
-            return;
-          }
-
-          var ownerNoteButton = e.target.closest(".kg-note-owner-action");
-          if (ownerNoteButton) {
-            e.preventDefault();
-            var ownerNote = notesController.createOwnerNote(
-              ownerNoteButton.getAttribute("data-target-type"), ownerNoteButton.getAttribute("data-target-id")
-            );
-            refreshActiveConcept();
-            notesController.revealNote(ownerNote.id, true);
+            detailsView.navigateFromContents(tocLink);
             return;
           }
 
@@ -6744,7 +6681,7 @@
               ? enclosingSection.id
               : "";
             cancelNotePlacement(addNoteButton.closest('[data-note-placement="active"]'));
-            var createdNote = createUserNote(
+            var createdNote = createAnchoredNote(
               noteTargetType,
               noteTargetId,
               addNoteButton.getAttribute("data-section") || "",
@@ -6839,20 +6776,6 @@
             var edgeConceptId = edgeConceptButton.getAttribute("data-edge-concept-id");
             if (!getConcept(edgeConceptId)) { return; }
             navigateToConcept(edgeConceptId, "Selected");
-            return;
-          }
-
-          var moduleFoldButton = e.target.closest(".module-graph-fold-button");
-          if (moduleFoldButton) {
-            e.preventDefault();
-            var foldModuleId = moduleFoldButton.getAttribute("data-module-id");
-            var foldState = moduleFoldButton.getAttribute("data-module-fold-state");
-            if (!getModule(foldModuleId)) { return; }
-            executeViewerCommand({
-              command: "set-module-representation",
-              target: "module:" + foldModuleId,
-              value: foldState === "folded" ? "folded" : "expanded"
-            }, {origin: "user"});
             return;
           }
 

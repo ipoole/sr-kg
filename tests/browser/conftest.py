@@ -73,6 +73,17 @@ class BrowserGraph:
         self.page.locator("#kg_search_close").click()
 
 
+def set_selected_module_representation(page, state: str) -> None:
+    """Set up a graph representation without requiring an on-screen corner."""
+    page.evaluate("""state => {
+      const selection = kgViewerStateSnapshot().selection;
+      if (selection.type !== 'module') { throw new Error('Select a module first'); }
+      return kgExecuteViewerCommand({
+        command: 'set-module-representation', target: 'module:' + selection.id, value: state
+      });
+    }""", state)
+
+
 def _write_browser_fixture(
     tmp_path: Path,
     *,

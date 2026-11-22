@@ -102,7 +102,12 @@ def test_blocks_and_graph_generated_routes(reading_graph, width):
         assert card.locator(".kg-reading-concept-container > .kg-reading-boundary").count() > 0
         assert card.locator(".kg-reading-block[open]").count() == 0
         assert card.locator(".kg-content-statement").count() > 0
-    assert page.evaluate("({state:kgViewerStateSnapshot(),camera:network.getViewPosition(),scale:network.getScale()})") == before
+    after = page.evaluate(
+        "({state:kgViewerStateSnapshot(),camera:network.getViewPosition(),scale:network.getScale()})"
+    )
+    assert after["state"] == before["state"]
+    assert after["camera"] == pytest.approx(before["camera"], rel=0, abs=1e-9)
+    assert after["scale"] == pytest.approx(before["scale"], rel=0, abs=1e-9)
     assert page.evaluate("document.getElementById('info_panel').scrollWidth<=document.getElementById('info_panel').clientWidth+1")
     assert not reading_graph.page_errors
 

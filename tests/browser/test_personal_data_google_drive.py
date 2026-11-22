@@ -1,6 +1,8 @@
 import pytest
 from playwright.sync_api import expect
 
+from conftest import set_selected_module_representation
+
 
 @pytest.mark.browser
 def test_google_drive_sync_is_optional_in_an_unconfigured_viewer(browser_graph):
@@ -322,7 +324,7 @@ def test_sync_preserves_fitpp_but_navigation_uses_latest_saved_layout(browser_gr
         browser_graph.open_control_section('kg_modules_section')
         page.locator(f'.kg-module-item[data-module-id="{module_id}"]').click()
         _close_tools_overlay(page)
-        page.locator('[data-module-fold-state="folded"]').click()
+        set_selected_module_representation(page, "folded")
     browser_graph.click_concept('3.1')
     page.locator('#kg_context_preset_select').select_option('foundations')
     page.locator('#kg_context_depth_select').select_option('two-hops')
