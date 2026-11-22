@@ -398,20 +398,8 @@
         top: calc(100% + 28px);
         z-index: 3;
       }
-      .kg-representation-actions {
-        flex: 0 0 auto;
-        position: relative;
-      }
-      #kg_expand_menu_toggle { display: none; }
-      .kg-expand-choices {
-        display: flex;
-        gap: 4px;
-      }
-      .kg-representation-actions[hidden],
-      .kg-expand-choices > [hidden] {
-        display: none;
-      }
-      .kg-expand-choices button { white-space: nowrap; }
+      #kg_expand_context_modules { flex: 0 0 auto; white-space: nowrap; }
+      #kg_expand_context_modules[hidden] { display: none; }
       .kg-custom-context {
         border-top: 1px solid #dbe2ea;
         margin-top: 7px;
@@ -3977,22 +3965,6 @@ details[open] > summary > .kg-content-preview { display: none; }
 
 
 /* Compact actions depend on the graph pane width, including in a desktop split. */
-@container graph-toolbar (max-width: 620px) {
-    #kg_expand_menu_toggle { display: inline-block; }
-    #kg_expand_menu_toggle[aria-expanded="false"] + .kg-expand-choices { display: none; }
-    .kg-expand-choices {
-        background: #fff;
-        border: 1px solid #cbd5e1;
-        border-radius: 7px;
-        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.16);
-        flex-direction: column;
-        padding: 4px;
-        position: absolute;
-        right: 0;
-        top: calc(100% + 4px);
-        z-index: 4;
-    }
-}
 @container graph-toolbar (max-width: 520px) {
     .kg-graph-context-controls {
         flex-wrap: nowrap;
@@ -4016,6 +3988,9 @@ details[open] > summary > .kg-content-preview { display: none; }
     #kg_context_depth_select { width: 64px; }
     #kg_fit_apply { white-space: nowrap; }
     .kg-graph-context-controls:has(#kg_custom_context_edit:not([hidden])) { flex-wrap: wrap; }
+}
+@container graph-toolbar (max-width: 380px) {
+    .kg-expand-context-suffix { display: none; }
 }
 @container graph-toolbar (max-width: 350px) {
     .kg-graph-context-controls label.kg-group-label { display: none; }

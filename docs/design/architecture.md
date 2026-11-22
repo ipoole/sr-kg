@@ -172,8 +172,8 @@ a layout that keeps Contents closed initially. Selecting an entry closes the
 list before focusing the section and measuring its scroll offset. Concept block
 fold commands live inside Contents. Use a module’s graph corner control to fold or expand it.
 
-Graph expansion actions share the Fit context toolbar row. Narrow graph panes
-group the available actions in an Expand disclosure. The context count and the
+Expand context shares the Fit context toolbar row and appears only when folded
+modules represent part of the context. The context count and the
 phone shortcut to Details float over the top edge of the graph canvas, outside
 the toolbar layout. Graph fitting takes their overlay into account.
 

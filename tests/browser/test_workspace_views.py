@@ -41,7 +41,7 @@ def test_phone_graph_only_selection_shares_floating_status(browser_graph, width)
     assert title.inner_text() == page.locator('#info_panel h2').inner_text()
     assert title.bounding_box()['height'] < 24
     page.evaluate("document.getElementById('kg_modules_collapse_all').click()")
-    assert page.locator('#kg_expand_menu_toggle').is_visible()
+    assert page.locator('#kg_expand_context_modules').is_visible()
     status = page.locator('#kg_graph_surface #kg_context_summary')
     assert status.is_visible()
     row = page.locator('#kg_graph_status').bounding_box()

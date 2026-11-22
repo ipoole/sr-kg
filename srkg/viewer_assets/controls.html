@@ -173,15 +173,9 @@
             <span id="kg_fit_help" class="kg-visually-hidden"></span>
             <button id="kg_fit_apply" class="kg-shell-button" type="button" aria-describedby="kg_fit_help">Fit context</button>
           </div>
-          <div id="kg_representation_actions" class="kg-representation-actions" hidden>
-            <button id="kg_expand_menu_toggle" class="kg-shell-button" type="button"
-                    aria-expanded="false" aria-controls="kg_expand_choices">Expand…</button>
-            <div id="kg_expand_choices" class="kg-expand-choices" role="group" aria-label="Expand modules">
-              <button id="kg_expand_selected_module" class="kg-shell-button" type="button"
-                      title="Expand the selected concept's module">Expand selected module</button>
-              <button id="kg_expand_context_modules" class="kg-shell-button" type="button">Expand context modules</button>
-            </div>
-          </div>
+          <button id="kg_expand_context_modules" class="kg-shell-button" type="button" hidden>
+            Expand<span class="kg-expand-context-suffix"> context</span>
+          </button>
         </div>
         <div id="kg_context_notice" class="kg-context-notice" aria-live="polite" hidden></div>
         <div id="kg_custom_context" class="kg-custom-context" hidden>

@@ -1,7 +1,5 @@
 import pytest
 
-from conftest import open_expand_actions
-
 
 def _context(page, concept_id, preset, depth="one-hop", custom=None):
     return page.evaluate(
@@ -357,8 +355,7 @@ def test_selecting_concept_preserves_folded_representation_and_view_axes(browser
     assert page.evaluate("() => network.getSelectedNodes()") == [
         "module::test.m02_applications"
     ]
-    open_expand_actions(page)
-    assert page.locator("#kg_expand_selected_module").is_visible()
+    assert page.locator("#kg_expand_context_modules").is_visible()
 
 
 

@@ -3901,20 +3901,6 @@
           }, compact);
         }
 
-        function setExpandMenuOpen(open) {
-          document.getElementById("kg_expand_menu_toggle").setAttribute("aria-expanded", String(open));
-        }
-
-        function closeExpandMenu(restoreFocus) {
-          var toggle = document.getElementById("kg_expand_menu_toggle");
-          if (toggle.getAttribute("aria-expanded") !== "true") { return; }
-          setExpandMenuOpen(false);
-          if (restoreFocus) {
-            var target = toggle.getClientRects().length ? toggle : document.getElementById("kg_fit_apply");
-            target.focus({preventScroll: true});
-          }
-        }
-
         function updateGraphContextControls() {
           var selection = viewerSelectionSnapshot();
           var context = computeViewerContext(selection, viewerState.contextRule);
@@ -3922,7 +3908,7 @@
           var depthSelect = document.getElementById("kg_context_depth_select");
           var summary = document.getElementById("kg_context_summary");
           var customEdit = document.getElementById("kg_custom_context_edit");
-          var representationActions = document.getElementById("kg_representation_actions");
+          var expandContext = document.getElementById("kg_expand_context_modules");
           if (presetSelect) {
             presetSelect.value = viewerState.contextRule.preset;
             presetSelect.disabled = false;
@@ -3946,19 +3932,9 @@
             });
             if (moduleRepresentsContext) { representedModuleCount += 1; }
           });
-          if (representationActions) {
-            var selectedConceptModule = selection.type === "concept"
-              ? moduleIdForConcept(selection.id)
-              : null;
-            var selectedConceptIsFolded = Boolean(
-              selectedConceptModule && selectedModuleIsFolded(selectedConceptModule)
-            );
-            var expandSelected = document.getElementById("kg_expand_selected_module");
-            var expandContext = document.getElementById("kg_expand_context_modules");
-            var contextCanExpand = representedCount > 0;
-            expandSelected.hidden = !selectedConceptIsFolded;
-            expandContext.hidden = !contextCanExpand;
-            expandContext.textContent = "Expand context (" + String(representedCount) + ")";
+          if (expandContext) {
+            var wasFocused = expandContext === document.activeElement;
+            expandContext.hidden = representedCount === 0;
             var expandContextLabel =
               "Expand " + String(representedCount) + " context concept" +
               (representedCount === 1 ? "" : "s") + " represented by " +
@@ -3966,16 +3942,9 @@
               (representedModuleCount === 1 ? "" : "s");
             expandContext.setAttribute("aria-label", expandContextLabel);
             expandContext.title = expandContextLabel;
-            var hadActionFocus = representationActions.contains(document.activeElement);
-            representationActions.hidden = !selectedConceptIsFolded && !contextCanExpand;
-            if (representationActions.hidden) {
-              closeExpandMenu(false);
-              if (hadActionFocus) { document.getElementById("kg_fit_apply").focus({preventScroll: true}); }
+            if (expandContext.hidden && wasFocused) {
+              document.getElementById("kg_fit_apply").focus({preventScroll: true});
             }
-            representationActions.setAttribute(
-              "data-selected-module-id",
-              selectedConceptIsFolded ? selectedConceptModule : ""
-            );
           }
           if (!summary) { return; }
 
@@ -6333,35 +6302,7 @@
           document.getElementById("kg_custom_context").hidden = true;
           document.getElementById("kg_context_preset_select").value = viewerState.contextRule.preset;
         });
-        document.getElementById("kg_expand_menu_toggle").addEventListener("click", function() {
-          setExpandMenuOpen(this.getAttribute("aria-expanded") !== "true");
-        });
-        document.addEventListener("click", function(event) {
-          if (!document.getElementById("kg_representation_actions").contains(event.target)) {
-            closeExpandMenu(false);
-          }
-        });
-        document.addEventListener("keydown", function(event) {
-          if (event.key === "Escape" &&
-              document.getElementById("kg_expand_menu_toggle").getAttribute("aria-expanded") === "true") {
-            closeExpandMenu(true);
-            event.preventDefault();
-          }
-        });
-        document.getElementById("kg_expand_selected_module").addEventListener("click", function() {
-          closeExpandMenu(true);
-          var actions = document.getElementById("kg_representation_actions");
-          var moduleId = actions.getAttribute("data-selected-module-id");
-          if (moduleId && getModule(moduleId)) {
-            executeViewerCommand({
-              command: "set-module-representation",
-              target: "module:" + moduleId,
-              value: "expanded"
-            }, {origin: "user"});
-          }
-        });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
-          closeExpandMenu(true);
           executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
         document.getElementById("kg_graph_selection").addEventListener("click", function() {
