@@ -62,7 +62,7 @@ function kgCreateTutorialStore(options) {
     return record && typeof record.id === 'string' && record.id.indexOf('personal:') === 0 &&
       record.route && record.route.tutorial_id === record.id && Array.isArray(record.route.steps);
   }
-  function save(record, asset) {
+  function save(record, assets) {
     record = clone(record);
     if (!validRecord(record)) { return Promise.reject(new Error('Invalid personal tutorial record.')); }
     return transaction(['tutorials','audio'], 'readwrite', function(tx, done, fail) {
@@ -77,7 +77,7 @@ function kgCreateTutorialStore(options) {
           record.createdAt = previous ? previous.createdAt : now; record.updatedAt = now;
           if (record.deletedAt) { record.deletedAt = now; }
           record.revisionId = id('revision:');
-          if (asset) { tx.objectStore('audio').put(asset); }
+          (assets || []).forEach(function(asset) { tx.objectStore('audio').put(asset); });
           (record.route.steps || []).forEach(function(step) {
             if (!step.audio) { return; }
             tx.objectStore('audio').get(step.audio.assetId).onsuccess = function(event) {
@@ -89,7 +89,7 @@ function kgCreateTutorialStore(options) {
       };
     }).then(function(result) { changed('edit'); return result; });
   }
-  function commitSnapshot(records, baseline, expected, origin) {
+  function commitSnapshot(records, baseline, expected, origin, assets) {
     records = clone(records);
     if (!Array.isArray(records) || records.some(function(record) { return !validRecord(record); }) ||
         new Set(records.map(function(record) { return record.id; })).size !== records.length) {
@@ -97,25 +97,26 @@ function kgCreateTutorialStore(options) {
     }
     var revisions = {};
     expected.forEach(function(record) { revisions[record.id] = record.revisionId; });
-    return transaction(['tutorials','meta'], 'readwrite', function(tx, done, fail) {
+    return transaction(['tutorials','meta','audio'], 'readwrite', function(tx, done, fail) {
       var store = tx.objectStore('tutorials');
       store.getAll().onsuccess = function(event) {
         var current = event.target.result;
         if (current.length !== expected.length || current.some(function(record) { return revisions[record.id] !== record.revisionId; })) {
           var error = new Error('Tutorials changed while synchronising; retrying.'); error.code = 'conflict'; fail(error); return;
         }
+        (assets || []).forEach(function(asset) { tx.objectStore('audio').put(asset); });
         store.clear(); records.forEach(function(record) { store.put(record); });
         if (baseline !== null) { tx.objectStore('meta').put({key:'cloudBaseline', value:baseline}); }
         done(records);
       };
     }).then(function(result) { changed(origin || 'remote'); return result; });
   }
-  function create(route, basedOn, metadata) {
+  function create(route, basedOn, metadata, assets) {
     var key = id('personal:');
     route = route ? clone(route) : {title:'New tutorial', summary:'', category:'physics',
       sequence:0, domains:[], steps:[kgTutorialSequence.newCard(id('card:'))]};
     route.tutorial_id = key;
-    return save(Object.assign({},metadata || {},{id:key, route:route, basedOn:clone(basedOn), deletedAt:''}));
+    return save(Object.assign({},metadata || {},{id:key, route:route, basedOn:clone(basedOn), deletedAt:''}), assets);
   }
   function remove(key, revisionId) {
     return get(key).then(function(record) {
@@ -136,7 +137,7 @@ function kgCreateTutorialStore(options) {
     if (!step) { throw new Error('This card no longer exists.'); }
     step.audio = {assetId:assetId, duration:duration, commentaryHash:await fingerprint(step.commentary || ''),
       actionsHash:await fingerprint(voiceActions(step))};
-    return save(record, {id:assetId, mimeType:blob.type, byteLength:blob.size, blob:blob});
+    return save(record, [{id:assetId, mimeType:blob.type, byteLength:blob.size, blob:blob}]);
   }
   function voiceActions(step) {
     return {prepare:step.prepare || [], actions:step.actions || null, action:step.action || null,

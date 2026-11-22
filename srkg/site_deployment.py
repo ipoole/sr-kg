@@ -120,6 +120,13 @@ def assemble(root: Path, viewer: Path, channel: str, previous=None) -> dict[str,
                       for name in PREVIEW_SITE_FILES})
         directory = 'preview'
     files[f'{directory}/PhysicsKG.html'] = viewer.read_bytes()
+    for asset in sorted((viewer.parent / 'tutorial-audio').glob('*')):
+        if asset.is_symlink() or not asset.is_file() or not re.fullmatch(r'[a-f0-9]{64}',asset.name):
+            raise ValueError(f'Invalid built-in tutorial audio path: {asset}')
+        payload = asset.read_bytes()
+        if digest(payload) != asset.name:
+            raise ValueError(f'Built-in tutorial audio checksum mismatch: {asset}')
+        files[f'{directory}/tutorial-audio/{asset.name}'] = payload
     for path in sorted((root / 'lib').rglob('*')):
         if path.is_symlink():
             raise ValueError(f'Library symlink is not allowed: {path}')

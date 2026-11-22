@@ -5436,8 +5436,27 @@
         var showTutorialConceptHover = tutorialTargets.showTutorialConceptHover;
         var showTutorialEdgeHover = tutorialTargets.showTutorialEdgeHover;
         var tutorialLibrary;
+        var tutorialAudioTypes = new Map();
+        tutorialData.forEach(function(route) {
+          route.steps.forEach(function(step) {
+            if (step.audio && step.audio.mimeType) { tutorialAudioTypes.set(step.audio.assetId,step.audio.mimeType); }
+          });
+        });
+        async function getTutorialAudio(id) {
+          var mimeType = tutorialAudioTypes.get(id);
+          try {
+            var asset = await personalDataStore.tutorials.getAudio(id);
+            if (asset || !mimeType) { return asset; }
+          } catch (error) {
+            if (!mimeType) { throw error; }
+          }
+          var response = await fetch('tutorial-audio/' + id);
+          if (!response.ok) { throw new Error('Built-in recording could not be loaded.'); }
+          var bytes = await response.arrayBuffer();
+          return {id:id,mimeType:mimeType,byteLength:bytes.byteLength,blob:new Blob([bytes],{type:mimeType})};
+        }
         var guidedTutorial = kgCreateGuidedTutorial({
-          getAudio: function(id) { return personalDataStore.tutorials.getAudio(id); },
+          getAudio: getTutorialAudio,
           personalRouteById: function(id) { return tutorialLibrary ? tutorialLibrary.routeById(id) : null; },
           canStart: function(route) {
             return !(tutorialRecorder && tutorialRecorder.active()) &&
@@ -5484,7 +5503,7 @@
           stopped:function(items) { return tutorialLibrary.recordingStopped(items); }
         });
         tutorialLibrary = kgCreateTutorialLibrary({
-          store: personalDataStore.tutorials, markup: contentMarkup,
+          store: personalDataStore.tutorials, getAudio:getTutorialAudio, markup: contentMarkup,
           model:tutorialEditorModel, recorder:tutorialRecorder, portable:window.kgTutorialPortable,
           canRecord:function() { return !tutorialPlaybackSnapshot().tutorialId; },
           version: document.querySelector('meta[name="application-version"]').content,

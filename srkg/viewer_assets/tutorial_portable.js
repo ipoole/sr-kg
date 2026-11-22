@@ -92,9 +92,9 @@ function kgCreateTutorialPortable(options) {
     value.steps.forEach(function(step) {
       keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate','audio'],'card');
       if (step.audio !== undefined) {
-        keys(step.audio,['assetId','duration','commentaryHash','actionsHash'],'voice reference');
+        keys(step.audio,['assetId','duration','commentaryHash','actionsHash','mimeType'],'voice reference');
         if (!['assetId','commentaryHash','actionsHash'].every(function(key) { return /^[a-f0-9]{64}$/.test(step.audio[key]); }) ||
-            !Number.isFinite(step.audio.duration) || step.audio.duration <= 0) { throw new Error('Invalid voice reference.'); }
+            (step.audio.mimeType !== undefined && !audioType(step.audio.mimeType)) || !Number.isFinite(step.audio.duration) || step.audio.duration <= 0) { throw new Error('Invalid voice reference.'); }
       }
       if (step.demonstrate !== undefined && typeof step.demonstrate !== 'boolean') { throw new Error('Invalid demonstration flag.'); }
       if (!identifier(step.step_id) || ids.has(step.step_id)) { throw new Error('Invalid or duplicate card ID.'); }
@@ -144,7 +144,7 @@ function kgCreateTutorialPortable(options) {
   }
   function requireTextOnly(records) {
     if (records.some(function(record) { return record.route.steps.some(function(step) { return Boolean(step.audio); }); })) {
-      throw new Error('Voice recordings are stored only in this browser. Audio export, backup and sync are not available yet.');
+      throw new Error('Voice recordings are stored only in this browser. This format is text-only. Use Export tutorial for a voiced ZIP. Audio backup and sync are not available yet.');
     }
   }
   function collectionDocument(records) { requireTextOnly(records); return {format:'physicskg-tutorial-library', schema_version:1, records:records}; }
@@ -182,6 +182,71 @@ function kgCreateTutorialPortable(options) {
     if (value.format !== 'physicskg-tutorial' || value.schema_version !== 1 || value.route_schema_version !== 1) { throw new Error('Unsupported tutorial definition.'); }
     var checked = record(value.tutorial,false); requireTextOnly([checked]); return checked;
   }
+  var bundleLimit = 200 * 1024 * 1024, clipLimit = 50 * 1024 * 1024;
+  function voiceCards(route) { return route.steps.filter(function(step) { return step.audio; }); }
+  function assetPath(id) { return 'audio/' + id; }
+  function audioType(type) {
+    return typeof type === 'string' && type.length <= 128 &&
+      /^audio\/[a-z0-9.+-]+(?:;[a-z0-9=., +_-]+)?$/i.test(type);
+  }
+  async function sha256(bytes) {
+    var result = await crypto.subtle.digest('SHA-256',bytes);
+    return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
+  }
+  async function exportBundle(source, getAudio) {
+    var checked = record(source,false), cards = voiceCards(checked.route);
+    if (!cards.length) { return {bytes:exportSingle(checked,false), count:0}; }
+    var files = {}, inventory = [], seen = new Set(), size = 0;
+    for (var step of cards) {
+      var id = step.audio.assetId;
+      if (seen.has(id)) { continue; }
+      var asset = await getAudio(id);
+      if (!asset || !asset.blob || !asset.blob.size) { throw new Error('Recording is missing for “' + step.title + '”.'); }
+      var blob = asset.blob;
+      if (!audioType(blob.type) || blob.size > clipLimit) { throw new Error('Invalid audio for “' + step.title + '”.'); }
+      size += blob.size;
+      if (size > bundleLimit) { throw new Error('Tutorial package exceeds 200 MB.'); }
+      var bytes = new Uint8Array(await blob.arrayBuffer());
+      if (await sha256(bytes) !== id) { throw new Error('Recording checksum failed for “' + step.title + '”.'); }
+      seen.add(id); files[assetPath(id)] = bytes;
+      inventory.push({id:id, mimeType:blob.type, byteLength:blob.size});
+    }
+    var header = {format:'physicskg-tutorial', schema_version:2, route_schema_version:2};
+    files['manifest.json'] = json(Object.assign({},header,{assets:inventory}));
+    files['tutorial.json'] = json(Object.assign({},header,{tutorial:checked}));
+    return {bytes:kgTextZip.encode(files,bundleLimit),count:cards.length};
+  }
+  async function importBundle(buffer) {
+    var bytes = new Uint8Array(buffer);
+    if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) { return {source:importSingle(bytes),assets:[]}; }
+    var files = kgTextZip.decode(bytes,true,bundleLimit);
+    var decoder = new TextDecoder('utf-8',{fatal:true});
+    var header = files['manifest.json'] && parse(decoder.decode(files['manifest.json']));
+    if (!header || header.schema_version === 1) { return {source:importSingle(bytes),assets:[]}; }
+    function current(value) {
+      return value.format === 'physicskg-tutorial' && value.schema_version === 2 && value.route_schema_version === 2;
+    }
+    if (!current(header) || !Array.isArray(header.assets) || !files['tutorial.json']) {
+      throw new Error('Unsupported voiced tutorial manifest.');
+    }
+    var definition = parse(decoder.decode(files['tutorial.json']));
+    if (!current(definition)) { throw new Error('Unsupported voiced tutorial definition.'); }
+    var source = record(definition.tutorial,false);
+    var required = new Set(voiceCards(source.route).map(function(step) { return step.audio.assetId; }));
+    if (Object.keys(files).length !== required.size + 2 || header.assets.length !== required.size) {
+      throw new Error('Tutorial audio inventory does not match its cards.');
+    }
+    var assets = [];
+    for (var entry of header.assets) {
+      keys(entry,['id','mimeType','byteLength'],'audio asset');
+      if (!required.delete(entry.id) || !audioType(entry.mimeType)) { throw new Error('Invalid tutorial audio inventory.'); }
+      var data = files[assetPath(entry.id)];
+      if (!data || !data.length || data.length > clipLimit || data.length !== entry.byteLength ||
+          await sha256(data) !== entry.id) { throw new Error('Missing or damaged tutorial audio.'); }
+      assets.push({id:entry.id,mimeType:entry.mimeType,byteLength:data.length,blob:new Blob([data],{type:entry.mimeType})});
+    }
+    return {source:source,assets:assets};
+  }
   function exportCollection(records) {
     var value = collectionDocument(records); collection(value);
     return kgTextZip.encode({'manifest.json':manifest('physicskg-tutorial-library'),'tutorials.json':json(value)});
@@ -200,7 +265,7 @@ function kgCreateTutorialPortable(options) {
     var result = await crypto.subtle.digest('SHA-256',bytes);
     return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
   }
-  return {requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
+  return {exportBundle:exportBundle, importBundle:importBundle, bundleLimit:bundleLimit, requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
     parse:parse, json:json, exportSingle:exportSingle, importSingle:importSingle,
     exportCollection:exportCollection, importCollection:importCollection, fingerprint:fingerprint, clone:clone};
 }

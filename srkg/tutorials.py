@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -23,6 +24,27 @@ class TutorialLoadError(ValueError):
     """Raised when authored tutorial data is not safe to load."""
 
 
+AUDIO_ID = re.compile(r"[a-f0-9]{64}")
+AUDIO_TYPE = re.compile(r"audio/[a-z0-9.+-]+(?:;[a-z0-9=., +_-]+)?", re.I)
+
+
+def validate_audio_reference(value, context, *, installed=False):
+    keys = {"assetId", "duration", "commentaryHash", "actionsHash"}
+    if not isinstance(value, dict) or set(value) not in (keys, keys | {"mimeType"}):
+        raise TutorialLoadError(f"{context}: invalid voice reference")
+    for name in ("assetId", "commentaryHash", "actionsHash"):
+        if not isinstance(value[name], str) or not AUDIO_ID.fullmatch(value[name]):
+            raise TutorialLoadError(f"{context}: invalid voice checksum")
+    duration = value["duration"]
+    if type(duration) not in (float, int) or not 0 < duration <= 1e9:
+        raise TutorialLoadError(f"{context}: invalid voice duration")
+    mime = value.get("mimeType")
+    if installed or "mimeType" in value:
+        if not isinstance(mime, str) or len(mime) > 128 or not AUDIO_TYPE.fullmatch(mime):
+            raise TutorialLoadError(f"{context}: invalid voice MIME type")
+    return dict(value)
+
+
 @dataclass(frozen=True)
 class TutorialStep:
     """One narrated semantic action in a tutorial route."""
@@ -35,6 +57,7 @@ class TutorialStep:
     pointer_target: str | None = None
     actions: tuple[dict[str, object], ...] = ()
     demonstrate: bool | None = None
+    audio: dict | None = None
 
     def to_viewer_data(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -52,6 +75,8 @@ class TutorialStep:
             data["pointer"] = {"target": self.pointer_target}
         if self.demonstrate is not None:
             data["demonstrate"] = self.demonstrate
+        if self.audio is not None:
+            data["audio"] = dict(self.audio)
         return data
 
 
@@ -67,6 +92,7 @@ class Tutorial:
     domains: tuple[str, ...]
     steps: tuple[TutorialStep, ...]
     author: str = ""
+    source: Path | None = None
 
     def to_viewer_data(self) -> dict[str, object]:
         data = {
@@ -185,6 +211,7 @@ def load_tutorials(
             domains=tuple(domains),
             steps=steps,
             author=_optional_author(mapping.get("author")),
+            source=path,
         )
         if external:
             build_warnings.extend(external)
@@ -252,7 +279,7 @@ def _load_steps(rows: list[object], *, context: str, concept_ids: set[str], modu
             pointer = _mapping(mapping['pointer'], f'{step_context}.pointer')
             pointer_target = _required_text(pointer, 'target', f'{step_context}.pointer')
             _validate_pointer_target(pointer_target, context=f'{step_context}.pointer target', concept_ids=concept_ids, module_ids=module_ids, block_ids=block_ids, references=references)
-        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_optional_text(mapping, 'commentary', step_context, maximum=100000), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate))
+        steps.append(TutorialStep(step_id=step_id, title=_required_text(mapping, 'title', step_context), commentary=_optional_text(mapping, 'commentary', step_context, maximum=100000), action=action, prepare=prepare, pointer_target=pointer_target, actions=tuple(actions), demonstrate=demonstrate, audio=validate_audio_reference(mapping['audio'], step_context, installed=True) if 'audio' in mapping else None))
     return tuple(steps)
 
 

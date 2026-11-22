@@ -10,6 +10,7 @@ The pipeline is the only ``srkg`` module intended to depend on all major stages.
 Lower-level modules should not import it.
 """
 
+import hashlib
 from dataclasses import replace
 from pathlib import Path
 
@@ -28,7 +29,7 @@ from srkg.module_layout import (
 )
 from srkg.module_colours import build_module_visuals_by_concept
 from srkg.render_pyvis import write_pyvis_html
-from srkg.tutorials import tutorials_for_domains
+from srkg.tutorials import AUDIO_ID, TutorialLoadError, tutorials_for_domains
 
 
 def generate_viewer_from_root(
@@ -269,6 +270,7 @@ def generate_viewer_from_kb(
         figure_data=kb.figure_data(),
         google_drive_client_id=google_drive_client_id,
     )
+    _write_tutorial_audio(kb.tutorials, output_file.parent / "tutorial-audio")
     output_file.write_text(html_text, encoding="utf-8")
 
     return (
@@ -278,3 +280,28 @@ def generate_viewer_from_kb(
         kb.paths.edge_key,
         len(kb.edge_key),
     )
+
+
+def _write_tutorial_audio(tutorials, output: Path) -> None:
+    assets = {}
+    for tutorial in tutorials:
+        for step in tutorial.steps:
+            if step.audio is None:
+                continue
+            identifier = step.audio["assetId"]
+            source = tutorial.source.parent / "tutorial-audio" / identifier
+            try:
+                payload = source.read_bytes()
+            except OSError as exc:
+                raise TutorialLoadError(f"Missing recording for {step.title}: {source}") from exc
+            if not payload or len(payload) > 50 * 1024 * 1024 or hashlib.sha256(payload).hexdigest() != identifier:
+                raise TutorialLoadError(f"Invalid recording for {step.title}: {source}")
+            assets[identifier] = payload
+    if assets:
+        output.mkdir(parents=True, exist_ok=True)
+        for identifier, payload in assets.items():
+            (output / identifier).write_bytes(payload)
+    if output.is_dir():
+        for old in output.iterdir():
+            if old.is_file() and AUDIO_ID.fullmatch(old.name) and old.name not in assets:
+                old.unlink()
