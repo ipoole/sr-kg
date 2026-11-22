@@ -20,7 +20,7 @@ def main():
     args = parser.parse_args()
     try:
         target = install_tutorial(args.package, args.data_root, args.tutorial_id,
-                                  replace=args.replace, domains=args.domains, dry_run=args.dry_run)
+                                  replace=args.replace, domains=args.domains, dry_run=args.dry_run, report=print)
     except (OSError, TutorialLoadError) as error:
         parser.exit(1, str(error) + "\n")
     print(("Validated; would update " if args.dry_run else "Installed into ") + str(target))

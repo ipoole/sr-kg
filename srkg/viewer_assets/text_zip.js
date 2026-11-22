@@ -27,11 +27,11 @@
     return result;
   }
 
-  function makeZip(files) {
+  function makeZip(files, byteLimit) {
     if (Object.keys(files).length > 1000) { throw new Error('Archive contains too many files'); }
     var encoder = new TextEncoder(), locals = [], centrals = [], offset = 0, count = 0;
     Object.keys(files).forEach(function(name) {
-      var nameBytes = encoder.encode(name), data = encoder.encode(files[name]);
+      var nameBytes = encoder.encode(name), data = typeof files[name] === "string" ? encoder.encode(files[name]) : files[name];
       var crc = crc32(data), size = data.length;
       var local = new Uint8Array([
         0x50,0x4b,0x03,0x04].concat(u16(20),u16(0x0800),u16(0),u16(0),u16(0),
@@ -49,13 +49,13 @@
     var end = new Uint8Array([
       0x50,0x4b,0x05,0x06].concat(u16(0),u16(0),u16(count),u16(count),
         u32(centralBytes.length),u32(offset),u16(0)));
-    if (offset + centralBytes.length + end.length > 20 * 1024 * 1024) { throw new Error('Archive exceeds 20 MB'); }
+    if (offset + centralBytes.length + end.length > (byteLimit || 20 * 1024 * 1024)) { throw new Error('Archive exceeds the size limit'); }
     return join(locals.concat([centralBytes, end]));
   }
 
-  function readZip(buffer) {
+  function readZip(buffer, binary, byteLimit) {
     var bytes = new Uint8Array(buffer);
-    if (bytes.length > 20 * 1024 * 1024) { throw new Error('Archive exceeds 20 MB'); }
+    if (bytes.length > (byteLimit || 20 * 1024 * 1024)) { throw new Error('Archive exceeds the size limit'); }
     var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     function d16(at) { return view.getUint16(at, true); }
     function d32(at) { return view.getUint32(at, true); }
@@ -86,7 +86,7 @@
           d16(localOffset + 8) !== method || d32(localOffset + 18) !== size || d32(cursor + 20) !== size) {
         throw new Error('ZIP directory does not match file data');
       }
-      files[name] = decoder.decode(data);
+      files[name] = binary ? data : decoder.decode(data);
       cursor += 46 + nameLength + extraLength + commentLength;
     }
     return files;

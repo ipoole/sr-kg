@@ -17,7 +17,6 @@ function kgCreateTutorialLibrary(options) {
   }
   function updatePlay() {
     var errors = editing ? problems(editing.route) : [];
-    element("editor_export").disabled = element("editor_json").disabled = busy;
     var canRecord = !options.canRecord || options.canRecord();
     element("editor_record").disabled = busy || !editing || !editing.route.steps.length || !canRecord;
     element("editor_record").title = canRecord ? '' : 'Exit the playing tutorial before recording.';
@@ -241,7 +240,16 @@ function kgCreateTutorialLibrary(options) {
     try {
       var basedOn = route ? {tutorialId: route.tutorial_id, version: options.version} : null;
       if (route) { route = clone(route); route.title += " (copy)"; }
-      var record = await store.create(route, basedOn);
+      var assets = [];
+      if (route && !records.has(basedOn.tutorialId)) {
+        var ids = new Set(route.steps.filter(function(step) { return step.audio; }).map(function(step) { return step.audio.assetId; }));
+        for (var id of ids) {
+          var asset = await options.getAudio(id);
+          if (!asset) { throw new Error('A built-in recording is missing.'); }
+          assets.push(asset);
+        }
+      }
+      var record = await store.create(route, basedOn, null, assets);
       records.set(record.id, record); renderList(); openEditor(record);
     } catch (error) { element("library_status").textContent = "Could not create tutorial: " + error.message; }
     finally { element("new").disabled = element("intro_copy").disabled = false; }
@@ -297,38 +305,40 @@ function kgCreateTutorialLibrary(options) {
     link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove();
     setTimeout(function() { URL.revokeObjectURL(url); },1000);
   }
-  async function exportTutorial(asJson) {
+  async function exportTutorial() {
+    var button = element('intro_export');
+    if (editing || button.disabled) { return; }
+    button.disabled = true;
+    var status = element('intro_status');
     try {
-      var saveError = '';
-      try { await flush(); } catch (error) { if (!editing) { throw error; } saveError = ' Local save still needs Retry.'; }
-      var source = editing || records.get(selected());
+      var id = selected(), source = records.get(id);
       if (!source) {
-        var route = options.routeById(selected()), now = new Date().toISOString();
+        var route = options.routeById(id), now = new Date().toISOString();
         source = {id:route.tutorial_id,route:route,basedOn:{tutorialId:route.tutorial_id,version:options.version},
           revisionId:'builtin:' + options.version,createdAt:now,updatedAt:now,deletedAt:''};
       }
-      var name = (source.route.title || 'tutorial').replace(/[^a-zA-Z0-9_-]+/g,'-').slice(0,80);
-      download(portable.exportSingle(source,asJson),name + (asJson ? '.json' : '.zip'),asJson ? 'application/json' : 'application/zip');
-      if (editing) { element('editor_validation').textContent = 'Tutorial exported.' + saveError; }
-      else { element('library_status').textContent = 'Tutorial exported.'; }
-    } catch (error) {
-      element(editing ? 'editor_validation' : 'library_status').textContent = 'Could not export: ' + error.message;
-    }
+      status.textContent = 'Preparing tutorial download…';
+      var bundle = await portable.exportBundle(source,options.getAudio);
+      var name = (source.route.title || 'tutorial').replace(/[^a-zA-Z0-9_-]+/g,'-').slice(0,80) + '.zip';
+      download(bundle.bytes,name,'application/zip');
+      status.textContent = 'Downloaded ' + name + ' (' + bundle.count + ' recorded cards).';
+    } catch (error) { status.textContent = 'Could not export: ' + error.message; }
+    finally { button.disabled = false; }
   }
-  element('intro_export').addEventListener('click',function() { exportTutorial(false); });
-  element('editor_export').addEventListener('click',function() { exportTutorial(false); });
-  element('editor_json').addEventListener('click',function() { exportTutorial(true); });
+  element('intro_export').addEventListener('click',exportTutorial);
   element('import').addEventListener('click',function() { element('import_file').click(); });
   var pendingImport = null;
   element('import_file').addEventListener('change',async function(event) {
     var file = event.target.files && event.target.files[0];
     if (!file) { return; }
     try {
-      if (file.size > 10 * 1024 * 1024) { throw new Error('Tutorial package exceeds 10 MB.'); }
-      var source = portable.importSingle(await file.arrayBuffer()), existing = await store.get(source.id);
-      pendingImport = {source:source,revision:existing ? existing.revisionId : null};
+      if (file.size > portable.bundleLimit) { throw new Error('Tutorial package exceeds 200 MB.'); }
+      var bundle = await portable.importBundle(await file.arrayBuffer());
+      var source = bundle.source, existing = await store.get(source.id);
+      pendingImport = {source:source,assets:bundle.assets,revision:existing ? existing.revisionId : null};
       element('import_summary').textContent = (source.route.title || 'Untitled tutorial') + ' · ' + source.route.steps.length +
-        ' cards. ' + problems(source.route).join(' ');
+        ' cards, ' + source.route.steps.filter(function(step) { return step.audio; }).length +
+        ' with recordings. ' + problems(source.route).join(' ');
       document.querySelector('input[name="kg_tutorial_import_mode"][value="copy"]').checked = true;
       element('import_replace').disabled = !existing;
       element('import_status').textContent = '';
@@ -359,9 +369,9 @@ function kgCreateTutorialLibrary(options) {
           updatedAt:now,deletedAt:'',revisionId:'revision:' + model.id()});
         record.route.tutorial_id = existing.id;
         var revised = snapshot.records.filter(function(item) { return item.id !== existing.id; }).concat([record,previous]);
-        await store.commitSnapshot(revised,null,snapshot.records,'import');
+        await store.commitSnapshot(revised,null,snapshot.records,'import',pendingImport.assets);
       } else {
-        record = await store.create(source.route,source.basedOn || {tutorialId:source.id,version:'imported'});
+        record = await store.create(source.route,source.basedOn || {tutorialId:source.id,version:'imported'},null,pendingImport.assets);
       }
       await refresh(); pendingImport = null; element('import_dialog').close(); openEditor(record);
       element('library_status').textContent = 'Tutorial imported.';
