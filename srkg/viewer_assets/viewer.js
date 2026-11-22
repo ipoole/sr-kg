@@ -1178,6 +1178,7 @@
           shell.appendChild(document.getElementById("kg_history_controls"));
           graphPane.appendChild(graphSurface);
           graphSurface.appendChild(graphContainer);
+          graphSurface.appendChild(document.getElementById("kg_graph_status"));
           if (tutorialNarration) {
             document.body.appendChild(tutorialNarration);
           }
@@ -3898,11 +3899,19 @@
           setResponsiveOptionLabels("kg_view_select", {
             both: ["Both", "Both"], graph: ["Graph", "Graph"], details: ["Details", "Details"]
           }, compact);
-          var expandSelected = document.getElementById("kg_expand_selected_module");
-          if (expandSelected) {
-            expandSelected.textContent = compact
-              ? "Expand module"
-              : "Expand selected concept's module";
+        }
+
+        function setExpandMenuOpen(open) {
+          document.getElementById("kg_expand_menu_toggle").setAttribute("aria-expanded", String(open));
+        }
+
+        function closeExpandMenu(restoreFocus) {
+          var toggle = document.getElementById("kg_expand_menu_toggle");
+          if (toggle.getAttribute("aria-expanded") !== "true") { return; }
+          setExpandMenuOpen(false);
+          if (restoreFocus) {
+            var target = toggle.getClientRects().length ? toggle : document.getElementById("kg_fit_apply");
+            target.focus({preventScroll: true});
           }
         }
 
@@ -3949,7 +3958,7 @@
             var contextCanExpand = representedCount > 0;
             expandSelected.hidden = !selectedConceptIsFolded;
             expandContext.hidden = !contextCanExpand;
-            expandContext.textContent = "Expand " + String(representedCount) + " folded";
+            expandContext.textContent = "Expand context (" + String(representedCount) + ")";
             var expandContextLabel =
               "Expand " + String(representedCount) + " context concept" +
               (representedCount === 1 ? "" : "s") + " represented by " +
@@ -3957,7 +3966,12 @@
               (representedModuleCount === 1 ? "" : "s");
             expandContext.setAttribute("aria-label", expandContextLabel);
             expandContext.title = expandContextLabel;
+            var hadActionFocus = representationActions.contains(document.activeElement);
             representationActions.hidden = !selectedConceptIsFolded && !contextCanExpand;
+            if (representationActions.hidden) {
+              closeExpandMenu(false);
+              if (hadActionFocus) { document.getElementById("kg_fit_apply").focus({preventScroll: true}); }
+            }
             representationActions.setAttribute(
               "data-selected-module-id",
               selectedConceptIsFolded ? selectedConceptModule : ""
@@ -3976,7 +3990,6 @@
           graphSelection.textContent = selectionLabel;
           graphSelection.title = "Open details for " + selectionLabel;
           graphSelection.setAttribute("aria-label", graphSelection.title);
-          summary.parentElement.setAttribute("data-context-can-expand", representedCount > 0 ? "true" : "false");
           var scopeLabel = viewerState.displayScope === DisplayScope.CONTEXT
             ? "Context only"
             : viewerState.displayScope === DisplayScope.OVERVIEW ? "Overview" : "Context + background";
@@ -6320,7 +6333,23 @@
           document.getElementById("kg_custom_context").hidden = true;
           document.getElementById("kg_context_preset_select").value = viewerState.contextRule.preset;
         });
+        document.getElementById("kg_expand_menu_toggle").addEventListener("click", function() {
+          setExpandMenuOpen(this.getAttribute("aria-expanded") !== "true");
+        });
+        document.addEventListener("click", function(event) {
+          if (!document.getElementById("kg_representation_actions").contains(event.target)) {
+            closeExpandMenu(false);
+          }
+        });
+        document.addEventListener("keydown", function(event) {
+          if (event.key === "Escape" &&
+              document.getElementById("kg_expand_menu_toggle").getAttribute("aria-expanded") === "true") {
+            closeExpandMenu(true);
+            event.preventDefault();
+          }
+        });
         document.getElementById("kg_expand_selected_module").addEventListener("click", function() {
+          closeExpandMenu(true);
           var actions = document.getElementById("kg_representation_actions");
           var moduleId = actions.getAttribute("data-selected-module-id");
           if (moduleId && getModule(moduleId)) {
@@ -6332,6 +6361,7 @@
           }
         });
         document.getElementById("kg_expand_context_modules").addEventListener("click", function() {
+          closeExpandMenu(true);
           executeViewerCommand({command: "expand-context-modules"}, {origin: "user"});
         });
         document.getElementById("kg_graph_selection").addEventListener("click", function() {

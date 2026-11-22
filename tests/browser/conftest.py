@@ -84,6 +84,12 @@ def set_selected_module_representation(page, state: str) -> None:
     }""", state)
 
 
+def open_expand_actions(page) -> None:
+    toggle = page.locator("#kg_expand_menu_toggle")
+    if toggle.is_visible() and toggle.get_attribute("aria-expanded") == "false":
+        toggle.click()
+
+
 def _write_browser_fixture(
     tmp_path: Path,
     *,

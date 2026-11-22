@@ -197,8 +197,7 @@ function kgCreateTutorialTargets(options) {
       "view": ["kg_view_select", "Workspace view"],
       search: ["kg_search_toggle", "Search"],
       "search-input": ["kg_search", "Search query"],
-      tools: ["kg_controls_toggle", "Tools"],
-      "expand-context": ["kg_expand_context_modules", "Expand context modules"]
+      tools: ["kg_controls_toggle", "Tools"]
     };
     if (target === "narration") {
       return tutorialElementTarget(
@@ -214,6 +213,12 @@ function kgCreateTutorialTargets(options) {
         foldControl,
         foldControl ? foldControl.getAttribute("aria-label") : "Module representation"
       );
+    }
+    if (target === "control:expand-context") {
+      var expandContext = document.getElementById("kg_expand_context_modules");
+      if (!expandContext || expandContext.hidden) { return null; }
+      return tutorialElementTarget(expandContext, "Expand context modules") ||
+        tutorialElementTarget(document.getElementById("kg_expand_menu_toggle"), "Expand context modules");
     }
     if (target.indexOf("control:") === 0) {
       var control = controlTargets[target.slice("control:".length)];

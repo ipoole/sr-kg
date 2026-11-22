@@ -137,8 +137,8 @@ def test_phone_expanded_tutorial_module_stays_above_narration(mobile_repo_browse
       const bottom = network.canvasToDOM({x: bounds.x, y: bounds.bottom}).y + canvas.top;
       const top = network.canvasToDOM({x: bounds.x, y: bounds.top}).y + canvas.top;
       const card = document.querySelector('#kg_tutorial_narration').getBoundingClientRect();
-      const controls = document.querySelector('#kg_graph_context_panel').getBoundingClientRect();
-      return bottom <= card.top && top >= controls.bottom;
+      const status = document.querySelector('#kg_graph_status').getBoundingClientRect();
+      return bottom <= card.top && top >= status.bottom;
     }""")
 
 

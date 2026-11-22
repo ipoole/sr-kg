@@ -30,7 +30,7 @@ def test_selection_does_not_leave_a_stray_status_below_version_history(browser_g
 
 
 @pytest.mark.parametrize('width', [360, 430])
-def test_phone_graph_only_selection_shares_context_row(browser_graph, width):
+def test_phone_graph_only_selection_shares_floating_status(browser_graph, width):
     page = browser_graph.page
     page.set_viewport_size({'width': width, 'height': 932})
     browser_graph.click_concept('2.1')
@@ -41,12 +41,12 @@ def test_phone_graph_only_selection_shares_context_row(browser_graph, width):
     assert title.inner_text() == page.locator('#info_panel h2').inner_text()
     assert title.bounding_box()['height'] < 24
     page.evaluate("document.getElementById('kg_modules_collapse_all').click()")
-    expand = page.locator('#kg_expand_context_modules')
-    assert expand.is_visible()
-    assert not page.locator('#kg_context_summary').is_visible()
-    row = page.locator('.kg-context-meta-row').bounding_box()
-    assert row['height'] < 32
-    assert title.bounding_box()['x'] + title.bounding_box()['width'] <= expand.bounding_box()['x']
+    assert page.locator('#kg_expand_menu_toggle').is_visible()
+    status = page.locator('#kg_graph_surface #kg_context_summary')
+    assert status.is_visible()
+    row = page.locator('#kg_graph_status').bounding_box()
+    assert row['height'] < 28
+    assert title.bounding_box()['x'] + title.bounding_box()['width'] <= status.bounding_box()['x']
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
     before = page.evaluate('kgViewerStateSnapshot()')
     if page.locator('#kg_controls').is_visible():

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import set_selected_module_representation
+from conftest import open_expand_actions, set_selected_module_representation
 
 
 def _visible_content_block_kinds(page):
@@ -355,6 +355,7 @@ def test_selecting_member_concept_keeps_selected_module_folded(browser_graph):
     assert "2.1 Beta" in page.locator("#kg_context_summary").get_attribute("aria-label")
 
     page.evaluate("() => kgToggleControls()")
+    open_expand_actions(page)
     page.locator("#kg_expand_selected_module").click()
     assert page.evaluate("""moduleNodeId => nodes.get(moduleNodeId) === null""", module_node_id)
     assert page.evaluate("""() => nodes.get("2.1").hidden === false""")
@@ -374,8 +375,9 @@ def test_expand_context_is_offered_for_context_represented_by_other_folded_modul
 
     assert page.locator("#kg_expand_selected_module").is_hidden()
     context_action = page.locator("#kg_expand_context_modules")
+    open_expand_actions(page)
     assert context_action.is_visible()
-    assert context_action.inner_text() == "Expand 1 folded"
+    assert context_action.inner_text() == "Expand context (1)"
     assert context_action.get_attribute("aria-label") == (
         "Expand 1 context concept represented by 1 folded module"
     )
@@ -398,8 +400,9 @@ def test_expand_context_is_offered_for_selected_folded_module(browser_graph):
 
     context_action = page.locator("#kg_expand_context_modules")
     assert page.locator("#kg_expand_selected_module").is_hidden()
+    open_expand_actions(page)
     assert context_action.is_visible()
-    assert context_action.inner_text() == "Expand 3 folded"
+    assert context_action.inner_text() == "Expand context (3)"
 
     context_action.click()
     assert page.evaluate(
@@ -1639,28 +1642,62 @@ def test_phone_context_controls_and_compact_summary_use_one_row(browser_graph):
 
 
 @pytest.mark.browser
-def test_phone_context_status_and_representation_actions_share_one_row(browser_graph):
+@pytest.mark.parametrize(
+    ("width", "split_key"),
+    [(320, None), (390, None), (960, "Home"), (1100, "ArrowLeft"), (1280, None)],
+)
+def test_expand_actions_share_fit_row_and_status_floats(browser_graph, width, split_key):
     page = browser_graph.page
+    page.set_viewport_size({"width": width, "height": 844})
+    page.locator("#kg_view_select").select_option("both" if split_key else "graph")
+    if split_key:
+        page.locator("#kg_pane_splitter").press(split_key)
     page.locator("#kg_context_preset_select").select_option("foundations")
-    page.set_viewport_size({"width": 390, "height": 800})
     browser_graph.click_concept("2.1")
-    page.locator(
-        '.kg-module-corner-control[data-module-id="test.m02_applications"]'
-    ).evaluate("element => element.click()")
+    if page.locator("#kg_controls").is_visible():
+        page.locator("#kg_controls_toggle").click()
+    page.locator('.kg-module-corner-control[data-module-id="test.m02_applications"]').evaluate(
+        "element => element.click()"
+    )
 
-    summary = page.locator("#kg_context_summary")
-    selected_action = page.locator("#kg_expand_selected_module")
-    context_action = page.locator("#kg_expand_context_modules")
-    selected_action.wait_for(state="visible")
-    context_action.wait_for(state="visible")
-    boxes = [item.bounding_box() for item in (summary, selected_action, context_action)]
+    toolbar = page.locator("#kg_graph_context_panel")
+    fit = page.locator("#kg_fit_apply")
+    status = page.locator("#kg_graph_surface #kg_context_summary")
+    toggle = page.locator("#kg_expand_menu_toggle")
+    selected = page.locator("#kg_expand_selected_module")
+    context = page.locator("#kg_expand_context_modules")
+    assert status.inner_text().endswith("context concepts")
+    assert status.evaluate("el => getComputedStyle(el).pointerEvents") == "none"
+    assert status.bounding_box()["y"] > toolbar.bounding_box()["y"] + toolbar.bounding_box()["height"]
+    fit_box = fit.bounding_box()
+    toolbar_box = toolbar.bounding_box()
+    action_box = (toggle if width < 1280 else selected).bounding_box()
+    assert action_box["x"] >= fit_box["x"] + fit_box["width"]
+    assert abs((action_box["y"] + action_box["height"] / 2) -
+               (fit_box["y"] + fit_box["height"] / 2)) <= 3
+    assert action_box["x"] + action_box["width"] <= toolbar.bounding_box()["x"] + toolbar.bounding_box()["width"]
 
-    assert summary.inner_text().endswith("context concepts")
-    assert "·" not in summary.inner_text()
-    assert selected_action.inner_text() == "Expand module"
-    assert context_action.inner_text().startswith("Expand ")
-    assert context_action.inner_text().endswith(" folded")
-    assert max(box["y"] for box in boxes) - min(box["y"] for box in boxes) <= 6
+    if width < 1280:
+        assert not selected.is_visible()
+        assert not context.is_visible()
+        toggle.press("Enter")
+        assert toggle.get_attribute("aria-expanded") == "true"
+        assert selected.is_visible() and context.is_visible()
+        assert selected.bounding_box()["y"] >= fit_box["y"] + fit_box["height"]
+        assert toolbar.bounding_box()["height"] == toolbar_box["height"]
+        selected.focus()
+        page.keyboard.press("Escape")
+        assert not selected.is_visible()
+        assert toggle.evaluate("el => el === document.activeElement")
+        open_expand_actions(page)
+    else:
+        assert not toggle.is_visible()
+        assert selected.is_visible() and context.is_visible()
+    assert selected.inner_text() == "Expand selected module"
+    assert context.inner_text().startswith("Expand context (")
+    assert context.get_attribute("aria-label").startswith("Expand ")
+    selected.click()
+    assert page.evaluate("() => nodes.get('module::test.m02_applications') === null")
 
 
 @pytest.mark.browser

@@ -172,6 +172,11 @@ a layout that keeps Contents closed initially. Selecting an entry closes the
 list before focusing the section and measuring its scroll offset. Concept block
 fold commands live inside Contents. Use a module’s graph corner control to fold or expand it.
 
+Graph expansion actions share the Fit context toolbar row. Narrow graph panes
+group the available actions in an Expand disclosure. The context count and the
+phone shortcut to Details float over the top edge of the graph canvas, outside
+the toolbar layout. Graph fitting takes their overlay into account.
+
 `viewer.js` is the composition root and application coordinator. It retains
 selection/navigation, module projection and footprint coordination, search,
 responsive workspace controls, semantic commands and event wiring. It supplies

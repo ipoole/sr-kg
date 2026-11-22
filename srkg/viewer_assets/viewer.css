@@ -289,6 +289,7 @@
         border-radius: 9px;
         box-shadow: 0 2px 7px rgba(15, 23, 42, 0.12);
         box-sizing: border-box;
+        container: graph-toolbar / inline-size;
         font: 13px Arial, sans-serif;
         flex: 0 0 auto;
         margin: 10px 10px 0;
@@ -321,44 +322,45 @@
         cursor: default;
         opacity: 0.58;
       }
+      .kg-graph-status {
+        align-items: center;
+        display: flex;
+        gap: 4px;
+        justify-content: space-between;
+        left: 6px;
+        pointer-events: none;
+        position: absolute;
+        right: 6px;
+        top: 4px;
+        z-index: 7;
+      }
+      .kg-graph-status > :not([hidden]) {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #dbe2ea;
+        border-radius: 6px;
+        font: 12px/16px Arial, sans-serif;
+        padding: 2px 6px;
+        white-space: nowrap;
+      }
       .kg-context-summary {
         color: #475569;
-        flex: 1 1 auto;
-        font-size: 12px;
-        line-height: 1.35;
-        min-width: 0;
+        margin-left: auto;
       }
       .kg-release-history { list-style: none; margin: 0.5em 0; padding: 0; }
       .kg-release-history li + li { border-top: 1px solid #d8dfe7; padding-top: 0.6em; }
       .kg-release-history time { color: #596579; font-size: 0.9em; margin-left: 0.4em; }
       .kg-release-history p { margin: 0.25em 0 0.7em; }
-      .kg-context-meta-row {
-        align-items: center;
-        display: flex;
-        gap: 6px;
-        margin-top: 5px;
-      }
       #kg_graph_selection { display: none; }
       @media (max-width: 850px) {
         body.kg-details-hidden #kg_graph_selection:not([hidden]) {
-          background: transparent;
-          border: 0;
           color: #174ea6;
           cursor: pointer;
           display: block;
-          flex: 1 1 0;
-          font: inherit;
           font-weight: 700;
           min-width: 0;
           overflow: hidden;
-          padding: 0;
-          text-align: left;
+          pointer-events: auto;
           text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        body.kg-details-hidden #kg_context_summary { flex: 0 0 auto; }
-        body.kg-details-hidden .kg-context-meta-row[data-context-can-expand="true"] #kg_context_summary {
-          display: none;
         }
       }
       .kg-context-notice {
@@ -379,7 +381,7 @@
         margin: 0;
         position: absolute;
         right: 8px;
-        top: calc(100% + 4px);
+        top: calc(100% + 28px);
         z-index: 3;
       }
       .kg-context-notice[data-kind="context-contracted"] {
@@ -393,21 +395,23 @@
         padding: 0;
         pointer-events: none;
         position: absolute;
-        top: calc(100% + 4px);
+        top: calc(100% + 28px);
         z-index: 3;
       }
       .kg-representation-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin: 0;
+        flex: 0 0 auto;
+        position: relative;
       }
-      .kg-representation-actions[hidden] {
+      #kg_expand_menu_toggle { display: none; }
+      .kg-expand-choices {
+        display: flex;
+        gap: 4px;
+      }
+      .kg-representation-actions[hidden],
+      .kg-expand-choices > [hidden] {
         display: none;
       }
-      .kg-representation-actions button {
-        font: inherit;
-      }
+      .kg-expand-choices button { white-space: nowrap; }
       .kg-custom-context {
         border-top: 1px solid #dbe2ea;
         margin-top: 7px;
@@ -3649,27 +3653,6 @@
         #kg_context_preset_select { width: 108px; }
         #kg_context_depth_select { width: 68px; }
         #kg_fit_apply { white-space: nowrap; }
-        .kg-context-summary {
-          font-size: 10.5px;
-          line-height: 1.2;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .kg-context-meta-row {
-          gap: 4px;
-          margin-top: 3px;
-        }
-        .kg-representation-actions {
-          flex: 0 0 auto;
-          flex-wrap: nowrap;
-          gap: 3px;
-        }
-        .kg-representation-actions button {
-          font-size: 10.5px;
-          padding: 3px 4px;
-          white-space: nowrap;
-        }
         .kg-context-notice[data-kind="layout-locked"] {
           font-size: 11px;
           padding: 4px 6px;
@@ -3991,3 +3974,55 @@ details[open] > summary > .kg-content-preview { display: none; }
 /* Keep the ordinary workflow visible while advanced controls scroll separately. */
 #kg_tutorial_editor_advanced { margin: 0; padding: 0; border: 0; max-height: 40vh; max-height: 40dvh; overflow: auto; }
 #kg_tutorial_editor_advanced > summary { font-size: 0.875em; color: #526577; }
+
+
+/* Compact actions depend on the graph pane width, including in a desktop split. */
+@container graph-toolbar (max-width: 620px) {
+    #kg_expand_menu_toggle { display: inline-block; }
+    #kg_expand_menu_toggle[aria-expanded="false"] + .kg-expand-choices { display: none; }
+    .kg-expand-choices {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.16);
+        flex-direction: column;
+        padding: 4px;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 4;
+    }
+}
+@container graph-toolbar (max-width: 520px) {
+    .kg-graph-context-controls {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+    .kg-context-control-group {
+        flex-wrap: nowrap;
+        gap: 3px;
+        min-width: 0;
+        padding: 3px 4px;
+    }
+    .kg-graph-context-controls .kg-canvas-select,
+    .kg-graph-context-controls .kg-shell-button {
+        font-size: 11px;
+        min-height: 25px;
+        padding: 3px 4px;
+    }
+    .kg-graph-context-controls .kg-canvas-select { padding-right: 16px; }
+    .kg-graph-context-controls label:not(.kg-group-label) { display: none; }
+    #kg_context_preset_select { width: 104px; }
+    #kg_context_depth_select { width: 64px; }
+    #kg_fit_apply { white-space: nowrap; }
+    .kg-graph-context-controls:has(#kg_custom_context_edit:not([hidden])) { flex-wrap: wrap; }
+}
+@container graph-toolbar (max-width: 350px) {
+    .kg-graph-context-controls label.kg-group-label { display: none; }
+    #kg_context_preset_select { width: clamp(64px, 32cqi, 96px); }
+    #kg_context_depth_select { width: clamp(40px, 18cqi, 58px); }
+    .kg-graph-context-controls .kg-canvas-select,
+    .kg-graph-context-controls .kg-shell-button {
+        font-size: 10px;
+    }
+}
