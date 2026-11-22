@@ -136,12 +136,14 @@ def test_voiced_zip_installs_into_moving_clocks_catalogue_and_builds(installatio
 
     write_clip(audio)
     before = moving.source.read_bytes()
+    asset_directory = moving.source.parent / "tutorial-audio"
+    before_audio = {path.name: path.read_bytes() for path in asset_directory.glob("*")}
     log = []
     assert install_tutorial(bundle, data, moving.tutorial_id, replace=True, dry_run=True,
                             report=log.append) == moving.source
     assert sum(line.endswith("— voice") for line in log) == 2
     assert moving.source.read_bytes() == before
-    assert not (moving.source.parent / "tutorial-audio").exists()
+    assert {path.name: path.read_bytes() for path in asset_directory.glob("*")} == before_audio
     write_clip(audio[:-1] + b"x")
     with pytest.raises(TutorialLoadError, match="checksum"):
         install_tutorial(bundle, data, moving.tutorial_id, replace=True)
