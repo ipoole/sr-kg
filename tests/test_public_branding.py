@@ -76,8 +76,8 @@ def test_privacy_policy_discloses_personal_and_google_data_handling():
     normalised_policy = " ".join(policy.split())
 
     assert (
-        "PhysicsKG does not operate an application server, and personal data "
-        "is not accessible to the developer through PhysicsKG."
+        "PhysicsKG does not operate an application server, and your personal study "
+        "records are not accessible to the developer through PhysicsKG."
     ) in normalised_policy
     for disclosure in (
         "PhysicsKG personal data.zip",
