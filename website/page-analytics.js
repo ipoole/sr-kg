@@ -38,9 +38,50 @@
     });
   }
 
-  // Activation and a visitor preference interface require a separate release.
+  // Enable in a coordinated release after the Plausible site is ready.
   const enabled = false;
-  const allowed = false;
+  if (!enabled || origin !== production ||
+      (!paths.has(pathname) && pathname !== '/privacy.html')) return;
+
+  const preferenceKey = 'srkg.websiteAnalytics.v1';
+  const gpc = window.navigator.globalPrivacyControl === true;
+  let allowed = false;
+  try {
+    allowed = window.localStorage.getItem(preferenceKey) === 'allow';
+  } catch {
+    // An unavailable preference store defaults to no collection.
+  }
+
+  if (pathname === '/privacy.html') {
+    const settings = window.document.getElementById('website-analytics-settings');
+    const control = window.document.getElementById('website-analytics-allow');
+    const status = window.document.getElementById('website-analytics-status');
+    settings.hidden = false;
+    control.checked = allowed && !gpc;
+    control.disabled = gpc;
+    if (gpc) status.textContent = 'Global Privacy Control keeps analytics off.';
+
+    control.addEventListener('change', () => {
+      try {
+        if (control.checked) window.localStorage.setItem(preferenceKey, 'allow');
+        else window.localStorage.removeItem(preferenceKey);
+        allowed = control.checked;
+        status.textContent = allowed ? 'Analytics allowed on this browser.' : 'Analytics off.';
+      } catch {
+        control.checked = allowed;
+        status.textContent = 'This browser could not save the change.';
+      }
+    });
+    window.addEventListener('storage', (event) => {
+      if ((event.key === preferenceKey || event.key === null) && !gpc) {
+        allowed = event.newValue === 'allow';
+        control.checked = allowed;
+        status.textContent = '';
+      }
+    });
+    return;
+  }
+
   window.recordPhysicsKGPageview({
     channel: paths.has(pathname) ? 'release' : 'preview',
     enabled,

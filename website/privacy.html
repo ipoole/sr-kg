@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="How PhysicsKG handles browser-local study records and optional Google Drive synchronisation.">
+  <meta name="description" content="How PhysicsKG handles study records, optional Google Drive sync and optional website analytics.">
   <title>Privacy — PhysicsKG</title>
   <link rel="canonical" href="https://physicskg.org/privacy.html">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">
@@ -32,7 +32,7 @@
       PhysicsKG is local-first. Your notes and study records stay in your browser
       unless you explicitly export them or choose to synchronise them with your
       own Google Drive. PhysicsKG does not operate an application server, and
-      personal data is not accessible to the developer through PhysicsKG.
+      your personal study records are not accessible to the developer through PhysicsKG.
     </p>
 
     <h2>What is stored</h2>
@@ -66,7 +66,7 @@
 
     <h2>Use and sharing</h2>
     <p>
-      Personal data is used only to restore your work, display your progress,
+      Personal study data is used only to restore your work, display your progress,
       import or export it, and optionally synchronise it with Google Drive. It is
       not sold, used for advertising or profiling, or shared with other users.
       Google processes Drive and authorisation data under your Google account and
@@ -86,6 +86,30 @@
       <li>Delete <strong>PhysicsKG personal data.zip</strong> to remove the Drive copy.</li>
       <li>Revoke PhysicsKG in your Google Account permissions.</li>
     </ul>
+
+    <section id="website-analytics-settings" hidden>
+      <h2>Optional website analytics</h2>
+      <p>
+        If you allow analytics, PhysicsKG sends Plausible a pageview when you open
+        the home page, atlas or user guide. These counts help us understand how
+        often those pages are used. The event includes the fixed page address.
+        PhysicsKG omits query strings, fragments, referrers and study activity.
+      </p>
+      <p>
+        Plausible uses your IP address and browser information to derive an
+        approximate location, browser and device details, and a daily visitor
+        identifier. It says it stores event and session records in the EU and
+        does not store raw IP addresses or browser identification strings.
+        See the <a href="https://plausible.io/data-policy">Plausible data policy</a>.
+      </p>
+      <p>
+        Analytics starts off. PhysicsKG stores your choice in this browser
+        and honours Global Privacy Control. You can turn analytics off here
+        at any time. This stops future pageviews being sent.
+      </p>
+      <label><input id="website-analytics-allow" type="checkbox"> Allow website analytics</label>
+      <p id="website-analytics-status" role="status"></p>
+    </section>
 
     <h2>Other network access</h2>
     <p>
@@ -107,5 +131,6 @@
     <span>PhysicsKG — An Atlas of Physics Knowledge</span>
     <span><a href="acknowledgments.html">Acknowledgments</a> · <a href="index.html">Home</a> · <a href="terms.html">Terms</a> · <a href="output/PhysicsKG.html">Open the atlas</a></span>
   </footer>
+  <script src="page-analytics.js"></script>
 </body>
 </html>

@@ -99,7 +99,6 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
                 return
             if simulate_activation:
                 data = data.replace(b"const enabled = false;", b"const enabled = true;")
-                data = data.replace(b"const allowed = false;", b"const allowed = true;")
             route.fulfill(
                 content_type="text/html" if name.endswith(".html") else "text/javascript",
                 body=data,
@@ -108,6 +107,18 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
         try:
             page.context.add_cookies([{"name": "test", "value": "private", "url": endpoint}])
             page.route("**/*", serve)
+            page.goto("https://physicskg.org/?allow=true")
+            assert requests == []
+            privacy = "https://physicskg.org/privacy.html"
+            page.goto(privacy)
+            control = page.get_by_role("checkbox", name="Allow website analytics")
+            if simulate_activation:
+                assert not control.is_checked()
+                control.check()
+                page.reload()
+                assert control.is_checked()
+            else:
+                assert not control.is_visible()
             for path in routes:
                 url = "https://physicskg.org" + path + "?tutorial=private#step-2"
                 if simulate_activation and not path.startswith("/preview/"):
@@ -127,5 +138,21 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
                 assert headers["content-type"] == "text/plain"
                 assert "referer" not in headers
                 assert "cookie" not in headers
+            if simulate_activation:
+                page.goto(privacy)
+                control.uncheck()
+                page.goto("https://physicskg.org/")
+                assert len(requests) == len(expected)
+
+                page.goto(privacy)
+                control.check()
+                page.add_init_script(
+                    "Object.defineProperty(navigator, 'globalPrivacyControl', {value: true});"
+                )
+                page.goto("https://physicskg.org/")
+                page.goto(privacy)
+                assert not control.is_checked()
+                assert control.is_disabled()
+                assert len(requests) == len(expected)
         finally:
             page.close()

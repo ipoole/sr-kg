@@ -20,18 +20,22 @@ one event per document. A call must supply all of the following:
 - channel `release` and an explicitly enabled release setting;
 - affirmative visitor choice, with Global Privacy Control overriding it.
 
-The payload is just `{"event":"pageview","path":"<fixed path>"}`. Query strings,
-fragments, referrers, tutorial IDs, study actions and personal data are outside
-the event. The gate has no URL or storage-based enable switch. No production
-page loads the module in this phase. It has no endpoint, SDK, preference
-storage or automatic network request. The future release integration must
-supply its channel from reviewed build configuration and keep the default off.
-It must not alter the HTML after the exact build has been tested.
+The PhysicsKG adapter sends the pageview and its fixed canonical URL to
+Plausible. It omits query strings, fragments, HTTP and event referrers
+and credentials. The provider still receives ordinary browser request
+metadata such as the IP address and User-Agent.
 
-Browser tests intercept navigation to synthetic pages and use an in-memory
-collector. The production-origin preview URLs, local URLs, unlisted routes,
-disabled collection, declined or unset choice, and Global Privacy Control all
-send zero events. Repeated calls and in-document navigation do not add events.
+The home and user guide load the packaged script. The viewer embeds it at
+generation to preserve standalone use and exact build packaging. The privacy
+page holds the opt-in, which takes effect on subsequent page loads and
+defaults off. PhysicsKG stores only the value `allow` in this browser's
+local storage and removes it on withdrawal. The owner can leave analytics
+off on each browser profile to exclude their visits. Preview pages never
+read the preference or send events.
+
+Chromium tests use an intercepted production origin and check that disabled
+builds are silent. They also simulate activation and verify default-off
+behaviour, opt-in, withdrawal, Global Privacy Control and preview exclusion.
 
 ## Provider review
 
@@ -42,32 +46,18 @@ send zero events. Repeated calls and in-document navigation do not add events.
 | [Betterloop ingest](https://betterloopai.com/docs/api#ingest) | The issue commenter discloses maintaining the service. The [provider's data notes](https://betterloopai.com/docs/privacy) document per-event User-Agent storage and a session ID. Those fields do not help these totals. The comment and vendor documentation do not independently establish the collector's behaviour. |
 | Aggregate-only counter | Store only a day, one of the three fixed page labels, and a count. Requires running a service alongside GitHub Pages. Request metadata may still be present in hosting or abuse logs, so verify retention there too. |
 
-Shortlist Plausible if its extra processing is acceptable. Choose a minimal
-counter if stored data must be limited to aggregate totals. Before choosing,
-confirm hosting, retention, deletion, processor terms and any subprocessor use.
-Inspect a candidate adapter's actual request against a fake endpoint before
-a live trial. Omit the HTTP Referer with an explicit no-referrer policy and omit
-credentials where the API permits. The JSON allowlist alone does not control
-network metadata such as source IP and User-Agent.
+Plausible is the selected provider. Use the three pageview totals for
+reporting, especially while traffic is low.
 
-## Privacy wording and release decision
+## Production activation
 
-Keep the current public policy unchanged while collection is disabled. Before
-activation, add a short website analytics section that names the provider,
-explains the three totals and their purpose, describes request metadata and
-retention, and links to a way to decline or withdraw. Suggested core wording:
+Register `physicskg.org` in the owner's Plausible account before enabling
+the integration. The Events API uses that site domain and needs no tracking
+snippet or browser API key. Review the provider's retention terms and the
+disclosure on the PhysicsKG privacy page before activating the release flag.
 
-> If you allow website analytics, PhysicsKG counts opens of the home page,
-> atlas and user guide to understand how the site is used. The analytics
-> event contains the page path. It does not contain your tutorial selection,
-> reading or study activity, notes or recordings. You can change your choice
-> at any time.
-
-Complete that text with the chosen provider and the verified processing and
-retention details before publishing it. The planned gate requires affirmative
-choice. The [ICO's statistical purposes guidance](https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/what-are-the-exceptions/)
-describes a conditional UK exception, including clear information and a simple,
-free means to object. Treat any move to opt-out as a separate decision.
-
-Provider, visitor preference interface and release activation are unresolved.
-Test the eventual wiring through both archive channels before enabling it.
+The preference and its disclosure appear on the privacy page only when
+the feature is enabled. Verify the enabled release and excluded preview
+against intercepted requests before publishing. After publication, check
+the Plausible dashboard with an explicitly opted-in browser profile and
+turn analytics back off in that profile if it was used for verification.
