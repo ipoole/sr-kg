@@ -1,4 +1,5 @@
 [
+  {"version": "5.0.15", "date": "2026-11-26", "summary": "Preview: Preserve older tutorial pointers during Google Drive sync and identify any card that blocks sync."},
   {"version": "5.0.14", "date": "2026-11-26", "summary": "Preview: Sync personal tutorial voice recordings across devices through Google Drive."},
   {"version": "5.0.13", "date": "2026-11-22", "summary": "Preview: The first two cards of the moving-clocks tutorial now have voice narration. Export a tutorial and its recordings together as one ZIP."},
   {"version": "5.0.12", "date": "2026-11-22", "summary": "Preview: Record and play tutorial narration, with compact playback controls and the latest Details and graph toolbar updates."},
