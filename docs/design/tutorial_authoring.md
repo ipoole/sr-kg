@@ -544,6 +544,11 @@ the tutorial snapshot and recordings in one IndexedDB transaction. Interrupted
 transfers can be retried. Unreferenced recordings are retained to protect
 conflict copies and transfers in progress.
 
+Drive sync preserves unresolved pointers in the viewer's semantic namespaces
+so older pointers and incomplete drafts survive sync. Selector syntax remains
+invalid. If pointer validation blocks sync, the status names the tutorial,
+card and action.
+
 ## Voice playback (issue #6, implementation stage 3)
 
 Tutorial introductions offer **Start** for text and **Start with voice** when at

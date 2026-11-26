@@ -483,7 +483,18 @@ def test_voiced_drive_sync_migrates_and_transfers_only_missing_audio(tutorial_gr
       const source = sync(first), destination = sync(second);
       const voice = (tutorial, value) => first.saveVoice(tutorial,card,
         new Blob([value],{type:'audio/webm'}),1,portable.fingerprint);
-      await voice(record,'first take');
+      const voiced = await voice(record,'first take');
+      const step = voiced.route.steps[0];
+      const firstAction = step.actions ? step.actions[0] : step;
+      firstAction.pointer = {target:'control:older-toolbar'};
+      await first.save(voiced);
+      const unsafe = portable.clone(voiced);
+      const unsafeStep = unsafe.route.steps[0];
+      (unsafeStep.actions ? unsafeStep.actions[0] : unsafeStep).pointer.target = 'control:#arbitrary-selector';
+      let unsafeRejected = false;
+      try { portable.exportCloudCollection([unsafe],{}); } catch (error) {
+        unsafeRejected = error.message.includes('card 1, action 1') && error.message.includes('#arbitrary-selector');
+      }
       let interrupted = false;
       try { await source.synchronize(); } catch (error) {
         interrupted = error.message === 'Interrupted upload' && remote === null;
@@ -499,6 +510,8 @@ def test_voiced_drive_sync_migrates_and_transfers_only_missing_audio(tutorial_gr
       clips.set(originalId,original);
       await destination.synchronize();
       const received = await (await second.getAudio(originalId)).blob.text();
+      const restoredStep = (await second.get(record.id)).route.steps[0];
+      const pointer = (restoredStep.actions ? restoredStep.actions[0] : restoredStep).pointer.target;
       const beforeText = [uploaded.length,downloaded.length,writes];
       const edited = await first.get(record.id);
       edited.route.title = 'New title';
@@ -518,12 +531,14 @@ def test_voiced_drive_sync_migrates_and_transfers_only_missing_audio(tutorial_gr
       const migrated = await source.synchronize();
       await destination.synchronize();
       const final = await second.snapshot();
-      return {interrupted,rejected,received,beforeText,afterText,uploaded,downloaded,
+      return {interrupted,rejected,received,pointer,unsafeRejected,beforeText,afterText,uploaded,downloaded,
         originalId,replacementId,migrated,final:final.records,legacy:portable.importCollection(legacy.bytes),
         replacement:await (await second.getAudio(replacementId)).blob.text()};
     }''')
     assert result['interrupted'] and result['rejected']
     assert result['received'] == 'first take'
+    assert result['pointer'] == 'control:older-toolbar'
+    assert result['unsafeRejected']
     assert result['replacement'] == 'replacement take'
     assert result['beforeText'] == [1, 2, 1]
     assert result['afterText'] == [1, 2, 2]
