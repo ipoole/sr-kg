@@ -183,6 +183,8 @@ def inject_controls(
     head_assets = MATHJAX_ASSET + "\n" + css
     html_text = html_text.replace("</head>", head_assets + "\n</head>")
     html_text = html_text.replace("<body>", "<body>\n" + controls)
+    analytics = Path(__file__).resolve().parents[1] / "website" / "page-analytics.js"
+    js += _script_tag(analytics.read_text(encoding="utf-8"))
     html_text = html_text.replace("</body>", js + "\n</body>")
     return html_text
 

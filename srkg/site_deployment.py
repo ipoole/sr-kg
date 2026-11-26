@@ -27,8 +27,9 @@ GUIDE_FILES = (
 )
 # Optional in older archives; include them in every newly assembled channel.
 ACKNOWLEDGMENT_FILES = ('acknowledgments.html', 'third-party-notices.txt')
-SITE_FILES = BASE_SITE_FILES + GUIDE_FILES + ACKNOWLEDGMENT_FILES
-PREVIEW_SITE_FILES = GUIDE_FILES + ACKNOWLEDGMENT_FILES + (
+ANALYTICS_FILES = ('page-analytics.js',)
+SITE_FILES = BASE_SITE_FILES + GUIDE_FILES + ACKNOWLEDGMENT_FILES + ANALYTICS_FILES
+PREVIEW_SITE_FILES = GUIDE_FILES + ACKNOWLEDGMENT_FILES + ANALYTICS_FILES + (
     'site.css', 'favicon.svg', 'favicon-32.png', 'apple-touch-icon.png',
     'physicskg-logo-120.png',
 )
