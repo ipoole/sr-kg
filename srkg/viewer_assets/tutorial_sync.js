@@ -9,7 +9,9 @@ function kgCreateTutorialSync(options) {
   }
   async function merge(local, remote, baseline) {
     baseline = baseline || {};
-    var all = local.concat(remote).map(function(record) { return portable.record(record,true); });
+    var all = local.concat(remote).map(function(record) {
+      return options.legacyProvider ? portable.syncRecord(record) : portable.record(record,true);
+    });
     var hashes = await Promise.all(all.map(portable.fingerprint)), grouped = new Map(), resolved = new Set();
     all.forEach(function(record,index) {
       if (!grouped.has(record.id)) { grouped.set(record.id,new Map()); }
