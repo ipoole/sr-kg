@@ -174,12 +174,17 @@ def test_tutorial_sync_preserves_open_editor_text_focus_and_selection(tutorial_g
       const helper=kgCreateTutorialSync({portable:p});
       await store.commitSnapshot(snapshot.records,await helper.stamps(snapshot.records),snapshot.records);
       const remote=JSON.parse(JSON.stringify(snapshot.records));remote[0].route.title='Phone revision';remote[0].revisionId='revision:phone';
-      let bytes=p.exportCollection(remote),revision='remote-v1';
+      const legacyBytes=p.exportCollection(remote);
+      let cloud=null;
       kgCloudSyncConfig.googleDriveClientId='test-client';
       window.kgCreateGoogleDriveAuthorizer=()=>({connect:async()=>{},token:()=> 'test-token',disconnect:()=>{}});
-      window.kgCreateGoogleDrivePersonalDataProvider=options=>options.fileName ? {
-        read:async()=>({bytes,revision}),write:async value=>{bytes=value;revision='remote-v2';return {revision};}
-      } : {};
+      window.kgCreateGoogleDrivePersonalDataProvider=options=>{
+        if (options.fileName==='PhysicsKG tutorials.zip') return {read:async()=>({bytes:legacyBytes})};
+        return {
+          read:async()=>cloud,
+          write:async bytes=>{cloud={bytes,revision:'remote-v2'};return {revision:cloud.revision};}
+        };
+      };
       window.kgCreatePersonalDataSyncEngine=()=>({synchronize:async()=>({})});
       kgInitialiseGoogleDriveSync();
     }''',tutorial_id)
@@ -449,3 +454,121 @@ def test_voiced_tutorial_export_import_round_trip(tutorial_graph, playwright_bro
             context.close()
             server.shutdown()
             thread.join()
+
+
+@pytest.mark.browser
+def test_voiced_drive_sync_migrates_and_transfers_only_missing_audio(tutorial_graph):
+    page = _library(tutorial_graph)
+    result = page.evaluate('''async () => {
+      const portable = kgTutorialPortable;
+      const first = kgCreateTutorialStore({databaseName:'voiced-sync-first'});
+      const second = kgCreateTutorialStore({databaseName:'voiced-sync-second'});
+      const record = await first.create(tutorialData[0]);
+      const card = record.route.steps[0].step_id;
+      await first.commitSnapshot([record],{[record.id]:await portable.fingerprint(record)},[record]);
+      let legacy = {bytes:portable.exportCollection([record])}, remote = null, failWrite = true;
+      let writes = 0;
+      const clips = new Map(), uploaded = [], downloaded = [];
+      const provider = {
+        read: async () => remote,
+        write: async bytes => {
+          if (failWrite) { failWrite = false; throw new Error('Interrupted upload'); }
+          remote = {bytes,revision:'v' + (++writes)};
+        },
+        audioInventory: async () => new Map(Array.from(clips, ([id]) => [id,[id]])),
+        uploadAudio: async asset => { clips.set(asset.id,asset.blob); uploaded.push(asset.id); },
+        downloadAudio: async id => { downloaded.push(id); return clips.get(id); }
+      };
+      const sync = store => kgCreateTutorialSync({portable,store,provider,legacyProvider:{read:async () => legacy}});
+      const source = sync(first), destination = sync(second);
+      const voice = (tutorial, value) => first.saveVoice(tutorial,card,
+        new Blob([value],{type:'audio/webm'}),1,portable.fingerprint);
+      await voice(record,'first take');
+      let interrupted = false;
+      try { await source.synchronize(); } catch (error) {
+        interrupted = error.message === 'Interrupted upload' && remote === null;
+      }
+      await source.synchronize();
+      const originalId = (await first.get(record.id)).route.steps[0].audio.assetId;
+      const original = clips.get(originalId);
+      clips.set(originalId,new Blob(['bad bytes'],{type:'audio/webm'}));
+      let rejected = false;
+      try { await destination.synchronize(); } catch (error) {
+        rejected = error.message.includes('missing or damaged') && !(await second.get(record.id));
+      }
+      clips.set(originalId,original);
+      await destination.synchronize();
+      const received = await (await second.getAudio(originalId)).blob.text();
+      const beforeText = [uploaded.length,downloaded.length,writes];
+      const edited = await first.get(record.id);
+      edited.route.title = 'New title';
+      await first.save(edited);
+      await source.synchronize();
+      await destination.synchronize();
+      const afterText = [uploaded.length,downloaded.length,writes];
+      const newTake = await voice(await first.get(record.id),'replacement take');
+      const replacementId = newTake.route.steps[0].audio.assetId;
+      await source.synchronize();
+      await destination.synchronize();
+      await source.synchronize();
+      const oldEdit = portable.clone(record);
+      oldEdit.route.title = 'Edit from an older viewer';
+      oldEdit.revisionId = 'revision:legacy-edit';
+      legacy = {bytes:portable.exportCollection([oldEdit])};
+      const migrated = await source.synchronize();
+      await destination.synchronize();
+      const final = await second.snapshot();
+      return {interrupted,rejected,received,beforeText,afterText,uploaded,downloaded,
+        originalId,replacementId,migrated,final:final.records,legacy:portable.importCollection(legacy.bytes),
+        replacement:await (await second.getAudio(replacementId)).blob.text()};
+    }''')
+    assert result['interrupted'] and result['rejected']
+    assert result['received'] == 'first take'
+    assert result['replacement'] == 'replacement take'
+    assert result['beforeText'] == [1, 2, 1]
+    assert result['afterText'] == [1, 2, 2]
+    assert result['uploaded'] == [result['originalId'], result['replacementId']]
+    assert result['downloaded'] == [result['originalId'], result['originalId'], result['replacementId']]
+    assert result['migrated']['legacyChanged']
+    assert result['migrated']['conflicts'] == 1
+    assert {item['route']['title'] for item in result['final']} == {'New title', 'Edit from an older viewer'}
+    assert len(result['legacy']) == 1
+    assert 'audio' not in result['legacy'][0]['route']['steps'][0]
+
+
+@pytest.mark.browser
+def test_drive_audio_provider_lists_tagged_assets_and_preserves_mime_type(tutorial_graph):
+    page = _library(tutorial_graph)
+    result = page.evaluate('''async () => {
+      const portable = kgTutorialPortable;
+      const clip = new Blob(['take'],{type:'audio/mp4'});
+      const id = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await clip.arrayBuffer())),
+        byte => byte.toString(16).padStart(2,'0')).join('');
+      const file = {id:'file/id',mimeType:clip.type,size:String(clip.size),appProperties:{sha256:id}};
+      let searches = 0, upload = '';
+      const provider = kgCreateGoogleDrivePersonalDataProvider({
+        accessToken:'test',fetch:async (url,options) => {
+          if (options.method === 'POST') {
+            upload = await options.body.text();
+            return Response.json({id:'uploaded'});
+          }
+          const target = new URL(url);
+          if (target.searchParams.get('alt') === 'media') {
+            if (!target.pathname.endsWith('/file%2Fid')) throw new Error('File ID was not escaped.');
+            return new Response(clip,{headers:{'Content-Type':'application/octet-stream'}});
+          }
+          if (!target.searchParams.get('q').includes('tutorial-audio-v1')) throw new Error('Missing Drive tag.');
+          searches++;
+          return Response.json(target.searchParams.has('pageToken') ? {files:[file]} : {nextPageToken:'next'});
+        }
+      });
+      const inventory = await provider.audioInventory();
+      const restored = await portable.validateAudio(await provider.downloadAudio(inventory.get(id)[0]),id);
+      await provider.uploadAudio(restored);
+      return {searches,upload,id,type:restored.mimeType,text:await restored.blob.text()};
+    }''')
+    assert result['searches'] == 2
+    assert result['type'] == 'audio/mp4'
+    assert result['text'] == 'take'
+    assert '"physicskgAsset":"tutorial-audio-v1"' in result['upload']
+    assert f'"sha256":"{result["id"]}"' in result['upload']

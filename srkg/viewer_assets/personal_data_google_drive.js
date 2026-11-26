@@ -101,6 +101,7 @@
       return String(options.accessToken || "");
     };
     var fileName = String(options.fileName || DEFAULT_FILE_NAME);
+    var mimeType = options.mimeType || 'application/zip';
     var fileId = "", allMatches = options.allMatches === true, cache = new Map();
 
     function headers(extra) {
@@ -140,15 +141,12 @@
       return Object.assign({},available[0],allMatches ? {copies:available.slice(1)} : {});
     }
 
-    async function create(bytes) {
-      if (allMatches && (await findMatches()).length) {
-        var conflict = new Error('A tutorial cloud file was created by another device.'); conflict.code = 'conflict'; throw conflict;
-      }
+    async function upload(bytes, metadata) {
       var boundary = "physicskg-" + Math.random().toString(36).slice(2);
       var body = new Blob([
         "--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n",
-        JSON.stringify({name: fileName, mimeType: "application/zip"}),
-        "\r\n--" + boundary + "\r\nContent-Type: application/zip\r\n\r\n",
+        JSON.stringify(metadata),
+        "\r\n--" + boundary + "\r\nContent-Type: " + metadata.mimeType + "\r\n\r\n",
         bytes,
         "\r\n--" + boundary + "--"
       ]);
@@ -161,10 +159,17 @@
         }
       );
       if (!response.ok) { throw apiError(response, "Could not create the Google Drive file"); }
-      var result = await response.json();
+      return {file:await response.json(),revision:response.headers.get('etag') || ''};
+    }
+
+    async function create(bytes) {
+      if (allMatches && (await findMatches()).length) {
+        var conflict = new Error('A tutorial cloud file was created by another device.'); conflict.code = 'conflict'; throw conflict;
+      }
+      var uploaded = await upload(bytes,{name:fileName,mimeType:mimeType}), result = uploaded.file;
       fileId = result.id;
       cache.delete(fileId);
-      return {revision: response.headers.get("etag") || String(result.version || "")};
+      return {revision: uploaded.revision || String(result.version || "")};
     }
 
     async function update(bytes, revision) {
@@ -174,7 +179,7 @@
         {
           method: "PATCH",
           headers: headers(Object.assign(
-            {"Content-Type": "application/zip"},
+            {"Content-Type": mimeType},
             revision ? {"If-Match": revision} : {}
           )),
           body: bytes
@@ -186,8 +191,44 @@
       return {revision: response.headers.get("etag") || String(result.version || "")};
     }
 
+    async function audioInventory() {
+      var assets = new Map(), pageToken = '';
+      do {
+        var params = new URLSearchParams({
+          q:"appProperties has { key='physicskgAsset' and value='tutorial-audio-v1' } and trashed = false",
+          fields:'nextPageToken,files(id,mimeType,size,appProperties)',pageSize:'1000',spaces:'drive'
+        });
+        if (pageToken) { params.set('pageToken',pageToken); }
+        var response = await fetchImpl(DRIVE_API + '?' + params,{headers:headers()});
+        if (!response.ok) { throw apiError(response,'Could not list Google Drive tutorial recordings'); }
+        var result = await response.json();
+        for (var file of result.files || []) {
+          var hash = file.appProperties && file.appProperties.sha256;
+          if (!/^[a-f0-9]{64}$/.test(hash) || !Number(file.size) ||
+              Number(file.size) > 50 * 1024 * 1024 || !/^audio\//.test(file.mimeType)) { continue; }
+          if (!assets.has(hash)) { assets.set(hash,[]); }
+          assets.get(hash).push(file);
+        }
+        pageToken = result.nextPageToken;
+      } while (pageToken);
+      return assets;
+    }
+    async function downloadAudio(file) {
+      var response = await fetchImpl(DRIVE_API + '/' + encodeURIComponent(file.id) + '?alt=media',{headers:headers()});
+      if (response.status === 404) { return null; }
+      if (!response.ok) { throw apiError(response,'Could not download a Google Drive tutorial recording'); }
+      return new Blob([await response.blob()],{type:file.mimeType});
+    }
+    async function uploadAudio(asset) {
+      await upload(asset.blob,{
+        name:'PhysicsKG audio ' + asset.id, mimeType:asset.mimeType,
+        appProperties:{physicskgAsset:'tutorial-audio-v1',sha256:asset.id}
+      });
+    }
+
     return {
       read: read,
+      audioInventory:audioInventory, downloadAudio:downloadAudio, uploadAudio:uploadAudio,
       write: function(bytes, syncOptions) {
         return syncOptions && syncOptions.create
           ? create(bytes)

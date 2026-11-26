@@ -1,4 +1,4 @@
-/* Transparent text-only tutorial packages; imported content never supplies executable selectors. */
+/* Validated tutorial archives and Drive library documents. */
 function kgCreateTutorialPortable(options) {
   'use strict';
   var contract = options.contract, maxBytes = 10 * 1024 * 1024;
@@ -144,7 +144,7 @@ function kgCreateTutorialPortable(options) {
   }
   function requireTextOnly(records) {
     if (records.some(function(record) { return record.route.steps.some(function(step) { return Boolean(step.audio); }); })) {
-      throw new Error('Voice recordings are stored only in this browser. This format is text-only. Use Export tutorial for a voiced ZIP. Audio backup and sync are not available yet.');
+      throw new Error('This format is text-only. Use Export tutorial for a voiced ZIP.');
     }
   }
   function collectionDocument(records) { requireTextOnly(records); return {format:'physicskg-tutorial-library', schema_version:1, records:records}; }
@@ -255,6 +255,32 @@ function kgCreateTutorialPortable(options) {
     var files = unpack(buffer); checkManifest(files,'physicskg-tutorial-library','tutorials.json');
     var checked = collection(parse(files['tutorials.json'])); requireTextOnly(checked); return checked;
   }
+  function cloudCollection(value) {
+    keys(value,['format','schema_version','records','legacyStamps'],'cloud tutorial library');
+    if (value.format !== 'physicskg-cloud-tutorial-library' || value.schema_version !== 2 ||
+        !value.legacyStamps || Array.isArray(value.legacyStamps) || typeof value.legacyStamps !== 'object' ||
+        Object.entries(value.legacyStamps).some(function(pair) {
+          return !pair[0].startsWith('personal:') || !/^[a-f0-9]{64}$/.test(pair[1]);
+        })) { throw new Error('Unsupported cloud tutorial library.'); }
+    return {records:collection({format:'physicskg-tutorial-library',schema_version:1,records:value.records}),
+      legacyStamps:value.legacyStamps};
+  }
+  function exportCloudCollection(records, legacyStamps) {
+    var value = {format:'physicskg-cloud-tutorial-library',schema_version:2,records:records,legacyStamps:legacyStamps};
+    cloudCollection(value);
+    return new TextEncoder().encode(json(value));
+  }
+  function importCloudCollection(buffer) {
+    if (buffer.byteLength > maxBytes) { throw new Error('Cloud tutorial library exceeds 10 MB.'); }
+    return cloudCollection(parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer)));
+  }
+  async function validateAudio(blob, id) {
+    if (!blob || !blob.size || blob.size > clipLimit || !audioType(blob.type) ||
+        await sha256(await blob.arrayBuffer()) !== id) {
+      throw new Error('A tutorial recording is missing or damaged.');
+    }
+    return {id:id,mimeType:blob.type,byteLength:blob.size,blob:blob};
+  }
   function stable(value) {
     if (Array.isArray(value)) { return '[' + value.map(stable).join(',') + ']'; }
     if (value && typeof value === 'object') { return '{' + Object.keys(value).sort().map(function(key) { return JSON.stringify(key) + ':' + stable(value[key]); }).join(',') + '}'; }
@@ -267,5 +293,7 @@ function kgCreateTutorialPortable(options) {
   }
   return {exportBundle:exportBundle, importBundle:importBundle, bundleLimit:bundleLimit, requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
     parse:parse, json:json, exportSingle:exportSingle, importSingle:importSingle,
-    exportCollection:exportCollection, importCollection:importCollection, fingerprint:fingerprint, clone:clone};
+    exportCollection:exportCollection, importCollection:importCollection,
+    exportCloudCollection:exportCloudCollection, importCloudCollection:importCloudCollection,
+    validateAudio:validateAudio, fingerprint:fingerprint, clone:clone};
 }

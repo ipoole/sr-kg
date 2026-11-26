@@ -1,9 +1,9 @@
 # Personal tutorial authoring and voice narration
 
 Status: design accepted; stages 1–6 and voiced playback from stage 7 implemented.
-Backup integration and tutorial sync are available for text-only
-libraries. Local voice recording/import and optional playback are available; compact
-cards and audio attachment sync remain planned. Tutorial ZIPs carry recordings and can be installed as built-ins.
+Personal-data backups are available for text-only libraries. Tutorial sync,
+standalone tutorial ZIPs and built-in installation support recordings.
+Compact cards remain planned.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -416,8 +416,8 @@ with a 50 MB limit per clip. Browser import validates all assets before committi
 the tutorial and recordings in a single transaction.
 
 Personal data backup includes the entire library, including deletion tombstones.
-Old backups retain existing tutorials. Optional Google sync uses the separate
-**PhysicsKG tutorials.zip** companion file and whole-route conflict copies; see
+Old backups retain existing tutorials. Optional Google sync uses the versioned
+library described below and whole-route conflict copies; see
 [Personal data](personal_data.md). It preserves an open editor and a running
 playback snapshot. Exporting a tutorial does not expose notes, answers or layouts.
 To install an exported tutorial into the repository:
@@ -519,11 +519,30 @@ the unsaved take remains in the dialogue for retry. Removal detaches only
 that card's reference. Assets are retained conservatively; garbage collection is
 deferred until backup/conflict/transfer lifetimes are implemented.
 
-Tutorial ZIP export and import carry recordings. Personal-data backups and
-the Google Drive companion still use the text-only format and report when a
-library contains recordings. Older viewer versions cannot reopen the upgraded
-local tutorial database. Use an isolated profile to review a hosted preview
-alongside an older public viewer.
+Tutorial ZIP export and import, and Google Drive sync, carry recordings.
+Full personal-data backups still report when the library contains recordings.
+Use Export tutorial to back up a voiced tutorial independently.
+
+## Voiced tutorial sync (issue #34)
+
+Sync uses the existing Drive connection. The separate
+`PhysicsKG tutorial library v2.json` holds tutorial records, deletion markers
+and fingerprints of the last observed legacy records. Each immutable
+recording is uploaded separately and tagged with its SHA-256 content ID in
+Drive app properties. An unchanged sync and a text-only edit transfer no
+audio bytes when both sides already have the recordings.
+
+The first sync reads the old `PhysicsKG tutorials.zip`. Later syncs surface and
+merge changes seen in that file. Older viewers continue to see the text-only
+library and cannot read or overwrite the new library. If a legacy edit and a
+newer edit both changed a tutorial, the existing merge rules preserve a
+conflict copy. Open the newer viewer to review it.
+
+Sync uploads missing clips before updating the library with its Drive revision
+check. The receiving browser validates type, size and hash before committing
+the tutorial snapshot and recordings in one IndexedDB transaction. Interrupted
+transfers can be retried. Unreferenced recordings are retained to protect
+conflict copies and transfers in progress.
 
 ## Voice playback (issue #6, implementation stage 3)
 
@@ -547,5 +566,4 @@ the Voice checkbox and preserve the preference for subsequent cards.
 Only the current clip is retained, and its object URL is revoked on navigation.
 Voice shares the navigation row. Status uses a fixed-width slot on wider screens
 and is announced without adding a line on phones.
-Compact mode, audio-bearing packages, hosted audio and attachment sync are still
-out of scope for this increment.
+Compact mode remains out of scope for the voice playback increment.

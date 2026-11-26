@@ -182,11 +182,13 @@ also checks every five minutes and when it becomes active after being away.
 time. Disconnecting removes authorization from the current page but does not
 delete either copy of the data.
 
-Tutorials share the same connection and Sync now action, but use a second visible
-file, **PhysicsKG tutorials.zip**. The original cloud archive remains exactly the
-legacy CSV format, so old viewers can continue syncing safely. The companion
-contains `manifest.json` and `tutorials.json` (versioned readable JSON). No file is
-created until there is tutorial data to sync.
+Tutorials share the same connection and Sync now action. They use
+**PhysicsKG tutorial library v2.json** and separate **PhysicsKG audio**
+attachments. The notes and progress archive retains its original CSV format.
+The new viewer reads the older **PhysicsKG tutorials.zip** and brings in
+later edits to it. A new library is created when there are tutorial records
+to sync. See [Voiced tutorial sync](tutorial_authoring.md#voiced-tutorial-sync-issue-34)
+for attachment transfers and compatibility.
 
 A durable baseline supports three-way whole-tutorial merges. Independent edits
 keep both versions as visibly marked conflict copies, with deterministic IDs so
