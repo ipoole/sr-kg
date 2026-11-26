@@ -71,7 +71,7 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
     ), encoding="utf-8")
     release = assemble(REPO_ROOT, viewer, "release")
     files = assemble(REPO_ROOT, viewer, "preview", previous=release)
-    endpoint = "https://plausible.io/api/event"
+    endpoint = "https://counter.example/pageview/"
     routes = {
         "/": "index.html",
         "/user-guide.html": "user-guide.html",
@@ -85,9 +85,9 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
 
         def serve(route):
             url = urlsplit(route.request.url)
-            if route.request.url == endpoint:
+            if route.request.url.startswith(endpoint):
                 requests.append(route.request)
-                route.fulfill(status=202)
+                route.fulfill(status=204)
                 return
             name = routes.get(url.path, url.path.lstrip("/"))
             if url.netloc != "physicskg.org" or name not in files:
@@ -99,6 +99,9 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
                 return
             if simulate_activation:
                 data = data.replace(b"const enabled = false;", b"const enabled = true;")
+                data = data.replace(
+                    b"const counterOrigin = '';", b"const counterOrigin = 'https://counter.example';"
+                )
             route.fulfill(
                 content_type="text/html" if name.endswith(".html") else "text/javascript",
                 body=data,
@@ -122,20 +125,18 @@ def test_packaged_site_analytics(playwright_browser, tmp_path):
             for path in routes:
                 url = "https://physicskg.org" + path + "?tutorial=private#step-2"
                 if simulate_activation and not path.startswith("/preview/"):
-                    with page.expect_request(endpoint, timeout=5000):
+                    with page.expect_request(lambda request: request.url.startswith(endpoint), timeout=5000):
                         page.goto(url)
                 else:
                     page.goto(url)
                 assert page.evaluate("typeof recordPhysicsKGPageview") == "function"
-            expected = [path for path in routes if not path.startswith("/preview/")]
-            assert [request.post_data_json for request in requests] == ([
-                {"name": "pageview", "url": "https://physicskg.org" + path, "domain": "physicskg.org"}
-                for path in expected
-            ] if simulate_activation else [])
+            expected = [endpoint + page for page in ("home", "guide", "atlas")]
+            assert [request.url for request in requests] == (expected if simulate_activation else [])
             for request in requests:
                 assert request.method == "POST"
                 headers = request.all_headers()
-                assert headers["content-type"] == "text/plain"
+                assert request.post_data is None
+                assert headers["origin"] == "https://physicskg.org"
                 assert "referer" not in headers
                 assert "cookie" not in headers
             if simulate_activation:

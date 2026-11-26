@@ -33,3 +33,6 @@ books/
 
 # Local historical viewer archive
 /historic_builds/
+
+# Cloudflare local Worker and D1 state
+/analytics/.wrangler/

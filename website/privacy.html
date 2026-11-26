@@ -90,17 +90,16 @@
     <section id="website-analytics-settings" hidden>
       <h2>Optional website analytics</h2>
       <p>
-        If you allow analytics, PhysicsKG sends Plausible a pageview when you open
+        If you allow analytics, PhysicsKG counts a pageview when you open
         the home page, atlas or user guide. These counts help us understand how
-        often those pages are used. The event includes the fixed page address.
+        often those pages are used. The request identifies one of those three pages.
         PhysicsKG omits query strings, fragments, referrers and study activity.
       </p>
       <p>
-        Plausible uses your IP address and browser information to derive an
-        approximate location, browser and device details, and a daily visitor
-        identifier. It says it stores event and session records in the EU and
-        does not store raw IP addresses or browser identification strings.
-        See the <a href="https://plausible.io/data-policy">Plausible data policy</a>.
+        Cloudflare hosts the counter and receives ordinary request information
+        such as your IP address and browser details. The counter stores a total
+        for each page and UTC day. It uses no cookies or visitor identifiers.
+        See the <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare privacy policy</a>.
       </p>
       <p>
         Analytics starts off. PhysicsKG stores your choice in this browser

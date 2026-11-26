@@ -1,14 +1,18 @@
-/* Release pageview gate and Plausible adapter. */
+/* Release pageview gate and aggregate counter adapter. */
 (function (window) {
   'use strict';
 
   const production = 'https://physicskg.org';
-  const paths = new Set(['/', '/output/PhysicsKG.html', '/user-guide.html']);
+  const pages = new Map([
+    ['/', 'home'],
+    ['/output/PhysicsKG.html', 'atlas'],
+    ['/user-guide.html', 'guide'],
+  ]);
   const {origin, pathname} = window.location;
   let sent = false;
 
   window.recordPhysicsKGPageview = function ({channel, enabled, allowed, collect} = {}) {
-    if (sent || origin !== production || !paths.has(pathname) ||
+    if (sent || origin !== production || !pages.has(pathname) ||
         channel !== 'release' || enabled !== true || allowed !== true ||
         window.navigator.globalPrivacyControl === true ||
         typeof collect !== 'function') {
@@ -20,28 +24,23 @@
     return true;
   };
 
-  function collectWithPlausible({event, path}) {
-    window.fetch('https://plausible.io/api/event', {
+  function collectPageview({path}) {
+    window.fetch(counterOrigin + '/pageview/' + pages.get(path), {
       method: 'POST',
       mode: 'no-cors',
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
       keepalive: true,
-      headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({
-        name: event,
-        url: production + path,
-        domain: 'physicskg.org',
-      }),
     }).catch(() => {
       // Analytics failures must not interrupt the page.
     });
   }
 
-  // Enable in a coordinated release after the Plausible site is ready.
+  // Set the deployed Worker origin and enable in a coordinated release.
+  const counterOrigin = '';
   const enabled = false;
-  if (!enabled || origin !== production ||
-      (!paths.has(pathname) && pathname !== '/privacy.html')) return;
+  if (!enabled || !counterOrigin || origin !== production ||
+      (!pages.has(pathname) && pathname !== '/privacy.html')) return;
 
   const preferenceKey = 'srkg.websiteAnalytics.v1';
   const gpc = window.navigator.globalPrivacyControl === true;
@@ -83,9 +82,9 @@
   }
 
   window.recordPhysicsKGPageview({
-    channel: paths.has(pathname) ? 'release' : 'preview',
+    channel: 'release',
     enabled,
     allowed,
-    collect: collectWithPlausible,
+    collect: collectPageview,
   });
 })(window);
