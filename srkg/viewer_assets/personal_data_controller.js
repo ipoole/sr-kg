@@ -109,8 +109,10 @@ function kgCreatePersonalDataController(options) {
         }
       });
       tutorialSyncEngine = kgCreateTutorialSync({portable:kgTutorialPortable,store:personalDataStore.tutorials,
-        provider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
+        legacyProvider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
           fileName:'PhysicsKG tutorials.zip',allMatches:true}),
+        provider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
+          fileName:'PhysicsKG tutorial library v2.json',mimeType:'application/json',appendOnly:true}),
         prepare:options.prepareTutorials,updated:options.tutorialsChanged});
       showCloudSyncConnected(true);
       showCloudSyncAttention(false);
@@ -139,6 +141,7 @@ function kgCreatePersonalDataController(options) {
         cloudSyncLastSuccessfulAt = Date.now(); showCloudSyncAttention(false);
         setCloudSyncStatus(result.pending ? 'Notes and progress synced; new tutorial edits are pending automatic sync.' :
           'Personal data synced. Last synced at ' + cloudSyncTimeText(cloudSyncLastSuccessfulAt) +
+          (result.legacyChanged ? '. Changes from an older viewer were found and synced' : '') +
           (result.conflicts ? '. Tutorial conflicts were kept as separate copies.' : '.'));
         if (result.pending) { schedulePersonalDataAutoSync(1500); }
         return true;

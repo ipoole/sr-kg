@@ -1,4 +1,4 @@
-/* Transparent text-only tutorial packages; imported content never supplies executable selectors. */
+/* Validated tutorial archives and Drive library documents. */
 function kgCreateTutorialPortable(options) {
   'use strict';
   var contract = options.contract, maxBytes = 10 * 1024 * 1024;
@@ -32,9 +32,10 @@ function kgCreateTutorialPortable(options) {
     var parts = typeof value === 'string' && value.indexOf('edge:') === 0 ? value.slice(5).split('|') : [];
     if (parts.length !== 3 || !identifier(parts[0]) || !identifier(parts[2]) || contract.relations.indexOf(parts[1]) < 0) { throw new Error('Invalid edge target.'); }
   }
-  function pointer(value) {
-    if (value === '' || value === null || contract.pointer_base[value]) { return; }
+  function pointer(value, sync) {
+    if (value === '' || value === null) { return; }
     if (typeof value !== 'string') { throw new Error('Invalid pointer.'); }
+    if (Object.prototype.hasOwnProperty.call(contract.pointer_base,value)) { return; }
     if (value.indexOf('control:module-fold:') === 0) { return target('module:' + value.slice(20),'module'); }
     if (value.indexOf('control:') === 0 && contract.controls.indexOf(value.slice(8)) >= 0) { return; }
     if (value.indexOf('tools:section:') === 0 && contract.tools.indexOf(value.slice(14)) >= 0) { return; }
@@ -48,6 +49,9 @@ function kgCreateTutorialPortable(options) {
       if (match[1] === 'concept') { return target('concept:' + (match[3] || ''),'concept'); }
       if (!match[3]) { return; }
     }
+    // A saved draft or an older viewer can have a semantic pointer that this
+    // viewer cannot resolve. Preserve it across devices without accepting selectors.
+    if (sync && value.length <= 300 && /^(control|details|tools|graph|search):[A-Za-z0-9_.:-]*$/.test(value)) { return; }
     throw new Error('Unsupported pointer target.');
   }
   function command(value) {
@@ -80,7 +84,7 @@ function kgCreateTutorialPortable(options) {
       });
     }
   }
-  function route(value) {
+  function route(value, sync) {
     keys(value,['tutorial_id','title','summary','author','category','sequence','domains','steps'],'tutorial');
     if (!identifier(value.tutorial_id)) { throw new Error('Invalid tutorial ID.'); }
     text(value.title,'tutorial title',300,false); text(value.summary === undefined ? '' : value.summary,'tutorial summary',10000,false);
@@ -89,7 +93,17 @@ function kgCreateTutorialPortable(options) {
     if (!Array.isArray(value.domains) || value.domains.length > 100 || value.domains.some(function(id) { return !identifier(id); })) { throw new Error('Invalid domains.'); }
     if (!Array.isArray(value.steps) || value.steps.length > 1000) { throw new Error('Invalid card list.'); }
     var ids = new Set();
-    value.steps.forEach(function(step) {
+    function checkPointer(mark, cardIndex, actionIndex) {
+      keys(mark,['target'],'pointer');
+      try { pointer(mark.target,sync); }
+      catch (error) {
+        if (!sync) { throw error; }
+        var detail = typeof mark.target === 'string' ? ' ' + JSON.stringify(mark.target.slice(0,100)) : '';
+        throw new Error('Tutorial “' + (value.title || 'Untitled') + '”, card ' + (cardIndex + 1) +
+          ', action ' + (actionIndex + 1) + ': ' + error.message + detail);
+      }
+    }
+    value.steps.forEach(function(step, cardIndex) {
       keys(step,['step_id','title','commentary','prepare','action','actions','pointer','demonstrate','audio'],'card');
       if (step.audio !== undefined) {
         keys(step.audio,['assetId','duration','commentaryHash','actionsHash','mimeType'],'voice reference');
@@ -105,14 +119,14 @@ function kgCreateTutorialPortable(options) {
       }
       if (step.actions !== undefined) {
         if (step.action !== undefined || step.pointer !== undefined || !Array.isArray(step.actions) || !step.actions.length || step.actions.length > contract.max_actions) { throw new Error('Invalid action sequence.'); }
-        step.actions.forEach(function(item) {
+        step.actions.forEach(function(item, actionIndex) {
           keys(item,['action','pointer','pause_ms'],'visible action'); command(item.action);
           if (item.pause_ms !== undefined && (typeof item.pause_ms !== 'number' || !Number.isFinite(item.pause_ms))) { throw new Error('Invalid action pause.'); }
-          if (item.pointer !== undefined) { keys(item.pointer,['target'],'pointer'); pointer(item.pointer.target); }
+          if (item.pointer !== undefined) { checkPointer(item.pointer,cardIndex,actionIndex); }
         });
       } else {
         command(step.action);
-        if (step.pointer !== undefined) { keys(step.pointer,['target'],'pointer'); pointer(step.pointer.target); }
+        if (step.pointer !== undefined) { checkPointer(step.pointer,cardIndex,0); }
       }
     });
     var result = clone(value);
@@ -120,9 +134,9 @@ function kgCreateTutorialPortable(options) {
     result.steps.forEach(function(step) { if (step.commentary === undefined) { step.commentary = ''; } });
     return result;
   }
-  function record(value, personal) {
+  function record(value, personal, sync) {
     keys(value,['id','route','basedOn','createdAt','updatedAt','revisionId','deletedAt','conflictOf','sourceRevision'],'tutorial record');
-    var result = clone(value); result.route = route(value.route);
+    var result = clone(value); result.route = route(value.route,sync);
     if (!identifier(value.id) || (personal && value.id.indexOf('personal:') !== 0) || value.route.tutorial_id !== value.id || !identifier(value.revisionId)) { throw new Error('Invalid tutorial record identity.'); }
     result.createdAt = date(value.createdAt,'creation time'); result.updatedAt = date(value.updatedAt,'update time');
     result.deletedAt = value.deletedAt ? date(value.deletedAt,'deletion time') : '';
@@ -133,18 +147,18 @@ function kgCreateTutorialPortable(options) {
     ['conflictOf','sourceRevision'].forEach(function(key) { if (value[key] !== undefined) { text(value[key],key,300,true); } });
     return result;
   }
-  function collection(value) {
+  function collection(value, sync) {
     keys(value,['format','schema_version','records'],'tutorial library');
     if (value.format !== 'physicskg-tutorial-library' || value.schema_version !== 1 || !Array.isArray(value.records) || value.records.length > 1000) { throw new Error('Unsupported tutorial library.'); }
     var ids = new Set();
     return value.records.map(function(item) {
-      var checked = record(item,true);
+      var checked = record(item,true,sync);
       if (ids.has(checked.id)) { throw new Error('Duplicate tutorial record.'); } ids.add(checked.id); return checked;
     });
   }
   function requireTextOnly(records) {
     if (records.some(function(record) { return record.route.steps.some(function(step) { return Boolean(step.audio); }); })) {
-      throw new Error('Voice recordings are stored only in this browser. This format is text-only. Use Export tutorial for a voiced ZIP. Audio backup and sync are not available yet.');
+      throw new Error('This format is text-only. Use Export tutorial for a voiced ZIP.');
     }
   }
   function collectionDocument(records) { requireTextOnly(records); return {format:'physicskg-tutorial-library', schema_version:1, records:records}; }
@@ -192,6 +206,9 @@ function kgCreateTutorialPortable(options) {
   async function sha256(bytes) {
     var result = await crypto.subtle.digest('SHA-256',bytes);
     return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
+  }
+  async function recordingMatches(bytes, id) {
+    return Boolean(bytes && bytes.byteLength && bytes.byteLength <= clipLimit && await sha256(bytes) === id);
   }
   async function exportBundle(source, getAudio) {
     var checked = record(source,false), cards = voiceCards(checked.route);
@@ -241,8 +258,9 @@ function kgCreateTutorialPortable(options) {
       keys(entry,['id','mimeType','byteLength'],'audio asset');
       if (!required.delete(entry.id) || !audioType(entry.mimeType)) { throw new Error('Invalid tutorial audio inventory.'); }
       var data = files[assetPath(entry.id)];
-      if (!data || !data.length || data.length > clipLimit || data.length !== entry.byteLength ||
-          await sha256(data) !== entry.id) { throw new Error('Missing or damaged tutorial audio.'); }
+      if (!data || data.byteLength !== entry.byteLength || !await recordingMatches(data,entry.id)) {
+        throw new Error('Missing or damaged tutorial audio.');
+      }
       assets.push({id:entry.id,mimeType:entry.mimeType,byteLength:data.length,blob:new Blob([data],{type:entry.mimeType})});
     }
     return {source:source,assets:assets};
@@ -255,17 +273,44 @@ function kgCreateTutorialPortable(options) {
     var files = unpack(buffer); checkManifest(files,'physicskg-tutorial-library','tutorials.json');
     var checked = collection(parse(files['tutorials.json'])); requireTextOnly(checked); return checked;
   }
+  function cloudCollection(value) {
+    keys(value,['format','schema_version','records','legacyStamps'],'cloud tutorial library');
+    if (value.format !== 'physicskg-cloud-tutorial-library' || value.schema_version !== 2 ||
+        !value.legacyStamps || Array.isArray(value.legacyStamps) || typeof value.legacyStamps !== 'object' ||
+        Object.entries(value.legacyStamps).some(function(pair) {
+          return !pair[0].startsWith('personal:') || !/^[a-f0-9]{64}$/.test(pair[1]);
+        })) { throw new Error('Unsupported cloud tutorial library.'); }
+    return {records:collection({format:'physicskg-tutorial-library',schema_version:1,records:value.records},true),
+      legacyStamps:value.legacyStamps};
+  }
+  function exportCloudCollection(records, legacyStamps) {
+    var value = {format:'physicskg-cloud-tutorial-library',schema_version:2,records:records,legacyStamps:legacyStamps};
+    cloudCollection(value);
+    return new TextEncoder().encode(json(value));
+  }
+  function importCloudCollection(buffer) {
+    if (buffer.byteLength > maxBytes) { throw new Error('Cloud tutorial library exceeds 10 MB.'); }
+    return cloudCollection(parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer)));
+  }
+  async function validateAudio(blob, id) {
+    if (!blob || !blob.size || blob.size > clipLimit || !audioType(blob.type) ||
+        !await recordingMatches(await blob.arrayBuffer(),id)) {
+      throw new Error('A tutorial recording is missing or damaged.');
+    }
+    return {id:id,mimeType:blob.type,byteLength:blob.size,blob:blob};
+  }
   function stable(value) {
     if (Array.isArray(value)) { return '[' + value.map(stable).join(',') + ']'; }
     if (value && typeof value === 'object') { return '{' + Object.keys(value).sort().map(function(key) { return JSON.stringify(key) + ':' + stable(value[key]); }).join(',') + '}'; }
     return JSON.stringify(value);
   }
   async function fingerprint(value) {
-    var bytes = new TextEncoder().encode(stable(value));
-    var result = await crypto.subtle.digest('SHA-256',bytes);
-    return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
+    return sha256(new TextEncoder().encode(stable(value)));
   }
   return {exportBundle:exportBundle, importBundle:importBundle, bundleLimit:bundleLimit, requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
     parse:parse, json:json, exportSingle:exportSingle, importSingle:importSingle,
-    exportCollection:exportCollection, importCollection:importCollection, fingerprint:fingerprint, clone:clone};
+    exportCollection:exportCollection, importCollection:importCollection,
+    exportCloudCollection:exportCloudCollection, importCloudCollection:importCloudCollection,
+    syncRecord:function(value) { return record(value,true,true); },
+    validateAudio:validateAudio, fingerprint:fingerprint, clone:clone};
 }

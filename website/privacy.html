@@ -40,13 +40,16 @@
     <ul>
       <li>notes attached to teaching content;</li>
       <li>personal graph-layout adjustments;</li>
-      <li>latest study-question results; and</li>
-      <li>reading-completion marks and related update timestamps.</li>
+      <li>latest study-question results;</li>
+      <li>reading-completion marks and related update timestamps; and</li>
+      <li>personal tutorials, including their written content, actions and voice recordings.</li>
     </ul>
     <p>
       It remains in your browser's local storage until you clear it. You can
       export it as <strong>PhysicsKG personal data.zip</strong>, a transparent
       archive of CSV files, and import that archive into another browser.
+      For a tutorial with recordings, use <strong>Export tutorial</strong>
+      to save a separate ZIP containing the tutorial and its audio.
     </p>
 
     <h2>Optional Google Drive sync</h2>
@@ -58,10 +61,14 @@
       with it; it does not provide general access to your Drive.
     </p>
     <p>
-      When you press <strong>Sync now</strong>, the app reads or updates one
-      visible file named <strong>PhysicsKG personal data.zip</strong>. Data moves
-      directly between your browser and Google Drive. The access token is kept
+      When sync runs, PhysicsKG reads or updates <strong>PhysicsKG personal data.zip</strong>
+      for notes, layouts and progress. Personal tutorials use separate
+      <strong>PhysicsKG tutorial library snapshot.json</strong> files, with their recordings
+      stored as separate <strong>PhysicsKG audio</strong> attachments. An older
+      <strong>PhysicsKG tutorials.zip</strong> may be read to pick up earlier tutorial
+      edits. Data moves directly between your browser and Google Drive. The access token is kept
       only in the page's memory and is not stored in your study record or archive.
+      Previous tutorial snapshots and recordings are retained in Drive.
     </p>
 
     <h2>Use and sharing</h2>
@@ -83,7 +90,8 @@
       <li>Use PhysicsKG without connecting Google Drive.</li>
       <li>Export or import your data from <strong>Tools → Personal data</strong>.</li>
       <li>Clear the site's browser storage to delete the local copy.</li>
-      <li>Delete <strong>PhysicsKG personal data.zip</strong> to remove the Drive copy.</li>
+      <li>Disconnect sync on your devices before deleting the PhysicsKG archives,
+        tutorial library and audio attachments from Drive.</li>
       <li>Revoke PhysicsKG in your Google Account permissions.</li>
     </ul>
 
