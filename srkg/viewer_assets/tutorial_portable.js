@@ -207,6 +207,9 @@ function kgCreateTutorialPortable(options) {
     var result = await crypto.subtle.digest('SHA-256',bytes);
     return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
   }
+  async function recordingMatches(bytes, id) {
+    return Boolean(bytes && bytes.byteLength && bytes.byteLength <= clipLimit && await sha256(bytes) === id);
+  }
   async function exportBundle(source, getAudio) {
     var checked = record(source,false), cards = voiceCards(checked.route);
     if (!cards.length) { return {bytes:exportSingle(checked,false), count:0}; }
@@ -255,8 +258,9 @@ function kgCreateTutorialPortable(options) {
       keys(entry,['id','mimeType','byteLength'],'audio asset');
       if (!required.delete(entry.id) || !audioType(entry.mimeType)) { throw new Error('Invalid tutorial audio inventory.'); }
       var data = files[assetPath(entry.id)];
-      if (!data || !data.length || data.length > clipLimit || data.length !== entry.byteLength ||
-          await sha256(data) !== entry.id) { throw new Error('Missing or damaged tutorial audio.'); }
+      if (!data || data.byteLength !== entry.byteLength || !await recordingMatches(data,entry.id)) {
+        throw new Error('Missing or damaged tutorial audio.');
+      }
       assets.push({id:entry.id,mimeType:entry.mimeType,byteLength:data.length,blob:new Blob([data],{type:entry.mimeType})});
     }
     return {source:source,assets:assets};
@@ -290,7 +294,7 @@ function kgCreateTutorialPortable(options) {
   }
   async function validateAudio(blob, id) {
     if (!blob || !blob.size || blob.size > clipLimit || !audioType(blob.type) ||
-        await sha256(await blob.arrayBuffer()) !== id) {
+        !await recordingMatches(await blob.arrayBuffer(),id)) {
       throw new Error('A tutorial recording is missing or damaged.');
     }
     return {id:id,mimeType:blob.type,byteLength:blob.size,blob:blob};
@@ -301,9 +305,7 @@ function kgCreateTutorialPortable(options) {
     return JSON.stringify(value);
   }
   async function fingerprint(value) {
-    var bytes = new TextEncoder().encode(stable(value));
-    var result = await crypto.subtle.digest('SHA-256',bytes);
-    return Array.from(new Uint8Array(result)).map(function(byte) { return byte.toString(16).padStart(2,'0'); }).join('');
+    return sha256(new TextEncoder().encode(stable(value)));
   }
   return {exportBundle:exportBundle, importBundle:importBundle, bundleLimit:bundleLimit, requireTextOnly:requireTextOnly, route:route, record:record, collection:collection, collectionDocument:collectionDocument,
     parse:parse, json:json, exportSingle:exportSingle, importSingle:importSingle,

@@ -615,7 +615,7 @@ def test_voiced_drive_writes_without_etag_and_preserves_concurrent_heads(tutoria
         return Response.json({files:Array.from(files.values(),({bytes,...file})=>file)});
       };
       const model = () => kgCreateGoogleDrivePersonalDataProvider({
-        fileName:'PhysicsKG tutorial library v2.json',allMatches:true,mimeType:'application/json',appendOnly:true,fetch
+        fileName:'PhysicsKG tutorial library v2.json',mimeType:'application/json',appendOnly:true,fetch
       });
       const a = model(), b = model(), options = {legacyProvider:{read:async()=>null}};
       const left = kgCreateTutorialStore({databaseName:'revisionless-left'});

@@ -135,7 +135,7 @@ def test_voice_storage_atomic_conflict_duplicate_and_portability_guards(tutorial
     assert result['bytes']=='original'
     assert result['reads']==0
     for key in ['exportError','backupError','syncError']:
-        assert 'not available yet' in result[key]
+        assert 'This format is text-only' in result[key]
 
 
 @pytest.mark.browser

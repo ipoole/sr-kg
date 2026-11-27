@@ -104,7 +104,7 @@
     var mimeType = options.mimeType || 'application/zip';
     var appendOnly = options.appendOnly === true;
     var snapshotName = 'PhysicsKG tutorial library snapshot.json';
-    var fileId = "", allMatches = options.allMatches === true, cache = new Map();
+    var fileId = "", allMatches = appendOnly || options.allMatches === true, cache = new Map();
 
     function headers(extra) {
       var result = {Authorization: "Bearer " + token()};

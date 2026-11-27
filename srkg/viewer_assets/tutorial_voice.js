@@ -5,6 +5,7 @@ function kgCreateTutorialVoice(options) {
   var dialog = el('dialog'), session = null, generation = 0;
   var recorder = null, stream = null, timer = null, started = 0;
   var clip = null, duration = 0, dirty = false, phase = 'idle', url = null;
+  var clipLimit = 50 * 1024 * 1024;
   var player = el('audio');
   // iOS can keep playback routed through the recording audio session with a muted track.
   var releaseBetweenTakes = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
@@ -25,9 +26,12 @@ function kgCreateTutorialVoice(options) {
     ? 'The microphone is released when you stop recording. Re-recording may ask for access again.'
     : 'Microphone access lasts until Done or Exit tutorial. It is muted between takes.';
   function message(text) { el('status').textContent = text; }
+  function canRecord() {
+    return Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  }
   function controls() {
     var locked = phase !== 'idle';
-    el('record').disabled = locked || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder;
+    el('record').disabled = locked || !canRecord();
     el('record').textContent = clip ? 'Re-record' : 'Record';
     el('stop').disabled = phase !== 'recording';
     el('play').disabled = locked || !clip;
@@ -84,7 +88,7 @@ function kgCreateTutorialVoice(options) {
       var current = recorder, chunks = [], bytes = 0, failed = false;
       current.ondataavailable = function(event) {
         if (event.data.size) { chunks.push(event.data); bytes += event.data.size; }
-        if (bytes > 50 * 1024 * 1024 && current.state !== 'inactive') {
+        if (bytes > clipLimit && current.state !== 'inactive') {
           failed = true; message('Recording exceeds 50 MB. Previous take kept.'); current.stop(); stopTracks();
         }
       };
@@ -98,7 +102,7 @@ function kgCreateTutorialVoice(options) {
         if (token !== generation) { return; }
         endTake(); useAudioType('playback'); recorder = null; phase = 'idle';
         var blob = new Blob(chunks,{type:current.mimeType || (chunks[0] && chunks[0].type) || mime || 'audio/webm'});
-        if (!failed && blob.size && blob.size <= 50 * 1024 * 1024) {
+        if (!failed && blob.size && blob.size <= clipLimit) {
           useClip(blob, Math.max(0.001,(performance.now() - started) / 1000)); dirty = true;
           message('Take ready. Listen, re-record, or Finish recording to save.');
         } else { duration = oldDuration; if (!failed) { message('No audio captured. Previous take kept.'); } }
@@ -162,7 +166,7 @@ function kgCreateTutorialVoice(options) {
     if (asset) { useClip(asset.blob,step.audio.duration); }
     message(asset ? 'Saved recording. Re-record to make a new take.' : 'Record your narration, or cancel to return to the editor.');
     if (step.audio && !asset) { message('Saved audio is missing. Import a file or record a replacement.'); }
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    if (!canRecord()) {
       message('Microphone recording is unavailable here. Use Import audio file in the card editor.');
     }
     controls(); dialog.showModal();
@@ -170,7 +174,7 @@ function kgCreateTutorialVoice(options) {
   async function importFile(file) {
     if (!session) { return; }
     var token = generation;
-    if (!file.size || file.size > 50 * 1024 * 1024 || !/^audio\//.test(file.type)) {
+    if (!file.size || file.size > clipLimit || !/^audio\//.test(file.type)) {
       message('Choose an audio file of at most 50 MB.'); return;
     }
     phase = 'loading'; controls(); message('Checking audio file…');
