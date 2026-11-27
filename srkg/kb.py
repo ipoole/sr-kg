@@ -64,6 +64,7 @@ DEFAULT_KB_FILES = {
     "edges": "edges.csv",
     "edge_key": "edges_key.csv",
     "content_blocks": "content_blocks.csv",
+    "symbols": "symbols.csv",
     "study_questions": "study_questions.csv",
     "study_question_options": "study_question_options.csv",
     "references": "references.csv",
@@ -77,6 +78,7 @@ DEFAULT_KB_FILES = {
     "layout": "layout.json",
     "tutorials": "tutorials.yaml",
 }
+SYMBOL_COLUMNS = ["symbol_id", "symbol", "name", "definition_block_id", "search_terms"]
 
 
 @dataclass(frozen=True)
@@ -103,6 +105,7 @@ class KnowledgeBasePaths:
     domains_root: Path | None = None
     layout_revision: str = ""
     figures: Path | None = None
+    symbols: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -120,6 +123,7 @@ class KnowledgeBase:
     domain_packages: tuple = ()
     build_warnings: tuple[BuildWarning, ...] = ()
     content_units: ContentRegistry = field(default_factory=ContentRegistry)
+    symbols: tuple[dict[str, str], ...] = ()
 
     def figure_data(self):
         return {key: value.to_viewer_data() for key, value in self.content_units.figures.items()}
@@ -228,8 +232,9 @@ def resolve_knowledge_base_paths(data_root: str | Path) -> KnowledgeBasePaths:
 
 
 def _paths_from_manifest(root: Path, manifest: dict) -> KnowledgeBasePaths:
+    declared_files = manifest.get("files", {})
     files = dict(DEFAULT_KB_FILES)
-    files.update(manifest.get("files", {}))
+    files.update(declared_files)
 
     return KnowledgeBasePaths(
         root=root,
@@ -245,6 +250,7 @@ def _paths_from_manifest(root: Path, manifest: dict) -> KnowledgeBasePaths:
         reference_links=_resolve_manifest_path(root, files["reference_links"]),
         graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("graphic_designs")),
         figures=_resolve_existing_optional_manifest_path(root, files.get("figures")),
+        symbols=_resolve_optional_manifest_path(root, declared_files.get("symbols")),
         module_graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("module_graphic_designs")),
         modules=_resolve_existing_optional_manifest_path(root, files.get("modules")),
         module_members=_resolve_existing_optional_manifest_path(root, files.get("module_members")),
@@ -281,8 +287,15 @@ def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | No
     """Read one source package; also used by authoring/review tools."""
     tables = {
         role: _read_optional_csv(getattr(paths, role))
-        for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials"}
+        for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials", "symbols"}
     }
+    tables["symbols"] = None
+    if paths.symbols is not None:
+        symbols = _read_csv(paths.symbols)
+        missing = set(SYMBOL_COLUMNS) - set(symbols.columns)
+        if missing:
+            raise KnowledgeBaseLoadError(f"{paths.symbols}: missing columns: {', '.join(sorted(missing))}")
+        tables["symbols"] = symbols[SYMBOL_COLUMNS]
     if tables['figures'] is not None:
         tables['figures']['_asset_root'] = str(paths.root or paths.figures.parent)
     return tables
@@ -379,6 +392,23 @@ def _assemble_knowledge_base(
         domains=({package.id for package in domain_packages} or known_domains), figures=figures)
     warnings = reference_warnings if reference_warnings is not None else []
     warnings.extend(content_units.warnings)
+    symbols_df = tables.get("symbols")
+    symbols = []
+    if symbols_df is not None:
+        blocks = {block.block_id: concept.id for concept in concepts for block in concept.content_blocks}
+        symbol_ids = set()
+        for entry in symbols_df.to_dict("records"):
+            entry = {key: value.strip() for key, value in entry.items()}
+            symbol_id = entry["symbol_id"]
+            if not all(entry[key] for key in SYMBOL_COLUMNS[:-1]):
+                raise KnowledgeBaseLoadError("symbols.csv requires an ID, symbol, name and definition block for each entry")
+            if symbol_id in symbol_ids:
+                raise KnowledgeBaseLoadError(f"Duplicate symbol ID: {symbol_id}")
+            symbol_ids.add(symbol_id)
+            block_id = entry["definition_block_id"]
+            if block_id not in blocks:
+                raise KnowledgeBaseLoadError(f"{symbol_id}: unknown symbol definition block {block_id}")
+            symbols.append({**entry, "concept_id": blocks[block_id]})
     try:
         tutorials = []
         for source in tutorial_paths if tutorial_paths is not None else [paths.tutorials]:
@@ -416,6 +446,7 @@ def _assemble_knowledge_base(
         published_layout=published_layout,
         tutorials=tutorials,
         content_units=content_units,
+        symbols=tuple(symbols),
         build_warnings=tuple(warnings),
     )
 

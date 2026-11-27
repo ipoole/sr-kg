@@ -27,6 +27,41 @@ def test_exact_title_search_opens_real_concept_first(shared_repo_browser_graph):
     assert page.url.endswith('#concept-sr.lorentz_transformations')
 
 
+def test_maths_symbols_browse_search_and_open_definition(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_search()
+    page.get_by_role('button', name='Symbols', exact=True).click()
+    rows = page.locator('#kg_symbol_list tbody tr')
+    assert rows.count() == 8
+    query = page.get_by_role('textbox', name='Search symbols')
+    for spelling in ('gamma', 'γ', 'Worldline'):
+        query.fill(spelling)
+        assert rows.count() == 1
+        assert rows.first.locator('td').first.inner_text() == 'γ'
+    query.fill('no matching notation')
+    assert page.locator('#kg_search_status').inner_text() == 'No matching symbols.'
+    query.fill('gamma')
+    query.press('ArrowDown')
+    assert rows.first.get_by_role('link').evaluate('link => link === document.activeElement')
+    page.keyboard.press('Enter')
+    assert not page.locator('#kg_search_section').is_visible()
+    assert page.locator('#info_panel [data-content-block-id="math.worldline.definition"]').evaluate('el => el.open')
+
+
+def test_maths_inline_symbol_previews_its_definition(repo_browser_graph):
+    graph = repo_browser_graph
+    page = graph.page
+    graph.click_concept('math.tensor_field')
+    page.locator('#kg_view_select').select_option('details')
+    block = page.locator('#info_panel [data-content-block-id="math.tensor_field.definition"]')
+    block.locator(':scope > summary').click()
+    explanation = block.locator('details[data-content-slot="point"]')
+    explanation.locator(':scope > summary').click()
+    definition = 'math.tangent_space.definition'
+    explanation.locator(f'a[data-block-id="{definition}"]').hover()
+    assert page.locator(f'#kg_concept_preview [data-preview-block-id="{definition}"]').is_visible()
+
+
 def test_exact_module_beats_partial_concept_title(browser_graph):
     page = browser_graph.page
     page.evaluate("conceptData['1.1'].label = 'Applications overview'")

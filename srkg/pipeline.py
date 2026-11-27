@@ -187,6 +187,7 @@ def filter_knowledge_base_by_domains(
         modules=filtered_modules,
         published_layout=kb.published_layout,
         tutorials=tutorials_for_domains(kb.tutorials, available_domains),
+        symbols=tuple(entry for entry in kb.symbols if entry["concept_id"] in selected_ids),
         content_units=content_units,
         build_warnings=content_units.warnings,
     )
@@ -267,6 +268,7 @@ def generate_viewer_from_kb(
         tutorial_data=kb.tutorial_data(),
         domain_data=kb.domain_data(),
         figure_data=kb.figure_data(),
+        symbol_data=kb.symbols,
         google_drive_client_id=google_drive_client_id,
     )
     output_file.write_text(html_text, encoding="utf-8")

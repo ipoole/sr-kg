@@ -1,6 +1,7 @@
       /* Runtime data injected by srkg.html_injection. */
       var conceptData = __CONCEPT_DATA__;
       var figureData = __FIGURE_DATA__;
+      var symbolData = __SYMBOL_DATA__;
       var moduleData = __MODULE_DATA__;
       var publishedLayout = __PUBLISHED_LAYOUT__;
       var tutorialData = __TUTORIAL_DATA__;
@@ -5010,7 +5011,7 @@
           query = String(query || "");
           var input = document.getElementById("kg_search");
           input.value = query;
-          buildConceptList(query);
+          setSymbolSearch(false);
           setSearchOpen(true);
         }
 
@@ -5239,7 +5240,8 @@
         function tutorialSearchSnapshot() {
           return {
             open: Boolean(document.getElementById("kg_search_section").open),
-            query: document.getElementById("kg_search").value
+            query: document.getElementById("kg_search").value,
+            symbols: !symbolList.hidden
           };
         }
 
@@ -5348,7 +5350,7 @@
           var search = snapshot.search || {};
           var searchInput = document.getElementById("kg_search");
           searchInput.value = String(search.query || "");
-          buildConceptList(searchInput.value);
+          setSymbolSearch(Boolean(search.symbols) && symbolData.length > 0);
           setSearchOpen(Boolean(search.open));
 
           applyWorkspaceSplit(snapshot.workspaceSplitPercent);
@@ -6187,6 +6189,56 @@
           document.getElementById(open ? "kg_search" : "kg_search_toggle").focus();
         }
 
+        var symbolSearchButton = document.getElementById("kg_search_symbols");
+        var symbolList = document.getElementById("kg_symbol_list");
+        var searchStatus = document.getElementById("kg_search_status");
+        var searchInput = document.getElementById("kg_search");
+        symbolSearchButton.hidden = !symbolData.length;
+
+        function buildSymbolList(query) {
+          var terms = query.normalize("NFKC").trim().toLowerCase().split(/\s+/).filter(Boolean);
+          var rows = symbolData.filter(function(entry) {
+            var searchable = [entry.symbol, entry.name, entry.search_terms]
+              .join(" ").normalize("NFKC").toLowerCase();
+            return terms.every(function(term) { return searchable.includes(term); });
+          });
+          symbolList.querySelector("tbody").innerHTML = rows.map(function(entry) {
+            return "<tr><td>" + escapeHtml(entry.symbol) + "</td><td>" + escapeHtml(entry.name) +
+              '</td><td><a href="' + escapeHtml(conceptHash(entry.concept_id)) + '" data-block-id="' +
+              escapeHtml(entry.definition_block_id) + '">' + escapeHtml(conceptTitleText(entry.concept_id)) +
+              "</a></td></tr>";
+          }).join("");
+          symbolList.querySelector("table").hidden = !rows.length;
+          searchStatus.textContent = rows.length ? rows.length + (rows.length === 1 ? " entry" : " entries") : "No matching symbols.";
+          symbolList.scrollTop = 0;
+        }
+
+        function setSymbolSearch(showSymbols) {
+          symbolList.hidden = !showSymbols;
+          document.getElementById("kg_concept_list").hidden = showSymbols;
+          document.getElementById("kg_search_find").hidden = showSymbols;
+          symbolSearchButton.setAttribute("aria-pressed", String(showSymbols));
+          searchInput.setAttribute("aria-label", showSymbols ? "Search symbols" : "Search concepts and modules");
+          searchInput.placeholder = showSymbols ? "Search symbol or name" : "Search ID, title, or concept text";
+          if (showSymbols) { buildSymbolList(searchInput.value); }
+          else { buildConceptList(searchInput.value); }
+        }
+
+        symbolSearchButton.addEventListener("click", function() {
+          setSymbolSearch(symbolList.hidden);
+        });
+
+        symbolList.addEventListener("click", function(e) {
+          var link = e.target.closest("a[data-block-id]");
+          if (!link || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) { return; }
+          var source = sharedExplanations.source(link.dataset.blockId);
+          if (!source) { return; }
+          e.preventDefault();
+          setSearchOpen(false);
+          navigateToConcept(source.ownerId, "Selected");
+          openTutorialDetailsBlock(source.block.block_id);
+        });
+
         document.getElementById("kg_search_toggle").addEventListener("click", function() {
           setSearchOpen(!document.getElementById("kg_search_section").open);
         });
@@ -6200,16 +6252,17 @@
           if (e.key === "Escape") { e.preventDefault(); setSearchOpen(false); }
         });
 
-        document.getElementById("kg_search").addEventListener("keydown", function(e) {
-          if (e.key === "Enter") { kgSearch(); }
+        searchInput.addEventListener("keydown", function(e) {
+          if (e.key === "Enter" && symbolList.hidden) { kgSearch(); }
           if (e.key === "ArrowDown") {
-            var first = document.querySelector("#kg_concept_list button");
+            var first = document.querySelector(symbolList.hidden ? "#kg_concept_list button" : "#kg_symbol_list a");
             if (first) { e.preventDefault(); first.focus(); }
           }
         });
 
-        document.getElementById("kg_search").addEventListener("input", function(e) {
-          buildConceptList(e.target.value);
+        searchInput.addEventListener("input", function(e) {
+          if (symbolList.hidden) { buildConceptList(e.target.value); }
+          else { buildSymbolList(e.target.value); }
         });
 
         document.getElementById("kg_display_scope_select").addEventListener("change", function(e) {

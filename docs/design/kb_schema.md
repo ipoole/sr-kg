@@ -228,6 +228,20 @@ validates these additions; the [shared reader](folded_reading_trees_renderer.md)
 implements them on a synthetic fixture before production-content conversion.
 Existing tables/content need no conversion to load or render.
 
+## symbols.csv
+
+An optional `files.symbols` entry in `domain.yaml` points to the domain’s
+glossary table. Each row has `symbol_id`, `symbol`, `name`,
+`definition_block_id` and `search_terms`. Use a unique, domain-prefixed ID for
+each meaning and plain Unicode for the displayed symbol. The definition block
+must be a concept content block owned by the same domain. Reuse the glyph in
+separate rows when it has multiple meanings. `search_terms` can be empty or
+include plain-text spellings like `gamma` and `T_pM`.
+
+The viewer combines the tables from the selected domains. A few inline
+occurrences can also link directly to a defining block with
+`\cref{\(T_pM\)}{math.tangent_space.definition}` in prose.
+
 ## modules.csv
 
 `modules.csv` registers authored flat modules. Modules are the semantic unit of graph folding and have their own detail pages.

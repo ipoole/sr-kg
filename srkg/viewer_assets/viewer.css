@@ -3525,12 +3525,25 @@
       #kg_search_section summary { font-weight: bold; cursor: pointer; }
       #kg_search_block { display: flex; gap: 6px; margin: 8px 0; }
       #kg_search { flex: 1; min-width: 0; padding: 6px; font: inherit; }
-      #kg_search_section #kg_concept_list {
+      #kg_search_section #kg_concept_list,
+      #kg_symbol_list {
         max-height: min(52dvh, 440px);
         font-size: 1em;
       }
+      #kg_search_section [hidden] { display: none; }
+      #kg_symbol_list { overflow: auto; }
+      #kg_symbol_list table { width: 100%; border-collapse: collapse; }
+      #kg_symbol_list th, #kg_symbol_list td {
+        padding: 8px 5px;
+        border-bottom: 1px solid #dce2ea;
+        text-align: left;
+      }
+      #kg_symbol_list th { position: sticky; top: 0; background: white; }
+      #kg_symbol_list td:first-child { white-space: nowrap; font: 1.2em Georgia, serif; }
+      #kg_search_symbols[aria-pressed="true"] { background: #e0ebfa; color: #174ea6; }
       #kg_search_status { color: #526070; font-size: .9em; }
       #kg_search_close { margin-top: 8px; }
+      #kg_symbol_list a:focus-visible,
       #kg_search_section button:focus-visible,
       #kg_search_toggle:focus-visible { outline: 2px solid #174ea6; outline-offset: 2px; }
       @media (max-width: 850px) {

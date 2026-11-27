@@ -51,7 +51,10 @@ def test_temperature_argument_retains_named_clarification_and_source_identity(ma
         assert any(isinstance(p, ContentExplanation) and p.slot == slot
                    for p in maths.content_units[source].parts)
     assert maths.content_units['math.tangent_space.graphic'].graphic == 'detail'
-    assert maths.missing_domains == ('sr',)
+
+
+def test_selected_maths_reports_links_to_unloaded_domains(maths):
+    assert maths.missing_domains == ('gr', 'sr')
 
 
 def test_foundational_routes_are_explicit_and_acyclic(maths):
