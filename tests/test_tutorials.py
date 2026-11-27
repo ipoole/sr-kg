@@ -19,7 +19,7 @@ def test_physics_routes_start_with_quiet_introduction():
         intro = route.steps[0]
         assert intro.action == {"command": "wait", "milliseconds": 0}
         assert not intro.actions
-        assert not intro.prepare
+        assert intro.prepare in ((), ({"command": "home"},))
         assert not intro.pointer_target
 
 
@@ -27,9 +27,10 @@ def test_built_in_cards_use_explicit_whole_card_visibility():
     from srkg.kb import load_knowledge_base
     routes = load_knowledge_base(Path(__file__).parents[1] / "data", include_graphics=False).tutorials
     for route in routes:
-        for step in route.steps:
+        for index, step in enumerate(route.steps):
             assert isinstance(step.demonstrate, bool), (route.tutorial_id, step.step_id)
-            assert not step.prepare, (route.tutorial_id, step.step_id)
+            if step.prepare:
+                assert index == 0 and step.prepare == ({"command": "home"},), (route.tutorial_id, step.step_id)
         if route.category == "physics":
             assert all(step.demonstrate is False for step in route.steps)
 
