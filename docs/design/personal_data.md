@@ -183,7 +183,7 @@ time. Disconnecting removes authorization from the current page but does not
 delete either copy of the data.
 
 Tutorials share the same connection and Sync now action. They use
-**PhysicsKG tutorial library v2.json** and separate **PhysicsKG audio**
+**PhysicsKG tutorial library snapshot.json** files and separate **PhysicsKG audio**
 attachments. The notes and progress archive retains its original CSV format.
 The new viewer reads the older **PhysicsKG tutorials.zip** and brings in
 later edits to it. A new library is created when there are tutorial records
@@ -194,10 +194,9 @@ A durable baseline supports three-way whole-tutorial merges. Independent edits
 keep both versions as visibly marked conflict copies, with deterministic IDs so
 repeated syncing does not multiply copies. Deletions use tombstones; an independent
 edit survives as a conflict copy. Card order is never merged automatically.
-Updates require the cloud revision and retry a bounded number of times on a
-concurrent change. Duplicate companion files from simultaneous first connections
-are read together, merged into a stable canonical file and retained, not deleted.
-Unchanged Drive versions reuse their downloaded content.
+Each update creates a snapshot that points to the versions it supersedes.
+Concurrent current snapshots are read together and merged. Previous snapshots
+are retained. Unchanged Drive versions reuse their downloaded content.
 
 Sync does not rebuild an open tutorial editor or interrupt playback. A playing
 route remains a frozen snapshot; an open editor keeps its text, focus and caret.

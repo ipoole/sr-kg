@@ -526,8 +526,8 @@ Use Export tutorial to back up a voiced tutorial independently.
 ## Voiced tutorial sync (issue #34)
 
 Sync uses the existing Drive connection. The separate
-`PhysicsKG tutorial library v2.json` holds tutorial records, deletion markers
-and fingerprints of the last observed legacy records. Each immutable
+`PhysicsKG tutorial library snapshot.json` files hold tutorial records,
+deletion markers and fingerprints of the last observed legacy records. Each immutable
 recording is uploaded separately and tagged with its SHA-256 content ID in
 Drive app properties. An unchanged sync and a text-only edit transfer no
 audio bytes when both sides already have the recordings.
@@ -538,8 +538,15 @@ library and cannot read or overwrite the new library. If a legacy edit and a
 newer edit both changed a tutorial, the existing merge rules preserve a
 conflict copy. Open the newer viewer to review it.
 
-Sync uploads missing clips before updating the library with its Drive revision
-check. The receiving browser validates type, size and hash before committing
+Sync uploads missing clips before creating a new library snapshot. Each
+snapshot identifies the Drive snapshots it supersedes through file metadata,
+so the browser downloads only the current candidates. Devices that publish
+concurrently create independent snapshots. The next sync merges them and
+creates a successor. This avoids relying on a response ETag and preserves
+each device's edits. The original `PhysicsKG tutorial library v2.json` is
+read as a starting snapshot. Previous snapshots are retained.
+
+The receiving browser validates type, size and hash before committing
 the tutorial snapshot and recordings in one IndexedDB transaction. Interrupted
 transfers can be retried. Unreferenced recordings are retained to protect
 conflict copies and transfers in progress.

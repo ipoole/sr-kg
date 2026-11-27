@@ -587,3 +587,60 @@ def test_drive_audio_provider_lists_tagged_assets_and_preserves_mime_type(tutori
     assert result['text'] == 'take'
     assert '"physicskgAsset":"tutorial-audio-v1"' in result['upload']
     assert f'"sha256":"{result["id"]}"' in result['upload']
+
+
+@pytest.mark.browser
+def test_voiced_drive_writes_without_etag_and_preserves_concurrent_heads(tutorial_graph):
+    page = _library(tutorial_graph)
+    result = page.evaluate('''async () => {
+      const p = kgTutorialPortable;
+      const initial = await kgCreateTutorialStore({databaseName:'revisionless-source'}).create(tutorialData[0]);
+      const files = new Map([['root',{id:'root',name:'PhysicsKG tutorial library v2.json',
+        version:'1',bytes:p.exportCloudCollection([initial],{})}]]);
+      const methods = [];
+      const fetch = async (url, options) => {
+        const target = new URL(url), method = options.method || 'GET';
+        methods.push(method);
+        if (method === 'POST') {
+          const body = await options.body.text();
+          const metadata = JSON.parse(body.split('\\r\\n')[3]);
+          const bytes = new TextEncoder().encode(body.split('\\r\\n\\r\\n')[2].split('\\r\\n--')[0]);
+          const id = 'file-' + files.size;
+          files.set(id,{...metadata,id,version:'1',bytes});
+          return Response.json({id,version:'1'});
+        }
+        if (target.searchParams.get('alt') === 'media') {
+          return new Response(files.get(target.pathname.split('/').pop()).bytes);
+        }
+        return Response.json({files:Array.from(files.values(),({bytes,...file})=>file)});
+      };
+      const model = () => kgCreateGoogleDrivePersonalDataProvider({
+        fileName:'PhysicsKG tutorial library v2.json',allMatches:true,mimeType:'application/json',appendOnly:true,fetch
+      });
+      const a = model(), b = model(), options = {legacyProvider:{read:async()=>null}};
+      const left = kgCreateTutorialStore({databaseName:'revisionless-left'});
+      const right = kgCreateTutorialStore({databaseName:'revisionless-right'});
+      const sync = (store,provider) => kgCreateTutorialSync({portable:p,store,provider,...options});
+      await sync(left,a).synchronize();
+      await sync(right,b).synchronize();
+      const [beforeA,beforeB] = await Promise.all([a.read(),b.read()]);
+      const leftEdit = await left.get(initial.id), rightEdit = await right.get(initial.id);
+      leftEdit.route.title = 'Desktop edit';
+      rightEdit.route.title = 'Phone edit';
+      const [savedA,savedB] = await Promise.all([left.save(leftEdit),right.save(rightEdit)]);
+      await Promise.all([
+        a.write(p.exportCloudCollection([savedA],{}),{remote:beforeA}),
+        b.write(p.exportCloudCollection([savedB],{}),{remote:beforeB})
+      ]);
+      await left.commitSnapshot([savedA],{[savedA.id]:await p.fingerprint(savedA)},[savedA]);
+      const result = await sync(left,a).synchronize();
+      const current = await a.read();
+      await sync(left,a).synchronize();
+      return {result,methods,heads:1+current.copies.length,files:files.size,
+        titles:p.importCloudCollection(current.bytes).records.map(record=>record.route.title)};
+    }''')
+    assert result['result']['conflicts'] == 1
+    assert result['heads'] == 1
+    assert result['files'] == 4
+    assert 'PATCH' not in result['methods']
+    assert set(result['titles']) == {'Desktop edit', 'Phone edit'}

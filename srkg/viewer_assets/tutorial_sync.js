@@ -7,12 +7,13 @@ function kgCreateTutorialSync(options) {
     await Promise.all(records.map(async function(record) { result[record.id] = await portable.fingerprint(record); }));
     return result;
   }
-  async function merge(local, remote, baseline) {
+  async function merge(local, remote, baseline, preserveRemoteHeads) {
     baseline = baseline || {};
     var all = local.concat(remote).map(function(record) {
       return options.legacyProvider ? portable.syncRecord(record) : portable.record(record,true);
     });
     var hashes = await Promise.all(all.map(portable.fingerprint)), grouped = new Map(), resolved = new Set();
+    var remoteHashes = preserveRemoteHeads ? new Set(hashes.slice(local.length)) : new Set();
     all.forEach(function(record,index) {
       if (!grouped.has(record.id)) { grouped.set(record.id,new Map()); }
       grouped.get(record.id).set(hashes[index],record);
@@ -26,7 +27,9 @@ function kgCreateTutorialSync(options) {
         if (localHashes[id] === item.hash) { relocations[id] = 'personal:conflict-' + item.hash; }
         return false;
       });
-      if (items.length > 1) { items = items.filter(function(item) { return item.hash !== baseline[id]; }); }
+      if (items.length > 1) {
+        items = items.filter(function(item) { return item.hash !== baseline[id] || remoteHashes.has(item.hash); });
+      }
       if (!items.length) { return; }
       items.sort(function(a,b) {
         return Number(Boolean(a.record.deletedAt)) - Number(Boolean(b.record.deletedAt)) || a.hash.localeCompare(b.hash);
@@ -101,7 +104,8 @@ function kgCreateTutorialSync(options) {
       var legacyStamps = cloud.legacyStamps, legacyChanged = false;
       var older = legacy ? await readLegacy(legacy) : [];
       if (legacy && !remote) { remoteRecords = remoteRecords.concat(older); }
-      var merged = await merge(local.records,remoteRecords,local.baseline);
+      var concurrentHeads = Boolean(provider.appendOnly && remote && remote.copies.length);
+      var merged = await merge(local.records,remoteRecords,local.baseline,concurrentHeads);
       if (legacy) {
         var olderStamps = await stamps(older);
         var changes = older.filter(function(record) { return olderStamps[record.id] !== legacyStamps[record.id]; });
@@ -121,10 +125,10 @@ function kgCreateTutorialSync(options) {
       var equal = sameStamps(primaryStamps,mergedStamps) && sameStamps(cloud.legacyStamps,legacyStamps);
       try {
         var assets = legacy ? await prepareAudio(merged.records,store,provider) : [];
-        if (!equal || !remote) {
-          if (remote && !remote.revision) { throw new Error('Google Drive did not provide a revision; tutorial upload was stopped to protect the cloud copy.'); }
+        if (!equal || !remote || concurrentHeads) {
+          if (remote && !provider.appendOnly && !remote.revision) { throw new Error('Google Drive did not provide a revision; tutorial upload was stopped to protect the cloud copy.'); }
           var bytes = legacy ? portable.exportCloudCollection(merged.records,legacyStamps) : portable.exportCollection(merged.records);
-          await provider.write(bytes, {revision:remote ? remote.revision : null,create:!remote});
+          await provider.write(bytes, {remote:remote,revision:remote ? remote.revision : null,create:!remote});
         }
         if (options.prepare) { await options.prepare(); }
         await store.commitSnapshot(merged.records,mergedStamps,local.records,undefined,assets);
