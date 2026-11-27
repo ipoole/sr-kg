@@ -136,6 +136,12 @@ when the reader needs a particular proof or qualification; use a concept target
 for a definition. Keep the surrounding argument understandable without opening
 the preview, and avoid self-links or links on every occurrence of a term.
 
+If a symbol first appears in an equation and is defined in another block, put
+the reference inside the math delimiters, for example
+`\[T^{0i}/\cref{c}{sr.constancy_of_speed_of_light.definition}=g_i.\]`.
+The symbol appears in dark blue and opens the same definition preview as a
+prose link. Introduce notation defined locally in the block itself.
+
 ## Edges and arguments
 
 | Relation | Meaning |

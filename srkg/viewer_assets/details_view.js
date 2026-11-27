@@ -2,6 +2,7 @@
 function kgCreateDetailsView(options) {
   "use strict";
   var cssAttributeValueEscape = options.markup.cssAttributeValueEscape;
+  var decorateMathReferences = options.markup.decorateMathReferences;
   var searchDisplayText = options.content.searchDisplayText;
   var schedulePanelContentRefit = options.onContentChange;
   var activeConceptSectionTargetId = null, currentConceptTocItems = [];
@@ -187,6 +188,7 @@ function kgCreateDetailsView(options) {
       return MathJax.typesetPromise([panel]).catch(function(err) {
         console.warn("MathJax typesetting failed:", err);
       }).then(function() {
+        decorateMathReferences(panel);
         applyInfoPanelSearchHighlight(options.searchQuery, options.scrollToSearchMatch);
         schedulePanelContentRefit();
       });

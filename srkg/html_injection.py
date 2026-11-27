@@ -46,7 +46,9 @@ VIEWPORT_META = '<meta name="viewport" content="width=device-width, initial-scal
 MATHJAX_ASSET = """
 <script>
   window.MathJax = {
+    loader: {load: ['[tex]/html']},
     tex: {
+      packages: {'[+]': ['html']},
       inlineMath: [['\\\\(', '\\\\)']],
       displayMath: [['\\\\[', '\\\\]']],
       processEscapes: true,

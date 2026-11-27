@@ -2713,6 +2713,18 @@
         text-decoration: underline;
     }
 
+    #info_panel a.concept-math-link,
+    #kg_concept_preview a.concept-math-link {
+        color: #184779;
+        fill: currentColor;
+        cursor: pointer;
+    }
+
+    a.concept-math-link:focus-visible {
+        outline: 2px solid #184779;
+        outline-offset: 2px;
+    }
+
     #kg_concept_preview {
         box-sizing: border-box;
         background: #ffffff;

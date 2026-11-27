@@ -55,19 +55,57 @@ function kgCreateContentMarkup(options) {
     return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   }
 
+  // Insert the navigation fragment only after MathJax has parsed the equation.
+  // TeX can interpret a hash in a link argument as a macro parameter.
+  var mathReferencePrefix = "kg-math-ref/";
+
+  function referenceTarget(id) {
+    var concept = getConcept(id);
+    var source = !concept && options.source ? options.source(id) : null;
+    if (!concept && !source) { return null; }
+    var ownerId = source ? source.ownerId : id;
+    return {
+      ownerId: ownerId,
+      blockId: source ? id : null,
+      title: source ? source.block.title : concept.label,
+      href: source && source.ownerType === "module" ? "#module-" + encodeURIComponent(ownerId) : conceptHash(ownerId)
+    };
+  }
+
+  function decorateMathReferences(element) {
+    var xlink = "http://www.w3.org/1999/xlink";
+    element.querySelectorAll('mjx-container a').forEach(function(link) {
+      var href = link.getAttribute("href") || link.getAttributeNS(xlink, "href") || "";
+      if (!href.startsWith(mathReferencePrefix)) { return; }
+      // The renderer only emits semantic IDs after this prefix.
+      var target = referenceTarget(href.slice(mathReferencePrefix.length));
+      if (!target) { return; }
+      link.setAttribute("href", target.href);
+      if (link.hasAttributeNS(xlink, "href")) { link.setAttributeNS(xlink, "href", target.href); }
+      link.classList.add("concept-link", "concept-math-link");
+      link.setAttribute("data-concept-id", target.ownerId);
+      if (target.blockId) { link.setAttribute("data-block-id", target.blockId); }
+      link.setAttribute("aria-label", target.title || target.ownerId);
+      link.setAttribute("aria-haspopup", "dialog");
+      link.setAttribute("aria-controls", "kg_concept_preview");
+      link.setAttribute("tabindex", "0");
+    });
+  }
+
   function renderSimpleConceptText(s) {
     var text = String(s || ""), html = "", cursor = 0;
     var macro = "\\cref";
-    while (cursor < text.length) {
-      var start = text.indexOf(macro, cursor);
-      if (start === -1) { return html + escapeHtml(text.slice(cursor)); }
-      html += escapeHtml(text.slice(cursor, start));
-      var after = start + macro.length;
-      if (/[A-Za-z0-9_]/.test(text.charAt(after))) {
-        html += escapeHtml(macro);
-        cursor = after;
+    var mathEnd = "", tokens = /\\\\|\\cref(?![A-Za-z0-9_])|\\[()[\]]/g, token;
+    while ((token = tokens.exec(text))) {
+      if (token[0] !== macro) {
+        if (token[0] === mathEnd) { mathEnd = ""; }
+        else if (!mathEnd && token[0] === "\\(") { mathEnd = "\\)"; }
+        else if (!mathEnd && token[0] === "\\[") { mathEnd = "\\]"; }
         continue;
       }
+      var start = token.index;
+      html += escapeHtml(text.slice(cursor, start));
+      var after = start + macro.length;
       var label = parseBracedArgument(text, skipOptionalDetailWhitespace(text, after));
       var target = label && parseBracedArgument(text, skipOptionalDetailWhitespace(text, label.end));
       if (!target) {
@@ -77,21 +115,23 @@ function kgCreateContentMarkup(options) {
       }
       var targetId = target.value.trim();
       var labelHtml = escapeHtml(label.value);
-      var source = !getConcept(targetId) && options.source ? options.source(targetId) : null;
-      if (!getConcept(targetId) && !source) {
+      var reference = referenceTarget(targetId);
+      if (!reference) {
         html += labelHtml;
+      } else if (mathEnd) {
+        html += /^[a-zA-Z0-9_.-]+$/.test(targetId)
+          ? "\\href{" + mathReferencePrefix + targetId + "}{" + labelHtml + "}" : labelHtml;
       } else {
-        var ownerId = source ? source.ownerId : targetId;
-        var href = source && source.ownerType === "module" ? "#module-" + encodeURIComponent(ownerId) : conceptHash(ownerId);
-        html += '<a href="' + escapeHtml(href) +
-          '" class="concept-link" data-concept-id="' + escapeHtml(ownerId) + '"' +
-          (source ? ' data-block-id="' + escapeHtml(targetId) + '"' : "") +
+        html += '<a href="' + escapeHtml(reference.href) +
+          '" class="concept-link" data-concept-id="' + escapeHtml(reference.ownerId) + '"' +
+          (reference.blockId ? ' data-block-id="' + escapeHtml(reference.blockId) + '"' : "") +
           ' aria-haspopup="dialog" aria-controls="kg_concept_preview"><strong>' +
           labelHtml + "</strong></a>";
       }
       cursor = target.end;
+      tokens.lastIndex = cursor;
     }
-    return html;
+    return html + escapeHtml(text.slice(cursor));
   }
 
   function skipOptionalDetailWhitespace(text, index) {
@@ -492,6 +532,7 @@ function kgCreateContentMarkup(options) {
     renderBodyLine: renderBodyLine,
     renderBodyLines: renderBodyLines,
     renderConceptText: renderConceptText,
+    decorateMathReferences: decorateMathReferences,
     findNextOptionalDetailBlock: findNextOptionalDetailBlock,
     splitConceptBlocks: splitConceptBlocks,
     renderStudyText: renderStudyText,

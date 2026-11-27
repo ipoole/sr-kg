@@ -3309,6 +3309,7 @@
           MathJax.typesetPromise([conceptPreview]).catch(function(err) {
             console.warn("MathJax concept preview typesetting failed:", err);
           }).then(function() {
+            contentMarkup.decorateMathReferences(conceptPreview);
             if (conceptPreviewAnchor && conceptPreview.style.display !== "none") {
               positionConceptPreview(conceptPreviewAnchor);
             }
