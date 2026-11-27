@@ -102,6 +102,8 @@
     };
     var fileName = String(options.fileName || DEFAULT_FILE_NAME);
     var mimeType = options.mimeType || 'application/zip';
+    var appendOnly = options.appendOnly === true;
+    var snapshotName = 'PhysicsKG tutorial library snapshot.json';
     var fileId = "", allMatches = options.allMatches === true, cache = new Map();
 
     function headers(extra) {
@@ -112,13 +114,37 @@
 
     async function findMatches() {
       var escapedName = fileName.replace(/'/g, "\\'");
-      var params = new URLSearchParams({q:"name = '" + escapedName + "' and trashed = false",spaces:'drive',
-        fields:'nextPageToken,files(id,name,version,modifiedTime)',orderBy:'modifiedTime desc',pageSize:allMatches ? '100' : '10'});
-      var response = await fetchImpl(DRIVE_API + '?' + params.toString(),{headers:headers()});
-      if (!response.ok) { throw apiError(response,'Could not search Google Drive'); }
-      var result = await response.json();
-      if (allMatches && result.nextPageToken) { throw new Error('Too many duplicate tutorial cloud files; tidy them in Google Drive before syncing.'); }
-      return (result.files || []).filter(function(item) { return item.name === fileName; });
+      var names = "name = '" + escapedName + "'";
+      if (appendOnly) { names = "(" + names + " or name = '" + snapshotName + "')"; }
+      var params = new URLSearchParams({q:names + " and trashed = false",spaces:'drive',
+        fields:'nextPageToken,files(id,name,version,modifiedTime' + (appendOnly ? ',appProperties)' : ')'),
+        orderBy:'modifiedTime desc',pageSize:appendOnly ? '1000' : allMatches ? '100' : '10'});
+      var matches = [];
+      do {
+        var response = await fetchImpl(DRIVE_API + '?' + params.toString(),{headers:headers()});
+        if (!response.ok) { throw apiError(response,'Could not search Google Drive'); }
+        var result = await response.json();
+        matches = matches.concat(result.files || []);
+        if (!appendOnly) {
+          if (allMatches && result.nextPageToken) { throw new Error('Too many duplicate tutorial cloud files; tidy them in Google Drive before syncing.'); }
+          break;
+        }
+        if (result.nextPageToken) { params.set('pageToken',result.nextPageToken); }
+      } while (result.nextPageToken);
+      return matches.filter(function(item) { return item.name === fileName || appendOnly && item.name === snapshotName; });
+    }
+    function snapshotKey(file) {
+      return file.name === snapshotName ? file.id : file.id + ':' + (file.version || '');
+    }
+    function snapshotHeads(files) {
+      var covered = new Set();
+      files.forEach(function(file) {
+        if (file.name !== snapshotName) { return; }
+        Object.entries(file.appProperties || {}).forEach(function(pair) {
+          if (/^parent[0-9]+$/.test(pair[0])) { covered.add(pair[1]); }
+        });
+      });
+      return files.filter(function(file) { return !covered.has(snapshotKey(file)); });
     }
     async function readFile(file) {
       var previous = cache.get(file.id);
@@ -132,13 +158,25 @@
     }
     async function read() {
       var matches = !allMatches && fileId ? [{id:fileId}] : await findMatches();
+      if (appendOnly && matches.length) {
+        var heads = snapshotHeads(matches);
+        if (!heads.length) { throw new Error('Google Drive has no current tutorial snapshot.'); }
+        matches = heads;
+        var ids = new Set(heads.map(function(file) { return file.id; }));
+        cache.forEach(function(value,id) { if (!ids.has(id)) { cache.delete(id); } });
+      }
       if (!matches.length) { return null; }
       if (allMatches) { matches.sort(function(a,b) { return a.id.localeCompare(b.id); }); }
       var available = [];
       for (var file of matches) { var value = await readFile(file); if (value) { available.push(value); } }
+      if (appendOnly && available.length !== matches.length) {
+        var changed = new Error('Google Drive tutorial snapshots changed while syncing.');
+        changed.code = 'conflict'; throw changed;
+      }
       if (!available.length) { fileId = ''; return null; }
       fileId = available[0].id;
-      return Object.assign({},available[0],allMatches ? {copies:available.slice(1)} : {});
+      return Object.assign({},available[0],allMatches ? {copies:available.slice(1)} : {},
+        appendOnly ? {parents:matches.map(snapshotKey)} : {});
     }
 
     async function upload(bytes, metadata) {
@@ -170,6 +208,15 @@
       fileId = result.id;
       cache.delete(fileId);
       return {revision: uploaded.revision || String(result.version || "")};
+    }
+
+    async function append(bytes, parents) {
+      if (parents.length > 30) {
+        throw new Error('Too many concurrent tutorial snapshots in Google Drive.');
+      }
+      var properties = {};
+      parents.forEach(function(parent,index) { properties['parent' + index] = parent; });
+      await upload(bytes,{name:snapshotName,mimeType:mimeType,appProperties:properties});
     }
 
     async function update(bytes, revision) {
@@ -228,8 +275,10 @@
 
     return {
       read: read,
+      appendOnly:appendOnly,
       audioInventory:audioInventory, downloadAudio:downloadAudio, uploadAudio:uploadAudio,
       write: function(bytes, syncOptions) {
+        if (appendOnly) { return append(bytes, syncOptions && syncOptions.remote ? syncOptions.remote.parents : []); }
         return syncOptions && syncOptions.create
           ? create(bytes)
           : update(bytes, syncOptions && syncOptions.revision);

@@ -112,7 +112,7 @@ function kgCreatePersonalDataController(options) {
         legacyProvider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
           fileName:'PhysicsKG tutorials.zip',allMatches:true}),
         provider:window.kgCreateGoogleDrivePersonalDataProvider({token:googleDriveAuthorizer.token,
-          fileName:'PhysicsKG tutorial library v2.json',mimeType:'application/json',allMatches:true}),
+          fileName:'PhysicsKG tutorial library v2.json',mimeType:'application/json',allMatches:true,appendOnly:true}),
         prepare:options.prepareTutorials,updated:options.tutorialsChanged});
       showCloudSyncConnected(true);
       showCloudSyncAttention(false);
