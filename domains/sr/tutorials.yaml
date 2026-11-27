@@ -424,86 +424,111 @@ tutorials:
     pointer:
       target: details:study-questions
 - tutorial_id: time-dilation
-  title: Why moving clocks record less time
+  title: Why moving clocks record less time (part voiced)
   category: physics
-  summary: Follow a light pulse, compare the same two clock events and resolve the reciprocal-clock puzzle.
+  summary: Follow a light pulse, compare the same two clock events and resolve the
+    reciprocal-clock puzzle.
   sequence: 30
   domains:
   - sr
   steps:
   - step_id: introduction
-    demonstrate: false
     title: Why do moving clocks record less time?
-    commentary: We will follow a light pulse, compare two ticks of the same clock and connect the result to Lorentz
-      transformations and proper time. Press Next to move to each reading scene, then read at your own pace.
-      Explore lets you take control; Resume returns to the tutorial.
+    commentary: We will follow a light pulse, compare two ticks of the same clock
+      and connect the result to Lorentz transformations and proper time. Press Next
+      to move to each reading scene, then read at your own pace. Explore lets you
+      take control; Resume returns to the tutorial.
     action:
       command: wait
       milliseconds: 0
+    demonstrate: false
+    audio:
+      assetId: d7786059bfadb75cd697d8f74133716d7efa3bd011df85c56d6ff030d122405a
+      duration: 20.2465
+      commentaryHash: 80f6ecde0ee8bbb42949e9f15d894344224ed13287a360e3310426c507f42931
+      actionsHash: acaba340b2e161baf928a692fe8a9ec775f7f9ea0bff8979a832aac4db90da1c
+      mimeType: audio/webm;codecs=opus
+    prepare:
+    - command: home
   - step_id: begin-with-two-ticks
     title: Map the argument
-    commentary: First look over the derivation route in Graph view. Fit++ brings its concepts together.
-      The following cards give the reading the full screen; Explore lets you inspect a branch.
+    commentary: First look over the derivation route in Graph view. Fit++ brings its
+      concepts together after which we can temporarily rearrange them manually . The
+      following cards give full screen to the reading; Explore lets you inspect a
+      branch of the graph.
     demonstrate: false
     actions:
     - action:
         command: select
         target: module:sr.spacetime_foundations
+      pause_ms: 0
       pointer:
         target: narration
-      pause_ms: 0
     - action:
         command: set-all-module-representations
         value: folded
+      pause_ms: 0
       pointer:
         target: narration
-      pause_ms: 0
     - action:
         command: set-display-scope
         value: context
+      pause_ms: 0
       pointer:
         target: control:display-scope
-      pause_ms: 0
     - action:
         command: set-view
         value: both
+      pause_ms: 0
       pointer:
         target: control:view
-      pause_ms: 0
     - action:
         command: select
         target: concept:sr.time_dilation
+      pause_ms: 500
       pointer:
         target: graph:module:sr.spacetime_foundations
     - action:
         command: open-details-relationship
         value: derived-from
+      pause_ms: 500
       pointer:
         target: details:heading
     - action:
         command: set-relationship-full-tree
         value: derived-from
         full_tree: true
+      pause_ms: 500
       pointer:
         target: details:derived-from-full-tree
     - action:
         command: show-relationship-in-graph
         preset: derivation
         full_tree: true
+      pause_ms: 500
       pointer:
         target: details:derived-from-show-graph
     - action:
         command: set-view
         value: graph
+      pause_ms: 500
       pointer:
         target: control:view
     - action:
         command: expand-context-modules
+      pause_ms: 500
       pointer:
         target: control:expand-context
     - action:
         command: fit
         value: context
+      pause_ms: 500
+      pointer:
+        target: control:fit
+    - action:
+        command: fit
+        value: context
+      pause_ms: 500
       pointer:
         target: control:fit
     - action:
@@ -511,201 +536,271 @@ tutorials:
         value: context
       pointer:
         target: control:fit
+      pause_ms: 0
+    - action:
+        command: fit
+        value: context
+      pointer:
+        target: control:fit
+      pause_ms: 0
+    - action:
+        command: place-context-node
+        target: concept:sr.constancy_of_speed_of_light
+        anchor: concept:sr.time_dilation
+        x: -41.8172814934419
+        y: 617.8274597037016
+      pointer:
+        target: graph:concept:sr.constancy_of_speed_of_light
+      pause_ms: 0
+    - action:
+        command: place-context-node
+        target: concept:sr.principle_of_relativity
+        anchor: concept:sr.time_dilation
+        x: 226.6511120047944
+        y: 916.0111020997538
+      pointer:
+        target: graph:concept:sr.principle_of_relativity
+      pause_ms: 0
+    - action:
+        command: place-context-node
+        target: concept:sr.spacetime_interval
+        anchor: concept:sr.time_dilation
+        x: 782.4898861344
+        y: 195.04911245806034
+      pointer:
+        target: graph:concept:sr.spacetime_interval
+      pause_ms: 0
+    - action:
+        command: place-context-node
+        target: concept:sr.lorentz_transformations
+        anchor: concept:sr.time_dilation
+        x: 364.848058090447
+        y: 423.2362211036252
+      pointer:
+        target: graph:concept:sr.lorentz_transformations
+      pause_ms: 0
+    audio:
+      assetId: 75cac3ef97a39afdc1f6adcccd94e9f8e183bc4649a3c3b9a52124ce53c5e938
+      duration: 20.32379999999702
+      commentaryHash: 68b4513e0dc1a6edd5fb60c83f9d3e4ebbdb926cc240538793918654c9caac15
+      actionsHash: 6b9db5e5d03bb546f1c8d61947a30d27f6185b2bbd4a7e65aa444bf52a2a2553
+      mimeType: audio/webm;codecs=opus
   - step_id: read-opening-question
     title: One clock, two ticks
-    commentary: Read the opening question. Keep the same two tick events in mind throughout the explanation.
-    demonstrate: false
+    commentary: Read the opening question. Keep the same two tick events in mind throughout
+      the explanation.
     actions:
     - action:
         command: set-view
         value: details
+      pause_ms: 0
       pointer:
         target: control:view
-      pause_ms: 0
     - action:
         command: open-details-block
         target: block:sr.time_dilation.overview
+      pause_ms: 500
       pointer:
         target: details:block:sr.time_dilation.overview
-  - step_id: define-the-comparison
     demonstrate: false
+  - step_id: define-the-comparison
     title: How does the lab assign time?
-    commentary: Read One travelling clock and a lab clock network. Identify A and B, the clock that visits both,
-      and the separate lab clocks that record them. Which frame synchronises those lab clocks?
+    commentary: Read One travelling clock and a lab clock network. Identify A and
+      B, the clock that visits both, and the separate lab clocks that record them.
+      Which frame synchronises those lab clocks?
     action:
       command: open-details-block
       target: block:sr.time_dilation.measurement
     pointer:
       target: details:block:sr.time_dilation.measurement
-  - step_id: build-a-light-clock
     demonstrate: false
+  - step_id: build-a-light-clock
     title: Count returning light pulses
-    commentary: Read the light-clock setup. Locate A and B on the lower mirror, and check why its own round-trip
-      time is proper time.
+    commentary: Read the light-clock setup. Locate A and B on the lower mirror, and
+      check why its own round-trip time is proper time.
     action:
       command: open-details-block
       target: block:sr.time_dilation.light_clock_setup
     pointer:
       target: details:block:sr.time_dilation.light_clock_setup
-  - step_id: compare-the-paths
     demonstrate: false
+  - step_id: compare-the-paths
     title: The same pulse in two frames
-    commentary: Trace the graphic's vertical path in the clock frame and diagonal path in the lab. These are spatial
-      paths inside the apparatus, not rays travelling to a distant observer. Find L and s.
+    commentary: Trace the graphic's vertical path in the clock frame and diagonal
+      path in the lab. These are spatial paths inside the apparatus, not rays travelling
+      to a distant observer. Find L and s.
     action:
       command: open-details-graphic
     pointer:
       target: details:graphic
-  - step_id: explain-the-diagonal
     demonstrate: false
+  - step_id: explain-the-diagonal
     title: Longer path, unchanged light speed
-    commentary: Read A diagonal path at the same speed. Explain why the mirror moves during the flight, and why
-      the lab cannot compensate by assigning a larger speed to the light.
+    commentary: Read A diagonal path at the same speed. Explain why the mirror moves
+      during the flight, and why the lab cannot compensate by assigning a larger speed
+      to the light.
     action:
       command: open-details-block
       target: block:sr.time_dilation.light_clock_triangle
     pointer:
       target: details:block:sr.time_dilation.light_clock_triangle
-  - step_id: derive-the-factor
     demonstrate: false
+  - step_id: derive-the-factor
     title: Let the triangle do the algebra
-    commentary: Work through the right-triangle derivation. Identify the three sides before substituting for L,
-      then check the result at zero speed.
+    commentary: Work through the right-triangle derivation. Identify the three sides
+      before substituting for L, then check the result at zero speed.
     action:
       command: open-details-block
       target: block:sr.time_dilation.light_clock_derivation
     pointer:
       target: details:block:sr.time_dilation.light_clock_derivation
-  - step_id: interpret-the-clock-law
     demonstrate: false
+  - step_id: interpret-the-clock-law
     title: Which interval is longer?
-    commentary: Compare the definition with the derivation. Say which clock or frame each time symbol belongs to,
-      and which interval is longer.
+    commentary: Compare the definition with the derivation. Say which clock or frame
+      each time symbol belongs to, and which interval is longer.
     action:
       command: open-details-block
       target: block:sr.time_dilation.definition
     pointer:
       target: details:block:sr.time_dilation.definition
-  - step_id: generalise-the-clock
     demonstrate: false
+  - step_id: generalise-the-clock
     title: Does this only work for light clocks?
-    commentary: Read why the comparison applies to ideal clocks generally. Distinguish a physical clock error from
-      the effect of comparing measurements in different inertial frames.
+    commentary: Read why the comparison applies to ideal clocks generally. Distinguish
+      a physical clock error from the effect of comparing measurements in different
+      inertial frames.
     action:
       command: open-details-block
       target: block:sr.time_dilation.ideal_clocks
     pointer:
       target: details:block:sr.time_dilation.ideal_clocks
-  - step_id: put-numbers-on-it
     demonstrate: false
+  - step_id: put-numbers-on-it
     title: Ten seconds versus eight
-    commentary: Work through the numerical example. Check both directions of the calculation, and distinguish a
-      local second from the comparison of elapsed readings in two frames.
+    commentary: Work through the numerical example. Check both directions of the calculation,
+      and distinguish a local second from the comparison of elapsed readings in two
+      frames.
     action:
       command: open-details-block
       target: block:sr.time_dilation.worked_comparison
     pointer:
       target: details:block:sr.time_dilation.worked_comparison
-  - step_id: connect-the-lorentz-boost
     demonstrate: false
+  - step_id: connect-the-lorentz-boost
     title: Find the same rule in Lorentz transformations
-    commentary: Read the time part of the standard boost and the sentence about its inverse. Our clock is stationary
-      in the primed frame; which displacement between its two ticks is zero there?
+    commentary: Read the time part of the standard boost and the sentence about its
+      inverse. Our clock is stationary in the primed frame; which displacement between
+      its two ticks is zero there?
     actions:
     - action:
         command: select
         target: concept:sr.lorentz_transformations
+      pause_ms: 500
       pointer:
         target: details:heading
     - action:
         command: open-details-block
         target: block:sr.lorentz_transformations.boost_formula
+      pause_ms: 500
       pointer:
         target: details:block:sr.lorentz_transformations.boost_formula
-  - step_id: apply-the-boost
     demonstrate: false
+  - step_id: apply-the-boost
     title: Keep the clock's two events fixed
-    commentary: Read Derivation from a boost. Follow the zero-displacement substitution and identify why primed
-      coordinate time equals this clock's proper time.
+    commentary: Read Derivation from a boost. Follow the zero-displacement substitution
+      and identify why primed coordinate time equals this clock's proper time.
     actions:
     - action:
         command: select
         target: concept:sr.time_dilation
+      pause_ms: 500
       pointer:
         target: details:heading
     - action:
         command: open-details-block
         target: block:sr.time_dilation.lorentz_derivation
+      pause_ms: 500
       pointer:
         target: details:block:sr.time_dilation.lorentz_derivation
-  - step_id: connect-proper-time
     demonstrate: false
+  - step_id: connect-proper-time
     title: Clock time belongs to a worldline
-    commentary: Read Coordinate time versus clock time in Proper time. This generalises the distinction we used
-      for two ticks of a coasting clock.
+    commentary: Read Coordinate time versus clock time in Proper time. This generalises
+      the distinction we used for two ticks of a coasting clock.
     actions:
     - action:
         command: select
         target: concept:sr.proper_time
+      pause_ms: 500
       pointer:
         target: details:heading
     - action:
         command: open-details-block
         target: block:sr.proper_time.coordinate_time
+      pause_ms: 500
       pointer:
         target: details:block:sr.proper_time.coordinate_time
-  - step_id: read-the-invariant-rate
     demonstrate: false
+  - step_id: read-the-invariant-rate
     title: Recover the clock rate from the interval
-    commentary: Follow the interval calculation. Identify where the clock's speed enters, and why the positive root
-      gives a smaller elapsed proper time.
+    commentary: Follow the interval calculation. Identify where the clock's speed
+      enters, and why the positive root gives a smaller elapsed proper time.
     action:
       command: open-details-block
       target: block:sr.proper_time.rate
     pointer:
       target: details:block:sr.proper_time.rate
-  - step_id: reunite-the-explanations
     demonstrate: false
+  - step_id: reunite-the-explanations
     title: Triangle, boost and interval agree
-    commentary: Read The same result from proper time. Compare it with the light-clock triangle, and note the limit
-      on applying a finite constant-speed formula to a changing journey.
+    commentary: Read The same result from proper time. Compare it with the light-clock
+      triangle, and note the limit on applying a finite constant-speed formula to
+      a changing journey.
     actions:
     - action:
         command: select
         target: concept:sr.time_dilation
+      pause_ms: 500
       pointer:
         target: details:heading
     - action:
         command: open-details-block
         target: block:sr.time_dilation.interval_derivation
+      pause_ms: 500
       pointer:
         target: details:block:sr.time_dilation.interval_derivation
-  - step_id: resolve-reciprocity
     demonstrate: false
+  - step_id: resolve-reciprocity
     title: Can both frames call the other slow?
-    commentary: Read the reciprocal comparison. Identify the clocks and synchronisation convention in each experiment.
-      Use the final equation to explain why the claims do not contradict one another.
+    commentary: Read the reciprocal comparison. Identify the clocks and synchronisation
+      convention in each experiment. Use the final equation to explain why the claims
+      do not contradict one another.
     action:
       command: open-details-block
       target: block:sr.time_dilation.reciprocal
     pointer:
       target: details:block:sr.time_dilation.reciprocal
-  - step_id: separate-signals-from-readings
     demonstrate: false
+  - step_id: separate-signals-from-readings
     title: What a camera sees is another question
-    commentary: Read the signal-delay warning. Distinguish event times from signal arrival times, then explain why
-      a reunion comparison needs the proper time along each actual worldline.
+    commentary: Read the signal-delay warning. Distinguish event times from signal
+      arrival times, then explain why a reunion comparison needs the proper time along
+      each actual worldline.
     action:
       command: open-details-block
       target: block:sr.time_dilation.not_signal_delay
     pointer:
       target: details:block:sr.time_dilation.not_signal_delay
-  - step_id: check-the-comparison-yourself
     demonstrate: false
+  - step_id: check-the-comparison-yourself
     title: Test your clock reasoning
-    commentary: Use Explore to try the moving-clock and light-clock calculations. Then explain the reciprocal-frame
-      comparison in your own words. Resume returns to this step and keeps your study work.
+    commentary: Use Explore to try the moving-clock and light-clock calculations.
+      Then explain the reciprocal-frame comparison in your own words. Resume returns
+      to this step and keeps your study work.
     action:
       command: open-study-questions
     pointer:
       target: details:study-questions
+    demonstrate: false
+  author: ''

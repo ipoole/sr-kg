@@ -97,3 +97,60 @@ def test_stored_zip_install_and_missing_domains_are_inferred(installation):
     install_tutorial(archive,data,"edge-tour")
     installed = next(item for item in load_knowledge_base(data,include_graphics=False).tutorials if item.tutorial_id=='edge-tour')
     assert set(installed.domains) == {'math','sr'}
+
+
+
+def test_voiced_zip_installs_into_moving_clocks_catalogue_and_builds(installation, tmp_path):
+    import hashlib
+    import io
+    import wave
+
+    data, package, document = installation
+    domains = tmp_path / "domains"
+    shutil.copytree(ROOT / "domains", domains)
+    manifest = yaml.safe_load((data / "manifest.yaml").read_text())
+    manifest["domains_root"] = str(domains)
+    (data / "manifest.yaml").write_text(yaml.safe_dump(manifest))
+    moving = next(t for t in load_knowledge_base(data, include_graphics=False).tutorials
+                  if t.tutorial_id == "time-dilation")
+    assert moving.source.is_relative_to(domains)
+    route = moving.to_viewer_data()
+    stream = io.BytesIO()
+    with wave.open(stream, "wb") as wav:
+        wav.setparams((1, 2, 8000, 0, "NONE", "not compressed"))
+        wav.writeframes(b"\x00" * 16000)
+    audio = stream.getvalue()
+    identifier = hashlib.sha256(audio).hexdigest()
+    for step in route["steps"][:2]:
+        step["audio"] = dict(assetId=identifier, duration=1, commentaryHash="a"*64, actionsHash="b"*64)
+    header = dict(format="physicskg-tutorial", schema_version=2, route_schema_version=2)
+    bundle = package.with_suffix(".zip")
+
+    def write_clip(payload):
+        with ZipFile(bundle, "w", compression=ZIP_STORED) as z:
+            z.writestr("manifest.json", json.dumps(dict(header, assets=[
+                dict(id=identifier, mimeType="audio/wav", byteLength=len(audio))
+            ])))
+            z.writestr("tutorial.json", json.dumps(dict(header, tutorial=dict(route=route))))
+            z.writestr(f"audio/{identifier}", payload)
+
+    write_clip(audio)
+    before = moving.source.read_bytes()
+    asset_directory = moving.source.parent / "tutorial-audio"
+    before_audio = {path.name: path.read_bytes() for path in asset_directory.glob("*")}
+    log = []
+    assert install_tutorial(bundle, data, moving.tutorial_id, replace=True, dry_run=True,
+                            report=log.append) == moving.source
+    assert sum(line.endswith("— voice") for line in log) == 2
+    assert moving.source.read_bytes() == before
+    assert {path.name: path.read_bytes() for path in asset_directory.glob("*")} == before_audio
+    write_clip(audio[:-1] + b"x")
+    with pytest.raises(TutorialLoadError, match="checksum"):
+        install_tutorial(bundle, data, moving.tutorial_id, replace=True)
+    assert moving.source.read_bytes() == before
+    write_clip(audio)
+    assert install_tutorial(bundle, data, moving.tutorial_id, replace=True) == moving.source
+    viewer = tmp_path / "build" / "PhysicsKG.html"
+    generate_viewer_from_root(data_root=str(data), out_path=str(viewer), height="100vh", width="100vw", title="Test")
+    assert (viewer.parent / "tutorial-audio" / identifier).read_bytes() == audio
+    assert viewer.read_text().count('"assetId": "' + identifier + '"') == 2

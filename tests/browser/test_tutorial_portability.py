@@ -114,18 +114,17 @@ def test_tutorial_sync_retries_local_edits_during_upload_and_skips_unchanged_wri
 
 @pytest.mark.browser
 def test_tutorial_export_import_ui_makes_independent_copy_and_retains_unsaved_text(tutorial_graph):
-    import json
     from test_personal_tutorials import _fill_draft
     from playwright.sync_api import expect
     page = _library(tutorial_graph)
     page.locator('#kg_tutorial_new').click()
     _fill_draft(page)
     original_id = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+    assert not page.locator('#kg_tutorial_editor_export, #kg_tutorial_editor_json').count()
+    page.locator('#kg_tutorial_editor_close').click()
     with page.expect_download() as captured:
-        page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
-        page.locator('#kg_tutorial_editor_export').click()
+        page.locator('#kg_tutorial_intro_export').click()
     path = captured.value.path()
-    page.keyboard.press('Escape')
     page.locator('#kg_tutorial_import_file').set_input_files(path)
     page.locator('#kg_tutorial_import_apply').click()
     expect(page.locator('#kg_tutorial_editor')).to_have_attribute('open','')
@@ -135,12 +134,9 @@ def test_tutorial_export_import_ui_makes_independent_copy_and_retains_unsaved_te
     page.evaluate("()=>{kgPersonalData.tutorials.save=()=>Promise.reject(new Error('Storage full'));}")
     page.locator('#kg_tutorial_editor_title').fill('My unsaved title')
     expect(page.locator('#kg_tutorial_editor_status')).to_have_attribute('data-state','error')
-    with page.expect_download() as captured:
-        page.locator('#kg_tutorial_editor_advanced').evaluate('e=>e.open=true')
-        page.locator('#kg_tutorial_editor_json').click()
-    from pathlib import Path
-    exported = json.loads(Path(captured.value.path()).read_text())
-    assert exported['tutorial']['route']['title'] == 'My unsaved title'
+    page.locator('#kg_tutorial_editor_close').click()
+    expect(page.locator('#kg_tutorial_editor')).to_be_visible()
+    assert page.locator('#kg_tutorial_editor_title').input_value() == 'My unsaved title'
     assert page.evaluate('(id)=>kgPersonalData.tutorials.get(id)',imported_id)['route']['title'] != 'My unsaved title'
     assert page.locator('#kg_tutorial_editor_retry').is_visible()
 
@@ -380,3 +376,76 @@ def test_full_import_reports_failure_in_dialog_and_cannot_cancel_in_flight(tutor
     expect(page.locator('#kg_personal_data_import_status')).to_be_visible()
     expect(page.locator('#kg_personal_data_import_status')).to_contain_text('Import did not complete')
     assert page.evaluate('kgPersonalData.getSnapshot().readingProgress') == page.evaluate('__beforeImport.readingProgress')
+
+
+@pytest.mark.browser
+def test_voiced_tutorial_export_import_round_trip(tutorial_graph, playwright_browser, tmp_path):
+    import functools
+    import shutil
+    import threading
+    from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+    import yaml
+    from srkg.pipeline import generate_viewer_from_root
+    from srkg.tutorial_packages import install_tutorial
+    from test_tutorial_voice_playback import voice_route
+    from test_personal_tutorials import _library
+    from conftest import REPO_ROOT, _open_browser_graph
+    from playwright.sync_api import expect
+
+    original, tutorial_id = voice_route(tutorial_graph)
+    assert not original.locator('#kg_tutorial_editor_export, #kg_tutorial_editor_json').count()
+    with original.expect_download() as exported:
+        original.locator('#kg_tutorial_intro_export').click()
+    package = tmp_path / "voiced.zip"
+    exported.value.save_as(package)
+    expect(original.locator('#kg_tutorial_intro_status')).to_contain_text('2 recorded cards')
+
+    api, browser = playwright_browser
+    with _open_browser_graph(api, browser, tutorial_graph.output_path) as fresh:
+        page = _library(fresh)
+        page.locator('#kg_tutorial_import_file').set_input_files(package)
+        page.locator('#kg_tutorial_import_apply').click()
+        expect(page.locator('#kg_tutorial_editor')).to_be_visible()
+        imported = page.locator('#kg_tutorial_editor').get_attribute('data-tutorial-id')
+        assert imported != tutorial_id
+        assert page.evaluate('''async id=>{
+          const store=kgPersonalData.tutorials, record=await store.get(id);
+          const steps=record.route.steps;
+          const clip=await store.getAudio(steps[0].audio.assetId);
+          return [Boolean(steps[0].audio),Boolean(steps[1].audio),Boolean(steps[2].audio),clip.blob.type];
+        }''', imported) == [True, True, False, 'audio/wav']
+        page.locator('#kg_tutorial_editor_close').click()
+        page.locator('#kg_tutorial_start_voice').click()
+        expect(page.locator('#kg_tutorial_listen_status')).to_have_text('Playing voice.')
+
+
+    data = tmp_path / "data"
+    shutil.copytree(REPO_ROOT / "data", data)
+    manifest = yaml.safe_load((data / "manifest.yaml").read_text())
+    manifest["domains_root"] = str(REPO_ROOT / "domains")
+    (data / "manifest.yaml").write_text(yaml.safe_dump(manifest))
+    install_tutorial(package, data, "voiced-export-test")
+    viewer = tmp_path / "output" / "PhysicsKG.html"
+    generate_viewer_from_root(data_root=str(data), out_path=str(viewer), height="100vh", width="100vw", title="Test")
+    handler = functools.partial(SimpleHTTPRequestHandler, directory=viewer.parent)
+    with ThreadingHTTPServer(("127.0.0.1", 0), handler) as server:
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        context = browser.new_context()
+        try:
+            page = context.new_page()
+            page.goto(f"http://127.0.0.1:{server.server_port}/{viewer.name}", wait_until="domcontentloaded")
+            page.locator("#kg_splash_dismiss").click()
+            if not page.locator("#kg_controls").is_visible():
+                page.locator("#kg_controls_toggle").click()
+            page.locator("#kg_tutorials_section").evaluate("e=>e.open=true")
+            page.locator('[data-tutorial-id="voiced-export-test"]').click()
+            with page.expect_response(lambda response: "/tutorial-audio/" in response.url) as loaded:
+                page.locator("#kg_tutorial_start_voice").click()
+            assert loaded.value.ok
+            expect(page.locator("#kg_tutorial_listen_status")).to_have_text("Playing voice.")
+        finally:
+            context.close()
+            server.shutdown()
+            thread.join()

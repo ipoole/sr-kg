@@ -1,9 +1,9 @@
 # Personal tutorial authoring and voice narration
 
 Status: design accepted; stages 1–6 and voiced playback from stage 7 implemented.
-Text export/import, backup integration and tutorial sync are available for text-only
+Backup integration and tutorial sync are available for text-only
 libraries. Local voice recording/import and optional playback are available; compact
-cards and audio delivery remain planned. See the local voice authoring section below for current limits.
+cards and audio attachment sync remain planned. Tutorial ZIPs carry recordings and can be installed as built-ins.
 Agreed direction: write and refine the whole tutorial first, then optionally
 record its written narration card by card. Ian's recordings should be exportable
 and installable as built-in tutorials, adding a personal human voice.
@@ -331,7 +331,7 @@ A standalone package has one transparent definition, with optional recordings:
     tutorial.zip
       manifest.json       package schema, tutorial/route schema, asset inventory
       tutorial.json       route plus authoring metadata/provenance
-      audio/<asset-id>.*   original audio files named in the inventory
+      audio/<asset-id>     original audio bytes, with MIME type in the inventory
 
 Accept a plain JSON definition for text-only exchange too. Exported definitions
 contain no browser-specific media URLs, private notes, study records or entire
@@ -401,25 +401,26 @@ the strip reports these rather than guessing which occurrence to reproduce.
 
 ### Text portability and sync
 
-Tools → Tutorials → Import accepts the versioned text-only ZIP or JSON exported
-by this viewer. The review dialog defaults to an independent copy. Replacement
+Tools → Tutorials → Import accepts tutorial ZIPs with recordings and the older
+text-only ZIP and JSON formats. The review dialog defaults to an independent copy. Replacement
 is offered only for a matching personal ID and preserves a separate previous
 copy; a changed local revision stops replacement until reviewed again. Built-ins
 are never overwritten by browser import. Missing KB targets/domains remain
 editable drafts; repair Required domains and the highlighted actions before
 playing. Unsupported commands, unsafe target syntax and damaged archives are
-rejected before saving. Export from the editor also recovers its current text if
-a local save has failed. ZIP entries are stored UTF-8; JSON is the simpler option
-when manually editing a text definition.
+rejected before saving. Choose Done in the editor, then Export tutorial on the
+introduction. A save failure keeps the editor open for retry. The ZIP contains
+the tutorial JSON and original recordings, with matching SHA-256 identifiers and
+a MIME type for each clip. Shared clips appear once. The ZIP limit is 200 MB
+with a 50 MB limit per clip. Browser import validates all assets before committing
+the tutorial and recordings in a single transaction.
 
 Personal data backup includes the entire library, including deletion tombstones.
 Old backups retain existing tutorials. Optional Google sync uses the separate
 **PhysicsKG tutorials.zip** companion file and whole-route conflict copies; see
 [Personal data](personal_data.md). It preserves an open editor and a running
 playback snapshot. Exporting a tutorial does not expose notes, answers or layouts.
-Packages currently reject audio assets; portable audio delivery remains stage 8.
-
-To install an exported text tutorial into the repository:
+To install an exported tutorial into the repository:
 
 ```bash
 conda run -n sr-kg python tools/install_tutorial.py my-tutorial.zip --tutorial-id my-tutorial --dry-run
@@ -431,7 +432,18 @@ separate KB. Required domains are inferred from references and combined with the
 exported list; `--domains` overrides that list. Full target/schema validation runs
 before an atomic YAML update. Card IDs and author credit survive. Review the Git
 diff, build/test normally, then publish through the artifact workflow. The command
-does not publish or alter the browser's personal library.
+does not publish or alter the browser's personal library. Replacement finds the
+original tutorial catalogue, including domain catalogues. A dry run lists the
+cards and their voice coverage. The installer puts the original audio bytes in
+the catalogue's `tutorial-audio/` directory. Build output copies the files next
+to the viewer, and site packaging includes them in the selected channel.
+
+For a local build with voiced built-ins, serve the output over HTTP instead of
+opening the HTML as a file. The browser lazily fetches the current clip.
+
+```bash
+conda run -n sr-kg python -m http.server 8765 --bind 127.0.0.1 --directory output
+```
 
 ## 10. Delivery stages and review gates
 
@@ -462,8 +474,8 @@ lanes; avoid multiplying combinations unrelated to a specific behaviour.
 
 ### Built-in route visibility audit
 
-The built-in routes use explicit whole-card visibility, with no separate `prepare`
-sequences. Using PhysicsKG demonstrates controls with Show cards; its opening map
+The built-in routes use explicit whole-card visibility. A recorded route may start
+with a quiet Home reset to establish its recorded starting view. Using PhysicsKG demonstrates controls with Show cards; its opening map
 and reading-tree scene use Hide. The physics routes use Hide throughout: each
 card prepares its graph or reading scene quietly, then invites the learner to
 read. Card identifiers and teaching order are preserved. Legacy imported
@@ -507,21 +519,11 @@ the unsaved take remains in the dialogue for retry. Removal detaches only
 that card's reference. Assets are retained conservatively; garbage collection is
 deferred until backup/conflict/transfer lifetimes are implemented.
 
-Delivery remains staged: the player resolves audio from this browser. Version-1 packages,
-backups and tutorial sync remain text-only, and explicitly reject records containing
-audio references before export or cloud access. No silently incomplete voiced
-package is produced. A library containing recordings cannot currently use full
-personal-data backup or tutorial sync; download the clips separately for now.
-Version-2 clients cannot reopen the upgraded local database and overwrite voice
-references. Existing text-only package formats are unchanged.
-
-Before audio delivery ships, introduce package/route schema version 2 with an
-asset inventory and validated `audio/<content-id>.<extension>` entries. Use a
-separate versioned cloud companion for voiced metadata/attachments; do not place
-voice references in the version-1 companion read by older viewers. That migration,
-asset transfer, cross-device encoding and compact cards remain
-later stages of the issue implementation plan (design delivery stages 7–8).
-
+Tutorial ZIP export and import carry recordings. Personal-data backups and
+the Google Drive companion still use the text-only format and report when a
+library contains recordings. Older viewer versions cannot reopen the upgraded
+local tutorial database. Use an isolated profile to review a hosted preview
+alongside an older public viewer.
 
 ## Voice playback (issue #6, implementation stage 3)
 

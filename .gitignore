@@ -33,3 +33,5 @@ books/
 
 # Local historical viewer archive
 /historic_builds/
+
+/output/tutorial-audio/

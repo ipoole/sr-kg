@@ -36,8 +36,6 @@ def test_editor_footer_stays_visible_and_advanced_is_last(tutorial_graph,width,h
     assert page.locator('#kg_tutorial_editor_card').evaluate('e=>e.parentElement.previousElementSibling.tagName')=='HR'
     assert page.locator('#kg_tutorial_editor_play').count()==0
     expect(page.get_by_role('button',name='Done',exact=True)).to_be_enabled()
-    assert page.locator('#kg_tutorial_editor_export').evaluate('e=>!!e.closest("#kg_tutorial_editor_advanced")')
-    assert page.locator('#kg_tutorial_editor_json').evaluate('e=>!!e.closest("#kg_tutorial_editor_advanced")')
     assert advanced.locator('summary').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')<16
     pinned=footer.bounding_box()
     body=page.locator('#kg_tutorial_editor_body')
