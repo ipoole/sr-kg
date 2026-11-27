@@ -233,7 +233,9 @@ Existing tables/content need no conversion to load or render.
 An optional `files.symbols` entry in `domain.yaml` points to the domain’s
 glossary table. Each row has `symbol_id`, `symbol`, `name`,
 `definition_block_id` and `search_terms`. Use a unique, domain-prefixed ID for
-each meaning and plain Unicode for the displayed symbol. The definition block
+each meaning and plain Unicode for the base symbol. Indexed notation can use
+the optional `subscript`, `superscript` and `suffix` columns. For example,
+`T`, `p`, `∗`, `M` render as \(T_p^*M\). The definition block
 must be a concept content block owned by the same domain. Reuse the glyph in
 separate rows when it has multiple meanings. `search_terms` can be empty or
 include plain-text spellings like `gamma` and `T_pM`.

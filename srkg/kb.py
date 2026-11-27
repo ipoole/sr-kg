@@ -79,6 +79,7 @@ DEFAULT_KB_FILES = {
     "tutorials": "tutorials.yaml",
 }
 SYMBOL_COLUMNS = ["symbol_id", "symbol", "name", "definition_block_id", "search_terms"]
+SYMBOL_NOTATION_COLUMNS = ["subscript", "superscript", "suffix"]
 
 
 @dataclass(frozen=True)
@@ -295,7 +296,7 @@ def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | No
         missing = set(SYMBOL_COLUMNS) - set(symbols.columns)
         if missing:
             raise KnowledgeBaseLoadError(f"{paths.symbols}: missing columns: {', '.join(sorted(missing))}")
-        tables["symbols"] = symbols[SYMBOL_COLUMNS]
+        tables["symbols"] = symbols.reindex(columns=SYMBOL_COLUMNS + SYMBOL_NOTATION_COLUMNS, fill_value="")
     if tables['figures'] is not None:
         tables['figures']['_asset_root'] = str(paths.root or paths.figures.parent)
     return tables

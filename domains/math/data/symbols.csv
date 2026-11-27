@@ -1,9 +1,9 @@
-symbol_id,symbol,name,definition_block_id,search_terms
-math.manifold_symbol,M,Manifold,math.manifold.definition,space
-math.worldline_symbol,γ,Worldline,math.worldline.definition,gamma curve
-math.chart_coordinates,xⁱ,Local coordinates,math.coordinate_chart.definition,x^i chart
-math.tangent_space_symbol,TₚM,Tangent space,math.tangent_space.definition,T_pM TpM
-math.cotangent_space_symbol,Tₚ*M,Cotangent space,math.cotangent_space.definition,T_p^*M Tp*M dual
-math.covector_components,ωᵢ,Covector components,math.index_notation.definition,omega omega_i covariant
-math.spacetime_indices,"μ, ν",Spacetime indices,math.index_notation.component_indices,mu nu greek index
-math.jacobian_symbol,J,Coordinate-transition Jacobian,math.coordinate_transformation.jacobian,partial derivatives
+symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix
+math.manifold_symbol,M,Manifold,math.manifold.definition,space,,,
+math.worldline_symbol,γ,Worldline,math.worldline.definition,gamma curve,,,
+math.chart_coordinates,x,Local coordinates,math.coordinate_chart.definition,x^i chart xⁱ,,i,
+math.tangent_space_symbol,T,Tangent space,math.tangent_space.definition,T_pM TpM TₚM,p,,M
+math.cotangent_space_symbol,T,Cotangent space,math.cotangent_space.definition,T_p^*M Tp*M dual Tₚ*M,p,∗,M
+math.covector_components,ω,Covector components,math.index_notation.definition,omega omega_i covariant ωᵢ,i,,
+math.spacetime_indices,"μ, ν",Spacetime indices,math.index_notation.component_indices,mu nu greek index,,,
+math.jacobian_symbol,J,Coordinate-transition Jacobian,math.coordinate_transformation.jacobian,partial derivatives,,,

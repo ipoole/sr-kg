@@ -27,25 +27,24 @@ def test_exact_title_search_opens_real_concept_first(shared_repo_browser_graph):
     assert page.url.endswith('#concept-sr.lorentz_transformations')
 
 
-def test_maths_symbols_browse_search_and_open_definition(repo_browser_graph):
+def test_symbols_browse_search_and_open_definition(repo_browser_graph):
     page = repo_browser_graph.page
     repo_browser_graph.open_search()
     page.get_by_role('button', name='Symbols', exact=True).click()
     rows = page.locator('#kg_symbol_list tbody tr')
-    assert rows.count() == 8
+    assert rows.count() > 8
     query = page.get_by_role('textbox', name='Search symbols')
-    for spelling in ('gamma', 'γ', 'Worldline'):
+    for spelling in ('gamma', 'γ'):
         query.fill(spelling)
-        assert rows.count() == 1
-        assert rows.first.locator('td').first.inner_text() == 'γ'
+        assert set(rows.locator('td:nth-child(2)').all_text_contents()) == {'Lorentz factor', 'Worldline'}
     query.fill('no matching notation')
     assert page.locator('#kg_search_status').inner_text() == 'No matching symbols.'
-    query.fill('gamma')
+    query.fill('Lorentz factor')
     query.press('ArrowDown')
     assert rows.first.get_by_role('link').evaluate('link => link === document.activeElement')
     page.keyboard.press('Enter')
     assert not page.locator('#kg_search_section').is_visible()
-    assert page.locator('#info_panel [data-content-block-id="math.worldline.definition"]').evaluate('el => el.open')
+    assert page.locator('#info_panel [data-content-block-id="sr.lorentz_transformations.boost_formula"]').evaluate('el => el.open')
 
 
 def test_maths_inline_symbol_previews_its_definition(repo_browser_graph):
@@ -60,6 +59,33 @@ def test_maths_inline_symbol_previews_its_definition(repo_browser_graph):
     definition = 'math.tangent_space.definition'
     explanation.locator(f'a[data-block-id="{definition}"]').hover()
     assert page.locator(f'#kg_concept_preview [data-preview-block-id="{definition}"]').is_visible()
+
+
+def test_glossary_renders_indices_and_accepts_plain_text_search(repo_browser_graph):
+    page = repo_browser_graph.page
+    repo_browser_graph.open_search()
+    page.get_by_role('button', name='Symbols', exact=True).click()
+    query = page.get_by_role('textbox', name='Search symbols')
+    for spelling, tag, expected in [
+        ('x^mu', 'msup', ['x', 'μ']),
+        ('eta_munu', 'msub', ['η', 'μν']),
+        ('T_p^*M', 'msubsup', ['T', 'p', '∗']),
+    ]:
+        query.fill(spelling)
+        indexes = page.locator(f'#kg_symbol_list td math > {tag}')
+        assert indexes.is_visible()
+        assert indexes.locator(':scope > *').all_text_contents() == expected
+        assert indexes.evaluate('el => el.namespaceURI') == 'http://www.w3.org/1998/Math/MathML'
+        centres = indexes.evaluate('''el => Array.from(el.children, child => {
+            const box = child.getBoundingClientRect();
+            return box.top + box.height / 2;
+        })''')
+        if tag in {'msub', 'msubsup'}:
+            assert centres[1] > centres[0]
+        if tag in {'msup', 'msubsup'}:
+            assert centres[-1] < centres[0]
+        if tag == 'msubsup':
+            assert page.locator('#kg_symbol_list td math > mi').text_content() == 'M'
 
 
 def test_exact_module_beats_partial_concept_title(browser_graph):

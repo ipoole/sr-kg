@@ -6195,6 +6195,24 @@
         var searchInput = document.getElementById("kg_search");
         symbolSearchButton.hidden = !symbolData.length;
 
+        function renderGlossarySymbol(entry) {
+          if (!entry.subscript && !entry.superscript) { return escapeHtml(entry.symbol); }
+          function notation(value) {
+            var tokens = (value || "").match(/[0-9]+|./gu) || [];
+            var html = tokens.map(function(token) {
+              var tag = /^[0-9]+$/.test(token) ? "mn" : token === "∗" ? "mo" : "mi";
+              return "<" + tag + ">" + escapeHtml(token) + "</" + tag + ">";
+            }).join("");
+            return tokens.length > 1 ? "<mrow>" + html + "</mrow>" : html;
+          }
+          var base = notation(entry.symbol);
+          var sub = notation(entry.subscript);
+          var sup = notation(entry.superscript);
+          var indexed = entry.subscript && entry.superscript ? "<msubsup>" + base + sub + sup + "</msubsup>"
+            : entry.subscript ? "<msub>" + base + sub + "</msub>" : "<msup>" + base + sup + "</msup>";
+          return "<math>" + indexed + notation(entry.suffix) + "</math>";
+        }
+
         function buildSymbolList(query) {
           var terms = query.normalize("NFKC").trim().toLowerCase().split(/\s+/).filter(Boolean);
           var rows = symbolData.filter(function(entry) {
@@ -6203,7 +6221,7 @@
             return terms.every(function(term) { return searchable.includes(term); });
           });
           symbolList.querySelector("tbody").innerHTML = rows.map(function(entry) {
-            return "<tr><td>" + escapeHtml(entry.symbol) + "</td><td>" + escapeHtml(entry.name) +
+            return "<tr><td>" + renderGlossarySymbol(entry) + "</td><td>" + escapeHtml(entry.name) +
               '</td><td><a href="' + escapeHtml(conceptHash(entry.concept_id)) + '" data-block-id="' +
               escapeHtml(entry.definition_block_id) + '">' + escapeHtml(conceptTitleText(entry.concept_id)) +
               "</a></td></tr>";
