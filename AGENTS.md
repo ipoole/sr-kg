@@ -6,7 +6,9 @@
   Check the issue and its linked work before starting. Record who is taking it
   and the branch name. Use the issue for scope changes, blockers and handoffs.
   Record lasting design decisions in the relevant project docs.
-- Use a separate checkout and feature branch for each active piece of work.
+- Use one assigned checkout per agent and a feature branch for each active
+  piece of work. Reuse the assigned checkout for successive tasks by switching
+  branches there. Use separate checkouts when agents work in parallel.
   Fetch `origin`, check the current branch and working tree, and base new work
   on `origin/main`. Include the issue number in the branch name when there is
   one, for example `issue-11-domain-personal-data`. Coordinate scope and merge
