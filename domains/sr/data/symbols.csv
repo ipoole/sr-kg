@@ -59,3 +59,9 @@ sr.vector_field_symbol,V,Vector field,sr.vector_field.definition,V^mu vector fie
 sr.field_component,φ,Field component,sr.field_lagrangian.definition,phi_a independently varied field component,a,,,One of the field variables varied independently in the action.
 sr.field_derivative_coefficient,P,Field derivative coefficient,sr.field_equations.euler_lagrange,field momentum derivative coefficient,a,μ,,The derivative of the Lagrangian density with respect to the spacetime derivative of one field component.
 sr.scalar_potential_energy_density,V,Scalar-field potential energy density,sr.field_lagrangian.example_scalar,V(phi) scalar potential self interaction,,,,The contribution to the scalar field's energy density that depends only on its local value.
+sr.electric_charge,q,Electric charge,sr.minimal_coupling.definition,q test charge source,,,,The signed charge of a particle that sets the strength and sign of its electromagnetic coupling.
+sr.magnetic_vector_potential,𝐀,Magnetic vector potential,sr.vector_potential.definition,A spatial potential,,,,The spatial part of the electromagnetic potential whose curl gives the magnetic field.
+sr.vacuum_permittivity,ε,Vacuum permittivity,sr.maxwells_equations.three_vector_split,epsilon_0 epsilon0 electric constant,0,,,The SI constant relating charge density to the divergence of the electric field in vacuum.
+sr.electric_current_density,𝐣,Electric current density,sr.four_current.definition,j current flux,,,,The signed electric charge flowing per unit time through unit area normal to the flow.
+sr.four_force,f,Four-force,sr.lorentz_force_law.definition,K^mu f^mu dp/dtau,,μ,,The rate of change of four-momentum along a particle's worldline with respect to proper time.
+sr.em_stress_energy_symbol,T,Electromagnetic stress–energy tensor,sr.em_stress_energy.definition,T EM electromagnetic tensor,EM,μν,,"The tensor collecting the electromagnetic field's energy density, momentum density, energy flux and stresses."
