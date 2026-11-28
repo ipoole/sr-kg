@@ -1,12 +1,12 @@
 symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix,definition
 sr.light_speed,c,Speed of light in vacuum,sr.constancy_of_speed_of_light.definition,vacuum light speed,,,,The invariant speed at which light propagates in vacuum.
-sr.beta,β,Signed boost velocity divided by c,sr.lorentz_transformations.boost_formula,beta v/c relative speed,,,,
-sr.lorentz_factor,γ,Lorentz factor,sr.lorentz_transformations.boost_formula,gamma boost factor,,,,
-sr.lorentz_matrix,Λ,Lorentz transformation matrix,sr.lorentz_transformations.matrix_form,lambda lorentz matrix,,,,
-sr.spacetime_interval_squared,Δs,Spacetime interval squared,sr.spacetime_interval.definition,delta s squared ds^2 invariant separation Δs²,,2,,
+sr.beta,β,Signed boost velocity divided by c,sr.lorentz_transformations.boost_formula,beta v/c relative speed,,,,The signed relative velocity of the inertial frames divided by the vacuum light speed.
+sr.lorentz_factor,γ,Lorentz factor,sr.lorentz_transformations.boost_formula,gamma boost factor,,,,"The factor that scales time and length comparisons in a boost, \(\gamma=(1-eta^2)^{-1/2}\)."
+sr.lorentz_matrix,Λ,Lorentz transformation matrix,sr.lorentz_transformations.matrix_form,lambda lorentz matrix,,,,A matrix relating two inertial coordinate systems while preserving the Minkowski metric.
+sr.spacetime_interval_squared,Δs,Spacetime interval squared,sr.spacetime_interval.definition,delta s squared ds^2 invariant separation Δs²,,2,,The Minkowski metric applied twice to the separation vector between two events.
 sr.minkowski_metric,η,Minkowski metric,sr.metric_tensor.definition,eta mu nu flat metric signature η_μν eta_munu,μν,,,"The bilinear form that gives the spacetime interval in flat spacetime. In the atlas’s inertial coordinates its matrix is \(\mathrm{diag}(1,-1,-1,-1)\)."
-sr.proper_time_symbol,τ,Proper time,sr.proper_time.definition,tau clock time d tau,,,,
-sr.position_four_vector_symbol,x,Position four-vector,sr.position_four_vector.definition,x mu ct spacetime coordinates x^μ x^mu,,μ,,
+sr.proper_time_symbol,τ,Proper time,sr.proper_time.definition,tau clock time d tau,,,,Time elapsed on a clock following a specified timelike path.
+sr.position_four_vector_symbol,x,Position four-vector,sr.position_four_vector.definition,x mu ct spacetime coordinates x^μ x^mu,,μ,,The four inertial coordinates of an event relative to a chosen origin.
 sr.four_velocity,U,Four-velocity,sr.velocity_four_vector.definition,U mu four velocity U^μ U^mu,,μ,,
 sr.four_momentum,p,Four-momentum,sr.momentum_four_vector.definition,p mu four momentum energy momentum p^μ p^mu,,μ,,
 sr.invariant_mass,m,Invariant mass,sr.mass_energy_equivalence.definition,rest mass,,,,
@@ -43,3 +43,7 @@ sr.spatial_laplacian,∇,Spatial Laplacian,sr.wave_equation.definition,nabla squ
 sr.raised_four_potential,A,Electromagnetic four-potential (raised index),sr.vector_potential.definition,A^mu A^nu four vector potential,,μ,,"The contravariant electromagnetic potential, with SI components \(A^\mu=(\phi/c,\mathbf A)\)."
 sr.raised_field_tensor,F,Electromagnetic field tensor (raised indices),sr.field_tensor.definition,F^munu electromagnetic field strength,,μν,,The electromagnetic field tensor with both indices raised by the inverse Minkowski metric. It describes the electric and magnetic fields together.
 sr.vacuum_permeability,μ,Vacuum permeability,sr.maxwells_equations.three_vector_split,mu0 mu_0 magnetic constant,0,,,"The SI constant relating electric four-current to the divergence of the field tensor, \(\partial_\mu F^{\mu\nu}=\mu_0j^\nu\)."
+sr.particle_velocity,𝐯,Coordinate velocity,sr.inertial_frames.free_motion,v velocity three velocity,,,,The rate of change of spatial position with respect to the time of a chosen frame.
+sr.rest_length,L,Rest length,sr.length_contraction.definition,L0 proper length,0,,,The distance between the endpoints measured simultaneously in the object's rest frame.
+sr.measured_length,L,Length in the measuring frame,sr.length_contraction.definition,coordinate length moving length,,,,The distance between the endpoints measured at the same coordinate time in the chosen frame.
+sr.event_separation,Δx,Event separation four-vector,sr.spacetime_interval.constructing_delta,delta x displacement,,μ,,The coordinate difference between two events in a given inertial frame.
