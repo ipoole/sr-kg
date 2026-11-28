@@ -1,4 +1,5 @@
 [
+  {"version": "5.0.17", "date": "2026-11-28", "summary": "Preview: Block glossaries for Maths and Special Relativity, with searchable symbols and definitions in place."},
   {"version": "5.0.12", "date": "2026-11-22", "summary": "Preview: Record and play tutorial narration, with compact playback controls and the latest Details and graph toolbar updates."},
   {"version": "5.0.11", "date": "2026-11-22", "summary": "Preview: Expand folded context in one tap from the graph toolbar."},
   {"version": "5.0.9", "date": "2026-11-22", "summary": "Preview: A compact Details masthead keeps its size while reading text zooms."},
