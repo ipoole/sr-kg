@@ -2,7 +2,6 @@
       var conceptData = __CONCEPT_DATA__;
       var figureData = __FIGURE_DATA__;
       var symbolData = __SYMBOL_DATA__;
-      var glossaryById = new Map(symbolData.map(function(entry) { return [entry.symbol_id, entry]; }));
       var moduleData = __MODULE_DATA__;
       var publishedLayout = __PUBLISHED_LAYOUT__;
       var tutorialData = __TUTORIAL_DATA__;
@@ -167,6 +166,17 @@
               block.title, block.block_id, source.sectionKey || "", block.body, context, capabilities);
           },
           typeset: function(element) { typesetInfoPanel({element: element}); }
+        });
+        var symbolGlossary = kgCreateSymbolGlossary({
+          entries: symbolData, markup: contentMarkup, source: sharedExplanations.source,
+          conceptHash: conceptHash, table: document.querySelector("#kg_symbol_list table"),
+          typeset: function(body) {
+            if (window.MathJax && MathJax.typesetPromise) {
+              typesetInfoPanel({element: body});
+            } else if (document.readyState !== "complete") {
+              window.addEventListener("load", function() { typesetInfoPanel({element: body}); }, {once: true});
+            }
+          }
         });
         readingTrees = kgCreateReadingTrees({
           markup: contentMarkup, shared: sharedExplanations, concepts: conceptData,
@@ -1958,7 +1968,7 @@
               escapeHtml(contentBlockKindLabel(block.kind)) + '"></span>',
             actions: sharedExplanations.actions(block.block_id, capabilities),
             bodyClass: "content-block-body",
-            bodyHtml: renderBlockSymbols(block) + sharedExplanations.body(block.block_id, context, capabilities)
+            bodyHtml: symbolGlossary.renderBlock(block) + sharedExplanations.body(block.block_id, context, capabilities)
           });
         }
 
@@ -3260,11 +3270,6 @@
           return cut.replace(/[.,;:]*$/, "") + "...";
         }
 
-        function renderSymbolDefinition(entry, source, className) {
-          var definition = entry.definition || (source && source.block.statement);
-          return definition ? contentMarkup.renderBodyLines(definition, className) : "";
-        }
-
         function blockPreviewHtml(source, glossaryEntry) {
           var block = source.block;
           var ownerTitle = source.ownerType === "module" ? source.owner.title : conceptTitleText(source.ownerId);
@@ -3276,7 +3281,7 @@
             (glossaryEntry ? '' : '<div class="concept-preview-module">' + renderTooltipText(ownerTitle) +
               ' · ' + escapeHtml(contentBlockKindLabel(block.kind)) + '</div>') +
             (glossaryEntry
-              ? renderSymbolDefinition(glossaryEntry, source, "concept-preview-excerpt")
+              ? symbolGlossary.renderDefinition(glossaryEntry, "concept-preview-excerpt")
               : sharedExplanations.nativeStatement(block.block_id)) +
             contentMarkup.renderContentUnit({level: "inline", origin: "authored",
               className: "kg-block-preview-body", title: "Read full block",
@@ -3393,7 +3398,7 @@
           if (!link) { return; }
           var id = link.getAttribute("data-concept-id");
           var blockId = link.getAttribute("data-block-id");
-          var glossaryEntry = glossaryById.get(link.getAttribute("data-symbol-id"));
+          var glossaryEntry = symbolGlossary.get(link.getAttribute("data-symbol-id"));
           var source = blockId && sharedExplanations.source(blockId);
           if (!getConcept(id) && !source) { return; }
 
@@ -6206,77 +6211,18 @@
 
         var symbolSearchButton = document.getElementById("kg_search_symbols");
         var symbolList = document.getElementById("kg_symbol_list");
-        var symbolRows = [];
         var searchStatus = document.getElementById("kg_search_status");
         var searchInput = document.getElementById("kg_search");
         symbolSearchButton.hidden = !symbolData.length;
 
-        function renderGlossarySymbol(entry) {
-          if (!entry.subscript && !entry.superscript) { return escapeHtml(entry.symbol); }
-          function notation(value) {
-            var tokens = (value || "").match(/[0-9]+|./gu) || [];
-            var html = tokens.map(function(token) {
-              var tag = /^[0-9]+$/.test(token) ? "mn" : token === "∗" ? "mo" : "mi";
-              return "<" + tag + ">" + escapeHtml(token) + "</" + tag + ">";
-            }).join("");
-            return tokens.length > 1 ? "<mrow>" + html + "</mrow>" : html;
-          }
-          var base = notation(entry.symbol);
-          var sub = notation(entry.subscript);
-          var sup = notation(entry.superscript);
-          var indexed = entry.subscript && entry.superscript ? "<msubsup>" + base + sub + sup + "</msubsup>"
-            : entry.subscript ? "<msub>" + base + sub + "</msub>" : "<msup>" + base + sup + "</msup>";
-          return "<math>" + indexed + notation(entry.suffix) + "</math>";
-        }
-
-        function renderBlockSymbols(block) {
-          var symbols = (block.symbol_ids || []).map(function(id) { return glossaryById.get(id); }).filter(Boolean);
-          if (!symbols.length) { return ""; }
-          var links = symbols.map(function(entry) {
-            return '<a class="concept-link kg-block-symbol" href="' + escapeHtml(conceptHash(entry.concept_id)) +
-              '" data-symbol-id="' + escapeHtml(entry.symbol_id) + '" data-concept-id="' + escapeHtml(entry.concept_id) +
-              '" data-block-id="' + escapeHtml(entry.definition_block_id) + '" aria-label="' + escapeHtml(entry.name) +
-              '" aria-haspopup="dialog" aria-controls="kg_concept_preview">' + renderGlossarySymbol(entry) + '</a>';
-          });
-          return '<div class="kg-block-symbols"><span>Symbols:</span> ' + links.join(', ') + '</div>';
-        }
-
         function buildSymbolList(query) {
           hideSymbolPreview();
-          if (!symbolRows.length) {
-            var body = symbolList.querySelector("tbody");
-            body.innerHTML = symbolData.map(function(entry) {
-              var source = sharedExplanations.source(entry.definition_block_id);
-              return "<tr><td>" + renderGlossarySymbol(entry) +
-                '</td><td><a class="concept-link kg-symbol-name" href="' + escapeHtml(conceptHash(entry.concept_id)) +
-                '" data-symbol-id="' + escapeHtml(entry.symbol_id) + '" data-concept-id="' + escapeHtml(entry.concept_id) +
-                '" data-block-id="' + escapeHtml(entry.definition_block_id) + '">' + escapeHtml(entry.name) + '</a></td><td>' +
-                renderSymbolDefinition(entry, source, "kg-symbol-definition") + '</td></tr>';
-            }).join("");
-            symbolRows = symbolData.map(function(entry, index) {
-              return {row: body.rows[index], searchable: [entry.symbol, entry.name, entry.search_terms]
-                .join(" ").normalize("NFKC").toLowerCase()};
-            });
-            if (window.MathJax && MathJax.typesetPromise) {
-              typesetInfoPanel({element: body});
-            } else if (document.readyState !== "complete") {
-              window.addEventListener("load", function() { typesetInfoPanel({element: body}); }, {once: true});
-            }
-          }
-          var terms = query.normalize("NFKC").trim().toLowerCase().split(/\s+/).filter(Boolean);
-          var count = 0;
-          symbolRows.forEach(function(entry) {
-            var matches = terms.every(function(term) { return entry.searchable.includes(term); });
-            entry.row.hidden = !matches;
-            if (matches) { count++; }
-          });
-          symbolList.querySelector("table").hidden = !count;
+          var count = symbolGlossary.filter(query);
           searchStatus.textContent = count ? count + (count === 1 ? " entry" : " entries") : "No matching symbols.";
           symbolList.scrollTop = 0;
         }
 
         function setSymbolSearch(showSymbols) {
-          hideSymbolPreview();
           symbolList.hidden = !showSymbols;
           document.getElementById("kg_search_section").classList.toggle("kg-symbol-search", showSymbols);
           document.getElementById("kg_concept_list").hidden = showSymbols;
@@ -6285,7 +6231,10 @@
           searchInput.setAttribute("aria-label", showSymbols ? "Search symbols" : "Search concepts and modules");
           searchInput.placeholder = showSymbols ? "Search symbol or name" : "Search ID, title, or concept text";
           if (showSymbols) { buildSymbolList(searchInput.value); }
-          else { buildConceptList(searchInput.value); }
+          else {
+            hideSymbolPreview();
+            buildConceptList(searchInput.value);
+          }
         }
 
         symbolSearchButton.addEventListener("click", function() {

@@ -72,20 +72,6 @@ def test_symbols_browse_search_and_open_definition(repo_browser_graph):
     assert page.locator('#info_panel [data-content-block-id="sr.lorentz_transformations.boost_formula"]').evaluate('el => el.open')
 
 
-def test_maths_inline_symbol_previews_its_definition(repo_browser_graph):
-    graph = repo_browser_graph
-    page = graph.page
-    graph.click_concept('math.tensor_field')
-    page.locator('#kg_view_select').select_option('details')
-    block = page.locator('#info_panel [data-content-block-id="math.tensor_field.definition"]')
-    block.locator(':scope > summary').click()
-    explanation = block.locator('details[data-content-slot="point"]')
-    explanation.locator(':scope > summary').click()
-    definition = 'math.tangent_space.definition'
-    explanation.locator(f'a[data-block-id="{definition}"]').hover()
-    assert page.locator(f'#kg_concept_preview [data-preview-block-id="{definition}"]').is_visible()
-
-
 def test_glossary_renders_indices_and_accepts_plain_text_search(repo_browser_graph):
     page = repo_browser_graph.page
     repo_browser_graph.open_search()

@@ -121,6 +121,7 @@ def inject_controls(
         "graph_camera.js",
         "graph_presentation.js",
         "content_markup.js",
+        "symbol_glossary.js",
         "shared_explanations.js",
         "reading_trees.js",
         "details_view.js",

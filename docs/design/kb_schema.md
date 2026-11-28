@@ -252,7 +252,8 @@ the defining block. The preview can expand the full block in place.
 ## block_symbols.csv
 
 An optional `files.block_symbols` entry in `domain.yaml` points to the domain’s
-block symbol lists.
+block symbol lists. A **block glossary** is the **Symbols:** row rendered at
+the top of a block from its list of glossary IDs.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
