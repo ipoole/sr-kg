@@ -1,0 +1,2 @@
+symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix,definition
+gr.spacetime_metric,g,Spacetime metric,gr.metric_tensor.definition,g mu nu lorentzian metric,μν,,,A symmetric bilinear form on tangent vectors that determines proper time and the local light cones.

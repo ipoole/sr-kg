@@ -141,7 +141,8 @@ def _owned(package, tables):
             raise KnowledgeBaseLoadError(f"{getattr(package.paths, role)}: foreign {column} owner(s): {', '.join(sorted(invalid))}")
     links = tables.get("reference_links")
     block_ids = _ids(tables.get("content_blocks"), "block_id")
-    foreign_blocks = _ids(tables.get("block_symbols"), "block_id") - block_ids
+    owned_blocks = block_ids | _ids(tables.get("module_content_blocks"), "block_id")
+    foreign_blocks = _ids(tables.get("block_symbols"), "block_id") - owned_blocks
     if foreign_blocks:
         raise KnowledgeBaseLoadError(f"{package.paths.block_symbols}: symbol rows must belong to {package.id}: "
                                      + ", ".join(sorted(foreign_blocks)))

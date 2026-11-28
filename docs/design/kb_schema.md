@@ -257,7 +257,7 @@ the top of a block from its list of glossary IDs.
 
 | Column | Required | Meaning |
 | --- | --- | --- |
-| `block_id` | Yes | ID of an owned concept content block. Use at most one row per block. |
+| `block_id` | Yes | ID of an owned concept or module content block. Use at most one row per block. |
 | `symbol_ids` | Yes | Space-separated, distinct glossary IDs in the order they appear in the block’s **Symbols:** row. |
 
 The block chooses which meaning to use. For example,

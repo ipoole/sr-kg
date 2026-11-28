@@ -187,12 +187,15 @@ class KnowledgeBase:
 
     def concept_data(self) -> dict[str, dict[str, object]]:
         """Return the JSON-compatible concept mapping consumed by the viewer."""
-        data = {concept.id: concept.to_viewer_data() for concept in self.concepts}
+        return self._with_block_symbols({concept.id: concept.to_viewer_data() for concept in self.concepts})
+
+    def _with_block_symbols(self, data):
         if self.block_symbols:
             available = {entry["symbol_id"] for entry in self.symbols}
-            for concept in data.values():
-                for block in concept["content_blocks"]:
-                    symbols = [entry for entry in self.block_symbols.get(block["block_id"], ()) if entry in available]
+            for owner in data.values():
+                for block in owner["content_blocks"]:
+                    symbols = [symbol_id for symbol_id in self.block_symbols.get(block["block_id"], ())
+                               if symbol_id in available]
                     if symbols:
                         block["symbol_ids"] = symbols
         return data
@@ -212,7 +215,7 @@ class KnowledgeBase:
 
     def module_data(self) -> dict[str, dict[str, object]]:
         """Return the JSON-compatible module mapping consumed by the viewer."""
-        return {module.module_id: module.to_viewer_data() for module in self.modules}
+        return self._with_block_symbols({module.module_id: module.to_viewer_data() for module in self.modules})
 
     def tutorial_data(self) -> list[dict[str, object]]:
         """Return validated tutorial routes in their browser representation."""
@@ -433,12 +436,11 @@ def _assemble_knowledge_base(
             symbols.append({**entry, "concept_id": blocks[block_id]})
     block_symbols = {}
     if (block_symbols_df := tables.get("block_symbols")) is not None:
-        concept_block_ids = set(content_blocks_df["block_id"].str.strip())
         loaded_domains = {package.id for package in domain_packages}
         for row in block_symbols_df.itertuples(index=False):
             block_id = row.block_id.strip()
             ids = tuple(row.symbol_ids.split())
-            if block_id not in concept_block_ids or block_id in block_symbols:
+            if block_id not in content_block_ids or block_id in block_symbols:
                 raise KnowledgeBaseLoadError(f"block_symbols.csv: unknown or duplicate block_id {block_id!r}")
             if not ids or len(ids) != len(set(ids)):
                 raise KnowledgeBaseLoadError(f"{block_id}: expected a list of distinct symbol IDs")

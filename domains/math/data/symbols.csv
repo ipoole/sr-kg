@@ -1,9 +1,23 @@
-symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix
-math.manifold_symbol,M,Manifold,math.manifold.definition,space,,,
-math.worldline_symbol,γ,Worldline,math.worldline.definition,gamma curve,,,
-math.chart_coordinates,x,Local coordinates,math.coordinate_chart.definition,x^i chart xⁱ,,i,
-math.tangent_space_symbol,T,Tangent space,math.tangent_space.definition,T_pM TpM TₚM,p,,M
-math.cotangent_space_symbol,T,Cotangent space,math.cotangent_space.definition,T_p^*M Tp*M dual Tₚ*M,p,∗,M
-math.covector_components,ω,Covector components,math.index_notation.definition,omega omega_i covariant ωᵢ,i,,
-math.spacetime_indices,"μ, ν",Spacetime indices,math.index_notation.component_indices,mu nu greek index,,,
-math.jacobian_symbol,J,Coordinate-transition Jacobian,math.coordinate_transformation.jacobian,partial derivatives,,,
+symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix,definition
+math.manifold_symbol,M,Manifold,math.manifold.definition,space,,,,A smooth space that locally admits a system of real-valued coordinates.
+math.worldline_symbol,γ,Worldline,math.worldline.definition,gamma curve,,,,"A curve through spacetime, labelled by a parameter, that records an object’s history."
+math.chart_coordinates,x,Local coordinates,math.coordinate_chart.definition,x^i chart xⁱ,,i,,The real-valued components assigned to a point by a coordinate chart.
+math.tangent_space_symbol,T,Tangent space,math.tangent_space.definition,T_pM TpM TₚM,p,,M,The vector space of tangent directions to a manifold at a point.
+math.cotangent_space_symbol,T,Cotangent space,math.cotangent_space.definition,T_p^*M Tp*M dual Tₚ*M,p,∗,M,"The dual of the tangent space at a point, consisting of linear maps from tangent vectors to scalars."
+math.covector_components,ω,Covector components,math.index_notation.definition,omega omega_i covariant ωᵢ,i,,,The coefficients of a covector in a chosen dual basis.
+math.spacetime_indices,"μ, ν",Spacetime indices,math.index_notation.component_indices,mu nu greek index,,,,Indices that label spacetime coordinate directions.
+math.jacobian_symbol,J,Coordinate-transition Jacobian,math.coordinate_transformation.jacobian,partial derivatives,,,,The matrix of first partial derivatives that relates two coordinate charts on their overlap.
+math.coordinate_chart_map,x,Coordinate chart,math.coordinate_chart.definition,chart map x phi ϕ,,,,A map that assigns a tuple of real coordinates to the points in an open part of a manifold.
+math.chart_domain,U,Chart domain,math.coordinate_chart.definition,open set neighbourhood,,,,The open part of a manifold on which a particular chart is defined.
+math.manifold_dimension,n,Manifold dimension,math.manifold.definition,dimension number coordinates,,,,The number of independent local coordinates at each point of the manifold.
+math.real_coordinate_space,ℝ,Real coordinate space,math.manifold.definition,R^n Rn Euclidean,,n,,The space of ordered tuples of n real numbers.
+math.temperature_field,T,Temperature field,math.manifold.terrain_survey,temperature scalar,,,,A scalar field assigning a temperature to each point of the survey surface.
+math.surface_curvature,K,Gaussian curvature,math.manifold.terrain_survey,surface curvature gaussian,,,,A scalar describing the intrinsic curvature of the survey surface at each point.
+math.surface_growth,𝐆,Growth vector field,math.manifold.terrain_survey,G growth tangent vector,,,,A tangent vector field giving the direction and rate of growth on the survey surface.
+math.scalar_differential,df,Scalar differential,math.cotangent_space.gradient_example,df dT differential one-form,,,,The covector that maps each tangent vector to the corresponding directional derivative of a scalar field.
+math.directional_derivative,v[f],Directional derivative,math.tangent_space.directional_derivative,directional derivative dT/dλ,,,,The rate of change of a scalar field along the tangent vector v.
+math.coordinate_basis,∂,Coordinate tangent basis,math.tangent_space.components,partial derivative ∂i d/dx,i,,,The basis of tangent vectors that differentiate with respect to the local coordinates.
+math.dual_basis,dx,Coordinate dual basis,math.cotangent_space.basis,dx^i dxⁱ covector,,i,,The covector basis whose elements read off the components of a tangent vector in the coordinate tangent basis.
+math.kronecker_delta,δ,Kronecker delta,math.cotangent_space.basis,delta identity,j,i,,The component that equals one when its two indices agree and zero otherwise.
+math.covector_symbol,ω,Covector,math.cotangent_space.definition,omega one-form,,,,A linear map from tangent vectors at a point to scalars.
+math.flat_map,v,Metric lowering map,math.cotangent_space.readout,flat musical isomorphism,,♭,,The covector that takes a tangent vector w to its metric pairing with v.

@@ -88,3 +88,18 @@ def test_maths_uses_consolidated_kinds_without_hiding_core_definitions(maths, mo
     assert all(block.kind in AUTHORING_BLOCK_KINDS for block in module.content_blocks)
     assert maths.content_units['math.m01_manifolds_and_coordinates.curvature_preview'].kind == 'advanced'
     assert maths.content_units['math.worldline.definition'].kind == 'definition'
+
+
+def test_block_glossaries_include_module_content_and_follow_loaded_domains(maths):
+    module_id = 'math.m01_manifolds_and_coordinates'
+    block_id = module_id + '.probe_result'
+
+    def symbols(kb):
+        return next(block['symbol_ids'] for block in kb.module_data()[module_id]['content_blocks']
+                    if block['block_id'] == block_id)
+
+    full_kb = load_knowledge_base(ROOT / 'data', domains=['math', 'sr'], include_graphics=False)
+    assert symbols(full_kb)[:3] == [
+        'math.worldline_symbol', 'sr.coordinate_time_symbol', 'math.temperature_field',
+    ]
+    assert symbols(maths) == [entry for entry in symbols(full_kb) if entry.startswith('math.')]
