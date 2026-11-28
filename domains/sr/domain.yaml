@@ -10,6 +10,7 @@ files:
   edges: data/edges.csv
   content_blocks: data/content_blocks.csv
   symbols: data/symbols.csv
+  block_symbols: data/block_symbols.csv
   figures: data/figures.csv
   study_questions: data/study_questions.csv
   study_question_options: data/study_question_options.csv

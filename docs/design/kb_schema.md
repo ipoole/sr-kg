@@ -231,18 +231,40 @@ Existing tables/content need no conversion to load or render.
 ## symbols.csv
 
 An optional `files.symbols` entry in `domain.yaml` points to the domain’s
-glossary table. Each row has `symbol_id`, `symbol`, `name`,
-`definition_block_id` and `search_terms`. Use a unique, domain-prefixed ID for
-each meaning and plain Unicode for the base symbol. Indexed notation can use
-the optional `subscript`, `superscript` and `suffix` columns. For example,
-`T`, `p`, `∗`, `M` render as \(T_p^*M\). The definition block
-must be a concept content block owned by the same domain. Reuse the glyph in
-separate rows when it has multiple meanings. `search_terms` can be empty or
-include plain-text spellings like `gamma` and `T_pM`.
+glossary table. Each row describes one meaning. If a glyph has multiple
+meanings, give each meaning its own `symbol_id`.
 
-The viewer combines the tables from the selected domains. A few inline
-occurrences can also link directly to a defining block with
-`\cref{\(T_pM\)}{math.tangent_space.definition}` in prose.
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `symbol_id` | Yes | Stable, unique, domain-prefixed ID for the meaning. |
+| `symbol` | Yes | Symbol in plain Unicode, or the base glyph for indexed notation. |
+| `name` | Yes | Short name shown in Search and as the symbol preview heading. |
+| `definition` | No | Succinct definition shown in the glossary table and symbol preview. |
+| `definition_block_id` | Yes | Concept content block that gives the full definition. The defining domain owns both the glossary entry and this block. |
+| `search_terms` | Yes, may be blank | Plain-text aliases such as `gamma` or `T_pM`. |
+| `subscript`, `superscript`, `suffix` | No | Optional parts of the displayed notation. A base `T`, subscript `p`, superscript `∗` and suffix `M` render as \(T_p^*M\). |
+
+**Search → Symbols** combines entries from the selected domains. The table
+and symbol preview show the same short definition, using the defining
+block’s statement when `definition` is empty. The name in the table opens
+the defining block. The preview can expand the full block in place.
+
+## block_symbols.csv
+
+An optional `files.block_symbols` entry in `domain.yaml` points to the domain’s
+block symbol lists.
+
+| Column | Required | Meaning |
+| --- | --- | --- |
+| `block_id` | Yes | ID of an owned concept content block. Use at most one row per block. |
+| `symbol_ids` | Yes | Space-separated, distinct glossary IDs in the order they appear in the block’s **Symbols:** row. |
+
+The block chooses which meaning to use. For example,
+`sr.wave_equation.plane_wave` lists `sr.angular_frequency`. The glossary entry
+displays \(\omega\), names it **Angular frequency**, provides the short
+definition and points to **Plane-wave test** for the full block. Other blocks
+using \(\omega\) with the same meaning can reuse that entry. The Symbols row
+shows the glossary entries available in the current build.
 
 ## modules.csv
 

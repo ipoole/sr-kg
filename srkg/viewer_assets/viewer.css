@@ -2702,14 +2702,17 @@
         font-weight: 700;
     }
 
-    #info_panel .concept-link {
+    #info_panel .concept-link,
+    #kg_symbol_list .kg-symbol-name {
         color: #174ea6;
         text-decoration: none;
         cursor: pointer;
     }
 
     #info_panel .concept-link:hover,
-    #info_panel .concept-link:focus {
+    #info_panel .concept-link:focus,
+    #kg_symbol_list .kg-symbol-name:hover,
+    #kg_symbol_list .kg-symbol-name:focus {
         text-decoration: underline;
     }
 
@@ -2724,6 +2727,16 @@
         outline: 2px solid #184779;
         outline-offset: 2px;
     }
+
+    #info_panel .kg-block-symbols {
+        margin: 0 0 .65em;
+        padding: .2em 0 .45em;
+        border-bottom: 1px solid #e5e8ec;
+        line-height: 1.55;
+    }
+    #info_panel .kg-block-symbols > span { color: #53616c; }
+    #info_panel .kg-block-symbols .kg-block-symbol { color: inherit; white-space: nowrap; }
+    #info_panel .kg-block-symbol:focus-visible { outline: 2px solid #184779; outline-offset: 2px; }
 
     #kg_concept_preview {
         box-sizing: border-box;
@@ -3534,6 +3547,7 @@
         font: 14px Arial, sans-serif;
       }
       #kg_search_section:not([open]) { display: none; }
+      #kg_search_section.kg-symbol-search { width: min(580px, calc(100vw - 24px)); }
       #kg_search_section summary { font-weight: bold; cursor: pointer; }
       #kg_search_block { display: flex; gap: 6px; margin: 8px 0; }
       #kg_search { flex: 1; min-width: 0; padding: 6px; font: inherit; }
@@ -3544,14 +3558,20 @@
       }
       #kg_search_section [hidden] { display: none; }
       #kg_symbol_list { overflow: auto; }
-      #kg_symbol_list table { width: 100%; border-collapse: collapse; }
+      #kg_symbol_list table { width: 100%; border-spacing: 0; table-layout: fixed; }
       #kg_symbol_list th, #kg_symbol_list td {
         padding: 8px 5px;
         border-bottom: 1px solid #dce2ea;
         text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
       }
-      #kg_symbol_list th { position: sticky; top: 0; background: white; }
+      #kg_symbol_list thead { position: sticky; top: 0; z-index: 1; background: white; }
+      #kg_symbol_list th:first-child { width: 18%; }
+      #kg_symbol_list th:nth-child(2) { width: 29%; }
+      #kg_symbol_list .kg-symbol-name { font-weight: 700; }
       #kg_symbol_list td:first-child { white-space: nowrap; font: 1.2em Georgia, serif; }
+      #kg_symbol_list .kg-symbol-definition mjx-container { max-width: 100%; overflow-x: auto; vertical-align: middle; }
       #kg_search_symbols[aria-pressed="true"] { background: #e0ebfa; color: #174ea6; }
       #kg_search_status { color: #526070; font-size: .9em; }
       #kg_search_close { margin-top: 8px; }

@@ -188,6 +188,7 @@ def filter_knowledge_base_by_domains(
         published_layout=kb.published_layout,
         tutorials=tutorials_for_domains(kb.tutorials, available_domains),
         symbols=tuple(entry for entry in kb.symbols if entry["concept_id"] in selected_ids),
+        block_symbols=kb.block_symbols,
         content_units=content_units,
         build_warnings=content_units.warnings,
     )

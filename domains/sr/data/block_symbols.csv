@@ -1,0 +1,12 @@
+block_id,symbol_ids
+sr.wave_equation.graphic,sr.dalembertian sr.scalar_wave_field
+sr.wave_equation.overview,sr.dalembertian sr.light_speed
+sr.wave_equation.definition,sr.time_coordinate_length sr.light_speed sr.coordinate_time_symbol sr.minkowski_signature sr.dalembertian sr.coordinate_derivative sr.raised_coordinate_derivative sr.spatial_laplacian sr.scalar_wave_field
+sr.wave_equation.metric_structure,sr.minkowski_metric sr.minkowski_signature sr.dalembertian
+sr.wave_equation.maxwell_origin,sr.coordinate_derivative sr.raised_field_tensor sr.dalembertian sr.raised_four_potential sr.vacuum_permeability sr.electric_four_current
+sr.wave_equation.source_free,sr.electric_four_current sr.dalembertian sr.raised_four_potential sr.coordinate_derivative
+sr.wave_equation.plane_wave,sr.scalar_wave_field sr.angular_frequency sr.wave_vector sr.dalembertian sr.light_speed
+sr.wave_equation.moving_pattern,sr.light_speed sr.coordinate_time_symbol sr.scalar_wave_field sr.dalembertian
+sr.wave_equation.sources,sr.electric_four_current sr.raised_four_potential sr.dalembertian
+sr.wave_equation.not_any_oscillation,sr.dalembertian sr.scalar_wave_field
+sr.wave_equation.summary,sr.dalembertian sr.raised_four_potential sr.electric_four_current

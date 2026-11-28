@@ -56,6 +56,7 @@ from srkg.layout_persistence import (
     load_published_layout,
 )
 from srkg.model import Concept, ConceptSection, ContentBlock, Module, ModuleContentBlock
+from srkg.domain_references import domain_namespace
 from srkg.tutorials import Tutorial, TutorialLoadError, load_tutorials
 
 DEFAULT_KB_FILES = {
@@ -65,6 +66,7 @@ DEFAULT_KB_FILES = {
     "edge_key": "edges_key.csv",
     "content_blocks": "content_blocks.csv",
     "symbols": "symbols.csv",
+    "block_symbols": "block_symbols.csv",
     "study_questions": "study_questions.csv",
     "study_question_options": "study_question_options.csv",
     "references": "references.csv",
@@ -79,7 +81,7 @@ DEFAULT_KB_FILES = {
     "tutorials": "tutorials.yaml",
 }
 SYMBOL_COLUMNS = ["symbol_id", "symbol", "name", "definition_block_id", "search_terms"]
-SYMBOL_NOTATION_COLUMNS = ["subscript", "superscript", "suffix"]
+SYMBOL_OPTIONAL_COLUMNS = ["subscript", "superscript", "suffix", "definition"]
 
 
 @dataclass(frozen=True)
@@ -107,6 +109,7 @@ class KnowledgeBasePaths:
     layout_revision: str = ""
     figures: Path | None = None
     symbols: Path | None = None
+    block_symbols: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -125,6 +128,7 @@ class KnowledgeBase:
     build_warnings: tuple[BuildWarning, ...] = ()
     content_units: ContentRegistry = field(default_factory=ContentRegistry)
     symbols: tuple[dict[str, str], ...] = ()
+    block_symbols: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     def figure_data(self):
         return {key: value.to_viewer_data() for key, value in self.content_units.figures.items()}
@@ -183,7 +187,15 @@ class KnowledgeBase:
 
     def concept_data(self) -> dict[str, dict[str, object]]:
         """Return the JSON-compatible concept mapping consumed by the viewer."""
-        return {concept.id: concept.to_viewer_data() for concept in self.concepts}
+        data = {concept.id: concept.to_viewer_data() for concept in self.concepts}
+        if self.block_symbols:
+            available = {entry["symbol_id"] for entry in self.symbols}
+            for concept in data.values():
+                for block in concept["content_blocks"]:
+                    symbols = [entry for entry in self.block_symbols.get(block["block_id"], ()) if entry in available]
+                    if symbols:
+                        block["symbol_ids"] = symbols
+        return data
 
     @property
     def module_index(self) -> dict[str, Module]:
@@ -252,6 +264,7 @@ def _paths_from_manifest(root: Path, manifest: dict) -> KnowledgeBasePaths:
         graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("graphic_designs")),
         figures=_resolve_existing_optional_manifest_path(root, files.get("figures")),
         symbols=_resolve_optional_manifest_path(root, declared_files.get("symbols")),
+        block_symbols=_resolve_optional_manifest_path(root, declared_files.get("block_symbols")),
         module_graphic_designs=_resolve_existing_optional_manifest_path(root, files.get("module_graphic_designs")),
         modules=_resolve_existing_optional_manifest_path(root, files.get("modules")),
         module_members=_resolve_existing_optional_manifest_path(root, files.get("module_members")),
@@ -288,7 +301,7 @@ def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | No
     """Read one source package; also used by authoring/review tools."""
     tables = {
         role: _read_optional_csv(getattr(paths, role))
-        for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials", "symbols"}
+        for role in DEFAULT_KB_FILES if role not in {"edge_key", "layout", "tutorials", "symbols", "block_symbols"}
     }
     tables["symbols"] = None
     if paths.symbols is not None:
@@ -296,7 +309,15 @@ def read_source_tables(paths: KnowledgeBasePaths) -> dict[str, pd.DataFrame | No
         missing = set(SYMBOL_COLUMNS) - set(symbols.columns)
         if missing:
             raise KnowledgeBaseLoadError(f"{paths.symbols}: missing columns: {', '.join(sorted(missing))}")
-        tables["symbols"] = symbols.reindex(columns=SYMBOL_COLUMNS + SYMBOL_NOTATION_COLUMNS, fill_value="")
+        tables["symbols"] = symbols.reindex(columns=SYMBOL_COLUMNS + SYMBOL_OPTIONAL_COLUMNS, fill_value="")
+    tables["block_symbols"] = None
+    if paths.block_symbols is not None:
+        block_symbols = _read_csv(paths.block_symbols)
+        columns = ["block_id", "symbol_ids"]
+        missing = set(columns) - set(block_symbols.columns)
+        if missing:
+            raise KnowledgeBaseLoadError(f"{paths.block_symbols}: missing columns: {', '.join(sorted(missing))}")
+        tables["block_symbols"] = block_symbols[columns]
     if tables['figures'] is not None:
         tables['figures']['_asset_root'] = str(paths.root or paths.figures.parent)
     return tables
@@ -395,9 +416,9 @@ def _assemble_knowledge_base(
     warnings.extend(content_units.warnings)
     symbols_df = tables.get("symbols")
     symbols = []
+    symbol_ids = set()
     if symbols_df is not None:
         blocks = {block.block_id: concept.id for concept in concepts for block in concept.content_blocks}
-        symbol_ids = set()
         for entry in symbols_df.to_dict("records"):
             entry = {key: value.strip() for key, value in entry.items()}
             symbol_id = entry["symbol_id"]
@@ -410,6 +431,22 @@ def _assemble_knowledge_base(
             if block_id not in blocks:
                 raise KnowledgeBaseLoadError(f"{symbol_id}: unknown symbol definition block {block_id}")
             symbols.append({**entry, "concept_id": blocks[block_id]})
+    block_symbols = {}
+    if (block_symbols_df := tables.get("block_symbols")) is not None:
+        concept_block_ids = set(content_blocks_df["block_id"].str.strip())
+        loaded_domains = {package.id for package in domain_packages}
+        for row in block_symbols_df.itertuples(index=False):
+            block_id = row.block_id.strip()
+            ids = tuple(row.symbol_ids.split())
+            if block_id not in concept_block_ids or block_id in block_symbols:
+                raise KnowledgeBaseLoadError(f"block_symbols.csv: unknown or duplicate block_id {block_id!r}")
+            if not ids or len(ids) != len(set(ids)):
+                raise KnowledgeBaseLoadError(f"{block_id}: expected a list of distinct symbol IDs")
+            for symbol_id in ids:
+                domain = domain_namespace(symbol_id, block_id)
+                if symbol_id not in symbol_ids and (not loaded_domains or domain in loaded_domains):
+                    raise KnowledgeBaseLoadError(f"{block_id}: unknown symbol {symbol_id}")
+            block_symbols[block_id] = ids
     try:
         tutorials = []
         for source in tutorial_paths if tutorial_paths is not None else [paths.tutorials]:
@@ -448,6 +485,7 @@ def _assemble_knowledge_base(
         tutorials=tutorials,
         content_units=content_units,
         symbols=tuple(symbols),
+        block_symbols=block_symbols,
         build_warnings=tuple(warnings),
     )
 

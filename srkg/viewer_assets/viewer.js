@@ -2,6 +2,7 @@
       var conceptData = __CONCEPT_DATA__;
       var figureData = __FIGURE_DATA__;
       var symbolData = __SYMBOL_DATA__;
+      var glossaryById = new Map(symbolData.map(function(entry) { return [entry.symbol_id, entry]; }));
       var moduleData = __MODULE_DATA__;
       var publishedLayout = __PUBLISHED_LAYOUT__;
       var tutorialData = __TUTORIAL_DATA__;
@@ -1904,7 +1905,8 @@
                 title: String(block.title || ""),
                 body: String(block.body || ""),
                 statement: String(block.statement || ""),
-                graphic: String(block.graphic || "")
+                graphic: String(block.graphic || ""),
+                symbol_ids: Array.isArray(block.symbol_ids) ? block.symbol_ids : []
               };
             })
             .filter(function(block) {
@@ -1956,7 +1958,7 @@
               escapeHtml(contentBlockKindLabel(block.kind)) + '"></span>',
             actions: sharedExplanations.actions(block.block_id, capabilities),
             bodyClass: "content-block-body",
-            bodyHtml: sharedExplanations.body(block.block_id, context, capabilities)
+            bodyHtml: renderBlockSymbols(block) + sharedExplanations.body(block.block_id, context, capabilities)
           });
         }
 
@@ -3258,21 +3260,29 @@
           return cut.replace(/[.,;:]*$/, "") + "...";
         }
 
-        function blockPreviewHtml(source) {
+        function renderSymbolDefinition(entry, source, className) {
+          var definition = entry.definition || (source && source.block.statement);
+          return definition ? contentMarkup.renderBodyLines(definition, className) : "";
+        }
+
+        function blockPreviewHtml(source, glossaryEntry) {
           var block = source.block;
           var ownerTitle = source.ownerType === "module" ? source.owner.title : conceptTitleText(source.ownerId);
-          return '<div data-preview-block-id="' + escapeHtml(block.block_id) + '">' +
+          return '<div data-preview-block-id="' + escapeHtml(block.block_id) + '"' +
+            (glossaryEntry ? ' data-preview-symbol-id="' + escapeHtml(glossaryEntry.symbol_id) + '"' : '') + '>' +
             '<div class="concept-preview-header"><div class="concept-preview-title">' +
-            renderTooltipText(block.title) + '</div>' +
+            (glossaryEntry ? escapeHtml(glossaryEntry.name) : renderTooltipText(block.title)) + '</div>' +
             '<button type="button" class="concept-preview-close" aria-label="Close preview">Close</button></div>' +
-            '<div class="concept-preview-module">' + renderTooltipText(ownerTitle) +
-            ' · ' + escapeHtml(contentBlockKindLabel(block.kind)) + '</div>' +
-            sharedExplanations.nativeStatement(block.block_id) +
+            (glossaryEntry ? '' : '<div class="concept-preview-module">' + renderTooltipText(ownerTitle) +
+              ' · ' + escapeHtml(contentBlockKindLabel(block.kind)) + '</div>') +
+            (glossaryEntry
+              ? renderSymbolDefinition(glossaryEntry, source, "concept-preview-excerpt")
+              : sharedExplanations.nativeStatement(block.block_id)) +
             contentMarkup.renderContentUnit({level: "inline", origin: "authored",
               className: "kg-block-preview-body", title: "Read full block",
               capabilities: {}, bodyHtml: ""}) +
-            '<div class="concept-preview-actions"><button type="button" class="concept-preview-go" data-block-id="' +
-            escapeHtml(block.block_id) + '">Go to block</button></div></div>';
+            (glossaryEntry ? '' : '<div class="concept-preview-actions"><button type="button" class="concept-preview-go" data-block-id="' +
+              escapeHtml(block.block_id) + '">Go to block</button></div>') + '</div>';
         }
 
         function conceptPreviewHtml(nodeId, blockId) {
@@ -3383,6 +3393,7 @@
           if (!link) { return; }
           var id = link.getAttribute("data-concept-id");
           var blockId = link.getAttribute("data-block-id");
+          var glossaryEntry = glossaryById.get(link.getAttribute("data-symbol-id"));
           var source = blockId && sharedExplanations.source(blockId);
           if (!getConcept(id) && !source) { return; }
 
@@ -3391,9 +3402,11 @@
           // Following another reference inside the preview replaces this one
           // popup; retain its original, still-connected page anchor.
           if (!conceptPreview.contains(link)) { conceptPreviewAnchor = link; }
-          replaceTypesetContent(conceptPreview, conceptPreviewHtml(id, blockId));
+          replaceTypesetContent(conceptPreview, glossaryEntry && source
+            ? blockPreviewHtml(source, glossaryEntry) : conceptPreviewHtml(id, blockId));
           conceptPreview.classList.toggle("concept-preview-pinned", conceptPreviewPinned);
-          conceptPreview.setAttribute("aria-label", source ? "Block preview: " + source.block.title : "Concept preview: " + conceptTitleText(id));
+          conceptPreview.setAttribute("aria-label", glossaryEntry ? glossaryEntry.name :
+            source ? "Block preview: " + source.block.title : "Concept preview: " + conceptTitleText(id));
           positionConceptPreview(conceptPreviewAnchor);
           applyTransientConceptHighlight(source ? source.ownerId : id);
           if (conceptPreviewPinned) {
@@ -6185,6 +6198,7 @@
         });
 
         function setSearchOpen(open) {
+          if (!open) { hideSymbolPreview(); }
           document.getElementById("kg_search_section").open = open;
           document.getElementById("kg_search_toggle").setAttribute("aria-expanded", String(open));
           document.getElementById(open ? "kg_search" : "kg_search_toggle").focus();
@@ -6192,6 +6206,7 @@
 
         var symbolSearchButton = document.getElementById("kg_search_symbols");
         var symbolList = document.getElementById("kg_symbol_list");
+        var symbolRows = [];
         var searchStatus = document.getElementById("kg_search_status");
         var searchInput = document.getElementById("kg_search");
         symbolSearchButton.hidden = !symbolData.length;
@@ -6214,26 +6229,56 @@
           return "<math>" + indexed + notation(entry.suffix) + "</math>";
         }
 
-        function buildSymbolList(query) {
-          var terms = query.normalize("NFKC").trim().toLowerCase().split(/\s+/).filter(Boolean);
-          var rows = symbolData.filter(function(entry) {
-            var searchable = [entry.symbol, entry.name, entry.search_terms]
-              .join(" ").normalize("NFKC").toLowerCase();
-            return terms.every(function(term) { return searchable.includes(term); });
+        function renderBlockSymbols(block) {
+          var symbols = (block.symbol_ids || []).map(function(id) { return glossaryById.get(id); }).filter(Boolean);
+          if (!symbols.length) { return ""; }
+          var links = symbols.map(function(entry) {
+            return '<a class="concept-link kg-block-symbol" href="' + escapeHtml(conceptHash(entry.concept_id)) +
+              '" data-symbol-id="' + escapeHtml(entry.symbol_id) + '" data-concept-id="' + escapeHtml(entry.concept_id) +
+              '" data-block-id="' + escapeHtml(entry.definition_block_id) + '" aria-label="' + escapeHtml(entry.name) +
+              '" aria-haspopup="dialog" aria-controls="kg_concept_preview">' + renderGlossarySymbol(entry) + '</a>';
           });
-          symbolList.querySelector("tbody").innerHTML = rows.map(function(entry) {
-            return "<tr><td>" + renderGlossarySymbol(entry) + "</td><td>" + escapeHtml(entry.name) +
-              '</td><td><a href="' + escapeHtml(conceptHash(entry.concept_id)) + '" data-block-id="' +
-              escapeHtml(entry.definition_block_id) + '">' + escapeHtml(conceptTitleText(entry.concept_id)) +
-              "</a></td></tr>";
-          }).join("");
-          symbolList.querySelector("table").hidden = !rows.length;
-          searchStatus.textContent = rows.length ? rows.length + (rows.length === 1 ? " entry" : " entries") : "No matching symbols.";
+          return '<div class="kg-block-symbols"><span>Symbols:</span> ' + links.join(', ') + '</div>';
+        }
+
+        function buildSymbolList(query) {
+          hideSymbolPreview();
+          if (!symbolRows.length) {
+            var body = symbolList.querySelector("tbody");
+            body.innerHTML = symbolData.map(function(entry) {
+              var source = sharedExplanations.source(entry.definition_block_id);
+              return "<tr><td>" + renderGlossarySymbol(entry) +
+                '</td><td><a class="concept-link kg-symbol-name" href="' + escapeHtml(conceptHash(entry.concept_id)) +
+                '" data-symbol-id="' + escapeHtml(entry.symbol_id) + '" data-concept-id="' + escapeHtml(entry.concept_id) +
+                '" data-block-id="' + escapeHtml(entry.definition_block_id) + '">' + escapeHtml(entry.name) + '</a></td><td>' +
+                renderSymbolDefinition(entry, source, "kg-symbol-definition") + '</td></tr>';
+            }).join("");
+            symbolRows = symbolData.map(function(entry, index) {
+              return {row: body.rows[index], searchable: [entry.symbol, entry.name, entry.search_terms]
+                .join(" ").normalize("NFKC").toLowerCase()};
+            });
+            if (window.MathJax && MathJax.typesetPromise) {
+              typesetInfoPanel({element: body});
+            } else if (document.readyState !== "complete") {
+              window.addEventListener("load", function() { typesetInfoPanel({element: body}); }, {once: true});
+            }
+          }
+          var terms = query.normalize("NFKC").trim().toLowerCase().split(/\s+/).filter(Boolean);
+          var count = 0;
+          symbolRows.forEach(function(entry) {
+            var matches = terms.every(function(term) { return entry.searchable.includes(term); });
+            entry.row.hidden = !matches;
+            if (matches) { count++; }
+          });
+          symbolList.querySelector("table").hidden = !count;
+          searchStatus.textContent = count ? count + (count === 1 ? " entry" : " entries") : "No matching symbols.";
           symbolList.scrollTop = 0;
         }
 
         function setSymbolSearch(showSymbols) {
+          hideSymbolPreview();
           symbolList.hidden = !showSymbols;
+          document.getElementById("kg_search_section").classList.toggle("kg-symbol-search", showSymbols);
           document.getElementById("kg_concept_list").hidden = showSymbols;
           document.getElementById("kg_search_find").hidden = showSymbols;
           symbolSearchButton.setAttribute("aria-pressed", String(showSymbols));
@@ -6246,6 +6291,12 @@
         symbolSearchButton.addEventListener("click", function() {
           setSymbolSearch(symbolList.hidden);
         });
+
+        function hideSymbolPreview() {
+          if (conceptPreviewAnchor && symbolList.contains(conceptPreviewAnchor)) { hideConceptPreview(true); }
+        }
+
+        symbolList.addEventListener("scroll", hideSymbolPreview);
 
         symbolList.addEventListener("click", function(e) {
           var link = e.target.closest("a[data-block-id]");
@@ -6274,7 +6325,7 @@
         searchInput.addEventListener("keydown", function(e) {
           if (e.key === "Enter" && symbolList.hidden) { kgSearch(); }
           if (e.key === "ArrowDown") {
-            var first = document.querySelector(symbolList.hidden ? "#kg_concept_list button" : "#kg_symbol_list a");
+            var first = document.querySelector(symbolList.hidden ? "#kg_concept_list button" : "#kg_symbol_list tr:not([hidden]) .kg-symbol-name");
             if (first) { e.preventDefault(); first.focus(); }
           }
         });
@@ -6606,37 +6657,27 @@
           } else { navigateToConcept(id, "Selected"); }
         });
 
-        document.getElementById("info_panel").addEventListener("pointerover", function(e) {
-          var link = conceptPreviewTriggerFromEventTarget(e.target);
-          if (!link || e.pointerType === "touch") { return; }
-          showConceptPreview(link, {pinned: false});
-        });
-
-        document.getElementById("info_panel").addEventListener("pointerout", function(e) {
-          var link = conceptPreviewTriggerFromEventTarget(e.target);
-          if (!link || conceptPreviewPinned) { return; }
-          var related = e.relatedTarget;
-          if (related && (link.contains(related) || conceptPreview.contains(related))) {
-            return;
+        function bindPreviewTriggers(container) {
+          function enter(e) {
+            var link = conceptPreviewTriggerFromEventTarget(e.target);
+            if (link && e.pointerType !== "touch") { showConceptPreview(link, {pinned: false}); }
           }
-          scheduleConceptPreviewHide();
-        });
 
-        document.getElementById("info_panel").addEventListener("focusin", function(e) {
-          var link = conceptPreviewTriggerFromEventTarget(e.target);
-          if (!link) { return; }
-          showConceptPreview(link, {pinned: false});
-        });
-
-        document.getElementById("info_panel").addEventListener("focusout", function(e) {
-          var link = conceptPreviewTriggerFromEventTarget(e.target);
-          if (!link || conceptPreviewPinned) { return; }
-          var related = e.relatedTarget;
-          if (related && (link.contains(related) || conceptPreview.contains(related))) {
-            return;
+          function leave(e) {
+            var link = conceptPreviewTriggerFromEventTarget(e.target);
+            if (!link || conceptPreviewPinned) { return; }
+            var related = e.relatedTarget;
+            if (related && (link.contains(related) || conceptPreview.contains(related))) { return; }
+            scheduleConceptPreviewHide();
           }
-          scheduleConceptPreviewHide();
-        });
+
+          container.addEventListener("pointerover", enter);
+          container.addEventListener("pointerout", leave);
+          container.addEventListener("focusin", enter);
+          container.addEventListener("focusout", leave);
+        }
+        bindPreviewTriggers(document.getElementById("info_panel"));
+        bindPreviewTriggers(symbolList);
 
         document.addEventListener("click", function(e) {
           if (!conceptPreview || conceptPreview.style.display === "none") { return; }

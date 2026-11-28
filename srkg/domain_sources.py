@@ -59,7 +59,8 @@ def discover_domains(paths, *, domains=None) -> tuple[DomainPackage, ...]:
         # Package metadata must stay within its owning directory.
         for role in ("nodes", "edges", "content_blocks", "study_questions", "study_question_options",
                      "references", "reference_links", "graphic_designs", "module_graphic_designs",
-                     "modules", "module_members", "module_supports", "module_content_blocks", "layout", "tutorials", "figures", "symbols"):
+                     "modules", "module_members", "module_supports", "module_content_blocks", "layout", "tutorials", "figures", "symbols",
+                     "block_symbols"):
             file = getattr(package_paths, role)
             if file is not None and not file.resolve().is_relative_to(manifest_path.parent.resolve()):
                 raise KnowledgeBaseLoadError(f"{manifest_path}: {role} escapes the owning domain directory")
@@ -140,6 +141,10 @@ def _owned(package, tables):
             raise KnowledgeBaseLoadError(f"{getattr(package.paths, role)}: foreign {column} owner(s): {', '.join(sorted(invalid))}")
     links = tables.get("reference_links")
     block_ids = _ids(tables.get("content_blocks"), "block_id")
+    foreign_blocks = _ids(tables.get("block_symbols"), "block_id") - block_ids
+    if foreign_blocks:
+        raise KnowledgeBaseLoadError(f"{package.paths.block_symbols}: symbol rows must belong to {package.id}: "
+                                     + ", ".join(sorted(foreign_blocks)))
     foreign_definitions = _ids(tables.get("symbols"), "definition_block_id") - block_ids
     if foreign_definitions:
         raise KnowledgeBaseLoadError(f"{package.paths.symbols}: definition blocks must belong to {package.id}: "

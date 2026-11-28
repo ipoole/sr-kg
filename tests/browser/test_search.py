@@ -31,17 +31,42 @@ def test_symbols_browse_search_and_open_definition(repo_browser_graph):
     page = repo_browser_graph.page
     repo_browser_graph.open_search()
     page.get_by_role('button', name='Symbols', exact=True).click()
-    rows = page.locator('#kg_symbol_list tbody tr')
+    table = page.get_by_role('table', name='Symbols glossary')
+    assert table.get_by_role('columnheader').all_text_contents() == ['Symbol', 'Name', 'Short definition']
+    assert page.locator('#kg_search_section').bounding_box()['width'] > 420
+    rows = table.locator('tbody tr:not([hidden])')
     assert rows.count() > 8
+    assert table.evaluate('''async table => {
+        const heading = table.tHead;
+        const scroll = table.parentElement;
+        const initialTop = heading.getBoundingClientRect().top;
+        scroll.scrollTop = 75;
+        await new Promise(requestAnimationFrame);
+        const bounds = heading.getBoundingClientRect();
+        const hit = document.elementFromPoint(bounds.right - 20, bounds.top + bounds.height / 2);
+        return scroll.scrollTop > 0 && Math.abs(bounds.top - initialTop) <= 1 && heading.contains(hit);
+    }''')
     query = page.get_by_role('textbox', name='Search symbols')
     for spelling in ('gamma', 'γ'):
         query.fill(spelling)
         assert set(rows.locator('td:nth-child(2)').all_text_contents()) == {'Lorentz factor', 'Worldline'}
+    worldline = rows.filter(has=page.get_by_role('link', name='Worldline', exact=True))
+    assert 'through spacetime, labelled by a parameter' in worldline.locator('td').nth(2).inner_text()
+    query.fill('omega')
+    frequency = rows.filter(has=page.get_by_role('link', name='Angular frequency', exact=True))
+    assert 'radians per second' in frequency.locator('td').nth(2).inner_text()
+    name = frequency.get_by_role('link', name='Angular frequency', exact=True)
+    assert name.evaluate('link => getComputedStyle(link).textDecorationLine') == 'none'
+    name.hover()
+    preview = page.locator('#kg_concept_preview [data-preview-symbol-id="sr.angular_frequency"]')
+    assert preview.locator('.concept-preview-title').inner_text() == 'Angular frequency'
+    assert 'radians per second' in preview.locator('.concept-preview-excerpt').inner_text()
     query.fill('no matching notation')
+    assert not preview.is_visible()
     assert page.locator('#kg_search_status').inner_text() == 'No matching symbols.'
     query.fill('Lorentz factor')
     query.press('ArrowDown')
-    assert rows.first.get_by_role('link').evaluate('link => link === document.activeElement')
+    assert rows.first.get_by_role('link', name='Lorentz factor').evaluate('link => link === document.activeElement')
     page.keyboard.press('Enter')
     assert not page.locator('#kg_search_section').is_visible()
     assert page.locator('#info_panel [data-content-block-id="sr.lorentz_transformations.boost_formula"]').evaluate('el => el.open')
@@ -72,7 +97,7 @@ def test_glossary_renders_indices_and_accepts_plain_text_search(repo_browser_gra
         ('T_p^*M', 'msubsup', ['T', 'p', '∗']),
     ]:
         query.fill(spelling)
-        indexes = page.locator(f'#kg_symbol_list td math > {tag}')
+        indexes = page.locator(f'#kg_symbol_list tr:not([hidden]) td:first-child math > {tag}')
         assert indexes.is_visible()
         assert indexes.locator(':scope > *').all_text_contents() == expected
         assert indexes.evaluate('el => el.namespaceURI') == 'http://www.w3.org/1998/Math/MathML'
@@ -85,7 +110,7 @@ def test_glossary_renders_indices_and_accepts_plain_text_search(repo_browser_gra
         if tag in {'msup', 'msubsup'}:
             assert centres[-1] < centres[0]
         if tag == 'msubsup':
-            assert page.locator('#kg_symbol_list td math > mi').text_content() == 'M'
+            assert page.locator('#kg_symbol_list tr:not([hidden]) td:first-child math > mi').text_content() == 'M'
 
 
 def test_exact_module_beats_partial_concept_title(browser_graph):

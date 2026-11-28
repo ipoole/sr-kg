@@ -1,33 +1,45 @@
-symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix
-sr.light_speed,c,Speed of light in vacuum,sr.constancy_of_speed_of_light.definition,vacuum light speed,,,
-sr.beta,β,Signed boost velocity divided by c,sr.lorentz_transformations.boost_formula,beta v/c relative speed,,,
-sr.lorentz_factor,γ,Lorentz factor,sr.lorentz_transformations.boost_formula,gamma boost factor,,,
-sr.lorentz_matrix,Λ,Lorentz transformation matrix,sr.lorentz_transformations.matrix_form,lambda lorentz matrix,,,
-sr.spacetime_interval_squared,Δs,Spacetime interval squared,sr.spacetime_interval.definition,delta s squared ds^2 invariant separation Δs²,,2,
-sr.minkowski_metric,η,Minkowski metric,sr.metric_tensor.definition,eta mu nu flat metric signature η_μν eta_munu,μν,,
-sr.proper_time_symbol,τ,Proper time,sr.proper_time.definition,tau clock time d tau,,,
-sr.position_four_vector_symbol,x,Position four-vector,sr.position_four_vector.definition,x mu ct spacetime coordinates x^μ x^mu,,μ,
-sr.four_velocity,U,Four-velocity,sr.velocity_four_vector.definition,U mu four velocity U^μ U^mu,,μ,
-sr.four_momentum,p,Four-momentum,sr.momentum_four_vector.definition,p mu four momentum energy momentum p^μ p^mu,,μ,
-sr.invariant_mass,m,Invariant mass,sr.mass_energy_equivalence.definition,rest mass,,,
-sr.rest_energy,E,Rest energy,sr.mass_energy_equivalence.definition,E0 E_0 mass energy E₀,0,,
-sr.mechanical_action,S,Mechanical action,sr.action_principle.definition,stationary action variation,,,
-sr.mechanical_lagrangian,L,Mechanical Lagrangian,sr.lagrangian.definition,generalised coordinates lagrangian,,,
-sr.canonical_momentum_symbol,p,Canonical momentum,sr.canonical_momentum.definition,p_i conjugate momentum pᵢ,i,,
-sr.hamiltonian,H,Hamiltonian,sr.hamiltonian_formalism.definition,legendre transform,,,
-sr.scalar_field_symbol,φ,Generic scalar field,sr.scalar_field.definition,phi scalar field,,,
-sr.field_lagrangian_density,ℒ,Field Lagrangian density,sr.field_lagrangian.definition,mathcal L action density,,,
-sr.spacetime_volume_element,d,Spacetime volume element,sr.field_lagrangian.definition,d^4x four dimensional measure d⁴x,,4,x
-sr.electromagnetic_four_potential,A,Electromagnetic four-potential,sr.vector_potential.definition,A mu A^mu four potential A_μ A_mu,μ,,
-sr.electric_scalar_potential,φ,Electric scalar potential,sr.vector_potential.definition,phi voltage electromagnetic potential,,,
-sr.electromagnetic_field_tensor,F,Electromagnetic field tensor,sr.field_tensor.definition,F mu nu field strength F_μν F_munu,μν,,
-sr.electric_field_symbol,𝐄,Electric field,sr.electric_field.definition,E electric three vector,,,
-sr.magnetic_field_symbol,𝐁,Magnetic field,sr.magnetic_field.definition,B magnetic three vector,,,
-sr.gauge_function,χ,Gauge function,sr.gauge_invariance.definition,chi gauge transformation,,,
-sr.electric_four_current,j,Electric four-current,sr.four_current.definition,j mu four current source j^μ j^mu,,μ,
-sr.charge_density,ρ,Charge density,sr.four_current.definition,rho charge per volume,,,
-sr.dalembertian,□,D’Alembertian,sr.wave_equation.definition,box dalembertian d'alembertian wave operator,,,
-sr.stress_energy,T,Stress–energy tensor,sr.energy_momentum_tensor.definition,T mu nu stress energy momentum tensor T^μν T^munu,,μν,
-sr.electromagnetic_energy_density,u,Electromagnetic energy density,sr.em_energy_density.definition,u_EM field energy per volume,,,
-sr.poynting_vector_symbol,𝐒,Poynting vector,sr.poynting_vector.definition,S electromagnetic energy flux,,,
-sr.electromagnetic_momentum_density,𝐠,Electromagnetic momentum density,sr.poynting_vector.definition,g field momentum per volume,,,
+symbol_id,symbol,name,definition_block_id,search_terms,subscript,superscript,suffix,definition
+sr.light_speed,c,Speed of light in vacuum,sr.constancy_of_speed_of_light.definition,vacuum light speed,,,,The invariant speed at which light propagates in vacuum.
+sr.beta,β,Signed boost velocity divided by c,sr.lorentz_transformations.boost_formula,beta v/c relative speed,,,,
+sr.lorentz_factor,γ,Lorentz factor,sr.lorentz_transformations.boost_formula,gamma boost factor,,,,
+sr.lorentz_matrix,Λ,Lorentz transformation matrix,sr.lorentz_transformations.matrix_form,lambda lorentz matrix,,,,
+sr.spacetime_interval_squared,Δs,Spacetime interval squared,sr.spacetime_interval.definition,delta s squared ds^2 invariant separation Δs²,,2,,
+sr.minkowski_metric,η,Minkowski metric,sr.metric_tensor.definition,eta mu nu flat metric signature η_μν eta_munu,μν,,,"The bilinear form that gives the spacetime interval in flat spacetime. In the atlas’s inertial coordinates its matrix is \(\mathrm{diag}(1,-1,-1,-1)\)."
+sr.proper_time_symbol,τ,Proper time,sr.proper_time.definition,tau clock time d tau,,,,
+sr.position_four_vector_symbol,x,Position four-vector,sr.position_four_vector.definition,x mu ct spacetime coordinates x^μ x^mu,,μ,,
+sr.four_velocity,U,Four-velocity,sr.velocity_four_vector.definition,U mu four velocity U^μ U^mu,,μ,,
+sr.four_momentum,p,Four-momentum,sr.momentum_four_vector.definition,p mu four momentum energy momentum p^μ p^mu,,μ,,
+sr.invariant_mass,m,Invariant mass,sr.mass_energy_equivalence.definition,rest mass,,,,
+sr.rest_energy,E,Rest energy,sr.mass_energy_equivalence.definition,E0 E_0 mass energy E₀,0,,,
+sr.mechanical_action,S,Mechanical action,sr.action_principle.definition,stationary action variation,,,,
+sr.mechanical_lagrangian,L,Mechanical Lagrangian,sr.lagrangian.definition,generalised coordinates lagrangian,,,,
+sr.canonical_momentum_symbol,p,Canonical momentum,sr.canonical_momentum.definition,p_i conjugate momentum pᵢ,i,,,
+sr.hamiltonian,H,Hamiltonian,sr.hamiltonian_formalism.definition,legendre transform,,,,
+sr.scalar_field_symbol,φ,Generic scalar field,sr.scalar_field.definition,phi scalar field,,,,
+sr.field_lagrangian_density,ℒ,Field Lagrangian density,sr.field_lagrangian.definition,mathcal L action density,,,,
+sr.spacetime_volume_element,d,Spacetime volume element,sr.field_lagrangian.definition,d^4x four dimensional measure d⁴x,,4,x,
+sr.electromagnetic_four_potential,A,Electromagnetic four-potential,sr.vector_potential.definition,A mu A^mu four potential A_μ A_mu,μ,,,
+sr.electric_scalar_potential,φ,Electric scalar potential,sr.vector_potential.definition,phi voltage electromagnetic potential,,,,
+sr.electromagnetic_field_tensor,F,Electromagnetic field tensor,sr.field_tensor.definition,F mu nu field strength F_μν F_munu,μν,,,
+sr.electric_field_symbol,𝐄,Electric field,sr.electric_field.definition,E electric three vector,,,,
+sr.magnetic_field_symbol,𝐁,Magnetic field,sr.magnetic_field.definition,B magnetic three vector,,,,
+sr.gauge_function,χ,Gauge function,sr.gauge_invariance.definition,chi gauge transformation,,,,
+sr.electric_four_current,j,Electric four-current,sr.four_current.definition,j mu four current source j^μ j^mu,,μ,,"The spacetime vector combining charge density and electric current density, \(j^\mu=(c\rho,\mathbf j)\)."
+sr.charge_density,ρ,Charge density,sr.four_current.definition,rho charge per volume,,,,
+sr.dalembertian,□,D’Alembertian,sr.wave_equation.definition,box dalembertian d'alembertian wave operator,,,,"The flat-spacetime wave operator, \(\Box=c^{-2}\partial_t^2-\nabla^2\), in the atlas’s metric convention."
+sr.stress_energy,T,Stress–energy tensor,sr.energy_momentum_tensor.definition,T mu nu stress energy momentum tensor T^μν T^munu,,μν,,
+sr.electromagnetic_energy_density,u,Electromagnetic energy density,sr.em_energy_density.definition,u_EM field energy per volume,,,,
+sr.poynting_vector_symbol,𝐒,Poynting vector,sr.poynting_vector.definition,S electromagnetic energy flux,,,,
+sr.electromagnetic_momentum_density,𝐠,Electromagnetic momentum density,sr.poynting_vector.definition,g field momentum per volume,,,,
+sr.angular_frequency,ω,Angular frequency,sr.wave_equation.plane_wave,omega phase rate,,,,"The rate at which the phase of a wave changes with time at a fixed position, measured in radians per second."
+sr.wave_vector,𝐤,Wave vector,sr.wave_equation.plane_wave,k wavevector wavenumber,,,,"The vector describing how the wave phase changes with position. For a plane wave it points along the direction of propagation and has magnitude \(2\pi/\lambda\), where \(\lambda\) is the wavelength."
+sr.scalar_wave_field,ψ,Scalar wave field,sr.wave_equation.definition,psi scalar amplitude,,,,A single scalar value at each spacetime point that varies according to the wave equation.
+sr.coordinate_time_symbol,t,Coordinate time,sr.proper_time.coordinate_time,frame clock time,,,,Time assigned to events by the synchronised clocks of a chosen frame.
+sr.time_coordinate_length,x,Time coordinate in length units,sr.spacetime_event.ct_coordinate,x^0 x0 ct,,0,,"The time component of a spacetime position, \(x^0=ct\), expressed in units of length."
+sr.minkowski_signature,+---,Mostly-minus metric signature,sr.metric_tensor.definition,plus minus sign convention,,,,The sign convention in which the time term of the Minkowski interval is positive and the three spatial terms are negative.
+sr.coordinate_derivative,∂,Coordinate derivative,sr.scalar_field.derivatives,partial mu partial_mu,μ,,,"The partial derivative with respect to the spacetime coordinate \(x^\mu\), holding the other coordinates fixed."
+sr.raised_coordinate_derivative,∂,Raised coordinate derivative,sr.scalar_field.derivatives,partial mu partial^mu,,μ,,"The coordinate derivative with its index raised by the inverse metric, \(\partial^\mu=\eta^{\mu\nu}\partial_\nu\)."
+sr.spatial_laplacian,∇,Spatial Laplacian,sr.wave_equation.definition,nabla squared del squared,,2,,The sum of the second spatial derivatives along the three Cartesian coordinate axes.
+sr.raised_four_potential,A,Electromagnetic four-potential (raised index),sr.vector_potential.definition,A^mu A^nu four vector potential,,μ,,"The contravariant electromagnetic potential, with SI components \(A^\mu=(\phi/c,\mathbf A)\)."
+sr.raised_field_tensor,F,Electromagnetic field tensor (raised indices),sr.field_tensor.definition,F^munu electromagnetic field strength,,μν,,The electromagnetic field tensor with both indices raised by the inverse Minkowski metric. It describes the electric and magnetic fields together.
+sr.vacuum_permeability,μ,Vacuum permeability,sr.maxwells_equations.three_vector_split,mu0 mu_0 magnetic constant,0,,,"The SI constant relating electric four-current to the divergence of the field tensor, \(\partial_\mu F^{\mu\nu}=\mu_0j^\nu\)."

@@ -45,9 +45,9 @@ def test_field_module_content_and_reading_routes(sr1_reading_output,playwright_b
 @pytest.mark.browser
 @pytest.mark.browser_full
 @pytest.mark.parametrize('concept, block_id, definition, link_count', [
-    ('wave_equation', 'maxwell_origin', 'sr.field_tensor.definition', 4),
+    ('maxwells_equations', 'homogeneous_equation', 'sr.field_tensor.definition', 2),
     ('noether_theorem', 'definition', 'sr.scalar_field.derivatives', 1),
-], ids=['lorenz-gauge', 'noether'])
+], ids=['maxwell', 'noether'])
 @pytest.mark.parametrize('phone', [False, True], ids=['desktop', 'phone'])
 def test_sr5_equation_links_open_definition_previews(
     sr1_reading_output, playwright_browser, phone, concept, block_id, definition, link_count,
@@ -78,4 +78,65 @@ def test_sr5_equation_links_open_definition_previews(
             page.keyboard.press('Escape')
             symbol_link.hover()
         preview.wait_for(state='visible')
+        assert not graph.page_errors
+
+
+@pytest.mark.browser
+@pytest.mark.browser_full
+@pytest.mark.parametrize('phone', [False, True], ids=['desktop', 'phone'])
+def test_wave_equation_symbol_rows_use_the_glossary(sr1_reading_output, playwright_browser, phone):
+    api, browser = playwright_browser
+    viewport = {'width': 390 if phone else 1280, 'height': 900}
+    with _open_browser_graph(api, browser, sr1_reading_output,
+                             {'viewport': viewport, 'has_touch': phone, 'is_mobile': phone}) as graph:
+        page = graph.page
+        graph.click_concept('sr.wave_equation')
+        page.locator('#kg_view_select').select_option('details')
+        panel = page.locator('#info_panel')
+        rows = panel.locator(':scope > details > .content-block-body > .kg-block-symbols')
+        assert rows.count() == 11
+        assert rows.locator(':scope > span').all_text_contents() == ['Symbols:'] * 11
+        assert panel.locator('.concept-math-link').count() == 0
+
+        plane_wave = panel.locator('[data-content-block-id="sr.wave_equation.plane_wave"]')
+        plane_wave.locator(':scope > summary').click()
+        omega = plane_wave.get_by_role('link', name='Angular frequency')
+        if phone:
+            omega.tap()
+        else:
+            omega.hover()
+        preview = page.locator('#kg_concept_preview [data-preview-symbol-id="sr.angular_frequency"]')
+        assert preview.locator('.concept-preview-title').inner_text() == 'Angular frequency'
+        short_definition = preview.locator('.concept-preview-excerpt').inner_text()
+        assert 'radians per second' in short_definition
+        assert preview.locator('.concept-preview-go').count() == 0
+        full_block = preview.locator('.kg-block-preview-body')
+        full_block.locator(':scope > summary').click()
+        full_block.get_by_text('Use a plane-wave field', exact=False).wait_for()
+        assert panel.get_attribute('data-concept-id') == 'sr.wave_equation'
+        preview.get_by_role('button', name='Close preview').click()
+
+        metric_block = panel.locator('[data-content-block-id="sr.wave_equation.metric_structure"]')
+        metric_block.locator(':scope > summary').click()
+        metric = metric_block.get_by_role('link', name='Minkowski metric', exact=True)
+        if phone:
+            metric.tap()
+        else:
+            metric.hover()
+        metric_preview = page.locator('#kg_concept_preview [data-preview-symbol-id="sr.minkowski_metric"]')
+        heading = metric_preview.locator('.concept-preview-title')
+        assert heading.inner_text() == 'Minkowski metric'
+        assert heading.evaluate('element => getComputedStyle(element).fontWeight') == '700'
+        assert 'bilinear form' in metric_preview.locator('.concept-preview-excerpt').inner_text()
+        page.keyboard.press('Escape')
+
+        graph.open_search()
+        page.get_by_role('button', name='Symbols', exact=True).click()
+        page.get_by_role('textbox', name='Search symbols').fill('omega')
+        result = page.get_by_role('row').filter(has=page.get_by_role('link', name='Angular frequency', exact=True))
+        assert result.locator('td').nth(2).inner_text() == short_definition
+        page.get_by_role('textbox', name='Search symbols').fill('Minkowski metric')
+        metric_result = page.get_by_role('row').filter(has=page.get_by_role('link', name='Minkowski metric', exact=True))
+        metric_result.locator('td').nth(2).locator('mjx-container').wait_for()
+        assert page.locator('#kg_search_section').evaluate('el => el.scrollWidth <= el.clientWidth + 1')
         assert not graph.page_errors
