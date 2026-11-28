@@ -47,3 +47,7 @@ sr.particle_velocity,𝐯,Coordinate velocity,sr.inertial_frames.free_motion,v v
 sr.rest_length,L,Rest length,sr.length_contraction.definition,L0 proper length,0,,,The distance between the endpoints measured simultaneously in the object's rest frame.
 sr.measured_length,L,Length in the measuring frame,sr.length_contraction.definition,coordinate length moving length,,,,The distance between the endpoints measured at the same coordinate time in the chosen frame.
 sr.event_separation,Δx,Event separation four-vector,sr.spacetime_interval.constructing_delta,delta x displacement,,μ,,The coordinate difference between two events in a given inertial frame.
+sr.particle_energy,E,Total particle energy,sr.momentum_four_vector.definition,total energy relativistic energy,,,,The energy associated with the time component of four-momentum in the chosen frame.
+sr.spatial_momentum,𝐩,Spatial momentum,sr.momentum_four_vector.components,p momentum three momentum,,,,The spatial part of four-momentum in the chosen frame.
+sr.kinetic_energy,K,Kinetic energy,sr.momentum_four_vector.kinetic_limit,kinetic energy motion,,,,The difference between a particle's total energy and its rest energy.
+sr.force,𝐅,Three-force,sr.momentum_four_vector.work_energy,force dp/dt,,,,The rate of change of spatial momentum with respect to coordinate time.
