@@ -21,3 +21,12 @@ math.dual_basis,dx,Coordinate dual basis,math.cotangent_space.basis,dx^i dxⁱ c
 math.kronecker_delta,δ,Kronecker delta,math.cotangent_space.basis,delta identity,j,i,,The component that equals one when its two indices agree and zero otherwise.
 math.covector_symbol,ω,Covector,math.cotangent_space.definition,omega one-form,,,,A linear map from tangent vectors at a point to scalars.
 math.flat_map,v,Metric lowering map,math.cotangent_space.readout,flat musical isomorphism,,♭,,The covector that takes a tangent vector w to its metric pairing with v.
+math.tensor_type,"(r, s)",Tensor type,math.tensor_field.rank,type rank order r s,,,,The number of upper and lower index slots of a tensor.
+math.tensor_components,T,Tensor components,math.index_notation.definition,tensor components mixed indices,,i,,The scalar entries describing a tensor in a chosen basis.
+math.vector_components,V,Vector components,math.index_notation.definition,V^i Vⁱ contravariant,,i,,The coefficients of a vector in a chosen tangent basis.
+math.coordinate_indices,"i, j",Coordinate indices,math.index_notation.component_indices,latin index component label,,,,Labels selecting local coordinate components.
+math.tangent_basis_symbol,e,Tangent basis,math.tensor_field.multilinear_construction,e_i basis vector,i,,,A set of linearly independent vectors spanning the tangent space at a point.
+math.dual_basis_symbol,ε,Dual basis,math.tensor_field.multilinear_construction,epsilon dual covector,,i,,The covectors that extract individual components in the chosen tangent basis.
+math.tensor_product,⊗,Tensor product,math.tensor_field.multilinear_construction,outer product otimes,,,,A multilinear tensor formed by multiplying the readouts of its factors on separate inputs.
+math.metric_symbol,g,Metric,math.tensor_field.metric_example,g_ij inner product bilinear,ij,,,A symmetric bilinear form that pairs two tangent vectors at a point.
+math.inverse_jacobian,K,Inverse Jacobian,math.tensor_transformation_law.definition,inverse transition jacobian,,,,The matrix of derivatives of the old coordinates with respect to the new coordinates.
