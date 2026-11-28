@@ -51,3 +51,11 @@ sr.particle_energy,E,Total particle energy,sr.momentum_four_vector.definition,to
 sr.spatial_momentum,𝐩,Spatial momentum,sr.momentum_four_vector.components,p momentum three momentum,,,,The spatial part of four-momentum in the chosen frame.
 sr.kinetic_energy,K,Kinetic energy,sr.momentum_four_vector.kinetic_limit,kinetic energy motion,,,,The difference between a particle's total energy and its rest energy.
 sr.force,𝐅,Three-force,sr.momentum_four_vector.work_energy,force dp/dt,,,,The rate of change of spatial momentum with respect to coordinate time.
+sr.generalised_coordinate,q,Generalised coordinate,sr.lagrangian.definition,q configuration coordinate,i,,,One of the independent variables specifying the configuration of a mechanical system.
+sr.generalised_velocity,q̇,Generalised velocity,sr.lagrangian.definition,qdot derivative generalised velocity,i,,,The coordinate-time derivative of a generalised coordinate.
+sr.potential_energy,V,Potential energy,sr.lagrangian.simple_example,potential energy position,,,,The energy assigned to a configuration by a conservative interaction.
+sr.field_action,S,Field action,sr.field_lagrangian.definition,action spacetime integral,,,,The spacetime integral of the Lagrangian density for a specified field history.
+sr.vector_field_symbol,V,Vector field,sr.vector_field.definition,V^mu vector field,,μ,,A field assigning a vector to each event.
+sr.field_component,φ,Field component,sr.field_lagrangian.definition,phi_a independently varied field component,a,,,One of the field variables varied independently in the action.
+sr.field_derivative_coefficient,P,Field derivative coefficient,sr.field_equations.euler_lagrange,field momentum derivative coefficient,a,μ,,The derivative of the Lagrangian density with respect to the spacetime derivative of one field component.
+sr.scalar_potential_energy_density,V,Scalar-field potential energy density,sr.field_lagrangian.example_scalar,V(phi) scalar potential self interaction,,,,The contribution to the scalar field's energy density that depends only on its local value.
