@@ -44,13 +44,14 @@ def test_field_module_content_and_reading_routes(sr1_reading_output,playwright_b
 
 @pytest.mark.browser
 @pytest.mark.browser_full
-@pytest.mark.parametrize('concept, block_id, definition, link_count', [
-    ('maxwells_equations', 'homogeneous_equation', 'sr.field_tensor.definition', 2),
-    ('noether_theorem', 'definition', 'sr.scalar_field.derivatives', 1),
+@pytest.mark.parametrize('concept, block_id, symbol_id, name', [
+    ('maxwells_equations', 'homogeneous_equation', 'sr.electromagnetic_field_tensor',
+     'Electromagnetic field tensor'),
+    ('noether_theorem', 'definition', 'sr.coordinate_derivative', 'Coordinate derivative'),
 ], ids=['maxwell', 'noether'])
 @pytest.mark.parametrize('phone', [False, True], ids=['desktop', 'phone'])
-def test_sr5_equation_links_open_definition_previews(
-    sr1_reading_output, playwright_browser, phone, concept, block_id, definition, link_count,
+def test_sr5_block_glossary_opens_definition_previews(
+    sr1_reading_output, playwright_browser, phone, concept, block_id, symbol_id, name,
 ):
     api, browser = playwright_browser
     viewport = {'width': 390 if phone else 1280, 'height': 900}
@@ -65,11 +66,10 @@ def test_sr5_equation_links_open_definition_previews(
         first_equation.wait_for()
         errors = first_equation.locator('[data-mml-node="merror"]').all()
         assert not errors, [error.get_attribute('data-mjx-error') for error in errors]
-        symbol_link = first_equation.locator(f'a.concept-math-link[data-block-id="{definition}"]')
-        symbol_link.wait_for()
-        assert first_equation.locator('a.concept-math-link').count() == link_count
-        assert symbol_link.evaluate('a => getComputedStyle(a.querySelector("use, path")).fill') == 'rgb(24, 71, 121)'
-        preview = page.locator(f'#kg_concept_preview [data-preview-block-id="{definition}"]')
+        assert block.locator('a.concept-math-link').count() == 0
+        row = block.locator('.kg-block-symbols')
+        symbol_link = row.get_by_role('link', name=name, exact=True)
+        preview = page.locator(f'#kg_concept_preview [data-preview-symbol-id="{symbol_id}"]')
         if phone:
             symbol_link.tap()
         else:
@@ -78,6 +78,7 @@ def test_sr5_equation_links_open_definition_previews(
             page.keyboard.press('Escape')
             symbol_link.hover()
         preview.wait_for(state='visible')
+        assert preview.locator('.concept-preview-title').inner_text() == name
         assert not graph.page_errors
 
 

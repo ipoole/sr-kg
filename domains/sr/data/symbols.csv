@@ -65,3 +65,9 @@ sr.vacuum_permittivity,ε,Vacuum permittivity,sr.maxwells_equations.three_vector
 sr.electric_current_density,𝐣,Electric current density,sr.four_current.definition,j current flux,,,,The signed electric charge flowing per unit time through unit area normal to the flow.
 sr.four_force,f,Four-force,sr.lorentz_force_law.definition,K^mu f^mu dp/dtau,,μ,,The rate of change of four-momentum along a particle's worldline with respect to proper time.
 sr.em_stress_energy_symbol,T,Electromagnetic stress–energy tensor,sr.em_stress_energy.definition,T EM electromagnetic tensor,EM,μν,,"The tensor collecting the electromagnetic field's energy density, momentum density, energy flux and stresses."
+sr.noether_current,J,Noether current,sr.noether_theorem.definition,J^mu symmetry current,,μ,,A current associated with a continuous variational symmetry whose divergence vanishes on solutions of the equations of motion.
+sr.noether_boundary_term,K,Noether boundary term,sr.noether_theorem.symmetry_of_action,K^mu boundary divergence,,μ,,The vector whose divergence gives the first-order change in the Lagrangian density under the symmetry.
+sr.noether_charge,Q,Conserved Noether quantity,sr.noether_theorem.definition,Q conserved charge,,,,The quantity conserved in time by the equations of motion when the action has the corresponding continuous symmetry.
+sr.coordinate_acceleration,𝐚,Coordinate acceleration,sr.radiation_reaction.pathologies,a acceleration,,,,The coordinate-time derivative of a particle's spatial velocity in the chosen frame.
+sr.radiation_reaction_timescale,τ,Radiation reaction timescale,sr.radiation_reaction.pathologies,tau0 tau_0 Abraham Lorentz,0,,,The positive time scale multiplying the acceleration derivative in the nonrelativistic Abraham–Lorentz model.
+sr.radiated_power,P,Radiated power,sr.radiation_reaction.energy_balance,P rad radiative energy flux,rad,,,The outward rate of energy carried away by radiation.
